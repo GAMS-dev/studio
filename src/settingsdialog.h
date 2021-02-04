@@ -62,7 +62,7 @@ private slots:
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
     void themeModified();
-    void updateUserTypeToolTip();
+    void updateUserTypeToolTip(bool direct);
     void setModified();
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();

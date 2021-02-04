@@ -64,6 +64,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings->block(); // prevent changes from outside this dialog
     initColorPage();
     loadSettings();
+    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
+"<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
+"<i>The following extensions will be automatically removed:<br>%1</i></p>");
+    ui->edUserGamsTypes->setToolTip(tip.arg(FileType::invalidUserGamsTypes().join(", ")));
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -313,14 +317,10 @@ void SettingsDialog::themeModified()
     }
 }
 
-void SettingsDialog::updateUserTypeToolTip()
+void SettingsDialog::updateUserTypeToolTip(bool direct)
 {
-
-    if (!ui->edUserGamsTypes->isModified() && ui->edUserGamsTypes->hasFocus()) {
-        QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
-    "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
-    "<i>The following extensions will be automatically removed:<br>%1</i></p>");
-        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), tip.arg(FileType::invalidUserGamsTypes().join(", ")));
+    if (direct || (!ui->edUserGamsTypes->isModified() && ui->edUserGamsTypes->hasFocus())) {
+        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), ui->edUserGamsTypes->toolTip());
     } else {
         QToolTip::hideText();
     }
@@ -389,8 +389,11 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
-    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::Enter || event->type() == QEvent::Leave))
-        updateUserTypeToolTip();
+    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::Enter || event->type() == QEvent::Leave ||
+                                           event->type() == QEvent::ToolTip )) {
+        updateUserTypeToolTip(event->type() == QEvent::ToolTip);
+        return event->type() == QEvent::ToolTip;
+    }
 
     return false;
 }
