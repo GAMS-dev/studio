@@ -23,7 +23,7 @@ QIcon FileIcon::iconForFileKind(FileKind kind, bool isReadonly, bool isMain)
     if (kind == FileKind::Txt) return Theme::icon(":/img/file-edit", true);
     if (kind == FileKind::TxtRO) return Theme::icon(":/img/file-alt", true);
     if (!isReadonly) return Theme::icon(":/img/file-edit", true);
-    return Theme::icon(":/img/file-alt"+runMark, true);
+    return Theme::icon(":/img/file-alt", true);
 
 }
 
