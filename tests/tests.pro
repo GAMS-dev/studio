@@ -25,17 +25,13 @@ SUBDIRS +=                              \
            testblockcode                \
            testcheckforupdatewrapper    \
            testcommonpaths              \
-           testconopt4option            \
-           testcplexoption              \
            testdialogfilefilter         \
            testdoclocation              \
            testeditors                  \
            testgamslicenseinfo          \
            testgamsoption               \
            testgamsuserconfig           \
-           testgurobioption             \
            testmemorymapper             \
-           testminosoption              \
            testmiro                     \
            testoptionapi                \
            testoptionfile               \
