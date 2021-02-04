@@ -44,5 +44,6 @@ SOURCES += \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp
 
-OTHER_FILES +=                                      \
-    optdummy.def
+OTHER_FILES +=         \
+    optdummy.def       \
+    genoptdeffile.cpp
