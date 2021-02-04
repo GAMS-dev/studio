@@ -222,6 +222,7 @@ void FileMeta::refreshType()
             connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
         }
     }
+    emit changed(mId);
 }
 
 FileId FileMeta::id() const

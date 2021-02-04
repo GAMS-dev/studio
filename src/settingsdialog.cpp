@@ -267,10 +267,7 @@ void SettingsDialog::on_btn_browse_clicked()
 
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
-    if (button == ui->buttonBox->button(QDialogButtonBox::Apply)) {
-        saveSettings();
-        emit userGamsTypeChanged();
-    } else if (button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
+    if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
@@ -319,10 +316,10 @@ void SettingsDialog::themeModified()
 void SettingsDialog::updateUserTypeToolTip()
 {
 
-    if (!ui->edUserGamsTypes->isModified()) {
-        QString tip("<html><p>A&nbsp;comma&nbsp;separated&nbsp;list&nbsp;of&nbsp;extensions&nbsp;(e.g.&quot;gms,inc&quot;)"
-"<br>For&nbsp;these&nbsp;files&nbsp;the&nbsp;syntax&nbsp;will&nbsp;be&nbsp;highlighted<br><br>"
-"<i>The&nbsp;following&nbsp;extensions&nbsp;will&nbsp;be&nbsp;automatically&nbsp;removed:<br>%1</i></p></html>");
+    if (!ui->edUserGamsTypes->isModified() && ui->edUserGamsTypes->hasFocus()) {
+        QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
+    "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
+    "<i>The following extensions will be automatically removed:<br>%1</i></p>");
         QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), tip.arg(FileType::invalidUserGamsTypes().join(", ")));
     } else {
         QToolTip::hideText();
