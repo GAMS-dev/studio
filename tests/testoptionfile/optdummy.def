@@ -83,11 +83,35 @@ str_6 string.nv 0 "" 1 3 description for option str_6
 *
 * synonym section
 *
+d_0 synonym double_0
+d_1 synonym double_1
+d_2 synonym double_2
+d_3 synonym double_3
+d_4 synonym double_4
+d_5 synonym double_5
+d_6 synonym double_6
+d_7 synonym double_7
+d_8 synonym double_8
+d_9 synonym double_9
+ei_2 synonym EnumInt_2
 eint_2 synonym EnumInt_2
+ei_4 synonym EnumInt_4
 eint_4 synonym EnumInt_4
 s_0 synonym str_0
+s_1 synonym str_1
 s_2 synonym str_2
+s_3 synonym str_3
 s_4 synonym str_4
+*
+* deprecated section
+*
+synon deprecated
+ d_5
+ ei_2
+ ei_4
+ s_0
+ s_2
+ s_4
 *
 * indicator section
 *

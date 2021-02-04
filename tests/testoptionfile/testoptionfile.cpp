@@ -340,11 +340,14 @@ void TestOptionFile::testOptionSynonym_data()
     QTest::addColumn<QString>("optionSynonym");
     QTest::addColumn<QString>("optionName");
 
-    QTest::newRow("EnumInt_2")  << "eint_2"   << "EnumInt_2";
-    QTest::newRow("EnumInt_4")  << "eint_4"   << "EnumInt_4";
+    QTest::newRow("EnumInt_2")    << "eint_2"   << "EnumInt_2";
+    QTest::newRow("EnumInt_4_1")  << "ei_4"     << "EnumInt_4";
+    QTest::newRow("EnumInt_4_2")  << "eint_4"   << "EnumInt_4";
 
     QTest::newRow("str_0")  << "s_0"   << "str_0";
+    QTest::newRow("str_1")  << "s_1"   << "str_1";
     QTest::newRow("str_2")  << "s_2"   << "str_2";
+    QTest::newRow("str_3")  << "s_3"   << "str_3";
     QTest::newRow("str_4")  << "s_4"   << "str_4";
 }
 
@@ -359,6 +362,61 @@ void TestOptionFile::testOptionSynonym()
     } else {
        QVERIFY( optionTokenizer->getOption()->isASynonym(optionSynonym) );
        QCOMPARE( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
+    }
+}
+
+void TestOptionFile::testDeprecatedOption_data()
+{
+    QTest::addColumn<QString>("deprecatedOption");
+    QTest::addColumn<bool>("isASynonym");
+    QTest::addColumn<bool>("isDeprecated");
+    QTest::addColumn<QString>("optionType");
+
+    QTest::newRow("d_0")    << "d_0"    << true   << false << "double";
+    QTest::newRow("d_1")    << "d_1"    << true   << false << "double";
+    QTest::newRow("d_2")    << "d_2"    << true   << false << "double";
+    QTest::newRow("d_3")    << "d_3"    << true   << false << "double";
+    QTest::newRow("d_4")    << "d_4"    << true   << false << "double";
+
+    QTest::newRow("d_5")    << "d_5"    << true   << true  << "double";
+
+    QTest::newRow("d_6")    << "d_6"    << true   << false << "double";
+    QTest::newRow("d_7")    << "d_7"    << true   << false << "double";
+    QTest::newRow("d_8")    << "d_8"    << true   << false << "double";
+    QTest::newRow("d_9")    << "d_9"    << true   << false << "double";
+
+    QTest::newRow("s_0")    << "s_0"    << true   << true  << "string";
+
+    QTest::newRow("s_1")    << "s_1"    << true   << false << "string";
+
+    QTest::newRow("s_2")    << "s_2"    << true   << true  << "string";
+
+    QTest::newRow("s_3")    << "s_3"    << true   << false << "string";
+
+    QTest::newRow("s_4")    << "s_4"    << true   << true  << "string";
+}
+
+void TestOptionFile::testDeprecatedOption()
+{
+    QFETCH(QString, deprecatedOption);
+    QFETCH(bool, isASynonym);
+    QFETCH(bool, isDeprecated);
+    QFETCH(QString, optionType);
+
+    if (isASynonym) {
+       QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+       QVERIFY( optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+
+       QString optionName = optionTokenizer->getOption()->getNameFromSynonym(deprecatedOption);
+       QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(optionName)), optionType );
+       QCOMPARE( optionTokenizer->getOption()->isDeprecated(deprecatedOption), isDeprecated );
+    } else {
+        QVERIFY( !optionTokenizer->getOption()->isValid(deprecatedOption) );
+        QVERIFY( !optionTokenizer->getOption()->isASynonym(deprecatedOption) );
+
+        QVERIFY( optionTokenizer->getOption()->isDeprecated(deprecatedOption) );
+        QCOMPARE( optionTokenizer->getOption()->getOptionTypeName(optionTokenizer->getOption()->getOptionType(deprecatedOption)), optionType );
+        QCOMPARE( optionTokenizer->getOption()->isDeprecated(deprecatedOption), isDeprecated );
     }
 }
 

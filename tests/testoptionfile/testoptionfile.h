@@ -58,6 +58,9 @@ private slots:
     void testOptionSynonym_data();
     void testOptionSynonym();
 
+    void testDeprecatedOption_data();
+    void testDeprecatedOption();
+
     void testHiddenOption_data();
     void testHiddenOption();
 
