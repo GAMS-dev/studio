@@ -36,7 +36,7 @@ MiroDeployProcess::MiroDeployProcess(QObject *parent)
 
 QStringList MiroDeployProcess::defaultParameters() const
 {
-    return { QString("IDCJSON=%1/%2_io.json")
+    return { QString("IDCJSON=\"%1/%2_io.json\"")
                 .arg(MiroCommon::confDirectory(modelName()))
                 .arg(modelName().toLower()),
              "a=c" };
