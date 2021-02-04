@@ -6,6 +6,7 @@ Version 1.5.3 *
 - avoid flickering of error markers
 - removed short switch to dark mode on canceling the settings dialog
 - fixed wrong color initialization for dark theme
+- fixed MIRO exectuion issue if model files contain spaces
 
 Version 1.5.2
 ==================
