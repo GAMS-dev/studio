@@ -443,14 +443,186 @@ void TestOptionFile::testInvalidOption()
     QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid );
 }
 
-void TestOptionFile::testNonExistReadOptionFile()
+void TestOptionFile::testReadOptionFile_data()
 {
+    // given
+    QFile outputFile(QDir(".").absoluteFilePath("dummy.opt"));
+    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+        QFAIL("expected to open dummy.opt to write, but failed");
+
+    QTextStream out(&outputFile);
+    out << "* -this-is-a-comment-line----" << Qt::endl;
+    out << "" << Qt::endl;
+    out << "bool_0=YES     # Default value (recommended)" << Qt::endl;
+    out << "int_2=0"      << Qt::endl;
+    out << "str_0=aValue" << Qt::endl;
+    out << "str_1=anotherValue   * this is not a comment due to invalid eolchar" << Qt::endl;
+    outputFile.close();
+
     // when
     QString optFile = QDir(".").absoluteFilePath("dummy.opt");
     QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
 
     // then
+    QCOMPARE( items.size(), 6 );
+
+    QTest::addColumn<bool>("optionItem_disabledFlag");
+    QTest::addColumn<bool>("disabledFlag");
+    QTest::addColumn<QString>("optionItem_optionKey");
+    QTest::addColumn<QString>("optionKey");
+    QTest::addColumn<QVariant>("optionItem_optionValue");
+    QTest::addColumn<QVariant>("optionValue");
+    QTest::addColumn<QString>("optionItem_optionText");
+    QTest::addColumn<QString>("optionText");
+    QTest::addColumn<int>("optionItem_optionId");
+    QTest::addColumn<int>("optionId");
+    QTest::addColumn<int>("optionItem_error");
+    QTest::addColumn<int>("error");
+
+    // comments
+    QTest::newRow("* -this-is-a-comment-line----")
+                      << items.at(0)->disabled <<  true
+                      << items.at(0)->key      << "* -this-is-a-comment-line----"
+                      << items.at(0)->value    << QVariant("")
+                      << items.at(0)->text     << ""
+                      << items.at(0)->optionId << -1
+                      << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
+    QTest::newRow("[empty line1]")
+                      << items.at(1)->disabled <<  true
+                      << items.at(1)->key      << ""
+                      << items.at(1)->value    << QVariant("")
+                      << items.at(1)->text     << ""
+                      << items.at(1)->optionId << -1
+                      << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
+    QTest::newRow("bool_0=YES")
+                      << items.at(2)->disabled <<  false
+                      << items.at(2)->key      << "bool_0"
+                      << items.at(2)->value    << QVariant("YES")
+                      << items.at(2)->text     << "Default value (recommended)"
+                      << items.at(2)->optionId << 0
+                      << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
+    QTest::newRow("int_2=0")
+                      << items.at(3)->disabled <<  false
+                      << items.at(3)->key      << "int_2"
+                      << items.at(3)->value    << QVariant("0")
+                      << items.at(3)->text     << ""
+                      << items.at(3)->optionId << 0
+                      << static_cast<int>(items.at(3)->error)    << static_cast<int>(OptionErrorType::No_Error);
+    QTest::newRow("str_0=aValue")
+                      << items.at(4)->disabled <<  false
+                      << items.at(4)->key      << "str_0"
+                      << items.at(4)->value    << QVariant("aValue")
+                      << items.at(4)->text     << ""
+                      << items.at(4)->optionId << 0
+                      << static_cast<int>(items.at(4)->error)    << static_cast<int>(OptionErrorType::No_Error);
+    QTest::newRow("str_1=anotherValue   * this is not a comment due to invalid eolchar")
+                      << items.at(5)->disabled <<  false
+                      << items.at(5)->key      << "str_1"
+                      << items.at(5)->value    << QVariant("anotherValue   * this is not a comment due to invalid eolchar")
+                      << items.at(5)->text     << ""
+                      << items.at(5)->optionId << 0
+                      << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
+}
+
+void TestOptionFile::testReadOptionFile()
+{
+    QFETCH(bool, optionItem_disabledFlag);
+    QFETCH(bool, disabledFlag);
+    QFETCH(QString, optionItem_optionKey);
+    QFETCH(QString, optionKey);
+    QFETCH(QVariant, optionItem_optionValue);
+    QFETCH(QVariant, optionValue);
+    QFETCH(QString, optionItem_optionText);
+    QFETCH(QString, optionText);
+    QFETCH(int, optionItem_optionId);
+    QFETCH(int, optionId);
+    QFETCH(int, optionItem_error);
+    QFETCH(int, error);
+
+    QCOMPARE( optionItem_disabledFlag, disabledFlag );
+    QCOMPARE( optionItem_optionKey, optionKey );
+    QCOMPARE( optionItem_optionValue, optionValue );
+    QCOMPARE( optionItem_optionText, optionText );
+    if (optionId == -1)
+       QCOMPARE( optionItem_optionId, optionId );
+    QCOMPARE( optionItem_error, error );
+}
+
+void TestOptionFile::testNonExistReadOptionFile()
+{
+    // when
+    QString optFile = QDir(".").absoluteFilePath("dummy.op3");
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
+
+    // then
     QCOMPARE( items.size(), 0);
+}
+
+void TestOptionFile::testWriteOptionFile_data()
+{
+    // given
+    QList<SolverOptionItem *> items;
+    items.append(new SolverOptionItem(-1, "double_2", "0.0", "", false));
+    items.append(new SolverOptionItem(-1, "double_9", "1e-2", "", false));
+    items.append(new SolverOptionItem(-1, "* -this-is-a-comment-line----", "", "", true));
+    items.append(new SolverOptionItem(-1, "EnumInt_1", "2", "", false));
+    items.append(new SolverOptionItem(-1, "str_0", "aValue", "", false));
+    items.append(new SolverOptionItem(-1, "eint_4", "6", "", false));
+    items.append(new SolverOptionItem(-1, "* -string.nv option----", "", "", true));
+    items.append(new SolverOptionItem(-1, "str_5", "", "", false));
+    items.append(new SolverOptionItem(-1, "str_6", "", "", false));
+    items.append(new SolverOptionItem(-1, "bool_0", "YES", "this is end of line comment", false));
+    items.append(new SolverOptionItem(-1, "bool_1", "NO", "", false));
+    int size = items.size();
+
+    // when
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("dummy.op2"), QTextCodec::codecForLocale()) );
+
+    // clean up
+    qDeleteAll(items);
+    items.clear();
+
+    // then
+    QFile inputFile(QDir(".").absoluteFilePath("dummy.op2"));
+    int i = 0;
+    QStringList optionItems;
+
+    if (inputFile.open(QIODevice::ReadOnly)) {
+       QTextStream in(&inputFile);
+       while (!in.atEnd()) {
+           optionItems << in.readLine();
+           i++ ;
+       }
+       inputFile.close();
+    }
+
+    QCOMPARE( optionItems.size(), size );
+    QCOMPARE( i, size );
+
+    QTest::addColumn<QString>("optionString");
+    QTest::addColumn<QString>("line");
+
+    QTest::newRow("line0") << optionItems.at(0) <<  "double_2=0.0";
+    QTest::newRow("line2") << optionItems.at(1) << "double_9=1e-2";
+    QTest::newRow("line3") << optionItems.at(2) <<  "* -this-is-a-comment-line----";
+    QTest::newRow("line4") << optionItems.at(3) << "EnumInt_1=2";
+    QTest::newRow("line5") << optionItems.at(4) << "str_0=aValue";
+    QTest::newRow("line6") << optionItems.at(5) << "eint_4=6";
+
+    QTest::newRow("line7") << optionItems.at(6) <<  "* -string.nv option----";
+    QTest::newRow("line8") << optionItems.at(7) << "str_5";
+    QTest::newRow("line9") << optionItems.at(8) << "str_6";
+
+    QTest::newRow("line10") << optionItems.at(9)  << "bool_0=YES # this is end of line comment";
+    QTest::newRow("line11") << optionItems.at(10) << "bool_1=NO";
+}
+
+void TestOptionFile::testWriteOptionFile()
+{
+    QFETCH(QString, optionString);
+    QFETCH(QString, line);
+
+    QCOMPARE( optionString, line );
 }
 
 void TestOptionFile::testEOLChars()
