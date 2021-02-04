@@ -140,12 +140,14 @@ void SettingsDialog::loadSettings()
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
+    disconnect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     while (ui->cbThemes->count() > mFixedThemeCount)
         ui->cbThemes->removeItem(ui->cbThemes->count()-1);
     QStringList themes = Theme::instance()->themes();
     for (int i = 2; i < Theme::instance()->themeCount(); ++i) {
         ui->cbThemes->addItem(themes.at(i));
     }
+    connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
