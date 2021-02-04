@@ -317,15 +317,6 @@ void SettingsDialog::themeModified()
     }
 }
 
-void SettingsDialog::updateUserTypeToolTip(bool direct)
-{
-    if (direct || (!ui->edUserGamsTypes->isModified() && ui->edUserGamsTypes->hasFocus())) {
-        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), ui->edUserGamsTypes->toolTip());
-    } else {
-        QToolTip::hideText();
-    }
-}
-
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
     QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->toString(skUserModelLibraryDir)));
@@ -389,10 +380,10 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             return true;
         }
     }
-    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::Enter || event->type() == QEvent::Leave ||
-                                           event->type() == QEvent::ToolTip )) {
-        updateUserTypeToolTip(event->type() == QEvent::ToolTip);
-        return event->type() == QEvent::ToolTip;
+    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::ToolTip)) {
+        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), ui->edUserGamsTypes->toolTip());
+        event->ignore();
+        return true;
     }
 
     return false;
