@@ -89,25 +89,34 @@ void TestOptionFile::testOptionStringType_data()
 {
     QTest::addColumn<QString>("optionName");
     QTest::addColumn<bool>("valid");
+    QTest::addColumn<bool>("novalue");
     QTest::addColumn<QString>("defaultValue");
     QTest::addColumn<QString>("description");
 
-    QTest::newRow("str_0")   << "str_0"  << true  << "defval_0" << "description for option str_0";
-    QTest::newRow("str_1")   << "str_1"  << true  << "defval_1" << "description for option str_1";
-    QTest::newRow("str_2")   << "str_2"  << true  << "defval_2" << "description for option str_2";
-    QTest::newRow("str_3")   << "str_3"  << true  << "defval_3" << "description for option str_3";
-    QTest::newRow("str_4")   << "str_4"  << true  << "defval_4" << "description for option str_4";
+    QTest::newRow("str_0")   << "str_0"  << true  << false << "defval_0" << "description for option str_0";
+    QTest::newRow("str_1")   << "str_1"  << true  << false << "defval_1" << "description for option str_1";
+    QTest::newRow("str_2")   << "str_2"  << true  << false << "defval_2" << "description for option str_2";
+    QTest::newRow("str_3")   << "str_3"  << true  << false << "defval_3" << "description for option str_3";
+    QTest::newRow("str_4")   << "str_4"  << true  << false << "defval_4" << "description for option str_4";
+
+    QTest::newRow("str_5")   << "str_5"  << true  << true  << ""         << "description for option str_5";
+    QTest::newRow("str_6")   << "str_6"  << true  << true  << ""         << "description for option str_6";
 }
 
 void TestOptionFile::testOptionStringType()
 {
     QFETCH(QString, optionName);
     QFETCH(bool, valid);
+    QFETCH(bool, novalue);
     QFETCH(QString, defaultValue);
     QFETCH(QString, description);
 
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, valid);
     QCOMPARE( optionTokenizer->getOption()->getOptionType(optionName),  optTypeString);
+    if (novalue)
+        QVERIFY( optionTokenizer->getOption()->getOptionSubType(optionName) == optsubNoValue );
+    else
+        QVERIFY( optionTokenizer->getOption()->getOptionSubType(optionName) != optsubNoValue );
     QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).description, description);
     QCOMPARE( optionTokenizer->getOption()->getDefaultValue(optionName).toString(), defaultValue );
 }
@@ -121,8 +130,8 @@ void TestOptionFile::testOptionEnumIntType_data()
     QTest::addColumn<int>("value");
     QTest::addColumn<QString>("description");
 
-    QTest::newRow("EnumInt_1_0")  << "EnumInt_1"  << true  << 0 << false << 1  << "enumint_1_0";
-    QTest::newRow("EnumInt_1_1")  << "EnumInt_1"  << true  << 1 << false << 2  << "enumint_1_1";
+    QTest::newRow("EnumInt_1_0")  << "EnumInt_1"  << false << 0 << true  << 1  << "enumint_1_0";
+    QTest::newRow("EnumInt_1_1")  << "EnumInt_1"  << false << 1 << true  << 2  << "enumint_1_1";
 
     QTest::newRow("EnumInt_2_0")  << "EnumInt_2"  << true  << 0 << false << 1  << "enumint_2_0";
     QTest::newRow("EnumInt_2_1")  << "EnumInt_2"  << true  << 1 << false << 2  << "enumint_2_1";
@@ -227,8 +236,8 @@ void TestOptionFile::testOptionDoubleType_data()
     QTest::newRow("double_2")  <<  "double_2"  << true  << -1.9     << 8571.43                                        << 6711.87;
     QTest::newRow("double_3")  <<  "double_3"  << true  << -2.9     << 11428.6                                        << 9124.44;
 
-    QTest::newRow("double_4")  <<  "double_4"  << true  << -3.9     << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 9.11647e+298;
-    QTest::newRow("double_5")  <<  "double_5"  << true  << -4.9     << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 1.97551e+298;
+    QTest::newRow("double_4")  <<  "double_4"  << true  << -3.9     << 14285.7                                        << 13023.2;
+    QTest::newRow("double_5")  <<  "double_5"  << true  << -4.9     << 17142.9                                        << 3382.66;
     QTest::newRow("double_6")  <<  "double_6"  << true  << -5.9     << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 3.35223e+298;
     QTest::newRow("double_7")  <<  "double_7"  << true  << -6.9     << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 7.6823e+298;
     QTest::newRow("double_8")  <<  "double_8"  << true  << -7.9     << gams::studio::option::OPTION_VALUE_MAXDOUBLE   << 2.77775e+298;
@@ -260,7 +269,7 @@ void TestOptionFile::testOptionIntegerType_data()
     QTest::addColumn<int>("defaultValue");
 
     QTest::newRow("int_0")  << "int_0"   << true  << 0    << 10    << 0;
-    QTest::newRow("int_1")  << "int_1"   << true  << -1   << 11    << 1;
+    QTest::newRow("int_1")  << "int_1"   << false << -1   << 11    << 1;
     QTest::newRow("int_2")  << "int_2"   << true  << -2   << 12    << 2;
     QTest::newRow("int_3")  << "int_3"   << true  << -3   << 13    << 3;
     QTest::newRow("int_4")  << "int_4"   << true  << -4   << 14    << 4;
@@ -325,7 +334,9 @@ void TestOptionFile::testOptionGroup_data()
     QTest::newRow("str_2")       << "str_2"         << 3 << "gr_ThirdGroup" << "string";
     QTest::newRow("str_3")       << "str_3"         << 3 << "gr_ThirdGroup" << "string";
     QTest::newRow("str_4")       << "str_4"         << 3 << "gr_ThirdGroup" << "string";
+
     QTest::newRow("str_5")       << "str_5"         << 3 << "gr_ThirdGroup" << "string";
+    QTest::newRow("str_6")       << "str_6"         << 3 << "gr_ThirdGroup" << "string";
 }
 
 void TestOptionFile::testOptionGroup()
@@ -365,6 +376,71 @@ void TestOptionFile::testOptionSynonym()
        QVERIFY( optionTokenizer->getOption()->isASynonym(optionSynonym) );
        QCOMPARE( optionTokenizer->getOption()->getNameFromSynonym(optionSynonym).toUpper(), optionName.toUpper() );
     }
+}
+
+void TestOptionFile::testHiddenOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("hidden");
+
+    QTest::newRow("bool_0")      << "bool_0"    << false;
+    QTest::newRow("bool_1")      << "bool_1"    << false;
+    QTest::newRow("bool_2")      << "bool_2"    << false;
+
+    QTest::newRow("double_0")    << "double_0"    << false;
+    QTest::newRow("double_1")    << "double_1"    << false;
+    QTest::newRow("double_2")    << "double_2"    << false;
+    QTest::newRow("double_3")    << "double_3"    << false;
+    QTest::newRow("double_4")    << "double_4"    << false;
+    QTest::newRow("double_5")    << "double_5"    << false;
+    QTest::newRow("double_6")    << "double_6"    << false;
+    QTest::newRow("double_7")    << "double_7"    << false;
+    QTest::newRow("double_8")    << "double_8"    << false;
+    QTest::newRow("double_9")    << "double_9"    << false;
+
+    QTest::newRow("int_0")      << "int_0"      << false;
+    QTest::newRow("int_1")      << "int_1"      << true ;
+    QTest::newRow("int_2")      << "int_2"      << false;
+    QTest::newRow("int_3")      << "int_3"      << false;
+    QTest::newRow("int_4")      << "int_4"      << false;
+    QTest::newRow("int_5")      << "int_5"      << false;
+    QTest::newRow("int_6")      << "int_6"      << false;
+    QTest::newRow("int_7")      << "int_7"      << false;
+    QTest::newRow("int_8")      << "int_8"      << false;
+    QTest::newRow("int_9")      << "int_9"      << false;
+
+    QTest::newRow("EnumInt_1")  << "EnumInt_1"  << true ;
+    QTest::newRow("EnumInt_2")  << "EnumInt_2"  << false;
+    QTest::newRow("EnumInt_3")  << "EnumInt_3"  << false;
+    QTest::newRow("EnumInt_4")  << "EnumInt_4"  << false;
+    QTest::newRow("EnumInt_5")  << "EnumInt_5"  << false;
+}
+
+void TestOptionFile::testHiddenOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, hidden);
+
+    QCOMPARE( optionTokenizer->getOption()->getOptionDefinition(optionName).valid, !hidden);
+}
+
+void TestOptionFile::testInvalidOption_data()
+{
+    QTest::addColumn<QString>("optionName");
+    QTest::addColumn<bool>("nameValid");
+
+    QTest::newRow("int_1_hidden_and_invalid")  << "int_1"    << false;
+
+    QTest::newRow("int_2_invalid")        << "int 2"         << false;
+    QTest::newRow("int_2_valid")          << "int_2"         << true;
+}
+
+void TestOptionFile::testInvalidOption()
+{
+    QFETCH(QString, optionName);
+    QFETCH(bool, nameValid);
+
+    QCOMPARE( optionTokenizer->getOption()->isValid(optionName), nameValid );
 }
 
 void TestOptionFile::testNonExistReadOptionFile()

@@ -7,15 +7,15 @@ double_0 double 0 2400.55 0.1 2857.14 1 2 description for option double_0
 double_1 double 0 2253.07 -0.9 5714.29 1 2 description for option double_1
 double_2 double 0 6711.87 -1.9 8571.43 1 2 description for option double_2
 double_3 double 0 9124.44 -2.9 11428.6 1 2 description for option double_3
-double_4 double 0 9.11647e+298 -3.9 1e+299 1 2 description for option double_4
-double_5 double 0 1.97551e+298 -4.9 1e+299 1 2 description for option double_5
+double_4 double 0 13023.2 -3.9 14285.7 1 2 description for option double_4
+double_5 double 0 3382.66 -4.9 17142.9 1 2 description for option double_5
 double_6 double 0 3.35223e+298 -5.9 1e+299 1 2 description for option double_6
 double_7 double 0 7.6823e+298 -6.9 1e+299 1 2 description for option double_7
 double_8 double 0 2.77775e+298 -7.9 1e+299 1 2 description for option double_8
 double_9 double 0 5.5397e+298 -8.9 1e+299 1 2 description for option double_9
-EnumInt_1 enumint 0 1 1 1 description for option EnumInt_1
- 1 1 enumint_1_0
- 2 1 enumint_1_1
+EnumInt_1 enumint 0 1 0 1 description for option EnumInt_1
+ 1 0 enumint_1_0
+ 2 0 enumint_1_1
 EnumInt_2 enumint 0 2 1 1 description for option EnumInt_2
  1 1 enumint_2_0
  2 1 enumint_2_1
@@ -64,7 +64,7 @@ EnumStr_3 enumstr 0 "str33" 1 2 description for option EnumStr_3
  "str35" 1 enumstr_3_4
  "str36" 1 enumstr_3_5
 int_0 integer 0 0 0 10 1 1 description for option int_0
-int_1 integer 0 1 -1 11 1 1 description for option int_1
+int_1 integer 0 1 -1 11 0 1 description for option int_1
 int_2 integer 0 2 -2 12 1 1 description for option int_2
 int_3 integer 0 3 -3 13 1 1 description for option int_3
 int_4 integer 0 4 -4 14 1 1 description for option int_4

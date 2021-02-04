@@ -58,6 +58,12 @@ private slots:
     void testOptionSynonym_data();
     void testOptionSynonym();
 
+    void testHiddenOption_data();
+    void testHiddenOption();
+
+    void testInvalidOption_data();
+    void testInvalidOption();
+
     void testNonExistReadOptionFile();
 
     void testEOLChars();
