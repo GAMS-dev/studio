@@ -72,15 +72,12 @@ private slots:
     void testWriteOptionFile_data();
     void testWriteOptionFile();
 
-    void testEOLChars();
+    void testIndicators_data();
+    void testIndicators();
 
     void cleanupTestCase();
 
 private:
-    bool Dcreated = false;
-    bool optdefRead = false;
-    optHandle_t mOPTHandle;
-
     OptionTokenizer* optionTokenizer;
 };
 

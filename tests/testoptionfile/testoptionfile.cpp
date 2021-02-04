@@ -29,33 +29,17 @@ using gams::studio::CommonPaths;
 
 void TestOptionFile::initTestCase()
 {
+    // given
     QString datafile = QFINDTESTDATA("optdummy.def");
     if (datafile.isEmpty())
         EXIT_FAILURE;
 
-    // given
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
     // when
     optionTokenizer = new OptionTokenizer(QString("optdummy.def"), QFileInfo(datafile).absolutePath());
     if  ( !optionTokenizer->getOption()->available() ) {
        QFAIL("expected successful read of optdummy.def, but failed");
-    }
-
-    // when
-    char msg[GMS_SSSIZE];
-    optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg));
-    if (msg[0] != '\0')
-        Dcreated = false;
-    else
-        Dcreated = true;
-
-    // test cplex for now
-    QString optdef = "optdummy.def";
-    if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
-        optdefRead = false;
-    } else {
-        optdefRead = true;
     }
 }
 
@@ -625,20 +609,26 @@ void TestOptionFile::testWriteOptionFile()
     QCOMPARE( optionString, line );
 }
 
-void TestOptionFile::testEOLChars()
+void TestOptionFile::testIndicators_data()
 {
-    char eolchars[256];
-    int numchar = optEOLChars( mOPTHandle, eolchars);
+    QTest::addColumn<QString>("actual");
+    QTest::addColumn<QString>("expect");
 
-    QCOMPARE( 0, numchar );
-    QVERIFY( QString::fromLatin1(eolchars).isEmpty() );
+    QTest::newRow("Stringquote") << optionTokenizer->getOption()->getDefaultStringquote() <<  "\"";
+    QTest::newRow("Separator")   << optionTokenizer->getOption()->getDefaultSeparator()   << "=";
+    QTest::newRow("EOLChar")     << optionTokenizer->getOption()->getEOLChars()           << "#";
+}
+
+void TestOptionFile::testIndicators()
+{
+    QFETCH(QString, actual);
+    QFETCH(QString, expect);
+
+    QCOMPARE( actual, expect );
 }
 
 void TestOptionFile::cleanupTestCase()
 {
-    if (mOPTHandle)
-        optFree(&mOPTHandle);
-
     if (optionTokenizer)
         delete optionTokenizer;
 }
