@@ -203,6 +203,28 @@ void FileMeta::unlinkAndFreeDocument()
     mDocument = nullptr;
 }
 
+void FileMeta::refreshType()
+{
+    QFileInfo f(mLocation);
+    FileType* newFT = &FileType::from(f.suffix());
+    mData = Data(mLocation, newFT); // react to changes in location and extension
+    if (mDocument) {
+        if (mHighlighter) {
+            mHighlighter->setDocument(nullptr, true);
+            mHighlighter->deleteLater();
+            mHighlighter = nullptr;
+            disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
+            disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+        }
+        if (kind() == FileKind::Gms) {
+            mHighlighter = new syntax::SyntaxHighlighter(mDocument);
+            connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
+            connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+        }
+    }
+    emit changed(mId);
+}
+
 FileId FileMeta::id() const
 {
     return mId;
@@ -634,9 +656,7 @@ void FileMeta::save(const QString &newLocation)
         if (!old.copy(location)) EXCEPT() << "Can't save " << location;
     }
     setLocation(location);
-    QFileInfo f(file);
-    FileType* newFT = &FileType::from(f.suffix());
-    mData = Data(location, newFT); // react to changes in location and extension
+    refreshType();
     setModified(false);
     mFileRepo->watch(this);
 }

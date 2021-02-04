@@ -1,3 +1,8 @@
+Version 1.6.0 *
+==================
+- added *.inc as common extension for GAMS files
+- added user defined extensions for GAMS files
+
 Version 1.5.2
 ==================
 - added saving of selected tab in Settings dialog for the current session

@@ -48,7 +48,10 @@ public:
     static void clear();
     static FileType& from(QString suffix);
     static FileType& from(FileKind kind);
-
+    static QStringList validateSuffixList(const QString &commaSeparatedList, QStringList *invalid = nullptr);
+    static void setUserGamsTypes(const QStringList &suffix);
+    static const QStringList userGamsTypes();
+    static const QStringList invalidUserGamsTypes();
 
 private:
     FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
@@ -60,6 +63,9 @@ private:
 
     static QList<FileType*> mFileTypes;
     static FileType* mNone;
+    static int mGmsFixedTypes;
+    static QStringList mUserGamsTypes;
+    static const QStringList CInvalidUserTypes;
 };
 
 } // namespace studio

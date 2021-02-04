@@ -257,7 +257,9 @@ void ProjectRepo::readGroup(ProjectGroupNode* group, const QVariantList& childre
         } else {
             // file
             if (!name.isEmpty() || !file.isEmpty()) {
-                FileType *ft = &FileType::from(child["type"].toString());
+                QString suf = child["type"].toString();
+                if (suf == "gms") suf = QFileInfo(name).suffix();
+                FileType *ft = &FileType::from(suf);
                 if (QFileInfo(file).exists()) {
                     ProjectFileNode * node = findOrCreateFileNode(file, group, ft, name);
                     if (child.contains("codecMib")) {

@@ -21,6 +21,7 @@
 #include <QDesktopServices>
 #include <QMessageBox>
 #include <QScrollArea>
+#include <QToolTip>
 #include "mainwindow.h"
 #include "theme.h"
 #include "colors/palettemanager.h"
@@ -63,6 +64,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings->block(); // prevent changes from outside this dialog
     initColorPage();
     loadSettings();
+    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
+"<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
+"<i>The following extensions will be automatically removed:<br>%1</i></p>");
+    ui->edUserGamsTypes->setToolTip(tip.arg(FileType::invalidUserGamsTypes().join(", ")));
 
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
@@ -91,6 +96,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -98,6 +104,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
 
+    ui->edUserGamsTypes->installEventFilter(this);
     setModifiedStatus(false);
 }
 
@@ -151,6 +158,7 @@ void SettingsDialog::loadSettings()
 
     // misc page
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
+    ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -232,6 +240,8 @@ void SettingsDialog::saveSettings()
 
     // misc page
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
+    ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
+    mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
 
     // solver option editor
     mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
@@ -261,10 +271,9 @@ void SettingsDialog::on_btn_browse_clicked()
 
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
-    if (button == ui->buttonBox->button(QDialogButtonBox::Apply)) {
+    if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
         saveSettings();
-    } else if (button == ui->buttonBox->button(QDialogButtonBox::Ok)) {
-        saveSettings();
+        emit userGamsTypeChanged();
     } else { // reject
         loadSettings(); // reset changes (mostly font and -size)
         themeModified();
@@ -370,6 +379,11 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
             }
             return true;
         }
+    }
+    if (watched == ui->edUserGamsTypes && (event->type() == QEvent::ToolTip)) {
+        QToolTip::showText(ui->edUserGamsTypes->mapToGlobal(QPoint(0, 6)), ui->edUserGamsTypes->toolTip());
+        event->ignore();
+        return true;
     }
 
     return false;

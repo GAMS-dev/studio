@@ -89,6 +89,10 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     }
 }
 
+
+
+
+
 ///
 /// \brief ViewHelper::setAppearance sets and saves the appearance
 /// \param appearance

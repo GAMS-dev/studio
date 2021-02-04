@@ -107,6 +107,7 @@ enum SettingsKey {
     skNeosAcceptTerms,
     skNeosForceGdx,
     skNeosShortPrio,
+    skUserFileTypes,
 
     // solver option editor settings
     skSoOverrideExisting,
