@@ -1,3 +1,14 @@
+Version 1.5.3
+==================
+- fixed tooltips appearing during text selection near line number area
+- fixed underlined links not always updating properly
+- improved visibility of current word and parentheses highlighting by changing render order
+- fixed flickering of error markers
+- fixed momentary theme switching when closing settings dialog
+- fixed wrong color initialization for dark theme
+- fixed unwanted cursor jump when searching lst files without results
+- fixed MIRO execution issue if model files contain spaces
+
 Version 1.5.2
 ==================
 - added saving of selected tab in Settings dialog for the current session
