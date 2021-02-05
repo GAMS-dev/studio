@@ -267,12 +267,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuMIRO->setEnabled(isMiroAvailable());
 
     // Themes
-#ifdef __APPLE__
-    ViewHelper::setAppearance(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-#else
-    // this needs to be re-called for studio startup, as the call when loading settings is too early
-    ViewHelper::setAppearance();
-#endif
+    ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme();
     initGamsStandardPaths();

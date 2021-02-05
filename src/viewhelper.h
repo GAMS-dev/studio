@@ -154,7 +154,7 @@ public:
     }
 
     static void setAppearance(int appearance = -1);
-    static void changeAppearance(int appearance);
+    static void changeAppearance(int appearance = -1);
 
 };
 

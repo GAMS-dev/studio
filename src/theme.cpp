@@ -175,6 +175,11 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
+
+    mColorThemes[sNr].insert(Mark_errorFg,                   QColor(180,60,60));
+    mColorThemes[sNr].insert(Mark_listingFg,                 QColor(60,90,250));
+    mColorThemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
+
     mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_directive,               QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
@@ -182,7 +187,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
     mColorThemes[sNr].insert(Syntax_comment,                 Color(dark_unobstrusive, fItalic));
     mColorThemes[sNr].insert(Syntax_identifier,              Color(dark_id));
-    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_id));
+    mColorThemes[sNr].insert(Syntax_formula,                 Color(dark_neutral));
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
