@@ -1,13 +1,13 @@
-Version 1.5.3 *
+Version 1.5.3
 ==================
-- fixed tooltip appears during selection
-- fixed underscore not updated on mouse move at include file
-- raised presence of markers for current word and parentheses match
-- avoid flickering of error markers
-- removed short switch to dark mode on canceling the settings dialog
+- fixed tooltips appearing during text selection near line number area
+- fixed underlined links not always updating properly
+- improved visibility of current word and parentheses highlighting by changing render order
+- fixed flickering of error markers
+- fixed momentary theme switching when closing settings dialog
 - fixed wrong color initialization for dark theme
 - fixed unwanted cursor jump when searching lst files without results
-- fixed MIRO exectuion issue if model files contain spaces
+- fixed MIRO execution issue if model files contain spaces
 
 Version 1.5.2
 ==================
