@@ -4,8 +4,10 @@ Version 1.5.3 *
 - fixed underscore not updated on mouse move at include file
 - raised presence of markers for current word and parentheses match
 - avoid flickering of error markers
+- removed short switch to dark mode on canceling the settings dialog
 - fixed wrong color initialization for dark theme
 - fixed unwanted cursor jump when searching lst files without results
+- fixed MIRO exectuion issue if model files contain spaces
 
 Version 1.5.2
 ==================
