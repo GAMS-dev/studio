@@ -117,6 +117,7 @@ SOURCES += \
     engine/enginestartdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
+    file/filechangedialog.cpp \
     file/fileevent.cpp \
     file/fileicon.cpp \
     file/filemeta.cpp \
@@ -302,6 +303,7 @@ HEADERS += \
     exception.h \
     file.h \
     file/dynamicfile.h \
+    file/filechangedialog.h \
     file/fileevent.h \
     file/fileicon.h \
     file/filemeta.h \
@@ -446,6 +448,7 @@ FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
     engine/enginestartdialog.ui \
+    file/filechangedialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \
