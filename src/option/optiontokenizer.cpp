@@ -41,10 +41,10 @@ QString OptionTokenizer::keyGeneratedStr = QString("[KEY]");
 QString OptionTokenizer::valueGeneratedStr = QString("[VALUE]");
 QString OptionTokenizer::commentGeneratedStr = QString("[COMMENT]");
 
-OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
+OptionTokenizer::OptionTokenizer(const QString &optionDefFileName, const QString &optionDefFilePath)
 {
     // option definition
-    mOption = new Option(CommonPaths::systemDir(), optionDefFileName);
+    mOption = new Option(optionDefFilePath, optionDefFileName);
     mOPTAvailable = mOption->available();
 
     if (mOPTAvailable) {
@@ -54,7 +54,7 @@ OptionTokenizer::OptionTokenizer(const QString &optionDefFileName)
 
        // option parser
        char msg[GMS_SSSIZE];
-       optCreateD(&mOPTHandle, mOption->getOptionDefinitionPath().toLatin1(), msg, sizeof(msg));
+       optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg));
        if (msg[0] != '\0') {
           logger()->append(msg, LogMsgType::Error);
           mOPTAvailable = false;
