@@ -32,7 +32,7 @@ void TestOptionFile::initTestCase()
     // given
     QString datafile = QFINDTESTDATA("optdummy.def");
     if (datafile.isEmpty())
-        EXIT_FAILURE;
+        QFAIL("expected non empty data file");
 
     const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     CommonPaths::setSystemDir(expected.toLatin1());
