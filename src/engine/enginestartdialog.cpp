@@ -186,6 +186,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 void EngineStartDialog::urlEdited(const QString &text)
 {
     mUrlChanged = true;
+    mValidUrl = QString();
     mUrl = text;
     getVersion();
 }
@@ -218,6 +219,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
+    if (!mValidUrl.isEmpty()) return;
     Q_UNUSED(errorText)
 //    mPendingRequest = false;
     if (mUrlChanged) {

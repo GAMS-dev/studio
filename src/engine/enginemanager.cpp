@@ -124,6 +124,12 @@ void EngineManager::setHost(const QString &host)
     mDefaultApi->setHost(host);
 }
 
+void EngineManager::setPort(const int &port)
+{
+    mJobsApi->setPort(port);
+    mDefaultApi->setPort(port);
+}
+
 void EngineManager::setBasePath(const QString &path)
 {
     mJobsApi->setBasePath(path);

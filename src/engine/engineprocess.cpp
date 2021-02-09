@@ -276,13 +276,20 @@ void EngineProcess::setUrl(const QString &url)
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
     setHost(url.mid(sp1, sp2-sp1));
+
     setBasePath(url.right(url.length()-sp2));
 }
 
 void EngineProcess::setHost(const QString &_host)
 {
     mHost = _host;
-    mManager->setHost(_host);
+    int colon = _host.indexOf(':');
+    if (colon > 0) {
+        mManager->setHost(_host.left(colon));
+        mManager->setPort(_host.rightRef(_host.length()-colon-1).toInt());
+    } else
+        mManager->setHost(_host);
+
 }
 
 QString EngineProcess::host() const

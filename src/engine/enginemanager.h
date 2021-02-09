@@ -36,6 +36,7 @@ public:
     ~EngineManager();
     void setWorkingDirectory(const QString &dir);
     void setHost(const QString &host);
+    void setPort(const int &port);
     void setBasePath(const QString &path);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
