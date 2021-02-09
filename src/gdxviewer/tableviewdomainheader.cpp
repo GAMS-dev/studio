@@ -1,8 +1,8 @@
 #include "tableviewdomainheader.h"
 #include "gdxsymbol.h"
 #include "tableviewmodel.h"
-#include "scheme.h"
 #include "tableviewdomainmodel.h"
+#include "theme.h"
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -53,7 +53,7 @@ void TableViewDomainHeader::paintSection(QPainter *painter, const QRect &rect, i
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
-        QIcon icon(Scheme::icon(iconRes));
+        QIcon icon(Theme::icon(iconRes));
         QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
         int posX = rect.x() + mFilterIconMargin;
