@@ -26,6 +26,7 @@
 #include "tableviewmodel.h"
 #include "common.h"
 #include "valuefilter.h"
+#include "tableviewdomainmodel.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -43,6 +44,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tvTableView->hide();
+    ui->tvRowDomains->hide();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -159,6 +161,12 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
+    ui->tvRowDomains->setHorizontalHeader(new TableViewDomainHeader(Qt::Horizontal));
+    ui->tvRowDomains->horizontalHeader()->setVisible(true);
+    ui->tvRowDomains->horizontalHeader()->setSectionsClickable(true);
+    ui->tvRowDomains->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showTvRowFilter);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -178,6 +186,24 @@ void GdxSymbolView::showColumnFilter(QPoint p)
         connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
         if (column<mSym->dim()) {
             ColumnFilter *cf = new ColumnFilter(mSym, column, this);
+            mColumnFilterMenu->addAction(cf);
+            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
+        } else {
+            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
+            mColumnFilterMenu->addAction(vf);
+            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
+        }
+    }
+}
+
+void GdxSymbolView::showTvRowFilter(QPoint p)
+{
+    int column = ui->tvRowDomains->horizontalHeader()->logicalIndexAt(p);
+    if(mSym->isLoaded() && column>=0 && ui->tvRowDomains->model()->columnCount()) {
+        mColumnFilterMenu = new QMenu(this);
+        connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
+        if (column<ui->tvRowDomains->model()->columnCount()) {
+            ColumnFilter *cf = new ColumnFilter(mSym, mTvModel->tvDimOrder().at(column), this);
             mColumnFilterMenu->addAction(cf);
             mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
         } else {
@@ -239,6 +265,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
+        //mSym->blockSignals(true);
         mPrecision->setValue(mDefaultPrecision); // this is not to be confused with "MAX". The value will be 6
         resetValFormat();
         mSqZeroes->setChecked(true);
@@ -251,10 +278,14 @@ void GdxSymbolView::resetSortFilter()
         mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
+            ui->tvRowDomains->setModel(nullptr);
             ui->tvTableView->setModel(nullptr);
+            delete mTvDomainModel;
+            mTvDomainModel = nullptr;
             delete mTvModel;
             mTvModel = nullptr;
         }
+        //QTimer::singleShot(100, [this](){ mSym->blockSignals(false); });
     }
 }
 
@@ -452,6 +483,7 @@ void GdxSymbolView::showListView()
 {
     mTableView = false;
     ui->tvTableView->hide();
+    ui->tvRowDomains->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
 }
@@ -462,6 +494,9 @@ void GdxSymbolView::showTableView()
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
         ui->tvTableView->setModel(mTvModel);
+
+        mTvDomainModel = new TableViewDomainModel(mTvModel);
+        ui->tvRowDomains->setModel(mTvDomainModel);
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
@@ -469,7 +504,11 @@ void GdxSymbolView::showTableView()
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();
+
     ui->tvTableView->show();
+    ui->tvRowDomains->show();
+    //ui->tvRowDomains->setMaximumHeight(ui->tvRowDomains->horizontalHeader()->size().height()+1.2);
+
     mTableView = true;
     autoResizeColumns();
 }

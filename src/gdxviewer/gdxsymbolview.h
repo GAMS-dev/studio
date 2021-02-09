@@ -28,6 +28,8 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include "gdxsymboltable.h"
+#include "tableviewdomainheader.h"
+#include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
 
 namespace gams {
@@ -59,6 +61,7 @@ public slots:
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);
+    void showTvRowFilter(QPoint p);
     void freeColumnFilterMenu();
     void autoResizeColumns();
 
@@ -70,6 +73,8 @@ private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
+    TableViewDomainModel* mTvDomainModel = nullptr;
+
     QByteArray mInitialHeaderState;
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;

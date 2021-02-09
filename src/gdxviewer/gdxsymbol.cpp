@@ -405,6 +405,11 @@ void GdxSymbol::initNumericalBounds()
     }
 }
 
+QStringList GdxSymbol::domains() const
+{
+    return mDomains;
+}
+
 void GdxSymbol::setNumericalFormat(const numerics::DoubleFormatter::Format &numericalFormat)
 {
     mNumericalFormat = numericalFormat;

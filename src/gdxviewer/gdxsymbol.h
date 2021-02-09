@@ -94,6 +94,8 @@ public:
 
     void setNumericalFormat(const numerics::DoubleFormatter::Format &numericalFormat);
 
+    QStringList domains() const;
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();

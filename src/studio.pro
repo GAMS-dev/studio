@@ -143,6 +143,8 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/tableviewdomainheader.cpp \
+    gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
     gdxviewer/valuefilter.cpp \
     gdxviewer/valuefilterwidget.cpp \
@@ -330,6 +332,8 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/tableviewdomainheader.h \
+    gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
     gdxviewer/valuefilterwidget.h \
