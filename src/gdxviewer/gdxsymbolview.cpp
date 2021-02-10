@@ -202,7 +202,7 @@ void GdxSymbolView::showTvRowFilter(QPoint p)
     if(mSym->isLoaded() && column>=0 && ui->tvRowDomains->model()->columnCount()) {
         mColumnFilterMenu = new QMenu(this);
         connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
-        if (column<ui->tvRowDomains->model()->columnCount()) {
+        if (column < mSym->dim()) {
             ColumnFilter *cf = new ColumnFilter(mSym, mTvModel->tvDimOrder().at(column), this);
             mColumnFilterMenu->addAction(cf);
             mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));

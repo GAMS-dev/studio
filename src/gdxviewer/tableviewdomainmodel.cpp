@@ -19,6 +19,13 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
             if (mTvModel->type() == GMS_DT_PAR)
                 return QVariant("Value");
             else if (mTvModel->type() == GMS_DT_VAR || mTvModel->type() == GMS_DT_EQU) {
+                switch(section-mTvModel->dim()) {
+                case GMS_VAL_LEVEL: return "Level";
+                case GMS_VAL_MARGINAL: return "Marginal";
+                case GMS_VAL_LOWER: return "Lower";
+                case GMS_VAL_UPPER: return "Upper";
+                case GMS_VAL_SCALE: return "Scale";
+                }
 
             }
         }
@@ -39,6 +46,8 @@ int TableViewDomainModel::columnCount(const QModelIndex &parent) const
         return 0;
     if (mTvModel->type() == GMS_DT_PAR)
         return mTvModel->dim() + 1;
+    if (mTvModel->type() == GMS_DT_EQU || mTvModel->type() == GMS_DT_VAR)
+        return mTvModel->dim() + GMS_VAL_MAX;
     return mTvModel->dim();
 }
 

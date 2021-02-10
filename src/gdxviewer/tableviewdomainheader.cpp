@@ -44,10 +44,11 @@ void TableViewDomainHeader::paintSection(QPainter *painter, const QRect &rect, i
     GdxSymbol* symbol = tvModel->sym();
 
     // show filter icon
-    //if (logicalIndex < model()->columnCount()) {
-    if (logicalIndex < symbol->dim()) {
+    if (logicalIndex < model()->columnCount()) {
         int domIndex = logicalIndex;
-        domIndex = tvModel->tvDimOrder().at(domIndex);
+        if (logicalIndex < symbol->dim()) {
+            domIndex = tvModel->tvDimOrder().at(domIndex);
+        }
         QString iconRes;
         if (symbol->filterActive(domIndex))
             iconRes = iconFilterOn;
@@ -62,6 +63,8 @@ void TableViewDomainHeader::paintSection(QPainter *painter, const QRect &rect, i
         painter->drawImage(posX, posY, pm.toImage());
 
         if (logicalIndex == tvModel->dim() - tvModel->tvColDim()-1)
+            painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+        if (symbol->type() == GMS_DT_PAR && logicalIndex == tvModel->dim()-1)
             painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
 
         mFilterIconX[logicalIndex] = posX;
