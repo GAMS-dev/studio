@@ -17,6 +17,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
+    setCanStart(false);
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
