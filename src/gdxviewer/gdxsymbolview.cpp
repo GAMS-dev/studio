@@ -472,8 +472,10 @@ void GdxSymbolView::autoResizeColumns()
 {
     if (mTableView) {
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
-        for (int i=0; i<mTVResizeColNr; i++)
+        for (int i=0; i<mTVResizeColNr; i++) {
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+            ui->tvRowDomains->resizeColumnToContents(ui->tvRowDomains->columnAt(0)+i);
+        }
     }
     else
         ui->tvListView->resizeColumnsToContents();
