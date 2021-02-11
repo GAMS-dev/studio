@@ -34,7 +34,7 @@ NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
     :QHeaderView(orientation, parent)
 {
     setAcceptDrops(true);
-    connect(this, &QHeaderView::sectionResized, [this]() { ddEnabled = false; });
+    connect(this, &QHeaderView::sectionResized, this, [this]() { ddEnabled = false; });
 }
 
 NestedHeaderView::~NestedHeaderView()

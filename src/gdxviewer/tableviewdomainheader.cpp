@@ -18,8 +18,7 @@ TableViewDomainHeader::TableViewDomainHeader(Qt::Orientation orientation, QWidge
     mFilterIconX.resize(maxColumns);
     mFilterIconY.resize(maxColumns);
 
-    //int h = sectionSizeFromContents(0).height();
-    int h = 20;
+    int h = sectionSizeFromContents(0).height();
     mFilterIconWidth  = h*ICON_SCALE_FACTOR;
     mFilterIconMargin = h*ICON_MARGIN_FACTOR;
 }

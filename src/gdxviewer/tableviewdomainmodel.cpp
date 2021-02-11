@@ -7,7 +7,7 @@ namespace gdxviewer {
 TableViewDomainModel::TableViewDomainModel(TableViewModel* tvModel, QObject *parent)
     : QAbstractTableModel(parent), mTvModel(tvModel)
 {
-    connect(mTvModel, &TableViewModel::modelReset, [this]() { emit beginResetModel(); emit endResetModel();});
+    connect(mTvModel, &TableViewModel::modelReset, this, [this]() { emit beginResetModel(); emit endResetModel();});
 }
 
 QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientation, int role) const

@@ -499,6 +499,7 @@ void GdxSymbolView::showTableView()
 
         mTvDomainModel = new TableViewDomainModel(mTvModel);
         ui->tvRowDomains->setModel(mTvDomainModel);
+        ui->tvRowDomains->setMaximumHeight(ui->tvRowDomains->horizontalHeader()->height()+2);
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
