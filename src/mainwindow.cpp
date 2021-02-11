@@ -95,7 +95,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     // Timers
     mFileTimer.setSingleShot(true);
-    mFileTimer.setInterval(100);
+    mFileTimer.setInterval(150);
     connect(&mFileTimer, &QTimer::timeout, this, &MainWindow::processFileEvents);
     mWinStateTimer.setSingleShot(true);
     mWinStateTimer.setInterval(10);
