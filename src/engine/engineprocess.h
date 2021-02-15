@@ -31,8 +31,8 @@ public:
     void setHasPreviousWorkOption(bool value);
     bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
-    void setUrl(const QString &url);
-    void setHost(const QString &_host);
+    bool setUrl(const QString &url);
+    bool setHost(const QString &_host);
     QString host() const;
     void setBasePath(const QString &path);
     QString basePath() const;

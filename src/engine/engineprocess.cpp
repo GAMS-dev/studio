@@ -269,27 +269,32 @@ QProcess::ProcessState EngineProcess::state() const
     return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
 }
 
-void EngineProcess::setUrl(const QString &url)
+bool EngineProcess::setUrl(const QString &url)
 {
     int sp1 = url.indexOf("://")+1;
     if (sp1) sp1 += 2;
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
-    setHost(url.mid(sp1, sp2-sp1));
+    bool res = setHost(url.mid(sp1, sp2-sp1));
 
     setBasePath(url.right(url.length()-sp2));
+    return res;
 }
 
-void EngineProcess::setHost(const QString &_host)
+bool EngineProcess::setHost(const QString &_host)
 {
     mHost = _host;
     int colon = _host.indexOf(':');
     if (colon > 0) {
         mManager->setHost(_host.left(colon));
-        mManager->setPort(_host.rightRef(_host.length()-colon-1).toInt());
+        bool ok;
+        int port = _host.rightRef(_host.length()-colon-1).toInt(&ok);
+        if (!ok || port > 65536) return false;
+        mManager->setPort(port);
+
     } else
         mManager->setHost(_host);
-
+    return true;
 }
 
 QString EngineProcess::host() const

@@ -152,11 +152,13 @@ void EngineStartDialog::getVersion()
 {
     setConnectionState(scsWaiting);
     if (mProc) {
-//        if (mPendingRequest) mProc->abortRequests();
-        mUrlChanged = false;
-        mProc->setUrl(mUrl.trimmed());
-        mProc->getVersions();
-//        mPendingRequest = true;
+        if (mProc->setUrl(mUrl.trimmed())) {
+            mUrlChanged = false;
+            mProc->getVersions();
+        } else {
+            mConnectState = scsNone;
+            updateConnectStateAppearance();
+        }
     }
 }
 
