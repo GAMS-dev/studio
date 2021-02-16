@@ -289,11 +289,13 @@ bool EngineProcess::setHost(const QString &_host)
         mManager->setHost(_host.left(colon));
         bool ok;
         int port = _host.rightRef(_host.length()-colon-1).toInt(&ok);
-        if (!ok || port > 65536) return false;
+        if (!ok || port < 0 || port > 65536) return false;
+        if (!port) port = 443;
         mManager->setPort(port);
-
-    } else
+    } else {
         mManager->setHost(_host);
+        mManager->setPort(443);
+    }
     return true;
 }
 
