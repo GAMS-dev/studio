@@ -110,6 +110,8 @@ void ViewHelper::setAppearance(int appearance)
 ///
 void ViewHelper::changeAppearance(int appearance)
 {
+    if (appearance == -1)
+        appearance = Settings::settings()->toInt(skEdAppearance);
     int pickedTheme = appearance;
 
 #ifdef _WIN32
