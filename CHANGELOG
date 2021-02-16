@@ -1,6 +1,7 @@
 Version 1.5.4  *
 ==================
 - fixed GDX file reloaded too early while being rewritten
+- fixed FIL marker in LOG doesn't handle relative filepaths
 
 Version 1.5.3
 ==================
