@@ -236,11 +236,10 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
         if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
             // This only activates the current eolCom
 //            mSharedData->commentEndLine()->setCommentChars("!!");
-            for (SyntaxFormula * sf: qAsConst(mSubSyntaxBody)) {
+            for (SyntaxFormula * sf: mSharedData->allFormula()) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
-            if (mSubDirectiveBody)
-                mSubDirectiveBody->setCommentChars(QVector<QChar>() << '!');
+            mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << '!');
          } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
@@ -248,11 +247,10 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
             if (i+1 == line.length() || isWhitechar(line,i+1)) comSize = 1;
             if (i+comSize <= line.length()) {
                 mSharedData->commentEndLine()->setCommentChars(line.mid(i,comSize));
-                for (SyntaxFormula * sf: qAsConst(mSubSyntaxBody)) {
+                for (SyntaxFormula * sf: mSharedData->allFormula()) {
                     sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
                 }
-                if (mSubDirectiveBody)
-                    mSubDirectiveBody->setCommentChars(QVector<QChar>() << line.at(i));
+                mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << line.at(i));
             }
         }
     }
@@ -283,6 +281,7 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, int flavo
 SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
+    sharedData->registerDirectiveBody(this);
     if (kind == SyntaxKind::IgnoredHead) {
         mSubKinds << SyntaxKind::Directive << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
         mEmptyLineKinds << SyntaxKind::IgnoredBlock;
@@ -400,6 +399,7 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, int flavo
 
 SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
+    sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
               << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment

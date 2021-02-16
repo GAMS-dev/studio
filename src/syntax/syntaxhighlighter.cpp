@@ -44,36 +44,23 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     // To visualize one format in DEBUG: add color index at start e.g. initKind(1, new SyntaxReservedBody());
     initKind(new SyntaxStandard(d), Theme::Syntax_undefined);
     addCode(BlockCode(SyntaxKind::Standard, 0), 0);
-    SyntaxDirective *syntaxDirective = new SyntaxDirective(d);
-    initKind(syntaxDirective, Theme::Syntax_directive);
-    SyntaxDirectiveBody *syntaxDirectiveBody = new SyntaxDirectiveBody(SyntaxKind::DirectiveBody, d);
-    initKind(syntaxDirectiveBody, Theme::Syntax_directiveBody);
-    syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
+    initKind(new SyntaxDirective(d), Theme::Syntax_directive);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody, d), Theme::Syntax_directiveBody);
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment, d), Theme::Syntax_comment);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title, d), Theme::Syntax_title);
     initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_directiveBody);
     initKind(new SyntaxCall(d), Theme::Syntax_directive);
 
-    SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula, d);
-    initKind(syntaxFormula, Theme::Syntax_formula);
-    syntaxDirective->addSubBody(syntaxFormula);
-    SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody, d);
-    initKind(syntaxSolveBody);
-    syntaxDirective->addSubBody(syntaxSolveBody);
-    SyntaxFormula * syntaxOptionBody = new SyntaxFormula(SyntaxKind::OptionBody, d);
-    initKind(syntaxOptionBody);
-    syntaxDirective->addSubBody(syntaxOptionBody);
-    SyntaxFormula * syntaxExecuteBody = new SyntaxFormula(SyntaxKind::ExecuteBody, d);
-    initKind(syntaxExecuteBody);
-    syntaxDirective->addSubBody(syntaxExecuteBody);
+    initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
+    initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));
+    initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
+    initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
     initKind(new SyntaxString(d), Theme::Syntax_neutral);
     initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock, d), Theme::Syntax_comment);
-//    SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
     initKind(new SyntaxCommentEndline(d), Theme::Syntax_comment);
-//    syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
     initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock, d), Theme::Syntax_neutral);
 
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey, d), Theme::Syntax_keyword);

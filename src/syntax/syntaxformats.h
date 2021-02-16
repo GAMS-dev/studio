@@ -146,13 +146,22 @@ struct SyntaxBlock
     bool isValid() { return syntax && start<end; }
 };
 
+class SyntaxFormula;
+class SyntaxDirectiveBody;
+
 class SharedSyntaxData
 {
-    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
+    QVector<SyntaxFormula*> mSubFormula;
+    SyntaxDirectiveBody *mDirectiveBody = nullptr;
+    SyntaxCommentEndline *mCommentEndline = nullptr;
 public:
-    void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mSyntaxCommentEndline = syntax; }
-    bool isValid() { return mSyntaxCommentEndline; }
-    SyntaxCommentEndline *commentEndLine() { return mSyntaxCommentEndline; }
+    void addFormula(SyntaxFormula* syntax) { if (syntax) mSubFormula << syntax; }
+    void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
+    void registerDirectiveBody(SyntaxDirectiveBody * syntax) { if (syntax) mDirectiveBody = syntax; }
+    bool isValid() { return mCommentEndline && mDirectiveBody && mSubFormula.size() == 4; }
+    const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
+    SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
+    SyntaxDirectiveBody *directiveBody() { return mDirectiveBody; }
 };
 
 /// \brief An abstract class to be used inside the <c>SyntaxHighlighter</c>.
@@ -243,16 +252,12 @@ public:
     SyntaxDirective(SharedSyntaxData* sharedData, QChar directiveChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
-    void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
-    void setDirectiveBody(SyntaxDirectiveBody *syntax) {mSubDirectiveBody = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
-    QVector<SyntaxFormula*> mSubSyntaxBody;
-    SyntaxDirectiveBody *mSubDirectiveBody = nullptr;
 
 };
 
