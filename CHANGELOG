@@ -1,5 +1,6 @@
 Version 1.5.4  *
 ==================
+- fixed GDX file reloaded too early while being rewritten
 - parse port for GAMS Engine URL
 
 Version 1.5.3
