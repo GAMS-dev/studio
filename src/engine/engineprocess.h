@@ -47,10 +47,10 @@ public:
     void abortRequests();
 
 signals:
-    void authenticated(QString token);
-    void procStateChanged(AbstractProcess *proc, ProcState progress);
+    void authenticated(const QString &token);
+    void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
-    void sslValidation(QString errorMessage);
+    void sslValidation(const QString &errorMessage);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
 
@@ -58,7 +58,7 @@ protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
     void reCreateJob(const QString &message, const QString &token);
-    void reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode);
+    void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
@@ -76,12 +76,12 @@ private slots:
 
 private:
     void setProcState(ProcState newState);
-    QStringList compileParameters();
-    QStringList remoteParameters();
+    QStringList compileParameters() const;
+    QStringList remoteParameters() const;
     QByteArray convertReferences(const QByteArray &data);
     void startPacking();
     void startUnpacking();
-    QString modelName();
+    QString modelName() const;
 
     EngineManager *mManager;
     QString mHost;
@@ -102,8 +102,10 @@ private:
     QString mJobPassword;
     ProcState mProcState;
     QTimer mPullTimer;
-
     AbstractGamsProcess *mSubProc = nullptr;
+
+    enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};
+    static const QHash<QString, JobStatusEnum> CJobStatus;
 };
 
 } // namespace engine
