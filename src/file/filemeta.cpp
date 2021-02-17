@@ -71,17 +71,11 @@ void FileMeta::setLocation(QString location)
         mFileRepo->watch(this);
         mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
                                                     : QFileInfo(mLocation).fileName();
-        for (QWidget*wid: mEditors) {
+        for (QWidget*wid: qAsConst(mEditors)) {
             ViewHelper::setLocation(wid, location);
             ViewHelper::setFileId(wid, id());
         }
         mAutoReload = mData.type->autoReload();
-        if (!mAutoReload) {
-            QStringList autoSuffix = Settings::settings()->toString(skAutoReloadTypes)
-                    .split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
-            QFileInfo fi(mLocation);
-            mAutoReload = autoSuffix.contains(fi.suffix());
-        }
     }
 }
 
@@ -109,7 +103,7 @@ QStringList FileMeta::pathList(QList<QUrl> urls)
 void FileMeta::invalidate()
 {
     if (kind() == FileKind::Gdx) {
-        for (QWidget *wid: mEditors) {
+        for (QWidget *wid: qAsConst(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 gdxViewer->invalidate();
             }
@@ -125,7 +119,7 @@ void FileMeta::takeEditsFrom(FileMeta *other)
     mDocument = other->mDocument;
     other->mDocument = nullptr;
     other->mEditors.clear();
-    for (QWidget *wid: mEditors) {
+    for (QWidget *wid: qAsConst(mEditors)) {
         ViewHelper::setLocation(wid, location());
         ViewHelper::setFileId(wid, id());
     }
@@ -141,7 +135,7 @@ FileMeta::~FileMeta()
 QVector<QPoint> FileMeta::getEditPositions()
 {
     QVector<QPoint> res;
-    for (QWidget* widget: mEditors) {
+    for (QWidget* widget: qAsConst(mEditors)) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
@@ -154,7 +148,7 @@ QVector<QPoint> FileMeta::getEditPositions()
 void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
-    for (QWidget* widget: mEditors) {
+    for (QWidget* widget: qAsConst(mEditors)) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
@@ -259,7 +253,7 @@ FileKind FileMeta::kind() const
 
 QString FileMeta::kindAsStr() const
 {
-    return mData.type->suffix().first();
+    return mData.type->suffix().constFirst();
 }
 
 QString FileMeta::name(NameModifier mod)
@@ -312,7 +306,7 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
         mFileRepo->textMarkRepo()->removeMarks(id(), edit->groupId(), QSet<TextMark::Type>()
                                                , fromLine, fromLine+removedLines);
     for (int i = fromLine; i <= toLine; ++i) {
-        QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
+        const QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
         for (TextMark *mark: marks) {
             if (mark->blockEnd() >= column)
                 mark->flatten();
@@ -333,7 +327,7 @@ void FileMeta::updateMarks()
     QMutexLocker mx(&mDirtyLinesMutex);
 
     // update changed editors
-    for (QWidget *w: mEditors) {
+    for (QWidget *w: qAsConst(mEditors)) {
         if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
         if (TextView * tv = ViewHelper::toTextView(w))
@@ -349,7 +343,7 @@ void FileMeta::reload()
 
 void FileMeta::updateView()
 {
-    for (QWidget *wid: mEditors) {
+    for (QWidget *wid: qAsConst(mEditors)) {
         if (TextView* tv = ViewHelper::toTextView(wid)) {
             tv->recalcVisibleLines();
         }
@@ -360,7 +354,7 @@ void FileMeta::updateSyntaxColors()
 {
     if (mHighlighter) {
         mHighlighter->reloadColors();
-        for (QWidget *w: mEditors) {
+        for (QWidget *w: qAsConst(mEditors)) {
             if (ViewHelper::toCodeEdit(w)) {
                 mHighlighter->rehighlight();
             }
@@ -371,7 +365,7 @@ void FileMeta::updateSyntaxColors()
 
 void FileMeta::initEditorColors()
 {
-    for (QWidget *w: mEditors) {
+    for (QWidget *w: qAsConst(mEditors)) {
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;
@@ -400,7 +394,7 @@ void FileMeta::initEditorColors()
 void FileMeta::updateEditorColors()
 {
     initEditorColors();
-    for (QWidget *w: mEditors) {
+    for (QWidget *w: qAsConst(mEditors)) {
         if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
@@ -534,7 +528,7 @@ void FileMeta::load(int codecMib, bool init)
     mData = Data(location(), mData.type);
 
     if (kind() == FileKind::Gdx) {
-        for (QWidget *wid: mEditors) {
+        for (QWidget *wid: qAsConst(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 gdxViewer->setHasChanged(init);
                 gdxViewer->reload(mCodec);
@@ -543,7 +537,7 @@ void FileMeta::load(int codecMib, bool init)
         return;
     }
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        for (QWidget *wid: mEditors) {
+        for (QWidget *wid: qAsConst(mEditors)) {
             if (TextView *tView = ViewHelper::toTextView(wid)) {
                 tView->loadFile(location(), codecMib, init);
             }
@@ -555,7 +549,7 @@ void FileMeta::load(int codecMib, bool init)
         return;
     }
     if (kind() == FileKind::Ref) {
-        for (QWidget *wid: mEditors) {
+        for (QWidget *wid: qAsConst(mEditors)) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
             if (refViewer) refViewer->on_referenceFileChanged(mCodec);
         }
@@ -563,7 +557,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::Opt) {
         bool textOptEditor = true;
-        for (QWidget *wid : mEditors) {
+        for (QWidget *wid : qAsConst(mEditors)) {
             if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 textOptEditor = false;
                 so->on_reloadSolverOptionFile(mCodec);
@@ -574,7 +568,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::Guc) {
         bool textOptEditor = true;
-        for (QWidget *wid : mEditors) {
+        for (QWidget *wid : qAsConst(mEditors)) {
             if (option::GamsConfigEditor *cfge = ViewHelper::toGamsConfigEditor(wid)) {
                 textOptEditor = false;
                 cfge->on_reloadGamsUserConfigFile(mCodec);
@@ -717,7 +711,7 @@ bool FileMeta::refreshMetaData()
 
 void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)
 {
-    emit mFileRepo->openFile(this, groupId, focus, codecMib());
+    mFileRepo->openFile(this, groupId, focus, codecMib());
     if (!mEditors.size()) return;
 
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mEditors.first());
@@ -764,7 +758,7 @@ void FileMeta::marksChanged(QSet<int> lines)
 
 void FileMeta::reloadDelayed()
 {
-    for (QWidget *wid: mEditors) {
+    for (QWidget *wid: qAsConst(mEditors)) {
         if (TextView *tv = ViewHelper::toTextView(wid)) {
             tv->reset();
         }
@@ -810,7 +804,14 @@ bool FileMeta::isReadOnly() const
 
 bool FileMeta::isAutoReload() const
 {
-    return mAutoReload || mTempAutoReloadTimer.isActive();
+    bool autoReload = mAutoReload || mTempAutoReloadTimer.isActive();
+    if (!mAutoReload) {
+        QStringList autoSuffix = Settings::settings()->toString(skAutoReloadTypes)
+                .split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
+        QFileInfo fi(mLocation);
+        autoReload = autoSuffix.contains(fi.suffix());
+    }
+    return autoReload;
 }
 
 void FileMeta::setAutoReload()
@@ -828,12 +829,12 @@ void FileMeta::setModified(bool modified)
     if (document()) {
         document()->setModified(modified);
     } else if (kind() == FileKind::Opt) {
-          for (QWidget *e : mEditors) {
+          for (QWidget *e : qAsConst(mEditors)) {
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
     } else if (kind() == FileKind::Guc) {
-        for (QWidget *e : mEditors) {
+        for (QWidget *e : qAsConst(mEditors)) {
              option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
              if (gco) gco->setModified(modified);
         }
@@ -880,7 +881,7 @@ void FileMeta::setCodec(QTextCodec *codec)
     } else {
         mCodec = codec;
     }
-    for (QWidget *wid: mEditors) {
+    for (QWidget *wid: qAsConst(mEditors)) {
         if (TextView *tv = ViewHelper::toTextView(wid)) {
             if (tv->logParser())
                 tv->logParser()->setCodec(mCodec);
@@ -890,7 +891,7 @@ void FileMeta::setCodec(QTextCodec *codec)
 
 bool FileMeta::exists(bool ckeckNow) const
 {
-    if (ckeckNow) return QFileInfo(location()).exists();
+    if (ckeckNow) return QFileInfo::exists(location());
     return mData.exist;
 }
 
@@ -982,7 +983,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     case tabAtStart: atIndex = 0; break;
     case tabBeforeCurrent: atIndex = tabWidget->currentIndex() < 0 ? 0 : tabWidget->currentIndex(); break;
     case tabAfterCurrent: atIndex = tabWidget->currentIndex()+1; break;
-    case tabAtEnd: atIndex = tabWidget->count(); break;
+    case tabAtEnd: break;
     }
     int i = tabWidget->insertTab(atIndex, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
