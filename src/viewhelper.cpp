@@ -89,6 +89,19 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     }
 }
 
+bool ViewHelper::updateBaseTheme()
+{
+    int currentTheme = Theme::instance()->activeTheme();
+#ifdef __APPLE__
+    if (currentTheme < 2) {
+        // reload theme when switching OS theme
+        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+    }
+#endif
+    return currentTheme != Theme::instance()->activeTheme();
+}
+
 ///
 /// \brief ViewHelper::setAppearance sets and saves the appearance
 /// \param appearance

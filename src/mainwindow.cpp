@@ -270,6 +270,7 @@ MainWindow::MainWindow(QWidget *parent)
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme();
+    ViewHelper::updateBaseTheme();
     initGamsStandardPaths();
     updateRunState();
 
@@ -448,10 +449,7 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-#ifdef __APPLE__
-        // reload theme when switching OS theme
-        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-#endif
+        ViewHelper::updateBaseTheme();
     }
     return QMainWindow::event(event);
 }
