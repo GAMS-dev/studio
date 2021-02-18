@@ -45,6 +45,8 @@ public:
 
     bool miroSettingsEnabled() const;
     void setMiroSettingsEnabled(bool enabled);
+    bool preventThemeChaning();
+    bool hasDelayedBaseThemeChange();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -54,6 +56,9 @@ signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
     void editorLineWrappingChanged();
     void themeChanged();
+
+public slots:
+    void delayBaseThemeChange(bool valid);
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
@@ -88,6 +93,7 @@ private:
     bool mInitializing = true;
     QList<ThemeWidget*> mColorWidgets;
     int mFixedThemeCount = 0;
+    bool mDelayedBaseThemeChange = false;
     bool mMiroSettingsEnabled = true;
 
     void saveSettings();

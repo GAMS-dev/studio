@@ -97,13 +97,10 @@ bool ViewHelper::updateBaseTheme()
 {
     int currentTheme = Theme::instance()->activeTheme();
 #ifdef __APPLE__
-    if (currentTheme < 2) {
-        // reload theme when switching OS theme
-        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-        if (currentTheme != Theme::instance()->activeTheme()) {
-            Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
-            DEB() << "theme changed: " << Theme::instance()->activeTheme();
-        }
+    Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+    if (currentTheme != Theme::instance()->activeTheme()) {
+        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+        Settings::settings()->save();
     }
 #endif
     return currentTheme != Theme::instance()->activeTheme();
