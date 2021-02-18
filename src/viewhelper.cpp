@@ -20,6 +20,7 @@
 #include "file/filemeta.h"
 #include "colors/palettemanager.h"
 #include "settings.h"
+#include <../platform/macos/macoscocoabridge.h>
 
 #include <QVariant>
 
