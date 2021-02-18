@@ -20,7 +20,10 @@
 #include "file/filemeta.h"
 #include "colors/palettemanager.h"
 #include "settings.h"
-#include <../platform/macos/macoscocoabridge.h>
+
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
 
 #include <QVariant>
 
@@ -97,7 +100,10 @@ bool ViewHelper::updateBaseTheme()
     if (currentTheme < 2) {
         // reload theme when switching OS theme
         Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+        if (currentTheme != Theme::instance()->activeTheme()) {
+            Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+            DEB() << "theme changed: " << Theme::instance()->activeTheme();
+        }
     }
 #endif
     return currentTheme != Theme::instance()->activeTheme();
