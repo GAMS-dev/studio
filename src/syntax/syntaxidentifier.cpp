@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-SyntaxIdentifier::SyntaxIdentifier() : SyntaxAbstract(SyntaxKind::Identifier)
+SyntaxIdentifier::SyntaxIdentifier(SharedSyntaxData *sharedData) : SyntaxAbstract(SyntaxKind::Identifier, sharedData)
 {
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
@@ -72,7 +72,8 @@ SyntaxBlock SyntaxIdentifier::validTail(const QString &line, int index, int flav
     return SyntaxBlock(this, flavor, index, start, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDim::SyntaxIdentifierDim() : SyntaxAbstract(SyntaxKind::IdentifierDim), mDelimiters("([)]")
+SyntaxIdentifierDim::SyntaxIdentifierDim(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::IdentifierDim, sharedData), mDelimiters("([)]")
 {
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
@@ -108,7 +109,8 @@ SyntaxBlock SyntaxIdentifierDim::validTail(const QString &line, int index, int f
     return SyntaxBlock(this, flavor, index, end+1, SyntaxShift::shift);
 }
 
-SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd() : SyntaxAbstract(SyntaxKind::IdentifierDimEnd), mDelimiters(")]")
+SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::IdentifierDimEnd, sharedData), mDelimiters(")]")
 {
     // sub-kinds to check for all types
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
@@ -144,7 +146,8 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, in
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentDescript::SyntaxIdentDescript() : SyntaxAbstract(SyntaxKind::IdentifierDescription)
+SyntaxIdentDescript::SyntaxIdentDescript(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::IdentifierDescription, sharedData)
 {
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -189,7 +192,7 @@ SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, int f
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -235,8 +238,8 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, int fla
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-AssignmentLabel::AssignmentLabel()
-     : SyntaxAbstract(SyntaxKind::AssignmentLabel)
+AssignmentLabel::AssignmentLabel(SharedSyntaxData *sharedData)
+     : SyntaxAbstract(SyntaxKind::AssignmentLabel, sharedData)
 {
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -302,8 +305,8 @@ SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, int flavo
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-AssignmentValue::AssignmentValue()
-    : SyntaxAbstract(SyntaxKind::AssignmentValue)
+AssignmentValue::AssignmentValue(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::AssignmentValue, sharedData)
 {
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -352,7 +355,7 @@ SyntaxBlock AssignmentValue::validTail(const QString &line, int index, int flavo
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
@@ -383,28 +386,29 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
     if (!inTable && !(flavor & flavorTable)) return SyntaxBlock(this);
     if (index > 0 && kind() != SyntaxKind::IdentifierTableAssignmentRow) return SyntaxBlock(this);
 
-    int start = index;
     if (kind() == SyntaxKind::IdentifierTableAssignmentColHead) {
+        int end = index;
         flavor = 0;
         if (inTable) {
             // validate this is a continued table using '+' and find start of first column
             int plusCount = 0;
-            while (start < line.length() && (isWhitechar(line, start) || line.at(start) == '+')) {
-                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+            while (end < line.length() && (isWhitechar(line, end) || line.at(end) == '+')) {
+                if (line.at(end) == '\t') flavor = ((flavor/8) +1) *8;
                 else ++flavor;
-                if (line.at(start) == '+') ++plusCount;
-                ++start;
+                if (line.at(end) == '+') ++plusCount;
+                ++end;
             }
-            if (start >= line.length() || plusCount != 1)
+            if (end >= line.length() || plusCount != 1)
                 return SyntaxBlock(this);
         } else {
             // find start of first column
-            while (start < line.length() && isWhitechar(line, start)) {
-                if (line.at(start) == '\t') flavor = ((flavor/8) +1) *8;
+            while (end < line.length() && isWhitechar(line, end)) {
+                if (line.at(end) == '\t') flavor = ((flavor/8) +1) *8;
                 else ++flavor;
-                ++start;
+                ++end;
             }
         }
+        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
     } else {
         // find split point between row-header and value
         int split = flavor;
@@ -413,30 +417,28 @@ SyntaxBlock SyntaxTableAssign::find(const SyntaxKind entryKind, int flavor, cons
         else
             split = line.length();
         if (split <= 0) return SyntaxBlock(this);
+        int end = index;
+        while (end < line.length() && line.at(end) != ';' && !mSharedData->commentEndLine()->check(line, end))
+            ++end;
+        if (split > end) split = end;
+
         if (kind() == SyntaxKind::IdentifierTableAssignmentRowHead) {
             return SyntaxBlock(this, flavor, index, split, SyntaxShift::shift);
-        } else {
-            if (index < split) return SyntaxBlock(this);
-            index = split;
         }
+        if (index < split) return SyntaxBlock(this);
+        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
     }
 
-    int end = line.indexOf(';', index);
-    if (end < 0)
-        return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
 }
 
 SyntaxBlock SyntaxTableAssign::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     Q_UNUSED(hasContent)
     int end = index;
-    while (isWhitechar(line, end)) ++end;
-    return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
-
-//    int end = line.indexOf(';', index);
-//    if (end < 0)
-//    return SyntaxBlock(this, 0, index, end, SyntaxShift::out);
+    while (end < line.length() && line.at(end) != ';' && !mSharedData->commentEndLine()->check(line, end))
+        ++end;
+    if (end < 0) end = line.length();
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
 } // namespace syntax

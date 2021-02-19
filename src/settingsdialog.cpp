@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -32,9 +32,6 @@
 #include "themewidget.h"
 #include "viewhelper.h"
 
-#ifdef __APPLE__
-#include "../platform/macos/macoscocoabridge.h"
-#endif
 
 namespace gams {
 namespace studio {
@@ -206,6 +203,17 @@ void SettingsDialog::setMiroSettingsEnabled(bool enabled)
     mMiroSettingsEnabled = enabled;
     ui->miroEdit->setEnabled(enabled);
     ui->miroBrowseButton->setEnabled(enabled);
+}
+
+bool SettingsDialog::preventThemeChaning()
+{
+    if (isVisible()) return true;
+    return false;
+}
+
+bool SettingsDialog::hasDelayedBaseThemeChange()
+{
+    return mDelayedBaseThemeChange;
 }
 
     // save settings from ui to qsettings
@@ -397,6 +405,11 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
+}
+
+void SettingsDialog::delayBaseThemeChange(bool valid)
+{
+    mDelayedBaseThemeChange = valid;
 }
 
 SettingsDialog::~SettingsDialog()

@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "enginestartdialog.h"
 #include "ui_enginestartdialog.h"
 #include "settings.h"
@@ -10,13 +27,14 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-const QString CUnavailable("-");
+const QString EngineStartDialog::CUnavailable("-");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
+    setCanStart(false);
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
@@ -30,12 +48,14 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
+    connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
+    connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    emit textChanged("");
+    textChanged("");
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
@@ -61,7 +81,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
-    emit urlEdited(ui->edUrl->text());
+    urlEdited(ui->edUrl->text());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -151,15 +171,17 @@ void EngineStartDialog::getVersion()
 {
     setConnectionState(scsWaiting);
     if (mProc) {
-//        if (mPendingRequest) mProc->abortRequests();
-        mUrlChanged = false;
-        mProc->setUrl(mUrl.trimmed());
-        mProc->getVersions();
-//        mPendingRequest = true;
+        if (mProc->setUrl(mUrl.trimmed())) {
+            mUrlChanged = false;
+            mProc->getVersions();
+        } else {
+            mConnectState = scsNone;
+            updateConnectStateAppearance();
+        }
     }
 }
 
-QString EngineStartDialog::ensureApi(QString url)
+QString EngineStartDialog::ensureApi(const QString &url) const
 {
     if (url.endsWith("/")) return url + "api";
     return url + "/api";
@@ -186,6 +208,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 void EngineStartDialog::urlEdited(const QString &text)
 {
     mUrlChanged = true;
+    mValidUrl = QString();
     mUrl = text;
     getVersion();
 }
@@ -202,9 +225,9 @@ void EngineStartDialog::textChanged(const QString &/*text*/)
     setConnectionState(mConnectState);
 }
 
-void EngineStartDialog::on_bAlways_clicked()
+void EngineStartDialog::btAlwaysClicked()
 {
-    emit buttonClicked(ui->bAlways);
+    buttonClicked(ui->bAlways);
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
@@ -218,6 +241,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
+    if (!mValidUrl.isEmpty()) return;
     Q_UNUSED(errorText)
 //    mPendingRequest = false;
     if (mUrlChanged) {
@@ -241,7 +265,7 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
 }
 
-void EngineStartDialog::on_cbForceGdx_stateChanged(int state)
+void EngineStartDialog::forceGdxStateChanged(int state)
 {
     if (mProc) mProc->setForceGdx(state != 0);
 }

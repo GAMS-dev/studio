@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -43,9 +43,9 @@ class SyntaxHighlighter : public BaseHighlighter
     Q_OBJECT
 public:
     SyntaxHighlighter(QTextDocument *doc);
-    ~SyntaxHighlighter();
+    ~SyntaxHighlighter() override;
 
-    void highlightBlock(const QString &text);
+    void highlightBlock(const QString &text) override;
     void reloadColors();
 
 public slots:

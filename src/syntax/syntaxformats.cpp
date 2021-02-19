@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -102,7 +102,7 @@ int SyntaxAbstract::endOfParentheses(const QString &line, const int &start, cons
 }
 
 
-SyntaxStandard::SyntaxStandard() : SyntaxAbstract(SyntaxKind::Standard)
+SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(SyntaxKind::Standard, sharedData)
 {
     mSubKinds << SyntaxKind::Semicolon
               << SyntaxKind::CommentLine
@@ -142,7 +142,8 @@ SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, int flavor
     return SyntaxBlock();
 }
 
-SyntaxDirective::SyntaxDirective(QChar directiveChar) : SyntaxAbstract(SyntaxKind::Directive)
+SyntaxDirective::SyntaxDirective(SharedSyntaxData *sharedData, QChar directiveChar)
+    : SyntaxAbstract(SyntaxKind::Directive, sharedData)
 {
     mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
 
@@ -231,24 +232,25 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
                 || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
-    } else if (mSyntaxCommentEndline) {
+    } else if (mSharedData->commentEndLine()) {
         if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
-            mSyntaxCommentEndline->setCommentChars("!!");
-            for (SyntaxFormula * sf: mSubSyntaxBody) {
+            // This only activates the current eolCom
+//            mSharedData->commentEndLine()->setCommentChars("!!");
+            for (SyntaxFormula * sf: mSharedData->allFormula()) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
-            if (mSubDirectiveBody)
-                mSubDirectiveBody->setCommentChars(QVector<QChar>() << '!');
+            mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << '!');
          } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
-            if (i+2 <= line.length()) {
-                mSyntaxCommentEndline->setCommentChars(line.mid(i,2));
-                for (SyntaxFormula * sf: mSubSyntaxBody) {
+            int comSize = 2;
+            if (i+1 == line.length() || isWhitechar(line,i+1)) comSize = 1;
+            if (i+comSize <= line.length()) {
+                mSharedData->commentEndLine()->setCommentChars(line.mid(i,comSize));
+                for (SyntaxFormula * sf: mSharedData->allFormula()) {
                     sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
                 }
-                if (mSubDirectiveBody)
-                    mSubDirectiveBody->setCommentChars(QVector<QChar>() << line.at(i));
+                mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << line.at(i));
             }
         }
     }
@@ -276,8 +278,10 @@ SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, int flavo
 }
 
 
-SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
 {
+    sharedData->registerDirectiveBody(this);
     if (kind == SyntaxKind::IgnoredHead) {
         mSubKinds << SyntaxKind::Directive << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
         mEmptyLineKinds << SyntaxKind::IgnoredBlock;
@@ -289,7 +293,7 @@ SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind) : SyntaxAbstract(kind)
 
 void SyntaxDirectiveBody::setCommentChars(QVector<QChar> chars)
 {
-    mCommentChars = chars;
+    mEolComChars = chars;
 }
 
 SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
@@ -297,8 +301,8 @@ SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, int flavor, co
     int end = index;
     if (index == 0 && entryKind == SyntaxKind::IgnoredHead) return SyntaxBlock();
     if (entryKind == SyntaxKind::DirectiveBody && end < line.length()
-            && mCommentChars.contains(line.at(end))) ++end;
-    while (end < line.length() && !mCommentChars.contains(line.at(end)))
+            && mEolComChars.contains(line.at(end))) ++end;
+    while (end < line.length() && !mEolComChars.contains(line.at(end)))
         ++end;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
@@ -308,15 +312,15 @@ SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index, int f
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    while (end < line.length() && !mCommentChars.contains(line.at(end)))
+    while (end < line.length() && !mEolComChars.contains(line.at(end)))
         ++end;
     hasContent = end > start;
     return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
 }
 
 
-SyntaxCommentLine::SyntaxCommentLine(QChar commentChar)
-    : SyntaxAbstract(SyntaxKind::CommentLine), mCommentChar(commentChar)
+SyntaxCommentLine::SyntaxCommentLine(SharedSyntaxData *sharedData, QChar commentChar)
+    : SyntaxAbstract(SyntaxKind::CommentLine, sharedData), mCommentChar(commentChar)
 { }
 
 SyntaxBlock SyntaxCommentLine::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
@@ -336,7 +340,8 @@ SyntaxBlock SyntaxCommentLine::validTail(const QString &line, int index, int fla
 }
 
 
-SyntaxUniformBlock::SyntaxUniformBlock(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxUniformBlock::SyntaxUniformBlock(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
 {
     mSubKinds << SyntaxKind::Directive;
 }
@@ -355,8 +360,8 @@ SyntaxBlock SyntaxUniformBlock::validTail(const QString &line, int index, int fl
     return SyntaxBlock(this, flavor, index, line.length(), SyntaxShift::shift);
 }
 
-SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind)
-    : SyntaxAbstract(kind)
+SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
 {
     mSubKinds << SyntaxKind::CommentEndline;
     if (kind == SyntaxKind::Semicolon) {
@@ -392,8 +397,9 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, int flavo
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxFormula::SyntaxFormula(SyntaxKind kind) : SyntaxAbstract(kind)
+SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
+    sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
               << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
@@ -464,8 +470,8 @@ void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
         mSpecialDynamicChars << '=';
 }
 
-SyntaxString::SyntaxString()
-    : SyntaxAbstract(SyntaxKind::String)
+SyntaxString::SyntaxString(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::String, sharedData)
 {}
 
 SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -492,7 +498,7 @@ SyntaxBlock SyntaxString::validTail(const QString &line, int index, int flavor, 
     return SyntaxBlock(this);
 }
 
-SyntaxAssign::SyntaxAssign() : SyntaxAbstract(SyntaxKind::Assignment)
+SyntaxAssign::SyntaxAssign(SharedSyntaxData *sharedData) : SyntaxAbstract(SyntaxKind::Assignment, sharedData)
 {}
 
 SyntaxBlock SyntaxAssign::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -528,16 +534,25 @@ SyntaxBlock SyntaxAssign::validTail(const QString &line, int index, int flavor, 
     return SyntaxBlock(this);
 }
 
-SyntaxCommentEndline::SyntaxCommentEndline(QString commentChars)
-    : SyntaxAbstract(SyntaxKind::CommentEndline)
+SyntaxCommentEndline::SyntaxCommentEndline(SharedSyntaxData *sharedData, QString commentChars)
+    : SyntaxAbstract(SyntaxKind::CommentEndline, sharedData)
 {
+    mSharedData->registerCommentEndLine(this);
     setCommentChars(commentChars);
 }
 
 void SyntaxCommentEndline::setCommentChars(QString commentChars)
 {
-    if (commentChars.length() == 2)
+    if (commentChars.length() == 1 || commentChars.length() == 2)
         mCommentChars = commentChars;
+}
+
+bool SyntaxCommentEndline::check(const QString &line, int index) const
+{
+    if (index + mCommentChars.length() > line.length()) return false;
+    if (line.at(index) != mCommentChars.at(0)) return false;
+    if (mCommentChars.length() > 1 && line.at(index+1) != mCommentChars.at(1)) return false;
+    return true;
 }
 
 SyntaxBlock SyntaxCommentEndline::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -546,7 +561,9 @@ SyntaxBlock SyntaxCommentEndline::find(const SyntaxKind entryKind, int flavor, c
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (start+2 <= line.length() && line.at(start) == mCommentChars.at(0) && line.at(start+1) == mCommentChars.at(1))
+
+    if (start+mCommentChars.size() <= line.length() && line.at(start) == mCommentChars.at(0) &&
+            (mCommentChars.size() == 1 || line.at(start+1) == mCommentChars.at(1)))
         return SyntaxBlock(this, flavor, start, line.length(), SyntaxShift::skip);
     return SyntaxBlock(this);
 }
@@ -560,10 +577,10 @@ SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, int 
     return SyntaxBlock(this);
 }
 
-SyntaxCall::SyntaxCall(): SyntaxAbstract(SyntaxKind::Call)
+SyntaxCall::SyntaxCall(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxKind::Call, sharedData)
 {
     QList<QPair<QString, QString>> list = SyntaxData::execute();
-    for (const QPair<QString,QString> &entry : list) {
+    for (const QPair<QString,QString> &entry : qAsConst(list)) {
         if (entry.first != "sync" && entry.first != "embedded")
             mSubDirective << entry.first;
     }

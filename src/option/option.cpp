@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -31,10 +31,10 @@ namespace gams {
 namespace studio {
 namespace option {
 
-Option::Option(const QString &systemPath, const QString &optionFileName) :
-    mOptionDefinitionPath(systemPath), mOptionDefinitionFile(optionFileName)
+Option::Option(const QString &optionFilePath, const QString &optionFileName) :
+    mOptionDefinitionPath(optionFilePath), mOptionDefinitionFile(optionFileName)
 {
-    mAvailable = readDefinitionFile(systemPath, optionFileName);
+    mAvailable = readDefinitionFile(optionFilePath, optionFileName);
 }
 
 Option::~Option()
@@ -467,7 +467,7 @@ OptionDefinition Option::getOptionDefinition(const QString &optionName) const
     return mOption[optionName.toUpper()];
 }
 
-bool Option::readDefinitionFile(const QString &systemPath, const QString &optionFileName)
+bool Option::readDefinitionFile(const QString &optionFilePath, const QString &optionFileName)
 {
     if (!CommonPaths::isSystemDirValid())
         return false;
@@ -479,7 +479,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
     optHandle_t mOPTHandle;
 
     char msg[GMS_SSSIZE];
-    if (!optCreateD(&mOPTHandle, systemPath.toLatin1(), msg, sizeof(msg)))
+    if (!optCreateD(&mOPTHandle, CommonPaths::systemDir().toLatin1(), msg, sizeof(msg)))
        return false;
 
     if (msg[0] != '\0') {
@@ -487,7 +487,7 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
         return false;
     }
 
-    if (!optReadDefinition(mOPTHandle, QDir(systemPath).filePath(optionFileName).toLatin1())) {
+    if (!optReadDefinition(mOPTHandle, QDir(optionFilePath).filePath(optionFileName).toLatin1())) {
 
          QMultiMap<QString, QString> synonym;
          char name[GMS_SSSIZE];
@@ -646,8 +646,8 @@ bool Option::readDefinitionFile(const QString &systemPath, const QString &option
          return true;
      } else {
 
-        SysLogLocator::systemLog()->append( QString("Problem reading definition file: %1").arg(QDir(systemPath).filePath(optionFileName)), LogMsgType::Error);
-        qDebug() << "Problem reading definition file " << QDir(systemPath).filePath(optionFileName).toLatin1();
+        SysLogLocator::systemLog()->append( QString("Problem reading definition file: %1").arg(QDir(CommonPaths::systemDir()).filePath(optionFileName)), LogMsgType::Error);
+        qDebug() << "Problem reading definition file " << QDir(CommonPaths::systemDir()).filePath(optionFileName).toLatin1();
         optFree(&mOPTHandle);
         return false;
      }

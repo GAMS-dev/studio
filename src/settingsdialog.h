@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -45,6 +45,8 @@ public:
 
     bool miroSettingsEnabled() const;
     void setMiroSettingsEnabled(bool enabled);
+    bool preventThemeChaning();
+    bool hasDelayedBaseThemeChange();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -55,6 +57,9 @@ signals:
     void editorLineWrappingChanged();
     void themeChanged();
     void userGamsTypeChanged();
+
+public slots:
+    void delayBaseThemeChange(bool valid);
 
 private slots:
     void on_buttonBox_clicked(QAbstractButton *button);
@@ -89,6 +94,7 @@ private:
     bool mInitializing = true;
     QList<ThemeWidget*> mColorWidgets;
     int mFixedThemeCount = 0;
+    bool mDelayedBaseThemeChange = false;
     bool mMiroSettingsEnabled = true;
 
     void saveSettings();

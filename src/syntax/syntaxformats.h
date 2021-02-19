@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -120,6 +120,7 @@ struct SyntaxTransition
 typedef QList<SyntaxKind> SyntaxTransitions;
 
 class SyntaxAbstract;
+class SyntaxCommentEndline;
 
 struct SyntaxBlock
 {
@@ -145,11 +146,29 @@ struct SyntaxBlock
     bool isValid() { return syntax && start<end; }
 };
 
+class SyntaxFormula;
+class SyntaxDirectiveBody;
+
+class SharedSyntaxData
+{
+    QVector<SyntaxFormula*> mSubFormula;
+    SyntaxDirectiveBody *mDirectiveBody = nullptr;
+    SyntaxCommentEndline *mCommentEndline = nullptr;
+public:
+    void addFormula(SyntaxFormula* syntax) { if (syntax) mSubFormula << syntax; }
+    void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
+    void registerDirectiveBody(SyntaxDirectiveBody * syntax) { if (syntax) mDirectiveBody = syntax; }
+    bool isValid() { return mCommentEndline && mDirectiveBody && mSubFormula.size() == 4; }
+    const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
+    SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
+    SyntaxDirectiveBody *directiveBody() { return mDirectiveBody; }
+};
+
 /// \brief An abstract class to be used inside the <c>SyntaxHighlighter</c>.
 class SyntaxAbstract
 {
 public:
-    SyntaxAbstract(SyntaxKind kind) : mKind(kind) {}
+    SyntaxAbstract(SyntaxKind kind, SharedSyntaxData* sharedData) : mKind(kind), mSharedData(sharedData) {}
     virtual ~SyntaxAbstract() {}
     SyntaxKind kind() const { return mKind; }
     void assignColorSlot(Theme::ColorSlot slot);
@@ -166,8 +185,10 @@ public:
     virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
     int intSyntaxType() { return static_cast<int>(kind()); }
+
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
+
 protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
@@ -209,6 +230,7 @@ protected:
     QTextCharFormat mCharFormat;
     SyntaxTransitions mSubKinds;
     SyntaxTransitions mEmptyLineKinds;
+    SharedSyntaxData *mSharedData = nullptr;
 };
 
 
@@ -216,33 +238,26 @@ protected:
 class SyntaxStandard : public SyntaxAbstract
 {
 public:
-    SyntaxStandard();
+    SyntaxStandard(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
-class SyntaxCommentEndline;
 class SyntaxFormula;
 class SyntaxDirectiveBody;
 /// \brief Defines the syntax for a directive.
 class SyntaxDirective : public SyntaxAbstract
 {
 public:
-    SyntaxDirective(QChar directiveChar = '$');
+    SyntaxDirective(SharedSyntaxData* sharedData, QChar directiveChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
-    void setSyntaxCommentEndline(SyntaxCommentEndline *syntax) {mSyntaxCommentEndline = syntax;}
-    void addSubBody(SyntaxFormula *syntax) {mSubSyntaxBody << syntax;}
-    void setDirectiveBody(SyntaxDirectiveBody *syntax) {mSubDirectiveBody = syntax;}
 private:
     QRegularExpression mRex;
     QStringList mDirectives;
     QStringList mDescription;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
-    SyntaxCommentEndline *mSyntaxCommentEndline = nullptr;
-    QVector<SyntaxFormula*> mSubSyntaxBody;
-    SyntaxDirectiveBody *mSubDirectiveBody = nullptr;
 
 };
 
@@ -250,9 +265,9 @@ private:
 /// \brief Defines the syntax for a single comment line.
 class SyntaxDirectiveBody: public SyntaxAbstract
 {
-    QVector<QChar> mCommentChars;
+    QVector<QChar> mEolComChars;
 public:
-    SyntaxDirectiveBody(SyntaxKind kind);
+    SyntaxDirectiveBody(SyntaxKind kind, SharedSyntaxData* sharedData);
     void setCommentChars(QVector<QChar> chars);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
@@ -262,7 +277,7 @@ public:
 class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
-    SyntaxCommentLine(QChar commentChar = '*');
+    SyntaxCommentLine(SharedSyntaxData* sharedData, QChar commentChar = '*');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
@@ -274,17 +289,20 @@ class SyntaxCommentEndline: public SyntaxAbstract
 {
     QString mCommentChars;
 public:
-    SyntaxCommentEndline(QString commentChars = "!!");
+    SyntaxCommentEndline(SharedSyntaxData* sharedData, QString commentChars = "!!");
     void setCommentChars(QString commentChars);
+    QString commentChars() const { return mCommentChars; }
+    bool check(const QString &line, int index) const;
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+protected:
 };
 
 /// \brief Defines the syntax for a uniform multi-line block.
 class SyntaxUniformBlock: public SyntaxAbstract
 {
 public:
-    SyntaxUniformBlock(SyntaxKind kind);
+    SyntaxUniformBlock(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -294,7 +312,7 @@ class SyntaxCall: public SyntaxAbstract
 {
     QStringList mSubDirective;
 public:
-    SyntaxCall();
+    SyntaxCall(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -303,7 +321,7 @@ class SyntaxDelimiter: public SyntaxAbstract
 {
     QChar mDelimiter;
 public:
-    SyntaxDelimiter(SyntaxKind kind);
+    SyntaxDelimiter(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -312,7 +330,7 @@ class SyntaxFormula: public SyntaxAbstract
 {
     QVector<QChar> mSpecialDynamicChars;
 public:
-    SyntaxFormula(SyntaxKind kind);
+    SyntaxFormula(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     void setSpecialDynamicChars(QVector<QChar> chars);
@@ -321,7 +339,7 @@ public:
 class SyntaxString : public SyntaxAbstract
 {
 public:
-    SyntaxString();
+    SyntaxString(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -329,7 +347,7 @@ public:
 class SyntaxAssign : public SyntaxAbstract
 {
 public:
-    SyntaxAssign();
+    SyntaxAssign(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

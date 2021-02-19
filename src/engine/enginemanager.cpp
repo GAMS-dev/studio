@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "enginemanager.h"
 #include "logger.h"
 #include "client/OAIAuthApi.h"
@@ -124,6 +141,12 @@ void EngineManager::setHost(const QString &host)
     mDefaultApi->setHost(host);
 }
 
+void EngineManager::setPort(int port)
+{
+    mJobsApi->setPort(port);
+    mDefaultApi->setPort(port);
+}
+
 void EngineManager::setBasePath(const QString &path)
 {
     mJobsApi->setBasePath(path);
@@ -217,7 +240,7 @@ void EngineManager::abortRequestsSignal()
 
 }
 
-bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams)
+bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams) const
 {
     QJsonDocument jDoc = QJsonDocument::fromJson(json);
     QJsonObject jObj = jDoc.object();

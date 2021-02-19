@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -365,7 +365,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
             }
             QString rawName = fName;
             for (QString loc : locations) {
-                if (!QDir(loc).isAbsolute())
+                if (!QDir::isAbsolutePath(loc))
                     loc = location() + '/' + loc;
                 fName = loc + '/' + rawName;
                 QFileInfo file(fName);
@@ -383,6 +383,9 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
         }
     } else if (parts.first().startsWith('"')) {
         QString fName = parts.first().mid(1, parts.first().length()-2).toString();
+        if (!QDir::isAbsolutePath(fName))
+            fName = location() + '/' + fName;
+
         exist = QFile(fName).exists();
         if (exist) res = fName;
         if (!create || !exist) return res;

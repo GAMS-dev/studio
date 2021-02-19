@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,6 +25,7 @@
 #include <QTextCodec>
 
 #include "option.h"
+#include "commonpaths.h"
 #include "editors/abstractsystemlogger.h"
 
 namespace gams {
@@ -53,7 +54,7 @@ class OptionTokenizer : public QObject
 
 public:
 
-    OptionTokenizer(const QString &optionDefFileName);
+    OptionTokenizer(const QString &optionDefFileName, const QString &optionDefFilePath=CommonPaths::systemDir());
     ~OptionTokenizer();
 
     QList<OptionItem> tokenize(const QString &commandLineStr);

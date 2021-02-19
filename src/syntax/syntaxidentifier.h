@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,7 +29,7 @@ namespace syntax {
 class SyntaxIdentifier : public SyntaxAbstract
 {
 public:
-    SyntaxIdentifier();
+    SyntaxIdentifier(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
@@ -40,7 +40,7 @@ class SyntaxIdentifierDim : public SyntaxAbstract
 {
     const QString mDelimiters;
 public:
-    SyntaxIdentifierDim();
+    SyntaxIdentifierDim(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     int maxNesting() override { return 1; }
@@ -50,7 +50,7 @@ class SyntaxIdentifierDimEnd : public SyntaxAbstract
 {
     const QString mDelimiters;
 public:
-    SyntaxIdentifierDimEnd();
+    SyntaxIdentifierDimEnd(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -58,7 +58,7 @@ public:
 class SyntaxIdentDescript : public SyntaxAbstract
 {
 public:
-    SyntaxIdentDescript();
+    SyntaxIdentDescript(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -66,7 +66,7 @@ public:
 class SyntaxIdentAssign : public SyntaxAbstract
 {
 public:
-    SyntaxIdentAssign(SyntaxKind kind);
+    SyntaxIdentAssign(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -74,7 +74,7 @@ public:
 class AssignmentLabel: public SyntaxAbstract
 {
 public:
-    AssignmentLabel();
+    AssignmentLabel(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -82,7 +82,7 @@ public:
 class AssignmentValue: public SyntaxAbstract
 {
 public:
-    AssignmentValue();
+    AssignmentValue(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -90,7 +90,7 @@ public:
 class SyntaxTableAssign : public SyntaxAbstract
 {
 public:
-    SyntaxTableAssign(SyntaxKind kind);
+    SyntaxTableAssign(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

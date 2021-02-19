@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -159,7 +159,7 @@ class Option
 public:
     static const int GAMS_DEPRECATED_GROUP_NUMBER = 4;
 
-    Option(const QString &systemPath, const QString &optionFileName);
+    Option(const QString &optionFilePath, const QString &optionFileName);
     ~Option();
 
     void dumpAll();
@@ -239,7 +239,7 @@ private:
     QMap<int, OptionGroup> mOptionGroup;
 
     bool mAvailable;
-    bool readDefinitionFile(const QString &systemPath, const QString &optionFileName);
+    bool readDefinitionFile(const QString &optionFilePath, const QString &optionFileName);
 };
 
 const double OPTION_VALUE_MAXDOUBLE = 1e+299;

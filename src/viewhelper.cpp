@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -20,6 +20,10 @@
 #include "file/filemeta.h"
 #include "colors/palettemanager.h"
 #include "settings.h"
+
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
 
 #include <QVariant>
 
@@ -89,9 +93,18 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     }
 }
 
-
-
-
+bool ViewHelper::updateBaseTheme()
+{
+    int currentTheme = Theme::instance()->activeTheme();
+#ifdef __APPLE__
+    Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+    if (currentTheme != Theme::instance()->activeTheme()) {
+        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+        Settings::settings()->save();
+    }
+#endif
+    return currentTheme != Theme::instance()->activeTheme();
+}
 
 ///
 /// \brief ViewHelper::setAppearance sets and saves the appearance

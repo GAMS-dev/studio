@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,7 +98,8 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
 }
 
 
-SyntaxDeclaration::SyntaxDeclaration() : SyntaxKeywordBase(SyntaxKind::Declaration)
+SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
+    : SyntaxKeywordBase(SyntaxKind::Declaration, sharedData)
 {
     QList<QPair<QString, QString>> list;
     list = SyntaxData::declaration();
@@ -151,7 +152,8 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
     return SyntaxBlock(this);
 }
 
-SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxKeywordBase(kind, sharedData)
 {
     QList<QPair<QString, QString>> list;
     switch (kind) {
@@ -192,7 +194,7 @@ SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, int flavor, c
     return SyntaxBlock(this);
 }
 
-SyntaxReserved::SyntaxReserved(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
               << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
@@ -251,7 +253,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
 }
 
 
-SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     QList<QPair<QString, QString>> list;
     if (kind == SyntaxKind::Embedded) {
@@ -280,7 +282,8 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, int flavor, const Q
     return SyntaxBlock(this);
 }
 
-SyntaxEmbeddedBody::SyntaxEmbeddedBody() : SyntaxAbstract(SyntaxKind::EmbeddedBody)
+SyntaxEmbeddedBody::SyntaxEmbeddedBody(SharedSyntaxData *sharedData)
+    : SyntaxAbstract(SyntaxKind::EmbeddedBody, sharedData)
 {
     mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Directive;
 }
@@ -293,11 +296,11 @@ SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, int flavor, con
 
 SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
-    Q_UNUSED(hasContent);
+    Q_UNUSED(hasContent)
     return SyntaxBlock(this, flavor, index, line.length());
 }
 
-SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind) : SyntaxKeywordBase(kind)
+SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;

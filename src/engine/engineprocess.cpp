@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "engineprocess.h"
 #include "client/OAIJobsApi.h"
 #include "enginemanager.h"
@@ -64,7 +81,7 @@ void EngineProcess::execute()
     setProcState(Proc1Compile);
 }
 
-QStringList EngineProcess::compileParameters()
+QStringList EngineProcess::compileParameters() const
 {
     if (mOutPath.isEmpty()) {
         DEB() << "Error: No runable file assigned to the GAMS Engine process";
@@ -97,7 +114,7 @@ QStringList EngineProcess::compileParameters()
     return params;
 }
 
-QStringList EngineProcess::remoteParameters()
+QStringList EngineProcess::remoteParameters() const
 {
     QStringList params = parameters();
     if (params.size()) params.removeFirst();
@@ -269,20 +286,34 @@ QProcess::ProcessState EngineProcess::state() const
     return (mProcState <= ProcIdle) ? QProcess::NotRunning : QProcess::Running;
 }
 
-void EngineProcess::setUrl(const QString &url)
+bool EngineProcess::setUrl(const QString &url)
 {
     int sp1 = url.indexOf("://")+1;
     if (sp1) sp1 += 2;
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
-    setHost(url.mid(sp1, sp2-sp1));
+    bool res = setHost(url.mid(sp1, sp2-sp1));
+
     setBasePath(url.right(url.length()-sp2));
+    return res;
 }
 
-void EngineProcess::setHost(const QString &_host)
+bool EngineProcess::setHost(const QString &_host)
 {
     mHost = _host;
-    mManager->setHost(_host);
+    int colon = _host.indexOf(':');
+    if (colon > 0) {
+        mManager->setHost(_host.left(colon));
+        bool ok;
+        int port = _host.rightRef(_host.length()-colon-1).toInt(&ok);
+        if (!ok || port < 0 || port > 65536) return false;
+        if (!port) port = 443;
+        mManager->setPort(port);
+    } else {
+        mManager->setHost(_host);
+        mManager->setPort(443);
+    }
+    return true;
 }
 
 QString EngineProcess::host() const
@@ -353,21 +384,18 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
     mManager->setToken(token);
     QString newLstEntry("\n--- switch to Engine .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
     QString lstPath = mOutPath+"/"+modelName()+".lst";
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(modelName()).arg(lstPath).arg(token).toUtf8());
+    emit newStdChannelData(newLstEntry.arg(QDir::separator(), modelName(), lstPath, token).toUtf8());
     // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
     pullStatus();
 }
 
-
-enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};
-
-static const QHash<QString, JobStatusEnum> CJobStatus {
+const QHash<QString, EngineProcess::JobStatusEnum> EngineProcess::CJobStatus {
     {"invalid", jsInvalid}, {"done", jsDone}, {"running", jsRunning}, {"waiting", jsWaiting},
     {"Unknown Job", jsUnknownJob}, {"Bad Password", jsBadPassword}
 };
 
-void EngineProcess::reGetJobStatus(const qint32 &status, const qint32 &gamsExitCode)
+void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 {
     // TODO(JM) convert status to EngineManager::Status
     EngineManager::StatusCode code = EngineManager::StatusCode(status);
@@ -551,7 +579,6 @@ void EngineProcess::startPacking()
     connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
-    QFileInfo path(mOutPath);
     QString baseName = modelName();
     QFile file(mOutPath+'/'+baseName+".gms");
     if (!file.open(QFile::WriteOnly)) {
@@ -594,7 +621,7 @@ void EngineProcess::startUnpacking()
     subProc->execute();
 }
 
-QString EngineProcess::modelName()
+QString EngineProcess::modelName() const
 {
     return QFileInfo(mOutPath).completeBaseName();
 }

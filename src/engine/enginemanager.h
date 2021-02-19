@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #ifndef GAMS_STUDIO_ENGINE_ENGINEMANAGER_H
 #define GAMS_STUDIO_ENGINE_ENGINEMANAGER_H
 
@@ -33,9 +50,10 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
-    ~EngineManager();
+    ~EngineManager() override;
     void setWorkingDirectory(const QString &dir);
     void setHost(const QString &host);
+    void setPort(int port);
     void setBasePath(const QString &path);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
@@ -76,7 +94,7 @@ private slots:
     void abortRequestsSignal();
 
 private:
-    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams);
+    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
 
 private:
 //    OpenAPI::OAIAuthApi *mAuthApi;

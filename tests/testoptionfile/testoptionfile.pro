@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,17 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
 TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH +=   \
-        $$SRCPATH \
-        $$SRCPATH/option
+INCLUDEPATH += $$SRCPATH \
+               $$SRCPATH/option
 
 HEADERS += \
-    testconopt4option.h \
+    testoptionfile.h \
     $$SRCPATH/logger.h \
     $$SRCPATH/theme.h \
     $$SRCPATH/svgengine.h \
@@ -35,7 +33,7 @@ HEADERS += \
     $$SRCPATH/option/optiontokenizer.h
 
 SOURCES += \
-    testconopt4option.cpp \
+    testoptionfile.cpp \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/theme.cpp \
     $$SRCPATH/svgengine.cpp \
@@ -45,3 +43,7 @@ SOURCES += \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp
+
+OTHER_FILES +=         \
+    optdummy.def       \
+    genoptdeffile.cpp
