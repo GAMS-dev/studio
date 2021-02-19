@@ -1,3 +1,11 @@
+Version 1.5.4
+==================
+- fixed GDX file reloading while being rewritten
+- fixed file links in Log not handling relative filepaths on windows
+- added support for ports in GAMS Engine URL
+- fixed syntax highlighting for eolCom in table definition
+- added support to instantly follow macOS theme changes (delayed when settings dialog is visible)
+
 Version 1.5.3
 ==================
 - fixed tooltips appearing during text selection near line number area

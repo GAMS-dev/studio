@@ -139,6 +139,7 @@ public:
                << "Text files (*.txt)"
                << "All files (*.*)";
     }
+    static bool updateBaseTheme();
     static void setAppearance(int appearance = -1);
     static void changeAppearance(int appearance = -1);
 
