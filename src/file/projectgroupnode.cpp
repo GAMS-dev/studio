@@ -552,7 +552,7 @@ void ProjectRunGroupNode::switchLst(const QString &lstFile)
 
 void ProjectRunGroupNode::registerGeneratedFile(const QString &fileName)
 {
-    fileRepo()->setAutoReload(fileName);
+    fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
 void ProjectRunGroupNode::clearErrorTexts()

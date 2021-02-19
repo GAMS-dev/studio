@@ -447,7 +447,7 @@ void MemoryMapper::parseNewLine()
                 int j = i;
                 while (j < end && chunk->bArray.at(j) != delim) ++j;
                 if (j < end) {
-                    emit registerGeneratedFile(chunk->bArray.mid(i, j-i-1));
+                    emit registerGeneratedFile(chunk->bArray.mid(i, j-i));
                 }
             }
         }
