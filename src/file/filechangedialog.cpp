@@ -10,7 +10,7 @@ FileChangeDialog::FileChangeDialog(QWidget *parent) :
 {
     mCbAll = new QCheckBox("For all files");
     setCheckBox(mCbAll);
-    mButtons << new QPushButton("Close") << new QPushButton("Reload") << new QPushButton("Reload Always") << new QPushButton("Keep");
+    mButtons << new QPushButton("Close") << new QPushButton("Reload") << new QPushButton("Always Reload") << new QPushButton("Keep");
     mButtons.at(int(Result::rKeep))->setAutoDefault(true);
     setIcon(Warning);
     for (QAbstractButton *button : qAsConst(mButtons)) {
