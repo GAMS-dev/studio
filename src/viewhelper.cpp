@@ -21,6 +21,10 @@
 #include "colors/palettemanager.h"
 #include "settings.h"
 
+#ifdef __APPLE__
+#include "../platform/macos/macoscocoabridge.h"
+#endif
+
 #include <QVariant>
 
 namespace gams {
@@ -87,6 +91,19 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
     } else if (TextView* tv = toTextView(widget)) {
        tv->edit()->setProperty("location", location);
     }
+}
+
+bool ViewHelper::updateBaseTheme()
+{
+    int currentTheme = Theme::instance()->activeTheme();
+#ifdef __APPLE__
+    Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
+    if (currentTheme != Theme::instance()->activeTheme()) {
+        Settings::settings()->setInt(skEdAppearance, Theme::instance()->activeTheme());
+        Settings::settings()->save();
+    }
+#endif
+    return currentTheme != Theme::instance()->activeTheme();
 }
 
 ///

@@ -4,6 +4,7 @@ Version 1.5.4  *
 - fixed FIL marker in LOG doesn't handle relative filepaths
 - parse port for GAMS Engine URL
 - fixed syntax highlighting for standard eolCom in table definition
+- instantly follow macOS theme changes (delayed on visible settings dialog)
 
 Version 1.5.3
 ==================

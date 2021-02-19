@@ -31,9 +31,6 @@
 #include "themewidget.h"
 #include "viewhelper.h"
 
-#ifdef __APPLE__
-#include "../platform/macos/macoscocoabridge.h"
-#endif
 
 namespace gams {
 namespace studio {
@@ -192,6 +189,17 @@ void SettingsDialog::setMiroSettingsEnabled(bool enabled)
     mMiroSettingsEnabled = enabled;
     ui->miroEdit->setEnabled(enabled);
     ui->miroBrowseButton->setEnabled(enabled);
+}
+
+bool SettingsDialog::preventThemeChaning()
+{
+    if (isVisible()) return true;
+    return false;
+}
+
+bool SettingsDialog::hasDelayedBaseThemeChange()
+{
+    return mDelayedBaseThemeChange;
 }
 
     // save settings from ui to qsettings
@@ -375,6 +383,11 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
+}
+
+void SettingsDialog::delayBaseThemeChange(bool valid)
+{
+    mDelayedBaseThemeChange = valid;
 }
 
 SettingsDialog::~SettingsDialog()
