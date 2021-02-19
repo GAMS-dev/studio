@@ -507,6 +507,7 @@ void FileMeta::removeEditor(QWidget *edit)
 
     if (mEditors.isEmpty()) {
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
+        mFileRepo->watch(this);
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
