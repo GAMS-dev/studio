@@ -448,7 +448,6 @@ FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
     engine/enginestartdialog.ui \
-    file/filechangedialog.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \

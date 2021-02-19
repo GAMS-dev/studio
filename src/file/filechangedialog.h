@@ -1,18 +1,15 @@
 #ifndef GAMS_STUDIO_FILECHANGEDIALOG_H
 #define GAMS_STUDIO_FILECHANGEDIALOG_H
 
-#include <QDialog>
-#include <QAbstractButton>
+#include <QMessageBox>
+#include <QPushButton>
+#include <QCheckBox>
 
 namespace gams {
 namespace studio {
 
-namespace Ui {
-class FileChangeDialog;
-}
 
-
-class FileChangeDialog : public QDialog
+class FileChangeDialog : public QMessageBox
 {
     Q_OBJECT
 public:
@@ -37,14 +34,13 @@ public:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
-    bool eventFilter(QObject *o, QEvent *e) override;
 
 private slots:
     void buttonClicked();
 
 private:
-    Ui::FileChangeDialog *ui;
-    QVector<QAbstractButton*> mButtons;
+    QVector<QPushButton*> mButtons;
+    QCheckBox *mCbAll;
 
 };
 
