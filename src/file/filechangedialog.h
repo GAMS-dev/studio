@@ -32,6 +32,9 @@ public:
     static bool isForAll(int result) { return result >= int(Result::rCount); }
     static bool isAutoReload(int result) { return ((result+1) % int(Result::rCount)) == 3; }
 
+signals:
+    void ready(int result);
+
 protected:
     void keyPressEvent(QKeyEvent *event) override;
 

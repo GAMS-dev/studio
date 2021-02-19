@@ -31,7 +31,7 @@ FileEventHandler::FileEventHandler(MainWindow *mainWindow, QObject *parent)
     , mMainWindow(mainWindow)
     , mDialog(new FileChangeDialog(mainWindow))
 {
-    connect(mDialog, &FileChangeDialog::finished, this, &FileEventHandler::messageBoxFinished);
+    connect(mDialog, &FileChangeDialog::ready, this, &FileEventHandler::messageBoxFinished);
 }
 
 void FileEventHandler::process(Type type, const QVector<FileEventData> &events)

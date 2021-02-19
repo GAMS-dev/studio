@@ -56,7 +56,8 @@ void FileChangeDialog::keyPressEvent(QKeyEvent *event)
 void FileChangeDialog::buttonClicked()
 {
     setResult(mButtons.indexOf(static_cast<QPushButton*>(sender())) + (isForAll() ? 4 : 0));
-    done(result());
+    emit ready(result());
+    hide();
 }
 
 } // namespace studio
