@@ -43,9 +43,9 @@ class SyntaxHighlighter : public BaseHighlighter
     Q_OBJECT
 public:
     SyntaxHighlighter(QTextDocument *doc);
-    ~SyntaxHighlighter();
+    ~SyntaxHighlighter() override;
 
-    void highlightBlock(const QString &text);
+    void highlightBlock(const QString &text) override;
     void reloadColors();
 
 public slots:

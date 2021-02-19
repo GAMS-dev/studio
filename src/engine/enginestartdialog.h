@@ -74,17 +74,17 @@ protected:
     void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
     void getVersion();
-    QString ensureApi(QString url);
+    QString ensureApi(const QString &url) const;
     void setCanStart(bool valid);
     void setConnectionState(ServerConnectionState state);
 
 private slots:
     void urlEdited(const QString &text);
     void textChanged(const QString &);
-    void on_bAlways_clicked();
+    void btAlwaysClicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
-    void on_cbForceGdx_stateChanged(int state);
+    void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
 
 private:
@@ -101,6 +101,8 @@ private:
     QTimer mConnectStateUpdater;
     QString mEngineVersion;
     QString mGamsVersion;
+
+    static const QString CUnavailable;
 
 };
 

@@ -270,6 +270,7 @@ MainWindow::MainWindow(QWidget *parent)
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme();
+    ViewHelper::updateBaseTheme();
     initGamsStandardPaths();
     updateRunState();
 
@@ -448,10 +449,11 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-#ifdef __APPLE__
-        // reload theme when switching OS theme
-        Theme::instance()->setActiveTheme(MacOSCocoaBridge::isDarkMode() ? 1 : 0);
-#endif
+        if (!mSettingsDialog || !mSettingsDialog->preventThemeChaning())
+            ViewHelper::updateBaseTheme();
+        else {
+            mSettingsDialog->delayBaseThemeChange(true);
+        }
     }
     return QMainWindow::event(event);
 }
@@ -3753,6 +3755,11 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
+            if (mSettingsDialog->hasDelayedBaseThemeChange()) {
+                mSettingsDialog->delayBaseThemeChange(false);
+                ViewHelper::updateBaseTheme();
+            }
+
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });

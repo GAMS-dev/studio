@@ -39,70 +39,63 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
                      << SyntaxKind::Call << SyntaxKind::CommentLine << SyntaxKind::Title;
 
+    SharedSyntaxData *d = new SharedSyntaxData();
+
     // To visualize one format in DEBUG: add color index at start e.g. initKind(1, new SyntaxReservedBody());
-    initKind(new SyntaxStandard(), Theme::Syntax_undefined);
+    initKind(new SyntaxStandard(d), Theme::Syntax_undefined);
     addCode(BlockCode(SyntaxKind::Standard, 0), 0);
-    SyntaxDirective *syntaxDirective = new SyntaxDirective();
-    initKind(syntaxDirective, Theme::Syntax_directive);
-    SyntaxDirectiveBody *syntaxDirectiveBody = new SyntaxDirectiveBody(SyntaxKind::DirectiveBody);
-    initKind(syntaxDirectiveBody, Theme::Syntax_directiveBody);
-    syntaxDirective->setDirectiveBody(syntaxDirectiveBody);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment), Theme::Syntax_comment);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::Title), Theme::Syntax_title);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead), Theme::Syntax_directiveBody);
-    initKind(new SyntaxCall(), Theme::Syntax_directive);
+    initKind(new SyntaxDirective(d), Theme::Syntax_directive);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody, d), Theme::Syntax_directiveBody);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment, d), Theme::Syntax_comment);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::Title, d), Theme::Syntax_title);
+    initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_directiveBody);
+    initKind(new SyntaxCall(d), Theme::Syntax_directive);
 
-    SyntaxFormula * syntaxFormula = new SyntaxFormula(SyntaxKind::Formula);
-    initKind(syntaxFormula, Theme::Syntax_formula);
-    syntaxDirective->addSubBody(syntaxFormula);
-    SyntaxFormula * syntaxSolveBody = new SyntaxFormula(SyntaxKind::SolveBody);
-    initKind(syntaxSolveBody);
-    syntaxDirective->addSubBody(syntaxSolveBody);
-    SyntaxFormula * syntaxOptionBody = new SyntaxFormula(SyntaxKind::OptionBody);
-    initKind(syntaxOptionBody);
-    syntaxDirective->addSubBody(syntaxOptionBody);
-    SyntaxFormula * syntaxExecuteBody = new SyntaxFormula(SyntaxKind::ExecuteBody);
-    initKind(syntaxExecuteBody);
-    syntaxDirective->addSubBody(syntaxExecuteBody);
+    initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
+    initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));
+    initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
+    initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
-    initKind(new SyntaxAssign(), Theme::Syntax_formula);
-    initKind(new SyntaxString(), Theme::Syntax_neutral);
-    initKind(new SyntaxCommentLine(), Theme::Syntax_comment);
-    initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock), Theme::Syntax_comment);
-    SyntaxCommentEndline *syntaxCommentEndline = new SyntaxCommentEndline();
-    initKind(syntaxCommentEndline, Theme::Syntax_comment);
-    syntaxDirective->setSyntaxCommentEndline(syntaxCommentEndline);
-    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock), Theme::Syntax_neutral);
+    initKind(new SyntaxAssign(d), Theme::Syntax_formula);
+    initKind(new SyntaxString(d), Theme::Syntax_neutral);
+    initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
+    initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock, d), Theme::Syntax_comment);
+    initKind(new SyntaxCommentEndline(d), Theme::Syntax_comment);
+    initKind(new SyntaxUniformBlock(SyntaxKind::IgnoredBlock, d), Theme::Syntax_neutral);
 
-    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey), Theme::Syntax_keyword);
-    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey), Theme::Syntax_keyword);
-    initKind(new SyntaxSubsetKey(SyntaxKind::ExecuteKey), Theme::Syntax_keyword);
-    initKind(new SyntaxDelimiter(SyntaxKind::Semicolon));
-    initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent));
+    initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey, d), Theme::Syntax_keyword);
+    initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey, d), Theme::Syntax_keyword);
+    initKind(new SyntaxSubsetKey(SyntaxKind::ExecuteKey, d), Theme::Syntax_keyword);
+    initKind(new SyntaxDelimiter(SyntaxKind::Semicolon, d));
+    initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent, d));
 
-    initKind(new SyntaxReserved(SyntaxKind::Reserved), Theme::Syntax_keyword);
-    initKind(new SyntaxReserved(SyntaxKind::Solve), Theme::Syntax_keyword);
-    initKind(new SyntaxReserved(SyntaxKind::Option), Theme::Syntax_keyword);
-    initKind(new SyntaxReserved(SyntaxKind::Execute), Theme::Syntax_keyword);
-    initKind(new SyntaxEmbedded(SyntaxKind::Embedded), Theme::Syntax_keyword);
-    initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd), Theme::Syntax_keyword);
-    initKind(new SyntaxEmbeddedBody(), Theme::Syntax_embedded);
-    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationSetType), Theme::Syntax_declaration);
-    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType), Theme::Syntax_declaration);
-    initKind(new SyntaxDeclaration(), Theme::Syntax_declaration);
+    initKind(new SyntaxReserved(SyntaxKind::Reserved, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Solve, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Option, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Execute, d), Theme::Syntax_keyword);
+    initKind(new SyntaxEmbedded(SyntaxKind::Embedded, d), Theme::Syntax_keyword);
+    initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd, d), Theme::Syntax_keyword);
+    initKind(new SyntaxEmbeddedBody(d), Theme::Syntax_embedded);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationSetType, d), Theme::Syntax_declaration);
+    initKind(new SyntaxPreDeclaration(SyntaxKind::DeclarationVariableType, d), Theme::Syntax_declaration);
+    initKind(new SyntaxDeclaration(d), Theme::Syntax_declaration);
 
-    initKind(new SyntaxIdentifier(), Theme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDim(), Theme::Syntax_identifier);
-    initKind(new SyntaxIdentifierDimEnd(), Theme::Syntax_identifier);
-    initKind(new SyntaxIdentDescript(), Theme::Syntax_description);
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment), Theme::Syntax_assignLabel);
-    initKind(new AssignmentLabel(), Theme::Syntax_assignLabel);
-    initKind(new AssignmentValue(), Theme::Syntax_assignValue);
-    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd), Theme::Syntax_assignLabel);
+    initKind(new SyntaxIdentifier(d), Theme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDim(d), Theme::Syntax_identifier);
+    initKind(new SyntaxIdentifierDimEnd(d), Theme::Syntax_identifier);
+    initKind(new SyntaxIdentDescript(d), Theme::Syntax_description);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignment, d), Theme::Syntax_assignLabel);
+    initKind(new AssignmentLabel(d), Theme::Syntax_assignLabel);
+    initKind(new AssignmentValue(d), Theme::Syntax_assignValue);
+    initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd, d), Theme::Syntax_assignLabel);
 
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentColHead), Theme::Syntax_tableHeader);
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead), Theme::Syntax_tableHeader);
-    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow), Theme::Syntax_assignValue);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentColHead, d), Theme::Syntax_tableHeader);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead, d), Theme::Syntax_tableHeader);
+    initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow, d), Theme::Syntax_assignValue);
+
+    if (!d->isValid()) {
+        EXCEPT() << "ERROR: Incomplete SharedSyntaxData";
+    }
 }
 
 SyntaxHighlighter::~SyntaxHighlighter()

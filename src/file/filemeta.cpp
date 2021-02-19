@@ -703,7 +703,7 @@ FileMeta::FileDifferences FileMeta::compare(QString fileName)
 bool FileMeta::refreshMetaData()
 {
     Data data(location(), mData.type);
-    bool res = (mData.compare(data) == FdEqual);
+    bool res = (mData.compare(data) != FdEqual);
     mData = data;
     return res;
 }

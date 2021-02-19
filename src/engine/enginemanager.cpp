@@ -141,6 +141,12 @@ void EngineManager::setHost(const QString &host)
     mDefaultApi->setHost(host);
 }
 
+void EngineManager::setPort(int port)
+{
+    mJobsApi->setPort(port);
+    mDefaultApi->setPort(port);
+}
+
 void EngineManager::setBasePath(const QString &path)
 {
     mJobsApi->setBasePath(path);
@@ -234,7 +240,7 @@ void EngineManager::abortRequestsSignal()
 
 }
 
-bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams)
+bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams) const
 {
     QJsonDocument jDoc = QJsonDocument::fromJson(json);
     QJsonObject jObj = jDoc.object();

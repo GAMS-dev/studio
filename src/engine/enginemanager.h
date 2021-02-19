@@ -50,9 +50,10 @@ public:
 
 public:
     EngineManager(QObject *parent = nullptr);
-    ~EngineManager();
+    ~EngineManager() override;
     void setWorkingDirectory(const QString &dir);
     void setHost(const QString &host);
+    void setPort(int port);
     void setBasePath(const QString &path);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
@@ -93,7 +94,7 @@ private slots:
     void abortRequestsSignal();
 
 private:
-    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams);
+    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
 
 private:
 //    OpenAPI::OAIAuthApi *mAuthApi;

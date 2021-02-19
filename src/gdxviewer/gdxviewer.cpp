@@ -91,6 +91,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
+        if (!selectedSymbol) return;
 
         //aliases are also aliases in the sense of the view
         if (selectedSymbol->type() == GMS_DT_ALIAS) {
