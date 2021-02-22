@@ -19,6 +19,7 @@
  */
 #include "encodingsdialog.h"
 #include "ui_encodingsdialog.h"
+#include "logger.h"
 
 #include <QCheckBox>
 #include <QTextCodec>
@@ -44,12 +45,11 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
-    for (int mib: mibs) {
+    for (int mib: qAsConst(mibs)) {
         QRadioButton *rad = new QRadioButton("");
-        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+        rad->setStyleSheet("margin-left: 18px;");
         rad->setChecked(mib == defaultMib);
         ui->tableWidget->setCellWidget(row, 0, rad);
-        connect(rad, &QRadioButton::clicked, this, &SelectEncodings::defaultChanged);
 
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
@@ -84,7 +84,8 @@ QList<int> SelectEncodings::selectedMibs()
     QList<int> res;
     for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
-        if (box->isChecked()) res << ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+        QRadioButton *rb = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
+        if (box->isChecked() || rb->isChecked()) res << ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
     }
     // ensure to have UTF-8 on top and System at the 2nd place
     if (res.contains(0)) res.move(res.indexOf(0), 0);
@@ -120,19 +121,6 @@ void SelectEncodings::on_pbReset_clicked()
         rad->setChecked(mib == mDefaultMib);
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
         box->setChecked(mib == 0 || mSelectedMibs.contains(mib));
-    }
-}
-
-void SelectEncodings::defaultChanged()
-{
-    if (sender()) {
-        for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
-            QRadioButton *rad = static_cast<QRadioButton*>(ui->tableWidget->cellWidget(row, 0));
-            rad->setDown(rad == sender());
-            if (rad->isDown()) {
-                static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1))->setChecked(true);
-            }
-        }
     }
 }
 
