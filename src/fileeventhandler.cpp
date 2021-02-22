@@ -22,6 +22,7 @@
 
 #include <QPushButton>
 #include <QCheckBox>
+#include <QTimer>
 
 namespace gams {
 namespace studio {

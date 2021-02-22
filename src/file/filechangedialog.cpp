@@ -8,7 +8,7 @@ namespace studio {
 FileChangeDialog::FileChangeDialog(QWidget *parent) :
     QMessageBox(parent)
 {
-    mCbAll = new QCheckBox("For all files");
+    mCbAll = new QCheckBox("For all files  [a]");
     setCheckBox(mCbAll);
     mButtons << new QPushButton("Close") << new QPushButton("Reload") << new QPushButton("Always Reload") << new QPushButton("Keep");
     mButtons.at(int(Result::rKeep))->setAutoDefault(true);
@@ -24,6 +24,7 @@ FileChangeDialog::~FileChangeDialog()
 
 void FileChangeDialog::show(QString filePath, bool deleted, bool modified, int count)
 {
+    mCbAll->setChecked(false);
     setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));
     QString file("\"" + filePath + "\"");
     QString text(file + (deleted ? "%1 doesn't exist anymore."
@@ -39,7 +40,8 @@ void FileChangeDialog::show(QString filePath, bool deleted, bool modified, int c
     mButtons.at(int(Result::rReload))->setVisible(!deleted);
     mButtons.at(int(Result::rReloadAlways))->setVisible(!deleted);
     mCbAll->setVisible(count > 1);
-    QMessageBox::show();
+    DEB() << "open for " << file << (count > 1 ? QString(" + %1").arg(count-1) : "");
+    QMessageBox::open();
 }
 
 bool FileChangeDialog::isForAll()
@@ -57,7 +59,7 @@ void FileChangeDialog::buttonClicked()
 {
     setResult(mButtons.indexOf(static_cast<QPushButton*>(sender())) + (isForAll() ? 4 : 0));
     emit ready(result());
-    hide();
+    QMessageBox::close();
 }
 
 } // namespace studio
