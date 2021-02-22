@@ -1,3 +1,7 @@
+Version 1.5.5  *
+==================
+- "Reset Windows" in settings now also resets the splitter in the LST/LXI-Viewer
+
 Version 1.5.4
 ==================
 - fixed GDX file reloading while being rewritten
