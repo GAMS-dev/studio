@@ -2,6 +2,9 @@ Version 1.6.0 *
 ==================
 - added *.inc as common extension for GAMS files
 - added user defined extensions for GAMS files
+- auto-reload files marked in the log that were changed on a GAMS run
+- added user defined extensions for files to be auto-reloaded
+- added auto-reload button to request dialog after file changes
 
 Version 1.5.4
 ==================

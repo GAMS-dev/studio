@@ -340,6 +340,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
     safelyAdd(res, skUserFileTypes, scUser, {"misc","userFileTypes"}, QString());
 
+    safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
+
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);
     safelyAdd(res, skSoAddCommentAbove, scUser, {"solverOption","addCommentAbove"}, false);

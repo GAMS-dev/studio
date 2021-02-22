@@ -123,6 +123,7 @@ public slots:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
+    void registerGeneratedFile(const QString &fileName);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

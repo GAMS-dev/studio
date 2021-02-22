@@ -74,6 +74,7 @@ public:
     bool isModified() const;
     bool isReadOnly() const;
     bool isAutoReload() const;
+    void setAutoReload();
     void resetTempReloadState();
     void setModified(bool modified=true);
 
@@ -149,6 +150,7 @@ private:
     QString mLocation;
     QString mName;
     Data mData;
+    bool mAutoReload = false;
     bool mActivelySaved = false;
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;

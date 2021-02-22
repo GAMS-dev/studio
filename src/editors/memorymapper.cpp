@@ -440,6 +440,17 @@ void MemoryMapper::parseNewLine()
     }
 
     if (lastLinkStart >= start) {
+        if (lastLinkStart+6 < end && chunk->bArray.mid(lastLinkStart+1, 4) == "FIL:") {
+            int i = lastLinkStart+6;
+            QChar delim = chunk->bArray.at(i-1);
+            if (delim == '\"' || delim == '\'') {
+                int j = i;
+                while (j < end && chunk->bArray.at(j) != delim) ++j;
+                if (j < end) {
+                    emit registerGeneratedFile(chunk->bArray.mid(i, j-i));
+                }
+            }
+        }
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
 //            fmt = LineFormat(4, line.length(), mBaseFormat.at(error));
 //            if (lastLinkStart > start+line.length()) {

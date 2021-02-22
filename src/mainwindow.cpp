@@ -1626,6 +1626,10 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
                guce->setFileChangedExtern(true);
         }
     }
+    if (!file->isModified() && file->isAutoReload()) {
+        file->reload();
+        return FileProcessKind::ignore;
+    }
     return file->isModified() ? FileProcessKind::changedConflict : FileProcessKind::changedExternOnly;
 }
 
