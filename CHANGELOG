@@ -1,3 +1,7 @@
+Version 1.5.5  *
+==================
+- Instantly update tab size on changing the settings
+
 Version 1.5.4
 ==================
 - fixed GDX file reloading while being rewritten
