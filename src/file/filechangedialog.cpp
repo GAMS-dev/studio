@@ -8,7 +8,7 @@ namespace studio {
 FileChangeDialog::FileChangeDialog(QWidget *parent) :
     QMessageBox(parent)
 {
-    mCbAll = new QCheckBox("For all files  [a]");
+    mCbAll = new QCheckBox("For &all files");
     setCheckBox(mCbAll);
     mButtons << new QPushButton("Close") << new QPushButton("Reload") << new QPushButton("Always Reload") << new QPushButton("Keep");
     mButtons.at(int(Result::rKeep))->setAutoDefault(true);
