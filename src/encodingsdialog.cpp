@@ -47,7 +47,8 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     boldFont.setBold(true);
     for (int mib: qAsConst(mibs)) {
         QRadioButton *rad = new QRadioButton("");
-        rad->setStyleSheet("margin-left: 18px;");
+        rad->setFocusPolicy(Qt::NoFocus);
+        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(mib == defaultMib);
         ui->tableWidget->setCellWidget(row, 0, rad);
 
@@ -72,6 +73,8 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->tableWidget->hideColumn(2);
+    ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
+    ui->tableWidget->setCurrentCell(-1,-1);
 }
 
 SelectEncodings::~SelectEncodings()
