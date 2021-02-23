@@ -1,3 +1,7 @@
+Version 1.5.5  *
+==================
+- fixed wrong auto selection in encodings dialog
+
 Version 1.5.4
 ==================
 - fixed GDX file reloading while being rewritten

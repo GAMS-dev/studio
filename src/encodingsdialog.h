@@ -45,6 +45,12 @@ private slots:
     void on_pbSave_clicked();
     void on_pbReset_clicked();
 
+protected:
+    void showEvent(QShowEvent *e) override;
+
+private:
+    void centerCurrent();
+
 private:
     Ui::SelectEncodings *ui;
     QList<int> mSelectedMibs;

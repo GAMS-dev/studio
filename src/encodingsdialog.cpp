@@ -42,6 +42,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     ui->tableWidget->setRowCount(mibs.count());
     ui->tableWidget->setWordWrap(false);
 
+    int rbRow = 0;
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
@@ -51,6 +52,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
         rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(mib == defaultMib);
         ui->tableWidget->setCellWidget(row, 0, rad);
+        if (mib == mDefaultMib) rbRow = row;
 
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
@@ -125,6 +127,25 @@ void SelectEncodings::on_pbReset_clicked()
         QCheckBox *box = static_cast<QCheckBox*>(ui->tableWidget->cellWidget(row, 1));
         box->setChecked(mib == 0 || mSelectedMibs.contains(mib));
     }
+    centerCurrent();
+}
+
+void SelectEncodings::showEvent(QShowEvent *e)
+{
+    QDialog::showEvent(e);
+    centerCurrent();
+}
+
+void SelectEncodings::centerCurrent()
+{
+    int rbRow = 0;
+    for (int row = 0; row < ui->tableWidget->rowCount(); ++row) {
+        int mib = ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
+        if (mib == mDefaultMib) rbRow = row;
+    }
+    QModelIndex mi = ui->tableWidget->model()->index(rbRow, 1);
+    ui->tableWidget->setCurrentIndex(mi);
+    ui->tableWidget->scrollTo(mi, QTableWidget::PositionAtCenter);
 }
 
 }
