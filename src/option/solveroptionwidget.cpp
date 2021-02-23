@@ -573,7 +573,9 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
                                                                          ui->solverOptionTableView->model()->data( topLeft, Qt::DisplayRole), 1);
     }
 
-    for(QModelIndex item : toDefinitionItems) {
+    for(const QModelIndex &item : toDefinitionItems) {
+        if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(item.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
+            continue;
         ui->solverOptionTreeView->selectionModel()->select(
                     QItemSelection (
                         ui->solverOptionTreeView->model ()->index (item.row() , 0),
