@@ -964,8 +964,13 @@ void SolverOptionWidget::insertOption()
     if (isViewCompact())
         return;
 
+    if (isEditing()) {
+        QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
+        if (editor) emit editor->editingFinished();
+    }
+
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : indexSelection) {
+    for(const QModelIndex &index : indexSelection) {
         if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
             return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -975,7 +980,7 @@ void SolverOptionWidget::insertOption()
     int rowToBeInserted = -1;
     if (isThereARowSelection()) {
         QList<int> rows;
-        for(QModelIndex idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+        for(const QModelIndex &idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -1022,6 +1027,7 @@ void SolverOptionWidget::insertOption()
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
+    ui->solverOptionTreeView->clearSelection();
     ui->solverOptionTableView->clearSelection();
     ui->solverOptionTableView->selectRow(rowToBeInserted);
     ui->solverOptionTableView->edit( mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
@@ -1029,19 +1035,27 @@ void SolverOptionWidget::insertOption()
 
 void SolverOptionWidget::insertComment()
 {
+    if  (isViewCompact())
+        return;
+
+    if (isEditing()) {
+        QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
+        if (editor) emit editor->editingFinished();
+    }
+
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : indexSelection) {
+    for(const QModelIndex &index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
-    if  (isViewCompact() || (isThereARow() && !isThereARowSelection() && !isEverySelectionARow()))
+    if  (isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
         return;
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
     if (isThereARowSelection() ) {
         QList<int> rows;
-        for(QModelIndex idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
+        for(const QModelIndex &idx : ui->solverOptionTableView->selectionModel()->selectedRows()) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -1076,6 +1090,7 @@ void SolverOptionWidget::insertComment()
     setModified(true);
     emit itemCountChanged(ui->solverOptionTableView->model()->rowCount());
 
+    ui->solverOptionTreeView->clearSelection();
     ui->solverOptionTableView->clearSelection();
     ui->solverOptionTableView->selectRow(rowToBeInserted);
     ui->solverOptionTableView->edit(mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
@@ -1109,8 +1124,13 @@ void SolverOptionWidget::deleteCommentsBeforeOption(int row)
 
 void SolverOptionWidget::deleteOption()
 {
+    if (isEditing()) {
+        QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
+        if (editor) emit editor->editingFinished();
+    }
+
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : indexSelection) {
+    for(const QModelIndex &index : indexSelection) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
@@ -1257,6 +1277,11 @@ QString SolverOptionWidget::getOptionTableEntry(int row)
     QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
     QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
     return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+}
+
+bool SolverOptionWidget::isEditing()
+{
+    return (mOptionCompleter->lastEditor() && !mOptionCompleter->isLastEditorClosed());
 }
 
 void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)
