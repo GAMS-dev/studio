@@ -20,6 +20,8 @@
 
 TEMPLATE = subdirs
 
-SUBDIRS += testmodeldialog  \
-           testmainwindow \
-           testtextfile
+SUBDIRS += \
+#   testmodeldialog  \
+#   testmainwindow \
+#   testtextfile \
+   testfilechangedialog
