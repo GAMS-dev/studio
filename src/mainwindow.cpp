@@ -4355,6 +4355,10 @@ void MainWindow::resetViews()
     mGamsParameterEditor->setEditorExtended(false);
     ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
+    for (QWidget * wid : mFileMetaRepo.editors()) {
+        if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid))
+            lxi->resetView();
+    }
 
     Settings::settings()->resetKeys(Settings::viewKeys());
     Settings::settings()->save();

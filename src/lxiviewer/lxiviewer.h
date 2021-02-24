@@ -48,6 +48,7 @@ public:
     TextView *textView() const;
     void print(QPagedPaintDevice *printer);
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void resetView();
 
 public slots:
     void loadLxi();
