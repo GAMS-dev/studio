@@ -71,8 +71,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->tableWidget->hideColumn(2);
-    ui->tableWidget->setSelectionMode(QAbstractItemView::NoSelection);
-    ui->tableWidget->setCurrentCell(-1,-1);
+    ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);
 }
 
 SelectEncodings::~SelectEncodings()
@@ -139,7 +138,7 @@ void SelectEncodings::centerCurrent()
         int mib = ui->tableWidget->item(row, 2)->data(Qt::EditRole).toInt();
         if (mib == mDefaultMib) rbRow = row;
     }
-    QModelIndex mi = ui->tableWidget->model()->index(rbRow, 1);
+    QModelIndex mi = ui->tableWidget->model()->index(rbRow, 0);
     ui->tableWidget->setCurrentIndex(mi);
     ui->tableWidget->scrollTo(mi, QTableWidget::PositionAtCenter);
 }
