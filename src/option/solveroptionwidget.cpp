@@ -625,6 +625,10 @@ void SolverOptionWidget::on_selectAndToggleRow(int logicalIndex)
 
 void SolverOptionWidget::on_toggleRowHeader(int logicalIndex)
 {
+    if (isEditing()) {
+        QLineEdit* editor = qobject_cast<QLineEdit *>(mOptionCompleter->lastEditor());
+        if (editor) emit editor->editingFinished();
+    }
     mOptionTableModel->on_toggleRowHeader(logicalIndex);
     updateTableColumnSpan();
     setModified(true);
