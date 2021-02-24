@@ -42,7 +42,6 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     ui->tableWidget->setRowCount(mibs.count());
     ui->tableWidget->setWordWrap(false);
 
-    int rbRow = 0;
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
@@ -52,7 +51,6 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
         rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(mib == defaultMib);
         ui->tableWidget->setCellWidget(row, 0, rad);
-        if (mib == mDefaultMib) rbRow = row;
 
         QCheckBox *box = new QCheckBox("");
         box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
