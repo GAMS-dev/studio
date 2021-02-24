@@ -24,4 +24,5 @@ SUBDIRS += \
 #   testmodeldialog  \
 #   testmainwindow \
 #   testtextfile \
-   testfilechangedialog
+   testfilechangedialog \
+   testgotodialog
