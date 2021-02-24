@@ -1029,7 +1029,6 @@ void SolverOptionWidget::insertOption()
 
     ui->solverOptionTreeView->clearSelection();
     ui->solverOptionTableView->clearSelection();
-    ui->solverOptionTableView->selectRow(rowToBeInserted);
     ui->solverOptionTableView->edit( mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
 }
 
@@ -1045,11 +1044,10 @@ void SolverOptionWidget::insertComment()
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
     for(const QModelIndex &index : indexSelection) {
+        if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
+            return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
-
-    if  (isThereARow() && !isThereARowSelection() && !isEverySelectionARow())
-        return;
 
     disconnect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem);
     int rowToBeInserted = -1;
@@ -1083,6 +1081,10 @@ void SolverOptionWidget::insertComment()
 
         ui->solverOptionTableView->model()->setData( insertKeyIndex, OptionTokenizer::commentGeneratedStr, Qt::EditRole);
         ui->solverOptionTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
+        if (mOptionTableModel->getColumnEntryNumber() > SolverOptionTableModel::COLUMN_EOL_COMMENT) {
+            QModelIndex eolCommentIndex = ui->solverOptionTableView->model()->index(rowToBeInserted, SolverOptionTableModel::COLUMN_EOL_COMMENT);
+            ui->solverOptionTableView->model()->setData( eolCommentIndex, "", Qt::EditRole);
+        }
         ui->solverOptionTableView->model()->setData( insertNumberIndex, -1, Qt::EditRole);
     }
     connect(mOptionTableModel, &QAbstractTableModel::dataChanged, mOptionTableModel, &SolverOptionTableModel::on_updateSolverOptionItem, Qt::UniqueConnection);
@@ -1092,7 +1094,6 @@ void SolverOptionWidget::insertComment()
 
     ui->solverOptionTreeView->clearSelection();
     ui->solverOptionTableView->clearSelection();
-    ui->solverOptionTableView->selectRow(rowToBeInserted);
     ui->solverOptionTableView->edit(mOptionTableModel->index(rowToBeInserted, SolverOptionTableModel::COLUMN_OPTION_KEY));
 }
 
