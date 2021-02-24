@@ -117,6 +117,13 @@ void AbstractEdit::unfold(QTextBlock block)
     Q_UNUSED(block)
 }
 
+void AbstractEdit::updateTabSize(int size)
+{
+    if (!size) size = Settings::settings()->toInt(skEdTabSize);
+    QFontMetrics metric(font());
+    setTabStopDistance(size * metric.horizontalAdvance(' '));
+}
+
 void AbstractEdit::setMarks(const LineMarks *marks)
 {
     mMarks = marks;
@@ -352,8 +359,7 @@ bool AbstractEdit::event(QEvent *e)
         return true;
     }
     if (e->type() == QEvent::FontChange) {
-        QFontMetrics metric(font());
-        setTabStopDistance(Settings::settings()->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
+        updateTabSize();
     }
     return QPlainTextEdit::event(e);
 }
