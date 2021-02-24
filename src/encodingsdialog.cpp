@@ -46,12 +46,12 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     boldFont.setBold(true);
     for (int mib: qAsConst(mibs)) {
         QRadioButton *rad = new QRadioButton("");
-//        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(mib == defaultMib);
         ui->tableWidget->setCellWidget(row, 0, rad);
 
         QCheckBox *box = new QCheckBox("");
-//        box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+        box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);
         if (mib == 0) box->setEnabled(false);
         ui->tableWidget->setCellWidget(row, 1, box);
