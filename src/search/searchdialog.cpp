@@ -514,7 +514,11 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
             ui->combo_search->setCurrentIndex(0);
         } else {
-            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            QString text;
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
+                text = ce->wordUnderCursor();
+            if (text.isEmpty()) text = ui->combo_search->itemText(0);
+            ui->combo_search->setEditText(text);
         }
     }
 
