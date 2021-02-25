@@ -2,6 +2,7 @@ Version 1.5.5  *
 ==================
 - "Reset Windows" in settings now also resets the splitter in the LST/LXI-Viewer
 - Instantly update tab size on changing the settings
+- fixed wrong auto selection in encodings dialog
 - Fixed crash on missing LST file (output=NUL)
 
 Version 1.5.4
