@@ -40,30 +40,46 @@ QSize gams::studio::TabBarStyle::sizeFromContents(QStyle::ContentsType type, con
     return res;
 }
 
+void dumpPalette(QPalette &pal)
+{
+    QList<int> codes { QPalette::WindowText, QPalette::Button, QPalette::Light, QPalette::Midlight, QPalette::Dark,
+                QPalette::Mid, QPalette::Text, QPalette::BrightText, QPalette::ButtonText, QPalette::Base,
+                QPalette::Window, QPalette::Shadow, QPalette::Highlight, QPalette::HighlightedText,
+                QPalette::Link, QPalette::LinkVisited, QPalette::AlternateBase};
+    QStringList names {"WindowText", "Button", "Light", "Midlight", "Dark", "Mid",
+                "Text", "BrightText", "ButtonText", "Base", "Window", "Shadow",
+                "Highlight", "HighlightedText",
+                "Link", "LinkVisited",
+                "AlternateBase"};
+    for (int i = 0; i < codes.size(); ++i) {
+        DEB() << names.at(i) << "  " << pal.color(QPalette::Normal, QPalette::ColorRole(codes.at(i))).name();
+    }
+}
+
 void gams::studio::TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option,
                                             QPainter *painter, const QWidget *widget) const
 {
     if (element == CE_TabBarTabLabel) {
         if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
             QStyleOptionTabV4 opt(*tab);
-            DEB() << "index = " << opt.tabIndex;
             if (isBold(opt.tabIndex)) {
                 opt.text = "";
             }
             QProxyStyle::drawControl(element, &opt, painter, widget);
+            painter->save();
+
             if (isBold(opt.tabIndex)) {
-                painter->save();
+                dumpPalette(opt.palette);
                 QFont f = painter->font();
                 f.setBold(true);
                 painter->setFont(f);
+                painter->setPen(opt.palette.text().color());
                 opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
                 if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width());
                 if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width()-4);
-                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette,
-                                          true, tab->text);
-//                painter->drawText(opt.rect, Qt::AlignHCenter|Qt::AlignBottom, tab->text);
-                painter->restore();
+                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
             }
+            painter->restore();
             return;
         }
     }
