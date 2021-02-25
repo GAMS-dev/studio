@@ -63,6 +63,7 @@
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
 #include "keys.h"
+#include "tabbarstyle.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -222,6 +223,8 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    mTabStyle = new TabBarStyle(qApp->style());
+    ui->mainTabs->tabBar()->setStyle(mTabStyle);
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -2633,6 +2636,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mTextMarkRepo.clear();
         delete mSettingsDialog;
         mSettingsDialog = nullptr;
+        mTabStyle = nullptr;
     } else {
         event->setAccepted(false);
     }
@@ -3407,7 +3411,7 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-
+    mTabStyle->setBaseStyle(qApp->style());
     repaint();
 }
 
