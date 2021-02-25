@@ -62,24 +62,22 @@ void gams::studio::TabBarStyle::drawControl(QStyle::ControlElement element, cons
     if (element == CE_TabBarTabLabel) {
         if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
             QStyleOptionTabV4 opt(*tab);
-            if (isBold(opt.tabIndex)) {
-                opt.text = "";
-            }
+            opt.palette.setColor(QPalette::WindowText, Qt::darkRed);
             QProxyStyle::drawControl(element, &opt, painter, widget);
-            painter->save();
 
-            if (isBold(opt.tabIndex)) {
-                dumpPalette(opt.palette);
-                QFont f = painter->font();
-                f.setBold(true);
-                painter->setFont(f);
-                painter->setPen(opt.palette.text().color());
-                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
-                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width());
-                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width()-4);
-                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
-            }
-            painter->restore();
+//            painter->save();
+//            if (isBold(opt.tabIndex)) {
+//                dumpPalette(opt.palette);
+//                QFont f = painter->font();
+//                f.setBold(true);
+//                painter->setFont(f);
+//                painter->setPen(opt.palette.text().color());
+//                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
+//                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width());
+//                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width()-4);
+//                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
+//            }
+//            painter->restore();
             return;
         }
     }

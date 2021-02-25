@@ -17,7 +17,7 @@ public:
     void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
 
 signals:
-    void getState(int index, bool &current, bool &changed, bool &grouped);
+    void getState(const QWidget *widget, int index, bool &current, bool &changed, bool &grouped);
 
 private:
     bool isBold(int index) const;
