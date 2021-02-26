@@ -2,6 +2,7 @@ Version 1.5.5  *
 ==================
 - "Reset Windows" in settings now also resets the splitter in the LST/LXI-Viewer
 - Instantly update tab size on changing the settings
+- Fixed highlighter if "Table" is preceded by Set, Parameter, or Function
 
 Version 1.5.4
 ==================
