@@ -98,7 +98,7 @@ void SolverOptionDefinitionModel::modifyOptionDefinitionItem(const SolverOptionI
                                              Qt::DisplayRole,
                                              QString::number(optionItem->optionId) , 1);
     beginResetModel();
-    for(QModelIndex idx : indices) {
+    for(const QModelIndex &idx : indices) {
         QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());

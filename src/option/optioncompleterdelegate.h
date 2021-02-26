@@ -39,6 +39,8 @@ public:
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
     QModelIndex currentEditedIndex() const;
+    QWidget* lastEditor() const;
+    bool isLastEditorClosed() const;
 
 protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;
@@ -54,6 +56,8 @@ private:
     OptionTokenizer* mOptionTokenizer;
     Option* mOption;
     QModelIndex mCurrentEditedIndex;
+    mutable bool mIsLastEditorClosed;
+    mutable QWidget* mLastEditor;
 };
 
 } // namespace option
