@@ -1844,14 +1844,15 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         bool doFocus = (groupNode == mRecent.group());
         ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
 
-        for (QWidget *edit: lstNode->file()->editors())
-            if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
+        if (lstNode)
+            for (QWidget *edit: lstNode->file()->editors())
+                if (TextView* tv = ViewHelper::toTextView(edit)) tv->endRun();
 
         bool alreadyJumped = false;
         if (Settings::settings()->toBool(skJumpToError))
             alreadyJumped = groupNode->jumpToFirstError(doFocus, lstNode);
 
-        if (!alreadyJumped && Settings::settings()->toBool(skOpenLst))
+        if (lstNode && !alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
     updateRunState();
