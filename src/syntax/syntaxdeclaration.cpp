@@ -101,7 +101,8 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
 SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
     : SyntaxKeywordBase(SyntaxKind::Declaration, sharedData)
 {
-    static const QStringList preTables {"Set", "Sets", "Parameter", "Parameters", "Function", "Functions"};
+    static const QStringList preTables {"Set", "Parameter", "Function", "Variable", "Equation",
+                                        "Sets", "Parameters", "Functions", "Variables", "Equations"};
     QList<QPair<QString, QString>> list;
     list = SyntaxData::declaration();
     mKeywords.insert(int(kind()), new DictList(list));
