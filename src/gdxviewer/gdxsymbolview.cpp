@@ -496,16 +496,22 @@ void GdxSymbolView::adjustDomainScrollbar()
         accSecWidth[i] = last;
     }
     if (accSecWidth.last() > tableWidth) {
-        ui->domFilterScrollBar->setMaximum(1);
+        int val = ui->domFilterScrollBar->value();
+        int scrollMax = 1;
+
         int diff = accSecWidth.last() - tableWidth;
         for (int i=0; i<colCount; ++i) {
             if (accSecWidth[i]>=diff) {
-                ui->domFilterScrollBar->setMaximum(i+1);
+                scrollMax = i+1;
                 break;
             }
         }
         ui->domFilterScrollBar->setEnabled(true);
+        ui->domFilterScrollBar->setValue(val);
+        ui->domFilterScrollBar->setMaximum(scrollMax);
     } else {
+        ui->domFilterScrollBar->setValue(0);
+        ui->domFilterScrollBar->setMaximum(0);
         ui->domFilterScrollBar->setEnabled(false);
     }
 
