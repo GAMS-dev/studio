@@ -171,6 +171,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
 
     connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showTvRowFilter);
+    connect(ui->domFilterScrollBar, &QScrollBar::valueChanged, this, [this](int value) { ui->tvRowDomains->horizontalHeader()->setOffsetToSectionPosition(value); });
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -538,10 +539,6 @@ void GdxSymbolView::showTableView()
         mTvDomainModel = new TableViewDomainModel(mTvModel);
         ui->tvRowDomains->setModel(mTvDomainModel);
         ui->tvRowDomains->setMaximumHeight(ui->tvRowDomains->horizontalHeader()->height()+2);
-        ui->domFilterScrollBar->setMaximum(ui->tvRowDomains->model()->columnCount()-1);
-        connect(ui->domFilterScrollBar, &QScrollBar::valueChanged, this, [this](int value) {
-            ui->tvRowDomains->horizontalHeader()->setOffsetToSectionPosition(value);
-        });
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
@@ -552,7 +549,6 @@ void GdxSymbolView::showTableView()
 
     ui->tvTableView->show();
     ui->tvRowDomains->show();
-    //ui->tvRowDomains->setMaximumHeight(ui->tvRowDomains->horizontalHeader()->size().height()+1.2);
 
     mTableView = true;
     autoResizeColumns();
