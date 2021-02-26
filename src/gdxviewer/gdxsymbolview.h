@@ -64,6 +64,7 @@ public slots:
     void showTvRowFilter(QPoint p);
     void freeColumnFilterMenu();
     void autoResizeColumns();
+    void adjustDomainScrollbar();
 
 private slots:
     void showContextMenu(QPoint p);
@@ -102,6 +103,10 @@ private:
     int mDefaultPrecision = 6;
     bool mRestoreSqZeros = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
+
+    // QObject interface
+public:
+    bool eventFilter(QObject *watched, QEvent *event);
 };
 
 

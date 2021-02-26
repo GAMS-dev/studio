@@ -166,6 +166,10 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvRowDomains->horizontalHeader()->setVisible(true);
     ui->tvRowDomains->horizontalHeader()->setSectionsClickable(true);
     ui->tvRowDomains->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    ui->tvRowDomains->horizontalHeader()->installEventFilter(this);
+    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
+
     connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showTvRowFilter);
 }
 
@@ -481,6 +485,34 @@ void GdxSymbolView::autoResizeColumns()
         ui->tvListView->resizeColumnsToContents();
 }
 
+void GdxSymbolView::adjustDomainScrollbar()
+{
+    int colCount = ui->tvRowDomains->model()->columnCount();
+    QVector<int> accSecWidth(colCount);
+    int tableWidth = ui->tvRowDomains->horizontalHeader()->width();
+    int last = 0;
+    for (int i=0; i<colCount; ++i) {
+        last += ui->tvRowDomains->horizontalHeader()->sectionSize(i);
+        accSecWidth[i] = last;
+    }
+    if (accSecWidth.last() > tableWidth) {
+        ui->domFilterScrollBar->setMaximum(1);
+        int diff = accSecWidth.last() - tableWidth;
+        for (int i=0; i<colCount; ++i) {
+            if (accSecWidth[i]>=diff) {
+                ui->domFilterScrollBar->setMaximum(i+1);
+                break;
+            }
+        }
+        ui->domFilterScrollBar->setEnabled(true);
+    } else {
+        ui->domFilterScrollBar->setEnabled(false);
+    }
+
+
+    //qDebug() << "total width of sections:" << totWidth;
+}
+
 void GdxSymbolView::showListView()
 {
     mTableView = false;
@@ -500,6 +532,10 @@ void GdxSymbolView::showTableView()
         mTvDomainModel = new TableViewDomainModel(mTvModel);
         ui->tvRowDomains->setModel(mTvDomainModel);
         ui->tvRowDomains->setMaximumHeight(ui->tvRowDomains->horizontalHeader()->height()+2);
+        ui->domFilterScrollBar->setMaximum(ui->tvRowDomains->model()->columnCount()-1);
+        connect(ui->domFilterScrollBar, &QScrollBar::valueChanged, this, [this](int value) {
+            ui->tvRowDomains->horizontalHeader()->setOffsetToSectionPosition(value);
+        });
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
@@ -537,7 +573,15 @@ void GdxSymbolView::resetValFormat()
 {
     int index = mValFormat->findData(mDefaultValFormat);
     if (index != -1)
-       mValFormat->setCurrentIndex(index);
+        mValFormat->setCurrentIndex(index);
+}
+
+bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
+{
+    if (event->type() == QEvent::Resize) {
+        this->adjustDomainScrollbar();
+    }
+    return false;
 }
 
 void GdxSymbolView::enableControls()
