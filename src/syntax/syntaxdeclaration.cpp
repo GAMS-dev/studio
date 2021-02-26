@@ -101,6 +101,7 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
 SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
     : SyntaxKeywordBase(SyntaxKind::Declaration, sharedData)
 {
+    static const QStringList preTables {"Set", "Sets", "Parameter", "Parameters", "Function", "Functions"};
     QList<QPair<QString, QString>> list;
     list = SyntaxData::declaration();
     mKeywords.insert(int(kind()), new DictList(list));
@@ -111,6 +112,8 @@ SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
             mFlavors.insert(i, flavorModel);
         } else if (list.at(i).first.compare("Models", Qt::CaseInsensitive) == 0) {
             mFlavors.insert(i, flavorModel);
+        } else if (preTables.contains(list.at(i).first, Qt::CaseInsensitive)) {
+            mFlavors.insert(i, flavorPreTable);
         }
     }
 
@@ -120,7 +123,7 @@ SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
     list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
     mKeywords.insert(int(SyntaxKind::DeclarationVariableType), new DictList(list));
     mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
-               << SyntaxKind::CommentInline << SyntaxKind::Identifier;
+               << SyntaxKind::CommentInline << SyntaxKind::Declaration << SyntaxKind::Identifier;
 }
 
 SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
@@ -145,8 +148,12 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
 
     end = findEnd(kind(), line, start, iKey);
     if (end > start) {
-        if (entryKind == SyntaxKind::Declaration)
+        if (entryKind == SyntaxKind::Declaration) {
+            if (flavor & flavorPreTable && mFlavors.value(iKey) == flavorTable) {
+                return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::shift, kind());
+            }
             return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
+        }
         return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::in, kind());
     }
     return SyntaxBlock(this);
