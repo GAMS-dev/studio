@@ -549,6 +549,7 @@ void GdxSymbolView::showTableView()
 
     ui->tvTableView->show();
     ui->tvRowDomains->show();
+    ui->domFilterScrollBar->setMaximumWidth(ui->domFilterScrollBar->height());
 
     mTableView = true;
     autoResizeColumns();
