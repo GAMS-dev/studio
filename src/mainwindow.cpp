@@ -223,8 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
-    mTabStyle = new TabBarStyle(qApp->style());
-    ui->mainTabs->tabBar()->setStyle(mTabStyle);
+    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style());
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -1369,7 +1368,8 @@ void MainWindow::on_actionSave_As_triggered()
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new
-                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::editState));
+                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::raw));
+                    ui->mainTabs->currentWidget()->setProperty("changed", false);
                 } else { // reopen in new editor
                     int index = ui->mainTabs->currentIndex();
                     openFileNode(node, true);
@@ -1588,7 +1588,8 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         int index = ui->mainTabs->indexOf(edit);
         if (index >= 0) {
-            if (fm) ui->mainTabs->setTabText(index, fm->name(NameModifier::editState));
+            ui->mainTabs->currentWidget()->setProperty("changed", fm->isModified());
+            ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
         }
     }
 }

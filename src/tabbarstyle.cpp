@@ -19,22 +19,44 @@
  */
 #include "tabbarstyle.h"
 #include "logger.h"
+#include "exception.h"
+
 #include <QStyleOptionTab>
 #include <QPainter>
 
-gams::studio::TabBarStyle::TabBarStyle(QStyle *style) : QProxyStyle(style)
-{}
+namespace gams {
+namespace studio {
 
-QSize gams::studio::TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+// Special remarks: If this is assigned to mainTabs-tabBar, the drawControl is accidently also called for other tabBars
+// (Qt 15.2)        like tabBar and the SettingsDialog tabs. However this isn't true for the sizeFromContents. That
+//                  is ONLY called if this Style is additionally applied to e.g. the logTabs-tabBar!
+//
+// For that reason this class is designed to support both tabBars, the mainTabs and the logTabs. The widget pointers
+// to mainTabs and logTabs assures the correct behavior.
+
+TabBarStyle::TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QStyle *style)
+    : QProxyStyle(style), mMainTabs(mainTabs), mLogTabs(logTabs)
+{
+    if (!mMainTabs || !mLogTabs)
+        FATAL() << "MainTabs and LogTabs need to be defined";
+    mMainTabs->tabBar()->setStyle(this);
+    mLogTabs->tabBar()->setStyle(this);
+}
+
+QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
 {
     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
-    if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
-        if (isBold((tab->tabIndex))) {
-            QFont f = widget->font();
-            f.setBold(true);
-            int diff = QFontMetrics(f).horizontalAdvance(tab->text) - tab->fontMetrics.horizontalAdvance(tab->text);
-
-            res.setWidth(int(res.width() + diff));
+    if (widget == mMainTabs->tabBar()) {
+        if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
+            if (QWidget *wid = mMainTabs->widget(tab->tabIndex)) {
+                TabState state = getState(wid);
+                if (state & tsChanged) {
+                    QFont f = widget->font();
+                    f.setBold(true);
+                    int diff = QFontMetrics(f).horizontalAdvance(tab->text) - tab->fontMetrics.horizontalAdvance(tab->text);
+                    res.setWidth(int(res.width() + diff));
+                }
+            }
         }
     }
     return res;
@@ -56,35 +78,63 @@ void dumpPalette(QPalette &pal)
     }
 }
 
-void gams::studio::TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option,
+void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption *option,
                                             QPainter *painter, const QWidget *widget) const
 {
     if (element == CE_TabBarTabLabel) {
         if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
             QStyleOptionTabV4 opt(*tab);
-            opt.palette.setColor(QPalette::WindowText, Qt::darkRed);
+            TabState state = tsNone;
+            int dy = mMainTabs->tabPosition()==QTabWidget::North ? 1 : mMainTabs->tabPosition()==QTabWidget::South ? -1 : 0;
+            if (widget == mMainTabs->tabBar())
+                state = getState(mMainTabs->widget(tab->tabIndex));
+            else if (widget == mLogTabs->tabBar())
+                state = getState(mLogTabs->widget(tab->tabIndex));
+            if (state & tsChanged) {
+                opt.text = "";
+            }
             QProxyStyle::drawControl(element, &opt, painter, widget);
 
-//            painter->save();
-//            if (isBold(opt.tabIndex)) {
+            painter->save();
+            if (state & tsChanged) {
 //                dumpPalette(opt.palette);
-//                QFont f = painter->font();
-//                f.setBold(true);
-//                painter->setFont(f);
-//                painter->setPen(opt.palette.text().color());
-//                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
-//                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width());
-//                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width()-4);
-//                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
-//            }
-//            painter->restore();
+                QFont f = painter->font();
+                f.setBold(true);
+                painter->setFont(f);
+                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
+                if (!opt.state.testFlag(State_Selected)) {
+                    opt.rect.moveTop(opt.rect.top() + dy);
+                }
+                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width());
+                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width()-4);
+                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
+            }
+            painter->restore();
             return;
         }
     }
     QProxyStyle::drawControl(element, option, painter, widget);
 }
 
-bool gams::studio::TabBarStyle::isBold(int index) const
+TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget) const
+{
+    if (!tabWidget) return tsNone;
+    int res = tsNone;
+//    bool changed = false;
+//    bool marked = false;
+//    bool grouped = false;
+//    emit requestState(tabWidget, changed, marked, grouped);
+    if (tabWidget->property("changed").toBool()) res = tsChanged;
+    if (tabWidget->property("marked").toBool()) res = res + tsMarked;
+//    if (tabWidget->property("grouped").toBool()) res = res + tsGrouped;
+    return TabState(res);
+}
+
+bool TabBarStyle::isBold(int index) const
 {
     return index == 2;
 }
+
+} // namespace studio
+} // namespace gams
+
