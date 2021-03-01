@@ -109,36 +109,51 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                                             QPainter *painter, const QWidget *widget) const
 {
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
-    if (tabWidget && element == CE_TabBarTabLabel) {
+    if (tabWidget) {
         if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
-            QStyleOptionTabV4 opt(*tab);
-            TabState state = tsNone;
 
-            state = getState(tabWidget->widget(tab->tabIndex));
-            if (state & tsChanged) {
-                opt.text = "";
-            }
+//            if (element == CE_TabBarTabShape) { // change the color of the background
+//                QStyleOptionTabV4 opt(*tab);
+//                QProxyStyle::drawControl(element, &opt, painter, widget);
+//                painter->save();
+//                painter->setBrush(Qt::darkGreen);
+//                painter->setPen(Qt::NoPen);
+//                painter->drawRect(opt.rect.marginsRemoved(QMargins(1,1,1,1)));
+//                painter->restore();
+//                return;
+//            }
 
-            QProxyStyle::drawControl(element, &opt, painter, widget);
+            if (element == CE_TabBarTabLabel) {
+                QStyleOptionTabV4 opt(*tab);
+                TabState state = tsNone;
 
-            painter->save();
-            if (state & tsChanged) {
-                QFont f = painter->font();
-                f.setBold(true);
-                painter->setFont(f);
-                painter->setPen(platformGetTextColor(opt.state.testFlag(State_Selected)));
-                opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
-                if (int dy = platformGetDyLifter(tabWidget->tabPosition(), opt.state.testFlag(State_Selected))) {
-                    opt.rect.moveTop(opt.rect.top() + dy);
+                state = getState(tabWidget->widget(tab->tabIndex));
+                if (state & tsChanged) {
+                    opt.text = "";
                 }
-                if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
-                if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
-                QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
+
+                QProxyStyle::drawControl(element, &opt, painter, widget);
+
+                painter->save();
+                if (state & tsChanged) {
+                    QFont f = painter->font();
+                    f.setBold(true);
+                    painter->setFont(f);
+                    painter->setPen(platformGetTextColor(opt.state.testFlag(State_Selected)));
+                    opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
+                    if (int dy = platformGetDyLifter(tabWidget->tabPosition(), opt.state.testFlag(State_Selected))) {
+                        opt.rect.moveTop(opt.rect.top() + dy);
+                    }
+                    if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
+                    if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
+                    QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
+                }
+                painter->restore();
+                return;
             }
-            painter->restore();
-            return;
         }
     }
+
     QProxyStyle::drawControl(element, option, painter, widget);
 }
 
