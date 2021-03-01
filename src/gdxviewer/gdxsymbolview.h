@@ -69,6 +69,8 @@ public slots:
 private slots:
     void showContextMenu(QPoint p);
     void updateNumericalPrecision();
+    void tvFilterScrollLeft();
+    void tvFilterScrollRight();
 
 private:
     Ui::GdxSymbolView *ui;
@@ -103,6 +105,9 @@ private:
     int mDefaultPrecision = 6;
     bool mRestoreSqZeros = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
+
+    int mTvFilterSection=0;
+    int mTvFilterSectionMax=0;
 
     // QObject interface
 public:
