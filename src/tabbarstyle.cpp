@@ -93,10 +93,14 @@ QColor platformGetTextColor(bool isCurrent)
 {
     bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1;
     QColor res = dark ? Qt::white : Qt::black;
-    if (!isCurrent) {
-        res = dark ? res.darker(150) : QColor(50,50,50);
-    }
 #ifdef __APPLE__
+    if (!isCurrent) {
+        res = dark ? res.darker(160) : QColor(50,50,50);
+    }
+#else
+    if (!isCurrent) {
+        res = dark ? res.darker(125) : QColor(60,60,60);
+    }
 #endif
     return res;
 }
