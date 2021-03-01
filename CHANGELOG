@@ -4,6 +4,7 @@ Version 1.5.5  *
 - Instantly update tab size on changing the settings
 - fixed wrong auto selection in encodings dialog
 - Fixed crash on missing LST file (output=NUL)
+- fixed insert new option/comment shortcut in solver option editor when pressing multiple times
 - Fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
 
 Version 1.5.4

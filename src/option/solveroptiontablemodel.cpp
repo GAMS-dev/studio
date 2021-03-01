@@ -454,7 +454,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
                 if (settings && settings->toBool(skSoOverrideExisting)) {
-                    for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
+                    for(const QModelIndex &idx : indices) { overrideIdRowList.append(idx.row()); }
                 }
             }
         }
