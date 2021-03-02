@@ -74,7 +74,7 @@ QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
 {
     bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1;
     QColor res = dark ? Qt::white : Qt::black;
-    if (state & tsColor1) return dark ? QColor(180,200,255) : QColor(30,70,180);
+    if (state & tsColor1) return dark ? res.darker(160) : QColor(50,50,50);
     if (state & tsColor2) return dark ? QColor(255,150,160) : QColor(180,40,30);
 #ifdef __APPLE__
     if (!isCurrent) {
@@ -92,7 +92,7 @@ TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selec
 {
     if (!tabWidget) return tsNormal;
     int res = tsNormal;
-//    if (selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
+    if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
     if (tabWidget->property("changed").toBool()) res += tsBold;
     if (tabWidget->property("marked").toBool()) res += tsColor2;
     return TabState(res);

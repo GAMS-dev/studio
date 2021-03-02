@@ -125,13 +125,16 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
 
     case Qt::ForegroundRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
-        if (node && !node->file()->exists(true))
+        if (node && !node->file()->exists(true)) {
             return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
-        else if (isCurrent(ind) || isCurrentGroup(ind)) {
-            bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme());
-            return dark ? Theme::color(Theme::Normal_Blue).darker(160)
-                        : Theme::color(Theme::Normal_Blue);
+        } else if (Theme::instance()->baseTheme(Theme::instance()->activeTheme())) {
+            // dark theme, not current: slightly grayed white
+            if (!isCurrent(ind) && !isCurrentGroup(ind))
+                return QColor(Qt::white).darker(125);
+        } else if (isCurrent(ind) || isCurrentGroup(ind)) {
+            // light theme, current: blue
+            return Theme::color(Theme::Normal_Blue).darker(150);
         }
     }   break;
 
