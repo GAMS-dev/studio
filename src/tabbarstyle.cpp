@@ -88,12 +88,20 @@ QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
     return res;
 }
 
+Qt::Alignment getAlign()
+{
+#ifdef __APPLE__
+    return Qt::AlignVCenter|Qt::AlignRight;
+#endif
+    return Qt::AlignVCenter|Qt::AlignLeft;
+}
+
 TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selected) const
 {
     if (!tabWidget) return tsNormal;
     int res = tsNormal;
     if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
-    if (tabWidget->property("changed").toBool()) res += tsBold;
+//    if (tabWidget->property("changed").toBool()) res += tsBold;
     if (tabWidget->property("marked").toBool()) res += tsColor2;
     return TabState(res);
 }
@@ -146,12 +154,10 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
 
                 QProxyStyle::drawControl(element, &opt, painter, widget);
 
+                painter->save();
                 if (state) {
-                    painter->save();
                     QFont f = painter->font();
                     f.setBold(state & tsBold);
-                    if (state & tsBold)
-                        DEB() << "bold font for " << tab->tabIndex;
                     painter->setFont(f);
                     painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
                     opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
@@ -161,8 +167,13 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
                     if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
                     QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
-                    painter->restore();
                 }
+                if (tabWidget->widget(tab->tabIndex)->property("changed").toBool()) {
+                    opt.rect = tab->rect;
+                    opt.rect.setHeight(opt.rect.height()/2);
+                    QProxyStyle::drawItemText(painter, tab->rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, " * ");
+                }
+                painter->restore();
                 return;
             }
         }
