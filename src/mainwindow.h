@@ -464,7 +464,7 @@ private:
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
-    TabBarStyle *mTabStyle;
+    TabBarStyle *mTabStyle = nullptr;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

@@ -10,8 +10,8 @@ namespace studio {
 
 class TabBarStyle : public QProxyStyle
 {
-    enum TabState { tsNone, tsChanged, tsMarked, tsChangedMarked,
-                    tsGrouped, tsGroupedChanged, tsGroupedMarked, tsGroupedChangedMarked, };
+    enum TabState { tsNormal, tsBold, tsColor1, tsColor1Bold,
+                    tsColor2, tsColor2Bold, tsColor12, tsColor12Bold, };
     Q_OBJECT
 public:
     TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QStyle *style = nullptr);
@@ -21,8 +21,9 @@ public:
     void drawControl(ControlElement element, const QStyleOption *option, QPainter *painter, const QWidget *widget) const override;
 
 private:
-    TabState getState(const QWidget *tabWidget) const;
-    bool isBold(int index) const;
+    TabState getState(const QWidget *tabWidget, bool selected) const;
+    int platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent) const;
+    QColor platformGetTextColor(TabState state, bool isCurrent) const;
 
 private:
     QTabWidget *mMainTabs;

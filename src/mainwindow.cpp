@@ -3413,7 +3413,7 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-    mTabStyle->setBaseStyle(qApp->style());
+    if (mTabStyle) mTabStyle->setBaseStyle(qApp->style());
     repaint();
 }
 

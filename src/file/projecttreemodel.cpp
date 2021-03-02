@@ -113,21 +113,27 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::EditRole:
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
-    case Qt::FontRole:
-        if (isCurrent(ind) || isCurrentGroup(ind)) {
+    case Qt::FontRole: {
+        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        if (node && node->file()->isModified()) {
+//        if (isCurrent(ind) || isCurrentGroup(ind)) {
             QFont f;
             f.setBold(true);
             return f;
         }
-        break;
+    }   break;
 
     case Qt::ForegroundRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node && !node->file()->exists(true))
             return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
-        break;
-    }
+        else if (isCurrent(ind) || isCurrentGroup(ind)) {
+            bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme());
+            return dark ? Theme::color(Theme::Normal_Blue).darker(160)
+                        : Theme::color(Theme::Normal_Blue);
+        }
+    }   break;
 
     case Qt::DecorationRole:
         return mProjectRepo->node(ind)->icon();
@@ -138,8 +144,8 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::UserRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node) return node->location();
-        break;
-    }
+    }   break;
+
     case Qt::UserRole+1: {
         ProjectAbstractNode *node = mProjectRepo->node(ind);
         if (node) return int(node->id());
@@ -163,9 +169,9 @@ ProjectGroupNode* ProjectTreeModel::rootNode() const
 
 bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
 {
-    Q_UNUSED(row);
-    Q_UNUSED(count);
-    Q_UNUSED(parent);
+    Q_UNUSED(row)
+    Q_UNUSED(count)
+    Q_UNUSED(parent)
     return false;
 }
 

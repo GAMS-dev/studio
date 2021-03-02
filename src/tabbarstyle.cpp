@@ -44,25 +44,6 @@ TabBarStyle::TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QStyle *styl
     mLogTabs->tabBar()->setStyle(this);
 }
 
-QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
-{
-    QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
-    if (widget == mMainTabs->tabBar()) {
-        if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
-            if (QWidget *wid = mMainTabs->widget(tab->tabIndex)) {
-                TabState state = getState(wid);
-                if (state & tsChanged) {
-                    QFont f = widget->font();
-                    f.setBold(true);
-                    int diff = QFontMetrics(f).horizontalAdvance(tab->text) - tab->fontMetrics.horizontalAdvance(tab->text);
-                    res.setWidth(int(res.width() + diff));
-                }
-            }
-        }
-    }
-    return res;
-}
-
 void dumpPalette(QPalette &pal)
 {
     QList<int> codes { QPalette::WindowText, QPalette::Button, QPalette::Light, QPalette::Midlight, QPalette::Dark,
@@ -79,7 +60,7 @@ void dumpPalette(QPalette &pal)
     }
 }
 
-int platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent)
+int TabBarStyle::platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent) const
 {
     int res = 0;
 #ifndef __APPLE__
@@ -89,10 +70,12 @@ int platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent)
     return res;
 }
 
-QColor platformGetTextColor(bool isCurrent)
+QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
 {
     bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1;
     QColor res = dark ? Qt::white : Qt::black;
+    if (state & tsColor1) return dark ? QColor(180,200,255) : QColor(30,70,180);
+    if (state & tsColor2) return dark ? QColor(255,150,160) : QColor(180,40,30);
 #ifdef __APPLE__
     if (!isCurrent) {
         res = dark ? res.darker(160) : QColor(50,50,50);
@@ -102,6 +85,35 @@ QColor platformGetTextColor(bool isCurrent)
         res = dark ? res.darker(125) : QColor(60,60,60);
     }
 #endif
+    return res;
+}
+
+TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selected) const
+{
+    if (!tabWidget) return tsNormal;
+    int res = tsNormal;
+//    if (selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
+    if (tabWidget->property("changed").toBool()) res += tsBold;
+    if (tabWidget->property("marked").toBool()) res += tsColor2;
+    return TabState(res);
+}
+
+QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const
+{
+    QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
+    if (widget == mMainTabs->tabBar()) {
+        if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
+            if (QWidget *wid = mMainTabs->widget(tab->tabIndex)) {
+                TabState state = getState(wid, tab->state.testFlag(State_Selected));
+                if (state & tsBold) {
+                    QFont f = widget->font();
+                    f.setBold(true);
+                    int diff = QFontMetrics(f).horizontalAdvance(tab->text) - tab->fontMetrics.horizontalAdvance(tab->text);
+                    res.setWidth(int(res.width() + diff));
+                }
+            }
+        }
+    }
     return res;
 }
 
@@ -125,21 +137,23 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
 
             if (element == CE_TabBarTabLabel) {
                 QStyleOptionTabV4 opt(*tab);
-                TabState state = tsNone;
+                TabState state = tsNormal;
 
-                state = getState(tabWidget->widget(tab->tabIndex));
-                if (state & tsChanged) {
+                state = getState(tabWidget->widget(tab->tabIndex), opt.state.testFlag(State_Selected));
+                if (state) {
                     opt.text = "";
                 }
 
                 QProxyStyle::drawControl(element, &opt, painter, widget);
 
-                painter->save();
-                if (state & tsChanged) {
+                if (state) {
+                    painter->save();
                     QFont f = painter->font();
-                    f.setBold(true);
+                    f.setBold(state & tsBold);
+                    if (state & tsBold)
+                        DEB() << "bold font for " << tab->tabIndex;
                     painter->setFont(f);
-                    painter->setPen(platformGetTextColor(opt.state.testFlag(State_Selected)));
+                    painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
                     opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
                     if (int dy = platformGetDyLifter(tabWidget->tabPosition(), opt.state.testFlag(State_Selected))) {
                         opt.rect.moveTop(opt.rect.top() + dy);
@@ -147,8 +161,8 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
                     if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
                     QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
+                    painter->restore();
                 }
-                painter->restore();
                 return;
             }
         }
@@ -157,24 +171,6 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
     QProxyStyle::drawControl(element, option, painter, widget);
 }
 
-TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget) const
-{
-    if (!tabWidget) return tsNone;
-    int res = tsNone;
-//    bool changed = false;
-//    bool marked = false;
-//    bool grouped = false;
-//    emit requestState(tabWidget, changed, marked, grouped);
-    if (tabWidget->property("changed").toBool()) res = tsChanged;
-    if (tabWidget->property("marked").toBool()) res = res + tsMarked;
-//    if (tabWidget->property("grouped").toBool()) res = res + tsGrouped;
-    return TabState(res);
-}
-
-bool TabBarStyle::isBold(int index) const
-{
-    return index == 2;
-}
 
 } // namespace studio
 } // namespace gams
