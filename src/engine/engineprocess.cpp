@@ -288,48 +288,29 @@ QProcess::ProcessState EngineProcess::state() const
 
 bool EngineProcess::setUrl(const QString &url)
 {
+    QString scheme = "https";
     int sp1 = url.indexOf("://")+1;
-    if (sp1) sp1 += 2;
+    if (sp1 > 0) {
+        scheme = url.left(sp1);
+        sp1 += 2;
+    }
+
     int sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
-    bool res = setHost(url.mid(sp1, sp2-sp1));
+    QString host = url.mid(sp1, sp2-sp1);
+    int sp3 = host.indexOf(':');
 
-    setBasePath(url.right(url.length()-sp2));
-    return res;
-}
-
-bool EngineProcess::setHost(const QString &_host)
-{
-    mHost = _host;
-    int colon = _host.indexOf(':');
-    if (colon > 0) {
-        mManager->setHost(_host.left(colon));
-        bool ok;
-        int port = _host.rightRef(_host.length()-colon-1).toInt(&ok);
-        if (!ok || port < 0 || port > 65536) return false;
-        if (!port) port = 443;
-        mManager->setPort(port);
-    } else {
-        mManager->setHost(_host);
-        mManager->setPort(443);
+    QString port = "443";
+    if (sp3 > 0) {
+        port = host.right(host.length()-sp3);
+        host = host.left(sp3);
     }
+
+    QString basePath = url.right(url.length()-sp2);
+
+    QString completeUrl = scheme+"://"+host+":"+port+basePath;
+    mManager->setUrl(completeUrl);
     return true;
-}
-
-QString EngineProcess::host() const
-{
-    return mHost;
-}
-
-void EngineProcess::setBasePath(const QString &path)
-{
-    mBasePath = path;
-    mManager->setBasePath(path);
-}
-
-QString EngineProcess::basePath() const
-{
-    return mBasePath;
 }
 
 void EngineProcess::authenticate(const QString &user, const QString &password)
@@ -623,7 +604,7 @@ void EngineProcess::startUnpacking()
 
 QString EngineProcess::modelName() const
 {
-    return QFileInfo(mOutPath).completeBaseName();
+    return QFileInfo(mOutPath).fileName();
 }
 
 bool EngineProcess::forceGdx() const

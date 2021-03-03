@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *
@@ -24,7 +24,9 @@
 #include <QObject>
 #include <QString>
 #include <QTimer>
-#include <QRandomGenerator>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    #include <QRandomGenerator>
+#endif
 
 #include "OAIHttpFileElement.h"
 
@@ -95,7 +97,9 @@ private:
     bool isResponseCompressionEnabled;
     bool isRequestCompressionEnabled;
     int  httpResponseCode;
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     QRandomGenerator randomGenerator;
+#endif
 
     void on_reply_timeout(QNetworkReply *reply);
     void on_reply_finished(QNetworkReply *reply);

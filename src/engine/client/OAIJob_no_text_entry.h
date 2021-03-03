@@ -10,18 +10,17 @@
  */
 
 /*
- * OAIJob.h
+ * OAIJob_no_text_entry.h
  *
  * 
  */
 
-#ifndef OAIJob_H
-#define OAIJob_H
+#ifndef OAIJob_no_text_entry_H
+#define OAIJob_no_text_entry_H
 
 #include <QJsonObject>
 
 #include "OAIResult_user.h"
-#include "OAIText_entry.h"
 #include <QDateTime>
 #include <QList>
 #include <QString>
@@ -31,11 +30,11 @@
 
 namespace OpenAPI {
 
-class OAIJob : public OAIObject {
+class OAIJob_no_text_entry : public OAIObject {
 public:
-    OAIJob();
-    OAIJob(QString json);
-    ~OAIJob() override;
+    OAIJob_no_text_entry();
+    OAIJob_no_text_entry(QString json);
+    ~OAIJob_no_text_entry() override;
 
     QString asJson() const override;
     QJsonObject asJsonObject() const override;
@@ -46,11 +45,6 @@ public:
     void setArguments(const QList<QString> &arguments);
     bool is_arguments_Set() const;
     bool is_arguments_Valid() const;
-
-    QList<QString> getDepTokens() const;
-    void setDepTokens(const QList<QString> &dep_tokens);
-    bool is_dep_tokens_Set() const;
-    bool is_dep_tokens_Valid() const;
 
     QDateTime getFinishedAt() const;
     void setFinishedAt(const QDateTime &finished_at);
@@ -82,11 +76,6 @@ public:
     bool is_process_status_Set() const;
     bool is_process_status_Valid() const;
 
-    bool isResultExists() const;
-    void setResultExists(const bool &result_exists);
-    bool is_result_exists_Set() const;
-    bool is_result_exists_Valid() const;
-
     qint32 getStatus() const;
     void setStatus(const qint32 &status);
     bool is_status_Set() const;
@@ -107,11 +96,6 @@ public:
     bool is_submitted_at_Set() const;
     bool is_submitted_at_Valid() const;
 
-    QList<OAIText_entry> getTextEntries() const;
-    void setTextEntries(const QList<OAIText_entry> &text_entries);
-    bool is_text_entries_Set() const;
-    bool is_text_entries_Valid() const;
-
     QString getToken() const;
     void setToken(const QString &token);
     bool is_token_Set() const;
@@ -131,10 +115,6 @@ private:
     QList<QString> arguments;
     bool m_arguments_isSet;
     bool m_arguments_isValid;
-
-    QList<QString> dep_tokens;
-    bool m_dep_tokens_isSet;
-    bool m_dep_tokens_isValid;
 
     QDateTime finished_at;
     bool m_finished_at_isSet;
@@ -160,10 +140,6 @@ private:
     bool m_process_status_isSet;
     bool m_process_status_isValid;
 
-    bool result_exists;
-    bool m_result_exists_isSet;
-    bool m_result_exists_isValid;
-
     qint32 status;
     bool m_status_isSet;
     bool m_status_isValid;
@@ -180,10 +156,6 @@ private:
     bool m_submitted_at_isSet;
     bool m_submitted_at_isValid;
 
-    QList<OAIText_entry> text_entries;
-    bool m_text_entries_isSet;
-    bool m_text_entries_isValid;
-
     QString token;
     bool m_token_isSet;
     bool m_token_isValid;
@@ -195,6 +167,6 @@ private:
 
 } // namespace OpenAPI
 
-Q_DECLARE_METATYPE(OpenAPI::OAIJob)
+Q_DECLARE_METATYPE(OpenAPI::OAIJob_no_text_entry)
 
-#endif // OAIJob_H
+#endif // OAIJob_no_text_entry_H

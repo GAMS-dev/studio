@@ -50,8 +50,8 @@ EngineManager::EngineManager(QObject* parent)
 
 
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
-    mDefaultApi->setScheme("https");
-    mDefaultApi->setPort(443);
+//    mDefaultApi->setScheme("https");
+//    mDefaultApi->setPort(443);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
             [this](OAIHttpRequestWorker *worker) {
@@ -70,8 +70,8 @@ EngineManager::EngineManager(QObject* parent)
 
 
     mJobsApi->setNetworkAccessManager(mNetworkManager);
-    mJobsApi->setScheme("https");
-    mJobsApi->setPort(443);
+//    mJobsApi->setScheme("https");
+//    mJobsApi->setPort(443);
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal, this,
             [this](OAIMessage_and_token summary) {
@@ -135,22 +135,10 @@ void EngineManager::setWorkingDirectory(const QString &dir)
     mJobsApi->setWorkingDirectory(dir);
 }
 
-void EngineManager::setHost(const QString &host)
+void EngineManager::setUrl(const QString &url)
 {
-    mJobsApi->setHost(host);
-    mDefaultApi->setHost(host);
-}
-
-void EngineManager::setPort(int port)
-{
-    mJobsApi->setPort(port);
-    mDefaultApi->setPort(port);
-}
-
-void EngineManager::setBasePath(const QString &path)
-{
-    mJobsApi->setBasePath(path);
-    mDefaultApi->setBasePath(path);
+    mJobsApi->setNewServerForAllOperations(url);
+    mDefaultApi->setNewServerForAllOperations(url);
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -189,8 +177,10 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
-    OAIHttpFileElement dummy;
-    mJobsApi->createJob(modelName, nSpace, "solver.log", QStringList(), QStringList(), params, model, dummy, dummy);
+    QVariant dummy;
+    QVariant vModel = QVariant::fromValue(model);
+
+    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummy, "solver.log", params, dummy, dummy, vModel, dummy, dummy);
 }
 
 void EngineManager::getJobStatus()

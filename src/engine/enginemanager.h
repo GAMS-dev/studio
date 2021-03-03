@@ -52,9 +52,7 @@ public:
     EngineManager(QObject *parent = nullptr);
     ~EngineManager() override;
     void setWorkingDirectory(const QString &dir);
-    void setHost(const QString &host);
-    void setPort(int port);
-    void setBasePath(const QString &path);
+    void setUrl(const QString &url);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
