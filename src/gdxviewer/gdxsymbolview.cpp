@@ -130,7 +130,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbPreferences->addAction(preferences);
 
     //create header for list view
-    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
+    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::ListView);
     headerView->setEnabled(false);
 
     ui->tvListView->setHorizontalHeader(headerView);
@@ -162,7 +162,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    ui->tvRowDomains->setHorizontalHeader(new TableViewDomainHeader(Qt::Horizontal));
+    ui->tvRowDomains->setHorizontalHeader(new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::TableViewFilter));
     ui->tvRowDomains->horizontalHeader()->setVisible(true);
     ui->tvRowDomains->horizontalHeader()->setSectionsClickable(true);
     ui->tvRowDomains->setContextMenuPolicy(Qt::CustomContextMenu);

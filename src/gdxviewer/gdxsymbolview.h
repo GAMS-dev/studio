@@ -28,7 +28,6 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include "gdxsymboltable.h"
-#include "tableviewdomainheader.h"
 #include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
 
