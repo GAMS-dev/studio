@@ -70,10 +70,11 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
 
     // show filter icon
     if (logicalIndex < maxIndex) {
+        int domIndex = logicalIndex;
         if (mHeaderType == HeaderType::TableViewFilter && logicalIndex < symbol->dim())
-            logicalIndex = tvModel->tvDimOrder().at(logicalIndex);
+            domIndex = tvModel->tvDimOrder().at(logicalIndex);
         QString iconRes;
-        if (symbol->filterActive(logicalIndex))
+        if (symbol->filterActive(domIndex))
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
