@@ -30,7 +30,7 @@ namespace gams {
 namespace studio {
 
 // Special remarks: If this is assigned to mainTabs-tabBar, the drawControl is accidently also called for other tabBars
-// (Qt 15.2)        like tabBar and the SettingsDialog tabs. However this isn't true for the sizeFromContents. That
+// (Qt 15.2)        like logTabs and the SettingsDialog tabs. However this isn't true for the sizeFromContents. That
 //                  is ONLY called if this Style is additionally applied to e.g. the logTabs-tabBar!
 //
 // For that reason this class is designed to support both tabBars, the mainTabs and the logTabs. The widget pointers
@@ -43,22 +43,6 @@ TabBarStyle::TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QStyle *styl
         FATAL() << "MainTabs and LogTabs need to be defined";
     mMainTabs->tabBar()->setStyle(this);
     mLogTabs->tabBar()->setStyle(this);
-}
-
-void dumpPalette(QPalette &pal)
-{
-    QList<int> codes { QPalette::WindowText, QPalette::Button, QPalette::Light, QPalette::Midlight, QPalette::Dark,
-                QPalette::Mid, QPalette::Text, QPalette::BrightText, QPalette::ButtonText, QPalette::Base,
-                QPalette::Window, QPalette::Shadow, QPalette::Highlight, QPalette::HighlightedText,
-                QPalette::Link, QPalette::LinkVisited, QPalette::AlternateBase};
-    QStringList names {"WindowText", "Button", "Light", "Midlight", "Dark", "Mid",
-                "Text", "BrightText", "ButtonText", "Base", "Window", "Shadow",
-                "Highlight", "HighlightedText",
-                "Link", "LinkVisited",
-                "AlternateBase"};
-    for (int i = 0; i < codes.size(); ++i) {
-        DEB() << names.at(i) << "  " << pal.color(QPalette::Normal, QPalette::ColorRole(codes.at(i))).name();
-    }
 }
 
 int TabBarStyle::platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent) const
@@ -75,8 +59,7 @@ QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
 {
     bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1;
     QColor res = dark ? Qt::white : Qt::black;
-    if (state & tsColor1) return dark ? res.darker(160) : QColor(50,50,50);
-    if (state & tsColor2) return dark ? QColor(255,150,160) : QColor(180,40,30);
+    if (state & tsColor1) return dark ? res.darker(160) : QColor(50,50,50); // text slightly grayed out
 #ifdef __APPLE__
     if (!isCurrent) {
         res = dark ? res.darker(160) : QColor(50,50,50);
@@ -89,7 +72,7 @@ QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
     return res;
 }
 
-Qt::Alignment getAlign()
+Qt::Alignment TabBarStyle::platformGetAlign() const
 {
 #ifdef __APPLE__
     return Qt::AlignVCenter|Qt::AlignRight;
@@ -102,7 +85,6 @@ TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selec
     if (!tabWidget) return tsNormal;
     int res = tsNormal;
     if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
-    if (tabWidget->property("marked").toBool()) res += tsColor2;
     return TabState(res);
 }
 
@@ -173,7 +155,7 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     opt.rect = tab->rect;
                     opt.rect.setHeight(opt.rect.height()/2);
                     painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
-                    QProxyStyle::drawItemText(painter, tab->rect, getAlign(), tab->palette, true, " *   ");
+                    QProxyStyle::drawItemText(painter, tab->rect, platformGetAlign(), tab->palette, true, " *  ");
                 }
                 painter->restore();
                 return;

@@ -24,6 +24,7 @@ private:
     TabState getState(const QWidget *tabWidget, bool selected) const;
     int platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurrent) const;
     QColor platformGetTextColor(TabState state, bool isCurrent) const;
+    Qt::Alignment platformGetAlign() const;
 
 private:
     QTabWidget *mMainTabs;
