@@ -21,6 +21,7 @@
 #include "logger.h"
 #include "exception.h"
 #include "theme.h"
+#include "viewhelper.h"
 
 #include <QStyleOptionTab>
 #include <QPainter>
@@ -101,7 +102,6 @@ TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selec
     if (!tabWidget) return tsNormal;
     int res = tsNormal;
     if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColor1;
-//    if (tabWidget->property("changed").toBool()) res += tsBold;
     if (tabWidget->property("marked").toBool()) res += tsColor2;
     return TabState(res);
 }
@@ -168,7 +168,8 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                     if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
                     QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, tab->text);
                 }
-                if (tabWidget->widget(tab->tabIndex)->property("changed").toBool()) {
+
+                if (ViewHelper::modified(tabWidget->widget(tab->tabIndex))) {
                     opt.rect = tab->rect;
                     opt.rect.setHeight(opt.rect.height()/2);
                     QProxyStyle::drawItemText(painter, tab->rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, " * ");

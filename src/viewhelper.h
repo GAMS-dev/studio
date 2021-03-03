@@ -43,7 +43,10 @@ public:
     static void setGroupId(QWidget* widget, NodeId id);
 
     static QString location(QWidget* widget);
-    static void setLocation(QWidget* widget, QString location);
+    static void setLocation(QWidget* widget, const QString &location);
+
+    static bool modified(QWidget* widget);
+    static void setModified(QWidget* widget, bool modified);
 
     inline static AbstractEdit* initEditorType(AbstractEdit* w, EditorType type) {
         if(w) w->setProperty("EditorType", int(type));

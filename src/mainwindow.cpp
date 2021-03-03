@@ -1369,7 +1369,7 @@ void MainWindow::on_actionSave_As_triggered()
 
                 if (oldKind == node->file()->kind()) { // if old == new
                     ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::raw));
-                    ui->mainTabs->currentWidget()->setProperty("changed", false);
+                    ViewHelper::setModified(ui->mainTabs->currentWidget(), false);
                 } else { // reopen in new editor
                     int index = ui->mainTabs->currentIndex();
                     openFileNode(node, true);
@@ -1588,7 +1588,7 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         int index = ui->mainTabs->indexOf(edit);
         if (index >= 0) {
-            ui->mainTabs->currentWidget()->setProperty("changed", fm->isModified());
+            ViewHelper::setModified(ui->mainTabs->currentWidget(), fm->isModified());
             ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
         }
     }

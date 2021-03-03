@@ -114,9 +114,9 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
     case Qt::FontRole: {
-        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
-        if (node && node->file()->isModified()) {
-//        if (isCurrent(ind) || isCurrentGroup(ind)) {
+//        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+//        if (node && node->file()->isModified()) {
+        if (isCurrent(ind) || isCurrentGroup(ind)) {
             QFont f;
             f.setBold(true);
             return f;
@@ -132,9 +132,6 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
             // dark theme, not current: slightly grayed white
             if (!isCurrent(ind) && !isCurrentGroup(ind))
                 return QColor(Qt::white).darker(125);
-        } else if (isCurrent(ind) || isCurrentGroup(ind)) {
-            // light theme, current: blue
-            return Theme::color(Theme::Normal_Blue).darker(150);
         }
     }   break;
 
