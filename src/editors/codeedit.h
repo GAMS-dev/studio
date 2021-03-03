@@ -178,7 +178,6 @@ private:
     void endBlockEdit(bool adjustCursor = true);
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
-    void updateTabSize();
     inline int assignmentKind(int p);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);

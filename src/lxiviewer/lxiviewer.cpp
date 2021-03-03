@@ -96,6 +96,14 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
+void LxiViewer::resetView()
+{
+    QList<int> sizes;
+    sizes << ui->splitter->width() / 4;
+    sizes << ui->splitter->width() - sizes.at(0);
+    ui->splitter->setSizes(sizes);
+}
+
 void LxiViewer::loadLxi()
 {
     if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size() > 0) {

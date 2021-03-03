@@ -3748,6 +3748,7 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
+        connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
             if (mSettingsDialog->hasDelayedBaseThemeChange()) {
@@ -3908,6 +3909,23 @@ void MainWindow::updateEditorLineWrapping()
                                                                               : wrapModeEditor);
         }
     }
+}
+
+void MainWindow::updateTabSize(int size)
+{
+    for (QWidget* edit: openEditors()) {
+        if (AbstractEdit *ed = ViewHelper::toAbstractEdit(edit))
+            ed->updateTabSize(size);
+        else if (TextView *tv = ViewHelper::toTextView(edit))
+            tv->edit()->updateTabSize(size);
+    }
+    for (QWidget* log: openLogs()) {
+        if (TextView *tv = ViewHelper::toTextView(log))
+            tv->edit()->updateTabSize(size);
+    }
+
+    mSyslog->updateTabSize();
+
 }
 
 bool MainWindow::readTabs(const QVariantMap &tabData)
@@ -4361,6 +4379,10 @@ void MainWindow::resetViews()
     mGamsParameterEditor->setEditorExtended(false);
     ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
+    for (QWidget * wid : mFileMetaRepo.editors()) {
+        if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid))
+            lxi->resetView();
+    }
 
     Settings::settings()->resetKeys(Settings::viewKeys());
     Settings::settings()->save();
