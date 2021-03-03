@@ -172,7 +172,8 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 if (ViewHelper::modified(tabWidget->widget(tab->tabIndex))) {
                     opt.rect = tab->rect;
                     opt.rect.setHeight(opt.rect.height()/2);
-                    QProxyStyle::drawItemText(painter, tab->rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, " * ");
+                    painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
+                    QProxyStyle::drawItemText(painter, tab->rect, getAlign(), tab->palette, true, " *   ");
                 }
                 painter->restore();
                 return;
