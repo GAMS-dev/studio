@@ -90,6 +90,9 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             initStyleOption(&opt);
             opt.rect = rect;
             opt.section = logicalIndex;
+            QPen pen(painter->pen());
+            pen.setColor(palette().text().color());
+            painter->setPen(pen);
             if (logicalIndex == tvModel->dim() - tvModel->tvColDim()-1)
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
             if (symbol->type() == GMS_DT_PAR && logicalIndex == tvModel->dim()-1)
