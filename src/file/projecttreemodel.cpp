@@ -104,7 +104,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     if (!ind.isValid()) return QVariant();
     switch (role) {
     case Qt::BackgroundRole:
-        if (isSelected(ind)) return QColor("#4466BBFF");
+        if (isSelected(ind)) return QColor(102,187,255,68); // "#4466BBFF"
         break;
 
     case Qt::DisplayRole:
@@ -114,8 +114,6 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
     case Qt::FontRole: {
-//        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
-//        if (node && node->file()->isModified()) {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
             QFont f;
             f.setBold(true);

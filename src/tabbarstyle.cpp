@@ -79,11 +79,13 @@ QString TabBarStyle::platformGetText(const QString &text, const QWidget *tabWidg
     return text;
 }
 
-TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selected, bool leftIcon) const
+TabBarStyle::TabState TabBarStyle::getState(const QWidget *tabWidget, bool selected) const
 {
-    if (!tabWidget) return tsNormal;
     int res = tsNormal;
-    if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColorAll;
+    if (tabWidget) {
+        if (!selected && tabWidget->parentWidget()->parentWidget() == mMainTabs) res = tsColorAll;
+
+    }
     return TabState(res);
 }
 
@@ -131,18 +133,12 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 QStyleOptionTabV4 opt(*tab);
                 TabState state = tsNormal;
 
-                state = getState(tabWidget->widget(tab->tabIndex), opt.state.testFlag(State_Selected), tab->leftButtonSize.width() > 0);
+                state = getState(tabWidget->widget(tab->tabIndex), opt.state.testFlag(State_Selected));
                 opt.text = "";
-                if (state) {
-                }
 
                 QProxyStyle::drawControl(element, &opt, painter, widget);
 
                 painter->save();
-                QFont f = painter->font();
-                int shift = 0;
-                f.setBold(state & tsBold);
-                painter->setFont(f);
                 painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
                 opt.rect = opt.rect.marginsRemoved(QMargins(12,0,12,0));
                 opt.text = platformGetText(tab->text, tabWidget->widget(tab->tabIndex));
@@ -152,20 +148,6 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
                 if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
                 QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, opt.text);
-                shift = QFontMetrics(f).horizontalAdvance(tab->text);
-                if (state) {
-                }
-
-//                if (ViewHelper::modified(tabWidget->widget(tab->tabIndex))) {
-//                    opt.rect = tab->rect;
-//                    painter->setPen(platformGetTextColor(state, opt.state.testFlag(State_Selected)));
-//                    Qt::Alignment align = (opt.leftButtonSize.width() > 0) ? Qt::AlignVCenter|Qt::AlignRight
-//                                                                           : Qt::AlignVCenter|Qt::AlignLeft;
-//                    if (shift) {
-//                        opt.rect.setLeft(opt.rect.left()+shift);
-//                    }
-//                    QProxyStyle::drawItemText(painter, opt.rect, align, tab->palette, true, " *  ");
-//                }
                 painter->restore();
                 return;
             }

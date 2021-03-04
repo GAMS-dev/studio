@@ -172,7 +172,7 @@ QVariant TabListModel::data(const QModelIndex &index, int role) const
     }
     if (role == Qt::SizeHintRole) {
         QFont font = mTabs->font();
-        if (index.row() == mTabs->currentIndex()) font.setBold(true);
+        font.setBold(true); // cut-off-text workaround: always bold for calculating width
         QString location = nameAppendix(index);
         QFontMetrics fm = QFontMetrics(font);
         return QSize(fm.horizontalAdvance(modName(index) + " [" + location + "]"), fm.height()+4);
