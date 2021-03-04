@@ -45,6 +45,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->setupUi(this);
     ui->tvTableView->hide();
     ui->tvRowDomains->hide();
+    ui->tbDomLeft->hide();
+    ui->tbDomRight->hide();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -545,6 +547,8 @@ void GdxSymbolView::showListView()
     mTableView = false;
     ui->tvTableView->hide();
     ui->tvRowDomains->hide();
+    ui->tbDomLeft->hide();
+    ui->tbDomRight->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
 }
@@ -572,6 +576,8 @@ void GdxSymbolView::showTableView()
 
     ui->tvTableView->show();
     ui->tvRowDomains->show();
+    ui->tbDomLeft->show();
+    ui->tbDomRight->show();
 
     mTableView = true;
     autoResizeColumns();
