@@ -286,11 +286,11 @@ void GdxSymbolView::resetSortFilter()
         showListView();
         if (mTvModel) {
             ui->tvRowDomains->setModel(nullptr);
-            ui->tvTableView->setModel(nullptr);
             delete mTvDomainModel;
             mTvDomainModel = nullptr;
             delete mTvModel;
             mTvModel = nullptr;
+            ui->tvTableView->setModel(nullptr);
         }
         //QTimer::singleShot(100, [this](){ mSym->blockSignals(false); });
     }
