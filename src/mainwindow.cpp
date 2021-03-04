@@ -223,7 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
-    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, qApp->style());
+    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
