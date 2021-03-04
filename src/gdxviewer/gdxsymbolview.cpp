@@ -565,13 +565,14 @@ void GdxSymbolView::showTableView()
         ui->tvRowDomains->setModel(mTvDomainModel);
         int height = ui->tvRowDomains->horizontalHeader()->height()+2;
         ui->tvRowDomains->setMaximumHeight(height);
+
         ui->tbDomLeft->setMaximumHeight(height);
         ui->tbDomRight->setMaximumHeight(height);
+        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
 
         ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
         ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-        //ui->tbDomLeft->setIcon(QIcon(":/solid/triangle-left"));
-        //ui->tbDomRight->setIcon(QIcon(":/solid/triangle-right"));
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
