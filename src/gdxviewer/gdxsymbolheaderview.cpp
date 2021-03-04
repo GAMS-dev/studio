@@ -133,8 +133,8 @@ QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
 #ifdef __APPLE__
     // do not modify the width on MAC OS since there is already a sufficient width to display the filter icon
 #else
-    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
 #endif
+    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
     return s;
 }
 
