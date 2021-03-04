@@ -168,7 +168,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvRowDomains->setHorizontalHeader(new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::TableViewFilter));
     ui->tvRowDomains->horizontalHeader()->setVisible(true);
     ui->tvRowDomains->horizontalHeader()->setSectionsClickable(true);
-    ui->tvRowDomains->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tvRowDomains->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
     ui->tvRowDomains->horizontalHeader()->installEventFilter(this);
     connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
