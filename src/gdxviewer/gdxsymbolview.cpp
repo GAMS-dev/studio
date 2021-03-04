@@ -24,6 +24,7 @@
 #include "columnfilter.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
+#include "theme.h"
 #include "common.h"
 #include "valuefilter.h"
 #include "tableviewdomainmodel.h"
@@ -566,6 +567,11 @@ void GdxSymbolView::showTableView()
         ui->tvRowDomains->setMaximumHeight(height);
         ui->tbDomLeft->setMaximumHeight(height);
         ui->tbDomRight->setMaximumHeight(height);
+
+        ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
+        ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
+        //ui->tbDomLeft->setIcon(QIcon(":/solid/triangle-left"));
+        //ui->tbDomRight->setIcon(QIcon(":/solid/triangle-right"));
     } else if (mSym->filterHasChanged())
         mTvModel->setTableView();
     mSym->setFilterHasChanged(false);
