@@ -272,7 +272,6 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
-        //mSym->blockSignals(true);
         mPrecision->setValue(mDefaultPrecision); // this is not to be confused with "MAX". The value will be 6
         resetValFormat();
         mSqZeroes->setChecked(true);
@@ -292,7 +291,6 @@ void GdxSymbolView::resetSortFilter()
             mTvModel = nullptr;
             ui->tvTableView->setModel(nullptr);
         }
-        //QTimer::singleShot(100, [this](){ mSym->blockSignals(false); });
     }
 }
 
