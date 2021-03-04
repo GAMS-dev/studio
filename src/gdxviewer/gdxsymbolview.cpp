@@ -246,8 +246,8 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
-        mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
+        mSym->resetSortFilter();
         mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {

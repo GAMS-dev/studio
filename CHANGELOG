@@ -5,6 +5,8 @@ Version 1.5.5  *
 - fixed wrong auto selection in encodings dialog
 - fixed crash on missing LST file (output=NUL)
 - fixed insert new option/comment shortcut in solver option editor when pressing multiple times
+- Fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
+- fixed wrong sort order after resetting GDX Viewer
 - fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
 - fixed modified mark not visible on macOS tabs
 
