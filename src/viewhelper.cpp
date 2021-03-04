@@ -93,7 +93,7 @@ void ViewHelper::setLocation(QWidget *widget, const QString &location)
     }
 }
 
-bool ViewHelper::modified(QWidget *widget)
+bool ViewHelper::modified(const QWidget *widget)
 {
     return widget->property("modified").toBool();
 }

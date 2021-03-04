@@ -45,7 +45,7 @@ public:
     static QString location(QWidget* widget);
     static void setLocation(QWidget* widget, const QString &location);
 
-    static bool modified(QWidget* widget);
+    static bool modified(const QWidget *widget);
     static void setModified(QWidget* widget, bool modified);
 
     inline static AbstractEdit* initEditorType(AbstractEdit* w, EditorType type) {
