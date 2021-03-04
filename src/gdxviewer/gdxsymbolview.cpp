@@ -556,7 +556,8 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView()
 {
-    if (!mTvModel) {
+    bool firstInit = !mTvModel;
+    if (firstInit) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
         ui->tvTableView->setModel(mTvModel);
@@ -585,9 +586,9 @@ void GdxSymbolView::showTableView()
     ui->tvRowDomains->show();
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
-
     mTableView = true;
-    autoResizeColumns();
+    if (firstInit)
+        autoResizeColumns();
 }
 
 void GdxSymbolView::toggleView()
