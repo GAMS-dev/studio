@@ -99,6 +99,7 @@ enum FlavorFlag {
     flavorBrace = 1,
     flavorTable = 2,
     flavorModel = 4,
+    flavorPreTable = 8,
 };
 
 enum class SyntaxShift {

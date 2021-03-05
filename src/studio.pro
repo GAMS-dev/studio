@@ -248,6 +248,7 @@ SOURCES += \
     syntax/systemloghighlighter.cpp \
     syntax/textmark.cpp \
     syntax/textmarkrepo.cpp \
+    tabbarstyle.cpp \
     tabdialog.cpp \
     theme.cpp \
     themewidget.cpp \
@@ -436,6 +437,7 @@ HEADERS += \
     syntax/systemloghighlighter.h \
     syntax/textmark.h \
     syntax/textmarkrepo.h \
+    tabbarstyle.h \
     tabdialog.h \
     theme.h \
     themewidget.h \

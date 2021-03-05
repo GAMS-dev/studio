@@ -44,6 +44,7 @@ public:
 
 private:
     QString nameAppendix(const QModelIndex &index) const;
+    QString modName(const QModelIndex &index) const;
 
 private:
     QTabWidget *mTabs = nullptr;

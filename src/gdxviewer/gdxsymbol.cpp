@@ -534,7 +534,7 @@ int GdxSymbol::subType() const
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
     // sort by key column
-    if(column<mDim) {
+    if(column<mDim && column >=0) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         uint uel;

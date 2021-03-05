@@ -57,6 +57,7 @@ signals:
     void editorLineWrappingChanged();
     void themeChanged();
     void userGamsTypeChanged();
+    void editorTabSizeChanged(int size);
 
 public slots:
     void delayBaseThemeChange(bool valid);
@@ -66,6 +67,7 @@ private slots:
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
+    void on_sb_tabsize_valueChanged(int size);
     void themeModified();
     void setModified();
     void appearanceIndexChanged(int index);
@@ -85,6 +87,7 @@ private slots:
     void on_btRemoveTheme_clicked();
     void on_btImportTheme_clicked();
     void on_btExportTheme_clicked();
+
 
 private:
     Ui::SettingsDialog *ui;

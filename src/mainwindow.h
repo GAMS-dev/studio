@@ -80,6 +80,7 @@ class GdxDiffDialog;
 namespace miro {
 class MiroDeployDialog;
 }
+class TabBarStyle;
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -380,6 +381,11 @@ protected:
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
 
+private slots:
+    void updateFixedFonts(const QString &fontFamily, int fontSize);
+    void updateEditorLineWrapping();
+    void updateTabSize(int size);
+
 private:
     void initWelcomePage();
     void initIcons();
@@ -404,8 +410,6 @@ private:
     bool isActiveTabRunnable();
     bool isRecentGroupRunning();
     void loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn);
-    void updateFixedFonts(const QString &fontFamily, int fontSize);
-    void updateEditorLineWrapping();
     void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
     void dockWidgetShow(QDockWidget* dw, bool show);
     int showSaveChangesMsgBox(const QString &text);
@@ -463,6 +467,7 @@ private:
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
+    TabBarStyle *mTabStyle = nullptr;
 
     bool mDebugMode = false;
     bool mStartedUp = false;
