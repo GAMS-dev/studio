@@ -80,6 +80,7 @@ class GdxDiffDialog;
 namespace miro {
 class MiroDeployDialog;
 }
+class TabBarStyle;
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -466,6 +467,7 @@ private:
     QVector<FileEventData> mFileEvents;
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
+    TabBarStyle *mTabStyle = nullptr;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

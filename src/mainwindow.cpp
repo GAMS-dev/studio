@@ -63,6 +63,7 @@
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
 #include "keys.h"
+#include "tabbarstyle.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -222,6 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -1366,7 +1368,8 @@ void MainWindow::on_actionSave_As_triggered()
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new
-                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::editState));
+                    ui->mainTabs->tabBar()->setTabText(ui->mainTabs->currentIndex(), fileMeta->name(NameModifier::raw));
+                    ViewHelper::setModified(ui->mainTabs->currentWidget(), false);
                 } else { // reopen in new editor
                     int index = ui->mainTabs->currentIndex();
                     openFileNode(node, true);
@@ -1585,7 +1588,8 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         int index = ui->mainTabs->indexOf(edit);
         if (index >= 0) {
-            if (fm) ui->mainTabs->setTabText(index, fm->name(NameModifier::editState));
+            ViewHelper::setModified(ui->mainTabs->currentWidget(), fm->isModified());
+            ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
         }
     }
 }
@@ -2634,6 +2638,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
         mTextMarkRepo.clear();
         delete mSettingsDialog;
         mSettingsDialog = nullptr;
+        mTabStyle = nullptr;
     } else {
         event->setAccepted(false);
     }
@@ -3408,7 +3413,7 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-
+    if (mTabStyle) mTabStyle->setBaseStyle(qApp->style());
     repaint();
 }
 

@@ -7,6 +7,7 @@ Version 1.5.5
 - fixed insert new option/comment shortcut in solver option editor when pressing multiple times
 - fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
 - fixed wrong sort order after resetting GDX Viewer
+- fixed modified mark not visible on macOS tabs
 
 Version 1.5.4
 ==================
