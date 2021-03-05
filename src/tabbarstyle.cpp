@@ -52,6 +52,7 @@ int TabBarStyle::platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurr
     if (!isCurrent)
         res = tabPos==QTabWidget::North ? 1 : tabPos==QTabWidget::South ? -1 : 0;
 #else
+    Q_UNUSED(tabPos)
     Q_UNUSED(isCurrent)
 #endif
     return res;
