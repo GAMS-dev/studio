@@ -51,6 +51,8 @@ int TabBarStyle::platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurr
 #ifndef __APPLE__
     if (!isCurrent)
         res = tabPos==QTabWidget::North ? 1 : tabPos==QTabWidget::South ? -1 : 0;
+#else
+    Q_UNUSED(isCurrent)
 #endif
     return res;
 }
@@ -98,7 +100,7 @@ QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOptio
             if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
                 QStyleOptionTabV4 opt(*tab);
                 QSize newSize = size;
-                opt.text = platformGetText(opt.text, tabWidget->widget(tab->tabIndex));
+                opt.text = platformGetText(opt.text, wid);
                 if (opt.text != tab->text) {
                     QFont f = widget->font();
                     int diff = QFontMetrics(f).horizontalAdvance(opt.text) - tab->fontMetrics.horizontalAdvance(tab->text);
