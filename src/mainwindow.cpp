@@ -3413,8 +3413,11 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-    if (mTabStyle)
+    if (mTabStyle) {
+        TabBarStyle *old = mTabStyle;
         mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+        delete old;
+    }
     repaint();
 }
 
