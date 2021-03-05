@@ -1,3 +1,14 @@
+Version 1.5.5
+==================
+- fixed "Reset View" not resetting splitter in the LST/LXI-Viewer
+- added instant update of tab size in editor when changing corresponding setting
+- fixed unwanted selection in encodings dialog when using arrow keys
+- fixed crash when LST file is missing (e.g. because of output=NUL)
+- fixed crash related to comment shortcut in solver option editor when pressing it multiple times
+- fixed highlighting when "Table" is preceded by Set, Parameter, Variable, or Equation
+- fixed wrong sort order after resetting GDX Viewer
+- fixed modified mark not visible on macOS tabs
+
 Version 1.5.4
 ==================
 - fixed GDX file reloading while being rewritten

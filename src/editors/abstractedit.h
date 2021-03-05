@@ -71,6 +71,8 @@ signals:
 public slots:
     virtual void updateExtraSelections();
     virtual void unfold(QTextBlock block);
+    void updateTabSize(int size = 0);
+
 
 protected slots:
     virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
