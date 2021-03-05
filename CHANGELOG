@@ -1,11 +1,11 @@
-Version 1.5.5  *
+Version 1.5.5
 ==================
-- "Reset Windows" in settings now also resets the splitter in the LST/LXI-Viewer
-- Instantly update tab size on changing the settings
+- fixed "Reset View" not reseting splitter in the LST/LXI-Viewer
+- added instant update of tab size in editor when changing corresponding setting
 - fixed wrong auto selection in encodings dialog
-- Fixed crash on missing LST file (output=NUL)
+- fixed crash LST file is missing (output=NUL)
 - fixed insert new option/comment shortcut in solver option editor when pressing multiple times
-- Fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
+- fixed highlighter if "Table" is preceded by Set, Parameter, Variable, or Equation
 - fixed wrong sort order after resetting GDX Viewer
 
 Version 1.5.4
