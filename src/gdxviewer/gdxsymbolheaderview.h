@@ -52,6 +52,7 @@ private:
     const double ICON_SCALE_FACTOR = 0.5;
     const double ICON_MARGIN_FACTOR = 0.1;
     const double SECTION_WIDTH_FACTOR = 1.5;
+    const double SECTION_WIDTH_FACTOR_MACOS = 2;
 
     int mFilterIconWidth;
     int mFilterIconMargin;

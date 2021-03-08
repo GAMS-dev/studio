@@ -133,11 +133,13 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
 QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
+    int width = s.width();
 #ifdef __APPLE__
-    // do not modify the width on MAC OS since there is already a sufficient width to display the filter icon
+    width += SECTION_WIDTH_FACTOR_MACOS*(mFilterIconWidth + mFilterIconMargin);
 #else
+    width += SECTION_WIDTH_FACTOR      *(mFilterIconWidth + mFilterIconMargin);
 #endif
-    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
+    s.setWidth(width);
     return s;
 }
 
