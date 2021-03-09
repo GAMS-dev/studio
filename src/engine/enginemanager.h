@@ -58,12 +58,12 @@ public:
     QString getToken() const;
     void setToken(const QString &token);
     void abortRequests();
-
+    void cleanup();
 
     void authenticate(const QString &user, const QString &password);
     void authenticate(const QString &userToken);
     void getVersion();
-    void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
+    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
     void getLog();
     void getOutputFile();

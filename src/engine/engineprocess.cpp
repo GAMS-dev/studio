@@ -157,6 +157,7 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
     }
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
+        DEB() << remoteParameters().join("\n   ");
         setProcState(Proc2Pack);
         startPacking();
     } else {
@@ -346,6 +347,7 @@ void EngineProcess::completed(int exitCode)
 {
     disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
     mPullTimer.stop();
+    mManager->cleanup();
     setProcState(ProcIdle);
     AbstractGamsProcess::completed(exitCode);
 }

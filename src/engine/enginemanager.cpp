@@ -172,15 +172,15 @@ void EngineManager::getVersion()
     mDefaultApi->getVersion();
 }
 
-void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params)
+void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)
 {
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
     QVariant dummy;
     QVariant vModel = QVariant::fromValue(model);
-
-    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummy, "solver.log", params, dummy, dummy, vModel, dummy, dummy);
+    QVariant vParams = QVariant(params);
+    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummy, "solver.log", vParams, dummy, dummy, vModel, dummy, dummy);
 }
 
 void EngineManager::getJobStatus()
@@ -254,6 +254,12 @@ void EngineManager::setToken(const QString &token)
 void EngineManager::abortRequests()
 {
     mJobsApi->abortRequests();
+}
+
+void EngineManager::cleanup()
+{
+    if (!mToken.isEmpty())
+        mJobsApi->deleteJobZip(mToken);
 }
 
 } // namespace engine
