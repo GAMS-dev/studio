@@ -193,7 +193,7 @@ void GdxSymbolView::showColumnFilter(QPoint p)
     int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
         mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
+        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeColumnFilterMenu);
         if (column<mSym->dim()) {
             ColumnFilter *cf = new ColumnFilter(mSym, column, this);
             mColumnFilterMenu->addAction(cf);
@@ -211,7 +211,7 @@ void GdxSymbolView::showTvRowFilter(QPoint p)
     int column = ui->tvRowDomains->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && ui->tvRowDomains->model()->columnCount()) {
         mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
+        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeColumnFilterMenu);
         if (column < mSym->dim()) {
             ColumnFilter *cf = new ColumnFilter(mSym, mTvModel->tvDimOrder().at(column), this);
             mColumnFilterMenu->addAction(cf);
