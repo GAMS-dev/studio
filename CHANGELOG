@@ -5,7 +5,8 @@ Version 1.6.0 *
 - auto-reload files marked in the log that were changed on a GAMS run
 - added user defined extensions for files to be auto-reloaded
 - added auto-reload button to request dialog after file changes
-- updated engine API
+- updated client API for GAMS Engine
+- delete the results on the GAMS Engine server after the job has finished
 
 Version 1.5.4
 ==================

@@ -61,7 +61,7 @@ public:
     void cleanup();
 
     void authenticate(const QString &user, const QString &password);
-    void authenticate(const QString &userToken);
+    void authenticate(const QString &bearerToken);
     void getVersion();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
@@ -100,8 +100,6 @@ private:
     OpenAPI::OAIJobsApi *mJobsApi;
     QNetworkAccessManager *mNetworkManager;
     int mJobNumber = 0;
-    QString mUser;
-    QString mPassword;
     QString mToken;
     bool mQueueFinished = false;
 };

@@ -152,19 +152,15 @@ bool EngineManager::ignoreSslErrors()
 
 void EngineManager::authenticate(const QString &user, const QString &password)
 {
-    mUser = user;
-    mPassword = password;
-
-    QByteArray auth = "Basic " + (user + ":" + password).toLatin1().toBase64();
-    mJobsApi->addHeaders("Authorization", auth);
-    mDefaultApi->addHeaders("Authorization", auth);
+    mJobsApi->setUsername(user);
+    mJobsApi->setPassword(password);
 }
 
-void EngineManager::authenticate(const QString &userToken)
+void EngineManager::authenticate(const QString &bearerToken)
 {
-    Q_UNUSED(userToken)
-    DEB() << "Authentication by token not implementet yet.";
-    // TODO(JM) prepared authentication by user-token
+    // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
+    mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mJobsApi->setPassword("");
 }
 
 void EngineManager::getVersion()

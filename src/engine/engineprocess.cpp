@@ -314,16 +314,19 @@ bool EngineProcess::setUrl(const QString &url)
     return true;
 }
 
-void EngineProcess::authenticate(const QString &user, const QString &password)
+void EngineProcess::authenticate(const QString &username, const QString &password)
 {
-    mManager->authenticate(user, password);
+    mManager->authenticate(username, password);
     setProcState(ProcIdle);
+    // TODO(JM): generate bearerToken and wait for answer before changing to idle
 }
 
-//void EngineProcess::authenticate(const QString &host, const QString &token)
-//{
-
-//}
+void EngineProcess::authenticate(const QString &bearerToken)
+{
+    mManager->authenticate(bearerToken);
+    setProcState(ProcIdle);
+    // TODO(JM): check for namespace permissions and wait for answer before changing to idle
+}
 
 void EngineProcess::setNamespace(const QString &nSpace)
 {
