@@ -609,6 +609,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
+    beginResetModel();
     for (int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
@@ -657,7 +658,6 @@ void GdxSymbol::filterRows()
             }
         }
     }
-    beginResetModel();
     endResetModel();
 }
 
