@@ -22,6 +22,7 @@
 #include <QDir>
 
 #include "editors/codeedit.h"
+#include "codecompleter.h"
 #include "settings.h"
 #include "search/searchdialog.h"
 #include "logger.h"
@@ -44,6 +45,7 @@ CodeEdit::CodeEdit(QWidget *parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
+    mCompleter = new CodeCompleter(this);
     mBlinkBlockEdit.setInterval(500);
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
@@ -68,6 +70,7 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
+    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -392,6 +395,18 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (!isReadOnly()) {
+        if (e->key() == Hotkey::CodeCompleter) {
+            QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
+            pos.setX(pos.x() + mLineNumberArea->width());
+            pos = mapToGlobal(pos);
+            QRect rect(pos, pos);
+            rect.setHeight(100);
+            rect.setWidth(200);
+            mCompleter->setGeometry(rect);
+            mCompleter->setVisible(true);
+            e->accept();
+            return;
+        }
         if (e->key() == Hotkey::JumpToContext) {
             jumpToCurrentLink(cursorRect().topLeft());
             e->accept();

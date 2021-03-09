@@ -83,6 +83,7 @@ SOURCES += \
     confirmdialog.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
+    editors/codecompleter.cpp \
     editors/codeedit.cpp \
     editors/defaultsystemlogger.cpp \
     editors/editorhelper.cpp \
@@ -267,6 +268,7 @@ HEADERS += \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
+    editors/codecompleter.h \
     editors/codeedit.h \
     editors/defaultsystemlogger.h \
     editors/editorhelper.h \

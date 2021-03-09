@@ -39,6 +39,7 @@ namespace studio {
 class Settings;
 class LineNumberArea;
 class SearchWidget;
+class CodeCompleter;
 
 struct BlockEditPos
 {
@@ -170,6 +171,7 @@ private slots:
 private:
     friend class BlockEdit;
     friend class LineNumberArea;
+    friend class CodeCompleter;
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
@@ -242,6 +244,7 @@ protected:
 
 private:
     LineNumberArea *mLineNumberArea;
+    CodeCompleter *mCompleter;
     int mCurrentCol;
     QTimer mCursorTimer;
     QPoint mDragStart;
