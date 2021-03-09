@@ -56,7 +56,6 @@ public:
 
 public slots:
     void enableControls();
-    void refreshView();
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
     void showColumnFilter(QPoint p);

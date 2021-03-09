@@ -297,15 +297,6 @@ void GdxSymbolView::resetSortFilter()
     }
 }
 
-void GdxSymbolView::refreshView()
-{
-    if(!mSym)
-        return;
-    if(mSym->isLoaded())
-        mSym->filterRows();
-    toggleSqueezeDefaults(mSqDefaults->isChecked());
-}
-
 GdxSymbol *GdxSymbolView::sym() const
 {
     return mSym;
@@ -344,8 +335,6 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(mSqZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
-
-    refreshView();
 }
 
 void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
@@ -597,7 +586,7 @@ void GdxSymbolView::toggleView()
         showListView();
     else
         showTableView();
-    refreshView();
+    toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
 void GdxSymbolView::selectAll()
