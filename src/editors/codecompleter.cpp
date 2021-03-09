@@ -1,5 +1,4 @@
 #include "codecompleter.h"
-#include "ui_codecompleter.h"
 #include "editors/codeedit.h"
 #include "logger.h"
 
