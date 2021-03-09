@@ -460,16 +460,6 @@ ValueFilter *GdxSymbol::valueFilter(int valueColumn)
     return mValueFilters[valueColumn];
 }
 
-bool GdxSymbol::filterHasChanged() const
-{
-    return mFilterHasChanged;
-}
-
-void GdxSymbol::setFilterHasChanged(bool filterHasChanged)
-{
-    mFilterHasChanged = filterHasChanged;
-}
-
 void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
 {
     mShowUelInColumn = showUelInColumn;

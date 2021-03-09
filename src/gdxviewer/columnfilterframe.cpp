@@ -84,7 +84,6 @@ void ColumnFilterFrame::apply()
     }
     mSymbol->setFilterActive(mColumn, activateFilter);
     mSymbol->filterRows();
-    mSymbol->setFilterHasChanged(true);
     static_cast<QMenu*>(this->parent())->close();
 }
 

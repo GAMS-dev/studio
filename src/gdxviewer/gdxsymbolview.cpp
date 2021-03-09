@@ -563,10 +563,7 @@ void GdxSymbolView::showTableView()
 
         ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
         ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-    } else if (mSym->filterHasChanged())
-        mTvModel->setTableView();
-    mSym->setFilterHasChanged(false);
-
+    }
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();

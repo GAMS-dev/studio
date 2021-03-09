@@ -78,9 +78,6 @@ public:
 
     int tvColDim() const;
 
-    bool filterHasChanged() const;
-    void setFilterHasChanged(bool filterHasChanged);
-
     void setNumericalPrecision(int numericalPrecision, bool squeezeTrailingZeroes);
 
     double minDouble(int valCol=0);
@@ -150,8 +147,6 @@ private:
 
     std::vector<int> mRecSortIdx;
     std::vector<int> mRecFilterIdx;
-
-    bool mFilterHasChanged = false;
 
     int mNumericalPrecision = 6;
     numerics::DoubleFormatter::Format mNumericalFormat = numerics::DoubleFormatter::g;
