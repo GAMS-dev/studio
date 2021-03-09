@@ -312,9 +312,9 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
         queryDelimiter = getParamStyleDelimiter(queryStyle, "text_entries", true); 
-        if (text_entries.value<QList<QString>>().size() > 0) {
+        if (text_entries.value<QStringList>().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -327,7 +327,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -340,7 +340,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -353,7 +353,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -366,7 +366,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -379,7 +379,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QList<QString>>()) {
+                foreach (QString t, text_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -398,9 +398,9 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
         queryDelimiter = getParamStyleDelimiter(queryStyle, "stream_entries", true); 
-        if (stream_entries.value<QList<QString>>().size() > 0) {
+        if (stream_entries.value<QStringList>().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -413,7 +413,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -426,7 +426,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -439,7 +439,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -452,7 +452,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -465,7 +465,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QList<QString>>()) {
+                foreach (QString t, stream_entries.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -500,9 +500,9 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
         queryDelimiter = getParamStyleDelimiter(queryStyle, "arguments", true); 
-        if (arguments.value<QList<QString>>().size() > 0) {
+        if (arguments.value<QStringList>().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -515,7 +515,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -528,7 +528,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -541,7 +541,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -554,7 +554,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -567,7 +567,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QList<QString>>()) {
+                foreach (QString t, arguments.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -586,9 +586,9 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
         queryDelimiter = getParamStyleDelimiter(queryStyle, "dep_tokens", true); 
-        if (dep_tokens.value<QList<QString>>().size() > 0) {
+        if (dep_tokens.value<QStringList>().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -601,7 +601,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -614,7 +614,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -627,7 +627,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -640,7 +640,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -653,7 +653,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QList<QString>>()) {
+                foreach (QString t, dep_tokens.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -672,9 +672,9 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
         queryDelimiter = getParamStyleDelimiter(queryStyle, "labels", true); 
-        if (labels.value<QList<QString>>().size() > 0) {
+        if (labels.value<QStringList>().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -687,7 +687,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -700,7 +700,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -713,7 +713,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -726,7 +726,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -739,7 +739,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QList<QString>>()) {
+                foreach (QString t, labels.value<QStringList>()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -749,7 +749,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
             }
         }
     }
-
+    qDebug() << "oAPI-intern: " << fullPath;
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
