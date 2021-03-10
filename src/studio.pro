@@ -18,10 +18,6 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Set this to "false" to build Studio without QWebEngine enabled,
-# which deactivates the studio help view.
-QWEBENGINE=true
-
 QT       += core gui svg concurrent network printsupport
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 

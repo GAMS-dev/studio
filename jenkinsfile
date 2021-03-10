@@ -257,7 +257,7 @@ pipeline {
                                 cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
 
-                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/src/studio.pro | cut -f2 -d"=")
+                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
                                 echo "Use QWEBENGINE: $USE_QWEBENGINE"
                                 if [ "$USE_QWEBENGINE" = "true" ]; then
                                     echo "Signing QWEBENGINE..."

@@ -286,7 +286,7 @@ FORMS += $$SRCPATH/gdxviewer/columnfilterframe.ui \
          $$SRCPATH/tabdialog.ui \
          $$SRCPATH/support/aboutgamsdialog.ui
 
-QWEBENGINE=true
+
 equals(QWEBENGINE, "true") {
 DEFINES += QWEBENGINE
 greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets

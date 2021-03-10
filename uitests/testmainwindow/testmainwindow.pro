@@ -37,7 +37,6 @@ SOURCES -= $$SRCPATH/main.cpp
 
 FORMS += $$files($$SRCPATH/*.ui, true)
 
-QWEBENGINE=true
 equals(QWEBENGINE, "true") {
 DEFINES += QWEBENGINE
 greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets
