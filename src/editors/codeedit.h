@@ -183,6 +183,8 @@ private:
     inline int assignmentKind(int p);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
+    bool prepareCompleter();
+    void showCompleter();
 
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
@@ -244,7 +246,7 @@ protected:
 
 private:
     LineNumberArea *mLineNumberArea;
-    CodeCompleter *mCompleter;
+    CodeCompleter *mCompleter = nullptr;
     int mCurrentCol;
     QTimer mCursorTimer;
     QPoint mDragStart;

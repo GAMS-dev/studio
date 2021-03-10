@@ -45,7 +45,6 @@ CodeEdit::CodeEdit(QWidget *parent)
 {
     mLineNumberArea = new LineNumberArea(this);
     mLineNumberArea->setMouseTracking(true);
-    mCompleter = new CodeCompleter(this);
     mBlinkBlockEdit.setInterval(500);
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
@@ -396,14 +395,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 
     if (!isReadOnly()) {
         if (e->key() == Hotkey::CodeCompleter) {
-            QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
-            pos.setX(pos.x() + mLineNumberArea->width());
-            pos = mapToGlobal(pos);
-            QRect rect(pos, pos);
-            rect.setHeight(100);
-            rect.setWidth(200);
-            mCompleter->setGeometry(rect);
-            mCompleter->setVisible(true);
+            if (prepareCompleter())
+                showCompleter();
             e->accept();
             return;
         }
@@ -1268,6 +1261,31 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.setPosition(anchor.position());
     cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
     cursor.endEditBlock();
+}
+
+bool CodeEdit::prepareCompleter()
+{
+    if (isReadOnly()) return false;
+    if (!mCompleter) {
+        mCompleter = new CodeCompleter(this);
+        // TODO(JM) connect
+    }
+
+    QTextCursor cur = textCursor();
+    return true;
+}
+
+void CodeEdit::showCompleter()
+{
+    if (!mCompleter) return;
+    QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
+    pos.setX(pos.x() + mLineNumberArea->width());
+    pos = mapToGlobal(pos);
+    QRect rect(pos, pos);
+    rect.setHeight(100);
+    rect.setWidth(200);
+    mCompleter->setGeometry(rect);
+    mCompleter->setVisible(true);
 }
 
 
