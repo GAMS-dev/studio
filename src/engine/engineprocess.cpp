@@ -292,7 +292,7 @@ bool EngineProcess::setUrl(const QString &url)
     QString scheme = "https";
     int sp1 = url.indexOf("://")+1;
     if (sp1 > 0) {
-        scheme = url.left(sp1);
+        scheme = url.left(sp1-1);
         sp1 += 2;
     }
 
