@@ -1,3 +1,7 @@
+Version 1.5.6  *
+==================
+- fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
+
 Version 1.5.5
 ==================
 - fixed "Reset View" not resetting splitter in the LST/LXI-Viewer
