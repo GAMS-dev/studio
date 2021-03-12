@@ -17,32 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TEST_MAIN_WINDOW_H
-#define TEST_MAIN_WINDOW_H
+#ifndef TEST_FILE_CHANGE_DIALOG_H
+#define TEST_FILE_CHANGE_DIALOG_H
 
 #include <QtTest/QTest>
-#include "mainwindow.h"
+#include "filechangedialog.h"
 
 using namespace gams::studio;
 
-class TestMainWindow : public QObject
+class TestFileChangeDialog : public QObject
 {
     Q_OBJECT
 
 private Q_SLOTS:
     void initTestCase();
-    void init();
-//    void cleanup();
     void cleanupTestCase();
 
-    void test_gdxValue();
-//    void test_search();
+    void test_multi();
+    void test_single();
 
 private:
-    MainWindow* mMainWindow = nullptr;
-    Settings* mSettings = nullptr;
-    QFileInfo mGms;
-    void clickRowByName(QTableView* source, const QString& name);
+    FileChangeDialog* mDialog = nullptr;
 };
 
-#endif // TEST_MAIN_WINDOW_H
+#endif // TEST_FILE_CHANGE_DIALOG_H

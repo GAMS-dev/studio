@@ -17,32 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TEST_MAIN_WINDOW_H
-#define TEST_MAIN_WINDOW_H
+#include "testgotodialog.h"
+#include "gotodialog.h"
 
-#include <QtTest/QTest>
-#include "mainwindow.h"
+#include <QLineEdit>
+#include <QPushButton>
 
-using namespace gams::studio;
-
-class TestMainWindow : public QObject
+void TestGoToDialog::initTestCase()
 {
-    Q_OBJECT
+    mDialog = new GoToDialog(nullptr, 100);
+}
 
-private Q_SLOTS:
-    void initTestCase();
-    void init();
-//    void cleanup();
-    void cleanupTestCase();
+void TestGoToDialog::cleanupTestCase()
+{
+    delete mDialog;
+}
 
-    void test_gdxValue();
-//    void test_search();
+void TestGoToDialog::testit()
+{
+    // One file changed externally
+    QLineEdit* ed = mDialog->findChild<QLineEdit*>("lineEdit");
+    ed->setText("50");
+    QTest::mouseClick(mDialog->findChild<QPushButton*>("goToButton"), Qt::LeftButton);
+    QTEST_ASSERT_X(mDialog->result() == 1, "GoToDialog", "line number in range");
 
-private:
-    MainWindow* mMainWindow = nullptr;
-    Settings* mSettings = nullptr;
-    QFileInfo mGms;
-    void clickRowByName(QTableView* source, const QString& name);
-};
+    ed->setText("150");
+    QTest::mouseClick(mDialog->findChild<QPushButton*>("goToButton"), Qt::LeftButton);
+    QTEST_ASSERT_X(mDialog->result() == 0, "GoToDialog", "line number out of range");
+}
 
-#endif // TEST_MAIN_WINDOW_H
+QTEST_MAIN(TestGoToDialog)

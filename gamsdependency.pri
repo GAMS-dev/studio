@@ -18,6 +18,10 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
+# Set this to "false" to build Studio without QWebEngine enabled,
+# which deactivates the studio help view.
+QWEBENGINE=true
+
 win32 {
     # Switch off warings caused by GAMS headers
     DEFINES += _CRT_SECURE_NO_WARNINGS
