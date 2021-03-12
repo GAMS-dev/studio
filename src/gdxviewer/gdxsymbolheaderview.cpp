@@ -39,7 +39,10 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, GdxSymbolH
 
     int h = sectionSizeFromContents(0).height();
     mFilterIconWidth  = h*ICON_SCALE_FACTOR;
-    mFilterIconMargin = h*ICON_MARGIN_FACTOR;
+    mFilterIconMarginLeft = h*ICON_MARGIN_LEFT;
+    mFilterIconMarginBottom = h*ICON_MARGIN_BOTTOM;
+
+    this->setTextElideMode(Qt::ElideRight);
 }
 
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
@@ -81,8 +84,8 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         QIcon icon(Theme::icon(iconRes));
         QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
-        posX = rect.x() + mFilterIconMargin;
-        posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMargin;
+        posX = rect.x() + mFilterIconMarginLeft;
+        posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMarginBottom;
         painter->drawImage(posX, posY, pm.toImage());
 
         if (mHeaderType == HeaderType::TableViewFilter) {
@@ -135,9 +138,9 @@ QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
     QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
     int width = s.width();
 #ifdef __APPLE__
-    width += SECTION_WIDTH_FACTOR_MACOS*(mFilterIconWidth + mFilterIconMargin);
+    width += SECTION_WIDTH_FACTOR_MACOS*(mFilterIconWidth + mFilterIconMarginLeft);
 #else
-    width += SECTION_WIDTH_FACTOR      *(mFilterIconWidth + mFilterIconMargin);
+    width += SECTION_WIDTH_FACTOR      *(mFilterIconWidth + mFilterIconMarginLeft);
 #endif
     s.setWidth(width);
     return s;
