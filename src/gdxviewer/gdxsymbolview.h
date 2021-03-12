@@ -60,7 +60,7 @@ public slots:
     void resetSortFilter();
     void showColumnFilter(QPoint p);
     void showTvRowFilter(QPoint p);
-    void freeColumnFilterMenu();
+    void freeFilterMenu();
     void autoResizeColumns();
     void adjustDomainScrollbar();
 

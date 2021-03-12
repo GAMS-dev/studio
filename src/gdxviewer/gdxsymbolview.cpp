@@ -193,38 +193,34 @@ void GdxSymbolView::showColumnFilter(QPoint p)
     int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
         mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeColumnFilterMenu);
-        if (column<mSym->dim()) {
-            ColumnFilter *cf = mSym->columnFilter(column);
-            mColumnFilterMenu->addAction(cf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        } else {
-            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
-            mColumnFilterMenu->addAction(vf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        }
+        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
+        QWidgetAction *filter = nullptr;
+        if (column<mSym->dim())
+            filter = mSym->columnFilter(column);
+        else
+            filter = mSym->valueFilter(column-mSym->dim());
+        mColumnFilterMenu->addAction(filter);
+        mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
     }
 }
 
 void GdxSymbolView::showTvRowFilter(QPoint p)
 {
     int column = ui->tvRowDomains->horizontalHeader()->logicalIndexAt(p);
-    if(mSym->isLoaded() && column>=0 && ui->tvRowDomains->model()->columnCount()) {
+    if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
         mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeColumnFilterMenu);
-        if (column < mSym->dim()) {
-            ColumnFilter *cf =  mSym->columnFilter(mTvModel->tvDimOrder().at(column));
-            mColumnFilterMenu->addAction(cf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        } else {
-            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
-            mColumnFilterMenu->addAction(vf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        }
+        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
+        QWidgetAction *filter = nullptr;
+        if (column<mSym->dim())
+            filter = mSym->columnFilter(mTvModel->tvDimOrder().at(column));
+        else
+            filter = mSym->valueFilter(column-mSym->dim());
+        mColumnFilterMenu->addAction(filter);
+        mColumnFilterMenu->popup(ui->tvRowDomains->mapToGlobal(p));
     }
 }
 
-void GdxSymbolView::freeColumnFilterMenu()
+void GdxSymbolView::freeFilterMenu()
 {
     if (mColumnFilterMenu) {
         mColumnFilterMenu->deleteLater();
