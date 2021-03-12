@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "gdxsymboltable.h"
 #include "nestedheaderview.h"
+#include "columnfilter.h"
 #include "valuefilter.h"
 
 #include <QMutex>
@@ -50,6 +51,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<filterColumnCount(); i++)
         mFilterActive[i] = false;
 
+    mColumnFilters.resize(mDim);
+    for (int i=0; i<mDim; i++)
+        mColumnFilters[i] = nullptr;
     mValueFilters.resize(mNumericalColumnCount);
     for (int i=0; i<mNumericalColumnCount; i++)
         mValueFilters[i] = nullptr;
@@ -70,6 +74,7 @@ GdxSymbol::~GdxSymbol()
         if(a)
             delete[] a;
     }
+    unregisterAllFilters();
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -438,10 +443,25 @@ double GdxSymbol::maxDouble(int valCol)
     return mMaxDouble[valCol];
 }
 
+void GdxSymbol::registerColumnFilter(int column, ColumnFilter *columnFilter)
+{
+    mColumnFilters.at(column) = columnFilter;
+    mFilterActive.at(column) = true;
+}
+
 void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
 {
     mValueFilters.at(valueColumn) = valueFilter;
     mFilterActive.at(mDim+valueColumn) = true;
+}
+
+void GdxSymbol::unregisterColumnFilter(int column)
+{
+    if (mColumnFilters[column] != nullptr) {
+        mColumnFilters[column]->deleteLater();
+        mColumnFilters[column] = nullptr;
+    }
+    mFilterActive.at(column) = false;
 }
 
 void GdxSymbol::unregisterValueFilter(int valueColumn)
@@ -451,6 +471,21 @@ void GdxSymbol::unregisterValueFilter(int valueColumn)
         mValueFilters[valueColumn] = nullptr;
     }
     mFilterActive.at(mDim+valueColumn) = false;
+}
+
+void GdxSymbol::unregisterAllFilters()
+{
+    for(int i=0; i<mDim; i++)
+        unregisterColumnFilter(i);
+    for(int i=0; i<mNumericalColumnCount; i++)
+        unregisterValueFilter(i);
+}
+
+ColumnFilter *GdxSymbol::columnFilter(int column)
+{
+    if (mColumnFilters[column] == nullptr)
+        mColumnFilters[column] = new ColumnFilter(this, column);
+    return mColumnFilters[column];
 }
 
 ValueFilter *GdxSymbol::valueFilter(int valueColumn)
@@ -495,10 +530,7 @@ void GdxSymbol::resetSortFilter()
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
-    for(int i=0; i<mNumericalColumnCount; i++)
-        mValueFilters[i] = nullptr;
-    for(int i=0; i<filterColumnCount(); i++)
-        mFilterActive[i] = false;
+    unregisterAllFilters();
     mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }

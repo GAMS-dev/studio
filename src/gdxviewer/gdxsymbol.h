@@ -35,6 +35,7 @@ namespace gdxviewer {
 
 class GdxSymbolTable;
 class TableViewModel;
+class ColumnFilter;
 class ValueFilter;
 
 class GdxSymbol : public QAbstractTableModel
@@ -83,9 +84,13 @@ public:
     double minDouble(int valCol=0);
     double maxDouble(int valCol=0);
 
+    void registerColumnFilter(int column, ColumnFilter *columnFilter);
     void registerValueFilter(int valueColumn, ValueFilter *valueFilter);
+    void unregisterColumnFilter(int column);
     void unregisterValueFilter(int valueColumn);
+    void unregisterAllFilters();
     ValueFilter* valueFilter(int valueColumn);
+    ColumnFilter* columnFilter(int column);
 
     int filterColumnCount();
 
@@ -152,6 +157,7 @@ private:
     numerics::DoubleFormatter::Format mNumericalFormat = numerics::DoubleFormatter::g;
     bool mSqueezeTrailingZeroes = true;
 
+    std::vector<ColumnFilter*> mColumnFilters;
     std::vector<ValueFilter*> mValueFilters;
     int mNumericalColumnCount;
 };
