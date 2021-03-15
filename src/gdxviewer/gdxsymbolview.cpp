@@ -598,6 +598,7 @@ void GdxSymbolView::resetValFormat()
 
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
+    Q_UNUSED(watched)
     if (event->type() == QEvent::Resize) {
         this->adjustDomainScrollbar();
     }
