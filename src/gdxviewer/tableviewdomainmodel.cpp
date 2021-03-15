@@ -32,6 +32,7 @@ TableViewDomainModel::TableViewDomainModel(TableViewModel* tvModel, QObject *par
 
 QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
+    Q_UNUSED(orientation)
     if (role == Qt::DisplayRole) {
         if (section < mTvModel->dim())
             return mTvModel->domains().at(section);
@@ -73,6 +74,7 @@ int TableViewDomainModel::columnCount(const QModelIndex &parent) const
 
 QVariant TableViewDomainModel::data(const QModelIndex &index, int role) const
 {
+    Q_UNUSED(role)
     if (!index.isValid())
         return QVariant();
     return QVariant();
