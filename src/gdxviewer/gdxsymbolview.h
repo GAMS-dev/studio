@@ -59,8 +59,7 @@ public slots:
     void enableControls();
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
-    void showColumnFilter(QPoint p);
-    void showTvRowFilter(QPoint p);
+    void showFilter(QPoint p);
     void freeFilterMenu();
     void autoResizeColumns();
     void autoResizeTableViewColumns();

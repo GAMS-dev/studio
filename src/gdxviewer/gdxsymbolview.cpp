@@ -147,7 +147,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
+    connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
     connect(mSqDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
@@ -173,7 +173,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvRowDomains->horizontalHeader()->installEventFilter(this);
     connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
 
-    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showTvRowFilter);
+    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
 
     connect(ui->tbDomLeft, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollLeft);
     connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
@@ -188,25 +188,11 @@ GdxSymbolView::~GdxSymbolView()
     delete ui;
 }
 
-void GdxSymbolView::showColumnFilter(QPoint p)
+void GdxSymbolView::showFilter(QPoint p)
 {
-    int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
-    if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
-        mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
-        QWidgetAction *filter = nullptr;
-        if (column<mSym->dim())
-            filter = mSym->columnFilter(column);
-        else
-            filter = mSym->valueFilter(column-mSym->dim());
-        mColumnFilterMenu->addAction(filter);
-        mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-    }
-}
+    QTableView* tableView = mTableView ? ui->tvRowDomains : ui->tvListView;
+    int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
-void GdxSymbolView::showTvRowFilter(QPoint p)
-{
-    int column = ui->tvRowDomains->horizontalHeader()->logicalIndexAt(p);
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
         mColumnFilterMenu = new QMenu(this);
         connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
@@ -216,7 +202,7 @@ void GdxSymbolView::showTvRowFilter(QPoint p)
         else
             filter = mSym->valueFilter(column-mSym->dim());
         mColumnFilterMenu->addAction(filter);
-        mColumnFilterMenu->popup(ui->tvRowDomains->mapToGlobal(p));
+        mColumnFilterMenu->popup(tableView->mapToGlobal(p));
     }
 }
 
