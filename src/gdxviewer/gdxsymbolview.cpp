@@ -212,7 +212,7 @@ void GdxSymbolView::showTvRowFilter(QPoint p)
         connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
         QWidgetAction *filter = nullptr;
         if (column<mSym->dim())
-            filter = mSym->columnFilter(mTvModel->tvDimOrder().at(column));
+            filter = mSym->columnFilter(column);
         else
             filter = mSym->valueFilter(column-mSym->dim());
         mColumnFilterMenu->addAction(filter);
@@ -418,6 +418,11 @@ void GdxSymbolView::toggleColumnHidden()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
+void GdxSymbolView::moveTvFilterColumns(int from, int to)
+{
+    ui->tvRowDomains->horizontalHeader()->moveSection(from, to);
+}
+
 void GdxSymbolView::updateNumericalPrecision()
 {
     QString svFull = "Full";
@@ -495,6 +500,15 @@ void GdxSymbolView::autoResizeColumns()
     }
     else
         ui->tvListView->resizeColumnsToContents();
+}
+
+void GdxSymbolView::autoResizeTableViewColumns()
+{
+    if (mTableView) {
+        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
+        for (int i=0; i<mTVResizeColNr; i++)
+            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+    }
 }
 
 void GdxSymbolView::adjustDomainScrollbar()

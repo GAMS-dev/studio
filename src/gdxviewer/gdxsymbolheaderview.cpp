@@ -73,11 +73,8 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
 
     // show filter icon
     if (logicalIndex < maxIndex) {
-        int domIndex = logicalIndex;
-        if (mHeaderType == HeaderType::TableViewFilter && logicalIndex < symbol->dim())
-            domIndex = tvModel->tvDimOrder().at(logicalIndex);
         QString iconRes;
-        if (symbol->filterActive(domIndex))
+        if (symbol->filterActive(logicalIndex))
             iconRes = iconFilterOn;
         else
             iconRes = iconFilterOff;
@@ -99,9 +96,10 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             pen.setWidth(2); // use a wider line for better visibility on macOS
 #endif
             painter->setPen(pen);
-            if (logicalIndex == tvModel->dim() - tvModel->tvColDim()-1)
+            int idx = visualIndex(logicalIndex);
+            if (idx == tvModel->dim() - tvModel->tvColDim()-1)
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
-            if (symbol->type() != GMS_DT_SET && logicalIndex == tvModel->dim()-1)
+            if (symbol->type() != GMS_DT_SET && idx == tvModel->dim()-1)
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
         }
     }

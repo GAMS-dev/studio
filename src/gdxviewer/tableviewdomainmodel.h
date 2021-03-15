@@ -47,7 +47,6 @@ public:
     TableViewModel *tvModel() const;
 
 
-
 private:
     TableViewModel* mTvModel;
 };

@@ -53,6 +53,7 @@ public:
     void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
+    void moveTvFilterColumns(int from, int to);
 
 public slots:
     void enableControls();
@@ -62,6 +63,7 @@ public slots:
     void showTvRowFilter(QPoint p);
     void freeFilterMenu();
     void autoResizeColumns();
+    void autoResizeTableViewColumns();
     void adjustDomainScrollbar();
 
 private slots:
