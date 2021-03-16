@@ -92,9 +92,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
             opt.section = logicalIndex;
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
-#ifdef __APPLE__
-            pen.setWidth(2); // use a wider line for better visibility on macOS
-#endif
+            pen.setWidth(2);
             painter->setPen(pen);
             int idx = visualIndex(logicalIndex);
             if (idx == tvModel->dim() - tvModel->tvColDim()-1)
