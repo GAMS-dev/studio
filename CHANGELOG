@@ -6,6 +6,7 @@ Version 1.6.0 *
 - added user defined extensions for files to be auto-reloaded
 - added auto-reload button to request dialog after file changes
 - fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
+- added Studio Documentation menu entry
 
 Version 1.5.5
 ==================

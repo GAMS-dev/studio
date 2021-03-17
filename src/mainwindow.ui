@@ -240,7 +240,8 @@
     <property name="toolTipsVisible">
      <bool>true</bool>
     </property>
-    <addaction name="actionHelp"/>
+    <addaction name="actionGamsHelp"/>
+    <addaction name="actionStudioHelp"/>
     <addaction name="separator"/>
     <addaction name="actionAbout_Qt"/>
     <addaction name="actionAbout_Studio"/>
@@ -544,13 +545,13 @@
     <string>Ctrl+Q</string>
    </property>
   </action>
-  <action name="actionHelp">
+  <action name="actionGamsHelp">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/book</normaloff>:/solid/book</iconset>
    </property>
    <property name="text">
-    <string>&amp;Documentation</string>
+    <string>&amp;GAMS Documentation</string>
    </property>
    <property name="shortcut">
     <string>F1</string>
@@ -1472,6 +1473,11 @@
    </property>
    <property name="shortcut">
     <string>Alt+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionStudioHelp">
+   <property name="text">
+    <string>Studio Documentation</string>
    </property>
   </action>
  </widget>
