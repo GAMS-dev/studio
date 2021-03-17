@@ -98,6 +98,8 @@ public:
 
     QStringList domains() const;
 
+    static const QList<QString> superScript;
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();

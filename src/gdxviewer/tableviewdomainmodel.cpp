@@ -35,7 +35,7 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
     Q_UNUSED(orientation)
     if (role == Qt::DisplayRole) {
         if (section < mTvModel->dim())
-            return mTvModel->domains().at(section) + " (" + QString::number(section+1) + ")";
+            return mTvModel->domains().at(section) + " " + GdxSymbol::superScript[section+1];
         else {
             if (mTvModel->type() == GMS_DT_PAR)
                 return QVariant("Value");

@@ -33,6 +33,30 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+const QList<QString> GdxSymbol::superScript = QList<QString>({
+                                         QString(u8"\u2070"),
+                                         QString(u8"\u00B9"),
+                                         QString(u8"\u00B2"),
+                                         QString(u8"\u00B3"),
+                                         QString(u8"\u2074"),
+                                         QString(u8"\u2075"),
+                                         QString(u8"\u2076"),
+                                         QString(u8"\u2077"),
+                                         QString(u8"\u2078"),
+                                         QString(u8"\u2079"),
+                                         QString(u8"\u00B9\u2070"),
+                                         QString(u8"\u00B9\u00B9"),
+                                         QString(u8"\u00B9\u00B2"),
+                                         QString(u8"\u00B9\u00B3"),
+                                         QString(u8"\u00B9\u2074"),
+                                         QString(u8"\u00B9\u2075"),
+                                         QString(u8"\u00B9\u2076"),
+                                         QString(u8"\u00B9\u2077"),
+                                         QString(u8"\u00B9\u2078"),
+                                         QString(u8"\u00B9\u2079"),
+                                         QString(u8"\u00B2\u2070"),
+                                     });
+
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
 {
@@ -81,8 +105,9 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
 {
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
-            if (section < mDim)
-                return mDomains.at(section) + " (" + QString::number(section+1) + ")";
+            if (section < mDim) {
+                return mDomains.at(section) + " " + GdxSymbol::superScript[section+1];
+            }
             else {
                 if (mType == GMS_DT_SET)
                     return "Text";
