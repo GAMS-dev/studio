@@ -5,6 +5,7 @@ Version 1.6.0 *
 - auto-reload files marked in the log that were changed on a GAMS run
 - added user defined extensions for files to be auto-reloaded
 - added auto-reload button to request dialog after file changes
+- fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
 
 Version 1.5.5
 ==================

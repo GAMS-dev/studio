@@ -91,7 +91,7 @@ EngineProcess *EngineStartDialog::process() const
 
 QString EngineStartDialog::url() const
 {
-    return ui->edUrl->text().trimmed();
+    return mValidUrl;
 }
 
 QString EngineStartDialog::nSpace() const

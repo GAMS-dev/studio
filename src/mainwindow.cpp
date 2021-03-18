@@ -223,9 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
-#ifndef __unix__
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
-#endif
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -3426,7 +3424,11 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-    if (mTabStyle) mTabStyle->setBaseStyle(qApp->style());
+    if (mTabStyle) {
+        TabBarStyle *old = mTabStyle;
+        mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+        delete old;
+    }
     repaint();
 }
 
