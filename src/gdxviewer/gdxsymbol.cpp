@@ -105,9 +105,8 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
 {
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
-            if (section < mDim) {
+            if (section < mDim)
                 return mDomains.at(section) + " " + GdxSymbol::superScript[section+1];
-            }
             else {
                 if (mType == GMS_DT_SET)
                     return "Text";

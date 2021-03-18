@@ -27,6 +27,7 @@ namespace gdxviewer {
 ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
     :QWidgetAction(parent), mSymbol(symbol), mColumn(column)
 {
+
 }
 
 QWidget *ColumnFilter::createWidget(QWidget *parent)
