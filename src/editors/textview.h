@@ -59,6 +59,7 @@ public:
     bool hasSelection() const;              // JM: changes on Debug / no selection
     void copySelection();
     QString selectedText() const;
+    QString wordUnderCursor() const;
     void selectAllText();
     void clearSelection();
     AbstractEdit *edit();
