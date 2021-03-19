@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -25,7 +25,7 @@
 
 using namespace gams::studio;
 
-class testmainwindow : public QObject
+class TestMainWindow : public QObject
 {
     Q_OBJECT
 
@@ -36,11 +36,11 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     void test_gdxValue();
-    void test_search();
+//    void test_search();
 
 private:
     MainWindow* mMainWindow = nullptr;
-    StudioSettings* mSettings = nullptr;
+    Settings* mSettings = nullptr;
     QFileInfo mGms;
     void clickRowByName(QTableView* source, const QString& name);
 };

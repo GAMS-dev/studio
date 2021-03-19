@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -18,22 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Set this to "false" to build Studio without QWebEngine enabled,
-# which deactivates the studio help view.
-QWEBENGINE=true
-
 QT       += core gui svg concurrent network printsupport
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
-
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
+
+OBJECTS_DIR=../objects
+MOC_DIR=../objects
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
@@ -117,6 +114,7 @@ SOURCES += \
     engine/enginestartdialog.cpp \
     exception.cpp \
     file/dynamicfile.cpp \
+    file/filechangedialog.cpp \
     file/fileevent.cpp \
     file/fileicon.cpp \
     file/filemeta.cpp \
@@ -303,6 +301,7 @@ HEADERS += \
     exception.h \
     file.h \
     file/dynamicfile.h \
+    file/filechangedialog.h \
     file/fileevent.h \
     file/fileicon.h \
     file/filemeta.h \

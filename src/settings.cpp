@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -338,6 +338,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
     safelyAdd(res, skNeosForceGdx, scSys, {"neos","forceGdx"}, true);
     safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
+    safelyAdd(res, skUserFileTypes, scUser, {"misc","userFileTypes"}, QString());
+
+    safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
 
     // solver option editor settings
     safelyAdd(res, skSoOverrideExisting, scUser, {"solverOption","overrideExisting"}, true);

@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #ifndef FILEEVENTHANDLER_H
 #define FILEEVENTHANDLER_H
 
@@ -8,7 +25,7 @@
 
 #include "file/fileevent.h"
 
-class QMessageBox;
+class QCheckBox;
 
 namespace gams {
 namespace studio {
@@ -16,6 +33,7 @@ namespace studio {
 struct FileEventData;
 class FileMeta;
 class MainWindow;
+class FileChangeDialog;
 
 class FileEventHandler : public QObject
 {
@@ -42,19 +60,18 @@ private:
     void keepAllDeletedFiles();
     void keepFirstDeletedFile();
 
-    void reloadAllChangedFiles();
-    void reloadFirstChangedFile();
+    void reloadAllChangedFiles(bool always = false);
+    void reloadFirstChangedFile(bool always = false);
     void keepAllChangedFiles();
     void keepFirstChangedFile();
 
     void reloadFile(FileMeta *file);
     void removeFile(FileMeta *file);
 
-    void openMessageBox(QString filePath, bool deleted, bool modified, int count);
-
 private:
     MainWindow *mMainWindow;
-    QSharedPointer<QMessageBox> mMessageBox;
+    QCheckBox *mCheckBox;
+    FileChangeDialog *mDialog;
     QVector<FileEventData> mCurrentEvents;
     QMap<Type, QMap<int, FileEventData>> mQueuedEvents;
     Type mCurrentType = None;

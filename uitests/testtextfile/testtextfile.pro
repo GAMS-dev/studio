@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2019 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2019 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -286,7 +286,7 @@ FORMS += $$SRCPATH/gdxviewer/columnfilterframe.ui \
          $$SRCPATH/tabdialog.ui \
          $$SRCPATH/support/aboutgamsdialog.ui
 
-QWEBENGINE=true
+
 equals(QWEBENGINE, "true") {
 DEFINES += QWEBENGINE
 greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -51,11 +51,13 @@ public:
     void unwatch(const FileMeta* fm);
     void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
+    void setAutoReload(const QString &location);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
     void updateRenamed(FileMeta *file, QString oldLocation);
+    void setUserGamsTypes(QStringList suffix);
 
     bool askBigFileEdit() const;
     void setAskBigFileEdit(bool askBigFileEdit);
@@ -85,6 +87,7 @@ private:
     ProjectRepo* mProjectRepo = nullptr;
     QHash<FileId, FileMeta*> mFiles;
     QHash<QString, FileMeta*> mFileNames;
+    QStringList mAutoReloadLater;
     QFileSystemWatcher mWatcher;
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically

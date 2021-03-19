@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -98,6 +98,8 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
         mFiles.remove(fileMeta->id());
         mFileNames.remove(fileMeta->location());
         unwatch(fileMeta);
+        if (fileMeta->isAutoReload())
+            mAutoReloadLater << fileMeta->location();
     }
 }
 
@@ -203,6 +205,15 @@ bool FileMetaRepo::watch(const FileMeta *fileMeta)
     return false;
 }
 
+void FileMetaRepo::setAutoReload(const QString &location)
+{
+    FileMeta * meta = fileMeta(location);
+    if (meta)
+        meta->setAutoReload();
+    else if (!mAutoReloadLater.contains(location))
+        mAutoReloadLater << location;
+}
+
 void FileMetaRepo::setDebugMode(bool debug)
 {
     mDebug = debug;
@@ -236,6 +247,34 @@ void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
 {
     mFileNames.remove(oldLocation);
     mFileNames.insert(file->location(), file);
+}
+
+void FileMetaRepo::setUserGamsTypes(QStringList suffix)
+{
+    QStringList changed;
+    for (const QString &suf : suffix) {
+        if (!FileType::userGamsTypes().contains(suf)) changed << suf;
+    }
+    for (const QString &suf : FileType::userGamsTypes()) {
+        if (!suffix.contains(suf)) changed << suf;
+    }
+    FileType::setUserGamsTypes(suffix);
+    QVector<ProjectRunGroupNode*> runGroups;
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        QFileInfo fi(i.value()->location());
+        if (changed.contains(fi.suffix())) {
+            i.value()->refreshType();
+            for (ProjectAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
+                if (!runGroups.contains(node->assignedRunGroup())) runGroups << node->assignedRunGroup();
+        }
+    }
+    for (ProjectRunGroupNode * group : runGroups) {
+        if (!group->runnableGms() || group->runnableGms()->kind() != FileKind::Gms) {
+            group->setRunnableGms();
+        }
+    }
 }
 
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
@@ -338,6 +377,10 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         addFileMeta(res);
+        if (mAutoReloadLater.contains(location)) {
+            mAutoReloadLater.removeAll(location);
+            res->setAutoReload();
+        }
     }
     return res;
 }

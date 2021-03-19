@@ -1,9 +1,28 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "fileeventhandler.h"
 #include "mainwindow.h"
 #include "viewhelper.h"
+#include "file/filechangedialog.h"
 
-#include <QMessageBox>
 #include <QPushButton>
+#include <QCheckBox>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -11,16 +30,15 @@ namespace studio {
 FileEventHandler::FileEventHandler(MainWindow *mainWindow, QObject *parent)
     : QObject(parent)
     , mMainWindow(mainWindow)
-    , mMessageBox(new QMessageBox(mMainWindow))
+    , mDialog(new FileChangeDialog(mainWindow))
 {
-    connect(mMessageBox.data(), &QMessageBox::finished,
-            this, &FileEventHandler::messageBoxFinished);
+    connect(mDialog, &FileChangeDialog::ready, this, &FileEventHandler::messageBoxFinished);
 }
 
 void FileEventHandler::process(Type type, const QVector<FileEventData> &events)
 {
-    if (mMessageBox->isVisible()) {
-        for (auto event: events) {
+    if (mDialog->isVisible()) {
+        for (const auto &event: events) {
             if (mCurrentType == type && event.fileId == mCurrentFile->id())
                 continue;
             mQueuedEvents[type][event.fileId] = event;
@@ -38,7 +56,7 @@ bool FileEventHandler::filter(const QVector<FileEventData> &events)
     if (events.isEmpty())
         return false;
     mCurrentEvents.clear();
-    for (auto event: events) {
+    for (const auto &event: events) {
         auto *file = mMainWindow->fileRepo()->fileMeta(event.fileId);
         if (file->isOpen() && file->isReadOnly()) {
             switch (mCurrentType) {
@@ -66,14 +84,14 @@ void FileEventHandler::process()
 
     switch (mCurrentType) {
         case Change:
-            openMessageBox(QDir::toNativeSeparators(mCurrentFile->location()),
-                           false, mCurrentFile->isModified(), mCurrentEvents.size());
+            mDialog->show(QDir::toNativeSeparators(mCurrentFile->location()),
+                          false, mCurrentFile->isModified(), mCurrentEvents.size());
             break;
         case Deletion:
             if (mCurrentFile->exists(true))
                 return;
-            openMessageBox(QDir::toNativeSeparators(mCurrentFile->location()),
-                           true, mCurrentFile->isModified(), mCurrentEvents.size());
+            mDialog->show(QDir::toNativeSeparators(mCurrentFile->location()),
+                          true, mCurrentFile->isModified(), mCurrentEvents.size());
             break;
         default:
             break;
@@ -85,18 +103,15 @@ void FileEventHandler::processChange(int result)
     auto queued = mQueuedEvents.take(Change);
     mCurrentEvents.append(queued.values().toVector());
 
-    if (result == 0) { // reload
-        mOpenMessageBox = true;
-        reloadFirstChangedFile();
-    } else if (result == 2) { // reload all
-        mOpenMessageBox = false;
-        reloadAllChangedFiles();
-    } else if (result == 1) { // keep
-        mOpenMessageBox = true;
-        keepFirstChangedFile();
-    } else if (result == 3) { // keep all
-        mOpenMessageBox = false;
-        keepAllChangedFiles();
+    mOpenMessageBox = !FileChangeDialog::isForAll(result);
+    if (FileChangeDialog::enumResult(result) == FileChangeDialog::Result::rKeep) {
+        if (FileChangeDialog::isForAll(result))
+            keepAllChangedFiles();
+        else keepFirstChangedFile();
+    } else { // rReload, rReloadAlways
+        if (FileChangeDialog::isForAll(result))
+            reloadAllChangedFiles(FileChangeDialog::isAutoReload(result));
+        else reloadFirstChangedFile(FileChangeDialog::isAutoReload(result));
     }
 }
 
@@ -105,18 +120,15 @@ void FileEventHandler::processDeletion(int result)
     auto queued = mQueuedEvents.take(Deletion);
     mCurrentEvents.append(queued.values().toVector());
 
-    if (result == 0) { // close
-        mOpenMessageBox = true;
-        closeFirstDeletedFile();
-    } else if (result == 2) { // close all
-        mOpenMessageBox = false;
-        closeAllDeletedFiles();
-    } else if (result == 1) { // keep
-        mOpenMessageBox = true;
-        keepFirstDeletedFile();
-    } else if (result == 3) { // keep all
-        mOpenMessageBox = false;
-        keepAllDeletedFiles();
+    mOpenMessageBox = !FileChangeDialog::isForAll(result);
+    if (FileChangeDialog::enumResult(result) == FileChangeDialog::Result::rKeep) {
+        if (FileChangeDialog::isForAll(result))
+            keepAllDeletedFiles();
+        else keepFirstDeletedFile();
+    } else { // rClose
+        if (FileChangeDialog::isForAll(result))
+            closeAllDeletedFiles();
+        else closeFirstDeletedFile();
     }
 }
 
@@ -178,18 +190,20 @@ void FileEventHandler::keepFirstDeletedFile()
     mMainWindow->fileRepo()->unwatch(file);
 }
 
-void FileEventHandler::reloadAllChangedFiles()
+void FileEventHandler::reloadAllChangedFiles(bool always)
 {
     for (int i=mCurrentEvents.size(); i>0; --i)
-        reloadFirstChangedFile();
+        reloadFirstChangedFile(always);
 }
 
-void FileEventHandler::reloadFirstChangedFile()
+void FileEventHandler::reloadFirstChangedFile(bool always)
 {
     if (mCurrentEvents.isEmpty())
         return;
     auto event = mCurrentEvents.takeFirst();
-    reloadFile(mMainWindow->fileRepo()->fileMeta(event.fileId));
+    FileMeta *fm = mMainWindow->fileRepo()->fileMeta(event.fileId);
+    if (always) fm->setAutoReload();
+    reloadFile(fm);
 }
 
 void FileEventHandler::keepAllChangedFiles()
@@ -256,7 +270,7 @@ void FileEventHandler::removeFile(FileMeta *file)
     mMainWindow->textMarkRepo()->removeMarks(file->id(), QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<ProjectFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
-        for (ProjectFileNode* node: nodes) {
+        for (ProjectFileNode* node: qAsConst(nodes)) {
             ProjectGroupNode *group = node->parentNode();
             mMainWindow->projectRepo()->closeNode(node);
             if (group->childCount() == 0)
@@ -272,32 +286,6 @@ void FileEventHandler::removeFile(FileMeta *file)
     mMainWindow->closeFileEditors(file->id());
     mMainWindow->clearHistory(file);
     mMainWindow->historyChanged();
-}
-
-void FileEventHandler::openMessageBox(QString filePath, bool deleted, bool modified, int count)
-{
-    mMessageBox->setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));
-    QString text(filePath + (deleted ? "%1 doesn't exist anymore."
-                                     : (count>1 ? "%1 have been modified externally."
-                                                : "%1 has been modified externally.")));
-    text = text.arg(count<2? "" : QString(" and %1 other file%2").arg(count-1).arg(count<3? "" : "s"));
-    text += "\nDo you want to %1?";
-    if (deleted) text = text.arg("keep the file in editor");
-    else if (modified) text = text.arg("reload the file or keep your changes");
-    else text = text.arg("reload the file");
-    mMessageBox->setText(text);
-
-    // The button roles define their position. To keep them in order they all get the same value
-    for (auto* button: mMessageBox->buttons())
-        mMessageBox->removeButton(button);
-    mMessageBox->setDefaultButton(mMessageBox->addButton(deleted ? "Close" : "Reload", QMessageBox::AcceptRole));
-    mMessageBox->setEscapeButton(mMessageBox->addButton("Keep", QMessageBox::AcceptRole));
-    if (count > 1) {
-        mMessageBox->addButton(mMessageBox->buttonText(0) + " all", QMessageBox::AcceptRole);
-        mMessageBox->addButton(mMessageBox->buttonText(1) + " all", QMessageBox::AcceptRole);
-    }
-    // close: 0, keep: 1, close all: 2, keep all: 3
-    mMessageBox->open();
 }
 
 }

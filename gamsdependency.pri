@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,6 +17,10 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
+# Set this to "false" to build Studio without QWebEngine enabled,
+# which deactivates the studio help view.
+QWEBENGINE=true
 
 win32 {
     # Switch off warings caused by GAMS headers

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -223,9 +223,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
-#ifndef __unix__
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
-#endif
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -382,7 +380,8 @@ void MainWindow::initIcons()
     ui->actionZoom_In->setIcon(Theme::icon(":/%1/search-plus"));
     ui->actionZoom_Out->setIcon(Theme::icon(":/%1/search-minus"));
     ui->actionShowToolbar->setIcon(Theme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionGamsHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionStudioHelp->setIcon(Theme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
@@ -1632,6 +1631,10 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
                guce->setFileChangedExtern(true);
         }
     }
+    if (!file->isModified() && file->isAutoReload()) {
+        file->reload();
+        return FileProcessKind::ignore;
+    }
     return file->isModified() ? FileProcessKind::changedConflict : FileProcessKind::changedExternOnly;
 }
 
@@ -1894,7 +1897,7 @@ void MainWindow::on_actionExit_Application_triggered()
     close();
 }
 
-void MainWindow::on_actionHelp_triggered()
+void MainWindow::on_actionGamsHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
@@ -1967,6 +1970,20 @@ void MainWindow::on_actionHelp_triggered()
              mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
          }
     }
+
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
+#endif
+}
+
+void MainWindow::on_actionStudioHelp_triggered()
+{
+#ifdef QWEBENGINE
+    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain,
+                                          QString(),
+                                          QString());
 
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
@@ -2350,6 +2367,13 @@ void MainWindow::restoreFromSettings()
     setExtendedEditorVisibility(settings->toBool(skViewOption));
     setHelpViewVisibility(settings->toBool(skViewHelp));
     setEncodingMIBs(settings->toString(skEncodingMib));
+
+    QStringList invalidSuffix;
+    QStringList suffixes = FileType::validateSuffixList(settings->toString(skUserFileTypes), &invalidSuffix);
+    mFileMetaRepo.setUserGamsTypes(suffixes);
+    if (!invalidSuffix.isEmpty()) {
+        settings->setString(skUserFileTypes, suffixes.join(","));
+    }
 
     // help
 #ifdef QWEBENGINE
@@ -3415,7 +3439,11 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-    if (mTabStyle) mTabStyle->setBaseStyle(qApp->style());
+    if (mTabStyle) {
+        TabBarStyle *old = mTabStyle;
+        mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+        delete old;
+    }
     repaint();
 }
 
@@ -3748,6 +3776,10 @@ void MainWindow::on_actionSettings_triggered()
         mSettingsDialog = new SettingsDialog(this);
         mSettingsDialog->setModal(true);
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+        connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
+            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserFileTypes));
+            mFileMetaRepo.setUserGamsTypes(suffixes);
+        });
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);

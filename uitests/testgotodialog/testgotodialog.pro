@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -17,29 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
+
 TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH \
-               $$SRCPATH/option
+INCLUDEPATH += $$SRCPATH                \
+               $$SRCPATH/file
 
-HEADERS += \
-    testcplexoption.h \
-    $$SRCPATH/logger.h \
-    $$SRCPATH/theme.h \
-    $$SRCPATH/option/option.h \
-    $$SRCPATH/svgengine.h \
-    $$SRCPATH/option/optiontokenizer.h
+HEADERS += $$files(*.h, true)                   \
+           $$SRCPATH/gotodialog.h
 
-SOURCES += \
-    testcplexoption.cpp \
-    $$SRCPATH/logger.cpp \
-    $$SRCPATH/theme.cpp \
-    $$SRCPATH/option/option.cpp \
-    $$SRCPATH/svgengine.cpp \
-    $$SRCPATH/option/optiontokenizer.cpp \
-    $$SRCPATH/editors/sysloglocator.cpp \
-    $$SRCPATH/editors/defaultsystemlogger.cpp \
-    $$SRCPATH/commonpaths.cpp \
-    $$SRCPATH/exception.cpp
+SOURCES += $$files(*.cpp, true)                 \
+           $$SRCPATH/gotodialog.cpp
+
+FORMS   += $$SRCPATH/gotodialog.ui

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -74,6 +74,7 @@ public:
     bool isModified() const;
     bool isReadOnly() const;
     bool isAutoReload() const;
+    void setAutoReload();
     void resetTempReloadState();
     void setModified(bool modified=true);
 
@@ -137,6 +138,7 @@ private:
     bool checkActivelySavedAndReset();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
+    void refreshType();
     void updateSyntaxColors();
     void initEditorColors();
     void updateEditorColors();
@@ -148,6 +150,7 @@ private:
     QString mLocation;
     QString mName;
     Data mData;
+    bool mAutoReload = false;
     bool mActivelySaved = false;
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;

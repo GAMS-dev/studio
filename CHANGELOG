@@ -1,3 +1,13 @@
+Version 1.6.0
+==================
+- added *.inc as common extension for GAMS files
+- added user defined extensions for GAMS files
+- added automatic reloading of files that appear in the GAMS log
+- added setting for user defined extensions for files to be auto-reloaded
+- added auto-reload button to file-changed-dialog
+- fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
+- added Studio Documentation entry in Help menu
+
 Version 1.5.5
 ==================
 - fixed "Reset View" not resetting splitter in the LST/LXI-Viewer

@@ -17,9 +17,9 @@ def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
 def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
-def GAMS_FOR_LINUX = "/opt/gams/gams34.0_linux_x64_64_sfx"
-def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/34/Resources"
-def GAMS_FOR_WINDOWS = "C:\\GAMS\\34"
+def GAMS_FOR_LINUX = "/opt/gams/gams35.0_linux_x64_64_sfx"
+def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/35/Resources"
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\35"
 
 pipeline {
     agent none
@@ -257,7 +257,7 @@ pipeline {
                                 cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
 
-                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/src/studio.pro | cut -f2 -d"=")
+                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
                                 echo "Use QWEBENGINE: $USE_QWEBENGINE"
                                 if [ "$USE_QWEBENGINE" = "true" ]; then
                                     echo "Signing QWEBENGINE..."

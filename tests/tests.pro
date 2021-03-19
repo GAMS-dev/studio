@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -25,19 +25,16 @@ SUBDIRS +=                              \
            testblockcode                \
            testcheckforupdatewrapper    \
            testcommonpaths              \
-           testconopt4option            \
-           testcplexoption              \
            testdialogfilefilter         \
            testdoclocation              \
            testeditors                  \
            testgamslicenseinfo          \
            testgamsoption               \
            testgamsuserconfig           \
-           testgurobioption             \
            testmemorymapper             \
-           testminosoption              \
            testmiro                     \
            testoptionapi                \
+           testoptionfile               \
            testsettings                 \
            testservicelocators
 #           testsolverconfiginfo

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,7 +48,10 @@ public:
     static void clear();
     static FileType& from(QString suffix);
     static FileType& from(FileKind kind);
-
+    static QStringList validateSuffixList(const QString &commaSeparatedList, QStringList *invalid = nullptr);
+    static void setUserGamsTypes(const QStringList &suffix);
+    static const QStringList userGamsTypes();
+    static const QStringList invalidUserGamsTypes();
 
 private:
     FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
@@ -60,6 +63,9 @@ private:
 
     static QList<FileType*> mFileTypes;
     static FileType* mNone;
+    static int mGmsFixedTypes;
+    static QStringList mUserGamsTypes;
+    static const QStringList CInvalidUserTypes;
 };
 
 } // namespace studio

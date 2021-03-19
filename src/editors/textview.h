@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -86,6 +86,7 @@ signals:
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
     void switchLst(const QString &lstName) const;
+    void registerGeneratedFile(const QString &fileName);
 
 public slots:
     void updateExtraSelections();

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -33,8 +33,10 @@ GoToDialog::GoToDialog(QWidget *parent, int maxLines)
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->setupUi(this);
     maxLineCount(maxLines);
-    int min = parent->fontMetrics().horizontalAdvance(QString::number(mMaxLines)+"0");
-    ui->lineEdit->setMinimumWidth(min);
+    if (parent) {
+        int min = parent->fontMetrics().horizontalAdvance(QString::number(mMaxLines)+"0");
+        ui->lineEdit->setMinimumWidth(min);
+    }
     connect(ui->lineEdit, &QLineEdit::returnPressed, this, &GoToDialog::on_goToButton_clicked);
 }
 

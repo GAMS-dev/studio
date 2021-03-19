@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2020 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2020 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -440,6 +440,17 @@ void MemoryMapper::parseNewLine()
     }
 
     if (lastLinkStart >= start) {
+        if (lastLinkStart+6 < end && chunk->bArray.mid(lastLinkStart+1, 4) == "FIL:") {
+            int i = lastLinkStart+6;
+            QChar delim = chunk->bArray.at(i-1);
+            if (delim == '\"' || delim == '\'') {
+                int j = i;
+                while (j < end && chunk->bArray.at(j) != delim) ++j;
+                if (j < end) {
+                    emit registerGeneratedFile(chunk->bArray.mid(i, j-i));
+                }
+            }
+        }
         if (lastLinkStart > start+line.length() || line.startsWith("*** Error")) {
 //            fmt = LineFormat(4, line.length(), mBaseFormat.at(error));
 //            if (lastLinkStart > start+line.length()) {
