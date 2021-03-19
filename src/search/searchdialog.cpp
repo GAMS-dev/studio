@@ -252,6 +252,9 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         e->accept();
         on_btn_FindAll_clicked();
+    } else if (e == Hotkey::OpenHelp) {
+        mMain->helpWidget()->on_helpContentRequested(help::DocumentType::StudioMain, "",
+                                                     help::HelpData::getStudioSectionName(help::StudioSection::SearchAndReplace));
     }
     QDialog::keyPressEvent(e);
 }
