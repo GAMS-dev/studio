@@ -45,7 +45,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tvTableView->hide();
-    ui->tvRowDomains->hide();
+    ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
 
@@ -165,15 +165,15 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    ui->tvRowDomains->setHorizontalHeader(new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::TableViewFilter));
-    ui->tvRowDomains->horizontalHeader()->setVisible(true);
-    ui->tvRowDomains->horizontalHeader()->setSectionsClickable(true);
-    ui->tvRowDomains->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->tvTableViewFilter->setHorizontalHeader(new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::TableViewFilter));
+    ui->tvTableViewFilter->horizontalHeader()->setVisible(true);
+    ui->tvTableViewFilter->horizontalHeader()->setSectionsClickable(true);
+    ui->tvTableViewFilter->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ui->tvRowDomains->horizontalHeader()->installEventFilter(this);
-    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
+    ui->tvTableViewFilter->horizontalHeader()->installEventFilter(this);
+    connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
 
-    connect(ui->tvRowDomains->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
+    connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
 
     connect(ui->tbDomLeft, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollLeft);
     connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
@@ -190,7 +190,7 @@ GdxSymbolView::~GdxSymbolView()
 
 void GdxSymbolView::showFilter(QPoint p)
 {
-    QTableView* tableView = mTableView ? ui->tvRowDomains : ui->tvListView;
+    QTableView* tableView = mTableView ? ui->tvTableViewFilter : ui->tvListView;
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
@@ -234,7 +234,7 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
                     ui->tvTableView->setColumnHidden(col, !mShowValColActions[col%GMS_DT_MAX]->isChecked());
             }
             for (int col=0; col<GMS_VAL_MAX; col++)
-                ui->tvRowDomains->setColumnHidden(mSym->dim()+col, !mShowValColActions[col]->isChecked());
+                ui->tvTableViewFilter->setColumnHidden(mSym->dim()+col, !mShowValColActions[col]->isChecked());
             ui->tvTableView->setUpdatesEnabled(true);
         } else {
             ui->tvListView->setUpdatesEnabled(false);
@@ -270,7 +270,7 @@ void GdxSymbolView::resetSortFilter()
         mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
-            ui->tvRowDomains->setModel(nullptr);
+            ui->tvTableViewFilter->setModel(nullptr);
             delete mTvDomainModel;
             mTvDomainModel = nullptr;
             delete mTvModel;
@@ -408,7 +408,7 @@ void GdxSymbolView::toggleColumnHidden()
 
 void GdxSymbolView::moveTvFilterColumns(int from, int to)
 {
-    ui->tvRowDomains->horizontalHeader()->moveSection(from, to);
+    ui->tvTableViewFilter->horizontalHeader()->moveSection(from, to);
 }
 
 void GdxSymbolView::updateNumericalPrecision()
@@ -453,7 +453,7 @@ void GdxSymbolView::tvFilterScrollLeft()
         mTvFilterSection=0;
         ui->tbDomLeft->setEnabled(false);
     }
-    ui->tvRowDomains->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
+    ui->tvTableViewFilter->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
 }
 
 void GdxSymbolView::tvFilterScrollRight()
@@ -465,7 +465,7 @@ void GdxSymbolView::tvFilterScrollRight()
         mTvFilterSection=mTvFilterSectionMax;
         ui->tbDomRight->setEnabled(false);
     }
-    ui->tvRowDomains->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
+    ui->tvTableViewFilter->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -483,7 +483,7 @@ void GdxSymbolView::autoResizeColumns()
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
         for (int i=0; i<mTVResizeColNr; i++) {
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
-            ui->tvRowDomains->resizeColumnToContents(ui->tvRowDomains->columnAt(0)+i);
+            ui->tvTableViewFilter->resizeColumnToContents(ui->tvTableViewFilter->columnAt(0)+i);
         }
     }
     else
@@ -501,12 +501,12 @@ void GdxSymbolView::autoResizeTableViewColumns()
 
 void GdxSymbolView::adjustDomainScrollbar()
 {
-    int colCount = ui->tvRowDomains->model()->columnCount();
+    int colCount = ui->tvTableViewFilter->model()->columnCount();
     QVector<int> accSecWidth(colCount);
-    int tableWidth = ui->tvRowDomains->horizontalHeader()->width();
+    int tableWidth = ui->tvTableViewFilter->horizontalHeader()->width();
     int last = 0;
     for (int i=0; i<colCount; ++i) {
-        last += ui->tvRowDomains->horizontalHeader()->sectionSize(i);
+        last += ui->tvTableViewFilter->horizontalHeader()->sectionSize(i);
         accSecWidth[i] = last;
     }
     if (accSecWidth.last() > tableWidth) {
@@ -533,7 +533,7 @@ void GdxSymbolView::showListView()
 {
     mTableView = false;
     ui->tvTableView->hide();
-    ui->tvRowDomains->hide();
+    ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
     ui->tvListView->show();
@@ -549,9 +549,9 @@ void GdxSymbolView::showTableView()
         ui->tvTableView->setModel(mTvModel);
 
         mTvDomainModel = new TableViewDomainModel(mTvModel);
-        ui->tvRowDomains->setModel(mTvDomainModel);
-        int height = ui->tvRowDomains->horizontalHeader()->height()+2;
-        ui->tvRowDomains->setMaximumHeight(height);
+        ui->tvTableViewFilter->setModel(mTvDomainModel);
+        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+        ui->tvTableViewFilter->setMaximumHeight(height);
 
         ui->tbDomLeft->setMaximumHeight(height);
         ui->tbDomRight->setMaximumHeight(height);
@@ -566,7 +566,7 @@ void GdxSymbolView::showTableView()
     ui->tvListView->hide();
 
     ui->tvTableView->show();
-    ui->tvRowDomains->show();
+    ui->tvTableViewFilter->show();
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
     mTableView = true;
