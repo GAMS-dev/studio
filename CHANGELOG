@@ -13,6 +13,7 @@ Version 1.6.0
     - fixed a memory leak caused by the fitler menu not being cleaned up properly
     - fixed an overlap of the section resize cursor and the filter icons
     - fixed table view columns being resized automatically when toggling between list and table view mode
+    - improved automatic column widths
 
 Version 1.5.5
 ==================
