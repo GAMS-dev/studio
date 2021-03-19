@@ -380,7 +380,8 @@ void MainWindow::initIcons()
     ui->actionZoom_In->setIcon(Theme::icon(":/%1/search-plus"));
     ui->actionZoom_Out->setIcon(Theme::icon(":/%1/search-minus"));
     ui->actionShowToolbar->setIcon(Theme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionGamsHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionStudioHelp->setIcon(Theme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
@@ -1896,7 +1897,7 @@ void MainWindow::on_actionExit_Application_triggered()
     close();
 }
 
-void MainWindow::on_actionHelp_triggered()
+void MainWindow::on_actionGamsHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
@@ -1969,6 +1970,20 @@ void MainWindow::on_actionHelp_triggered()
              mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
          }
     }
+
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
+#endif
+}
+
+void MainWindow::on_actionStudioHelp_triggered()
+{
+#ifdef QWEBENGINE
+    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain,
+                                          QString(),
+                                          QString());
 
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
