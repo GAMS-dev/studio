@@ -50,6 +50,11 @@ QVariant TableViewDomainModel::headerData(int section, Qt::Orientation orientati
 
             }
         }
+    } else if (role == Qt::ToolTipRole) {
+        QString description("<html><head/><body>");
+        description += "<p><span style=\" font-weight:600;\">Filter:</span> The filter menu can be opened via right click or by clicking on the filter icon.</p>";
+        description += "</body></html>";
+        return description;
     }
     return QVariant();
 }
