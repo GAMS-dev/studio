@@ -61,7 +61,7 @@
        <number>6</number>
       </property>
       <item row="0" column="0">
-       <widget class="QTabWidget" name="mainTabs">
+       <widget class="gams::studio::TabWidget" name="mainTabs">
         <property name="sizePolicy">
          <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
           <horstretch>3</horstretch>
@@ -438,7 +438,7 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QTabWidget" name="logTabs">
+      <widget class="gams::studio::TabWidget" name="logTabs">
        <property name="sizePolicy">
         <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
          <horstretch>3</horstretch>
@@ -1487,6 +1487,12 @@
    <class>gams::studio::ProjectTreeView</class>
    <extends>QTreeView</extends>
    <header>file/projecttreeview.h</header>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::TabWidget</class>
+   <extends>QTabWidget</extends>
+   <header>tabwidget.h</header>
+   <container>1</container>
   </customwidget>
  </customwidgets>
  <resources>
