@@ -219,6 +219,10 @@ MainWindow::MainWindow(QWidget *parent)
             this, &MainWindow::miroDeploy);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::newAssemblyFileData,
             this, &MainWindow::writeNewAssemblyFileData);
+    connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::showMiroHelp,
+            this, [this](){
+                auto section = help::HelpData::getStudioSectionName(help::StudioSection::MIRO);
+                mHelpWidget->on_helpContentRequested(help::DocumentType::StudioMain, "", section);} );
 
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);

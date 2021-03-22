@@ -22,6 +22,7 @@
 #include "mirocommon.h"
 #include "filesystemmodel.h"
 #include "theme.h"
+#include "keys.h"
 
 #include <QMessageBox>
 
@@ -122,6 +123,17 @@ void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
 {
     mWorkingDirectory = workingDirectory;
     setupViewModel();
+}
+
+void MiroDeployDialog::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Hotkey::OpenHelp) {
+        emit showMiroHelp();
+        e->accept();
+        return;
+    }
+
+    QDialog::keyPressEvent(e);
 }
 
 void MiroDeployDialog::on_createButton_clicked()
