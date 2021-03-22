@@ -3637,7 +3637,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == ProcState::Proc4GetResult) {
+            if (progress == ProcState::Proc5GetResult) {
                 gv->releaseFile();
             } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
@@ -3656,7 +3656,7 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
     for (ProjectFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                if (progress == ProcState::Proc4GetResult) {
+                if (progress == ProcState::Proc5GetResult) {
                     gv->releaseFile();
                 } else if (progress == ProcState::ProcIdle) {
                     gv->setHasChanged(true);
