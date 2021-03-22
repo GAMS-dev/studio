@@ -18,6 +18,7 @@
 */
 #include <QMessageBox>
 #include <QShortcut>
+#include <QSslSocket>
 
 #include "parametereditor.h"
 #include "ui_parametereditor.h"

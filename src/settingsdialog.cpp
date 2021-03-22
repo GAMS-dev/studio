@@ -308,6 +308,11 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
     emit editorFontChanged(ui->fontComboBox->currentFont().family(), size);
 }
 
+void SettingsDialog::on_sb_tabsize_valueChanged(int size)
+{
+    emit editorTabSizeChanged(size);
+}
+
 void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);

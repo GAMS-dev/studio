@@ -25,6 +25,9 @@ CONFIG -= app_bundle
 
 DESTDIR = ../bin
 
+OBJECTS_DIR=../../objects
+MOC_DIR=../../objects
+
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 

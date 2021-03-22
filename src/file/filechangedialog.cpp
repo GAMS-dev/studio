@@ -1,5 +1,4 @@
 #include "filechangedialog.h"
-#include "../logger.h"
 #include <QKeyEvent>
 
 namespace gams {
@@ -9,8 +8,13 @@ FileChangeDialog::FileChangeDialog(QWidget *parent) :
     QMessageBox(parent)
 {
     mCbAll = new QCheckBox("For &all files");
+    mCbAll->setObjectName("cbAll");
     setCheckBox(mCbAll);
     mButtons << new QPushButton("Close") << new QPushButton("Reload") << new QPushButton("Always Reload") << new QPushButton("Keep");
+    mButtons.at(int(Result::rClose))->setObjectName("btClose");
+    mButtons.at(int(Result::rReload))->setObjectName("btReload");
+    mButtons.at(int(Result::rReloadAlways))->setObjectName("btReloadAlways");
+    mButtons.at(int(Result::rKeep))->setObjectName("btKeep");
     mButtons.at(int(Result::rKeep))->setAutoDefault(true);
     setIcon(Warning);
     for (QAbstractButton *button : qAsConst(mButtons)) {
@@ -40,7 +44,6 @@ void FileChangeDialog::show(QString filePath, bool deleted, bool modified, int c
     mButtons.at(int(Result::rReload))->setVisible(!deleted);
     mButtons.at(int(Result::rReloadAlways))->setVisible(!deleted);
     mCbAll->setVisible(count > 1);
-    DEB() << "open for " << file << (count > 1 ? QString(" + %1").arg(count-1) : "");
     QMessageBox::open();
 }
 

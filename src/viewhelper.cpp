@@ -82,7 +82,7 @@ QString ViewHelper::location(QWidget *widget)
     return widget->property("location").toString();
 }
 
-void ViewHelper::setLocation(QWidget *widget, QString location)
+void ViewHelper::setLocation(QWidget *widget, const QString &location)
 {
     widget->setProperty("location", location);
     // if there is an inner edit: set the property additionally
@@ -90,6 +90,22 @@ void ViewHelper::setLocation(QWidget *widget, QString location)
         if (ed != widget) ed->setProperty("location", location);
     } else if (TextView* tv = toTextView(widget)) {
        tv->edit()->setProperty("location", location);
+    }
+}
+
+bool ViewHelper::modified(const QWidget *widget)
+{
+    return widget->property("modified").toBool();
+}
+
+void ViewHelper::setModified(QWidget *widget, bool modified)
+{
+    widget->setProperty("modified", modified);
+    // if there is an inner edit: set the property additionally
+    if (AbstractEdit *ed = toAbstractEdit(widget)) {
+        if (ed != widget) ed->setProperty("modified", modified);
+    } else if (TextView* tv = toTextView(widget)) {
+       tv->edit()->setProperty("modified", modified);
     }
 }
 
