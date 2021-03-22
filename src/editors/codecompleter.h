@@ -1,14 +1,18 @@
 #ifndef GAMS_STUDIO_SYNTAX_CODECOMPLETER_H
 #define GAMS_STUDIO_SYNTAX_CODECOMPLETER_H
 
-#include <QListWidget>
+#include <QListView>
+#include <QAbstractListModel>
+
+class QSortFilterProxyModel;
 
 namespace gams {
 namespace studio {
 
 class CodeEdit;
+class CodeCompleterModel;
 
-class CodeCompleter : public QListWidget
+class CodeCompleter : public QListView
 {
     Q_OBJECT
 
@@ -29,9 +33,22 @@ protected:
 
 private:
     CodeEdit *mEdit;
+    CodeCompleterModel *mModel;
+    QSortFilterProxyModel *mFilter;
 
 };
 
+class CodeCompleterModel : public QAbstractListModel
+{
+    QHash<Qt::ItemDataRole, QList<QPair<QString, QString>>> mData;
+    Q_OBJECT
+public:
+    CodeCompleterModel(QObject *parent = nullptr);
+    ~CodeCompleterModel() override {}
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+
+};
 
 } // namespace studio
 } // namespace gams
