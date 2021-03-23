@@ -10,7 +10,6 @@
  */
 
 #include "OAIJobsApi.h"
-#include "OAIHelpers.h"
 #include "OAIServerConfiguration.h"
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -22,64 +21,50 @@ OAIJobsApi::OAIJobsApi(const int timeOut)
       _manager(nullptr),
       isResponseCompressionEnabled(false),
       isRequestCompressionEnabled(false) {
-      initializeServerConfigs();
-      }
+    initializeServerConfigs();
+}
 
 OAIJobsApi::~OAIJobsApi() {
 }
 
 void OAIJobsApi::initializeServerConfigs(){
-
-//Default server
-QList<OAIServerConfiguration> defaultConf = QList<OAIServerConfiguration>();
-//varying endpoint server 
-QList<OAIServerConfiguration> serverConf = QList<OAIServerConfiguration>();
-defaultConf.append(OAIServerConfiguration(
+    //Default server
+    QList<OAIServerConfiguration> defaultConf = QList<OAIServerConfiguration>();
+    //varying endpoint server
+    QList<OAIServerConfiguration> serverConf = QList<OAIServerConfiguration>();
+    defaultConf.append(OAIServerConfiguration(
     QUrl("//localhost/"),
     "No description provided",
     QMap<QString, OAIServerVariable>()));
-_serverConfigs.insert("createJob",defaultConf);
-_serverIndices.insert("createJob",0);
-
-_serverConfigs.insert("deleteJobZip",defaultConf);
-_serverIndices.insert("deleteJobZip",0);
-
-_serverConfigs.insert("getJob",defaultConf);
-_serverIndices.insert("getJob",0);
-
-_serverConfigs.insert("getJobTextEntry",defaultConf);
-_serverIndices.insert("getJobTextEntry",0);
-
-_serverConfigs.insert("getJobTextEntryInfo",defaultConf);
-_serverIndices.insert("getJobTextEntryInfo",0);
-
-_serverConfigs.insert("getJobZip",defaultConf);
-_serverIndices.insert("getJobZip",0);
-
-_serverConfigs.insert("getJobZipInfo",defaultConf);
-_serverIndices.insert("getJobZipInfo",0);
-
-_serverConfigs.insert("getStatusCodes",defaultConf);
-_serverIndices.insert("getStatusCodes",0);
-
-_serverConfigs.insert("killJob",defaultConf);
-_serverIndices.insert("killJob",0);
-
-_serverConfigs.insert("listJobs",defaultConf);
-_serverIndices.insert("listJobs",0);
-
-_serverConfigs.insert("popJobLogs",defaultConf);
-_serverIndices.insert("popJobLogs",0);
-
-_serverConfigs.insert("popStreamEntry",defaultConf);
-_serverIndices.insert("popStreamEntry",0);
-
-
+    _serverConfigs.insert("createJob", defaultConf);
+    _serverIndices.insert("createJob", 0);
+    _serverConfigs.insert("deleteJobZip", defaultConf);
+    _serverIndices.insert("deleteJobZip", 0);
+    _serverConfigs.insert("getJob", defaultConf);
+    _serverIndices.insert("getJob", 0);
+    _serverConfigs.insert("getJobTextEntry", defaultConf);
+    _serverIndices.insert("getJobTextEntry", 0);
+    _serverConfigs.insert("getJobTextEntryInfo", defaultConf);
+    _serverIndices.insert("getJobTextEntryInfo", 0);
+    _serverConfigs.insert("getJobZip", defaultConf);
+    _serverIndices.insert("getJobZip", 0);
+    _serverConfigs.insert("getJobZipInfo", defaultConf);
+    _serverIndices.insert("getJobZipInfo", 0);
+    _serverConfigs.insert("getStatusCodes", defaultConf);
+    _serverIndices.insert("getStatusCodes", 0);
+    _serverConfigs.insert("killJob", defaultConf);
+    _serverIndices.insert("killJob", 0);
+    _serverConfigs.insert("listJobs", defaultConf);
+    _serverIndices.insert("listJobs", 0);
+    _serverConfigs.insert("popJobLogs", defaultConf);
+    _serverIndices.insert("popJobLogs", 0);
+    _serverConfigs.insert("popStreamEntry", defaultConf);
+    _serverIndices.insert("popStreamEntry", 0);
 }
 
 /**
 * returns 0 on success and -1, -2 or -3 on failure.
-* -1 when the variable does not exist and -2 if the value is not defined in the enum and -3 if the operation or server index is not found 
+* -1 when the variable does not exist and -2 if the value is not defined in the enum and -3 if the operation or server index is not found
 */
 int OAIJobsApi::setDefaultServerValue(int serverIndex, const QString &operation, const QString &variable, const QString &value){
     auto it = _serverConfigs.find(operation);
@@ -119,17 +104,17 @@ void OAIJobsApi::setWorkingDirectory(const QString &path) {
 }
 
 void OAIJobsApi::setNetworkAccessManager(QNetworkAccessManager* manager) {
-    _manager = manager;  
+    _manager = manager;
 }
 
-    /**
-     * Appends a new ServerConfiguration to the config map for a specific operation.
-     * @param operation The id to the target operation.
-     * @param url A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     * returns the index of the new server config on success and -1 if the operation is not found
-     */
+/**
+    * Appends a new ServerConfiguration to the config map for a specific operation.
+    * @param operation The id to the target operation.
+    * @param url A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    * returns the index of the new server config on success and -1 if the operation is not found
+    */
 int OAIJobsApi::addServerConfiguration(const QString &operation, const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
     if(_serverConfigs.contains(operation)){
         _serverConfigs[operation].append(OAIServerConfiguration(
@@ -142,27 +127,26 @@ int OAIJobsApi::addServerConfiguration(const QString &operation, const QUrl &url
     }
 }
 
-    /**
-     * Appends a new ServerConfiguration to the config map for a all operations and sets the index to that server.
-     * @param url A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     */
+/**
+    * Appends a new ServerConfiguration to the config map for a all operations and sets the index to that server.
+    * @param url A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    */
 void OAIJobsApi::setNewServerForAllOperations(const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
-        for(auto e : _serverIndices.keys()){
-            setServerIndex(e, addServerConfiguration(e, url, description, variables));
-        }
-} 
-    /**
-     * Appends a new ServerConfiguration to the config map for an operations and sets the index to that server.
-     * @param URL A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     */
+    for(auto e : _serverIndices.keys()){
+        setServerIndex(e, addServerConfiguration(e, url, description, variables));
+    }
+}
+
+/**
+    * Appends a new ServerConfiguration to the config map for an operations and sets the index to that server.
+    * @param URL A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    */
 void OAIJobsApi::setNewServer(const QString &operation, const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
-
     setServerIndex(operation, addServerConfiguration(operation, url, description, variables));
-
 }
 
 void OAIJobsApi::addHeaders(const QString &key, const QString &value) {
@@ -182,71 +166,69 @@ void OAIJobsApi::abortRequests(){
 }
 
 QString OAIJobsApi::getParamStylePrefix(QString style){
-
-        if(style == "matrix"){ 
-            return ";";
-        }else if(style == "label"){
-            return ".";
-        }else if(style == "form"){
-            return "&"; 
-        }else if(style == "simple"){
-            return "";
-        }else if(style == "spaceDelimited"){
-            return "&"; 
-        }else if(style == "pipeDelimited"){
-            return "&"; 
-        }else
-            return "none";
+    if(style == "matrix"){
+        return ";";
+    }else if(style == "label"){
+        return ".";
+    }else if(style == "form"){
+        return "&";
+    }else if(style == "simple"){
+        return "";
+    }else if(style == "spaceDelimited"){
+        return "&";
+    }else if(style == "pipeDelimited"){
+        return "&";
+    }else{
+        return "none";
+    }
 }
 
 QString OAIJobsApi::getParamStyleSuffix(QString style){
-
-        if(style == "matrix"){ 
-            return "=";
-        }else if(style == "label"){
-            return "";
-        }else if(style == "form"){
-            return "=";
-        }else if(style == "simple"){
-            return "";
-        }else if(style == "spaceDelimited"){
-            return "=";
-        }else if(style == "pipeDelimited"){
-            return "=";
-        }else
-            return "none";
+    if(style == "matrix"){
+        return "=";
+    }else if(style == "label"){
+        return "";
+    }else if(style == "form"){
+        return "=";
+    }else if(style == "simple"){
+        return "";
+    }else if(style == "spaceDelimited"){
+        return "=";
+    }else if(style == "pipeDelimited"){
+        return "=";
+    }else{
+        return "none";
+    }
 }
 
 QString OAIJobsApi::getParamStyleDelimiter(QString style, QString name, bool isExplode){
 
-        if(style == "matrix"){ 
-            return (isExplode) ? ";" + name + "=" : ",";
+    if(style == "matrix"){
+        return (isExplode) ? ";" + name + "=" : ",";
 
-        }else if(style == "label"){
-            return (isExplode) ? "." : ",";
+    }else if(style == "label"){
+        return (isExplode) ? "." : ",";
 
-        }else if(style == "form"){
-            return (isExplode) ? "&" + name + "=" : ","; 
+    }else if(style == "form"){
+        return (isExplode) ? "&" + name + "=" : ",";
 
-        }else if(style == "simple"){
-            return ",";
-        }else if(style == "spaceDelimited"){
-            return (isExplode) ? "&" + name + "=" : " ";
+    }else if(style == "simple"){
+        return ",";
+    }else if(style == "spaceDelimited"){
+        return (isExplode) ? "&" + name + "=" : " ";
 
-        }else if(style == "pipeDelimited"){
-            return (isExplode) ? "&" + name + "=" : "|";
+    }else if(style == "pipeDelimited"){
+        return (isExplode) ? "&" + name + "=" : "|";
 
-        }else if(style == "deepObject"){
-            return (isExplode) ? "&" : "none";
+    }else if(style == "deepObject"){
+        return (isExplode) ? "&" : "none";
 
-        }else
-            return "none";
+    }else {
+        return "none";
+    }
 }
 
-void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, const QVariant &run, const QVariant &text_entries,
-                           const QVariant &stream_entries, const QVariant &stdout_filename, const QVariant &arguments,
-                           const QVariant &dep_tokens, const QVariant &labels, const QVariant &model_data,
-                           const QVariant &data, const QVariant &inex_file) {
+void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, const ::OpenAPI::OptionalParam<QString> &run, const ::OpenAPI::OptionalParam<QList<QString>> &text_entries, const ::OpenAPI::OptionalParam<QList<QString>> &stream_entries, const ::OpenAPI::OptionalParam<QString> &stdout_filename, const ::OpenAPI::OptionalParam<QList<QString>> &arguments, const ::OpenAPI::OptionalParam<QList<QString>> &dep_tokens, const ::OpenAPI::OptionalParam<QList<QString>> &labels, const ::OpenAPI::OptionalParam<OAIHttpFileElement> &model_data, const ::OpenAPI::OptionalParam<OAIHttpFileElement> &data, const ::OpenAPI::OptionalParam<OAIHttpFileElement> &inex_file) {
     QString fullPath = QString(_serverConfigs["createJob"][_serverIndices.value("createJob")].URL()+"/jobs/");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -254,16 +236,15 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
     
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "model", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "model", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
@@ -271,31 +252,29 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
 
         fullPath.append(QUrl::toPercentEncoding("model")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(model)));
     }
-
-    if(!run.isNull())
+    if(run.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "run", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "run", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("run")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(run.value<QString>())));
+        fullPath.append(QUrl::toPercentEncoding("run")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(run.value())));
     }
-
     
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "namespace", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "namespace", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
@@ -303,18 +282,17 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
 
         fullPath.append(QUrl::toPercentEncoding("namespace")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(r_namespace)));
     }
-
-    if(!text_entries.isNull())
+    if(text_entries.hasValue())
     {
         queryStyle = "form";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "text_entries", true); 
-        if (text_entries.value<QStringList>().size() > 0) {
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "text_entries", true);
+        if(text_entries.value().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -327,7 +305,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -340,7 +318,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -353,7 +331,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -366,7 +344,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -379,28 +357,27 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("text_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, text_entries.value<QStringList>()) {
+                foreach (QString t, text_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
                     fullPath.append(::OpenAPI::toStringValue(t));
                     count++;
-                }   
+                }
             }
         }
     }
-
-    if(!stream_entries.isNull())
+    if(stream_entries.hasValue())
     {
         queryStyle = "form";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "stream_entries", true); 
-        if (stream_entries.value<QStringList>().size() > 0) {
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "stream_entries", true);
+        if(stream_entries.value().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -413,7 +390,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -426,7 +403,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -439,7 +416,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -452,7 +429,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -465,44 +442,42 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("stream_entries").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, stream_entries.value<QStringList>()) {
+                foreach (QString t, stream_entries.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
                     fullPath.append(::OpenAPI::toStringValue(t));
                     count++;
-                }   
+                }
             }
         }
     }
-
-    if(!stdout_filename.isNull())
+    if(stdout_filename.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "stdout_filename", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "stdout_filename", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("stdout_filename")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(stdout_filename.value<QString>())));
+        fullPath.append(QUrl::toPercentEncoding("stdout_filename")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(stdout_filename.value())));
     }
-
-    if(!arguments.isNull())
+    if(arguments.hasValue())
     {
         queryStyle = "form";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "arguments", true); 
-        if (arguments.value<QStringList>().size() > 0) {
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "arguments", true);
+        if(arguments.value().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -515,7 +490,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -528,7 +503,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -541,7 +516,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -554,7 +529,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -567,28 +542,27 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("arguments").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, arguments.value<QStringList>()) {
+                foreach (QString t, arguments.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
                     fullPath.append(::OpenAPI::toStringValue(t));
                     count++;
-                }   
+                }
             }
         }
     }
-
-    if(!dep_tokens.isNull())
+    if(dep_tokens.hasValue())
     {
         queryStyle = "form";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "dep_tokens", true); 
-        if (dep_tokens.value<QStringList>().size() > 0) {
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "dep_tokens", true);
+        if(dep_tokens.value().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -601,7 +575,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -614,7 +588,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -627,7 +601,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -640,7 +614,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -653,28 +627,27 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("dep_tokens").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, dep_tokens.value<QStringList>()) {
+                foreach (QString t, dep_tokens.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
                     fullPath.append(::OpenAPI::toStringValue(t));
                     count++;
-                }   
+                }
             }
         }
     }
-
-    if(!labels.isNull())
+    if(labels.hasValue())
     {
         queryStyle = "form";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "labels", true); 
-        if (labels.value<QStringList>().size() > 0) {
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "labels", true);
+        if(labels.value().size() > 0) {
             if (QString("multi").indexOf("multi") == 0) {
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (fullPath.indexOf("?") > 0)
                         fullPath.append(queryPrefix);
                     else
@@ -687,7 +660,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (count > 0) {
                         fullPath.append((true)? queryDelimiter : QUrl::toPercentEncoding(queryDelimiter));
                     }
@@ -700,7 +673,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (count > 0) {
                         fullPath.append("\t");
                     }
@@ -713,7 +686,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -726,7 +699,7 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
@@ -739,44 +712,44 @@ void OAIJobsApi::createJob(const QString &model, const QString &r_namespace, con
                 else
                     fullPath.append("?").append(queryPrefix).append("labels").append(querySuffix);
                 qint32 count = 0;
-                foreach (QString t, labels.value<QStringList>()) {
+                foreach (QString t, labels.value()) {
                     if (count > 0) {
                         fullPath.append(queryDelimiter);
                     }
                     fullPath.append(::OpenAPI::toStringValue(t));
                     count++;
-                }   
+                }
             }
         }
     }
-    qDebug() << "oAPI-intern: " << fullPath;
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "POST");
 
-
-    if(!model_data.isNull())
+    if(model_data.hasValue())
     {
-        input.add_file("model_data", model_data.value<OAIHttpFileElement>().local_filename, model_data.value<OAIHttpFileElement>().request_filename, model_data.value<OAIHttpFileElement>().mime_type);
+        input.add_file("model_data", model_data.value().local_filename, model_data.value().request_filename, model_data.value().mime_type);
     }
-
-
-    if(!data.isNull())
+    if(data.hasValue())
     {
-        input.add_file("data", data.value<OAIHttpFileElement>().local_filename, data.value<OAIHttpFileElement>().request_filename, data.value<OAIHttpFileElement>().mime_type);
+        input.add_file("data", data.value().local_filename, data.value().request_filename, data.value().mime_type);
     }
-
-
-    if(!inex_file.isNull())
+    if(inex_file.hasValue())
     {
-        input.add_file("inex_file", inex_file.value<OAIHttpFileElement>().local_filename, inex_file.value<OAIHttpFileElement>().request_filename, inex_file.value<OAIHttpFileElement>().mime_type);
+        input.add_file("inex_file", inex_file.value().local_filename, inex_file.value().request_filename, inex_file.value().mime_type);
     }
 
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::createJobCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -811,14 +784,13 @@ void OAIJobsApi::deleteJobZip(const QString &token) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -826,16 +798,22 @@ void OAIJobsApi::deleteJobZip(const QString &token) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "DELETE");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::deleteJobZipCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -862,7 +840,7 @@ void OAIJobsApi::deleteJobZipCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIJobsApi::getJob(const QString &token, const QVariant &x_fields) {
+void OAIJobsApi::getJob(const QString &token, const ::OpenAPI::OptionalParam<QString> &x_fields) {
     QString fullPath = QString(_serverConfigs["getJob"][_serverIndices.value("getJob")].URL()+"/jobs/{token}");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -870,14 +848,13 @@ void OAIJobsApi::getJob(const QString &token, const QVariant &x_fields) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -885,22 +862,28 @@ void OAIJobsApi::getJob(const QString &token, const QVariant &x_fields) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "GET");
 
-    if(!x_fields.isNull())
+
+    if(x_fields.hasValue())
     {
-        if (!::OpenAPI::toStringValue(x_fields.value<QString>()).isEmpty()) {
-            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value<QString>()));
+        if (!::OpenAPI::toStringValue(x_fields.value()).isEmpty()) {
+            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value()));
         }
-    }
+        }
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getJobCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -927,7 +910,7 @@ void OAIJobsApi::getJobCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIJobsApi::getJobTextEntry(const QString &token, const QString &entry_name, const QVariant &start_position, const QVariant &length) {
+void OAIJobsApi::getJobTextEntry(const QString &token, const QString &entry_name, const ::OpenAPI::OptionalParam<qint32> &start_position, const ::OpenAPI::OptionalParam<qint32> &length) {
     QString fullPath = QString(_serverConfigs["getJobTextEntry"][_serverIndices.value("getJobTextEntry")].URL()+"/jobs/{token}/text-entry/{entry_name}");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -935,14 +918,13 @@ void OAIJobsApi::getJobTextEntry(const QString &token, const QString &entry_name
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -950,14 +932,13 @@ void OAIJobsApi::getJobTextEntry(const QString &token, const QString &entry_name
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     
     {
         QString entry_namePathParam("{");
         entry_namePathParam.append("entry_name").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -965,49 +946,53 @@ void OAIJobsApi::getJobTextEntry(const QString &token, const QString &entry_name
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"entry_name"+pathSuffix : pathPrefix;
         fullPath.replace(entry_namePathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(entry_name)));
     }
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
-    if(!start_position.isNull())
+    if(start_position.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "start_position", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "start_position", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("start_position")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(start_position.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("start_position")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(start_position.value())));
     }
-
-    if(!length.isNull())
+    if(length.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "length", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "length", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("length")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(length.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("length")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(length.value())));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "GET");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getJobTextEntryCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1042,14 +1027,13 @@ void OAIJobsApi::getJobTextEntryInfo(const QString &token, const QString &entry_
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1057,14 +1041,13 @@ void OAIJobsApi::getJobTextEntryInfo(const QString &token, const QString &entry_
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     
     {
         QString entry_namePathParam("{");
         entry_namePathParam.append("entry_name").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1072,16 +1055,22 @@ void OAIJobsApi::getJobTextEntryInfo(const QString &token, const QString &entry_
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"entry_name"+pathSuffix : pathPrefix;
         fullPath.replace(entry_namePathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(entry_name)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "HEAD");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getJobTextEntryInfoCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1115,14 +1104,13 @@ void OAIJobsApi::getJobZip(const QString &token) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1130,16 +1118,22 @@ void OAIJobsApi::getJobZip(const QString &token) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "GET");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getJobZipCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1174,14 +1168,13 @@ void OAIJobsApi::getJobZipInfo(const QString &token) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1189,16 +1182,22 @@ void OAIJobsApi::getJobZipInfo(const QString &token) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "HEAD");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getJobZipInfoCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1224,25 +1223,31 @@ void OAIJobsApi::getJobZipInfoCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIJobsApi::getStatusCodes(const QVariant &x_fields) {
+void OAIJobsApi::getStatusCodes(const ::OpenAPI::OptionalParam<QString> &x_fields) {
     QString fullPath = QString(_serverConfigs["getStatusCodes"][_serverIndices.value("getStatusCodes")].URL()+"/jobs/status-codes");
     
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "GET");
 
-    if(!x_fields.isNull())
+
+    if(x_fields.hasValue())
     {
-        if (!::OpenAPI::toStringValue(x_fields.value<QString>()).isEmpty()) {
-            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value<QString>()));
+        if (!::OpenAPI::toStringValue(x_fields.value()).isEmpty()) {
+            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value()));
         }
-    }
+        }
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::getStatusCodesCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1278,7 +1283,7 @@ void OAIJobsApi::getStatusCodesCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIJobsApi::killJob(const QString &token, const QVariant &hard_kill) {
+void OAIJobsApi::killJob(const QString &token, const ::OpenAPI::OptionalParam<bool> &hard_kill) {
     QString fullPath = QString(_serverConfigs["killJob"][_serverIndices.value("killJob")].URL()+"/jobs/{token}");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -1286,14 +1291,13 @@ void OAIJobsApi::killJob(const QString &token, const QVariant &hard_kill) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1301,33 +1305,38 @@ void OAIJobsApi::killJob(const QString &token, const QVariant &hard_kill) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
-    if(!hard_kill.isNull())
+    if(hard_kill.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "hard_kill", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "hard_kill", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("hard_kill")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(hard_kill.value<bool>())));
+        fullPath.append(QUrl::toPercentEncoding("hard_kill")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(hard_kill.value())));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "DELETE");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::killJobCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1354,7 +1363,7 @@ void OAIJobsApi::killJobCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIJobsApi::listJobs(const QVariant &everyone, const QVariant &x_fields, const QVariant &page, const QVariant &per_page, const QVariant &order_by, const QVariant &order_asc, const QVariant &show_only_active) {
+void OAIJobsApi::listJobs(const ::OpenAPI::OptionalParam<bool> &everyone, const ::OpenAPI::OptionalParam<QString> &x_fields, const ::OpenAPI::OptionalParam<qint32> &page, const ::OpenAPI::OptionalParam<qint32> &per_page, const ::OpenAPI::OptionalParam<QString> &order_by, const ::OpenAPI::OptionalParam<bool> &order_asc, const ::OpenAPI::OptionalParam<bool> &show_only_active) {
     QString fullPath = QString(_serverConfigs["listJobs"][_serverIndices.value("listJobs")].URL()+"/jobs/");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -1362,119 +1371,119 @@ void OAIJobsApi::listJobs(const QVariant &everyone, const QVariant &x_fields, co
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
-    if(!everyone.isNull())
+    if(everyone.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "everyone", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "everyone", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("everyone")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(everyone.value<bool>())));
+        fullPath.append(QUrl::toPercentEncoding("everyone")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(everyone.value())));
     }
-
-    if(!page.isNull())
+    if(page.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "page", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "page", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("page")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(page.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("page")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(page.value())));
     }
-
-    if(!per_page.isNull())
+    if(per_page.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "per_page", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "per_page", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("per_page")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(per_page.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("per_page")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(per_page.value())));
     }
-
-    if(!order_by.isNull())
+    if(order_by.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "order_by", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "order_by", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("order_by")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(order_by.value<QString>())));
+        fullPath.append(QUrl::toPercentEncoding("order_by")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(order_by.value())));
     }
-
-    if(!order_asc.isNull())
+    if(order_asc.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "order_asc", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "order_asc", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("order_asc")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(order_asc.value<bool>())));
+        fullPath.append(QUrl::toPercentEncoding("order_asc")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(order_asc.value())));
     }
-
-    if(!show_only_active.isNull())
+    if(show_only_active.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "show_only_active", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "show_only_active", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("show_only_active")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(show_only_active.value<bool>())));
+        fullPath.append(QUrl::toPercentEncoding("show_only_active")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(show_only_active.value())));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "GET");
 
-    if(!x_fields.isNull())
+
+    if(x_fields.hasValue())
     {
-        if (!::OpenAPI::toStringValue(x_fields.value<QString>()).isEmpty()) {
-            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value<QString>()));
+        if (!::OpenAPI::toStringValue(x_fields.value()).isEmpty()) {
+            input.headers.insert("X-Fields", ::OpenAPI::toStringValue(x_fields.value()));
         }
-    }
+        }
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::listJobsCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1509,14 +1518,13 @@ void OAIJobsApi::popJobLogs(const QString &token) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1524,16 +1532,22 @@ void OAIJobsApi::popJobLogs(const QString &token) {
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "DELETE");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::popJobLogsCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -1568,14 +1582,13 @@ void OAIJobsApi::popStreamEntry(const QString &token, const QString &entry_name)
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     
     {
         QString tokenPathParam("{");
         tokenPathParam.append("token").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1583,14 +1596,13 @@ void OAIJobsApi::popStreamEntry(const QString &token, const QString &entry_name)
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"token"+pathSuffix : pathPrefix;
         fullPath.replace(tokenPathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(token)));
     }
-
     
     {
         QString entry_namePathParam("{");
         entry_namePathParam.append("entry_name").append("}");
         QString pathPrefix, pathSuffix, pathDelimiter;
-        QString pathStyle = "";    
-        if(pathStyle == "") 
+        QString pathStyle = "";
+        if(pathStyle == "")
             pathStyle = "simple";
         pathPrefix = getParamStylePrefix(pathStyle);
         pathSuffix = getParamStyleSuffix(pathStyle);
@@ -1598,16 +1610,22 @@ void OAIJobsApi::popStreamEntry(const QString &token, const QString &entry_name)
         QString paramString = (pathStyle == "matrix") ? pathPrefix+"entry_name"+pathSuffix : pathPrefix;
         fullPath.replace(entry_namePathParam, paramString+QUrl::toPercentEncoding(::OpenAPI::toStringValue(entry_name)));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "DELETE");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIJobsApi::popStreamEntryCallback);
-    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIJobsApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 

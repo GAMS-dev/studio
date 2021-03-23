@@ -21,13 +21,33 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
-#include <QVariant>
 
 #include "OAIEnum.h"
 #include "OAIHttpFileElement.h"
 #include "OAIObject.h"
 
 namespace OpenAPI {
+
+template <typename T>
+class OptionalParam {
+public:
+    T m_Value;
+    bool m_hasValue;
+public:
+    OptionalParam(){
+        m_hasValue = false;
+    }
+    OptionalParam(const T &val){
+        m_hasValue = true;
+        m_Value = val;
+    }
+    bool hasValue() const {
+        return m_hasValue;
+    }
+    T value() const{
+        return m_Value;
+    }
+};
 
 bool setDateTimeFormat(const QString&);
 

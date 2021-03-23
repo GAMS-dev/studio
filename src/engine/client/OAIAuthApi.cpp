@@ -10,7 +10,6 @@
  */
 
 #include "OAIAuthApi.h"
-#include "OAIHelpers.h"
 #include "OAIServerConfiguration.h"
 #include <QJsonArray>
 #include <QJsonDocument>
@@ -22,34 +21,30 @@ OAIAuthApi::OAIAuthApi(const int timeOut)
       _manager(nullptr),
       isResponseCompressionEnabled(false),
       isRequestCompressionEnabled(false) {
-      initializeServerConfigs();
-      }
+    initializeServerConfigs();
+}
 
 OAIAuthApi::~OAIAuthApi() {
 }
 
 void OAIAuthApi::initializeServerConfigs(){
-
-//Default server
-QList<OAIServerConfiguration> defaultConf = QList<OAIServerConfiguration>();
-//varying endpoint server 
-QList<OAIServerConfiguration> serverConf = QList<OAIServerConfiguration>();
-defaultConf.append(OAIServerConfiguration(
+    //Default server
+    QList<OAIServerConfiguration> defaultConf = QList<OAIServerConfiguration>();
+    //varying endpoint server
+    QList<OAIServerConfiguration> serverConf = QList<OAIServerConfiguration>();
+    defaultConf.append(OAIServerConfiguration(
     QUrl("//localhost/"),
     "No description provided",
     QMap<QString, OAIServerVariable>()));
-_serverConfigs.insert("createJWTToken",defaultConf);
-_serverIndices.insert("createJWTToken",0);
-
-_serverConfigs.insert("postW",defaultConf);
-_serverIndices.insert("postW",0);
-
-
+    _serverConfigs.insert("createJWTToken", defaultConf);
+    _serverIndices.insert("createJWTToken", 0);
+    _serverConfigs.insert("postW", defaultConf);
+    _serverIndices.insert("postW", 0);
 }
 
 /**
 * returns 0 on success and -1, -2 or -3 on failure.
-* -1 when the variable does not exist and -2 if the value is not defined in the enum and -3 if the operation or server index is not found 
+* -1 when the variable does not exist and -2 if the value is not defined in the enum and -3 if the operation or server index is not found
 */
 int OAIAuthApi::setDefaultServerValue(int serverIndex, const QString &operation, const QString &variable, const QString &value){
     auto it = _serverConfigs.find(operation);
@@ -89,17 +84,17 @@ void OAIAuthApi::setWorkingDirectory(const QString &path) {
 }
 
 void OAIAuthApi::setNetworkAccessManager(QNetworkAccessManager* manager) {
-    _manager = manager;  
+    _manager = manager;
 }
 
-    /**
-     * Appends a new ServerConfiguration to the config map for a specific operation.
-     * @param operation The id to the target operation.
-     * @param url A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     * returns the index of the new server config on success and -1 if the operation is not found
-     */
+/**
+    * Appends a new ServerConfiguration to the config map for a specific operation.
+    * @param operation The id to the target operation.
+    * @param url A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    * returns the index of the new server config on success and -1 if the operation is not found
+    */
 int OAIAuthApi::addServerConfiguration(const QString &operation, const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
     if(_serverConfigs.contains(operation)){
         _serverConfigs[operation].append(OAIServerConfiguration(
@@ -112,27 +107,26 @@ int OAIAuthApi::addServerConfiguration(const QString &operation, const QUrl &url
     }
 }
 
-    /**
-     * Appends a new ServerConfiguration to the config map for a all operations and sets the index to that server.
-     * @param url A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     */
+/**
+    * Appends a new ServerConfiguration to the config map for a all operations and sets the index to that server.
+    * @param url A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    */
 void OAIAuthApi::setNewServerForAllOperations(const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
-        for(auto e : _serverIndices.keys()){
-            setServerIndex(e, addServerConfiguration(e, url, description, variables));
-        }
-} 
-    /**
-     * Appends a new ServerConfiguration to the config map for an operations and sets the index to that server.
-     * @param URL A string that contains the URL of the server
-     * @param description A String that describes the server
-     * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
-     */
+    for(auto e : _serverIndices.keys()){
+        setServerIndex(e, addServerConfiguration(e, url, description, variables));
+    }
+}
+
+/**
+    * Appends a new ServerConfiguration to the config map for an operations and sets the index to that server.
+    * @param URL A string that contains the URL of the server
+    * @param description A String that describes the server
+    * @param variables A map between a variable name and its value. The value is used for substitution in the server's URL template.
+    */
 void OAIAuthApi::setNewServer(const QString &operation, const QUrl &url, const QString &description, const QMap<QString, OAIServerVariable> &variables){
-
     setServerIndex(operation, addServerConfiguration(operation, url, description, variables));
-
 }
 
 void OAIAuthApi::addHeaders(const QString &key, const QString &value) {
@@ -152,68 +146,69 @@ void OAIAuthApi::abortRequests(){
 }
 
 QString OAIAuthApi::getParamStylePrefix(QString style){
-
-        if(style == "matrix"){ 
-            return ";";
-        }else if(style == "label"){
-            return ".";
-        }else if(style == "form"){
-            return "&"; 
-        }else if(style == "simple"){
-            return "";
-        }else if(style == "spaceDelimited"){
-            return "&"; 
-        }else if(style == "pipeDelimited"){
-            return "&"; 
-        }else
-            return "none";
+    if(style == "matrix"){
+        return ";";
+    }else if(style == "label"){
+        return ".";
+    }else if(style == "form"){
+        return "&";
+    }else if(style == "simple"){
+        return "";
+    }else if(style == "spaceDelimited"){
+        return "&";
+    }else if(style == "pipeDelimited"){
+        return "&";
+    }else{
+        return "none";
+    }
 }
 
 QString OAIAuthApi::getParamStyleSuffix(QString style){
-
-        if(style == "matrix"){ 
-            return "=";
-        }else if(style == "label"){
-            return "";
-        }else if(style == "form"){
-            return "=";
-        }else if(style == "simple"){
-            return "";
-        }else if(style == "spaceDelimited"){
-            return "=";
-        }else if(style == "pipeDelimited"){
-            return "=";
-        }else
-            return "none";
+    if(style == "matrix"){
+        return "=";
+    }else if(style == "label"){
+        return "";
+    }else if(style == "form"){
+        return "=";
+    }else if(style == "simple"){
+        return "";
+    }else if(style == "spaceDelimited"){
+        return "=";
+    }else if(style == "pipeDelimited"){
+        return "=";
+    }else{
+        return "none";
+    }
 }
 
 QString OAIAuthApi::getParamStyleDelimiter(QString style, QString name, bool isExplode){
 
-        if(style == "matrix"){ 
-            return (isExplode) ? ";" + name + "=" : ",";
+    if(style == "matrix"){
+        return (isExplode) ? ";" + name + "=" : ",";
 
-        }else if(style == "label"){
-            return (isExplode) ? "." : ",";
+    }else if(style == "label"){
+        return (isExplode) ? "." : ",";
 
-        }else if(style == "form"){
-            return (isExplode) ? "&" + name + "=" : ","; 
+    }else if(style == "form"){
+        return (isExplode) ? "&" + name + "=" : ",";
 
-        }else if(style == "simple"){
-            return ",";
-        }else if(style == "spaceDelimited"){
-            return (isExplode) ? "&" + name + "=" : " ";
+    }else if(style == "simple"){
+        return ",";
+    }else if(style == "spaceDelimited"){
+        return (isExplode) ? "&" + name + "=" : " ";
 
-        }else if(style == "pipeDelimited"){
-            return (isExplode) ? "&" + name + "=" : "|";
+    }else if(style == "pipeDelimited"){
+        return (isExplode) ? "&" + name + "=" : "|";
 
-        }else if(style == "deepObject"){
-            return (isExplode) ? "&" : "none";
+    }else if(style == "deepObject"){
+        return (isExplode) ? "&" : "none";
 
-        }else
-            return "none";
+    }else {
+        return "none";
+    }
 }
 
-void OAIAuthApi::createJWTToken(const QVariant &expires_in) {
+void OAIAuthApi::createJWTToken(const ::OpenAPI::OptionalParam<qint32> &expires_in) {
     QString fullPath = QString(_serverConfigs["createJWTToken"][_serverIndices.value("createJWTToken")].URL()+"/auth/");
     
     if(!_username.isEmpty() && !_password.isEmpty()){
@@ -221,33 +216,38 @@ void OAIAuthApi::createJWTToken(const QVariant &expires_in) {
         b64.append(_username.toUtf8() + ":" + _password.toUtf8());
         addHeaders("Authorization","Basic " + b64.toBase64());
     }
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
-    if(!expires_in.isNull())
+    if(expires_in.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "expires_in", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "expires_in", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("expires_in")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(expires_in.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("expires_in")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(expires_in.value())));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "POST");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::createJWTTokenCallback);
-    connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 
@@ -274,19 +274,18 @@ void OAIAuthApi::createJWTTokenCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIAuthApi::postW(const QString &username, const QString &password, const QVariant &expires_in) {
+void OAIAuthApi::postW(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in) {
     QString fullPath = QString(_serverConfigs["postW"][_serverIndices.value("postW")].URL()+"/auth/login");
     
-
     QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
     
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "username", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "username", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
@@ -294,15 +293,14 @@ void OAIAuthApi::postW(const QString &username, const QString &password, const Q
 
         fullPath.append(QUrl::toPercentEncoding("username")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(username)));
     }
-
     
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "password", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "password", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
@@ -310,32 +308,37 @@ void OAIAuthApi::postW(const QString &username, const QString &password, const Q
 
         fullPath.append(QUrl::toPercentEncoding("password")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(password)));
     }
-
-    if(!expires_in.isNull())
+    if(expires_in.hasValue())
     {
         queryStyle = "";
-        if(queryStyle == "") 
+        if(queryStyle == "")
             queryStyle = "form";
         queryPrefix = getParamStylePrefix(queryStyle);
         querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "expires_in", false); 
+        queryDelimiter = getParamStyleDelimiter(queryStyle, "expires_in", false);
         if (fullPath.indexOf("?") > 0)
             fullPath.append(queryPrefix);
         else
             fullPath.append("?");
 
-        fullPath.append(QUrl::toPercentEncoding("expires_in")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(expires_in.value<qint32>())));
+        fullPath.append(QUrl::toPercentEncoding("expires_in")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(expires_in.value())));
     }
-
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "POST");
 
+
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
     connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::postWCallback);
-    connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater); 
+    connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater);
+    connect(worker, &QObject::destroyed, [this](){
+        if(findChildren<OAIHttpRequestWorker*>().count() == 0){
+            emit allPendingRequestsCompleted();
+        }
+    });
+
     worker->execute(&input);
 }
 

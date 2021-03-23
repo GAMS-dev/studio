@@ -12,6 +12,7 @@
 #ifndef OAI_OAIJobsApi_H
 #define OAI_OAIJobsApi_H
 
+#include "OAIHelpers.h"
 #include "OAIHttpRequest.h"
 #include "OAIServerConfiguration.h"
 
@@ -31,7 +32,6 @@
 #include <QStringList>
 #include <QList>
 #include <QNetworkAccessManager>
-#include <QVariant>
 
 namespace OpenAPI {
 
@@ -77,7 +77,7 @@ public:
     * @param[in]  data OAIHttpFileElement [optional]
     * @param[in]  inex_file OAIHttpFileElement [optional]
     */
-    void createJob(const QString &model, const QString &r_namespace, const QVariant &run = QVariant(), const QVariant &text_entries = QVariant(), const QVariant &stream_entries = QVariant(), const QVariant &stdout_filename = QVariant(), const QVariant &arguments = QVariant(), const QVariant &dep_tokens = QVariant(), const QVariant &labels = QVariant(), const QVariant &model_data = QVariant(), const QVariant &data = QVariant(), const QVariant &inex_file = QVariant());
+    void createJob(const QString &model, const QString &r_namespace, const ::OpenAPI::OptionalParam<QString> &run = ::OpenAPI::OptionalParam<QString>(), const ::OpenAPI::OptionalParam<QList<QString>> &text_entries = ::OpenAPI::OptionalParam<QList<QString>>(), const ::OpenAPI::OptionalParam<QList<QString>> &stream_entries = ::OpenAPI::OptionalParam<QList<QString>>(), const ::OpenAPI::OptionalParam<QString> &stdout_filename = ::OpenAPI::OptionalParam<QString>(), const ::OpenAPI::OptionalParam<QList<QString>> &arguments = ::OpenAPI::OptionalParam<QList<QString>>(), const ::OpenAPI::OptionalParam<QList<QString>> &dep_tokens = ::OpenAPI::OptionalParam<QList<QString>>(), const ::OpenAPI::OptionalParam<QList<QString>> &labels = ::OpenAPI::OptionalParam<QList<QString>>(), const ::OpenAPI::OptionalParam<OAIHttpFileElement> &model_data = ::OpenAPI::OptionalParam<OAIHttpFileElement>(), const ::OpenAPI::OptionalParam<OAIHttpFileElement> &data = ::OpenAPI::OptionalParam<OAIHttpFileElement>(), const ::OpenAPI::OptionalParam<OAIHttpFileElement> &inex_file = ::OpenAPI::OptionalParam<OAIHttpFileElement>());
 
     /**
     * @param[in]  token QString [required]
@@ -88,7 +88,7 @@ public:
     * @param[in]  token QString [required]
     * @param[in]  x_fields QString [optional]
     */
-    void getJob(const QString &token, const QVariant &x_fields = QVariant());
+    void getJob(const QString &token, const ::OpenAPI::OptionalParam<QString> &x_fields = ::OpenAPI::OptionalParam<QString>());
 
     /**
     * @param[in]  token QString [required]
@@ -96,7 +96,7 @@ public:
     * @param[in]  start_position qint32 [optional]
     * @param[in]  length qint32 [optional]
     */
-    void getJobTextEntry(const QString &token, const QString &entry_name, const QVariant &start_position = QVariant(), const QVariant &length = QVariant());
+    void getJobTextEntry(const QString &token, const QString &entry_name, const ::OpenAPI::OptionalParam<qint32> &start_position = ::OpenAPI::OptionalParam<qint32>(), const ::OpenAPI::OptionalParam<qint32> &length = ::OpenAPI::OptionalParam<qint32>());
 
     /**
     * @param[in]  token QString [required]
@@ -117,13 +117,13 @@ public:
     /**
     * @param[in]  x_fields QString [optional]
     */
-    void getStatusCodes(const QVariant &x_fields = QVariant());
+    void getStatusCodes(const ::OpenAPI::OptionalParam<QString> &x_fields = ::OpenAPI::OptionalParam<QString>());
 
     /**
     * @param[in]  token QString [required]
     * @param[in]  hard_kill bool [optional]
     */
-    void killJob(const QString &token, const QVariant &hard_kill = QVariant());
+    void killJob(const QString &token, const ::OpenAPI::OptionalParam<bool> &hard_kill = ::OpenAPI::OptionalParam<bool>());
 
     /**
     * @param[in]  everyone bool [optional]
@@ -134,7 +134,7 @@ public:
     * @param[in]  order_asc bool [optional]
     * @param[in]  show_only_active bool [optional]
     */
-    void listJobs(const QVariant &everyone = QVariant(), const QVariant &x_fields = QVariant(), const QVariant &page = QVariant(), const QVariant &per_page = QVariant(), const QVariant &order_by = QVariant(), const QVariant &order_asc = QVariant(), const QVariant &show_only_active = QVariant());
+    void listJobs(const ::OpenAPI::OptionalParam<bool> &everyone = ::OpenAPI::OptionalParam<bool>(), const ::OpenAPI::OptionalParam<QString> &x_fields = ::OpenAPI::OptionalParam<QString>(), const ::OpenAPI::OptionalParam<qint32> &page = ::OpenAPI::OptionalParam<qint32>(), const ::OpenAPI::OptionalParam<qint32> &per_page = ::OpenAPI::OptionalParam<qint32>(), const ::OpenAPI::OptionalParam<QString> &order_by = ::OpenAPI::OptionalParam<QString>(), const ::OpenAPI::OptionalParam<bool> &order_asc = ::OpenAPI::OptionalParam<bool>(), const ::OpenAPI::OptionalParam<bool> &show_only_active = ::OpenAPI::OptionalParam<bool>());
 
     /**
     * @param[in]  token QString [required]
@@ -229,7 +229,8 @@ signals:
     void popJobLogsSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
     void popStreamEntrySignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
 
-    void abortRequestsSignal(); 
+    void abortRequestsSignal();
+    void allPendingRequestsCompleted();
 };
 
 } // namespace OpenAPI

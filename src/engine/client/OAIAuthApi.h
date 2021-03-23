@@ -12,6 +12,7 @@
 #ifndef OAI_OAIAuthApi_H
 #define OAI_OAIAuthApi_H
 
+#include "OAIHelpers.h"
 #include "OAIHttpRequest.h"
 #include "OAIServerConfiguration.h"
 
@@ -24,7 +25,6 @@
 #include <QStringList>
 #include <QList>
 #include <QNetworkAccessManager>
-#include <QVariant>
 
 namespace OpenAPI {
 
@@ -59,14 +59,14 @@ public:
     /**
     * @param[in]  expires_in qint32 [optional]
     */
-    void createJWTToken(const QVariant &expires_in = QVariant());
+    void createJWTToken(const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
 
     /**
     * @param[in]  username QString [required]
     * @param[in]  password QString [required]
     * @param[in]  expires_in qint32 [optional]
     */
-    void postW(const QString &username, const QString &password, const QVariant &expires_in = QVariant());
+    void postW(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
 
 
 private:
@@ -100,7 +100,8 @@ signals:
     void createJWTTokenSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
     void postWSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
 
-    void abortRequestsSignal(); 
+    void abortRequestsSignal();
+    void allPendingRequestsCompleted();
 };
 
 } // namespace OpenAPI

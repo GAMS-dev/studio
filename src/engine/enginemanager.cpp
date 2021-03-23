@@ -173,16 +173,16 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
-    QVariant dummy;
-    QVariant vModel = QVariant::fromValue(model);
-    QVariant vParams = QVariant(params);
-    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummy, "solver.log", vParams, dummy, dummy, vModel, dummy, dummy);
+    QString dummy;
+    QStringList dummyL;
+
+    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, dummyL, model);
 }
 
 void EngineManager::getJobStatus()
 {
     if (!mToken.isEmpty())
-        mJobsApi->getJob(mToken, "status process_status");
+        mJobsApi->getJob(mToken, QString("status process_status"));
 }
 
 void EngineManager::killJob(bool hard)

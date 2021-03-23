@@ -12,6 +12,7 @@
 #ifndef OAI_OAIDefaultApi_H
 #define OAI_OAIDefaultApi_H
 
+#include "OAIHelpers.h"
 #include "OAIHttpRequest.h"
 #include "OAIServerConfiguration.h"
 
@@ -23,7 +24,6 @@
 #include <QStringList>
 #include <QList>
 #include <QNetworkAccessManager>
-#include <QVariant>
 
 namespace OpenAPI {
 
@@ -85,7 +85,8 @@ signals:
 
     void getVersionSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
 
-    void abortRequestsSignal(); 
+    void abortRequestsSignal();
+    void allPendingRequestsCompleted();
 };
 
 } // namespace OpenAPI
