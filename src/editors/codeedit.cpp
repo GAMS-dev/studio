@@ -2116,8 +2116,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
-//        if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
-//        if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
         if (e->key() == Qt::Key_Home) setSize(-mColumn);
         if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
