@@ -763,7 +763,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                 int fileEnd = block.text().length();
                 while (fileEnd >= fileStart) {
                     int kind;
-                    requestSyntaxKind(block.position() + fileEnd, kind);
+                    emit requestSyntaxKind(block.position() + fileEnd, kind);
                     if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
                     --fileEnd;
                 }
