@@ -11,6 +11,6 @@ Please test the MR on
 **Review**
 - [ ] Code
 - [ ] CHANGELOG
-- [ ] GAMS documenation
+- [ ] GAMS documentation
 - [ ] Unit Tests
 - [ ] UI Tests
