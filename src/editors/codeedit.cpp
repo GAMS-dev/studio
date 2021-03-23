@@ -2116,8 +2116,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
-        if (e->key() == Qt::Key_Home) setSize(-mColumn);
-        if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         Qt::KeyboardModifiers modMove = Qt::AltModifier;
         Qt::KeyboardModifiers modAnc = Qt::ShiftModifier;
@@ -2126,11 +2124,19 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
 #else
         Qt::KeyboardModifiers modWord = Qt::ControlModifier;
 #endif
-        if (e->key() == Qt::Key_Right) {
+        if (e->key() == Qt::Key_Home)
+            setSize(-mColumn);
+        else if (e->key() == Qt::Key_End)
+            selectToEnd();
+        else if (e->key() == Qt::Key_Right) {
             if (e->modifiers() & modWord) {
                 int size = mSize;
                 EditorHelper::nextWord(mColumn, size, block.text());
-                setSize(size);
+                if ((e->modifiers() & modAnc) != 0) setSize(size);
+                else {
+                    mColumn += size;
+                    setSize(0);
+                }
             } else if (e->modifiers() & modMove) {
                 setSize(mSize+1);
             } else {
@@ -2142,7 +2148,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             if ((e->modifiers() & modWord) != 0) {
                 int size = mSize;
                 EditorHelper::prevWord(mColumn, size, block.text());
-                setSize(size);
+                if ((e->modifiers() & modAnc) != 0) setSize(size);
+                else {
+                    mColumn += size;
+                    setSize(0);
+                }
             } else if (e->modifiers() & modMove) {
                 setSize(mSize-1);
             } else if (mColumn > 0) {
