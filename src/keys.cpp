@@ -181,7 +181,7 @@ void Keys::reset()
     setHotkey(Hotkey::BlockEditStart, seq);
 #endif
     seq = new KeySeqList("Esc","end block edit");
-    *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
+    *seq << QKeySequence("Alt+Left") << QKeySequence("Alt+Right")
          << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
