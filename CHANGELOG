@@ -8,6 +8,7 @@ Version 1.6.0
 - fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
 - added Studio Documentation entry in Help menu
 - close view tabs using the middle mouse button
+- fixed wrong error message in GAMS Engine job when polling the LOG too early
 - added moving the block and the anchor in block-edit mode
 
 Version 1.5.5
