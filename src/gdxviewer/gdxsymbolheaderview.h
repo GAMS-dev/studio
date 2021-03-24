@@ -31,7 +31,9 @@ class GdxSymbolHeaderView : public QHeaderView
     Q_OBJECT
 
 public:
-    GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
+    enum HeaderType { ListView, TableViewFilter };
+
+    GdxSymbolHeaderView(Qt::Orientation orientation, GdxSymbolHeaderView::HeaderType headerType, QWidget *parent = nullptr);
     ~GdxSymbolHeaderView() override;
     QSize sectionSizeFromContents(int logicalIndex) const override;
 
@@ -43,14 +45,19 @@ private:
     bool pointFilterIconCollision(QPoint p);
 
 private:
+    HeaderType mHeaderType;
+
     QString iconFilterOn = ":/img/filter";
     QString iconFilterOff = ":/img/filter-off";
     const double ICON_SCALE_FACTOR = 0.5;
-    const double ICON_MARGIN_FACTOR = 0.1;
-    const double SECTION_WIDTH_FACTOR = 1.5;
+    const double ICON_MARGIN_LEFT = 0.2;
+    const double ICON_MARGIN_BOTTOM = 0.1;
+    const double SECTION_WIDTH_FACTOR = 2.0;
+    const double SECTION_WIDTH_FACTOR_MACOS = 2.5;
 
     int mFilterIconWidth;
-    int mFilterIconMargin;
+    int mFilterIconMarginLeft;
+    int mFilterIconMarginBottom;
     mutable std::vector<int> mFilterIconX;
     mutable std::vector<int> mFilterIconY;
 };

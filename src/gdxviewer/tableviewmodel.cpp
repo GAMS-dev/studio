@@ -27,6 +27,12 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, Q
     mTvColDim = 1;
     for(int i=0; i<mSym->mDim; i++)
         mTvDimOrder << i;
+    connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
+}
+
+TableViewModel::~TableViewModel()
+{
+
 }
 
 QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -192,6 +198,11 @@ QVector<QList<QString> > TableViewModel::labelsInRows() const
     return mlabelsInRows;
 }
 
+QStringList TableViewModel::domains() const
+{
+    return mSym->domains();
+}
+
 void TableViewModel::scrollHTriggered()
 {
     headerDataChanged(Qt::Horizontal, 0, 2);
@@ -296,6 +307,11 @@ void TableViewModel::initTableView(int nrColDim, QVector<int> dimOrder)
     calcLabelsInRows();
 }
 
+GdxSymbol *TableViewModel::sym() const
+{
+    return mSym;
+}
+
 bool TableViewModel::needDummyColumn() const
 {
     return mNeedDummyColumn;
@@ -340,6 +356,11 @@ void TableViewModel::setTableView(int colDim, QVector<int> tvDims)
     }
     initTableView(mTvColDim, mTvDimOrder);
     endResetModel();
+}
+
+void TableViewModel::setTableViewNoArgs()
+{
+    setTableView();
 }
 
 bool TableViewModel::isAllDefault(int valColIdx)
