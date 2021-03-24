@@ -2120,9 +2120,9 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isAnchor = e->modifiers() & Qt::ShiftModifier;
 #ifdef __APPLE__
-        bool isWord = e->modifiers() & Qt::ControlModifier;
-#else
         bool isWord = (e->modifiers() & Qt::MetaModifier) && (e->modifiers() & Qt::ShiftModifier);
+#else
+        bool isWord = e->modifiers() & Qt::ControlModifier;
 #endif
         if (e->key() == Qt::Key_Home)
             setSize(-mColumn);
