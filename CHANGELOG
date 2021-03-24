@@ -9,6 +9,13 @@ Version 1.6.0
 - added Studio Documentation entry in Help menu
 - close view tabs using the middle mouse button
 - fixed wrong error message in GAMS Engine job when polling the LOG too early
+- improved GDX Viewer
+    - added facility to access domains and filters in table view mode
+    - show original index position of domains in both list view and table view
+    - fixed a memory leak caused by the fitler menu not being cleaned up properly
+    - fixed an overlap of the section resize cursor and the filter icons
+    - fixed table view columns being resized automatically when toggling between list and table view mode
+    - improved automatic column widths
 - updated client API for GAMS Engine
 - delete the results on the GAMS Engine server after the job has finished
 

@@ -34,7 +34,7 @@ NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
     :QHeaderView(orientation, parent)
 {
     setAcceptDrops(true);
-    connect(this, &QHeaderView::sectionResized, [this]() { ddEnabled = false; });
+    connect(this, &QHeaderView::sectionResized, this, [this]() { ddEnabled = false; });
 }
 
 NestedHeaderView::~NestedHeaderView()
@@ -326,11 +326,13 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
     (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
 
+    static_cast<GdxSymbolView*>(parent()->parent())->moveTvFilterColumns(dimIdxStart, dimIdxEnd);
+
     dimIdxEnd = -1;
     dimIdxStart = -1;
 
     static_cast<GdxSymbolView*>(parent()->parent())->toggleColumnHidden();
-    static_cast<GdxSymbolView*>(parent()->parent())->autoResizeColumns();
+    static_cast<GdxSymbolView*>(parent()->parent())->autoResizeTableViewColumns();
 }
 
 void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)

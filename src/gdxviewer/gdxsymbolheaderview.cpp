@@ -20,6 +20,7 @@
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
 #include "theme.h"
+#include "tableviewdomainmodel.h"
 
 #include <QPainter>
 #include <QTableView>
@@ -29,8 +30,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *parent)
-    : QHeaderView(orientation, parent)
+GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, GdxSymbolHeaderView::HeaderType headerType, QWidget *parent)
+    : QHeaderView(orientation, parent), mHeaderType(headerType)
 {
     int maxColumns = GMS_MAX_INDEX_DIM+GMS_VAL_MAX;
     mFilterIconX.resize(maxColumns);
@@ -38,7 +39,10 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, QWidget *p
 
     int h = sectionSizeFromContents(0).height();
     mFilterIconWidth  = h*ICON_SCALE_FACTOR;
-    mFilterIconMargin = h*ICON_MARGIN_FACTOR;
+    mFilterIconMarginLeft = h*ICON_MARGIN_LEFT;
+    mFilterIconMarginBottom = h*ICON_MARGIN_BOTTOM;
+
+    this->setTextElideMode(Qt::ElideRight);
 }
 
 GdxSymbolHeaderView::~GdxSymbolHeaderView()
@@ -50,12 +54,25 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
     painter->save();
     GdxSymbolHeaderView::QHeaderView::paintSection(painter, rect, logicalIndex);
     painter->restore();
+    TableViewModel* tvModel = nullptr;
+    GdxSymbol* symbol = nullptr;
+    int maxIndex = 0;
+    int posX = 0;
+    int posY = 0;
 
-    QTableView* tv = static_cast<QTableView*>(this->parent());
-    GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
+    if (mHeaderType == HeaderType::ListView) {
+        QTableView* tv = static_cast<QTableView*>(this->parent());
+        symbol = static_cast<GdxSymbol*>(tv->model());
+        maxIndex = symbol->filterColumnCount();
+    } else {
+        TableViewDomainModel* tvDomainModel = static_cast<TableViewDomainModel*>(this->model());
+        tvModel = tvDomainModel->tvModel();
+        symbol = tvModel->sym();
+        maxIndex = model()->columnCount();
+    }
 
     // show filter icon
-    if (logicalIndex < symbol->filterColumnCount()) {
+    if (logicalIndex < maxIndex) {
         QString iconRes;
         if (symbol->filterActive(logicalIndex))
             iconRes = iconFilterOn;
@@ -64,14 +81,28 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
         QIcon icon(Theme::icon(iconRes));
         QPixmap pm = icon.pixmap(mFilterIconWidth, mFilterIconWidth);
 
-        int posX = rect.x() + mFilterIconMargin;
-        int posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMargin;
-
+        posX = rect.x() + mFilterIconMarginLeft;
+        posY = rect.bottomRight().y()-mFilterIconWidth-mFilterIconMarginBottom;
         painter->drawImage(posX, posY, pm.toImage());
 
-        mFilterIconX[logicalIndex] = posX;
-        mFilterIconY[logicalIndex] = posY;
+        if (mHeaderType == HeaderType::TableViewFilter) {
+            QStyleOptionHeader opt;
+            initStyleOption(&opt);
+            opt.rect = rect;
+            opt.section = logicalIndex;
+            QPen pen(painter->pen());
+            pen.setColor(palette().text().color());
+            pen.setWidth(2);
+            painter->setPen(pen);
+            int idx = visualIndex(logicalIndex);
+            if (idx == tvModel->dim() - tvModel->tvColDim()-1)
+                painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+            if (symbol->type() != GMS_DT_SET && idx == tvModel->dim()-1)
+                painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
+        }
     }
+    mFilterIconX[logicalIndex] = posX;
+    mFilterIconY[logicalIndex] = posY;
 }
 
 void GdxSymbolHeaderView::mousePressEvent(QMouseEvent *event)
@@ -84,11 +115,13 @@ void GdxSymbolHeaderView::mousePressEvent(QMouseEvent *event)
 
 bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
 {
+    int maxIndex = 0;
+    if (mHeaderType == HeaderType::ListView)
+        maxIndex = static_cast<GdxSymbol*>(this->model())->filterColumnCount();
+    else
+        maxIndex = model()->columnCount();
     int index = logicalIndexAt(p);
-    QTableView* tv = static_cast<QTableView*>(this->parent());
-    GdxSymbol* symbol = static_cast<GdxSymbol*>(tv->model());
-
-    if (index < symbol->filterColumnCount()) {
+    if (index < maxIndex) {
         if(p.x() >= mFilterIconX[index] && p.x() <= mFilterIconX[index]+mFilterIconWidth &&
            p.y() >= mFilterIconY[index] && p.y() <= mFilterIconY[index]+mFilterIconWidth)
             return true;
@@ -99,11 +132,13 @@ bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)
 QSize GdxSymbolHeaderView::sectionSizeFromContents(int logicalIndex) const
 {
     QSize s = QHeaderView::sectionSizeFromContents(logicalIndex);
+    int width = s.width();
 #ifdef __APPLE__
-    // do not modify the width on MAC OS since there is already a sufficient width to display the filter icon
+    width += SECTION_WIDTH_FACTOR_MACOS*(mFilterIconWidth + mFilterIconMarginLeft);
 #else
-    s.setWidth(s.width() + SECTION_WIDTH_FACTOR*(mFilterIconWidth + mFilterIconMargin));
+    width += SECTION_WIDTH_FACTOR      *(mFilterIconWidth + mFilterIconMarginLeft);
 #endif
+    s.setWidth(width);
     return s;
 }
 
