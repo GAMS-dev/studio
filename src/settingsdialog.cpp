@@ -176,7 +176,7 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 {
     if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
         mInitializing = false;
-        for (ThemeWidget *wid : mColorWidgets) {
+        for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
             wid->refresh();
         }
     }
@@ -332,9 +332,12 @@ void SettingsDialog::editorBaseColorChanged()
 
 void SettingsDialog::themeModified()
 {
+    if (Theme::instance()->activeTheme() < mFixedThemeCount) {
+        on_btCopyTheme_clicked();
+    }
     setModified();
     emit themeChanged();
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -602,12 +605,12 @@ void SettingsDialog::initColorPage()
 
 void SettingsDialog::setThemeEditable(bool editable)
 {
-    for (ThemeWidget *wid : mColorWidgets) {
-        wid->setReadonly(!editable);
-    }
-    ui->btRenameTheme->setEnabled(editable);
-    ui->btRemoveTheme->setEnabled(editable);
-    ui->btExportTheme->setEnabled(editable);
+//    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+//        wid->setReadonly(!editable);
+//    }
+//    ui->btRenameTheme->setEnabled(editable);
+//    ui->btRemoveTheme->setEnabled(editable);
+//    ui->btExportTheme->setEnabled(editable);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()
@@ -630,7 +633,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -642,7 +645,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }

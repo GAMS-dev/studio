@@ -165,9 +165,12 @@ void ThemeWidget::showColorSelector(QFrame *frame)
 void ThemeWidget::colorChanged(const QColor &color)
 {
     Theme::ColorSlot slot = mSelectedFrame==ui->colorFG ? mSlotFg : mSelectedFrame==ui->colorBG1 ? mSlotBg : mSlotBg2;
-    Theme::setColor(slot, color);
-    refresh();
-    emit changed();
+    QColor old = Theme::color(slot);
+    if (old != color) {
+        Theme::setColor(slot, color);
+        refresh();
+        emit changed();
+    }
 }
 
 void ThemeWidget::fontFlagsChanged()
