@@ -51,6 +51,7 @@ enum struct DocumentType {
 };
 enum struct StudioSection {
     WelcomePage,
+    ProjectExplorer,
     ListingViewer,
     GDXViewer,
     MIRO,
@@ -60,6 +61,7 @@ enum struct StudioSection {
     GamsUserConfigEditor,
     Toolbar,
     OptionEditor,
+    ProcessLog,
 };
 
 class HelpData
@@ -90,6 +92,7 @@ public:
     static QList<QPair<StudioSection, QString>> studioSectionName() {
         QList<QPair<StudioSection, QString>> list = {
             {StudioSection::WelcomePage, "Welcome Page"},
+            {StudioSection::ProjectExplorer, "Project Explorer"}, // Project Explorer or STUDIO_PROJECT_EXPLORER?
             {StudioSection::ListingViewer, "Listing Viewer"},
             {StudioSection::GDXViewer, "GDX Viewer"},
             {StudioSection::MIRO, "MIRO"},
@@ -98,6 +101,7 @@ public:
             {StudioSection::SolverOptionEditor, "Solver Option Editor"},
             {StudioSection::GamsUserConfigEditor, "Gams Configuration Editor"},
             {StudioSection::OptionEditor, "Option Editor"},
+            {StudioSection::ProcessLog, "Process Log"},
         };
         return list;
     }
