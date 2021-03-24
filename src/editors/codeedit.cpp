@@ -2029,7 +2029,7 @@ void CodeEdit::BlockEdit::selectTo(int blockNr, int colNr)
     startCursorTimer();
 }
 
-void CodeEdit::BlockEdit::selectToEnd()
+void CodeEdit::BlockEdit::toEnd(bool select)
 {
     int end = 0;
     for (QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine))
@@ -2037,7 +2037,11 @@ void CodeEdit::BlockEdit::selectToEnd()
         if (end < block.length()-1) end = block.length()-1;
         if (!block.isValid()) break;
     }
-    setSize(end - mColumn);
+    if (select) setSize(end - mColumn);
+    else {
+        mColumn = end;
+        setSize(0);
+    }
 }
 
 QString CodeEdit::BlockEdit::blockText()
@@ -2124,11 +2128,15 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
 #else
         bool isWord = e->modifiers() & Qt::ControlModifier;
 #endif
-        if (e->key() == Qt::Key_Home)
-            setSize(-mColumn);
-        else if (e->key() == Qt::Key_End)
-            selectToEnd();
-        else if (e->key() == Qt::Key_Right) {
+        if (e->key() == Qt::Key_Home) {
+            if (isAnchor) setSize(-mColumn);
+            else {
+                mColumn = 0;
+                setSize(0);
+            }
+        } else if (e->key() == Qt::Key_End) {
+            toEnd(isAnchor);
+        } else if (e->key() == Qt::Key_Right) {
             if (isWord) {
                 int size = mSize;
                 EditorHelper::nextWord(mColumn, size, block.text());

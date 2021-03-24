@@ -182,7 +182,7 @@ void Keys::reset()
 #endif
     seq = new KeySeqList("Esc","end block edit");
     *seq << QKeySequence("Alt+Left") << QKeySequence("Alt+Right")
-         << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
+         << QKeySequence("PgUp") << QKeySequence("PgDown");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
     seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
