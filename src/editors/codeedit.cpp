@@ -2117,56 +2117,56 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
-        Qt::KeyboardModifiers modMove = Qt::AltModifier;
-        Qt::KeyboardModifiers modAnc = Qt::ShiftModifier;
+        bool isMove = e->modifiers() & Qt::AltModifier;
+        bool isAnchor = e->modifiers() & Qt::ShiftModifier;
 #ifdef __APPLE__
-        Qt::KeyboardModifiers modWord = Qt::MetaModifier | Qt::ShiftModifier;
+        bool isWord = e->modifiers() & Qt::ControlModifier;
 #else
-        Qt::KeyboardModifiers modWord = Qt::ControlModifier;
+        bool isWord = (e->modifiers() & Qt::MetaModifier) && (e->modifiers() & Qt::ShiftModifier);
 #endif
         if (e->key() == Qt::Key_Home)
             setSize(-mColumn);
         else if (e->key() == Qt::Key_End)
             selectToEnd();
         else if (e->key() == Qt::Key_Right) {
-            if (e->modifiers() & modWord) {
+            if (isWord) {
                 int size = mSize;
                 EditorHelper::nextWord(mColumn, size, block.text());
-                if ((e->modifiers() & modAnc) != 0) setSize(size);
+                if (isAnchor) setSize(size);
                 else {
                     mColumn += size;
                     setSize(0);
                 }
-            } else if (e->modifiers() & modMove) {
+            } else if (isMove) {
                 setSize(mSize+1);
             } else {
                 mColumn += 1;
-                if (e->modifiers() & modAnc)
+                if (isAnchor)
                     setSize(mSize-1);
             }
         } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            if ((e->modifiers() & modWord) != 0) {
+            if (isWord) {
                 int size = mSize;
                 EditorHelper::prevWord(mColumn, size, block.text());
-                if ((e->modifiers() & modAnc) != 0) setSize(size);
+                if (isAnchor) setSize(size);
                 else {
                     mColumn += size;
                     setSize(0);
                 }
-            } else if (e->modifiers() & modMove) {
+            } else if (isMove) {
                 setSize(mSize-1);
             } else if (mColumn > 0) {
                 mColumn -= 1;
-                if (e->modifiers() & modAnc)
+                if (isAnchor)
                     setSize(mSize+1);
             } else {
                 e->accept();
                 return;
             }
         } else if (e->key() == Qt::Key_Down) {
-            if (((e->modifiers() & modWord) != 0 || (e->modifiers() & modMove) != 0)  && mCurrentLine < mEdit->blockCount()-1) {
+            if ((isWord || isMove)  && mCurrentLine < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
-            } else if ((e->modifiers() & modAnc) && mStartLine < mEdit->blockCount()-1) {
+            } else if (isAnchor && mStartLine < mEdit->blockCount()-1) {
                 mStartLine += 1;
             } else if (qMax(mStartLine, mCurrentLine) < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
@@ -2176,9 +2176,9 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 return;
             }
         } else if (e->key() == Qt::Key_Up) {
-            if (((e->modifiers() & modWord) != 0 || (e->modifiers() & modMove) != 0) && mCurrentLine > 0) {
+            if ((isWord || isMove) && mCurrentLine > 0) {
                 mCurrentLine -= 1;
-            } else if ((e->modifiers() & modAnc) && mStartLine < mEdit->blockCount()-1) {
+            } else if (isAnchor && mStartLine < mEdit->blockCount()-1) {
                 mStartLine -= 1;
             } else if (qMin(mStartLine, mCurrentLine) > 0) {
                 mCurrentLine -= 1;
