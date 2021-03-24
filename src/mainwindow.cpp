@@ -165,7 +165,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
     connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->logTabs, &TabWidget::closeTab, this, &MainWindow::on_logTabs_tabCloseRequested);
     connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &TabWidget::closeTab, this, &MainWindow::on_mainTabs_tabCloseRequested);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);

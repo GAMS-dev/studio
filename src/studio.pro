@@ -250,6 +250,7 @@ SOURCES += \
     syntax/textmarkrepo.cpp \
     tabbarstyle.cpp \
     tabdialog.cpp \
+    tabwidget.cpp \
     theme.cpp \
     themewidget.cpp \
     viewhelper.cpp \
@@ -442,6 +443,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabbarstyle.h \
     tabdialog.h \
+    tabwidget.h \
     theme.h \
     themewidget.h \
     version.h \
