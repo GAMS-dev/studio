@@ -176,7 +176,7 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         QString zip = mOutPath + QDir::separator() + modlName + ".zip";
 
         mManager->submitJob(modlName, mNamespace, zip, remoteParameters());
-        setProcState(Proc3Monitor);
+        setProcState(Proc3Queued);
     }
     mSubProc->deleteLater();
     mSubProc = nullptr;
@@ -385,7 +385,13 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 {
     // TODO(JM) convert status to EngineManager::Status
     EngineManager::StatusCode code = EngineManager::StatusCode(status);
-    if (code == EngineManager::Finished && mProcState == Proc3Monitor) {
+
+    if (code > EngineManager::Queued && mProcState == Proc3Queued) {
+        setProcState(Proc4Monitor);
+        mManager->getLog();
+    }
+
+    if (code == EngineManager::Finished && mProcState == Proc4Monitor) {
         mManager->getLog();
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
@@ -393,7 +399,7 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
             completed(-1);
             return;
         }
-        setProcState(Proc4GetResult);
+        setProcState(Proc5GetResult);
         mManager->getOutputFile();
     }
 }
@@ -446,7 +452,7 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::pullStatus()
 {
-    mManager->getLog();
+    if (mProcState > Proc3Queued) mManager->getLog();
     mManager->getJobStatus();
     mPullTimer.start();
 }
