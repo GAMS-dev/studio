@@ -146,9 +146,10 @@ enum ProcState {
     ProcIdle,
     Proc1Compile,
     Proc2Pack,
-    Proc3Monitor,
-    Proc4GetResult,
-    Proc5Unpack,
+    Proc3Queued,
+    Proc4Monitor,
+    Proc5GetResult,
+    Proc6Unpack,
 };
 
 enum NewTabStrategy {
