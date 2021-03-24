@@ -70,7 +70,7 @@ KeySeqList&KeySeqList::operator <<(const QKeySequence& other)
 bool KeySeqList::operator ==(KeySeqList other) const
 {
     bool res = mSequence.size() == other.mSequence.size();
-    for (QKeySequence seq: mSequence) {
+    for (const QKeySequence &seq: mSequence) {
         if (!res) break;
         res = other.mSequence.contains(seq);
     }

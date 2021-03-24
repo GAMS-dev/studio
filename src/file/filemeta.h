@@ -95,7 +95,6 @@ public:
     void rehighlight(int line);
     syntax::SyntaxHighlighter *highlighter() const;
     void marksChanged(QSet<int> lines = QSet<int>());
-    void takeEditsFrom(FileMeta *other);
     void reloadDelayed();
     void setLocation(QString location);
 

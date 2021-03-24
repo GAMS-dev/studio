@@ -112,19 +112,6 @@ void FileMeta::invalidate()
     }
 }
 
-void FileMeta::takeEditsFrom(FileMeta *other)
-{
-    if (mDocument) return;
-    mEditors = other->mEditors;
-    mDocument = other->mDocument;
-    other->mDocument = nullptr;
-    other->mEditors.clear();
-    for (QWidget *wid: qAsConst(mEditors)) {
-        ViewHelper::setLocation(wid, location());
-        ViewHelper::setFileId(wid, id());
-    }
-}
-
 FileMeta::~FileMeta()
 {
     if (mDocument) unlinkAndFreeDocument();
