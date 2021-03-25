@@ -94,7 +94,7 @@ public:
             {StudioSection::WelcomePage, "Welcome Page"},
             {StudioSection::ProjectExplorer, "Project Explorer"}, // Project Explorer or STUDIO_PROJECT_EXPLORER?
             {StudioSection::ListingViewer, "Listing Viewer"},
-            {StudioSection::GDXDiff, "GDX Diff"},
+            {StudioSection::GDXDiff, "GDXDiff"},
             {StudioSection::GDXViewer, "GDX Viewer"},
             {StudioSection::SearchAndReplace, "Search and Replace"},
             {StudioSection::ReferenceFileViewer, "Reference File Viewer"},
