@@ -108,7 +108,7 @@ bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
         stream.setCodec(QTextCodec::codecForName("UTF-8"));
-        for (const auto& selectedFile: selectedFiles)
+        for (auto selectedFile: selectedFiles)
             stream << selectedFile << "\n";
         file.close();
         return true;

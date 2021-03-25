@@ -54,7 +54,6 @@ enum struct StudioSection {
     ProjectExplorer,
     ListingViewer,
     GDXViewer,
-    MIRO,
     SearchAndReplace,
     ReferenceFileViewer,
     SolverOptionEditor,
@@ -95,7 +94,6 @@ public:
             {StudioSection::ProjectExplorer, "Project Explorer"}, // Project Explorer or STUDIO_PROJECT_EXPLORER?
             {StudioSection::ListingViewer, "Listing Viewer"},
             {StudioSection::GDXViewer, "GDX Viewer"},
-            {StudioSection::MIRO, "MIRO"},
             {StudioSection::SearchAndReplace, "Search and Replace"},
             {StudioSection::ReferenceFileViewer, "Reference File Viewer"},
             {StudioSection::SolverOptionEditor, "Solver Option Editor"},

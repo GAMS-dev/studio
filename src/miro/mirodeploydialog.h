@@ -65,10 +65,6 @@ public:
 signals:
     void deploy(bool test, MiroDeployMode mode);
     void newAssemblyFileData();
-    void showMiroHelp();
-
-protected:
-    void keyPressEvent(QKeyEvent *e) override;
 
 private slots:
     void on_createButton_clicked();
