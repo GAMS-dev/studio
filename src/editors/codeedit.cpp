@@ -338,6 +338,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
     }
+    if (mCompleter && mCompleter->isVisible()) {
+        QSet<int> completerKeys;
+        completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+                      << Qt::Key_PageUp << Qt::Key_PageDown << Qt::Key_Enter << Qt::Key_Return << Qt::Key_Tab;
+        if (completerKeys.contains(e->key()))
+            return;
+    }
     QTextCursor cur = textCursor();
     QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
     if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
@@ -1268,24 +1275,24 @@ bool CodeEdit::prepareCompleter()
     if (isReadOnly()) return false;
     if (!mCompleter) {
         mCompleter = new CodeCompleter(this);
-        // TODO(JM) connect
     }
-
-    QTextCursor cur = textCursor();
     return true;
 }
 
 void CodeEdit::showCompleter()
 {
     if (!mCompleter) return;
-    QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
-    pos.setX(pos.x() + mLineNumberArea->width());
-    pos = mapToGlobal(pos);
-    QRect rect(pos, pos);
-    rect.setHeight(100);
-    rect.setWidth(200);
-    mCompleter->setGeometry(rect);
-    mCompleter->setVisible(true);
+    mCompleter->updateFilter();
+    if (mCompleter->rowCount()) {
+        QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
+        pos.setX(pos.x() + mLineNumberArea->width());
+        pos = mapToGlobal(pos);
+        QRect rect(pos, pos);
+        rect.setHeight(100);
+        rect.setWidth(200);
+        mCompleter->setGeometry(rect);
+        mCompleter->show();
+    }
 }
 
 
