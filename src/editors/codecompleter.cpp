@@ -95,11 +95,10 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
 
 QVariant FilterCompleterModel::data(const QModelIndex &index, int role) const
 {
-    if (role == Qt::EditRole) {
+    if (role == Qt::DisplayRole) {
         bool ok;
         int type = QSortFilterProxyModel::data(index, Qt::UserRole).toInt(&ok);
         if (!ok || (type & mTypeFilter)) return '?' + QSortFilterProxyModel::data(index, Qt::DisplayRole).toString();
-        return QSortFilterProxyModel::data(index, Qt::DisplayRole);
     }
     return QSortFilterProxyModel::data(index, role);
 }
@@ -119,7 +118,6 @@ CodeCompleter::CodeCompleter(CodeEdit *parent) :
     mFilterModel(new FilterCompleterModel(parent))
 {
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
-    mFilterModel->setFilterRole(Qt::EditRole);
     mFilterModel->setSourceModel(mModel);
     setModel(mFilterModel);
     setWindowFlag(Qt::FramelessWindowHint);
