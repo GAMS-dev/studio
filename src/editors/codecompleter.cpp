@@ -119,6 +119,7 @@ CodeCompleter::CodeCompleter(CodeEdit *parent) :
     mModel(new CodeCompleterModel(parent)),
     mFilterModel(new FilterCompleterModel(parent))
 {
+    if (mEdit) setFont(mEdit->font());
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     mFilterModel->setSourceModel(mModel);
     setModel(mFilterModel);
@@ -240,18 +241,24 @@ void CodeCompleter::updateFilter()
     } else {
         mFilterText = line.mid(validStart, len);
     }
-    // TODO(JM) get matching filter from syntax type
+
     mFilterModel->setTypeFilter(getFilterFromSyntax());
     if (mFilterText.startsWith('$'))
         mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
     else
         mFilterModel->setFilterRegularExpression('^'+mFilterText+".*");
 
+    if (!mFilterModel->rowCount()) hide();
+
     if (!currentIndex().isValid())
         setCurrentIndex(mFilterModel->index(0,0));
 
     // adapt size
-    QRect rect = QRect(mGlobalPos, geometry().size());
+    cur.setPosition(cur.position() - mFilterText.length());
+    QPoint pos = mEdit->cursorRect(cur).bottomLeft()
+            + QPoint(mEdit->viewportMargins().left(), mEdit->viewportMargins().top());
+
+    QRect rect = QRect(mEdit->mapToGlobal(pos), geometry().size());
     int hei = sizeHintForRow(0) * qMin(10, rowCount());
     QScreen *screen = qApp->screenAt(rect.topLeft());
     while (hei > sizeHintForRow(0) && rect.top() + hei > screen->availableVirtualGeometry().bottom())
@@ -277,14 +284,12 @@ int CodeCompleter::rowCount()
     return mFilterModel->rowCount();
 }
 
-void CodeCompleter::ShowIfData(QPoint globalPos)
+void CodeCompleter::ShowIfData()
 {
-    mGlobalPos = globalPos;
     updateFilter();
     if (rowCount()) {
         show();
     }
-
 }
 
 void CodeCompleter::insertCurrent()
@@ -314,15 +319,16 @@ void CodeCompleter::insertCurrent()
 
 int CodeCompleter::getFilterFromSyntax()
 {
-    int res = ccAll;
+    int res = ccNone;
     QTextCursor cur = mEdit->textCursor();
     bool atStart = cur.positionInBlock() == 0;
     int syntaxKind;
     int syntaxFlavor;
     mEdit->requestSyntaxKind(cur.position(), syntaxKind, syntaxFlavor);
+    DEB() << "SyntaxKind: " << syntax::SyntaxKind(syntaxKind);
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
-        return ccNone;
+        return ccAll;
     case syntax::SyntaxKind::Directive:
         return ccDco;
     case syntax::SyntaxKind::DirectiveBody:

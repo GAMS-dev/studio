@@ -1282,11 +1282,8 @@ bool CodeEdit::prepareCompleter()
 
 void CodeEdit::showCompleter()
 {
-    if (!mCompleter) return;
-    QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
-    pos.setX(pos.x() + mLineNumberArea->width());
-    pos.setY(pos.y() + 1);
-    mCompleter->ShowIfData(mapToGlobal(pos));
+    if (mCompleter)
+        mCompleter->ShowIfData();
 }
 
 

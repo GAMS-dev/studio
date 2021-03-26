@@ -64,7 +64,7 @@ public:
     void updateFilter();
     void updateDynamicData(QStringList symbols);
     int rowCount();
-    void ShowIfData(QPoint globalPos);
+    void ShowIfData();
 
 protected:
     bool event(QEvent *event) override;
@@ -82,7 +82,6 @@ private:
     CodeEdit *mEdit;
     CodeCompleterModel *mModel;
     FilterCompleterModel *mFilterModel;
-    QPoint mGlobalPos;
     QString mFilterText;
 
 };
