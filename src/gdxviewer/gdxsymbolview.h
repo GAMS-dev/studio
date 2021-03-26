@@ -28,6 +28,7 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include "gdxsymboltable.h"
+#include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
 
 namespace gams {
@@ -52,24 +53,30 @@ public:
     void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
+    void moveTvFilterColumns(int from, int to);
 
 public slots:
     void enableControls();
-    void refreshView();
     void toggleSqueezeDefaults(bool checked);
     void resetSortFilter();
-    void showColumnFilter(QPoint p);
-    void freeColumnFilterMenu();
+    void showFilter(QPoint p);
+    void freeFilterMenu();
     void autoResizeColumns();
+    void autoResizeTableViewColumns();
+    void adjustDomainScrollbar();
 
 private slots:
     void showContextMenu(QPoint p);
     void updateNumericalPrecision();
+    void tvFilterScrollLeft();
+    void tvFilterScrollRight();
 
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
+    TableViewDomainModel* mTvDomainModel = nullptr;
+
     QByteArray mInitialHeaderState;
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;
@@ -97,6 +104,13 @@ private:
     int mDefaultPrecision = 6;
     bool mRestoreSqZeros = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
+
+    int mTvFilterSection=0;
+    int mTvFilterSectionMax=0;
+
+    // QObject interface
+public:
+    bool eventFilter(QObject *watched, QEvent *event);
 };
 
 

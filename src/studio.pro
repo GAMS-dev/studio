@@ -101,10 +101,13 @@ SOURCES += \
     engine/client/OAIHttpRequest.cpp \
     engine/client/OAIJob.cpp \
     engine/client/OAIJobsApi.cpp \
+    engine/client/OAIJob_no_text_entry.cpp \
+    engine/client/OAIJob_no_text_entry_page.cpp \
     engine/client/OAILog_piece.cpp \
     engine/client/OAIMessage.cpp \
     engine/client/OAIMessage_and_token.cpp \
     engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIModel_version.cpp \
     engine/client/OAIResult_user.cpp \
     engine/client/OAIStatus_code_meaning.cpp \
     engine/client/OAIStream_entry.cpp \
@@ -143,6 +146,7 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
     gdxviewer/valuefilter.cpp \
     gdxviewer/valuefilterwidget.cpp \
@@ -247,6 +251,7 @@ SOURCES += \
     syntax/textmarkrepo.cpp \
     tabbarstyle.cpp \
     tabdialog.cpp \
+    tabwidget.cpp \
     theme.cpp \
     themewidget.cpp \
     viewhelper.cpp \
@@ -286,10 +291,13 @@ HEADERS += \
     engine/client/OAIHttpRequest.h \
     engine/client/OAIJob.h \
     engine/client/OAIJobsApi.h \
+    engine/client/OAIJob_no_text_entry.h \
+    engine/client/OAIJob_no_text_entry_page.h \
     engine/client/OAILog_piece.h \
     engine/client/OAIMessage.h \
     engine/client/OAIMessage_and_token.h \
     engine/client/OAIModel_auth_token.h \
+    engine/client/OAIModel_version.h \
     engine/client/OAIObject.h \
     engine/client/OAIResult_user.h \
     engine/client/OAIStatus_code_meaning.h \
@@ -330,6 +338,7 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
     gdxviewer/valuefilterwidget.h \
@@ -436,6 +445,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabbarstyle.h \
     tabdialog.h \
+    tabwidget.h \
     theme.h \
     themewidget.h \
     version.h \

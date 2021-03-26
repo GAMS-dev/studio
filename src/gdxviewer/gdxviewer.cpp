@@ -303,7 +303,7 @@ void GdxViewer::freeSymbols()
 
     for (GdxSymbolView* view : mSymbolViews) {
         if(view) {
-            view->freeColumnFilterMenu();
+            view->freeFilterMenu();
             delete view;
         }
     }

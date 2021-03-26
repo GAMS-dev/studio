@@ -9,7 +9,7 @@
  * Do not edit the class manually.
  */
 
-#include "OAIJob.h"
+#include "OAIJob_no_text_entry.h"
 
 #include <QDebug>
 #include <QJsonArray>
@@ -20,24 +20,21 @@
 
 namespace OpenAPI {
 
-OAIJob::OAIJob(QString json) {
+OAIJob_no_text_entry::OAIJob_no_text_entry(QString json) {
     this->initializeModel();
     this->fromJson(json);
 }
 
-OAIJob::OAIJob() {
+OAIJob_no_text_entry::OAIJob_no_text_entry() {
     this->initializeModel();
 }
 
-OAIJob::~OAIJob() {}
+OAIJob_no_text_entry::~OAIJob_no_text_entry() {}
 
-void OAIJob::initializeModel() {
+void OAIJob_no_text_entry::initializeModel() {
 
     m_arguments_isSet = false;
     m_arguments_isValid = false;
-
-    m_dep_tokens_isSet = false;
-    m_dep_tokens_isValid = false;
 
     m_finished_at_isSet = false;
     m_finished_at_isValid = false;
@@ -57,9 +54,6 @@ void OAIJob::initializeModel() {
     m_process_status_isSet = false;
     m_process_status_isValid = false;
 
-    m_result_exists_isSet = false;
-    m_result_exists_isValid = false;
-
     m_status_isSet = false;
     m_status_isValid = false;
 
@@ -72,9 +66,6 @@ void OAIJob::initializeModel() {
     m_submitted_at_isSet = false;
     m_submitted_at_isValid = false;
 
-    m_text_entries_isSet = false;
-    m_text_entries_isValid = false;
-
     m_token_isSet = false;
     m_token_isValid = false;
 
@@ -82,20 +73,17 @@ void OAIJob::initializeModel() {
     m_user_isValid = false;
 }
 
-void OAIJob::fromJson(QString jsonString) {
+void OAIJob_no_text_entry::fromJson(QString jsonString) {
     QByteArray array(jsonString.toStdString().c_str());
     QJsonDocument doc = QJsonDocument::fromJson(array);
     QJsonObject jsonObject = doc.object();
     this->fromJsonObject(jsonObject);
 }
 
-void OAIJob::fromJsonObject(QJsonObject json) {
+void OAIJob_no_text_entry::fromJsonObject(QJsonObject json) {
 
     m_arguments_isValid = ::OpenAPI::fromJsonValue(arguments, json[QString("arguments")]);
     m_arguments_isSet = !json[QString("arguments")].isNull() && m_arguments_isValid;
-
-    m_dep_tokens_isValid = ::OpenAPI::fromJsonValue(dep_tokens, json[QString("dep_tokens")]);
-    m_dep_tokens_isSet = !json[QString("dep_tokens")].isNull() && m_dep_tokens_isValid;
 
     m_finished_at_isValid = ::OpenAPI::fromJsonValue(finished_at, json[QString("finished_at")]);
     m_finished_at_isSet = !json[QString("finished_at")].isNull() && m_finished_at_isValid;
@@ -115,9 +103,6 @@ void OAIJob::fromJsonObject(QJsonObject json) {
     m_process_status_isValid = ::OpenAPI::fromJsonValue(process_status, json[QString("process_status")]);
     m_process_status_isSet = !json[QString("process_status")].isNull() && m_process_status_isValid;
 
-    m_result_exists_isValid = ::OpenAPI::fromJsonValue(result_exists, json[QString("result_exists")]);
-    m_result_exists_isSet = !json[QString("result_exists")].isNull() && m_result_exists_isValid;
-
     m_status_isValid = ::OpenAPI::fromJsonValue(status, json[QString("status")]);
     m_status_isSet = !json[QString("status")].isNull() && m_status_isValid;
 
@@ -130,9 +115,6 @@ void OAIJob::fromJsonObject(QJsonObject json) {
     m_submitted_at_isValid = ::OpenAPI::fromJsonValue(submitted_at, json[QString("submitted_at")]);
     m_submitted_at_isSet = !json[QString("submitted_at")].isNull() && m_submitted_at_isValid;
 
-    m_text_entries_isValid = ::OpenAPI::fromJsonValue(text_entries, json[QString("text_entries")]);
-    m_text_entries_isSet = !json[QString("text_entries")].isNull() && m_text_entries_isValid;
-
     m_token_isValid = ::OpenAPI::fromJsonValue(token, json[QString("token")]);
     m_token_isSet = !json[QString("token")].isNull() && m_token_isValid;
 
@@ -140,20 +122,17 @@ void OAIJob::fromJsonObject(QJsonObject json) {
     m_user_isSet = !json[QString("user")].isNull() && m_user_isValid;
 }
 
-QString OAIJob::asJson() const {
+QString OAIJob_no_text_entry::asJson() const {
     QJsonObject obj = this->asJsonObject();
     QJsonDocument doc(obj);
     QByteArray bytes = doc.toJson();
     return QString(bytes);
 }
 
-QJsonObject OAIJob::asJsonObject() const {
+QJsonObject OAIJob_no_text_entry::asJsonObject() const {
     QJsonObject obj;
     if (arguments.size() > 0) {
         obj.insert(QString("arguments"), ::OpenAPI::toJsonValue(arguments));
-    }
-    if (dep_tokens.size() > 0) {
-        obj.insert(QString("dep_tokens"), ::OpenAPI::toJsonValue(dep_tokens));
     }
     if (m_finished_at_isSet) {
         obj.insert(QString("finished_at"), ::OpenAPI::toJsonValue(finished_at));
@@ -173,9 +152,6 @@ QJsonObject OAIJob::asJsonObject() const {
     if (m_process_status_isSet) {
         obj.insert(QString("process_status"), ::OpenAPI::toJsonValue(process_status));
     }
-    if (m_result_exists_isSet) {
-        obj.insert(QString("result_exists"), ::OpenAPI::toJsonValue(result_exists));
-    }
     if (m_status_isSet) {
         obj.insert(QString("status"), ::OpenAPI::toJsonValue(status));
     }
@@ -188,9 +164,6 @@ QJsonObject OAIJob::asJsonObject() const {
     if (m_submitted_at_isSet) {
         obj.insert(QString("submitted_at"), ::OpenAPI::toJsonValue(submitted_at));
     }
-    if (text_entries.size() > 0) {
-        obj.insert(QString("text_entries"), ::OpenAPI::toJsonValue(text_entries));
-    }
     if (m_token_isSet) {
         obj.insert(QString("token"), ::OpenAPI::toJsonValue(token));
     }
@@ -200,271 +173,218 @@ QJsonObject OAIJob::asJsonObject() const {
     return obj;
 }
 
-QList<QString> OAIJob::getArguments() const {
+QList<QString> OAIJob_no_text_entry::getArguments() const {
     return arguments;
 }
-void OAIJob::setArguments(const QList<QString> &arguments) {
+void OAIJob_no_text_entry::setArguments(const QList<QString> &arguments) {
     this->arguments = arguments;
     this->m_arguments_isSet = true;
 }
 
-bool OAIJob::is_arguments_Set() const{
+bool OAIJob_no_text_entry::is_arguments_Set() const{
     return m_arguments_isSet;
 }
 
-bool OAIJob::is_arguments_Valid() const{
+bool OAIJob_no_text_entry::is_arguments_Valid() const{
     return m_arguments_isValid;
 }
 
-QList<QString> OAIJob::getDepTokens() const {
-    return dep_tokens;
-}
-void OAIJob::setDepTokens(const QList<QString> &dep_tokens) {
-    this->dep_tokens = dep_tokens;
-    this->m_dep_tokens_isSet = true;
-}
-
-bool OAIJob::is_dep_tokens_Set() const{
-    return m_dep_tokens_isSet;
-}
-
-bool OAIJob::is_dep_tokens_Valid() const{
-    return m_dep_tokens_isValid;
-}
-
-QDateTime OAIJob::getFinishedAt() const {
+QDateTime OAIJob_no_text_entry::getFinishedAt() const {
     return finished_at;
 }
-void OAIJob::setFinishedAt(const QDateTime &finished_at) {
+void OAIJob_no_text_entry::setFinishedAt(const QDateTime &finished_at) {
     this->finished_at = finished_at;
     this->m_finished_at_isSet = true;
 }
 
-bool OAIJob::is_finished_at_Set() const{
+bool OAIJob_no_text_entry::is_finished_at_Set() const{
     return m_finished_at_isSet;
 }
 
-bool OAIJob::is_finished_at_Valid() const{
+bool OAIJob_no_text_entry::is_finished_at_Valid() const{
     return m_finished_at_isValid;
 }
 
-bool OAIJob::isIsDataProvided() const {
+bool OAIJob_no_text_entry::isIsDataProvided() const {
     return is_data_provided;
 }
-void OAIJob::setIsDataProvided(const bool &is_data_provided) {
+void OAIJob_no_text_entry::setIsDataProvided(const bool &is_data_provided) {
     this->is_data_provided = is_data_provided;
     this->m_is_data_provided_isSet = true;
 }
 
-bool OAIJob::is_is_data_provided_Set() const{
+bool OAIJob_no_text_entry::is_is_data_provided_Set() const{
     return m_is_data_provided_isSet;
 }
 
-bool OAIJob::is_is_data_provided_Valid() const{
+bool OAIJob_no_text_entry::is_is_data_provided_Valid() const{
     return m_is_data_provided_isValid;
 }
 
-bool OAIJob::isIsTemporaryModel() const {
+bool OAIJob_no_text_entry::isIsTemporaryModel() const {
     return is_temporary_model;
 }
-void OAIJob::setIsTemporaryModel(const bool &is_temporary_model) {
+void OAIJob_no_text_entry::setIsTemporaryModel(const bool &is_temporary_model) {
     this->is_temporary_model = is_temporary_model;
     this->m_is_temporary_model_isSet = true;
 }
 
-bool OAIJob::is_is_temporary_model_Set() const{
+bool OAIJob_no_text_entry::is_is_temporary_model_Set() const{
     return m_is_temporary_model_isSet;
 }
 
-bool OAIJob::is_is_temporary_model_Valid() const{
+bool OAIJob_no_text_entry::is_is_temporary_model_Valid() const{
     return m_is_temporary_model_isValid;
 }
 
-QString OAIJob::getModel() const {
+QString OAIJob_no_text_entry::getModel() const {
     return model;
 }
-void OAIJob::setModel(const QString &model) {
+void OAIJob_no_text_entry::setModel(const QString &model) {
     this->model = model;
     this->m_model_isSet = true;
 }
 
-bool OAIJob::is_model_Set() const{
+bool OAIJob_no_text_entry::is_model_Set() const{
     return m_model_isSet;
 }
 
-bool OAIJob::is_model_Valid() const{
+bool OAIJob_no_text_entry::is_model_Valid() const{
     return m_model_isValid;
 }
 
-QString OAIJob::getRNamespace() const {
+QString OAIJob_no_text_entry::getRNamespace() const {
     return r_namespace;
 }
-void OAIJob::setRNamespace(const QString &r_namespace) {
+void OAIJob_no_text_entry::setRNamespace(const QString &r_namespace) {
     this->r_namespace = r_namespace;
     this->m_r_namespace_isSet = true;
 }
 
-bool OAIJob::is_r_namespace_Set() const{
+bool OAIJob_no_text_entry::is_r_namespace_Set() const{
     return m_r_namespace_isSet;
 }
 
-bool OAIJob::is_r_namespace_Valid() const{
+bool OAIJob_no_text_entry::is_r_namespace_Valid() const{
     return m_r_namespace_isValid;
 }
 
-qint32 OAIJob::getProcessStatus() const {
+qint32 OAIJob_no_text_entry::getProcessStatus() const {
     return process_status;
 }
-void OAIJob::setProcessStatus(const qint32 &process_status) {
+void OAIJob_no_text_entry::setProcessStatus(const qint32 &process_status) {
     this->process_status = process_status;
     this->m_process_status_isSet = true;
 }
 
-bool OAIJob::is_process_status_Set() const{
+bool OAIJob_no_text_entry::is_process_status_Set() const{
     return m_process_status_isSet;
 }
 
-bool OAIJob::is_process_status_Valid() const{
+bool OAIJob_no_text_entry::is_process_status_Valid() const{
     return m_process_status_isValid;
 }
 
-bool OAIJob::isResultExists() const {
-    return result_exists;
-}
-void OAIJob::setResultExists(const bool &result_exists) {
-    this->result_exists = result_exists;
-    this->m_result_exists_isSet = true;
-}
-
-bool OAIJob::is_result_exists_Set() const{
-    return m_result_exists_isSet;
-}
-
-bool OAIJob::is_result_exists_Valid() const{
-    return m_result_exists_isValid;
-}
-
-qint32 OAIJob::getStatus() const {
+qint32 OAIJob_no_text_entry::getStatus() const {
     return status;
 }
-void OAIJob::setStatus(const qint32 &status) {
+void OAIJob_no_text_entry::setStatus(const qint32 &status) {
     this->status = status;
     this->m_status_isSet = true;
 }
 
-bool OAIJob::is_status_Set() const{
+bool OAIJob_no_text_entry::is_status_Set() const{
     return m_status_isSet;
 }
 
-bool OAIJob::is_status_Valid() const{
+bool OAIJob_no_text_entry::is_status_Valid() const{
     return m_status_isValid;
 }
 
-QString OAIJob::getStdoutFilename() const {
+QString OAIJob_no_text_entry::getStdoutFilename() const {
     return stdout_filename;
 }
-void OAIJob::setStdoutFilename(const QString &stdout_filename) {
+void OAIJob_no_text_entry::setStdoutFilename(const QString &stdout_filename) {
     this->stdout_filename = stdout_filename;
     this->m_stdout_filename_isSet = true;
 }
 
-bool OAIJob::is_stdout_filename_Set() const{
+bool OAIJob_no_text_entry::is_stdout_filename_Set() const{
     return m_stdout_filename_isSet;
 }
 
-bool OAIJob::is_stdout_filename_Valid() const{
+bool OAIJob_no_text_entry::is_stdout_filename_Valid() const{
     return m_stdout_filename_isValid;
 }
 
-QList<QString> OAIJob::getStreamEntries() const {
+QList<QString> OAIJob_no_text_entry::getStreamEntries() const {
     return stream_entries;
 }
-void OAIJob::setStreamEntries(const QList<QString> &stream_entries) {
+void OAIJob_no_text_entry::setStreamEntries(const QList<QString> &stream_entries) {
     this->stream_entries = stream_entries;
     this->m_stream_entries_isSet = true;
 }
 
-bool OAIJob::is_stream_entries_Set() const{
+bool OAIJob_no_text_entry::is_stream_entries_Set() const{
     return m_stream_entries_isSet;
 }
 
-bool OAIJob::is_stream_entries_Valid() const{
+bool OAIJob_no_text_entry::is_stream_entries_Valid() const{
     return m_stream_entries_isValid;
 }
 
-QDateTime OAIJob::getSubmittedAt() const {
+QDateTime OAIJob_no_text_entry::getSubmittedAt() const {
     return submitted_at;
 }
-void OAIJob::setSubmittedAt(const QDateTime &submitted_at) {
+void OAIJob_no_text_entry::setSubmittedAt(const QDateTime &submitted_at) {
     this->submitted_at = submitted_at;
     this->m_submitted_at_isSet = true;
 }
 
-bool OAIJob::is_submitted_at_Set() const{
+bool OAIJob_no_text_entry::is_submitted_at_Set() const{
     return m_submitted_at_isSet;
 }
 
-bool OAIJob::is_submitted_at_Valid() const{
+bool OAIJob_no_text_entry::is_submitted_at_Valid() const{
     return m_submitted_at_isValid;
 }
 
-QList<OAIText_entry> OAIJob::getTextEntries() const {
-    return text_entries;
-}
-void OAIJob::setTextEntries(const QList<OAIText_entry> &text_entries) {
-    this->text_entries = text_entries;
-    this->m_text_entries_isSet = true;
-}
-
-bool OAIJob::is_text_entries_Set() const{
-    return m_text_entries_isSet;
-}
-
-bool OAIJob::is_text_entries_Valid() const{
-    return m_text_entries_isValid;
-}
-
-QString OAIJob::getToken() const {
+QString OAIJob_no_text_entry::getToken() const {
     return token;
 }
-void OAIJob::setToken(const QString &token) {
+void OAIJob_no_text_entry::setToken(const QString &token) {
     this->token = token;
     this->m_token_isSet = true;
 }
 
-bool OAIJob::is_token_Set() const{
+bool OAIJob_no_text_entry::is_token_Set() const{
     return m_token_isSet;
 }
 
-bool OAIJob::is_token_Valid() const{
+bool OAIJob_no_text_entry::is_token_Valid() const{
     return m_token_isValid;
 }
 
-OAIResult_user OAIJob::getUser() const {
+OAIResult_user OAIJob_no_text_entry::getUser() const {
     return user;
 }
-void OAIJob::setUser(const OAIResult_user &user) {
+void OAIJob_no_text_entry::setUser(const OAIResult_user &user) {
     this->user = user;
     this->m_user_isSet = true;
 }
 
-bool OAIJob::is_user_Set() const{
+bool OAIJob_no_text_entry::is_user_Set() const{
     return m_user_isSet;
 }
 
-bool OAIJob::is_user_Valid() const{
+bool OAIJob_no_text_entry::is_user_Valid() const{
     return m_user_isValid;
 }
 
-bool OAIJob::isSet() const {
+bool OAIJob_no_text_entry::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (arguments.size() > 0) {
-            isObjectUpdated = true;
-            break;
-        }
-
-        if (dep_tokens.size() > 0) {
             isObjectUpdated = true;
             break;
         }
@@ -499,11 +419,6 @@ bool OAIJob::isSet() const {
             break;
         }
 
-        if (m_result_exists_isSet) {
-            isObjectUpdated = true;
-            break;
-        }
-
         if (m_status_isSet) {
             isObjectUpdated = true;
             break;
@@ -524,11 +439,6 @@ bool OAIJob::isSet() const {
             break;
         }
 
-        if (text_entries.size() > 0) {
-            isObjectUpdated = true;
-            break;
-        }
-
         if (m_token_isSet) {
             isObjectUpdated = true;
             break;
@@ -542,7 +452,7 @@ bool OAIJob::isSet() const {
     return isObjectUpdated;
 }
 
-bool OAIJob::isValid() const {
+bool OAIJob_no_text_entry::isValid() const {
     // only required properties are required for the object to be considered valid
     return true;
 }

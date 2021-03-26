@@ -7,6 +7,18 @@ Version 1.6.0
 - added auto-reload button to file-changed-dialog
 - fixed GAMS engine not appending "/api" to the url on macOS when clicking Ok directly after editing the url
 - added Studio Documentation entry in Help menu
+- close view tabs using the middle mouse button
+- fixed wrong error message in GAMS Engine job when polling the LOG too early
+- improved GDX Viewer
+    - added facility to access domains and filters in table view mode
+    - show original index position of domains in both list view and table view
+    - fixed a memory leak caused by the fitler menu not being cleaned up properly
+    - fixed an overlap of the section resize cursor and the filter icons
+    - fixed table view columns being resized automatically when toggling between list and table view mode
+    - improved automatic column widths
+- updated client API for GAMS Engine
+- delete the results on the GAMS Engine server after the job has finished
+- fixed eolCom not working in some DCO lines (like $include)
 - added help integration for Project Explorer and Process Logs
 
 Version 1.5.5

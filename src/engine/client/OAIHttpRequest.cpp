@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *
@@ -17,6 +17,11 @@
 #include <QUrl>
 #include <QUuid>
 #include <QtGlobal>
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    #define SKIP_EMPTY_PARTS Qt::SkipEmptyParts
+#else
+    #define SKIP_EMPTY_PARTS QString::SkipEmptyParts
+#endif
 
 #include "OAIHttpRequest.h"
 
@@ -52,7 +57,14 @@ void OAIHttpRequestInput::add_file(QString variable_name, QString local_filename
 }
 
 OAIHttpRequestWorker::OAIHttpRequestWorker(QObject *parent, QNetworkAccessManager *_manager)
-    : QObject(parent), manager(_manager), timeOutTimer(this), isResponseCompressionEnabled(false), isRequestCompressionEnabled(false), httpResponseCode(-1), randomGenerator(QRandomGenerator::securelySeeded()) {
+    : QObject(parent), manager(_manager), timeOutTimer(this), isResponseCompressionEnabled(false), isRequestCompressionEnabled(false), httpResponseCode(-1) {
+
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+    randomGenerator = QRandomGenerator(QDateTime::currentDateTime().toSecsSinceEpoch());
+#else
+    qsrand(QDateTime::currentDateTime().toTime_t());
+#endif
+
     if (manager == nullptr) {
         manager = new QNetworkAccessManager(this);
     }
@@ -183,7 +195,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 
     // prepare request content
 
-    QByteArray boundary = "";
+    QString boundary = "";
 
     if (input->var_layout == ADDRESS || input->var_layout == URL_ENCODED) {
         // variable layout is ADDRESS or URL_ENCODED
@@ -211,31 +223,36 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
         // variable layout is MULTIPART
 
         boundary = QString("__-----------------------%1%2")
-                       .arg(QDateTime::currentDateTime().toTime_t())
-                       .arg(randomGenerator.generate()).toUtf8();
-        QByteArray boundary_delimiter = "--";
-        QByteArray new_line = "\r\n";
+                    #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
+                            .arg(QDateTime::currentDateTime().toSecsSinceEpoch())
+                            .arg(randomGenerator.generate());
+                    #else
+                            .arg(QDateTime::currentDateTime().toTime_t())
+                            .arg(qrand());
+                    #endif
+        QString boundary_delimiter = "--";
+        QString new_line = "\r\n";
 
         // add variables
         foreach (QString key, input->vars.keys()) {
             // add boundary
-            request_content.append(boundary_delimiter);
-            request_content.append(boundary);
-            request_content.append(new_line);
+            request_content.append(boundary_delimiter.toUtf8());
+            request_content.append(boundary.toUtf8());
+            request_content.append(new_line.toUtf8());
 
             // add header
             request_content.append("Content-Disposition: form-data; ");
             request_content.append(http_attribute_encode("name", key).toUtf8());
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
             request_content.append("Content-Type: text/plain");
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
 
             // add header to body splitter
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
 
             // add variable content
             request_content.append(input->vars.value(key).toUtf8());
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
         }
 
         // add files
@@ -269,40 +286,38 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
             }
 
             // add boundary
-            request_content.append(boundary_delimiter);
-            request_content.append(boundary);
-            request_content.append(new_line);
+            request_content.append(boundary_delimiter.toUtf8());
+            request_content.append(boundary.toUtf8());
+            request_content.append(new_line.toUtf8());
 
             // add header
             request_content.append(
-                QString("Content-Disposition: form-data; %1; %2").arg(http_attribute_encode("name", file_info->variable_name),
-                                                                      http_attribute_encode("filename", file_info->request_filename))
-                                                                 .toUtf8());
-            request_content.append(new_line);
+                QString("Content-Disposition: form-data; %1; %2").arg(http_attribute_encode("name", file_info->variable_name), http_attribute_encode("filename", file_info->request_filename)).toUtf8());
+            request_content.append(new_line.toUtf8());
 
             if (file_info->mime_type != nullptr && !file_info->mime_type.isEmpty()) {
                 request_content.append("Content-Type: ");
                 request_content.append(file_info->mime_type.toUtf8());
-                request_content.append(new_line);
+                request_content.append(new_line.toUtf8());
             }
 
             request_content.append("Content-Transfer-Encoding: binary");
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
 
             // add header to body splitter
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
 
             // add file content
             request_content.append(file.readAll());
-            request_content.append(new_line);
+            request_content.append(new_line.toUtf8());
 
             file.close();
         }
 
         // add end of body
-        request_content.append(boundary_delimiter);
-        request_content.append(boundary);
-        request_content.append(boundary_delimiter);
+        request_content.append(boundary_delimiter.toUtf8());
+        request_content.append(boundary.toUtf8());
+        request_content.append(boundary_delimiter.toUtf8());
     }
 
     if (input->request_body.size() > 0) {
@@ -415,15 +430,31 @@ void OAIHttpRequestWorker::on_reply_timeout(QNetworkReply *reply) {
 }
 
 void OAIHttpRequestWorker::process_response(QNetworkReply *reply) {
-    if (getResponseHeaders().contains(QString("Content-Disposition"))) {
-        auto contentDisposition = getResponseHeaders().value(QString("Content-Disposition").toUtf8()).split(QString(";"), Qt::SkipEmptyParts);
+    QString contentDispositionHdr;
+    QString contentTypeHdr;
+    QString contentEncodingHdr;
+
+    for(auto hdr: getResponseHeaders().keys()){
+        if(hdr.compare(QString("Content-Disposition"), Qt::CaseInsensitive) == 0){
+            contentDispositionHdr = getResponseHeaders().value(hdr);
+        }
+        if(hdr.compare(QString("Content-Type"), Qt::CaseInsensitive) == 0){
+            contentTypeHdr = getResponseHeaders().value(hdr);
+        }
+        if(hdr.compare(QString("Content-Encoding"), Qt::CaseInsensitive) == 0){
+            contentEncodingHdr = getResponseHeaders().value(hdr);
+        }
+    }
+
+    if (!contentDispositionHdr.isEmpty()) {
+        auto contentDisposition = contentDispositionHdr.split(QString(";"), SKIP_EMPTY_PARTS);
         auto contentType =
-            getResponseHeaders().contains(QString("Content-Type")) ? getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), Qt::SkipEmptyParts).first() : QString();
+            !contentTypeHdr.isEmpty() ? contentTypeHdr.split(QString(";"), SKIP_EMPTY_PARTS).first() : QString();
         if ((contentDisposition.count() > 0) && (contentDisposition.first() == QString("attachment"))) {
             QString filename = QUuid::createUuid().toString();
             for (const auto &file : contentDisposition) {
                 if (file.contains(QString("filename"))) {
-                    filename = file.split(QString("="), Qt::SkipEmptyParts).at(1);
+                    filename = file.split(QString("="), SKIP_EMPTY_PARTS).at(1);
                     break;
                 }
             }
@@ -432,15 +463,15 @@ void OAIHttpRequestWorker::process_response(QNetworkReply *reply) {
             files.insert(filename, felement);
         }
 
-    } else if (getResponseHeaders().contains(QString("Content-Type"))) {
-        auto contentType = getResponseHeaders().value(QString("Content-Type").toUtf8()).split(QString(";"), Qt::SkipEmptyParts);
+    } else if (!contentTypeHdr.isEmpty()) {
+        auto contentType = contentTypeHdr.split(QString(";"), SKIP_EMPTY_PARTS);
         if ((contentType.count() > 0) && (contentType.first() == QString("multipart/form-data"))) {
             // TODO : Handle Multipart responses
         } else {
-            if(headers.contains("Content-Encoding")){
-                auto encoding = headers.value("Content-Encoding").split(QString(";"), Qt::SkipEmptyParts);
+            if(!contentEncodingHdr.isEmpty()){
+                auto encoding = contentEncodingHdr.split(QString(";"), SKIP_EMPTY_PARTS);
                 if(encoding.count() > 0){
-                    auto compressionTypes = encoding.first().split(',', Qt::SkipEmptyParts);
+                    auto compressionTypes = encoding.first().split(',', SKIP_EMPTY_PARTS);
                     if(compressionTypes.contains("gzip", Qt::CaseInsensitive) || compressionTypes.contains("deflate", Qt::CaseInsensitive)){
                         response = decompress(reply->readAll());
                     } else if(compressionTypes.contains("identity", Qt::CaseInsensitive)){
@@ -465,7 +496,7 @@ QByteArray OAIHttpRequestWorker::compress(const QByteArray& input, int level, OA
     
     Q_UNUSED(input);
     Q_UNUSED(level);
-    Q_UNUSED(compressType);        
+    Q_UNUSED(compressType);
     return QByteArray();
 }
 
