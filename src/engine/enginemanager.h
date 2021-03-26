@@ -52,20 +52,18 @@ public:
     EngineManager(QObject *parent = nullptr);
     ~EngineManager() override;
     void setWorkingDirectory(const QString &dir);
-    void setHost(const QString &host);
-    void setPort(int port);
-    void setBasePath(const QString &path);
+    void setUrl(const QString &url);
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
     void setToken(const QString &token);
     void abortRequests();
-
+    void cleanup();
 
     void authenticate(const QString &user, const QString &password);
-    void authenticate(const QString &userToken);
+    void authenticate(const QString &bearerToken);
     void getVersion();
-    void submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params);
+    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
     void getLog();
     void getOutputFile();
@@ -102,8 +100,6 @@ private:
     OpenAPI::OAIJobsApi *mJobsApi;
     QNetworkAccessManager *mNetworkManager;
     int mJobNumber = 0;
-    QString mUser;
-    QString mPassword;
     QString mToken;
     bool mQueueFinished = false;
 };
