@@ -5,6 +5,8 @@ Version 1.6.0 *
 - auto-reload files marked in the log that were changed on a GAMS run
 - added user defined extensions for files to be auto-reloaded
 - added auto-reload button to request dialog after file changes
+- added word under cursor as default search entry when no text selection is present
+- removed loading of search scope setting on studio start
 
 Version 1.5.4
 ==================
