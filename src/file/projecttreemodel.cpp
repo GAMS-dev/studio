@@ -104,7 +104,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     if (!ind.isValid()) return QVariant();
     switch (role) {
     case Qt::BackgroundRole:
-        if (isSelected(ind)) return QColor("#4466BBFF");
+        if (isSelected(ind)) return QColor(102,187,255,68); // "#4466BBFF"
         break;
 
     case Qt::DisplayRole:
@@ -113,21 +113,25 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::EditRole:
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
-    case Qt::FontRole:
+    case Qt::FontRole: {
         if (isCurrent(ind) || isCurrentGroup(ind)) {
             QFont f;
             f.setBold(true);
             return f;
         }
-        break;
+    }   break;
 
     case Qt::ForegroundRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
-        if (node && !node->file()->exists(true))
+        if (node && !node->file()->exists(true)) {
             return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
-        break;
-    }
+        } else if (Theme::instance()->baseTheme(Theme::instance()->activeTheme())) {
+            // dark theme, not current: slightly grayed white
+            if (!isCurrent(ind) && !isCurrentGroup(ind))
+                return QColor(Qt::white).darker(125);
+        }
+    }   break;
 
     case Qt::DecorationRole:
         return mProjectRepo->node(ind)->icon();
@@ -138,8 +142,8 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::UserRole: {
         ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node) return node->location();
-        break;
-    }
+    }   break;
+
     case Qt::UserRole+1: {
         ProjectAbstractNode *node = mProjectRepo->node(ind);
         if (node) return int(node->id());
@@ -163,9 +167,9 @@ ProjectGroupNode* ProjectTreeModel::rootNode() const
 
 bool ProjectTreeModel::removeRows(int row, int count, const QModelIndex& parent)
 {
-    Q_UNUSED(row);
-    Q_UNUSED(count);
-    Q_UNUSED(parent);
+    Q_UNUSED(row)
+    Q_UNUSED(count)
+    Q_UNUSED(parent)
     return false;
 }
 

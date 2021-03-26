@@ -24,8 +24,10 @@
 #include "columnfilter.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
+#include "theme.h"
 #include "common.h"
 #include "valuefilter.h"
+#include "tableviewdomainmodel.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -43,6 +45,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 {
     ui->setupUi(this);
     ui->tvTableView->hide();
+    ui->tvTableViewFilter->hide();
+    ui->tbDomLeft->hide();
+    ui->tbDomRight->hide();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -128,7 +133,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbPreferences->addAction(preferences);
 
     //create header for list view
-    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal);
+    GdxSymbolHeaderView* headerView = new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::ListView);
     headerView->setEnabled(false);
 
     ui->tvListView->setHorizontalHeader(headerView);
@@ -142,7 +147,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showColumnFilter);
+    connect(ui->tvListView->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
     connect(mSqDefaults, &QCheckBox::toggled, this, &GdxSymbolView::toggleSqueezeDefaults);
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
@@ -159,6 +164,19 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
+    ui->tvTableViewFilter->setHorizontalHeader(new GdxSymbolHeaderView(Qt::Horizontal, GdxSymbolHeaderView::TableViewFilter));
+    ui->tvTableViewFilter->horizontalHeader()->setVisible(true);
+    ui->tvTableViewFilter->horizontalHeader()->setSectionsClickable(true);
+    ui->tvTableViewFilter->horizontalHeader()->setContextMenuPolicy(Qt::CustomContextMenu);
+
+    ui->tvTableViewFilter->horizontalHeader()->installEventFilter(this);
+    connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::adjustDomainScrollbar);
+
+    connect(ui->tvTableViewFilter->horizontalHeader(), &QHeaderView::customContextMenuRequested, this, &GdxSymbolView::showFilter);
+
+    connect(ui->tbDomLeft, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollLeft);
+    connect(ui->tbDomRight, &QToolButton::clicked, this, &GdxSymbolView::tvFilterScrollRight);
 }
 
 GdxSymbolView::~GdxSymbolView()
@@ -170,28 +188,27 @@ GdxSymbolView::~GdxSymbolView()
     delete ui;
 }
 
-void GdxSymbolView::showColumnFilter(QPoint p)
+void GdxSymbolView::showFilter(QPoint p)
 {
-    int column = ui->tvListView->horizontalHeader()->logicalIndexAt(p);
+    QTableView* tableView = mTableView ? ui->tvTableViewFilter : ui->tvListView;
+    int column = tableView->horizontalHeader()->logicalIndexAt(p);
+
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
         mColumnFilterMenu = new QMenu(this);
-        connect(mColumnFilterMenu, &QMenu::close, this, &GdxSymbolView::freeColumnFilterMenu);
-        if (column<mSym->dim()) {
-            ColumnFilter *cf = new ColumnFilter(mSym, column, this);
-            mColumnFilterMenu->addAction(cf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        } else {
-            ValueFilter* vf = mSym->valueFilter(column-mSym->dim());
-            mColumnFilterMenu->addAction(vf);
-            mColumnFilterMenu->popup(ui->tvListView->mapToGlobal(p));
-        }
+        connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
+        QWidgetAction *filter = nullptr;
+        if (column<mSym->dim())
+            filter = mSym->columnFilter(column);
+        else
+            filter = mSym->valueFilter(column-mSym->dim());
+        mColumnFilterMenu->addAction(filter);
+        mColumnFilterMenu->popup(tableView->mapToGlobal(p));
     }
 }
 
-void GdxSymbolView::freeColumnFilterMenu()
+void GdxSymbolView::freeFilterMenu()
 {
     if (mColumnFilterMenu) {
-        mColumnFilterMenu->actions().first()->deleteLater();
         mColumnFilterMenu->deleteLater();
         mColumnFilterMenu = nullptr;
     }
@@ -216,6 +233,8 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
                 for (int col=0; col<mTvModel->columnCount(); col++)
                     ui->tvTableView->setColumnHidden(col, !mShowValColActions[col%GMS_DT_MAX]->isChecked());
             }
+            for (int col=0; col<GMS_VAL_MAX; col++)
+                ui->tvTableViewFilter->setColumnHidden(mSym->dim()+col, !mShowValColActions[col]->isChecked());
             ui->tvTableView->setUpdatesEnabled(true);
         } else {
             ui->tvListView->setUpdatesEnabled(false);
@@ -246,25 +265,19 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
-        mSym->resetSortFilter();
         ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
+        mSym->resetSortFilter();
         mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
-            ui->tvTableView->setModel(nullptr);
+            ui->tvTableViewFilter->setModel(nullptr);
+            delete mTvDomainModel;
+            mTvDomainModel = nullptr;
             delete mTvModel;
             mTvModel = nullptr;
+            ui->tvTableView->setModel(nullptr);
         }
     }
-}
-
-void GdxSymbolView::refreshView()
-{
-    if(!mSym)
-        return;
-    if(mSym->isLoaded())
-        mSym->filterRows();
-    toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
 GdxSymbol *GdxSymbolView::sym() const
@@ -305,8 +318,6 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     connect(ui->tvListView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(ui->tvTableView, &QTableView::customContextMenuRequested, this, &GdxSymbolView::showContextMenu);
     connect(mSqZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
-
-    refreshView();
 }
 
 void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
@@ -395,6 +406,11 @@ void GdxSymbolView::toggleColumnHidden()
     toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
+void GdxSymbolView::moveTvFilterColumns(int from, int to)
+{
+    ui->tvTableViewFilter->horizontalHeader()->moveSection(from, to);
+}
+
 void GdxSymbolView::updateNumericalPrecision()
 {
     QString svFull = "Full";
@@ -428,6 +444,30 @@ void GdxSymbolView::updateNumericalPrecision()
         ui->tvTableView->reset();
 }
 
+void GdxSymbolView::tvFilterScrollLeft()
+{
+    mTvFilterSection--;
+    ui->tbDomRight->setEnabled(true);
+    ui->tbDomLeft->setEnabled(true);
+    if (mTvFilterSection<=0) {
+        mTvFilterSection=0;
+        ui->tbDomLeft->setEnabled(false);
+    }
+    ui->tvTableViewFilter->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
+}
+
+void GdxSymbolView::tvFilterScrollRight()
+{
+    mTvFilterSection++;
+    ui->tbDomRight->setEnabled(true);
+    ui->tbDomLeft->setEnabled(true);
+    if (mTvFilterSection >= mTvFilterSectionMax) {
+        mTvFilterSection=mTvFilterSectionMax;
+        ui->tbDomRight->setEnabled(false);
+    }
+    ui->tvTableViewFilter->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
@@ -441,37 +481,97 @@ void GdxSymbolView::autoResizeColumns()
 {
     if (mTableView) {
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
-        for (int i=0; i<mTVResizeColNr; i++)
+        for (int i=0; i<mTVResizeColNr; i++) {
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+            ui->tvTableViewFilter->resizeColumnToContents(ui->tvTableViewFilter->columnAt(0)+i);
+        }
     }
     else
         ui->tvListView->resizeColumnsToContents();
+}
+
+void GdxSymbolView::autoResizeTableViewColumns()
+{
+    if (mTableView) {
+        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
+        for (int i=0; i<mTVResizeColNr; i++)
+            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+    }
+}
+
+void GdxSymbolView::adjustDomainScrollbar()
+{
+    int colCount = ui->tvTableViewFilter->model()->columnCount();
+    QVector<int> accSecWidth(colCount);
+    int tableWidth = ui->tvTableViewFilter->horizontalHeader()->width();
+    int last = 0;
+    for (int i=0; i<colCount; ++i) {
+        last += ui->tvTableViewFilter->horizontalHeader()->sectionSize(i);
+        accSecWidth[i] = last;
+    }
+    if (accSecWidth.last() > tableWidth) {
+        mTvFilterSectionMax = 1;
+
+        int diff = accSecWidth.last() - tableWidth;
+        for (int i=0; i<colCount; ++i) {
+            if (accSecWidth[i]>=diff) {
+                mTvFilterSectionMax = i+1;
+                break;
+            }
+        }
+        ui->tbDomLeft->setEnabled(mTvFilterSection != 0);
+        ui->tbDomRight->setEnabled(mTvFilterSection != mTvFilterSectionMax);
+    } else {
+        mTvFilterSectionMax = 0;
+        mTvFilterSection = 0;
+        ui->tbDomLeft->setEnabled(false);
+        ui->tbDomRight->setEnabled(false);
+    }
 }
 
 void GdxSymbolView::showListView()
 {
     mTableView = false;
     ui->tvTableView->hide();
+    ui->tvTableViewFilter->hide();
+    ui->tbDomLeft->hide();
+    ui->tbDomRight->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
 }
 
 void GdxSymbolView::showTableView()
 {
-    if (!mTvModel) {
+    bool firstInit = !mTvModel;
+    if (firstInit) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
         ui->tvTableView->setModel(mTvModel);
-    } else if (mSym->filterHasChanged())
-        mTvModel->setTableView();
-    mSym->setFilterHasChanged(false);
 
+        mTvDomainModel = new TableViewDomainModel(mTvModel);
+        ui->tvTableViewFilter->setModel(mTvDomainModel);
+        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+        ui->tvTableViewFilter->setMaximumHeight(height);
+
+        ui->tbDomLeft->setMaximumHeight(height);
+        ui->tbDomRight->setMaximumHeight(height);
+        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+
+        ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
+        ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
+    }
     ui->pbToggleView->setText("List View");
 
     ui->tvListView->hide();
+
     ui->tvTableView->show();
+    ui->tvTableViewFilter->show();
+    ui->tbDomLeft->show();
+    ui->tbDomRight->show();
     mTableView = true;
-    autoResizeColumns();
+    if (firstInit)
+        autoResizeColumns();
 }
 
 void GdxSymbolView::toggleView()
@@ -480,7 +580,7 @@ void GdxSymbolView::toggleView()
         showListView();
     else
         showTableView();
-    refreshView();
+    toggleSqueezeDefaults(mSqDefaults->isChecked());
 }
 
 void GdxSymbolView::selectAll()
@@ -495,7 +595,16 @@ void GdxSymbolView::resetValFormat()
 {
     int index = mValFormat->findData(mDefaultValFormat);
     if (index != -1)
-       mValFormat->setCurrentIndex(index);
+        mValFormat->setCurrentIndex(index);
+}
+
+bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
+{
+    Q_UNUSED(watched)
+    if (event->type() == QEvent::Resize) {
+        this->adjustDomainScrollbar();
+    }
+    return false;
 }
 
 void GdxSymbolView::enableControls()

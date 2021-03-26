@@ -17,48 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ENCODINGSDIALOG_H
-#define ENCODINGSDIALOG_H
+#include "testgotodialog.h"
+#include "gotodialog.h"
 
-#include <QDialog>
+#include <QLineEdit>
+#include <QPushButton>
 
-namespace Ui {
-class SelectEncodings;
-}
-
-namespace gams {
-namespace studio {
-
-class SelectEncodings : public QDialog
+void TestGoToDialog::initTestCase()
 {
-    Q_OBJECT
-
-public:
-    explicit SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent = nullptr);
-    ~SelectEncodings() override;
-    QList<int> selectedMibs();
-    int defaultCodec();
-
-private slots:
-
-    void on_pbCancel_clicked();
-    void on_pbSave_clicked();
-    void on_pbReset_clicked();
-
-protected:
-    void showEvent(QShowEvent *e) override;
-
-private:
-    void centerCurrent();
-
-private:
-    Ui::SelectEncodings *ui;
-    QList<int> mSelectedMibs;
-    int mDefaultMib;
-};
-
-
-}
+    mDialog = new GoToDialog(nullptr, 100);
 }
 
-#endif // ENCODINGSDIALOG_H
+void TestGoToDialog::cleanupTestCase()
+{
+    delete mDialog;
+}
+
+void TestGoToDialog::testit()
+{
+    // One file changed externally
+    QLineEdit* ed = mDialog->findChild<QLineEdit*>("lineEdit");
+    ed->setText("50");
+    QTest::mouseClick(mDialog->findChild<QPushButton*>("goToButton"), Qt::LeftButton);
+    QTEST_ASSERT_X(mDialog->result() == 1, "GoToDialog", "line number in range");
+
+    ed->setText("150");
+    QTest::mouseClick(mDialog->findChild<QPushButton*>("goToButton"), Qt::LeftButton);
+    QTEST_ASSERT_X(mDialog->result() == 0, "GoToDialog", "line number out of range");
+}
+
+QTEST_MAIN(TestGoToDialog)

@@ -17,48 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef ENCODINGSDIALOG_H
-#define ENCODINGSDIALOG_H
+#ifndef TEST_FILE_CHANGE_DIALOG_H
+#define TEST_FILE_CHANGE_DIALOG_H
 
-#include <QDialog>
+#include <QtTest/QTest>
+#include "filechangedialog.h"
 
-namespace Ui {
-class SelectEncodings;
-}
+using namespace gams::studio;
 
-namespace gams {
-namespace studio {
-
-class SelectEncodings : public QDialog
+class TestFileChangeDialog : public QObject
 {
     Q_OBJECT
 
-public:
-    explicit SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent = nullptr);
-    ~SelectEncodings() override;
-    QList<int> selectedMibs();
-    int defaultCodec();
+private Q_SLOTS:
+    void initTestCase();
+    void cleanupTestCase();
 
-private slots:
-
-    void on_pbCancel_clicked();
-    void on_pbSave_clicked();
-    void on_pbReset_clicked();
-
-protected:
-    void showEvent(QShowEvent *e) override;
+    void test_multi();
+    void test_single();
 
 private:
-    void centerCurrent();
-
-private:
-    Ui::SelectEncodings *ui;
-    QList<int> mSelectedMibs;
-    int mDefaultMib;
+    FileChangeDialog* mDialog = nullptr;
 };
 
-
-}
-}
-
-#endif // ENCODINGSDIALOG_H
+#endif // TEST_FILE_CHANGE_DIALOG_H

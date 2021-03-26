@@ -1131,7 +1131,7 @@ QString OptionTokenizer::getDoubleValueFromStr(const QString &line, const QStrin
     if (value.contains(hintValue, Qt::CaseInsensitive))
         return hintValue;
 
-    for(QChar ch : mOption->getEOLChars()) {
+    for(const QChar &ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
             value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
@@ -1168,7 +1168,7 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
         }
     }
 
-    for(QChar ch : mOption->getEOLChars()) {
+    for(const QChar &ch : mOption->getEOLChars()) {
         if (value.indexOf(ch, Qt::CaseInsensitive) >= 0)  { // found EOL char
             value = value.split(getEOLCommentChar(), Qt::SkipEmptyParts).at(0).simplified();
             break;
@@ -1189,7 +1189,7 @@ QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString
     if (line.contains(hintValue, Qt::CaseInsensitive))
         strref = strref.mid( hintValue.size(), strref.size() ).trimmed();
 
-    for(QChar ch : mOption->getEOLChars()) {
+    for(const QChar &ch : mOption->getEOLChars()) {
         if (strref.startsWith(ch)) {
             return line.mid( line.indexOf(strref)+1, line.size()).simplified();
         }

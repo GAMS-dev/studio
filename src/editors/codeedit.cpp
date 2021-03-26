@@ -1475,12 +1475,6 @@ CodeEdit::CharType CodeEdit::charType(QChar c)
     return CharType::Other;
 }
 
-void CodeEdit::updateTabSize()
-{
-    QFontMetrics metric(font());
-    setTabStopDistance(mSettings->toInt(skEdTabSize) * metric.horizontalAdvance(' '));
-}
-
 int CodeEdit::findAlphaNum(const QString &text, int start, bool back)
 {
     QChar c = ' ';

@@ -17,36 +17,18 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-QT += testlib core gui svg concurrent network printsupport
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
-CONFIG += c++14
-CONFIG -= app_bundle
+TEMPLATE = app
 
-DESTDIR = ../bin
-OBJECTS_DIR=../../objects
-MOC_DIR=../../objects
+include(../tests.pri)
 
-# Setup and include the GAMS distribution
-include(../gamsdependency.pri)
+INCLUDEPATH += $$SRCPATH                \
+               $$SRCPATH/file
 
-macx {
-    HEADERS += ../../platform/macos/macospathfinder.h \
-               ../../platform/macos/macoscocoabridge.h
+HEADERS += $$files(*.h, true)                   \
+           $$SRCPATH/gotodialog.h
 
-    SOURCES += ../../platform/macos/macospathfinder.cpp
+SOURCES += $$files(*.cpp, true)                 \
+           $$SRCPATH/gotodialog.cpp
 
-    OBJECTIVE_SOURCES += ../../platform/macos/macoscocoabridge.mm
-
-
-    LIBS += -framework AppKit
-}
-unix {
-    LIBS += -ldl
-}
-win32 {
-    LIBS += -luser32
-}
-
-TESTSROOT = $$_PRO_FILE_PWD_/..
-SRCPATH = $$TESTSROOT/../src
+FORMS   += $$SRCPATH/gotodialog.ui

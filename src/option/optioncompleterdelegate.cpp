@@ -31,7 +31,7 @@ namespace studio {
 namespace option {
 
 OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QObject* parent) :
-    QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption())
+    QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption()), mIsLastEditorClosed(false), mLastEditor(nullptr)
 {
     mCurrentEditedIndex = QModelIndex();
     connect( this, &OptionCompleterDelegate::currentEditedIndexChanged, this, &OptionCompleterDelegate::updateCurrentEditedIndex) ;
@@ -62,6 +62,8 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
     lineEdit->setCompleter(completer);
     lineEdit->adjustSize();
 
+    mLastEditor = lineEdit;
+    mIsLastEditorClosed = false;
     connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
     emit currentEditedIndexChanged(index);
     return lineEdit;
@@ -92,10 +94,11 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 
 void OptionCompleterDelegate::commitAndCloseEditor()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
     updateCurrentEditedIndex(QModelIndex());
+    mIsLastEditorClosed = true;
 }
 
 void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
@@ -106,6 +109,16 @@ void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
 QModelIndex OptionCompleterDelegate::currentEditedIndex() const
 {
     return mCurrentEditedIndex;
+}
+
+QWidget *OptionCompleterDelegate::lastEditor() const
+{
+    return mLastEditor;
+}
+
+bool OptionCompleterDelegate::isLastEditorClosed() const
+{
+    return mIsLastEditorClosed;
 }
 
 bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
