@@ -16,6 +16,9 @@ Version 1.6.0
     - fixed an overlap of the section resize cursor and the filter icons
     - fixed table view columns being resized automatically when toggling between list and table view mode
     - improved automatic column widths
+- updated client API for GAMS Engine
+- delete the results on the GAMS Engine server after the job has finished
+- fixed eolCom not working in some DCO lines (like $include)
 - added word under cursor as default search entry when no text selection is present
 - removed loading of search scope setting on studio start
 
