@@ -48,7 +48,6 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->cb_regex->setChecked(mSettings->toBool(skSearchUseRegex));
     ui->cb_caseSens->setChecked(mSettings->toBool(skSearchCaseSens));
     ui->cb_wholeWords->setChecked(mSettings->toBool(skSearchWholeWords));
-    ui->combo_scope->setCurrentIndex(mSettings->toInt(skSearchScope));
     ui->lbl_nrResults->setText("");
     ui->combo_search->setCompleter(nullptr);
     adjustSize();

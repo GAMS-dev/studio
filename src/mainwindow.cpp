@@ -2290,7 +2290,6 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skSearchUseRegex, searchDialog()->regex());
     settings->setBool(skSearchCaseSens, searchDialog()->caseSens());
     settings->setBool(skSearchWholeWords, searchDialog()->wholeWords());
-    settings->setInt(skSearchScope, searchDialog()->selectedScope());
 
 #ifdef QWEBENGINE
     QVariantList joBookmarks;
