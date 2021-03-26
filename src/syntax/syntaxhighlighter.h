@@ -49,7 +49,7 @@ public:
     void reloadColors();
 
 public slots:
-    void syntaxKind(int position, int &intKind);
+    void syntaxKind(int position, int &intKind, int &flavor);
 
 private:
     void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses,
@@ -78,6 +78,7 @@ private:
 private:
     int mPositionForSyntaxKind = -1;
     int mLastSyntaxKind = 0;
+    int mLastFlavor = 0;
     QVector<SyntaxKind> mSingleLineKinds;
     Kinds mKinds;
     CodeRelations mCodes;

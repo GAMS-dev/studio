@@ -194,6 +194,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
+            mLastFlavor = nextBlock.flavor;
             mPositionForSyntaxKind = -1;
             posForSyntaxKind = text.length()+1;
         }
@@ -215,12 +216,14 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
 }
 
-void SyntaxHighlighter::syntaxKind(int position, int &intKind)
+void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
 {
     mPositionForSyntaxKind = position;
     mLastSyntaxKind = 0;
+    mLastFlavor = 0;
     rehighlightBlock(document()->findBlock(position));
     intKind = mLastSyntaxKind;
+    flavor = mLastFlavor;
     mLastSyntaxKind = 0;
 }
 

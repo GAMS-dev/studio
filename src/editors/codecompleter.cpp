@@ -1,6 +1,7 @@
 #include "codecompleter.h"
 #include "editors/codeedit.h"
 #include "syntaxdata.h"
+#include "syntax/syntaxformats.h"
 #include "logger.h"
 
 #include <QSortFilterProxyModel>
@@ -95,19 +96,18 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
 
 // ----------- Filter ---------------
 
-QVariant FilterCompleterModel::data(const QModelIndex &index, int role) const
+bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
-    if (role == Qt::DisplayRole) {
-        bool ok;
-        int type = QSortFilterProxyModel::data(index, Qt::UserRole).toInt(&ok);
-        if (!ok || (type & mTypeFilter)) return '?' + QSortFilterProxyModel::data(index, Qt::DisplayRole).toString();
-    }
-    return QSortFilterProxyModel::data(index, role);
+    QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
+    int type = sourceModel()->data(index, Qt::UserRole).toInt();
+    if (!(type & mTypeFilter)) return false;
+    return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
 
-void FilterCompleterModel::setFilter(int completerTypeFilter)
+void FilterCompleterModel::setTypeFilter(int completerTypeFilter)
 {
     mTypeFilter = completerTypeFilter;
+    invalidateFilter();
 }
 
 
@@ -241,11 +241,11 @@ void CodeCompleter::updateFilter()
         mFilterText = line.mid(validStart, len);
     }
     // TODO(JM) get matching filter from syntax type
-//    mFilterModel->setFilter(xxx);
+    mFilterModel->setTypeFilter(getFilterFromSyntax());
     if (mFilterText.startsWith('$'))
-        mFilterModel->setFilterRegExp("^\\"+mFilterText+".*");
+        mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
     else
-        mFilterModel->setFilterRegExp('^'+mFilterText+".*");
+        mFilterModel->setFilterRegularExpression('^'+mFilterText+".*");
 
     if (!currentIndex().isValid())
         setCurrentIndex(mFilterModel->index(0,0));
@@ -310,6 +310,75 @@ void CodeCompleter::insertCurrent()
     }
     mEdit->setFocus();
     hide();
+}
+
+int CodeCompleter::getFilterFromSyntax()
+{
+    int res = ccAll;
+    QTextCursor cur = mEdit->textCursor();
+    bool atStart = cur.positionInBlock() == 0;
+    int syntaxKind;
+    int syntaxFlavor;
+    mEdit->requestSyntaxKind(cur.position(), syntaxKind, syntaxFlavor);
+    switch (syntax::SyntaxKind(syntaxKind)) {
+    case syntax::SyntaxKind::Standard:
+        return ccNone;
+    case syntax::SyntaxKind::Directive:
+        return ccDco;
+    case syntax::SyntaxKind::DirectiveBody:
+    case syntax::SyntaxKind::DirectiveComment:
+    case syntax::SyntaxKind::Title:
+        return ccNone;
+    case syntax::SyntaxKind::CommentBlock:
+        return atStart ? ccDco2 : ccNone;
+
+    case syntax::SyntaxKind::String:
+    case syntax::SyntaxKind::Formula:
+    case syntax::SyntaxKind::Assignment:
+    case syntax::SyntaxKind::Call:
+    case syntax::SyntaxKind::CommentLine:
+    case syntax::SyntaxKind::CommentEndline:
+    case syntax::SyntaxKind::CommentInline:
+    case syntax::SyntaxKind::IgnoredHead:
+    case syntax::SyntaxKind::IgnoredBlock:
+
+    case syntax::SyntaxKind::Semicolon:
+    case syntax::SyntaxKind::CommaIdent:
+    case syntax::SyntaxKind::DeclarationSetType:
+    case syntax::SyntaxKind::DeclarationVariableType:
+    case syntax::SyntaxKind::Declaration:
+
+    case syntax::SyntaxKind::Identifier:
+    case syntax::SyntaxKind::IdentifierDim:
+    case syntax::SyntaxKind::IdentifierDimEnd:
+    case syntax::SyntaxKind::IdentifierDescription:
+
+    case syntax::SyntaxKind::IdentifierAssignment:
+    case syntax::SyntaxKind::AssignmentLabel:
+    case syntax::SyntaxKind::AssignmentValue:
+    case syntax::SyntaxKind::IdentifierAssignmentEnd:
+
+    case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
+    case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
+    case syntax::SyntaxKind::IdentifierTableAssignmentRow:
+
+    case syntax::SyntaxKind::Embedded:
+    case syntax::SyntaxKind::EmbeddedBody:
+    case syntax::SyntaxKind::EmbeddedEnd:
+    case syntax::SyntaxKind::Reserved:
+    case syntax::SyntaxKind::Solve:
+    case syntax::SyntaxKind::SolveBody:
+    case syntax::SyntaxKind::SolveKey:
+    case syntax::SyntaxKind::Option:
+    case syntax::SyntaxKind::OptionBody:
+    case syntax::SyntaxKind::OptionKey:
+    case syntax::SyntaxKind::Execute:
+    case syntax::SyntaxKind::ExecuteBody:
+    case syntax::SyntaxKind::ExecuteKey:
+    default: ;
+    }
+
+    return res;
 }
 
 } // namespace studio

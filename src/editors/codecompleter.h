@@ -21,6 +21,8 @@ enum CodeCompleterType {
 
     ccOpt  = 0x00010000, // options
     ccMod  = 0x00020000, // models
+
+    ccAll  = 0x7FFFFFFF
 };
 
 class CodeCompleterModel : public QAbstractListModel
@@ -40,12 +42,14 @@ public:
 class FilterCompleterModel : public QSortFilterProxyModel
 {
     int mTypeFilter = 0;
+    QString mFilterText;
     Q_OBJECT
 public:
     FilterCompleterModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
      ~FilterCompleterModel() override {}
-    QVariant data(const QModelIndex &index, int role) const override;
-    void setFilter(int completerTypeFilter);
+    bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    void setTypeFilter(int completerTypeFilter);
+    void setFilterText(QString filterText);
 };
 
 class CodeEdit;
@@ -72,6 +76,7 @@ protected:
 
 private:
     void insertCurrent();
+    int getFilterFromSyntax();
 
 private:
     CodeEdit *mEdit;
