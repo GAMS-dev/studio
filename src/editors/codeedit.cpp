@@ -2470,5 +2470,51 @@ void LineNumberArea::leaveEvent(QEvent *event)
     QWidget::leaveEvent(event);
 }
 
+
+
+void CodeEdit::MoveLineUP()
+{
+    QTextCursor cursor = textCursor();
+    if (mBlockEdit) {
+        QTextBlock startBlock = cursor.document()->findBlockByNumber(mBlockEdit->startLine());
+        QTextBlock endBlock = cursor.document()->findBlockByNumber(mBlockEdit->currentLine());
+        int columnFrom = mBlockEdit->colFrom();
+        int columnTo = mBlockEdit->colTo();
+        cursor.setPosition(startBlock.position() + mBlockEdit->colFrom());
+        cursor.setPosition(textCursor().block().position() + mBlockEdit->colTo(), QTextCursor::KeepAnchor);
+        endBlockEdit();
+        movingUp(cursor, qMin(startBlock, endBlock), qMax(startBlock.blockNumber(), endBlock.blockNumber()));
+        setTextCursor(cursor);
+        startBlockEdit(startBlock.blockNumber(), columnTo);
+        mBlockEdit->selectTo(endBlock.blockNumber(), columnFrom);
+    } else {
+        QTextBlock startBlock = cursor.document()->findBlock(qMin(cursor.position(), cursor.anchor()));
+        int lastBlockNr = cursor.document()->findBlock(qMax(cursor.position(), cursor.anchor())).blockNumber();
+        movingUp(cursor, startBlock, lastBlockNr);
+        setTextCursor(cursor);
+    }
+    recalcExtraSelections();
+}
+
+void CodeEdit::movingUp(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr)
+{
+    cursor.beginEditBlock();
+    QTextCursor anchor = cursor;
+    anchor.setPosition(anchor.anchor());
+    for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
+        if (!block.isValid()) break;
+        QString text = cursor.selectedText();
+        cursor.removeSelectedText();
+        QTextCursor ncur(cursor.block().previous());
+        ncur.insertText(text);
+    }
+    cursor.setPosition(anchor.position());
+    cursor.setPosition(textCursor().position(), QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+}
+
+
+
 } // namespace studio
 } // namespace gams

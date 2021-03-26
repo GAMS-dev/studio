@@ -19,6 +19,7 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
+#include <QScrollBar>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -1093,6 +1094,26 @@ void MainWindow::updateEditorPos()
         anchor = tv->anchor() + QPoint(1,1);
     }
     mStatusWidgets->setPosAndAnchor(pos, anchor);
+}
+
+
+
+void MainWindow::moveLinesUp()
+{ 
+    CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!edit || edit->isReadOnly()) return;
+    else {edit->MoveLineUP();
+        }
+
+
+}
+
+void MainWindow::moveLinesDown()
+{
+    CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!edit || edit->isReadOnly()) return;
+    else {
+    }
 }
 
 void MainWindow::updateEditorMode()
@@ -4803,6 +4824,15 @@ void MainWindow::checkGamsLicense()
     }
 }
 
-}
+void MainWindow::on_actionMove_Line_Up_triggered()
+{
+    moveLinesUp();
 }
 
+void MainWindow::on_actionMove_Line_Down_triggered()
+{
+    moveLinesDown();
+}
+
+}
+}
