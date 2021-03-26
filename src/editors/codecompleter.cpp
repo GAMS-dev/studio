@@ -4,6 +4,8 @@
 #include "logger.h"
 
 #include <QSortFilterProxyModel>
+#include <QGuiApplication>
+#include <QScreen>
 
 namespace gams {
 namespace studio {
@@ -138,15 +140,9 @@ bool CodeCompleter::event(QEvent *event)
 
 void CodeCompleter::showEvent(QShowEvent *event)
 {
-    updateFilter();
-    if (mFilterModel->rowCount()) {
-        setCurrentIndex(mFilterModel->index(0,0));
-        QListView::showEvent(event);
-        setFocus();
-    } else {
-        mEdit->setFocus();
-        hide();
-    }
+    setCurrentIndex(mFilterModel->index(0,0));
+    QListView::showEvent(event);
+    setFocus();
 }
 
 void CodeCompleter::mousePressEvent(QMouseEvent *event)
@@ -253,6 +249,21 @@ void CodeCompleter::updateFilter()
 
     if (!currentIndex().isValid())
         setCurrentIndex(mFilterModel->index(0,0));
+
+    // adapt size
+    QRect rect = QRect(mGlobalPos, geometry().size());
+    int hei = sizeHintForRow(0) * qMin(10, rowCount());
+    QScreen *screen = qApp->screenAt(rect.topLeft());
+    while (hei > sizeHintForRow(0) && rect.top() + hei > screen->availableVirtualGeometry().bottom())
+        hei -= sizeHintForRow(0);
+
+    int wid = 0;
+    for (int row = 0; row < rowCount(); ++row)
+        wid = qMax(wid, sizeHintForColumn(row));
+
+    rect.setHeight(hei + 2);
+    rect.setWidth(wid + 25);
+    setGeometry(rect);
 }
 
 void CodeCompleter::updateDynamicData(QStringList symbols)
@@ -264,6 +275,16 @@ void CodeCompleter::updateDynamicData(QStringList symbols)
 int CodeCompleter::rowCount()
 {
     return mFilterModel->rowCount();
+}
+
+void CodeCompleter::ShowIfData(QPoint globalPos)
+{
+    mGlobalPos = globalPos;
+    updateFilter();
+    if (rowCount()) {
+        show();
+    }
+
 }
 
 void CodeCompleter::insertCurrent()

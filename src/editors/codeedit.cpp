@@ -1282,17 +1282,10 @@ bool CodeEdit::prepareCompleter()
 void CodeEdit::showCompleter()
 {
     if (!mCompleter) return;
-    mCompleter->updateFilter();
-    if (mCompleter->rowCount()) {
-        QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
-        pos.setX(pos.x() + mLineNumberArea->width());
-        pos = mapToGlobal(pos);
-        QRect rect(pos, pos);
-        rect.setHeight(100);
-        rect.setWidth(200);
-        mCompleter->setGeometry(rect);
-        mCompleter->show();
-    }
+    QPoint pos = cursorRect().bottomLeft()+viewport()->rect().topLeft();
+    pos.setX(pos.x() + mLineNumberArea->width());
+    pos.setY(pos.y() + 1);
+    mCompleter->ShowIfData(mapToGlobal(pos));
 }
 
 
