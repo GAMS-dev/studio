@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *
@@ -13,7 +13,6 @@
 #include <QFile>
 #include <QJsonDocument>
 #include <QJsonObject>
-#include <QCborStreamReader>
 
 #include "OAIHttpFileElement.h"
 
@@ -66,7 +65,11 @@ QJsonValue OAIHttpFileElement::asJsonValue() const {
     if (!result) {
         qDebug() << "Error opening file " << local_filename;
     }
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     return QJsonDocument::fromJson(bArray.data()).object();
+#else
+    return QJsonDocument::fromBinaryData(bArray.data()).object();
+#endif
 }
 
 bool OAIHttpFileElement::fromStringValue(const QString &instr) {
@@ -91,7 +94,11 @@ bool OAIHttpFileElement::fromJsonValue(const QJsonValue &jval) {
         file.remove();
     }
     result = file.open(QIODevice::WriteOnly);
+#if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     file.write(QJsonDocument(jval.toObject()).toJson());
+#else
+    file.write(QJsonDocument(jval.toObject()).toBinaryData());
+#endif
     file.close();
     if (!result) {
         qDebug() << "Error creating file " << local_filename;

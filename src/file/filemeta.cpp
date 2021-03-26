@@ -195,19 +195,27 @@ void FileMeta::refreshType()
 {
     QFileInfo f(mLocation);
     FileType* newFT = &FileType::from(f.suffix());
+    FileKind oldKind = kind();
     mData = Data(mLocation, newFT); // react to changes in location and extension
     if (mDocument) {
-        if (mHighlighter) {
+        if (mHighlighter && kind() != FileKind::Gms) {
             mHighlighter->setDocument(nullptr, true);
             mHighlighter->deleteLater();
             mHighlighter = nullptr;
             disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
             disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
         }
-        if (kind() == FileKind::Gms) {
+        if (kind() == FileKind::Gms && kind() != oldKind) {
             mHighlighter = new syntax::SyntaxHighlighter(mDocument);
             connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
             connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+            for (QWidget *edit : qAsConst(mEditors)) {
+                CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+                if (scEdit && mHighlighter) {
+                    connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+                    connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
+                }
+            }
         }
     }
     emit changed(mId);

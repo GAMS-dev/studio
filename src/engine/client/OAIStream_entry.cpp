@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *

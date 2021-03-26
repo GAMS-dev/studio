@@ -10,13 +10,13 @@
  */
 
 /*
- * OAIModel_auth_token.h
+ * OAIModel_version.h
  *
  * 
  */
 
-#ifndef OAIModel_auth_token_H
-#define OAIModel_auth_token_H
+#ifndef OAIModel_version_H
+#define OAIModel_version_H
 
 #include <QJsonObject>
 
@@ -27,21 +27,26 @@
 
 namespace OpenAPI {
 
-class OAIModel_auth_token : public OAIObject {
+class OAIModel_version : public OAIObject {
 public:
-    OAIModel_auth_token();
-    OAIModel_auth_token(QString json);
-    ~OAIModel_auth_token() override;
+    OAIModel_version();
+    OAIModel_version(QString json);
+    ~OAIModel_version() override;
 
     QString asJson() const override;
     QJsonObject asJsonObject() const override;
     void fromJsonObject(QJsonObject json) override;
     void fromJson(QString jsonString) override;
 
-    QString getToken() const;
-    void setToken(const QString &token);
-    bool is_token_Set() const;
-    bool is_token_Valid() const;
+    QString getGamsVersion() const;
+    void setGamsVersion(const QString &gams_version);
+    bool is_gams_version_Set() const;
+    bool is_gams_version_Valid() const;
+
+    QString getVersion() const;
+    void setVersion(const QString &version);
+    bool is_version_Set() const;
+    bool is_version_Valid() const;
 
     virtual bool isSet() const override;
     virtual bool isValid() const override;
@@ -49,13 +54,17 @@ public:
 private:
     void initializeModel();
 
-    QString token;
-    bool m_token_isSet;
-    bool m_token_isValid;
+    QString gams_version;
+    bool m_gams_version_isSet;
+    bool m_gams_version_isValid;
+
+    QString version;
+    bool m_version_isSet;
+    bool m_version_isValid;
 };
 
 } // namespace OpenAPI
 
-Q_DECLARE_METATYPE(OpenAPI::OAIModel_auth_token)
+Q_DECLARE_METATYPE(OpenAPI::OAIModel_version)
 
-#endif // OAIModel_auth_token_H
+#endif // OAIModel_version_H
