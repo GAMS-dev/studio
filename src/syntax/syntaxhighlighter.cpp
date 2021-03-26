@@ -119,6 +119,12 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
 
+    bool scanBlock = (textBlock.blockNumber() == mScanBlockNr);
+    if (scanBlock) {
+        CodeRelation codeRel = mCodes.at(cri);
+        mScannedBlockSyntax.insert(0, QPair<int,int>(int(codeRel.blockCode.kind()), 0));
+    }
+
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
@@ -192,6 +198,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
 
+        if (scanBlock)
+            mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
             mLastFlavor = nextBlock.flavor;
@@ -225,6 +234,16 @@ void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
     intKind = mLastSyntaxKind;
     flavor = mLastFlavor;
     mLastSyntaxKind = 0;
+}
+
+void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> > &blockSyntax)
+{
+    mScanBlockNr = block.blockNumber();
+    mScannedBlockSyntax.clear();
+    rehighlightBlock(block);
+    blockSyntax = mScannedBlockSyntax;
+    mScannedBlockSyntax.clear();
+    mScanBlockNr = -1;
 }
 
 const QVector<SyntaxKind> invalidParenthesesSyntax = {

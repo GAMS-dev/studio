@@ -321,11 +321,27 @@ int CodeCompleter::getFilterFromSyntax()
 {
     int res = ccNone;
     QTextCursor cur = mEdit->textCursor();
+    int syntaxKind = 0;
+    int syntaxFlavor = 0;
+
+    QMap<int,QPair<int, int>> blockSyntax;
+    mEdit->scanSyntax(cur.block(), blockSyntax);
+
+    int start = cur.positionInBlock() - mFilterText.length();
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        syntaxKind = it.value().first;
+        syntaxFlavor = it.value().second;
+        if (it.key() > start) break;
+    }
     bool atStart = cur.positionInBlock() == 0;
-    int syntaxKind;
-    int syntaxFlavor;
-    mEdit->requestSyntaxKind(cur.position(), syntaxKind, syntaxFlavor);
-    DEB() << "SyntaxKind: " << syntax::SyntaxKind(syntaxKind);
+
+    // for analysis
+    DEB() << "--- Line: " << cur.block().text();
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+    }
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor;
+
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
         return ccAll;
