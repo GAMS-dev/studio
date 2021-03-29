@@ -87,7 +87,7 @@ public:
     void duplicateLine();
     void removeLine();
     void commentLine();
-    void MoveLineUP();
+    void moveLines(QTextCursor cursor, bool moveLinesUp, bool moveLinesDown);
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
@@ -182,7 +182,6 @@ private:
     inline int assignmentKind(int p);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
-    void movingUp(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
 
 
     static int findAlphaNum(const QString &text, int start, bool back);

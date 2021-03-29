@@ -1100,19 +1100,21 @@ void MainWindow::updateEditorPos()
 
 void MainWindow::moveLinesUp()
 { 
-    CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
-    if (!edit || edit->isReadOnly()) return;
-    else {edit->MoveLineUP();
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        QTextCursor textCursor(ce->textCursor());
+        ce->moveLines(textCursor,true,false);
         }
-
-
 }
 
 void MainWindow::moveLinesDown()
 {
-    CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
-    if (!edit || edit->isReadOnly()) return;
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
     else {
+        QTextCursor textCursor(ce->textCursor());
+        ce->moveLines(textCursor,false,true);
     }
 }
 
