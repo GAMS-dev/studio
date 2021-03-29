@@ -165,7 +165,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
     connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->logTabs, &TabWidget::closeTab, this, &MainWindow::on_logTabs_tabCloseRequested);
     connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &TabWidget::closeTab, this, &MainWindow::on_mainTabs_tabCloseRequested);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -223,9 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
-#ifndef __unix__
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
-#endif
     initIcons();
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
@@ -382,7 +382,8 @@ void MainWindow::initIcons()
     ui->actionZoom_In->setIcon(Theme::icon(":/%1/search-plus"));
     ui->actionZoom_Out->setIcon(Theme::icon(":/%1/search-minus"));
     ui->actionShowToolbar->setIcon(Theme::icon(":/%1/hammer"));
-    ui->actionHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionGamsHelp->setIcon(Theme::icon(":/%1/book"));
+    ui->actionStudioHelp->setIcon(Theme::icon(":/%1/book"));
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
@@ -1898,7 +1899,7 @@ void MainWindow::on_actionExit_Application_triggered()
     close();
 }
 
-void MainWindow::on_actionHelp_triggered()
+void MainWindow::on_actionGamsHelp_triggered()
 {
 #ifdef QWEBENGINE
     QWidget* widget = focusWidget();
@@ -1971,6 +1972,20 @@ void MainWindow::on_actionHelp_triggered()
              mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
          }
     }
+
+    if (ui->dockHelpView->isHidden())
+        ui->dockHelpView->show();
+    if (tabifiedDockWidgets(ui->dockHelpView).count())
+        ui->dockHelpView->raise();
+#endif
+}
+
+void MainWindow::on_actionStudioHelp_triggered()
+{
+#ifdef QWEBENGINE
+    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain,
+                                          QString(),
+                                          QString());
 
     if (ui->dockHelpView->isHidden())
         ui->dockHelpView->show();
@@ -3426,7 +3441,11 @@ void MainWindow::invalidateTheme()
 {
     for (FileMeta *fm: mFileMetaRepo.fileMetas())
         fm->invalidateTheme();
-    if (mTabStyle) mTabStyle->setBaseStyle(qApp->style());
+    if (mTabStyle) {
+        TabBarStyle *old = mTabStyle;
+        mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
+        delete old;
+    }
     repaint();
 }
 
@@ -3618,7 +3637,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == ProcState::Proc4GetResult) {
+            if (progress == ProcState::Proc5GetResult) {
                 gv->releaseFile();
             } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
@@ -3637,7 +3656,7 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
     for (ProjectFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                if (progress == ProcState::Proc4GetResult) {
+                if (progress == ProcState::Proc5GetResult) {
                     gv->releaseFile();
                 } else if (progress == ProcState::ProcIdle) {
                     gv->setHasChanged(true);

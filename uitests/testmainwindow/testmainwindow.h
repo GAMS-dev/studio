@@ -25,7 +25,7 @@
 
 using namespace gams::studio;
 
-class testmainwindow : public QObject
+class TestMainWindow : public QObject
 {
     Q_OBJECT
 
@@ -36,11 +36,11 @@ private Q_SLOTS:
     void cleanupTestCase();
 
     void test_gdxValue();
-    void test_search();
+//    void test_search();
 
 private:
     MainWindow* mMainWindow = nullptr;
-    StudioSettings* mSettings = nullptr;
+    Settings* mSettings = nullptr;
     QFileInfo mGms;
     void clickRowByName(QTableView* source, const QString& name);
 };

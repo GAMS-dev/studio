@@ -17,13 +17,15 @@
 # You should have received a copy of the GNU General Public License
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
-
-QT += testlib core gui svg concurrent network
+QT += testlib core gui svg concurrent network printsupport
+greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 CONFIG += c++14
 CONFIG -= app_bundle
 
 DESTDIR = ../bin
+OBJECTS_DIR=../../objects
+MOC_DIR=../../objects
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)

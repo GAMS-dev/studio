@@ -18,22 +18,19 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-# Set this to "false" to build Studio without QWebEngine enabled,
-# which deactivates the studio help view.
-QWEBENGINE=true
-
 QT       += core gui svg concurrent network printsupport
-
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
-
 CONFIG += c++14
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
+
+OBJECTS_DIR=../objects
+MOC_DIR=../objects
 
 macx {
 # ! The icns-file is created from a folder named gams.iconset containing images in multiple sizes.
@@ -105,10 +102,13 @@ SOURCES += \
     engine/client/OAIHttpRequest.cpp \
     engine/client/OAIJob.cpp \
     engine/client/OAIJobsApi.cpp \
+    engine/client/OAIJob_no_text_entry.cpp \
+    engine/client/OAIJob_no_text_entry_page.cpp \
     engine/client/OAILog_piece.cpp \
     engine/client/OAIMessage.cpp \
     engine/client/OAIMessage_and_token.cpp \
     engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIModel_version.cpp \
     engine/client/OAIResult_user.cpp \
     engine/client/OAIStatus_code_meaning.cpp \
     engine/client/OAIStream_entry.cpp \
@@ -147,6 +147,7 @@ SOURCES += \
     gdxviewer/gdxsymbolview.cpp \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
     gdxviewer/valuefilter.cpp \
     gdxviewer/valuefilterwidget.cpp \
@@ -251,6 +252,7 @@ SOURCES += \
     syntax/textmarkrepo.cpp \
     tabbarstyle.cpp \
     tabdialog.cpp \
+    tabwidget.cpp \
     theme.cpp \
     themewidget.cpp \
     viewhelper.cpp \
@@ -291,10 +293,13 @@ HEADERS += \
     engine/client/OAIHttpRequest.h \
     engine/client/OAIJob.h \
     engine/client/OAIJobsApi.h \
+    engine/client/OAIJob_no_text_entry.h \
+    engine/client/OAIJob_no_text_entry_page.h \
     engine/client/OAILog_piece.h \
     engine/client/OAIMessage.h \
     engine/client/OAIMessage_and_token.h \
     engine/client/OAIModel_auth_token.h \
+    engine/client/OAIModel_version.h \
     engine/client/OAIObject.h \
     engine/client/OAIResult_user.h \
     engine/client/OAIStatus_code_meaning.h \
@@ -335,6 +340,7 @@ HEADERS += \
     gdxviewer/gdxsymbolview.h \
     gdxviewer/gdxviewer.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
     gdxviewer/valuefilterwidget.h \
@@ -441,6 +447,7 @@ HEADERS += \
     syntax/textmarkrepo.h \
     tabbarstyle.h \
     tabdialog.h \
+    tabwidget.h \
     theme.h \
     themewidget.h \
     version.h \

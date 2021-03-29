@@ -280,7 +280,8 @@ private slots:
     void actionTerminalTriggered(const QString &workingDir);
 
     // Help
-    void on_actionHelp_triggered();
+    void on_actionGamsHelp_triggered();
+    void on_actionStudioHelp_triggered();
     void on_actionAbout_Studio_triggered();
     void on_gamsLicensing_triggered();
     void on_actionAbout_Qt_triggered();

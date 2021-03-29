@@ -257,7 +257,7 @@ pipeline {
                                 cp ../../CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
                                 codesign --sign ${CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ../../platform/macos/studio.entitlements.plist "GAMS Studio.app"
 
-                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/src/studio.pro | cut -f2 -d"=")
+                                USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
                                 echo "Use QWEBENGINE: $USE_QWEBENGINE"
                                 if [ "$USE_QWEBENGINE" = "true" ]; then
                                     echo "Signing QWEBENGINE..."
@@ -457,7 +457,7 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher.
                 tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
             }
             steps {
-                withCredentials([string(credentialsId: '53f1d92b-76a0-4484-8aaa-f3ce3bfba010', variable: 'SVN_URL'), string(credentialsId: '82bb4013-cc4c-4b0f-aa86-8dafdf5a02d8', variable: 'S3_URL'), string(credentialsId: '3ca54edd-0357-407f-84bf-317fa1b4c20d', variable: 'S3_ACCESS_KEY'), string(credentialsId: 'f4bd9039-889c-401b-b0c6-455b73147c7c', variable: 'S3_SECRET_KEY'), usernamePassword(credentialsId: '6d541d7f-9fe0-48e2-a6c2-625bccf47a90', passwordVariable: 'SVN_PASSWD', usernameVariable: 'SVN_USER')]) {
+                withCredentials([string(credentialsId: '53f1d92b-76a0-4484-8aaa-f3ce3bfba010', variable: 'SVN_URL'), string(credentialsId: 'bcd47003-0790-442d-ba1f-5538b4b5482c', variable: 'S3_URL'), string(credentialsId: '3ca54edd-0357-407f-84bf-317fa1b4c20d', variable: 'S3_ACCESS_KEY'), string(credentialsId: 'f4bd9039-889c-401b-b0c6-455b73147c7c', variable: 'S3_SECRET_KEY'), usernamePassword(credentialsId: '6d541d7f-9fe0-48e2-a6c2-625bccf47a90', passwordVariable: 'SVN_PASSWD', usernameVariable: 'SVN_USER')]) {
                     sh '''#!/bin/bash -xe
                         ## get Studio version information for artifact and tag name
                         STUDIO_MAJOR_VERSION=$(grep ^STUDIO_MAJOR_VERSION version | cut -f2 -d"=")
@@ -476,11 +476,14 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher.
                         ## move artifacts to correct location
                         mv *.dmg *.AppImage *.zip $FOLDER_NAME
 
+                        ## URL to S3 studio
+                        URL=${S3_URL}/studio
+
                         ## S3 upload to gams.com
-                        s3cmd sync --acl-public ./ ${S3_URL} --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+                        s3cmd sync --acl-public ./ $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
 
                         ## S3 content listing
-                        s3cmd ls -r ${S3_URL} --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
+                        s3cmd ls -r $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
 
                         ## Update gams.com for final releases
                         if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then

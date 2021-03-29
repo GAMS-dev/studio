@@ -32,6 +32,7 @@ class TableViewModel : public QAbstractTableModel
 
 public:
     explicit TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
+    ~TableViewModel();
 
     // Header:
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -54,6 +55,8 @@ public:
 
     void setTableView(int colDim = -1, QVector<int> tvDims = QVector<int>());
 
+    void setTableViewNoArgs();
+
     bool isAllDefault(int valColIdx);
 
     bool needDummyRow() const;
@@ -61,6 +64,10 @@ public:
     bool needDummyColumn() const;
 
     QVector<QList<QString> > labelsInRows() const;
+
+    QStringList domains() const;
+
+    GdxSymbol *sym() const;
 
 public slots:
     void scrollHTriggered();
