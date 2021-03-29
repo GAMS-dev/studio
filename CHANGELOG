@@ -19,7 +19,7 @@ Version 1.6.0
 - updated client API for GAMS Engine
 - delete the results on the GAMS Engine server after the job has finished
 - fixed eolCom not working in some DCO lines (like $include)
-- added help integration for Project Explorer and Process Logs
+- hotkey 'F1' jumps to the corresponding documentation entry for Project Explorer, Process Logs, GDX Diff Dialog, and Search Widget
 
 Version 1.5.5
 ==================
