@@ -25,6 +25,7 @@ TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
 CONFIG += c++14
+CONFIG += console
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)

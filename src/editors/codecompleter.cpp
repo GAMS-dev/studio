@@ -319,7 +319,7 @@ void CodeCompleter::insertCurrent()
 
 int CodeCompleter::getFilterFromSyntax()
 {
-    int res = ccNone;
+    int res = ccAll;
     QTextCursor cur = mEdit->textCursor();
     int syntaxKind = 0;
     int syntaxFlavor = 0;
@@ -340,19 +340,18 @@ int CodeCompleter::getFilterFromSyntax()
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
     }
-    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor;
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
-        return ccAll;
+        res = ccAll; break;
     case syntax::SyntaxKind::Directive:
-        return ccDco;
+        res = ccDco; break;
     case syntax::SyntaxKind::DirectiveBody:
     case syntax::SyntaxKind::DirectiveComment:
     case syntax::SyntaxKind::Title:
-        return ccNone;
+        res = ccNone; break;
     case syntax::SyntaxKind::CommentBlock:
-        return atStart ? ccDco2 : ccNone;
+        res = atStart ? ccDco2 : ccAll; break;
 
     case syntax::SyntaxKind::String:
     case syntax::SyntaxKind::Formula:
@@ -400,6 +399,7 @@ int CodeCompleter::getFilterFromSyntax()
     default: ;
     }
 
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 
