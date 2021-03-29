@@ -401,7 +401,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (!isReadOnly()) {
-        if (e->key() == Hotkey::CodeCompleter) {
+        if (e == Hotkey::CodeCompleter) {
             if (prepareCompleter())
                 showCompleter();
             e->accept();
