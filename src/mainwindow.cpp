@@ -762,6 +762,7 @@ void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
     QString link = CommonPaths::systemDir() + "/" + doc;
+    link = QFileInfo(link).canonicalFilePath();
     QUrl result = QUrl::fromLocalFile(link);
 
     if (!anchor.isEmpty())
