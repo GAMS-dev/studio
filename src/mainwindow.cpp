@@ -4809,8 +4809,7 @@ void MainWindow::on_actionMove_Line_Up_triggered()
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     else {
-        QTextCursor textCursor(ce->textCursor());
-        ce->moveLines(textCursor,true);
+        ce->moveLines(true);
     }
 }
 
@@ -4819,8 +4818,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (!ce || ce->isReadOnly()) return;
     else {
-        QTextCursor textCursor(ce->textCursor());
-        ce->moveLines(textCursor,false);
+        ce->moveLines(false);
     }
 }
 

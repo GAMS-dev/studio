@@ -2471,8 +2471,9 @@ void LineNumberArea::leaveEvent(QEvent *event)
 }
 
 
-void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp)
+void CodeEdit::moveLines(bool moveLinesUp)
 {
+    QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
     anchor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
@@ -2485,8 +2486,7 @@ void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp)
         firstBlock = anchor.block();
         lastBlock = cursor.block();
     }
-    if (moveLinesUp) {
-        if (firstBlock.blockNumber()) {
+    if (moveLinesUp && firstBlock.blockNumber()) {
             QTextCursor ncur(firstBlock.previous());
             ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
             QString temp = ncur.selectedText();
@@ -2500,15 +2500,12 @@ void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp)
             ncur.insertText(temp);
             cursor.setPosition(selection.x());
             cursor.setPosition(selection.y(), QTextCursor::KeepAnchor);
-        }
-    } else {
-        if (lastBlock != document()->lastBlock()) {
+    } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
             QTextCursor ncur(lastBlock.next());
             if (!lastBlock.next().next().isValid())
                 ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
             else
                 ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
-
             QString temp = ncur.selectedText();
             ncur.removeSelectedText();
             if (!lastBlock.next().next().isValid()) {
@@ -2518,7 +2515,6 @@ void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp)
             ncur.setPosition(firstBlock.position());
             ncur.insertText(temp);
         }
-    }
     anchor.endEditBlock();
     setTextCursor(cursor);
 }
