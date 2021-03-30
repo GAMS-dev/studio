@@ -1096,28 +1096,6 @@ void MainWindow::updateEditorPos()
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
 
-
-
-void MainWindow::moveLinesUp()
-{ 
-    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-    if (!ce || ce->isReadOnly()) return;
-    else {
-        QTextCursor textCursor(ce->textCursor());
-        ce->moveLines(textCursor,true,false);
-        }
-}
-
-void MainWindow::moveLinesDown()
-{
-    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-    if (!ce || ce->isReadOnly()) return;
-    else {
-        QTextCursor textCursor(ce->textCursor());
-        ce->moveLines(textCursor,false,true);
-    }
-}
-
 void MainWindow::updateEditorMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
@@ -4828,12 +4806,22 @@ void MainWindow::checkGamsLicense()
 
 void MainWindow::on_actionMove_Line_Up_triggered()
 {
-    moveLinesUp();
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        QTextCursor textCursor(ce->textCursor());
+        ce->moveLines(textCursor,true);
+    }
 }
 
 void MainWindow::on_actionMove_Line_Down_triggered()
 {
-    moveLinesDown();
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        QTextCursor textCursor(ce->textCursor());
+        ce->moveLines(textCursor,false);
+    }
 }
 
 }

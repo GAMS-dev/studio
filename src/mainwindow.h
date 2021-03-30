@@ -355,6 +355,8 @@ private slots:
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
+    void on_actionMove_Line_Up_triggered();
+    void on_actionMove_Line_Down_triggered();
 
     void showNeosStartDialog();
     void prepareNeosProcess();
@@ -364,13 +366,9 @@ private slots:
     void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
-    void moveLinesUp();
-    void moveLinesDown();
 
 
-    void on_actionMove_Line_Up_triggered();
 
-    void on_actionMove_Line_Down_triggered();
 
 protected:
     void closeEvent(QCloseEvent *event) override;

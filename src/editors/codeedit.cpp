@@ -2471,39 +2471,55 @@ void LineNumberArea::leaveEvent(QEvent *event)
 }
 
 
-void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp, bool moveLinesDown)
+void CodeEdit::moveLines(QTextCursor cursor, bool moveLinesUp)
 {
-    cursor.beginEditBlock();
-    QString temp = "";
     QTextCursor anchor = cursor;
+    anchor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
-
-    if (cursor.anchor()>cursor.position()){anchor.movePosition(QTextCursor::EndOfLine);
-    } else {anchor.movePosition(QTextCursor::StartOfLine);}
-
-    anchor.setPosition(cursor.position(),QTextCursor::KeepAnchor);
-
-    if (cursor.anchor()>cursor.position()){
-        anchor.movePosition(QTextCursor::StartOfLine,QTextCursor::KeepAnchor);
-    } else {anchor.movePosition(QTextCursor::EndOfLine,QTextCursor::KeepAnchor);}
-    QString text = anchor.selectedText();
-    anchor.removeSelectedText();
-
-    if (moveLinesUp) {
-        QTextCursor ncur(cursor.block().previous());
-        ncur.select(QTextCursor::LineUnderCursor);
-        temp= ncur.selectedText();
-        ncur.removeSelectedText();
-        ncur.insertText(text);
-    } else if (moveLinesDown) {
-        QTextCursor ncur(cursor.block().next());
-        ncur.select(QTextCursor::LineUnderCursor);
-        temp= ncur.selectedText();
-        ncur.removeSelectedText();
-        ncur.insertText(text);
+    QTextBlock firstBlock;
+    QTextBlock lastBlock;
+    if (cursor.anchor() >= cursor.position()) {
+        firstBlock = cursor.block();
+        lastBlock = anchor.block();
+    } else {
+        firstBlock = anchor.block();
+        lastBlock = cursor.block();
     }
-    cursor.insertText(temp);
-    cursor.endEditBlock();
+    if (moveLinesUp) {
+        if (firstBlock.blockNumber()) {
+            QTextCursor ncur(firstBlock.previous());
+            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (!lastBlock.next().isValid()) {
+                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+                temp = '\n' + temp.left(temp.size() - 1);
+            } else
+                ncur.setPosition(lastBlock.next().position());
+            QPoint selection(anchor.position(), cursor.position());
+            ncur.insertText(temp);
+            cursor.setPosition(selection.x());
+            cursor.setPosition(selection.y(), QTextCursor::KeepAnchor);
+        }
+    } else {
+        if (lastBlock != document()->lastBlock()) {
+            QTextCursor ncur(lastBlock.next());
+            if (!lastBlock.next().next().isValid())
+                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+            else
+                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (!lastBlock.next().next().isValid()) {
+                temp += '\n';
+                ncur.deletePreviousChar();
+            }
+            ncur.setPosition(firstBlock.position());
+            ncur.insertText(temp);
+        }
+    }
+    anchor.endEditBlock();
     setTextCursor(cursor);
 }
 

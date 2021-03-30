@@ -87,7 +87,7 @@ public:
     void duplicateLine();
     void removeLine();
     void commentLine();
-    void moveLines(QTextCursor cursor, bool moveLinesUp, bool moveLinesDown);
+    void moveLines(QTextCursor cursor, bool moveLinesUp);
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
