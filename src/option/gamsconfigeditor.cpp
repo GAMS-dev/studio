@@ -21,6 +21,7 @@
 #include "ui_gamsconfigeditor.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "keys.h"
 
 #include <QMessageBox>
 #include <QPushButton>
@@ -148,7 +149,7 @@ void GamsConfigEditor::deSelectAll()
 void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
-        if ( (event->key() == Qt::Key_F1) &&
+        if ( (event->key() == Hotkey::OpenHelp) &&
              (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
                mParamConfigEditor->on_actionShow_Option_Definition_triggered();
                event->accept(); return;
@@ -170,7 +171,7 @@ void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
             }
         }
     } else if (event->modifiers() & Qt::ShiftModifier) {
-              if ( (event->key() == Qt::Key_F1) &&
+              if ( (event->key() == Hotkey::OpenHelp) &&
                    (ui->GamsCfgTabWidget->currentIndex()==int(ConfigEditorType::commandLineParameter)) ) {
                     mParamConfigEditor->on_actionShowRecurrence_triggered();
                     event->accept(); return;

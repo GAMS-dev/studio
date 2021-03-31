@@ -477,7 +477,7 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher.
                         mv *.dmg *.AppImage *.zip $FOLDER_NAME
 
                         ## URL to S3 studio
-                        URL=${S3_URL}/studio
+                        URL=${S3_URL}/studio/
 
                         ## S3 upload to gams.com
                         s3cmd sync --acl-public ./ $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}

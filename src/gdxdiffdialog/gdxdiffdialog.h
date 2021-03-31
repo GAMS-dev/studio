@@ -58,6 +58,8 @@ public:
 
 protected:
     void closeEvent(QCloseEvent *e) override;
+    void keyPressEvent(QKeyEvent *e) override;
+
 
 private slots:
     void on_pbInput1_clicked();
