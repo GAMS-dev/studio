@@ -19,7 +19,6 @@
  */
 #include <QtConcurrent>
 #include <QtWidgets>
-#include <QScrollBar>
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
