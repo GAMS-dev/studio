@@ -230,6 +230,11 @@ QString TextView::selectedText() const
     return mMapper->selectedText();
 }
 
+QString TextView::wordUnderCursor() const
+{
+    return mEdit->wordUnderCursor();
+}
+
 void TextView::selectAllText()
 {
     mEdit->selectAllText();

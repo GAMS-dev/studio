@@ -217,6 +217,9 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
 
+    seq = new KeySeqList("F1","Open Help View");
+    setHotkey(Hotkey::OpenHelp, seq);
+
     seq = new KeySeqList("F2","jump to context");
     setHotkey(Hotkey::JumpToContext, seq);
 

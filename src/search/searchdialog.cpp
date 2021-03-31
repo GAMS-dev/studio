@@ -48,7 +48,6 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     ui->cb_regex->setChecked(mSettings->toBool(skSearchUseRegex));
     ui->cb_caseSens->setChecked(mSettings->toBool(skSearchCaseSens));
     ui->cb_wholeWords->setChecked(mSettings->toBool(skSearchWholeWords));
-    ui->combo_scope->setCurrentIndex(mSettings->toInt(skSearchScope));
     ui->lbl_nrResults->setText("");
     ui->combo_search->setCompleter(nullptr);
     adjustSize();
@@ -252,6 +251,9 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
     } else if (e->modifiers() & Qt::ShiftModifier && (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter)) {
         e->accept();
         on_btn_FindAll_clicked();
+    } else if (e == Hotkey::OpenHelp) {
+        mMain->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
+                              help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::SearchAndReplace)));
     }
     QDialog::keyPressEvent(e);
 }
@@ -514,7 +516,11 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
             ui->combo_search->setCurrentIndex(0);
         } else {
-            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            QString text;
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
+                text = ce->wordUnderCursor();
+            if (text.isEmpty()) text = ui->combo_search->itemText(0);
+            ui->combo_search->setEditText(text);
         }
     }
 
@@ -523,7 +529,9 @@ void SearchDialog::autofillSearchField()
             ui->combo_search->insertItem(-1, tv->selectedText());
             ui->combo_search->setCurrentIndex(0);
         } else {
-            ui->combo_search->setEditText(ui->combo_search->itemText(0));
+            QString text = tv->wordUnderCursor();
+            if (text.isEmpty()) text = ui->combo_search->itemText(0);
+            ui->combo_search->setEditText(text);
         }
     }
 

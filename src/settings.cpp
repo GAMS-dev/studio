@@ -301,7 +301,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSearchUseRegex, scSys, {"search", "regex"}, false);
     safelyAdd(res, skSearchCaseSens, scSys, {"search", "caseSens"}, false);
     safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, false);
-    safelyAdd(res, skSearchScope, scSys, {"search", "scope"}, 0);
 
     // general settings page
     safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir());
