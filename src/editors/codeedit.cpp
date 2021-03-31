@@ -2487,34 +2487,34 @@ void CodeEdit::moveLines(bool moveLinesUp)
         lastBlock = cursor.block();
     }
     if (moveLinesUp && firstBlock.blockNumber()) {
-            QTextCursor ncur(firstBlock.previous());
-            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
-            QString temp = ncur.selectedText();
-            ncur.removeSelectedText();
-            if (!lastBlock.next().isValid()) {
-                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
-                temp = '\n' + temp.left(temp.size() - 1);
-            } else
-                ncur.setPosition(lastBlock.next().position());
-            QPoint selection(anchor.position(), cursor.position());
-            ncur.insertText(temp);
-            cursor.setPosition(selection.x());
-            cursor.setPosition(selection.y(), QTextCursor::KeepAnchor);
+        QTextCursor ncur(firstBlock.previous());
+        ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (!lastBlock.next().isValid()) {
+            ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+            temp = '\n' + temp.left(temp.size() - 1);
+        } else
+            ncur.setPosition(lastBlock.next().position());
+        QPoint selection(anchor.position(), cursor.position());
+        ncur.insertText(temp);
+        cursor.setPosition(selection.x());
+        cursor.setPosition(selection.y(), QTextCursor::KeepAnchor);
     } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
-            QTextCursor ncur(lastBlock.next());
-            if (!lastBlock.next().next().isValid())
-                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
-            else
-                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
-            QString temp = ncur.selectedText();
-            ncur.removeSelectedText();
-            if (!lastBlock.next().next().isValid()) {
-                temp += '\n';
-                ncur.deletePreviousChar();
-            }
-            ncur.setPosition(firstBlock.position());
-            ncur.insertText(temp);
+        QTextCursor ncur(lastBlock.next());
+        if (!lastBlock.next().next().isValid())
+            ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+        else
+            ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (!lastBlock.next().next().isValid()) {
+            temp += '\n';
+            ncur.deletePreviousChar();
         }
+        ncur.setPosition(firstBlock.position());
+        ncur.insertText(temp);
+    }
     anchor.endEditBlock();
     setTextCursor(cursor);
 }
