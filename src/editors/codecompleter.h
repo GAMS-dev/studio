@@ -9,18 +9,19 @@ namespace gams {
 namespace studio {
 
 enum CodeCompleterType {
-    ccNone = 0x00000000,
-    ccDco1 = 0x00000001, // DCO (starter and standalone)
-    ccDco2 = 0x00000002, // DCO offText
-    ccDco  = 0x000000FF, // all DCOs
+    ccNone  = 0x00000000,
+    ccDco1  = 0x00000001, // DCO (starter and standalone)
+    ccDco2  = 0x00000002, // DCO offText
+    ccDco   = 0x000000FF, // all DCOs
+    ccNoDco = 0x7FFFFF00, // no DCOs
 
-    ccRes1 = 0x00000100, // declarations (starter and standalone)
-    ccRes2 = 0x00000200, // declaration "set"
-    ccRes3 = 0x00000400, // declaration "variable"
-    ccRes  = 0x0000FF00, // all declarations
+    ccRes1  = 0x00000100, // declarations (starter and standalone)
+    ccRes2  = 0x00000200, // declaration "set"
+    ccRes3  = 0x00000400, // declaration "variable"
+    ccRes   = 0x0000FF00, // all declarations
 
-    ccOpt  = 0x00010000, // options
-    ccMod  = 0x00020000, // models
+    ccOpt   = 0x00010000, // options
+    ccMod   = 0x00020000, // models
 
     ccAll  = 0x7FFFFFFF
 };

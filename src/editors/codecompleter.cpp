@@ -42,9 +42,13 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     mType.insert(mData.size()-1, ccRes1);
 
     // reserved
-    src = syntax::SyntaxData::declaration();
+    src = syntax::SyntaxData::reserved();
     it = src.constBegin();
     while (it != src.constEnd()) {
+        if (it->first == "ord") {
+            mData << "option " << "options ";
+            mDescription << "" << "";
+        }
         mData << it->first + ' ';
         mDescription << it->second;
         ++it;
@@ -391,13 +395,24 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::SolveBody:
     case syntax::SyntaxKind::SolveKey:
     case syntax::SyntaxKind::Option:
-    case syntax::SyntaxKind::OptionBody:
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
+        break;
+    case syntax::SyntaxKind::OptionBody:
+        res = ccOpt; break;
     default: ;
     }
+    bool isWhitespace = true;
+    QString text = cur.block().text();
+    for (int i = 0; i < cur.positionInBlock(); ++i) {
+        if (text.at(i) != ' ' && text.at(i) != '\t') {
+            isWhitespace = false;
+            break;
+        }
+    }
+    if (!isWhitespace) res = res & ccNoDco;
 
     DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
