@@ -27,8 +27,8 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     mType.insert(mData.size()-1, ccDco1);
     int i = mData.indexOf("$offText");
     if (i >= 0) {
+        if (i > 0) mType.insert(i-1, ccDco1);
         mType.insert(i, ccDco2);
-        mType.insert(i+1, ccDco1);
     }
 
     // declarations
@@ -337,7 +337,6 @@ int CodeCompleter::getFilterFromSyntax()
         syntaxFlavor = it.value().second;
         if (it.key() > start) break;
     }
-    bool atStart = cur.positionInBlock() == 0;
 
     // for analysis
     DEB() << "--- Line: " << cur.block().text();
@@ -353,9 +352,8 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::DirectiveBody:
     case syntax::SyntaxKind::DirectiveComment:
     case syntax::SyntaxKind::Title:
-        res = ccNone; break;
     case syntax::SyntaxKind::CommentBlock:
-        res = atStart ? ccDco2 : ccAll; break;
+        res = ccNone; break;
 
     case syntax::SyntaxKind::String:
     case syntax::SyntaxKind::Formula:
@@ -412,7 +410,13 @@ int CodeCompleter::getFilterFromSyntax()
             break;
         }
     }
-    if (!isWhitespace) res = res & ccNoDco;
+    if (isWhitespace) {
+        if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
+            res = ccDco2;
+        else if (!(res & ccDco))
+            res = res & ccDco;
+    } else
+        res = res & ccNoDco;
 
     DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
