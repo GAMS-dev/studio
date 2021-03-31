@@ -367,9 +367,6 @@ private slots:
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
-
-
-
 protected:
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
