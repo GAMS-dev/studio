@@ -226,7 +226,14 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
     case Qt::Key_PageDown:
     case Qt::Key_Home:
     case Qt::Key_End: {
-        QListView::keyPressEvent(e);
+        if (e->key() == Qt::Key_Up && currentIndex().row() == 0) {
+            QModelIndex mi = model()->index(rowCount()-1, 0);
+            if (mi.isValid()) setCurrentIndex(mi);
+        } else if (e->key() == Qt::Key_Down && currentIndex().row() == rowCount()-1) {
+            QModelIndex mi = model()->index(0, 0);
+            if (mi.isValid()) setCurrentIndex(mi);
+        } else
+            QListView::keyPressEvent(e);
         e->accept();
     }   break;
     case Qt::Key_Enter:
@@ -330,7 +337,7 @@ void CodeCompleter::updateFilter()
     for (int row = 0; row < rowCount(); ++row)
         wid = qMax(wid, sizeHintForColumn(row));
 
-    rect.setHeight(hei + 2);
+    rect.setHeight(hei + 4);
     rect.setWidth(wid + 25);
     setGeometry(rect);
 }
@@ -465,16 +472,14 @@ int CodeCompleter::getFilterFromSyntax()
     default: ;
     }
     bool isWhitespace = true;
-    bool isDCO = false;
     QString text = cur.block().text();
     for (int i = 0; i < start; ++i) {
         if (text.at(i) != ' ' && text.at(i) != '\t') {
             isWhitespace = false;
-//            isDCO = text.at(i) == '$';
             break;
         }
     }
-    if (isWhitespace || isDCO) {
+    if (isWhitespace) {
         if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
         else if (!(res & ccDco))
