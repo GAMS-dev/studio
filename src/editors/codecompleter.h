@@ -9,21 +9,26 @@ namespace gams {
 namespace studio {
 
 enum CodeCompleterType {
-    ccNone  = 0x00000000,
-    ccDco1  = 0x00000001, // DCO (starter and standalone)
-    ccDco2  = 0x00000002, // DCO offText
-    ccDco   = 0x000000FF, // all DCOs
-    ccNoDco = 0x7FFFFF00, // no DCOs
+    ccNone   = 0x00000000,
+    ccDco1   = 0x00000001, // DCO (starter and standalone)
+    ccDco2   = 0x00000002, // DCO offText
+    ccDco    = 0x000000FF, // all DCOs
+    ccNoDco  = 0x7FFFFF00, // no DCOs
 
-    ccRes1  = 0x00000100, // declarations (starter and standalone)
-    ccRes2  = 0x00000200, // declaration "set"
-    ccRes3  = 0x00000400, // declaration "variable"
-    ccRes   = 0x0000FF00, // all declarations
+    ccRes1   = 0x00000100, // declarations
+    ccRes2   = 0x00000200, // declaration additions for "variable" and "set"
+    ccRes3   = 0x00000400, // other reserved words
+    ccRes4   = 0x00000800, // embedded end
+    ccRes    = 0x0000FF00, // all declarations
 
-    ccOpt   = 0x00010000, // options
-    ccMod   = 0x00020000, // models
+    ccOpt    = 0x00010000, // options
+    ccMod    = 0x00020000, // models
+    ccSolve  = 0x00040000, // solve
+    ccExec   = 0x00080000, // execute additions
 
-    ccAll  = 0x7FFFFFFF
+    ccStart  = 0x7FF0F7FD, // all starting keywords
+
+    ccAll    = 0x7FFFFFFF
 };
 
 class CodeCompleterModel : public QAbstractListModel

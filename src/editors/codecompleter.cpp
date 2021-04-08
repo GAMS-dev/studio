@@ -41,6 +41,23 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     }
     mType.insert(mData.size()-1, ccRes1);
 
+    // declaration additions for "variable" and "set"
+    src = syntax::SyntaxData::declaration4Var();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first;
+        mDescription << it->second;
+        ++it;
+    }
+    src = syntax::SyntaxData::declaration4Set();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first;
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccRes2);
+
     // reserved
     src = syntax::SyntaxData::reserved();
     it = src.constBegin();
@@ -49,11 +66,33 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
             mData << "option " << "options ";
             mDescription << "" << "";
         }
+        if (it->first == "sum") {
+            mData << "solve ";
+            mDescription << "";
+        }
         mData << it->first + ' ';
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccRes2);
+    // embedded
+    src = syntax::SyntaxData::embedded();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccRes3);
+
+    // embedded end
+    src = syntax::SyntaxData::embeddedEnd();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccRes4);
 
     // options
     src = syntax::SyntaxData::options();
@@ -75,6 +114,25 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     }
     mType.insert(mData.size()-1, ccMod);
 
+    // models
+    src = syntax::SyntaxData::extendableKey();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ' << it->second;
+        mDescription << it->second << "";
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccSolve);
+
+    // execute
+    src = syntax::SyntaxData::execute();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccExec);
 }
 
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
@@ -329,13 +387,13 @@ int CodeCompleter::getFilterFromSyntax()
     int syntaxFlavor = 0;
 
     QMap<int,QPair<int, int>> blockSyntax;
-    mEdit->scanSyntax(cur.block(), blockSyntax);
+    emit mEdit->scanSyntax(cur.block(), blockSyntax);
 
     int start = cur.positionInBlock() - mFilterText.length();
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         syntaxKind = it.value().first;
         syntaxFlavor = it.value().second;
-        if (it.key() > start) break;
+        if (it.key() >= start) break;
     }
 
     // for analysis
@@ -346,9 +404,21 @@ int CodeCompleter::getFilterFromSyntax()
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
-        res = ccAll; break;
+    case syntax::SyntaxKind::Formula:
+    case syntax::SyntaxKind::Assignment:
+    case syntax::SyntaxKind::Call:
+    case syntax::SyntaxKind::IgnoredHead:
+    case syntax::SyntaxKind::IgnoredBlock:
+    case syntax::SyntaxKind::Semicolon:
+    case syntax::SyntaxKind::CommaIdent:
+    case syntax::SyntaxKind::DeclarationSetType:
+    case syntax::SyntaxKind::DeclarationVariableType:
+    case syntax::SyntaxKind::Declaration:
+        res = ccStart; break;
+
     case syntax::SyntaxKind::Directive:
         res = ccDco; break;
+
     case syntax::SyntaxKind::DirectiveBody:
     case syntax::SyntaxKind::DirectiveComment:
     case syntax::SyntaxKind::Title:
@@ -356,34 +426,23 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccNone; break;
 
     case syntax::SyntaxKind::String:
-    case syntax::SyntaxKind::Formula:
-    case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::Call:
     case syntax::SyntaxKind::CommentLine:
     case syntax::SyntaxKind::CommentEndline:
     case syntax::SyntaxKind::CommentInline:
-    case syntax::SyntaxKind::IgnoredHead:
-    case syntax::SyntaxKind::IgnoredBlock:
-
-    case syntax::SyntaxKind::Semicolon:
-    case syntax::SyntaxKind::CommaIdent:
-    case syntax::SyntaxKind::DeclarationSetType:
-    case syntax::SyntaxKind::DeclarationVariableType:
-    case syntax::SyntaxKind::Declaration:
+        res = ccNoDco; break;
 
     case syntax::SyntaxKind::Identifier:
     case syntax::SyntaxKind::IdentifierDim:
     case syntax::SyntaxKind::IdentifierDimEnd:
     case syntax::SyntaxKind::IdentifierDescription:
-
     case syntax::SyntaxKind::IdentifierAssignment:
     case syntax::SyntaxKind::AssignmentLabel:
     case syntax::SyntaxKind::AssignmentValue:
     case syntax::SyntaxKind::IdentifierAssignmentEnd:
-
     case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRow:
+        res = ccDco; break;
 
     case syntax::SyntaxKind::Embedded:
     case syntax::SyntaxKind::EmbeddedBody:
@@ -395,22 +454,27 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
+        res = ccStart; break;
+
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
-        break;
+        res = ccExec; break;
+
     case syntax::SyntaxKind::OptionBody:
         res = ccOpt; break;
     default: ;
     }
     bool isWhitespace = true;
+    bool isDCO = false;
     QString text = cur.block().text();
-    for (int i = 0; i < cur.positionInBlock(); ++i) {
+    for (int i = 0; i < start; ++i) {
         if (text.at(i) != ' ' && text.at(i) != '\t') {
             isWhitespace = false;
+//            isDCO = text.at(i) == '$';
             break;
         }
     }
-    if (isWhitespace) {
+    if (isWhitespace || isDCO) {
         if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
         else if (!(res & ccDco))
