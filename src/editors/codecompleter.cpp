@@ -37,6 +37,19 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     while (it != src.constEnd()) {
         mData << it->first;
         mDescription << it->second;
+        if (it->first == "Equations") {
+            mData << "Equation Table";
+            mDescription << it->second;
+        } else if (it->first == "Parameters") {
+            mData << "Parameter Table";
+            mDescription << it->second;
+        } else if (it->first == "Sets") {
+            mData << "Set Table";
+            mDescription << it->second;
+        } else if (it->first == "Variables") {
+            mData << "Variable Table";
+            mDescription << it->second;
+        }
         ++it;
     }
     mType.insert(mData.size()-1, ccRes1);
@@ -45,14 +58,14 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     src = syntax::SyntaxData::declaration4Var();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first;
+        mData << it->first + " Variable";
         mDescription << it->second;
         ++it;
     }
     src = syntax::SyntaxData::declaration4Set();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first;
+        mData << it->first + " Set";
         mDescription << it->second;
         ++it;
     }
@@ -244,6 +257,8 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
     }   break;
     default: {
         mEdit->keyPressEvent(e);
+        if (e->key() == Qt::Key_Space)
+            hide();
         updateFilter();
     }
     }
@@ -418,10 +433,15 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
-    case syntax::SyntaxKind::DeclarationSetType:
-    case syntax::SyntaxKind::DeclarationVariableType:
-    case syntax::SyntaxKind::Declaration:
         res = ccStart; break;
+
+    case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
+        res = ccDco; break;
+    case syntax::SyntaxKind::DeclarationSetType:
+    case syntax::SyntaxKind::DeclarationVariableType: {
+        res = ccStart;
+    } break;
+
 
     case syntax::SyntaxKind::Directive:
         res = ccDco; break;
