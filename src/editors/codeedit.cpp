@@ -2473,6 +2473,8 @@ void LineNumberArea::leaveEvent(QEvent *event)
 
 void CodeEdit::moveLines(bool moveLinesUp)
 {
+    if (mBlockEdit)
+        return;
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
     cursor.beginEditBlock();
