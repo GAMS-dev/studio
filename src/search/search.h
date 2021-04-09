@@ -80,6 +80,7 @@ private:
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
+    void jumpToResult(int matchNr);
 
 
 private slots:
@@ -97,6 +98,8 @@ private:
     bool mSearching = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
+    bool mJumpQueued = false;
+    bool mQueuedJumpForward = false;
 
     bool mSplitSearchContinue = false;
 };
