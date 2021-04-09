@@ -100,6 +100,7 @@ private:
     bool mOutsideOfList = false;
     bool mJumpQueued = false;
     bool mQueuedJumpForward = false;
+    int mLastMatchInOpt = -1;
 
     bool mSplitSearchContinue = false;
 };

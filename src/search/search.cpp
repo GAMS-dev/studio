@@ -101,6 +101,8 @@ void Search::reset()
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
     mOutsideOfList = false;
+    mJumpQueued = false;
+    mLastMatchInOpt = -1;
 
     mThread.isInterruptionRequested();
 }
@@ -186,24 +188,30 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
             // check if is in same line but behind the cursor
             if (file == r.filepath()) {
+                allowJumping = true; // allow jumping after searching the current file
+
                 // just jump to next result if in Solver Option Editor
                 if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-                    int iterator = direction == Direction::Backward ? -1 : 1;
-                    int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
-
-                    // no rows selected, select new depending on direction
-                    if (selected == -1) selected = direction == Direction::Backward ? mResults.size() : 0;
+                    if (direction == Direction::Forward) {
+                        if (i < mLastMatchInOpt)
+                            continue; // catch up with last hit in opt file
+                    } else { // if backwards
+                        if (mLastMatchInOpt == 0) mLastMatchInOpt = mResults.size();
+                        if (i > mLastMatchInOpt)
+                            continue;
+                    }
 
                     // select next
-                    int newIndex = selected + iterator;
+                    int newIndex = i + iterator;
                     if (newIndex < 0)
                         newIndex = mResults.size()-1;
                     else if (newIndex > mResults.size()-1)
                         newIndex = 0;
+
+                    mLastMatchInOpt = newIndex;
                     return newIndex;
                 }
 
-                allowJumping = true;
                 if (direction == Direction::Backward) {
                     if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length())) {
                         return (i == MAX_SEARCH_RESULTS) ? -1 : i;
@@ -256,7 +264,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
             // check if we should leave cache navigation
             mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS; // now leaving cache
             // if not, jump to start/end
-            if (!mOutsideOfList && mResults.size() > 0) matchNr = backwards ? mResults.size()-1 : 0;
+            if (!mOutsideOfList && mResults.size() > 0) {
+                matchNr = backwards ? mResults.size()-1 : 0;
+                mLastMatchInOpt = matchNr;
+            }
         }
 
         // navigate to match
