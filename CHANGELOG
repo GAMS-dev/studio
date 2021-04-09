@@ -19,6 +19,9 @@ Version 1.6.0
 - updated client API for GAMS Engine
 - delete the results on the GAMS Engine server after the job has finished
 - fixed eolCom not working in some DCO lines (like $include)
+- fixed jump to next search result if the result is in a different file and the current one has no results
+- fixed Find Next/Prev behavior for .opt files
+- fixed jump to search result occasionally not working because of search worker not being finished yet
 
 Version 1.5.5
 ==================
