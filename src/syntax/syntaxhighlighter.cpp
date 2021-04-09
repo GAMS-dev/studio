@@ -122,7 +122,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     bool scanBlock = (textBlock.blockNumber() == mScanBlockNr);
     if (scanBlock) {
         CodeRelation codeRel = mCodes.at(cri);
-        mScannedBlockSyntax.insert(0, QPair<int,int>(int(codeRel.blockCode.kind()), 0));
+        mScannedBlockSyntax.insert(0, QPair<int,int>(int(codeRel.blockCode.kind()), codeRel.blockCode.flavor()));
     }
 
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
