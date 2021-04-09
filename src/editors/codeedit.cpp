@@ -2475,6 +2475,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
 {
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
+    int positionInBlock = 0;
     cursor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
     QTextBlock firstBlock;
@@ -2482,9 +2483,17 @@ void CodeEdit::moveLines(bool moveLinesUp)
     if (cursor.anchor() >= cursor.position()) {
         firstBlock = cursor.block();
         lastBlock = anchor.block();
+        positionInBlock = anchor.positionInBlock();
+        if ((positionInBlock == 0) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+        }
     } else {
         firstBlock = anchor.block();
         lastBlock = cursor.block();
+        positionInBlock = cursor.positionInBlock();
+        if ((positionInBlock == 0) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+        }
     }
     int shift = 0;
     QPoint selection(anchor.position(), cursor.position());
