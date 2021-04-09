@@ -2475,7 +2475,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
 {
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
-    anchor.beginEditBlock();
+    cursor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
     QTextBlock firstBlock;
     QTextBlock lastBlock;
@@ -2519,7 +2519,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
     }
     cursor.setPosition(selection.x() + shift);
     cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
-    anchor.endEditBlock();
+    cursor.endEditBlock();
     setTextCursor(cursor);
 }
 
