@@ -125,9 +125,8 @@ void Search::findInDoc(FileMeta* fm)
 void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
-    bool requestNewCache = !mCacheAvailable
-            || mResultHash.find(mMain->fileRepo()
-                                ->fileMeta(mMain->recent()->editor())->location())->count() == 0;
+    QString location = mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location();
+    bool requestNewCache = (mResultHash.find(location) == mResultHash.end());
 
     if (requestNewCache) {
         mCacheAvailable = false;
@@ -156,7 +155,7 @@ QPair<int, int> Search::cursorPosition() {
 }
 
 ///
-/// \brief Search::findNextEntryInCache comares cursor position to list of results to find the next match.
+/// \brief Search::findNextEntryInCache compares cursor position to list of results to find the next match.
 /// respects search direction.
 /// \param direction Search::Direction
 /// \param cursorPos QPair of LineNr and ColumnNr
@@ -169,6 +168,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int iterator = direction == Direction::Backward ? -1 : 1;
     bool allowJumping = false;
 
+    // allow jumping when we have results but not in the current file
+    allowJumping = (mResults.size() > 0)
+            && (mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location())
+            == mResultHash.end());
+
     if (mMain->recent()->editor()) {
         QString file = ViewHelper::location(mMain->recent()->editor());
         for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
@@ -176,6 +180,23 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
             // check if is in same line but behind the cursor
             if (file == r.filepath()) {
+                // just jump to next result if in Solver Option Editor
+                if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+                    int iterator = direction == Direction::Backward ? -1 : 1;
+                    int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
+
+                    // no rows selected, select new depending on direction
+                    if (selected == -1) selected = direction == Direction::Backward ? mResults.size() : 0;
+
+                    // select next
+                    int newIndex = selected + iterator;
+                    if (newIndex < 0)
+                        newIndex = mResults.size()-1;
+                    else if (newIndex > mResults.size()-1)
+                        newIndex = 0;
+                    return newIndex;
+                }
+
                 allowJumping = true;
                 if (direction == Direction::Backward) {
                     if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length())) {
@@ -205,26 +226,8 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
     // navigation on cache
     if (mCacheAvailable && !mOutsideOfList) {
-        if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-            // skip to next entry if file is opened in solver option edit
-            int iterator = backwards ? -1 : 1;
-            int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
 
-            // no rows selected, select new depending on direction
-            if (selected == -1) selected = backwards ? mResults.size() : 0;
-
-            // select next
-            int newIndex = selected + iterator;
-            if (newIndex < 0)
-                newIndex = mResults.size()-1;
-            else if (newIndex > mResults.size()-1)
-                newIndex = 0;
-
-            matchNr = newIndex;
-
-        } else {
-            matchNr = findNextEntryInCache(direction);
-        }
+        matchNr = findNextEntryInCache(direction);
 
          // nothing found
         if (matchNr == -1) {
@@ -256,7 +259,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                 else tc.movePosition(QTextCursor::Start);
             }
 
-            QTextCursor ntc= e->document()->find(mRegex, backwards
+            QTextCursor ntc = e->document()->find(mRegex, backwards
                                                  ? tc.position()-tc.selectedText().length()
                                                  : tc.position(), mOptions);
             found = !ntc.isNull();
