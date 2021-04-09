@@ -70,7 +70,7 @@ KeySeqList&KeySeqList::operator <<(const QKeySequence& other)
 bool KeySeqList::operator ==(KeySeqList other) const
 {
     bool res = mSequence.size() == other.mSequence.size();
-    for (QKeySequence seq: mSequence) {
+    for (const QKeySequence &seq: mSequence) {
         if (!res) break;
         res = other.mSequence.contains(seq);
     }
@@ -181,8 +181,8 @@ void Keys::reset()
     setHotkey(Hotkey::BlockEditStart, seq);
 #endif
     seq = new KeySeqList("Esc","end block edit");
-    *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
-         << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
+    *seq << QKeySequence("Alt+Left") << QKeySequence("Alt+Right")
+         << QKeySequence("PgUp") << QKeySequence("PgDown");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
     seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
