@@ -37,24 +37,39 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     while (it != src.constEnd()) {
         mData << it->first;
         mDescription << it->second;
-        if (it->first == "Equations") {
-            mData << "Equation Table";
-            mDescription << it->second;
-        } else if (it->first == "Parameters") {
-            mData << "Parameter Table";
-            mDescription << it->second;
-        } else if (it->first == "Sets") {
-            mData << "Set Table";
-            mDescription << it->second;
-        } else if (it->first == "Variables") {
-            mData << "Variable Table";
-            mDescription << it->second;
+        if (it->first.startsWith("Equation")) {
+            mType.insert(mData.size()-1, ccRes1);
+            if (it->first.endsWith("s")) {
+                mData << "Equation Table";
+                mDescription << it->second;
+            }
+        } else if (it->first == "Parameter") {
+            mType.insert(mData.size()-1, ccRes1);
+            if (it->first.endsWith("s")) {
+                mData << "Parameter Table";
+                mDescription << it->second;
+            }
+        } else if (it->first == "Set") {
+            mType.insert(mData.size()-1, ccResS);
+            if (it->first.endsWith("s")) {
+                mData << "Set Table";
+                mDescription << it->second;
+            }
+        } else if (it->first == "Variable") {
+            mType.insert(mData.size()-1, ccResV);
+            if (it->first.endsWith("s")) {
+                mData << "Variable Table";
+                mDescription << it->second;
+            }
+        } else if (it->first == "Table") {
+            mType.insert(mData.size()-1, ccResT);
+        } else {
+            mType.insert(mData.size()-1, ccRes1);
         }
         ++it;
     }
-    mType.insert(mData.size()-1, ccRes1);
 
-    // declaration additions for "variable" and "set"
+    // declaration additions for "Variable" and "Set"
     src = syntax::SyntaxData::declaration4Var();
     it = src.constBegin();
     while (it != src.constEnd()) {
@@ -436,12 +451,11 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccStart; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = ccDco; break;
+        res = ccDco | ccResT; break;
     case syntax::SyntaxKind::DeclarationSetType:
-    case syntax::SyntaxKind::DeclarationVariableType: {
-        res = ccStart;
-    } break;
-
+        res = ccDco | ccResS; break;
+    case syntax::SyntaxKind::DeclarationVariableType:
+        res = ccDco | ccResV; break;
 
     case syntax::SyntaxKind::Directive:
         res = ccDco; break;
@@ -459,6 +473,7 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccNoDco; break;
 
     case syntax::SyntaxKind::Identifier:
+        res = ccDco | ccResT; break;
     case syntax::SyntaxKind::IdentifierDim:
     case syntax::SyntaxKind::IdentifierDimEnd:
     case syntax::SyntaxKind::IdentifierDescription:

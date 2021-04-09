@@ -16,9 +16,12 @@ enum CodeCompleterType {
     ccNoDco  = 0x7FFFFF00, // no DCOs
 
     ccRes1   = 0x00000100, // declarations
-    ccRes2   = 0x00000200, // declaration additions for "variable" and "set"
-    ccRes3   = 0x00000400, // other reserved words
-    ccRes4   = 0x00000800, // embedded end
+    ccResS   = 0x00000200, // declaration: Set
+    ccResV   = 0x00000400, // declaration: Variable
+    ccResT   = 0x00000800, // declaration: Table
+    ccRes2   = 0x00001000, // declaration additions for "variable" and "set"
+    ccRes3   = 0x00002000, // other reserved words
+    ccRes4   = 0x00004000, // embedded end
     ccRes    = 0x0000FF00, // all declarations
 
     ccOpt    = 0x00010000, // options
