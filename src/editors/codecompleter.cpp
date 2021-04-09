@@ -208,10 +208,10 @@ void CodeCompleter::showEvent(QShowEvent *event)
     setFocus();
 }
 
-void CodeCompleter::mousePressEvent(QMouseEvent *event)
+void CodeCompleter::mouseDoubleClickEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)
-    hide();
+    insertCurrent();
 }
 
 void CodeCompleter::keyPressEvent(QKeyEvent *e)

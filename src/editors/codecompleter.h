@@ -75,7 +75,7 @@ public:
 protected:
     bool event(QEvent *event) override;
     void showEvent(QShowEvent *event) override;
-    void mousePressEvent(QMouseEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
     void focusOutEvent(QFocusEvent *event) override;
