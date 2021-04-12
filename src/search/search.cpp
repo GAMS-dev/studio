@@ -128,7 +128,7 @@ void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
     QString location = mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location();
-    bool requestNewCache = (mResultHash.find(location) == mResultHash.end());
+    bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
 
     if (requestNewCache) {
         mCacheAvailable = false;
