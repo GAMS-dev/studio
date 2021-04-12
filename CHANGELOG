@@ -21,6 +21,8 @@ Version 1.6.0
 - fixed eolCom not working in some DCO lines (like $include)
 - added word under cursor as default search entry when no text selection is present
 - removed loading of search scope setting on Studio start
+- hotkey 'F1' jumps to the corresponding documentation entry for Project Explorer, Process Logs, GDX Diff Dialog, and Search Widget
+- allow to move block selections using the arrow keys in the code editor
 - added moving multiple lines up and down feature
 
 Version 1.5.5
