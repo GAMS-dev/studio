@@ -2534,12 +2534,14 @@ void CodeEdit::moveLines(bool moveLinesUp)
         lastBlock = anchor.block();
         if ((!anchor.positionInBlock()) && (cursor.hasSelection())) {
             lastBlock = lastBlock.previous();
+            anchor.setPosition(anchor.position()-1);
         }
     } else {
         firstBlock = anchor.block();
         lastBlock = cursor.block();
         if ((!cursor.positionInBlock()) && (cursor.hasSelection())) {
             lastBlock = lastBlock.previous();
+            cursor.setPosition(cursor.position()-1);
         }
     }
     int shift = 0;
