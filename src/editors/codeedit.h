@@ -217,7 +217,7 @@ protected:
         void updateExtraSelections();
         void adjustCursor();
         void selectTo(int blockNr, int colNr);
-        void selectToEnd();
+        void toEnd(bool select);
         QString blockText();
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
         void selectionToClipboard();
