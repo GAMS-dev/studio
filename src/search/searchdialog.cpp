@@ -183,16 +183,16 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     // convert user input to wildcard list
     QList<QRegExp> filterList;
-    for (QString s : filter)
+    for (const QString &s : qAsConst(filter))
         filterList.append(QRegExp(s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
 
     // filter files
     FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     QList<FileMeta*> res;
-    for (FileMeta* fm : files) {
+    for (FileMeta* fm : qAsConst(files)) {
         bool matchesWildcard = false;
 
-        for (QRegExp wildcard : filterList) {
+        for (const QRegExp &wildcard : filterList) {
             matchesWildcard = wildcard.indexIn(fm->location()) != -1;
             if (matchesWildcard) break; // one match is enough, dont overwrite result
         }

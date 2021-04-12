@@ -23,6 +23,9 @@ Version 1.6.0
 - removed loading of search scope setting on Studio start
 - hotkey 'F1' jumps to the corresponding documentation entry for Project Explorer, Process Logs, GDX Diff Dialog, and Search Widget
 - allow to move block selections using the arrow keys in the code editor
+- fixed jump to next search result if the result is in a different file and the current one has no results
+- fixed jump to search result occasionally not working because of search worker not being finished yet
+- fixed Find Next/Prev behavior for .opt files
 - added moving multiple lines up and down feature using CTRL+SHIFT+ARROW(Up/Down)
 - added static auto completion using shortcut 'ctrl-space'
 
