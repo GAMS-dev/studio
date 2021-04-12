@@ -88,6 +88,7 @@ public:
     void duplicateLine();
     void removeLine();
     void commentLine();
+    void moveLines(bool moveLinesUp);
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
@@ -185,6 +186,7 @@ private:
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
     bool prepareCompleter();
     void showCompleter();
+
 
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);

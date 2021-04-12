@@ -4815,6 +4815,23 @@ void MainWindow::checkGamsLicense()
     }
 }
 
-}
+void MainWindow::on_actionMove_Line_Up_triggered()
+{
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        ce->moveLines(true);
+    }
 }
 
+void MainWindow::on_actionMove_Line_Down_triggered()
+{
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        ce->moveLines(false);
+    }
+}
+
+}
+}

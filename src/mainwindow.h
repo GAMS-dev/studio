@@ -355,6 +355,8 @@ private slots:
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
+    void on_actionMove_Line_Up_triggered();
+    void on_actionMove_Line_Down_triggered();
 
     void showNeosStartDialog();
     void prepareNeosProcess();
