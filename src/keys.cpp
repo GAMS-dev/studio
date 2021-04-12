@@ -158,6 +158,14 @@ void Keys::reset()
     *seq << QKeySequence("Ctrl+A");
     setHotkey(Hotkey::SelectAll, seq);
 
+    seq = new KeySeqList("CodeCompleter","Open code completer");
+#ifdef __APPLE__
+    *seq << QKeySequence("Meta+Space");
+#else
+    *seq << QKeySequence("Ctrl+Space");
+#endif
+    setHotkey(Hotkey::CodeCompleter, seq);
+
 //    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
 //    *seq << QKeySequence("Ctrl+M") << QKeySequence("Meta+M");
 //    setHotkey(Hotkey::BookmarkToggle, seq);

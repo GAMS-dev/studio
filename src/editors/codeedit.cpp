@@ -22,6 +22,7 @@
 #include <QDir>
 
 #include "editors/codeedit.h"
+#include "codecompleter.h"
 #include "settings.h"
 #include "search/searchdialog.h"
 #include "logger.h"
@@ -68,6 +69,7 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
+    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -336,6 +338,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
     }
+    if (mCompleter && mCompleter->isVisible()) {
+        QSet<int> completerKeys;
+        completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+                      << Qt::Key_PageUp << Qt::Key_PageDown << Qt::Key_Enter << Qt::Key_Return << Qt::Key_Tab;
+        if (completerKeys.contains(e->key()))
+            return;
+    }
     QTextCursor cur = textCursor();
     QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
     if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
@@ -392,6 +401,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (!isReadOnly()) {
+        if (e == Hotkey::CodeCompleter) {
+            if (prepareCompleter())
+                showCompleter();
+            e->accept();
+            return;
+        }
         if (e->key() == Hotkey::JumpToContext) {
             jumpToCurrentLink(cursorRect().topLeft());
             e->accept();
@@ -763,7 +778,8 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                 int fileEnd = block.text().length();
                 while (fileEnd >= fileStart) {
                     int kind;
-                    emit requestSyntaxKind(block.position() + fileEnd, kind);
+                    int flavor;
+                    emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
                     if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
                     --fileEnd;
                 }
@@ -1255,6 +1271,21 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.endEditBlock();
 }
 
+bool CodeEdit::prepareCompleter()
+{
+    if (isReadOnly()) return false;
+    if (!mCompleter) {
+        mCompleter = new CodeCompleter(this);
+    }
+    return true;
+}
+
+void CodeEdit::showCompleter()
+{
+    if (mCompleter)
+        mCompleter->ShowIfData();
+}
+
 
 int CodeEdit::minIndentCount(int fromLine, int toLine)
 {
@@ -1515,7 +1546,8 @@ void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
     if (from >= 0 && from <= to) {
         word = text.mid(from, to-from+1);
         start = from + cursor.block().position();
-        emit requestSyntaxKind(start+1, intKind);
+        int flavor;
+        emit requestSyntaxKind(start+1, intKind, flavor);
 //        cursor.setPosition(start+1);
 //        intState = cursor.charFormat().property(QTextFormat::UserProperty).toInt();
     } else {
@@ -1666,18 +1698,6 @@ bool CodeEdit::overwriteMode() const
 {
     if (mBlockEdit) return mBlockEdit->overwriteMode();
     return AbstractEdit::overwriteMode();
-}
-
-inline int CodeEdit::assignmentKind(int p)
-{
-    int preKind = 0;
-    int postKind = 0;
-    emit requestSyntaxKind(p-1, preKind);
-    emit requestSyntaxKind(p+1, postKind);
-    if (postKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return 1;
-    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return -1;
-    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignmentEnd)) return -1;
-    return 0;
 }
 
 void CodeEdit::recalcWordUnderCursor()
@@ -2517,6 +2537,71 @@ void LineNumberArea::leaveEvent(QEvent *event)
     repaint(rect());
     QWidget::leaveEvent(event);
 }
+
+
+void CodeEdit::moveLines(bool moveLinesUp)
+{
+    if (mBlockEdit)
+        return;
+    QTextCursor cursor(textCursor());
+    QTextCursor anchor = cursor;
+    cursor.beginEditBlock();
+    anchor.setPosition(cursor.anchor());
+    QTextBlock firstBlock;
+    QTextBlock lastBlock;
+    if (cursor.anchor() >= cursor.position()) {
+        firstBlock = cursor.block();
+        lastBlock = anchor.block();
+        if ((!anchor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            anchor.setPosition(anchor.position()-1);
+        }
+    } else {
+        firstBlock = anchor.block();
+        lastBlock = cursor.block();
+        if ((!cursor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            cursor.setPosition(cursor.position()-1);
+        }
+    }
+    int shift = 0;
+    QPoint selection(anchor.position(), cursor.position());
+    if (moveLinesUp && firstBlock.blockNumber()) {
+        QTextCursor ncur(firstBlock.previous());
+        ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (!lastBlock.next().isValid()) {
+            ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+            temp = '\n' + temp.left(temp.size() - 1);
+        } else
+            ncur.setPosition(lastBlock.next().position());
+        ncur.insertText(temp);
+        shift = -temp.length();
+    } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
+        QTextCursor ncur(lastBlock.next());
+        bool isEnd = !lastBlock.next().next().isValid();
+        if (isEnd)
+            ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+        else
+            ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (isEnd) {
+            temp += '\n';
+            ncur.deletePreviousChar();
+        }
+        ncur.setPosition(firstBlock.position());
+        ncur.insertText(temp);
+        shift = temp.length();
+    }
+    cursor.setPosition(selection.x() + shift);
+    cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+}
+
+
 
 } // namespace studio
 } // namespace gams

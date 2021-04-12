@@ -188,6 +188,8 @@
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
+    <addaction name="actionMove_Line_Up"/>
+    <addaction name="actionMove_Line_Down"/>
    </widget>
    <widget class="QMenu" name="menuView">
     <property name="title">
@@ -1476,8 +1478,24 @@
    </property>
   </action>
   <action name="actionStudioHelp">
+    <property name="text">
+      <string>Studio Documentation</string>
+    </property>
+  </action>
+  <action name="actionMove_Line_Up">
    <property name="text">
-    <string>Studio Documentation</string>
+    <string>Move Line Up</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Up</string>
+   </property>
+  </action>
+  <action name="actionMove_Line_Down">
+   <property name="text">
+    <string>Move Line Down</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+Down</string>
    </property>
   </action>
  </widget>
