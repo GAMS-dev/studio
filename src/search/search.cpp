@@ -158,7 +158,7 @@ QPair<int, int> Search::cursorPosition() {
 
 ///
 /// \brief Search::findNextEntryInCache compares cursor position to list of results to find the next match.
-/// respects search direction.
+/// respects search direction and queues a jump if search is still running.
 /// \param direction Search::Direction
 /// \param cursorPos QPair of LineNr and ColumnNr
 /// \return index of match in result list
@@ -291,15 +291,17 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                                                  : tc.position(), mOptions);
             found = !ntc.isNull();
             if (found) e->setTextCursor(ntc);
-            else {
-                matchNr = findNextEntryInCache(direction);
-                found = matchNr != -1;
-                jumpToResult(matchNr);
-            }
 
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = !firstLevel;
             found = t->findText(mRegex, mOptions, mSplitSearchContinue);
+        }
+
+        // try again
+        if (!found) {
+            matchNr = findNextEntryInCache(direction);
+            found = matchNr != -1;
+            jumpToResult(matchNr);
         }
 
         if (!found && firstLevel) selectNextMatch(direction, false);
