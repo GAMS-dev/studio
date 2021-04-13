@@ -101,6 +101,8 @@ void Search::reset()
     mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
     mOutsideOfList = false;
+    mJumpQueued = false;
+    mLastMatchInOpt = -1;
 
     mThread.isInterruptionRequested();
 }
@@ -125,9 +127,8 @@ void Search::findInDoc(FileMeta* fm)
 void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
-    bool requestNewCache = !mCacheAvailable
-            || mResultHash.find(mMain->fileRepo()
-                                ->fileMeta(mMain->recent()->editor())->location())->count() == 0;
+    QString location = mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location();
+    bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
 
     if (requestNewCache) {
         mCacheAvailable = false;
@@ -156,8 +157,8 @@ QPair<int, int> Search::cursorPosition() {
 }
 
 ///
-/// \brief Search::findNextEntryInCache comares cursor position to list of results to find the next match.
-/// respects search direction.
+/// \brief Search::findNextEntryInCache compares cursor position to list of results to find the next match.
+/// respects search direction and queues a jump if search is still running.
 /// \param direction Search::Direction
 /// \param cursorPos QPair of LineNr and ColumnNr
 /// \return index of match in result list
@@ -169,6 +170,17 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int iterator = direction == Direction::Backward ? -1 : 1;
     bool allowJumping = false;
 
+    if (mSearching) {
+        mJumpQueued = true;
+        mQueuedJumpForward = direction == Direction::Forward;
+        return -1;
+    }
+
+    // allow jumping when we have results but not in the current file
+    allowJumping = (mResults.size() > 0)
+            && (mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location())
+            == mResultHash.end());
+
     if (mMain->recent()->editor()) {
         QString file = ViewHelper::location(mMain->recent()->editor());
         for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
@@ -176,7 +188,30 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
             // check if is in same line but behind the cursor
             if (file == r.filepath()) {
-                allowJumping = true;
+                allowJumping = true; // allow jumping after searching the current file
+
+                // just jump to next result if in Solver Option Editor
+                if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+                    if (direction == Direction::Forward) {
+                        if (i < mLastMatchInOpt)
+                            continue; // catch up with last hit in opt file
+                    } else { // if backwards
+                        if (mLastMatchInOpt == 0) mLastMatchInOpt = mResults.size();
+                        if (i > mLastMatchInOpt)
+                            continue;
+                    }
+
+                    // select next
+                    int newIndex = i + iterator;
+                    if (newIndex < 0)
+                        newIndex = mResults.size()-1;
+                    else if (newIndex > mResults.size()-1)
+                        newIndex = 0;
+
+                    mLastMatchInOpt = newIndex;
+                    return newIndex;
+                }
+
                 if (direction == Direction::Backward) {
                     if (cursorPos.first > r.lineNr() || (cursorPos.first == r.lineNr() && cursorPos.second > r.colNr() + r.length())) {
                         return (i == MAX_SEARCH_RESULTS) ? -1 : i;
@@ -194,6 +229,22 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     }
     return -1; // not found
 }
+
+/// Does a check if matchNr is valid and jumps to the corresponding result
+/// \brief Search::jumpToResult
+/// \param matchNr index of match in cache
+///
+void Search::jumpToResult(int matchNr)
+{
+    if (matchNr > -1 && matchNr < mResults.size()) {
+        ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
+        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
+
+        node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
+                             qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+    }
+}
+
 ///
 /// \brief SearchDialog::selectNextMatch steps through words in a document
 /// \param direction
@@ -205,43 +256,22 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
     // navigation on cache
     if (mCacheAvailable && !mOutsideOfList) {
-        if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
-            // skip to next entry if file is opened in solver option edit
-            int iterator = backwards ? -1 : 1;
-            int selected = mMain->resultsView() ? mMain->resultsView()->selectedItem() : -1;
 
-            // no rows selected, select new depending on direction
-            if (selected == -1) selected = backwards ? mResults.size() : 0;
-
-            // select next
-            int newIndex = selected + iterator;
-            if (newIndex < 0)
-                newIndex = mResults.size()-1;
-            else if (newIndex > mResults.size()-1)
-                newIndex = 0;
-
-            matchNr = newIndex;
-
-        } else {
-            matchNr = findNextEntryInCache(direction);
-        }
+        matchNr = findNextEntryInCache(direction);
 
          // nothing found
         if (matchNr == -1) {
             // check if we should leave cache navigation
             mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS; // now leaving cache
             // if not, jump to start/end
-            if (!mOutsideOfList && mResults.size() > 0) matchNr = backwards ? mResults.size()-1 : 0;
+            if (!mOutsideOfList && mResults.size() > 0) {
+                matchNr = backwards ? mResults.size()-1 : 0;
+                mLastMatchInOpt = matchNr;
+            }
         }
 
         // navigate to match
-        if (matchNr != -1) {
-            ProjectFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
-            if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
-
-            node->file()->jumpTo(node->runGroupId(), true, mResults.at(matchNr).lineNr()-1,
-                                 qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
-        }
+        jumpToResult(matchNr);
     }
 
     // navigation outside of cache
@@ -256,7 +286,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                 else tc.movePosition(QTextCursor::Start);
             }
 
-            QTextCursor ntc= e->document()->find(mRegex, backwards
+            QTextCursor ntc = e->document()->find(mRegex, backwards
                                                  ? tc.position()-tc.selectedText().length()
                                                  : tc.position(), mOptions);
             found = !ntc.isNull();
@@ -265,6 +295,13 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = !firstLevel;
             found = t->findText(mRegex, mOptions, mSplitSearchContinue);
+        }
+
+        // try again
+        if (!found) {
+            matchNr = findNextEntryInCache(direction);
+            found = matchNr != -1;
+            jumpToResult(matchNr);
         }
 
         if (!found && firstLevel) selectNextMatch(direction, false);
@@ -353,6 +390,10 @@ void Search::finished()
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = true;
+    if (mJumpQueued) {
+        selectNextMatch(mQueuedJumpForward ? Direction::Forward : Direction::Backward);
+        mJumpQueued = false;
+    }
 }
 
 QRegularExpression Search::regex() const

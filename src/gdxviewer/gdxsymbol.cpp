@@ -21,6 +21,7 @@
 #include "exception.h"
 #include "gdxsymboltable.h"
 #include "nestedheaderview.h"
+#include "columnfilter.h"
 #include "valuefilter.h"
 
 #include <QMutex>
@@ -31,6 +32,30 @@
 namespace gams {
 namespace studio {
 namespace gdxviewer {
+
+const QList<QString> GdxSymbol::superScript = QList<QString>({
+                                         QString(u8"\u2070"),
+                                         QString(u8"\u00B9"),
+                                         QString(u8"\u00B2"),
+                                         QString(u8"\u00B3"),
+                                         QString(u8"\u2074"),
+                                         QString(u8"\u2075"),
+                                         QString(u8"\u2076"),
+                                         QString(u8"\u2077"),
+                                         QString(u8"\u2078"),
+                                         QString(u8"\u2079"),
+                                         QString(u8"\u00B9\u2070"),
+                                         QString(u8"\u00B9\u00B9"),
+                                         QString(u8"\u00B9\u00B2"),
+                                         QString(u8"\u00B9\u00B3"),
+                                         QString(u8"\u00B9\u2074"),
+                                         QString(u8"\u00B9\u2075"),
+                                         QString(u8"\u00B9\u2076"),
+                                         QString(u8"\u00B9\u2077"),
+                                         QString(u8"\u00B9\u2078"),
+                                         QString(u8"\u00B9\u2079"),
+                                         QString(u8"\u00B2\u2070"),
+                                     });
 
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
@@ -50,6 +75,9 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* 
     for(int i=0; i<filterColumnCount(); i++)
         mFilterActive[i] = false;
 
+    mColumnFilters.resize(mDim);
+    for (int i=0; i<mDim; i++)
+        mColumnFilters[i] = nullptr;
     mValueFilters.resize(mNumericalColumnCount);
     for (int i=0; i<mNumericalColumnCount; i++)
         mValueFilters[i] = nullptr;
@@ -70,6 +98,7 @@ GdxSymbol::~GdxSymbol()
         if(a)
             delete[] a;
     }
+    unregisterAllFilters();
 }
 
 QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int role) const
@@ -77,7 +106,7 @@ QVariant GdxSymbol::headerData(int section, Qt::Orientation orientation, int rol
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal) {
             if (section < mDim)
-                return mDomains.at(section);
+                return mDomains.at(section) + " " + GdxSymbol::superScript[section+1];
             else {
                 if (mType == GMS_DT_SET)
                     return "Text";
@@ -405,6 +434,11 @@ void GdxSymbol::initNumericalBounds()
     }
 }
 
+QStringList GdxSymbol::domains() const
+{
+    return mDomains;
+}
+
 void GdxSymbol::setNumericalFormat(const numerics::DoubleFormatter::Format &numericalFormat)
 {
     mNumericalFormat = numericalFormat;
@@ -433,10 +467,25 @@ double GdxSymbol::maxDouble(int valCol)
     return mMaxDouble[valCol];
 }
 
+void GdxSymbol::registerColumnFilter(int column, ColumnFilter *columnFilter)
+{
+    mColumnFilters.at(column) = columnFilter;
+    mFilterActive.at(column) = true;
+}
+
 void GdxSymbol::registerValueFilter(int valueColumn, ValueFilter *valueFilter)
 {
     mValueFilters.at(valueColumn) = valueFilter;
     mFilterActive.at(mDim+valueColumn) = true;
+}
+
+void GdxSymbol::unregisterColumnFilter(int column)
+{
+    if (mColumnFilters[column] != nullptr) {
+        mColumnFilters[column]->deleteLater();
+        mColumnFilters[column] = nullptr;
+    }
+    mFilterActive.at(column) = false;
 }
 
 void GdxSymbol::unregisterValueFilter(int valueColumn)
@@ -448,21 +497,26 @@ void GdxSymbol::unregisterValueFilter(int valueColumn)
     mFilterActive.at(mDim+valueColumn) = false;
 }
 
+void GdxSymbol::unregisterAllFilters()
+{
+    for(int i=0; i<mDim; i++)
+        unregisterColumnFilter(i);
+    for(int i=0; i<mNumericalColumnCount; i++)
+        unregisterValueFilter(i);
+}
+
+ColumnFilter *GdxSymbol::columnFilter(int column)
+{
+    if (mColumnFilters[column] == nullptr)
+        mColumnFilters[column] = new ColumnFilter(this, column);
+    return mColumnFilters[column];
+}
+
 ValueFilter *GdxSymbol::valueFilter(int valueColumn)
 {
     if (mValueFilters[valueColumn] == nullptr)
         mValueFilters[valueColumn] = new ValueFilter(this, valueColumn);
     return mValueFilters[valueColumn];
-}
-
-bool GdxSymbol::filterHasChanged() const
-{
-    return mFilterHasChanged;
-}
-
-void GdxSymbol::setFilterHasChanged(bool filterHasChanged)
-{
-    mFilterHasChanged = filterHasChanged;
 }
 
 void GdxSymbol::setShowUelInColumn(const std::vector<bool *> &showUelInColumn)
@@ -500,10 +554,7 @@ void GdxSymbol::resetSortFilter()
         for(int uel : *mUelsInColumn.at(dim))
             mShowUelInColumn.at(dim)[uel] = true;
     }
-    for(int i=0; i<mNumericalColumnCount; i++)
-        mValueFilters[i] = nullptr;
-    for(int i=0; i<filterColumnCount(); i++)
-        mFilterActive[i] = false;
+    unregisterAllFilters();
     mFilterRecCount = mLoadedRecCount;
     layoutChanged();
 }
@@ -604,6 +655,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
+    beginResetModel();
     for (int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
 
@@ -652,7 +704,6 @@ void GdxSymbol::filterRows()
             }
         }
     }
-    beginResetModel();
     endResetModel();
 }
 

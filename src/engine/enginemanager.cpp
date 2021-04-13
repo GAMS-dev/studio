@@ -50,8 +50,8 @@ EngineManager::EngineManager(QObject* parent)
 
 
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
-    mDefaultApi->setScheme("https");
-    mDefaultApi->setPort(443);
+//    mDefaultApi->setScheme("https");
+//    mDefaultApi->setPort(443);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
             [this](OAIHttpRequestWorker *worker) {
@@ -70,8 +70,8 @@ EngineManager::EngineManager(QObject* parent)
 
 
     mJobsApi->setNetworkAccessManager(mNetworkManager);
-    mJobsApi->setScheme("https");
-    mJobsApi->setPort(443);
+//    mJobsApi->setScheme("https");
+//    mJobsApi->setPort(443);
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal, this,
             [this](OAIMessage_and_token summary) {
@@ -135,22 +135,10 @@ void EngineManager::setWorkingDirectory(const QString &dir)
     mJobsApi->setWorkingDirectory(dir);
 }
 
-void EngineManager::setHost(const QString &host)
+void EngineManager::setUrl(const QString &url)
 {
-    mJobsApi->setHost(host);
-    mDefaultApi->setHost(host);
-}
-
-void EngineManager::setPort(int port)
-{
-    mJobsApi->setPort(port);
-    mDefaultApi->setPort(port);
-}
-
-void EngineManager::setBasePath(const QString &path)
-{
-    mJobsApi->setBasePath(path);
-    mDefaultApi->setBasePath(path);
+    mJobsApi->setNewServerForAllOperations(url);
+    mDefaultApi->setNewServerForAllOperations(url);
 }
 
 void EngineManager::setIgnoreSslErrors()
@@ -164,19 +152,15 @@ bool EngineManager::ignoreSslErrors()
 
 void EngineManager::authenticate(const QString &user, const QString &password)
 {
-    mUser = user;
-    mPassword = password;
-
-    QByteArray auth = "Basic " + (user + ":" + password).toLatin1().toBase64();
-    mJobsApi->addHeaders("Authorization", auth);
-    mDefaultApi->addHeaders("Authorization", auth);
+    mJobsApi->setUsername(user);
+    mJobsApi->setPassword(password);
 }
 
-void EngineManager::authenticate(const QString &userToken)
+void EngineManager::authenticate(const QString &bearerToken)
 {
-    Q_UNUSED(userToken)
-    DEB() << "Authentication by token not implementet yet.";
-    // TODO(JM) prepared authentication by user-token
+    // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
+    mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mJobsApi->setPassword("");
 }
 
 void EngineManager::getVersion()
@@ -184,19 +168,21 @@ void EngineManager::getVersion()
     mDefaultApi->getVersion();
 }
 
-void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QStringList params)
+void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)
 {
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
-    OAIHttpFileElement dummy;
-    mJobsApi->createJob(modelName, nSpace, "solver.log", QStringList(), QStringList(), params, model, dummy, dummy);
+    QString dummy;
+    QStringList dummyL;
+
+    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, dummyL, model);
 }
 
 void EngineManager::getJobStatus()
 {
     if (!mToken.isEmpty())
-        mJobsApi->getJob(mToken, "status process_status");
+        mJobsApi->getJob(mToken, QString("status process_status"));
 }
 
 void EngineManager::killJob(bool hard)
@@ -264,6 +250,12 @@ void EngineManager::setToken(const QString &token)
 void EngineManager::abortRequests()
 {
     mJobsApi->abortRequests();
+}
+
+void EngineManager::cleanup()
+{
+    if (!mToken.isEmpty())
+        mJobsApi->deleteJobZip(mToken);
 }
 
 } // namespace engine

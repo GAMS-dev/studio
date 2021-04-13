@@ -165,7 +165,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::on_menuFile_aboutToShow);
     connect(ui->logTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->logTabs, &TabWidget::closeTab, this, &MainWindow::on_logTabs_tabCloseRequested);
     connect(ui->mainTabs, &QTabWidget::tabBarClicked, this, &MainWindow::tabBarClicked);
+    connect(ui->mainTabs, &TabWidget::closeTab, this, &MainWindow::on_mainTabs_tabCloseRequested);
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
@@ -760,6 +762,7 @@ void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
 void MainWindow::receiveOpenDoc(QString doc, QString anchor)
 {
     QString link = CommonPaths::systemDir() + "/" + doc;
+    link = QFileInfo(link).canonicalFilePath();
     QUrl result = QUrl::fromLocalFile(link);
 
     if (!anchor.isEmpty())
@@ -1908,67 +1911,78 @@ void MainWindow::on_actionGamsHelp_triggered()
                                                   help::HelpData::getStudioSectionName(help::StudioSection::OptionEditor));
         else
             mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
+    } else if (ui->projectView->hasFocus()) {
+        auto section = help::HelpData::getStudioSectionName(help::StudioSection::ProjectExplorer);
+        mHelpWidget->on_helpContentRequested(help::DocumentType::StudioMain, "", section);
     } else {
-         QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
-         if (editWidget) {
-             FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
-             if (!fm) {
-                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                       help::HelpData::getStudioSectionName(help::StudioSection::WelcomePage));
-             } else {
-                 if (mRecent.editor() != nullptr) {
-                     if (widget == mRecent.editor()) {
-                        CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
-                        if (ce) {
-                            QString word;
-                            int iKind = 0;
-                            ce->wordInfo(ce->textCursor(), word, iKind);
+        QWidget *wid = focusWidget();
+        while (wid && wid != ui->logTabs) wid = wid->parentWidget();
 
-                            if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
-                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
-                            } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
-                                mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
-                            } else {
-                                mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
+        if (wid) {
+            auto section = help::HelpData::getStudioSectionName(help::StudioSection::ProcessLog);
+            mHelpWidget->on_helpContentRequested(help::DocumentType::StudioMain, "", section);
+        } else {
+            QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
+            if (editWidget) {
+                FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
+                if (!fm) {
+                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                          help::HelpData::getStudioSectionName(help::StudioSection::WelcomePage));
+                } else {
+                    if (mRecent.editor() != nullptr) {
+                        if (widget == mRecent.editor()) {
+                           CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+                           if (ce) {
+                               QString word;
+                               int iKind = 0;
+                               ce->wordInfo(ce->textCursor(), word, iKind);
+
+                               if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
+                                   mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
+                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
+                                   mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
+                               } else {
+                                   mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
+                               }
                             }
-                         }
-                     } else {
-                         option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
-                         if (optionEdit) {
-                             QString optionName = optionEdit->getSelectedOptionName(widget);
-                             if (optionName.isEmpty())
-                                 mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                       help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
-                             else
-                                 mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName,
-                                                                       optionEdit->getSolverName());
-                         } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
+                        } else {
+                            option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
+                            if (optionEdit) {
+                                QString optionName = optionEdit->getSelectedOptionName(widget);
+                                if (optionName.isEmpty())
                                     mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                          help::HelpData::getStudioSectionName(help::StudioSection::GDXViewer));
-                         } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ReferenceFileViewer));
-                         } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
-                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                          help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
-                         } else if (option::GamsConfigEditor* editor = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
-                                   QString optionName = editor->getSelectedParameterName(widget);
-                                  if (optionName.isEmpty())
-                                      mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                            help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
-                                  else
-                                      mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
-                         } else {
-                             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
-                         }
-                     }
-                 } else {
-                     mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
-                 }
-             }
-         } else {
-             mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
-         }
+                                                                          help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
+                                else
+                                    mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName,
+                                                                          optionEdit->getSolverName());
+                            } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
+                                       mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                             help::HelpData::getStudioSectionName(help::StudioSection::GDXViewer));
+                            } else if (ViewHelper::toReferenceViewer(mRecent.editor())) {
+                                       mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                             help::HelpData::getStudioSectionName(help::StudioSection::ReferenceFileViewer));
+                            } else if (ViewHelper::toLxiViewer(mRecent.editor())) {
+                                       mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                             help::HelpData::getStudioSectionName(help::StudioSection::ListingViewer));
+                            } else if (option::GamsConfigEditor* editor = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                                      QString optionName = editor->getSelectedParameterName(widget);
+                                     if (optionName.isEmpty())
+                                         mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                               help::HelpData::getStudioSectionName(help::StudioSection::GamsUserConfigEditor));
+                                     else
+                                         mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
+                            } else {
+                                mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
+                            }
+                        }
+                    } else {
+                        mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
+                    }
+                }
+            } else {
+                mHelpWidget->on_helpContentRequested( help::DocumentType::Main, "");
+            }
+        }
     }
 
     if (ui->dockHelpView->isHidden())
@@ -2310,7 +2324,6 @@ void MainWindow::updateAndSaveSettings()
     settings->setBool(skSearchUseRegex, searchDialog()->regex());
     settings->setBool(skSearchCaseSens, searchDialog()->caseSens());
     settings->setBool(skSearchWholeWords, searchDialog()->wholeWords());
-    settings->setInt(skSearchScope, searchDialog()->selectedScope());
 
 #ifdef QWEBENGINE
     QVariantList joBookmarks;
@@ -3635,7 +3648,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
     ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-            if (progress == ProcState::Proc4GetResult) {
+            if (progress == ProcState::Proc5GetResult) {
                 gv->releaseFile();
             } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
@@ -3654,7 +3667,7 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
     for (ProjectFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
-                if (progress == ProcState::Proc4GetResult) {
+                if (progress == ProcState::Proc5GetResult) {
                     gv->releaseFile();
                 } else if (progress == ProcState::ProcIdle) {
                     gv->setHasChanged(true);
@@ -4802,6 +4815,23 @@ void MainWindow::checkGamsLicense()
     }
 }
 
-}
+void MainWindow::on_actionMove_Line_Up_triggered()
+{
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        ce->moveLines(true);
+    }
 }
 
+void MainWindow::on_actionMove_Line_Down_triggered()
+{
+    CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
+    if (!ce || ce->isReadOnly()) return;
+    else {
+        ce->moveLines(false);
+    }
+}
+
+}
+}

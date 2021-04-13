@@ -23,6 +23,7 @@
 #include "gdxviewer/gdxviewer.h"
 #include "gdxdiffprocess.h"
 #include "mainwindow.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -313,6 +314,19 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
 {
     Q_UNUSED(e)
     on_pbCancel_clicked();
+}
+
+void gams::studio::gdxdiffdialog::GdxDiffDialog::keyPressEvent(QKeyEvent *e)
+{
+    if (e->key() == Hotkey::OpenHelp) {
+        MainWindow* mainWindow = static_cast<MainWindow*>(parent());
+        mainWindow->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
+                                   help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::GDXDiff)));
+
+        e->accept();
+        return;
+    }
+    QDialog::keyPressEvent(e);
 }
 
 QString  gams::studio::gdxdiffdialog::GdxDiffDialog::lastInput2() const

@@ -70,7 +70,6 @@ enum SettingsKey {
     skSearchUseRegex,
     skSearchCaseSens,
     skSearchWholeWords,
-    skSearchScope,
 
     // general settings page
     skDefaultWorkspace,

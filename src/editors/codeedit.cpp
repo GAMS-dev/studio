@@ -22,6 +22,7 @@
 #include <QDir>
 
 #include "editors/codeedit.h"
+#include "codecompleter.h"
 #include "settings.h"
 #include "search/searchdialog.h"
 #include "logger.h"
@@ -68,6 +69,7 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
+    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -336,6 +338,13 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             return;
         }
     }
+    if (mCompleter && mCompleter->isVisible()) {
+        QSet<int> completerKeys;
+        completerKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
+                      << Qt::Key_PageUp << Qt::Key_PageDown << Qt::Key_Enter << Qt::Key_Return << Qt::Key_Tab;
+        if (completerKeys.contains(e->key()))
+            return;
+    }
     QTextCursor cur = textCursor();
     QTextCursor::MoveMode mm = (e->modifiers() & Qt::ShiftModifier) ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor;
     if (e == Hotkey::MatchParentheses || e == Hotkey::SelectParentheses) {
@@ -392,6 +401,12 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 
     if (!isReadOnly()) {
+        if (e == Hotkey::CodeCompleter) {
+            if (prepareCompleter())
+                showCompleter();
+            e->accept();
+            return;
+        }
         if (e->key() == Hotkey::JumpToContext) {
             jumpToCurrentLink(cursorRect().topLeft());
             e->accept();
@@ -763,7 +778,8 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                 int fileEnd = block.text().length();
                 while (fileEnd >= fileStart) {
                     int kind;
-                    requestSyntaxKind(block.position() + fileEnd, kind);
+                    int flavor;
+                    emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
                     if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
                     --fileEnd;
                 }
@@ -1255,6 +1271,21 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.endEditBlock();
 }
 
+bool CodeEdit::prepareCompleter()
+{
+    if (isReadOnly()) return false;
+    if (!mCompleter) {
+        mCompleter = new CodeCompleter(this);
+    }
+    return true;
+}
+
+void CodeEdit::showCompleter()
+{
+    if (mCompleter)
+        mCompleter->ShowIfData();
+}
+
 
 int CodeEdit::minIndentCount(int fromLine, int toLine)
 {
@@ -1515,7 +1546,8 @@ void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
     if (from >= 0 && from <= to) {
         word = text.mid(from, to-from+1);
         start = from + cursor.block().position();
-        emit requestSyntaxKind(start+1, intKind);
+        int flavor;
+        emit requestSyntaxKind(start+1, intKind, flavor);
 //        cursor.setPosition(start+1);
 //        intState = cursor.charFormat().property(QTextFormat::UserProperty).toInt();
     } else {
@@ -1666,18 +1698,6 @@ bool CodeEdit::overwriteMode() const
 {
     if (mBlockEdit) return mBlockEdit->overwriteMode();
     return AbstractEdit::overwriteMode();
-}
-
-inline int CodeEdit::assignmentKind(int p)
-{
-    int preKind = 0;
-    int postKind = 0;
-    emit requestSyntaxKind(p-1, preKind);
-    emit requestSyntaxKind(p+1, postKind);
-    if (postKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return 1;
-    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignment)) return -1;
-    if (preKind == static_cast<int>(syntax::SyntaxKind::IdentifierAssignmentEnd)) return -1;
-    return 0;
 }
 
 void CodeEdit::recalcWordUnderCursor()
@@ -2029,7 +2049,7 @@ void CodeEdit::BlockEdit::selectTo(int blockNr, int colNr)
     startCursorTimer();
 }
 
-void CodeEdit::BlockEdit::selectToEnd()
+void CodeEdit::BlockEdit::toEnd(bool select)
 {
     int end = 0;
     for (QTextBlock block = mEdit->document()->findBlockByNumber(qMin(mStartLine, mCurrentLine))
@@ -2037,7 +2057,11 @@ void CodeEdit::BlockEdit::selectToEnd()
         if (end < block.length()-1) end = block.length()-1;
         if (!block.isValid()) break;
     }
-    setSize(end - mColumn);
+    if (select) setSize(end - mColumn);
+    else {
+        mColumn = end;
+        setSize(0);
+    }
 }
 
 QString CodeEdit::BlockEdit::blockText()
@@ -2116,42 +2140,85 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     if (moveKeys.contains(e->key())) {
-        if (e->key() == Qt::Key_Down && mCurrentLine < mEdit->document()->blockCount()-1) mCurrentLine++;
-        if (e->key() == Qt::Key_Up && mCurrentLine > 0) mCurrentLine--;
-        if (e->key() == Qt::Key_Home) setSize(-mColumn);
-        if (e->key() == Qt::Key_End) selectToEnd();
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
+        bool isMove = e->modifiers() & Qt::AltModifier;
+        bool isShift = e->modifiers() & Qt::ShiftModifier;
+        bool isWord = e->modifiers() & Qt::ControlModifier;
 #ifdef __APPLE__
-        if ((e->modifiers() & Qt::MetaModifier) &&
-                (e->modifiers() & Qt::Key_Shift) &&
-                e->key() == Qt::Key_Right) {
-            int size = mSize;
-            EditorHelper::nextWord(mColumn, size, block.text());
-            setSize(size);
-        } else if (e->key() == Qt::Key_Right) {
-            setSize(mSize+1);
-        }
-        if ((e->modifiers() & Qt::MetaModifier) &&
-                (e->modifiers() & Qt::Key_Shift) &&
-                e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            int size = mSize;
-            EditorHelper::prevWord(mColumn, size, block.text());
-            setSize(size);
-        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            setSize(mSize-1);
-        }
+//        bool isWord = (e->modifiers() & Qt::MetaModifier);
 #else
-        if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Right) {
-            int size = mSize;
-            EditorHelper::nextWord(mColumn, size, block.text());
-            setSize(size);
-        } else if (e->key() == Qt::Key_Right) setSize(mSize+1);
-        if ((e->modifiers()&Qt::ControlModifier) != 0 && e->key() == Qt::Key_Left && mColumn+mSize > 0) {
-            int size = mSize;
-            EditorHelper::prevWord(mColumn, size, block.text());
-            setSize(size);
-        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) setSize(mSize-1);
 #endif
+        if (e->key() == Qt::Key_Home) {
+            if (isShift) setSize(-mColumn);
+            else {
+                mColumn = 0;
+                setSize(0);
+            }
+        } else if (e->key() == Qt::Key_End) {
+            toEnd(isShift);
+        } else if (e->key() == Qt::Key_Right) {
+            if (isWord) {
+                int size = mSize;
+                EditorHelper::nextWord(mColumn, size, block.text());
+                if (isShift) setSize(size);
+                else {
+                    mColumn += size;
+                    setSize(0);
+                }
+            } else if (isMove) {
+                setSize(mSize+1);
+            } else {
+                mColumn += 1;
+                if (isShift)
+                    setSize(mSize-1);
+            }
+        } else if (e->key() == Qt::Key_Left && mColumn+mSize > 0) {
+            if (isWord) {
+                int size = mSize;
+                EditorHelper::prevWord(mColumn, size, block.text());
+                if (isShift) setSize(size);
+                else {
+                    mColumn += size;
+                    setSize(0);
+                }
+            } else if (isMove) {
+                setSize(mSize-1);
+            } else if (mColumn > 0) {
+                mColumn -= 1;
+                if (isShift)
+                    setSize(mSize+1);
+            } else {
+                e->accept();
+                return;
+            }
+        } else if (e->key() == Qt::Key_Down) {
+            if ((isWord || isMove)  && mCurrentLine < mEdit->blockCount()-1) {
+                mCurrentLine += 1;
+            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
+                mStartLine += 1;
+            } else if (qMax(mStartLine, mCurrentLine) < mEdit->blockCount()-1) {
+                mCurrentLine += 1;
+                mStartLine += 1;
+            } else {
+                e->accept();
+                return;
+            }
+        } else if (e->key() == Qt::Key_Up) {
+            if ((isWord || isMove) && mCurrentLine > 0) {
+                mCurrentLine -= 1;
+            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
+                mStartLine -= 1;
+            } else if (qMin(mStartLine, mCurrentLine) > 0) {
+                mCurrentLine -= 1;
+                mStartLine -= 1;
+            } else {
+                e->accept();
+                return;
+            }
+        } else {
+            e->accept();
+            return;
+        }
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
             cursor.setPosition(block.position()+mColumn+mSize);
@@ -2159,6 +2226,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
+        e->accept();
         emit mEdit->cursorPositionChanged();
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) {
@@ -2469,6 +2537,71 @@ void LineNumberArea::leaveEvent(QEvent *event)
     repaint(rect());
     QWidget::leaveEvent(event);
 }
+
+
+void CodeEdit::moveLines(bool moveLinesUp)
+{
+    if (mBlockEdit)
+        return;
+    QTextCursor cursor(textCursor());
+    QTextCursor anchor = cursor;
+    cursor.beginEditBlock();
+    anchor.setPosition(cursor.anchor());
+    QTextBlock firstBlock;
+    QTextBlock lastBlock;
+    if (cursor.anchor() >= cursor.position()) {
+        firstBlock = cursor.block();
+        lastBlock = anchor.block();
+        if ((!anchor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            anchor.setPosition(anchor.position()-1);
+        }
+    } else {
+        firstBlock = anchor.block();
+        lastBlock = cursor.block();
+        if ((!cursor.positionInBlock()) && (cursor.hasSelection())) {
+            lastBlock = lastBlock.previous();
+            cursor.setPosition(cursor.position()-1);
+        }
+    }
+    int shift = 0;
+    QPoint selection(anchor.position(), cursor.position());
+    if (moveLinesUp && firstBlock.blockNumber()) {
+        QTextCursor ncur(firstBlock.previous());
+        ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (!lastBlock.next().isValid()) {
+            ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+            temp = '\n' + temp.left(temp.size() - 1);
+        } else
+            ncur.setPosition(lastBlock.next().position());
+        ncur.insertText(temp);
+        shift = -temp.length();
+    } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
+        QTextCursor ncur(lastBlock.next());
+        bool isEnd = !lastBlock.next().next().isValid();
+        if (isEnd)
+            ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+        else
+            ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+        QString temp = ncur.selectedText();
+        ncur.removeSelectedText();
+        if (isEnd) {
+            temp += '\n';
+            ncur.deletePreviousChar();
+        }
+        ncur.setPosition(firstBlock.position());
+        ncur.insertText(temp);
+        shift = temp.length();
+    }
+    cursor.setPosition(selection.x() + shift);
+    cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    cursor.endEditBlock();
+    setTextCursor(cursor);
+}
+
+
 
 } // namespace studio
 } // namespace gams
