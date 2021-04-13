@@ -49,7 +49,9 @@ CodeEdit::CodeEdit(QWidget *parent)
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
     mSettings = Settings::settings();
+    mCompleterTimer.setSingleShot(true);
 
+    connect(&mCompleterTimer, &QTimer::timeout, this, &CodeEdit::checkCompleterAutoOpen);
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
@@ -57,6 +59,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
+    connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -1271,6 +1274,24 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.endEditBlock();
 }
 
+void CodeEdit::checkCompleterAutoOpen()
+{
+    bool canOpen = true;
+    QTextCursor cur(textCursor());
+    if (cur.positionInBlock() > 2) {
+        cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
+        for (int i = 0 ; i < 3 ; ++i) {
+            QChar ch(cur.selectedText().at(i));
+            if (ch >= '0' && ch <= '9') continue;
+            if (ch >= 'a' && ch <= 'z') continue;
+            if (ch >= 'A' && ch <= 'Z') continue;
+            if (ch != '_') canOpen = false;
+        }
+        if (canOpen && prepareCompleter())
+            showCompleter();
+    }
+}
+
 bool CodeEdit::prepareCompleter()
 {
     if (isReadOnly()) return false;
@@ -1729,6 +1750,13 @@ void CodeEdit::recalcExtraSelections()
     } else {
         extraSelBlockEdit(selections);
         setExtraSelections(selections);
+    }
+}
+
+void CodeEdit::startCompleterTimer()
+{
+    if (!isReadOnly() && mSettings->toBool(skEdCompleterAutoOpen)) {
+        mCompleterTimer.start(500);
     }
 }
 

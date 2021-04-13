@@ -347,7 +347,11 @@ void CodeCompleter::updateFilter()
     else
         mFilterModel->setFilterRegularExpression('^'+mFilterText+".*");
 
-    if (!mFilterModel->rowCount()) hide();
+    if (!mFilterModel->rowCount() ||
+            (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
+        hide();
+        return;
+    }
 
     if (!currentIndex().isValid())
         setCurrentIndex(mFilterModel->index(0,0));
@@ -386,7 +390,8 @@ int CodeCompleter::rowCount()
 void CodeCompleter::ShowIfData()
 {
     updateFilter();
-    if (rowCount()) {
+    if (rowCount() &&
+            (mFilterModel->rowCount() > 1 || mFilterModel->data(mFilterModel->index(0,0)).toString() != mFilterText)) {
         show();
     }
 }
