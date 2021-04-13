@@ -581,8 +581,7 @@ SyntaxCall::SyntaxCall(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxKind:
 {
     QList<QPair<QString, QString>> list = SyntaxData::execute();
     for (const QPair<QString,QString> &entry : qAsConst(list)) {
-        if (entry.first != "sync" && entry.first != "embedded")
-            mSubDirective << entry.first;
+        mSubDirective << entry.first;
     }
     mSubKinds << SyntaxKind::Call << SyntaxKind::DirectiveBody;
 }
@@ -594,7 +593,8 @@ SyntaxBlock SyntaxCall::find(const gams::studio::syntax::SyntaxKind entryKind, i
     while (isWhitechar(line, start)) ++start;
     if (start < line.length() && line.at(start) == '.') ++start;
     while (isWhitechar(line, start)) ++start;
-    for (const QString &sub : mSubDirective) {
+    for (int i = mSubDirective.size()-1 ; i >= 0 ; --i) {
+        const QString &sub = mSubDirective.at(i);
         if (line.length() >= start+sub.length() && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0) {
             SyntaxShift shift = (line.length() == start+sub.length()) ? SyntaxShift::skip : SyntaxShift::shift;
             return SyntaxBlock(this, flavor, index, start+sub.length(), shift);
