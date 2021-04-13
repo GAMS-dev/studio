@@ -152,7 +152,7 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     }
     mType.insert(mData.size()-1, ccSolve);
 
-    // execute
+    // sub DCOs
     src = syntax::SyntaxData::execute();
     it = src.constBegin();
     while (it != src.constEnd()) {
@@ -160,7 +160,15 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccExec);
+    mType.insert(mData.size()-1, ccSubDcoC);
+
+    mData << "set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mType.insert(mData.size()-1, ccSubDcoE);
+
+    mData << "noError";
+    mDescription << "abort without error";
+    mType.insert(mData.size()-1, ccSubDcoA);
 }
 
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
@@ -313,7 +321,7 @@ enum CharGroup {
 
 CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
-    if ((c >= '0' && c <= '9') || c == ':' || c == '.') return clNum;
+    if ((c >= '0' && c <= '9') || c == ':') return clNum;
     if (c == '$') return clFix;
     return clBreak;
 }
@@ -427,6 +435,7 @@ int CodeCompleter::getFilterFromSyntax()
     QTextCursor cur = mEdit->textCursor();
     int syntaxKind = 0;
     int syntaxFlavor = 0;
+    int dcoFlavor = 0;
 
     QMap<int,QPair<int, int>> blockSyntax;
     emit mEdit->scanSyntax(cur.block(), blockSyntax);
@@ -437,6 +446,8 @@ int CodeCompleter::getFilterFromSyntax()
         if (it.key() > start) break;
         syntaxKind = it.value().first;
         syntaxFlavor = it.value().second;
+        if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::Dco)
+            dcoFlavor = syntaxFlavor;
     }
 
     // for analysis
@@ -449,12 +460,14 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::IgnoredHead:
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
         res = ccStart; break;
+
+    case syntax::SyntaxKind::SubDCO:
+        res = ccNone; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
         res = ccDco | ccResT; break;
@@ -512,6 +525,8 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccOpt; break;
     default: ;
     }
+
+    start = qMin(start, line.length()-1);
     bool isWhitespace = true;
     for (int i = 0; i < start; ++i) {
         if (line.at(i) != ' ' && line.at(i) != '\t') {
@@ -519,13 +534,29 @@ int CodeCompleter::getFilterFromSyntax()
             break;
         }
     }
+    mNeedDot = false;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
         else if (!(res & ccDco))
             res = res & ccDco;
-    } else
+    } else if (dcoFlavor > 15) {
+        mNeedDot = true;
+        for (int i = start; i > 0; --i) {
+            if (line.at(i) == '.') mNeedDot = false;
+            else if(line.at(i) != ' ' && line.at(i) != '\t') break;
+        }
+        if (dcoFlavor == 16)
+            res = ccSubDcoA;
+        else if (dcoFlavor == 17)
+            res = ccSubDcoC;
+        else if (dcoFlavor == 18)
+            res = ccSubDcoE;
+        else
+            res = res & ccNoDco;
+    } else {
         res = res & ccNoDco;
+    }
 
     DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;

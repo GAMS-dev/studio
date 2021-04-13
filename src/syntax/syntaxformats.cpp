@@ -186,9 +186,11 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("offFold").toLower(), 14);
     mFlavors.insert(QString("include").toLower(), 15);
     mFlavors.insert(QString("abort").toLower(), 16);
-    mFlavors.insert(QString("eval").toLower(), 17);
-    mFlavors.insert(QString("evalLocal").toLower(), 17);
-    mFlavors.insert(QString("evalGlobal").toLower(), 17);
+    mFlavors.insert(QString("call").toLower(), 17);
+    mFlavors.insert(QString("hiddenCall").toLower(), 17);
+    mFlavors.insert(QString("eval").toLower(), 18);
+    mFlavors.insert(QString("evalLocal").toLower(), 18);
+    mFlavors.insert(QString("evalGlobal").toLower(), 18);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -208,9 +210,9 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mSpecialKinds.insert(QString("onEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DcoComment);
+    mSpecialKinds.insert(QString("abort").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("call").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("hiddenCall").toLower(), SyntaxKind::SubDCO);
-    mSpecialKinds.insert(QString("abort").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("eval").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalLocal").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalGlobal").toLower(), SyntaxKind::SubDCO);
@@ -603,9 +605,9 @@ SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind,
     if (flavor == 16)
         subDCOs << "noerror";
     else if (flavor == 17)
-        subDCOs << "set";
-    else
         subDCOs = mSubDCOs;
+    else if (flavor == 18)
+        subDCOs << "set";
 
     for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {
         const QString &sub = subDCOs.at(i);

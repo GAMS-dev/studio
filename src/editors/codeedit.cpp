@@ -1285,7 +1285,7 @@ void CodeEdit::checkCompleterAutoOpen()
             if (ch >= '0' && ch <= '9') continue;
             if (ch >= 'a' && ch <= 'z') continue;
             if (ch >= 'A' && ch <= 'Z') continue;
-            if (ch != '_') canOpen = false;
+            if (ch != '_' && ch != '.' && ch != '$') canOpen = false;
         }
         if (canOpen && prepareCompleter())
             showCompleter();

@@ -9,29 +9,32 @@ namespace gams {
 namespace studio {
 
 enum CodeCompleterType {
-    ccNone   = 0x00000000,
-    ccDco1   = 0x00000001, // DCO (starter and standalone)
-    ccDco2   = 0x00000002, // DCO offText
-    ccDco    = 0x000000FF, // all DCOs
-    ccNoDco  = 0x7FFFFF00, // no DCOs
+    ccNone      = 0x00000000,
+    ccDco1      = 0x00000001, // DCO (starter and standalone)
+    ccDco2      = 0x00000002, // DCO $offText
+    ccSubDcoA   = 0x00000010, // sub DCO of $abort
+    ccSubDcoC   = 0x00000020, // sub DCO of $call
+    ccSubDcoE   = 0x00000040, // sub DCO of $eval
+    ccDco       = 0x000000FF, // all DCOs
+    ccNoDco     = 0x7FFFFF00, // no DCOs
 
-    ccRes1   = 0x00000100, // declarations
-    ccResS   = 0x00000200, // declaration: Set
-    ccResV   = 0x00000400, // declaration: Variable
-    ccResT   = 0x00000800, // declaration: Table
-    ccRes2   = 0x00001000, // declaration additions for "variable" and "set"
-    ccRes3   = 0x00002000, // other reserved words
-    ccRes4   = 0x00004000, // embedded end
-    ccRes    = 0x0000FF00, // all declarations
+    ccRes1      = 0x00000100, // declarations
+    ccResS      = 0x00000200, // declaration: Set
+    ccResV      = 0x00000400, // declaration: Variable
+    ccResT      = 0x00000800, // declaration: Table
+    ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
+    ccRes3      = 0x00002000, // other reserved words
+    ccRes4      = 0x00004000, // embedded end
+    ccRes       = 0x0000FF00, // all declarations
 
-    ccOpt    = 0x00010000, // options
-    ccMod    = 0x00020000, // models
-    ccSolve  = 0x00040000, // solve
-    ccExec   = 0x00080000, // execute additions
+    ccOpt       = 0x00010000, // options
+    ccMod       = 0x00020000, // models
+    ccSolve     = 0x00040000, // solve
+    ccExec      = 0x00080000, // execute additions
 
-    ccStart  = 0x7FF0F7FD, // all starting keywords
+    ccStart     = 0x7FF0F7FD, // all starting keywords
 
-    ccAll    = 0x7FFFFFFF
+    ccAll       = 0x7FFFFFFF
 };
 
 class CodeCompleterModel : public QAbstractListModel
@@ -92,6 +95,7 @@ private:
     CodeCompleterModel *mModel;
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
+    bool mNeedDot = false;
 
 };
 
