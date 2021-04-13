@@ -426,18 +426,19 @@ int CodeCompleter::getFilterFromSyntax()
     QMap<int,QPair<int, int>> blockSyntax;
     emit mEdit->scanSyntax(cur.block(), blockSyntax);
 
+    QString line = cur.block().text();
     int start = cur.positionInBlock() - mFilterText.length();
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (it.key() > start) break;
         syntaxKind = it.value().first;
         syntaxFlavor = it.value().second;
-        if (it.key() >= start) break;
     }
 
     // for analysis
-//    DEB() << "--- Line: " << cur.block().text();
-//    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-//        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
-//    }
+    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+    }
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
@@ -507,9 +508,8 @@ int CodeCompleter::getFilterFromSyntax()
     default: ;
     }
     bool isWhitespace = true;
-    QString text = cur.block().text();
     for (int i = 0; i < start; ++i) {
-        if (text.at(i) != ' ' && text.at(i) != '\t') {
+        if (line.at(i) != ' ' && line.at(i) != '\t') {
             isWhitespace = false;
             break;
         }
@@ -522,7 +522,7 @@ int CodeCompleter::getFilterFromSyntax()
     } else
         res = res & ccNoDco;
 
-//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 
