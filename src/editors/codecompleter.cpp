@@ -463,11 +463,11 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::DeclarationVariableType:
         res = ccDco | ccResV; break;
 
-    case syntax::SyntaxKind::Directive:
+    case syntax::SyntaxKind::Dco:
         res = ccDco; break;
 
-    case syntax::SyntaxKind::DirectiveBody:
-    case syntax::SyntaxKind::DirectiveComment:
+    case syntax::SyntaxKind::DcoBody:
+    case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::CommentBlock:
         res = ccNone; break;

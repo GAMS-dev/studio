@@ -1939,7 +1939,7 @@ void MainWindow::on_actionGamsHelp_triggered()
 
                                if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
-                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
+                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Dco)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
                                } else {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);

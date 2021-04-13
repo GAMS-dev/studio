@@ -783,7 +783,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                     int kind;
                     int flavor;
                     emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
-                    if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
+                    if (kind == int(syntax::SyntaxKind::DcoBody)) break;
                     --fileEnd;
                 }
                 endChar = QChar();
@@ -1913,8 +1913,8 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
     selection.cursor = cur;
     selection.format.setAnchorHref('"'+file+'"');
-    selection.format.setForeground(Theme::color(Theme::Syntax_directiveBody));
-    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_directiveBody));
+    selection.format.setForeground(Theme::color(Theme::Syntax_dcoBody));
+    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_dcoBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
 }

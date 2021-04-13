@@ -516,14 +516,14 @@ void SettingsDialog::initColorPage()
         {Theme::Syntax_declaration},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
-        {Theme::Syntax_directive},
+        {Theme::Syntax_dco},
         {Theme::Syntax_embedded},
         {Theme::Syntax_keyword},
 
         {Theme::Syntax_identifier},
         {Theme::Syntax_description},
         {Theme::Syntax_tableHeader},
-        {Theme::Syntax_directiveBody},
+        {Theme::Syntax_dcoBody},
         {Theme::Syntax_comment},
     };
     cols = 2;
