@@ -37,7 +37,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 {
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
     mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
-                     << SyntaxKind::Call << SyntaxKind::CommentLine << SyntaxKind::Title;
+                     << SyntaxKind::SubDCO << SyntaxKind::CommentLine << SyntaxKind::Title;
 
     SharedSyntaxData *d = new SharedSyntaxData();
 
@@ -49,7 +49,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment, d), Theme::Syntax_comment);
     initKind(new SyntaxDirectiveBody(SyntaxKind::Title, d), Theme::Syntax_title);
     initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_directiveBody);
-    initKind(new SyntaxCall(d), Theme::Syntax_directive);
+    initKind(new SyntaxSubDCO(d), Theme::Syntax_directive);
 
     initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
     initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));

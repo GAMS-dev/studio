@@ -449,7 +449,7 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::Call:
+    case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::IgnoredHead:
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:

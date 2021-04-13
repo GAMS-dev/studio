@@ -44,7 +44,7 @@ enum class SyntaxKind {
     String,
     Formula,
     Assignment,
-    Call,
+    SubDCO,
 
     CommentLine,
     CommentBlock,
@@ -308,12 +308,12 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
-/// \brief Defines the syntax for a multi-line comment block.
-class SyntaxCall: public SyntaxAbstract
+/// \brief Defines the syntax for a sub DCO part.
+class SyntaxSubDCO: public SyntaxAbstract
 {
     QStringList mSubDirective;
 public:
-    SyntaxCall(SharedSyntaxData* sharedData);
+    SyntaxSubDCO(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
