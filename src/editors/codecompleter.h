@@ -71,8 +71,9 @@ class CodeCompleter : public QListView
     Q_OBJECT
 
 public:
-    CodeCompleter(CodeEdit *parent);
+    CodeCompleter(CodeEdit *parent = nullptr);
     ~CodeCompleter() override;
+    void setCodeEdit(CodeEdit *edit);
     void updateFilter();
     void updateDynamicData(QStringList symbols);
     int rowCount();
@@ -85,6 +86,7 @@ protected:
     void keyPressEvent(QKeyEvent *e) override;
     void keyReleaseEvent(QKeyEvent *e) override;
     void focusOutEvent(QFocusEvent *event) override;
+    void actionEvent(QActionEvent *event) override;
 
 private:
     void insertCurrent();
@@ -96,7 +98,6 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     bool mNeedDot = false;
-
 };
 
 } // namespace studio

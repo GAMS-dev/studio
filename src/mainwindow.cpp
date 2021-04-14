@@ -277,6 +277,7 @@ MainWindow::MainWindow(QWidget *parent)
     ViewHelper::updateBaseTheme();
     initGamsStandardPaths();
     updateRunState();
+    initCompleterActions();
 
     checkGamsLicense();
 }
@@ -387,6 +388,7 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
+    DEB() << "actionCount: " << actions().size();
 }
 
 void MainWindow::initToolBar()
@@ -3174,6 +3176,19 @@ QString MainWindow::readGucValue(QString key)
     return res;
 }
 
+void MainWindow::initCompleterActions()
+{
+    mFileMetaRepo.completer()->addActions(ui->menuFile->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuEdit->actions());
+    mFileMetaRepo.completer()->addActions(ui->menu_GAMs->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuMIRO->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuTools->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuView->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuHelp->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuAdvanced->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuHelp->actions());
+}
+
 void MainWindow::showNeosStartDialog()
 {
     neos::NeosProcess *neosPtr = createNeosProcess();
@@ -3535,6 +3550,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
+            ce->addAction(ui->actionRun);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
             tv->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));

@@ -72,7 +72,6 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
-    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -1295,16 +1294,15 @@ void CodeEdit::checkCompleterAutoOpen()
 bool CodeEdit::prepareCompleter()
 {
     if (isReadOnly()) return false;
-    if (!mCompleter) {
-        mCompleter = new CodeCompleter(this);
-    }
-    return true;
+    return mCompleter;
 }
 
 void CodeEdit::showCompleter()
 {
-    if (mCompleter)
+    if (mCompleter) {
+        mCompleter->setCodeEdit(this);
         mCompleter->ShowIfData();
+    }
 }
 
 
@@ -1632,6 +1630,11 @@ void CodeEdit::jumpTo(int line, int column)
 {
     ensureUnfolded(line);
     AbstractEdit::jumpTo(line, column);
+}
+
+void CodeEdit::setCompleter(CodeCompleter *completer)
+{
+    mCompleter = completer;
 }
 
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const

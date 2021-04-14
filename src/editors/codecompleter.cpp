@@ -7,6 +7,7 @@
 #include <QSortFilterProxyModel>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QAction>
 
 namespace gams {
 namespace studio {
@@ -228,6 +229,12 @@ CodeCompleter::~CodeCompleter()
 {
 }
 
+void CodeCompleter::setCodeEdit(CodeEdit *edit)
+{
+    mEdit = edit;
+    if (mEdit) setFont(mEdit->font());
+}
+
 bool CodeCompleter::event(QEvent *event)
 {
     if (event->type() == QEvent::ActivationChange) {
@@ -279,9 +286,10 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         insertCurrent();
     }   break;
     default: {
-        mEdit->keyPressEvent(e);
         if (e->key() == Qt::Key_Space)
             hide();
+        if (mEdit)
+            mEdit->keyPressEvent(e);
         updateFilter();
     }
     }
@@ -300,15 +308,21 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Enter:
     case Qt::Key_Return:
     case Qt::Key_Tab:
-            break;
+        break;
     default:
-            mEdit->keyPressEvent(e);
+        if (mEdit) mEdit->keyPressEvent(e);
     }
 }
 
 void CodeCompleter::focusOutEvent(QFocusEvent *event)
 {
     QListView::focusOutEvent(event);
+    hide();
+}
+
+void CodeCompleter::actionEvent(QActionEvent *event)
+{
+    Q_UNUSED(event)
     hide();
 }
 
@@ -328,6 +342,7 @@ CharGroup group(const QChar &c) {
 
 void CodeCompleter::updateFilter()
 {
+    if (!mEdit) return;
     QTextCursor cur = mEdit->textCursor();
     QString line = cur.block().text();
     int peekStart = cur.positionInBlock();
@@ -406,6 +421,7 @@ void CodeCompleter::ShowIfData()
 
 void CodeCompleter::insertCurrent()
 {
+    if (!mEdit) return;
     if (currentIndex().isValid()) {
         QTextCursor cur = mEdit->textCursor();
         QString line = cur.block().text();
@@ -431,6 +447,7 @@ void CodeCompleter::insertCurrent()
 
 int CodeCompleter::getFilterFromSyntax()
 {
+    if (!mEdit) return ccNone;
     int res = ccAll;
     QTextCursor cur = mEdit->textCursor();
     int syntaxKind = 0;

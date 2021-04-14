@@ -107,6 +107,7 @@ public:
     void foldAll();
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
+    void setCompleter(CodeCompleter *completer);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
