@@ -1,3 +1,7 @@
+Version 1.6.1  *
+==================
+- improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
+
 Version 1.6.0
 ==================
 - added *.inc as common extension for GAMS files
