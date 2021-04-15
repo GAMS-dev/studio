@@ -612,12 +612,18 @@ int CodeCompleter::getFilterFromSyntax()
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
+        int validSpace = start-1;
         for (int i = start-1; i > 0; --i) {
-            if (mNeedDot && line.at(i) == '.')
+            if (mNeedDot && line.at(i) == '.') {
                 mNeedDot = false;
-            else {
+                validSpace = i-1;
+            } else {
                 CharGroup gr = group(line.at(i));
                 if (gr == clBreak) return res = res & ccNoDco;
+                if (gr == clSpace) {
+                    if (i == validSpace) validSpace = i-1;
+                    else return res = res & ccNoDco;
+                }
             }
         }
         if (dcoFlavor == 16)
