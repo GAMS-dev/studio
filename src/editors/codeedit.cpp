@@ -60,6 +60,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::startCompleterTimer);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -1759,8 +1760,17 @@ void CodeEdit::recalcExtraSelections()
 void CodeEdit::startCompleterTimer()
 {
     if (!isReadOnly() && mSettings->toBool(skEdCompleterAutoOpen)) {
-        mCompleterTimer.start(500);
+        if (mCompleter->isVisible())
+            showCompleter();
+        else
+            mCompleterTimer.start(500);
     }
+}
+
+void CodeEdit::checkAndStartCompleterTimer()
+{
+    if (mCompleter->isVisible())
+        showCompleter();
 }
 
 void CodeEdit::updateExtraSelections()

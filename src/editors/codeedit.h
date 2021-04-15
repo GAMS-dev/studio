@@ -166,6 +166,7 @@ private slots:
     void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void startCompleterTimer();
+    void checkAndStartCompleterTimer();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();

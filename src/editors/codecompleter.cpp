@@ -32,6 +32,7 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
         mType.insert(i, ccDco2);
     }
 
+
     // declarations
     src = syntax::SyntaxData::declaration();
     it = src.constBegin();
@@ -159,15 +160,27 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     while (it != src.constEnd()) {
         mData << it->first + ' ';
         mDescription << it->second;
+        mData << "$call." + it->first + ' ';
+        mDescription << it->second;
+        mData << "$hiddenCall." + it->first + ' ';
+        mDescription << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccSubDcoC);
 
     mData << "set";
     mDescription << "compile-time variable based on a GAMS set";
+    mData << "$eval.set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mData << "$evalGlobal.set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mData << "$evalLocal.set";
+    mDescription << "compile-time variable based on a GAMS set";
     mType.insert(mData.size()-1, ccSubDcoE);
 
     mData << "noError";
+    mDescription << "abort without error";
+    mData << "$abort.noError";
     mDescription << "abort without error";
     mType.insert(mData.size()-1, ccSubDcoA);
 }
@@ -221,6 +234,7 @@ CodeCompleter::CodeCompleter(CodeEdit *parent) :
     if (mEdit) setFont(mEdit->font());
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     mFilterModel->setSourceModel(mModel);
+    mFilterModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     setModel(mFilterModel);
     setWindowFlag(Qt::FramelessWindowHint);
 }
@@ -310,7 +324,7 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Tab:
         break;
     default:
-        if (mEdit) mEdit->keyPressEvent(e);
+        if (mEdit) mEdit->keyReleaseEvent(e);
     }
 }
 
@@ -397,6 +411,7 @@ void CodeCompleter::updateFilter()
     rect.setHeight(hei + 4);
     rect.setWidth(wid + 25);
     setGeometry(rect);
+    mFilterModel->sort(0);
 }
 
 void CodeCompleter::updateDynamicData(QStringList symbols)
