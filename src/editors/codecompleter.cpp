@@ -349,7 +349,7 @@ enum CharGroup {
 
 CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
-    if ((c >= '0' && c <= '9') || c == ':') return clNum;
+    if ((c >= '0' && c <= '9') || c == ':' || c == '.') return clNum;
     if (c == '$') return clFix;
     return clBreak;
 }
@@ -390,8 +390,7 @@ void CodeCompleter::updateFilter()
         return;
     }
 
-    if (!currentIndex().isValid())
-        setCurrentIndex(mFilterModel->index(0,0));
+    setCurrentIndex(mFilterModel->index(0,0));
 
     // adapt size
     cur.setPosition(cur.position() - mFilterText.length());
