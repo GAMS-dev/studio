@@ -384,7 +384,7 @@ void CodeCompleter::updateFilter()
         --peekStart;
         CharGroup cg = group(line.at(peekStart));
         if (cg >= clBreak) break;
-        if (cg == clAlpha) validStart = peekStart;
+        if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clFix) {
             validStart = peekStart;
             break;
