@@ -260,7 +260,6 @@ bool CodeCompleter::event(QEvent *event)
 
 void CodeCompleter::showEvent(QShowEvent *event)
 {
-    setCurrentIndex(mFilterModel->index(0,0));
     QListView::showEvent(event);
     setFocus();
 }
@@ -378,6 +377,7 @@ void CodeCompleter::updateFilter()
         mFilterText = line.mid(validStart, len);
     }
 
+    // assign filter
     mFilterModel->setTypeFilter(getFilterFromSyntax());
     if (mFilterText.startsWith('$'))
         mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
@@ -389,8 +389,25 @@ void CodeCompleter::updateFilter()
         hide();
         return;
     }
+    mFilterModel->sort(0);
 
-    setCurrentIndex(mFilterModel->index(0,0));
+    // find best index
+    int validEnd = cur.positionInBlock();
+    for (int i = validEnd+1; i < line.length(); ++i) {
+        CharGroup cg = group(line.at(i));
+        if (cg == clBreak) break;
+        validEnd = i;
+    }
+    QString fullWord = line.mid(validStart, validEnd - validStart + 1);
+    int bestInd = 0;
+    while (bestInd+1 < mFilterModel->rowCount()) {
+        QModelIndex ind = mFilterModel->index(bestInd+1, 0);
+        QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
+        if (itemWord.compare(fullWord, Qt::CaseInsensitive) > 0)
+            break;
+        bestInd = ind.row();
+    }
+    setCurrentIndex(mFilterModel->index(bestInd, 0));
 
     // adapt size
     cur.setPosition(cur.position() - mFilterText.length());
@@ -410,7 +427,6 @@ void CodeCompleter::updateFilter()
     rect.setHeight(hei + 4);
     rect.setWidth(wid + 25);
     setGeometry(rect);
-    mFilterModel->sort(0);
 }
 
 void CodeCompleter::updateDynamicData(QStringList symbols)
