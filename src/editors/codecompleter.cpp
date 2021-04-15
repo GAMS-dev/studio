@@ -160,29 +160,42 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     while (it != src.constEnd()) {
         mData << it->first + ' ';
         mDescription << it->second;
+        mData << '.' + it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccSubDcoC);
+    it = src.constBegin();
+    while (it != src.constEnd()) {
         mData << "$call." + it->first + ' ';
         mDescription << it->second;
         mData << "$hiddenCall." + it->first + ' ';
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccSubDcoC);
+    mType.insert(mData.size()-1, ccDco1);
 
     mData << "set";
     mDescription << "compile-time variable based on a GAMS set";
+    mData << ".set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mType.insert(mData.size()-1, ccSubDcoE);
     mData << "$eval.set";
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalGlobal.set";
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalLocal.set";
     mDescription << "compile-time variable based on a GAMS set";
-    mType.insert(mData.size()-1, ccSubDcoE);
+    mType.insert(mData.size()-1, ccDco1);
 
     mData << "noError";
     mDescription << "abort without error";
-    mData << "$abort.noError";
+    mData << ".noError";
     mDescription << "abort without error";
     mType.insert(mData.size()-1, ccSubDcoA);
+    mData << "$abort.noError";
+    mDescription << "abort without error";
+    mType.insert(mData.size()-1, ccDco1);
 }
 
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
@@ -213,12 +226,17 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
     if (!(type & mTypeFilter)) return false;
+    if (type & ccSubDco) {
+        if (sourceModel()->data(index, Qt::DisplayRole).toString().startsWith('.') != mNeedDot)
+            return false;
+    }
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
 
-void FilterCompleterModel::setTypeFilter(int completerTypeFilter)
+void FilterCompleterModel::setTypeFilter(int completerTypeFilter, bool needDot)
 {
     mTypeFilter = completerTypeFilter;
+    mNeedDot = needDot;
     invalidateFilter();
 }
 
@@ -340,16 +358,18 @@ void CodeCompleter::actionEvent(QActionEvent *event)
 }
 
 enum CharGroup {
-    clBreak,
     clAlpha,
     clNum,
     clFix,
+    clBreak,
+    clSpace,
 };
 
 CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
     if ((c >= '0' && c <= '9') || c == ':' || c == '.') return clNum;
     if (c == '$') return clFix;
+    if (c == ' ' || c == '\t') return clSpace;
     return clBreak;
 }
 
@@ -363,7 +383,7 @@ void CodeCompleter::updateFilter()
     while (peekStart > 0) {
         --peekStart;
         CharGroup cg = group(line.at(peekStart));
-        if (cg == clBreak) break;
+        if (cg >= clBreak) break;
         if (cg == clAlpha) validStart = peekStart;
         if (cg == clFix) {
             validStart = peekStart;
@@ -378,7 +398,7 @@ void CodeCompleter::updateFilter()
     }
 
     // assign filter
-    mFilterModel->setTypeFilter(getFilterFromSyntax());
+    mFilterModel->setTypeFilter(getFilterFromSyntax(), mNeedDot);
     if (mFilterText.startsWith('$'))
         mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
     else
@@ -395,19 +415,22 @@ void CodeCompleter::updateFilter()
     int validEnd = cur.positionInBlock();
     for (int i = validEnd+1; i < line.length(); ++i) {
         CharGroup cg = group(line.at(i));
-        if (cg == clBreak) break;
+        if (cg >= clBreak) break;
         validEnd = i;
     }
     QString fullWord = line.mid(validStart, validEnd - validStart + 1);
     int bestInd = 0;
     while (bestInd+1 < mFilterModel->rowCount()) {
-        QModelIndex ind = mFilterModel->index(bestInd+1, 0);
+        QModelIndex ind = mFilterModel->index(bestInd, 0);
         QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
         if (itemWord.compare(fullWord, Qt::CaseInsensitive) > 0)
             break;
-        bestInd = ind.row();
+        if (itemWord.compare(fullWord, Qt::CaseInsensitive) == 0)
+            break;
+        ++bestInd;
     }
     setCurrentIndex(mFilterModel->index(bestInd, 0));
+    scrollTo(currentIndex());
 
     // adapt size
     cur.setPosition(cur.position() - mFilterText.length());
@@ -589,9 +612,13 @@ int CodeCompleter::getFilterFromSyntax()
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
-        for (int i = start; i > 0; --i) {
-            if (line.at(i) == '.') mNeedDot = false;
-            else if(line.at(i) != ' ' && line.at(i) != '\t') break;
+        for (int i = start-1; i > 0; --i) {
+            if (mNeedDot && line.at(i) == '.')
+                mNeedDot = false;
+            else {
+                CharGroup gr = group(line.at(i));
+                if (gr == clBreak) return res = res & ccNoDco;
+            }
         }
         if (dcoFlavor == 16)
             res = ccSubDcoA;

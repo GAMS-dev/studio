@@ -1280,7 +1280,8 @@ void CodeEdit::checkCompleterAutoOpen()
     QTextCursor cur(textCursor());
     if (cur.positionInBlock() > 2) {
         cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
-        for (int i = 0 ; i < 3 ; ++i) {
+        QString part = cur.selectedText();
+        for (int i = 0 ; i < part.size() ; ++i) {
             QChar ch(cur.selectedText().at(i));
             if (ch >= '0' && ch <= '9') continue;
             if (ch >= 'a' && ch <= 'z') continue;

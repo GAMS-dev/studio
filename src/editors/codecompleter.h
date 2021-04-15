@@ -16,6 +16,7 @@ enum CodeCompleterType {
     ccSubDcoC   = 0x00000020, // sub DCO of $call
     ccSubDcoE   = 0x00000040, // sub DCO of $eval
     ccDco       = 0x000000FF, // all DCOs
+    ccSubDco    = 0x000000F0, // all sub DCOs
     ccNoDco     = 0x7FFFFF00, // no DCOs
 
     ccRes1      = 0x00000100, // declarations
@@ -53,14 +54,15 @@ public:
 
 class FilterCompleterModel : public QSortFilterProxyModel
 {
-    int mTypeFilter = 0;
     QString mFilterText;
+    int mTypeFilter = 0;
+    bool mNeedDot = true;
     Q_OBJECT
 public:
     FilterCompleterModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
      ~FilterCompleterModel() override {}
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
-    void setTypeFilter(int completerTypeFilter);
+    void setTypeFilter(int completerTypeFilter, bool needDot);
     void setFilterText(QString filterText);
 };
 
