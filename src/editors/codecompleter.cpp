@@ -478,12 +478,13 @@ void CodeCompleter::updateFilter()
     }
     QString fullWord = line.mid(validStart, validEnd - validStart + 1);
     int bestInd = 0;
+    Qt::CaseSensitivity caseSens = mModel->casing() == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive;
     while (bestInd+1 < mFilterModel->rowCount()) {
         QModelIndex ind = mFilterModel->index(bestInd, 0);
         QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
-        if (itemWord.compare(fullWord, Qt::CaseInsensitive) > 0)
+        if (itemWord.compare(fullWord, caseSens) > 0)
             break;
-        if (itemWord.compare(fullWord, Qt::CaseInsensitive) == 0)
+        if (itemWord.compare(fullWord, caseSens) == 0)
             break;
         ++bestInd;
     }
@@ -533,6 +534,7 @@ void CodeCompleter::ShowIfData()
 void CodeCompleter::setCasing(CodeCompleterCasing casing)
 {
     mModel->setCasing(casing);
+    mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
 }
 
 void CodeCompleter::insertCurrent()
