@@ -230,6 +230,8 @@ MainWindow::MainWindow(QWidget *parent)
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
 
+    mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
+
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
         ui->dockHelpView->setFloating(true);
@@ -3818,7 +3820,7 @@ void MainWindow::on_actionSettings_triggered()
                 mSettingsDialog->delayBaseThemeChange(false);
                 ViewHelper::updateBaseTheme();
             }
-
+            mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });

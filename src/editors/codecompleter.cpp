@@ -3,6 +3,7 @@
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
+#include "exception.h"
 
 #include <QSortFilterProxyModel>
 #include <QGuiApplication>
@@ -17,6 +18,17 @@ namespace studio {
 
 CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(parent)
 {
+    mCasing = caseCamel;
+    initData();
+}
+
+void CodeCompleterModel::initData()
+{
+    mData.clear();
+    mDescription.clear();
+    mDescriptIndex.clear();
+    mType.clear();
+
     // DCOs
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
@@ -196,6 +208,51 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     mData << "$abort.noError";
     mDescription << "abort without error";
     mType.insert(mData.size()-1, ccDco1);
+
+    for (int i = 0; i < mData.size(); ++i) {
+        mDescriptIndex << i;
+    }
+}
+
+void CodeCompleterModel::addDynamicData()
+{
+    QStringList data;
+    QList<int> descriptIndex;
+    QMap<int, CodeCompleterType> iType;
+    for (int i = 0; i < mData.size(); ++i) {
+        if (mDescriptIndex.at(i) != i) {
+            FATAL() << "ERROR addDynamicData() MUST not be called twice.";
+        }
+        data << mData.at(i);
+        descriptIndex << i;
+        if (mData.at(i).toLower() != mData.at(i)) {
+            data << mData.at(i).toLower();
+            descriptIndex << i;
+        }
+        if (mData.at(i).toUpper() != mData.at(i)) {
+            data << mData.at(i).toUpper();
+            descriptIndex << i;
+        }
+        if (mType.contains(i)) {
+            iType.insert(data.size()-1, mType.value(i));
+        }
+    }
+    mData = data;
+    mDescriptIndex = descriptIndex;
+    mType = iType;
+}
+
+void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
+{
+    bool isDynamic = (mCasing == caseDynamic);
+    mCasing = casing;
+    if (isDynamic != (casing == caseDynamic)) {
+        beginResetModel();
+        initData();
+        if (casing == caseDynamic)
+            addDynamicData();
+        endResetModel();
+    }
 }
 
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
@@ -209,9 +266,10 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     if (!index.isValid()) return QVariant();
     switch (role) {
     case Qt::DisplayRole:
-        return mData.at(index.row());
+        return mCasing == caseLower ? mData.at(index.row()).toLower()
+                                    : mCasing == caseUpper ? mData.at(index.row()).toUpper() : mData.at(index.row());
     case Qt::ToolTipRole:
-        return mDescription.at(index.row());
+        return mDescription.at(mDescriptIndex.at(index.row()));
     case Qt::UserRole:
         return mType.lowerBound(index.row()).value();
     }
@@ -470,6 +528,11 @@ void CodeCompleter::ShowIfData()
             (mFilterModel->rowCount() > 1 || mFilterModel->data(mFilterModel->index(0,0)).toString() != mFilterText)) {
         show();
     }
+}
+
+void CodeCompleter::setCasing(CodeCompleterCasing casing)
+{
+    mModel->setCasing(casing);
 }
 
 void CodeCompleter::insertCurrent()

@@ -8,6 +8,13 @@
 namespace gams {
 namespace studio {
 
+enum CodeCompleterCasing {
+    caseCamel,
+    caseLower,
+    caseUpper,
+    caseDynamic
+};
+
 enum CodeCompleterType {
     ccNone      = 0x00000000,
     ccDco1      = 0x00000001, // DCO (starter and standalone)
@@ -42,14 +49,20 @@ class CodeCompleterModel : public QAbstractListModel
 {
     QStringList mData;
     QStringList mDescription;
+    QList<int> mDescriptIndex;
     QMap<int, CodeCompleterType> mType;
+    CodeCompleterCasing mCasing;
     Q_OBJECT
 public:
     CodeCompleterModel(QObject *parent = nullptr);
     ~CodeCompleterModel() override {}
+    void setCasing(CodeCompleterCasing casing);
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
 
+private:
+    void initData();
+    void addDynamicData();
 };
 
 class FilterCompleterModel : public QSortFilterProxyModel
@@ -71,7 +84,6 @@ class CodeEdit;
 class CodeCompleter : public QListView
 {
     Q_OBJECT
-
 public:
     CodeCompleter(CodeEdit *parent = nullptr);
     ~CodeCompleter() override;
@@ -80,6 +92,7 @@ public:
     void updateDynamicData(QStringList symbols);
     int rowCount();
     void ShowIfData();
+    void setCasing(CodeCompleterCasing casing);
 
 protected:
     bool event(QEvent *event) override;

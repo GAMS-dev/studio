@@ -402,11 +402,42 @@
             </property>
            </widget>
           </item>
-          <item row="8" column="0" colspan="2">
+          <item row="8" column="2">
            <widget class="QCheckBox" name="cb_completerAutoOpen">
             <property name="text">
              <string>Auto open completer</string>
             </property>
+           </widget>
+          </item>
+          <item row="8" column="0">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Completer casing</string>
+            </property>
+           </widget>
+          </item>
+          <item row="8" column="1">
+           <widget class="QComboBox" name="cb_completerCasing">
+            <item>
+             <property name="text">
+              <string>CamelCase</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>lowercase</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>UPPERCASE</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dynamic</string>
+             </property>
+            </item>
            </widget>
           </item>
          </layout>

@@ -96,6 +96,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -140,6 +141,7 @@ void SettingsDialog::loadSettings()
     ui->sb_nrLogBackups->setValue(mSettings->toInt(skEdLogBackupCount));
     ui->cb_autoclose->setChecked(mSettings->toBool(skEdAutoCloseBraces));
     ui->cb_completerAutoOpen->setChecked(mSettings->toBool(skEdCompleterAutoOpen));
+    ui->cb_completerCasing->setCurrentIndex(mSettings->toInt(skEdCompleterCasing));
 
     // MIRO page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
@@ -249,6 +251,7 @@ void SettingsDialog::saveSettings()
     mSettings->setInt(skEdLogBackupCount, ui->sb_nrLogBackups->value());
     mSettings->setBool(skEdAutoCloseBraces, ui->cb_autoclose->isChecked());
     mSettings->setBool(skEdCompleterAutoOpen, ui->cb_completerAutoOpen->isChecked());
+    mSettings->setInt(skEdCompleterCasing, ui->cb_completerCasing->currentIndex());
 
     // MIRO page
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
