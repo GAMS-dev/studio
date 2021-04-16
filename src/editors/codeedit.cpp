@@ -60,7 +60,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
-    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::startCompleterTimer);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::checkAndStartCompleterTimer);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
