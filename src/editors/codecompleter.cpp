@@ -456,11 +456,15 @@ void CodeCompleter::updateFilter()
     }
 
     // assign filter
+    if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
+         mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
     mFilterModel->setTypeFilter(getFilterFromSyntax(), mNeedDot);
     if (mFilterText.startsWith('$'))
         mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
     else
         mFilterModel->setFilterRegularExpression('^'+mFilterText+".*");
+    if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())
+         mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     if (!mFilterModel->rowCount() ||
             (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
@@ -478,7 +482,7 @@ void CodeCompleter::updateFilter()
     }
     QString fullWord = line.mid(validStart, validEnd - validStart + 1);
     int bestInd = 0;
-    Qt::CaseSensitivity caseSens = mModel->casing() == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive;
+    Qt::CaseSensitivity caseSens = mFilterModel->filterCaseSensitivity();
     while (bestInd+1 < mFilterModel->rowCount()) {
         QModelIndex ind = mFilterModel->index(bestInd, 0);
         QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
