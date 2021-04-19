@@ -49,6 +49,7 @@ enum struct Hotkey {
     MoveCharGroupRight = 25,
     MoveCharGroupLeft = 26,
     SelectAll = 27,
+    CodeCompleter = 28,
 //    BookmarkToggle = 30,
 //    BookmarkNext = 31,
 //    BookmarkPrev = 32,
@@ -58,6 +59,7 @@ enum struct Hotkey {
     SearchFindNext = 61,
     SearchFindPrev = 62,
     ToggleBlockFolding = 63,
+    OpenHelp = 64,
 
     // configurable key-sequences > 100
     MinConfigurable = 100,

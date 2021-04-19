@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *
@@ -47,6 +47,11 @@ public:
     bool is_arguments_Set() const;
     bool is_arguments_Valid() const;
 
+    QList<QString> getDepTokens() const;
+    void setDepTokens(const QList<QString> &dep_tokens);
+    bool is_dep_tokens_Set() const;
+    bool is_dep_tokens_Valid() const;
+
     QDateTime getFinishedAt() const;
     void setFinishedAt(const QDateTime &finished_at);
     bool is_finished_at_Set() const;
@@ -76,6 +81,11 @@ public:
     void setProcessStatus(const qint32 &process_status);
     bool is_process_status_Set() const;
     bool is_process_status_Valid() const;
+
+    bool isResultExists() const;
+    void setResultExists(const bool &result_exists);
+    bool is_result_exists_Set() const;
+    bool is_result_exists_Valid() const;
 
     qint32 getStatus() const;
     void setStatus(const qint32 &status);
@@ -122,6 +132,10 @@ private:
     bool m_arguments_isSet;
     bool m_arguments_isValid;
 
+    QList<QString> dep_tokens;
+    bool m_dep_tokens_isSet;
+    bool m_dep_tokens_isValid;
+
     QDateTime finished_at;
     bool m_finished_at_isSet;
     bool m_finished_at_isValid;
@@ -145,6 +159,10 @@ private:
     qint32 process_status;
     bool m_process_status_isSet;
     bool m_process_status_isValid;
+
+    bool result_exists;
+    bool m_result_exists_isSet;
+    bool m_result_exists_isValid;
 
     qint32 status;
     bool m_status_isSet;

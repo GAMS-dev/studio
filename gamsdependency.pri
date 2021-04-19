@@ -43,7 +43,7 @@ GAMS_CORE_TMP = $$(GAMS_CORE_PATH)
                       GAMS_DISTRIB_CPP_API=\$$GAMS_DISTRIB/apifiles/C++/api
         }
         win32 {
-            GAMSINC = GAMS_DISTRIB=C:/GAMS/win64/'$$GAMS_DISTRIB_MAJOR'.'$$GAMS_DISTRIB_MINOR' \
+            GAMSINC = GAMS_DISTRIB=C:/GAMS/'$$GAMS_DISTRIB_MAJOR' \
                       GAMS_DISTRIB_C_API=\$$GAMS_DISTRIB/apifiles/C/api   \
                       GAMS_DISTRIB_CPP_API=\$$GAMS_DISTRIB/apifiles/C++/api
         }

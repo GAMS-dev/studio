@@ -70,7 +70,7 @@ KeySeqList&KeySeqList::operator <<(const QKeySequence& other)
 bool KeySeqList::operator ==(KeySeqList other) const
 {
     bool res = mSequence.size() == other.mSequence.size();
-    for (QKeySequence seq: mSequence) {
+    for (const QKeySequence &seq: mSequence) {
         if (!res) break;
         res = other.mSequence.contains(seq);
     }
@@ -158,6 +158,14 @@ void Keys::reset()
     *seq << QKeySequence("Ctrl+A");
     setHotkey(Hotkey::SelectAll, seq);
 
+    seq = new KeySeqList("CodeCompleter","Open code completer");
+#ifdef __APPLE__
+    *seq << QKeySequence("Meta+Space");
+#else
+    *seq << QKeySequence("Ctrl+Space");
+#endif
+    setHotkey(Hotkey::CodeCompleter, seq);
+
 //    seq = new KeySeqList("BookmarkToggle","Set or erase bookmark of the current line");
 //    *seq << QKeySequence("Ctrl+M") << QKeySequence("Meta+M");
 //    setHotkey(Hotkey::BookmarkToggle, seq);
@@ -181,8 +189,8 @@ void Keys::reset()
     setHotkey(Hotkey::BlockEditStart, seq);
 #endif
     seq = new KeySeqList("Esc","end block edit");
-    *seq << QKeySequence("Up") << QKeySequence("Down") << QKeySequence("Left") << QKeySequence("Right")
-         << QKeySequence("PgUp") << QKeySequence("PgDown") << QKeySequence("Home") << QKeySequence("End");
+    *seq << QKeySequence("Alt+Left") << QKeySequence("Alt+Right")
+         << QKeySequence("PgUp") << QKeySequence("PgDown");
     setHotkey(Hotkey::BlockEditEnd, seq);
 
     seq = new KeySeqList("Ctrl+F", "Open Search Dialog");
@@ -212,6 +220,9 @@ void Keys::reset()
 
     seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
+
+    seq = new KeySeqList("F1","Open Help View");
+    setHotkey(Hotkey::OpenHelp, seq);
 
     seq = new KeySeqList("F2","jump to context");
     setHotkey(Hotkey::JumpToContext, seq);

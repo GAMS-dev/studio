@@ -301,8 +301,8 @@ SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, int flavor, co
     int end = index;
     if (index == 0 && entryKind == SyntaxKind::IgnoredHead) return SyntaxBlock();
     if (entryKind == SyntaxKind::DirectiveBody && end < line.length()
-            && mEolComChars.contains(line.at(end))) ++end;
-    while (end < line.length() && !mEolComChars.contains(line.at(end)))
+            && mSharedData->directiveBody()->mEolComChars.contains(line.at(end))) ++end;
+    while (end < line.length() && !mSharedData->directiveBody()->mEolComChars.contains(line.at(end)))
         ++end;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
@@ -312,7 +312,7 @@ SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index, int f
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    while (end < line.length() && !mEolComChars.contains(line.at(end)))
+    while (end < line.length() && !mSharedData->directiveBody()->mEolComChars.contains(line.at(end)))
         ++end;
     hasContent = end > start;
     return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);

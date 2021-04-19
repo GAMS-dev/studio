@@ -39,6 +39,7 @@ namespace studio {
 class Settings;
 class LineNumberArea;
 class SearchWidget;
+class CodeCompleter;
 
 struct BlockEditPos
 {
@@ -87,6 +88,7 @@ public:
     void duplicateLine();
     void removeLine();
     void commentLine();
+    void moveLines(bool moveLinesUp);
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
@@ -138,7 +140,8 @@ protected:
 signals:
     void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
-    void requestSyntaxKind(int position, int &intKind);
+    void requestSyntaxKind(int position, int &intKind, int &flavor);
+    void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax);
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
@@ -170,6 +173,7 @@ private slots:
 private:
     friend class BlockEdit;
     friend class LineNumberArea;
+    friend class CodeCompleter;
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
@@ -178,9 +182,11 @@ private:
     void endBlockEdit(bool adjustCursor = true);
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
-    inline int assignmentKind(int p);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
+    bool prepareCompleter();
+    void showCompleter();
+
 
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
@@ -213,7 +219,7 @@ protected:
         void updateExtraSelections();
         void adjustCursor();
         void selectTo(int blockNr, int colNr);
-        void selectToEnd();
+        void toEnd(bool select);
         QString blockText();
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
         void selectionToClipboard();
@@ -242,6 +248,7 @@ protected:
 
 private:
     LineNumberArea *mLineNumberArea;
+    CodeCompleter *mCompleter = nullptr;
     int mCurrentCol;
     QTimer mCursorTimer;
     QPoint mDragStart;

@@ -49,14 +49,12 @@ void ValueFilter::updateFilter()
     else
         mSymbol->registerValueFilter(mValueColumn, this);
     mSymbol->filterRows();
-    mSymbol->setFilterHasChanged(true);
 }
 
 void ValueFilter::reset()
 {
     mSymbol->unregisterValueFilter(mValueColumn);
     mSymbol->filterRows();
-    mSymbol->setFilterHasChanged(true); 
 }
 
 double ValueFilter::min() const

@@ -1,6 +1,6 @@
 /**
  * GAMS Engine
- * GAMS Engine let's you register, solve and get results of GAMS Models. It has namespace management system so you can restrict your users to certain set of models.
+ * With GAMS Engine you can register and solve GAMS models. It has a namespace management system, so you can restrict your users to certain models.
  *
  * The version of the OpenAPI document: latest
  *
@@ -36,6 +36,9 @@ void OAIJob::initializeModel() {
     m_arguments_isSet = false;
     m_arguments_isValid = false;
 
+    m_dep_tokens_isSet = false;
+    m_dep_tokens_isValid = false;
+
     m_finished_at_isSet = false;
     m_finished_at_isValid = false;
 
@@ -53,6 +56,9 @@ void OAIJob::initializeModel() {
 
     m_process_status_isSet = false;
     m_process_status_isValid = false;
+
+    m_result_exists_isSet = false;
+    m_result_exists_isValid = false;
 
     m_status_isSet = false;
     m_status_isValid = false;
@@ -88,6 +94,9 @@ void OAIJob::fromJsonObject(QJsonObject json) {
     m_arguments_isValid = ::OpenAPI::fromJsonValue(arguments, json[QString("arguments")]);
     m_arguments_isSet = !json[QString("arguments")].isNull() && m_arguments_isValid;
 
+    m_dep_tokens_isValid = ::OpenAPI::fromJsonValue(dep_tokens, json[QString("dep_tokens")]);
+    m_dep_tokens_isSet = !json[QString("dep_tokens")].isNull() && m_dep_tokens_isValid;
+
     m_finished_at_isValid = ::OpenAPI::fromJsonValue(finished_at, json[QString("finished_at")]);
     m_finished_at_isSet = !json[QString("finished_at")].isNull() && m_finished_at_isValid;
 
@@ -105,6 +114,9 @@ void OAIJob::fromJsonObject(QJsonObject json) {
 
     m_process_status_isValid = ::OpenAPI::fromJsonValue(process_status, json[QString("process_status")]);
     m_process_status_isSet = !json[QString("process_status")].isNull() && m_process_status_isValid;
+
+    m_result_exists_isValid = ::OpenAPI::fromJsonValue(result_exists, json[QString("result_exists")]);
+    m_result_exists_isSet = !json[QString("result_exists")].isNull() && m_result_exists_isValid;
 
     m_status_isValid = ::OpenAPI::fromJsonValue(status, json[QString("status")]);
     m_status_isSet = !json[QString("status")].isNull() && m_status_isValid;
@@ -140,6 +152,9 @@ QJsonObject OAIJob::asJsonObject() const {
     if (arguments.size() > 0) {
         obj.insert(QString("arguments"), ::OpenAPI::toJsonValue(arguments));
     }
+    if (dep_tokens.size() > 0) {
+        obj.insert(QString("dep_tokens"), ::OpenAPI::toJsonValue(dep_tokens));
+    }
     if (m_finished_at_isSet) {
         obj.insert(QString("finished_at"), ::OpenAPI::toJsonValue(finished_at));
     }
@@ -157,6 +172,9 @@ QJsonObject OAIJob::asJsonObject() const {
     }
     if (m_process_status_isSet) {
         obj.insert(QString("process_status"), ::OpenAPI::toJsonValue(process_status));
+    }
+    if (m_result_exists_isSet) {
+        obj.insert(QString("result_exists"), ::OpenAPI::toJsonValue(result_exists));
     }
     if (m_status_isSet) {
         obj.insert(QString("status"), ::OpenAPI::toJsonValue(status));
@@ -196,6 +214,22 @@ bool OAIJob::is_arguments_Set() const{
 
 bool OAIJob::is_arguments_Valid() const{
     return m_arguments_isValid;
+}
+
+QList<QString> OAIJob::getDepTokens() const {
+    return dep_tokens;
+}
+void OAIJob::setDepTokens(const QList<QString> &dep_tokens) {
+    this->dep_tokens = dep_tokens;
+    this->m_dep_tokens_isSet = true;
+}
+
+bool OAIJob::is_dep_tokens_Set() const{
+    return m_dep_tokens_isSet;
+}
+
+bool OAIJob::is_dep_tokens_Valid() const{
+    return m_dep_tokens_isValid;
 }
 
 QDateTime OAIJob::getFinishedAt() const {
@@ -292,6 +326,22 @@ bool OAIJob::is_process_status_Set() const{
 
 bool OAIJob::is_process_status_Valid() const{
     return m_process_status_isValid;
+}
+
+bool OAIJob::isResultExists() const {
+    return result_exists;
+}
+void OAIJob::setResultExists(const bool &result_exists) {
+    this->result_exists = result_exists;
+    this->m_result_exists_isSet = true;
+}
+
+bool OAIJob::is_result_exists_Set() const{
+    return m_result_exists_isSet;
+}
+
+bool OAIJob::is_result_exists_Valid() const{
+    return m_result_exists_isValid;
 }
 
 qint32 OAIJob::getStatus() const {
@@ -414,6 +464,11 @@ bool OAIJob::isSet() const {
             break;
         }
 
+        if (dep_tokens.size() > 0) {
+            isObjectUpdated = true;
+            break;
+        }
+
         if (m_finished_at_isSet) {
             isObjectUpdated = true;
             break;
@@ -440,6 +495,11 @@ bool OAIJob::isSet() const {
         }
 
         if (m_process_status_isSet) {
+            isObjectUpdated = true;
+            break;
+        }
+
+        if (m_result_exists_isSet) {
             isObjectUpdated = true;
             break;
         }

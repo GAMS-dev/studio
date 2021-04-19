@@ -26,22 +26,22 @@ Download the GAMS Studio sources from GitHub (via git or as zip archive). All in
 
 ## 4. Building the GAMS Studio project ##
 
-Start Qt Creator, open the project file 'gams-studio.pro' and click 'Build/Run qmake'. This generates the file '**gamsinclude.pri**' that defines the default location of the GAMS installation location. The path within the 'gamsinclude.pri'  may have to be updated to the correct GAMS installation location on your system.
+Start Qt Creator, open the project file `gams-studio.pro` and click `Build -> Run qmake`. This generates the file `gamsinclude.pri` that defines the default location of the GAMS installation location. The path within the `gamsinclude.pri` may have to be updated to the correct GAMS installation location on your system.
 
 On Windows the file contains:
 ```
-GAMS_DISTRIB=C:/GAMS/win64/29.0
+GAMS_DISTRIB=C:/GAMS/35
 GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api
 GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 On Unix it will look like:
 ```
-GAMS_DISTRIB=$$(HOME)/gams/gams29.0_linux_x64_64_sfx
+GAMS_DISTRIB=$$(HOME)/gams/gams35.0_linux_x64_64_sfx
 GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api
 GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 
-Then perform a 'Build All' operation (Build->Build All) to build the project. Finally, the GAMS Studio can be executed by triggering Run button or pressing 'Ctrl+R'.
+Then perform a `Build All` operation (`Build -> Build All`) to build the project. Finally, the GAMS Studio can be executed by triggering `Run` button or pressing `Ctrl + R`.
 
 # Dependencies and Licenses
 
