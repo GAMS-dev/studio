@@ -459,11 +459,10 @@ void CodeCompleter::updateFilter()
     if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
     mFilterModel->setTypeFilter(getFilterFromSyntax(), mNeedDot);
-    QString filterRex = mFilterText.replace(".", "\\.");
-    if (mFilterText.startsWith('$'))
-        mFilterModel->setFilterRegularExpression("^\\"+filterRex+".*");
-    else
-        mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
+    QString filterRex = mFilterText;
+    filterRex.replace(".", "\\.").replace("$", "\\$");
+    mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
+
     if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())
          mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
