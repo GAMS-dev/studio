@@ -590,10 +590,10 @@ int CodeCompleter::getFilterFromSyntax()
     }
 
     // for analysis
-    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
-    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
-    }
+//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+//    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+//        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+//    }
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
@@ -681,18 +681,12 @@ int CodeCompleter::getFilterFromSyntax()
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
-        int validSpace = start-1;
         for (int i = start-1; i > 0; --i) {
             if (mNeedDot && line.at(i) == '.') {
                 mNeedDot = false;
-                validSpace = i-1;
             } else {
                 CharGroup gr = group(line.at(i));
-                if (gr == clBreak) return res = res & ccNoDco;
-                if (gr == clSpace) {
-                    if (i == validSpace) validSpace = i-1;
-                    else return res = res & ccNoDco;
-                }
+                if (gr >= clBreak) return res = res & ccNoDco;
             }
         }
         if (dcoFlavor == 16)
@@ -707,7 +701,7 @@ int CodeCompleter::getFilterFromSyntax()
         res = res & ccNoDco;
     }
 
-    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 

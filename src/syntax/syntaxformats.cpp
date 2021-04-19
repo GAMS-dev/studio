@@ -145,9 +145,9 @@ SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, int flavor
 SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     : SyntaxAbstract(SyntaxKind::Dco, sharedData)
 {
-    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape(dcoChar)));
+    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)").arg(QRegularExpression::escape(dcoChar)));
 
-    QList<QPair<QString, QString>> data = SyntaxData::directives();
+    const QList<QPair<QString, QString>> data = SyntaxData::directives();
     QStringList blockEndingDCOs;
     blockEndingDCOs << "offText" << "offPut" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
     for (const QPair<QString, QString> &list: data) {
@@ -278,7 +278,8 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QStrin
 SyntaxBlock SyntaxDco::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int end = index;
-    while (isWhitechar(line, end)) end++;
+    if (flavor < 16 || flavor > 18)
+        while (isWhitechar(line, end)) end++;
     hasContent = false;
     SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
     return SyntaxBlock(this, flavor, index, end, shift);
@@ -597,9 +598,7 @@ SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind,
 {
     Q_UNUSED(entryKind)
     int start = index;
-    while (isWhitechar(line, start)) ++start;
     if (start < line.length() && line.at(start) == '.') ++start;
-    while (isWhitechar(line, start)) ++start;
 
     QStringList subDCOs;
     if (flavor == 16)
