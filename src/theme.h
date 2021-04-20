@@ -76,9 +76,9 @@ public:
 
         Syntax_undefined,
         Syntax_neutral,
-        Syntax_directive,
+        Syntax_dco,
         Syntax_formula,
-        Syntax_directiveBody,
+        Syntax_dcoBody,
         Syntax_comment,
         Syntax_title,
         Syntax_keyword,

@@ -95,6 +95,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -138,6 +140,8 @@ void SettingsDialog::loadSettings()
     ui->cb_writeLog->setChecked(mSettings->toBool(skEdWriteLog));
     ui->sb_nrLogBackups->setValue(mSettings->toInt(skEdLogBackupCount));
     ui->cb_autoclose->setChecked(mSettings->toBool(skEdAutoCloseBraces));
+    ui->cb_completerAutoOpen->setChecked(mSettings->toBool(skEdCompleterAutoOpen));
+    ui->cb_completerCasing->setCurrentIndex(mSettings->toInt(skEdCompleterCasing));
 
     // MIRO page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
@@ -246,6 +250,8 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdWriteLog, ui->cb_writeLog->isChecked());
     mSettings->setInt(skEdLogBackupCount, ui->sb_nrLogBackups->value());
     mSettings->setBool(skEdAutoCloseBraces, ui->cb_autoclose->isChecked());
+    mSettings->setBool(skEdCompleterAutoOpen, ui->cb_completerAutoOpen->isChecked());
+    mSettings->setInt(skEdCompleterCasing, ui->cb_completerCasing->currentIndex());
 
     // MIRO page
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
@@ -513,14 +519,14 @@ void SettingsDialog::initColorPage()
         {Theme::Syntax_declaration},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
-        {Theme::Syntax_directive},
+        {Theme::Syntax_dco},
         {Theme::Syntax_embedded},
         {Theme::Syntax_keyword},
 
         {Theme::Syntax_identifier},
         {Theme::Syntax_description},
         {Theme::Syntax_tableHeader},
-        {Theme::Syntax_directiveBody},
+        {Theme::Syntax_dcoBody},
         {Theme::Syntax_comment},
     };
     cols = 2;
