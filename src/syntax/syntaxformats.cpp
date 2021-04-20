@@ -111,7 +111,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
               << SyntaxKind::Declaration
               << SyntaxKind::DeclarationSetType
               << SyntaxKind::DeclarationVariableType
-              << SyntaxKind::Directive
+              << SyntaxKind::Dco
               << SyntaxKind::Solve
               << SyntaxKind::Option
               << SyntaxKind::Execute
@@ -142,26 +142,26 @@ SyntaxBlock SyntaxStandard::validTail(const QString &line, int index, int flavor
     return SyntaxBlock();
 }
 
-SyntaxDirective::SyntaxDirective(SharedSyntaxData *sharedData, QChar directiveChar)
-    : SyntaxAbstract(SyntaxKind::Directive, sharedData)
+SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
+    : SyntaxAbstract(SyntaxKind::Dco, sharedData)
 {
-    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape(directiveChar)));
+    mRex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)").arg(QRegularExpression::escape(dcoChar)));
 
-    QList<QPair<QString, QString>> data = SyntaxData::directives();
-    QStringList blockEndingDirectives;
-    blockEndingDirectives << "offText" << "offPut" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
+    const QList<QPair<QString, QString>> data = SyntaxData::directives();
+    QStringList blockEndingDCOs;
+    blockEndingDCOs << "offText" << "offPut" << "pauseEmbeddedCode" << "endEmbeddedCode" << "offEmbeddedCode";
     for (const QPair<QString, QString> &list: data) {
-        if (blockEndingDirectives.contains(list.first)) {
-            // block-ending directives are checked separately -> ignore here
-            blockEndingDirectives.removeAll(list.first);
+        if (blockEndingDCOs.contains(list.first)) {
+            // block-ending DCOs are checked separately -> ignore here
+            blockEndingDCOs.removeAll(list.first);
         } else {
-            mDirectives << list.first;
+            mDCOs << list.first;
             mDescription << list.second;
         }
     }
 
-    if (!blockEndingDirectives.isEmpty()) {
-        DEB() << "Initialization error in SyntaxDirective. Unknown directive(s): " << blockEndingDirectives.join(",");
+    if (!blockEndingDCOs.isEmpty()) {
+        DEB() << "Initialization error in SyntaxDco. Unknown DCO(s): " << blockEndingDCOs.join(",");
     }
     // !!! Enter flavored names always in lowercase
     mFlavors.insert(QString("onText").toLower(), 1);
@@ -185,6 +185,12 @@ SyntaxDirective::SyntaxDirective(SharedSyntaxData *sharedData, QChar directiveCh
     mFlavors.insert(QString("onFold").toLower(), 13);
     mFlavors.insert(QString("offFold").toLower(), 14);
     mFlavors.insert(QString("include").toLower(), 15);
+    mFlavors.insert(QString("abort").toLower(), 16);
+    mFlavors.insert(QString("call").toLower(), 17);
+    mFlavors.insert(QString("hiddenCall").toLower(), 17);
+    mFlavors.insert(QString("eval").toLower(), 18);
+    mFlavors.insert(QString("evalLocal").toLower(), 18);
+    mFlavors.insert(QString("evalGlobal").toLower(), 18);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -203,15 +209,16 @@ SyntaxDirective::SyntaxDirective(SharedSyntaxData *sharedData, QChar directiveCh
     mSpecialKinds.insert(QString("onEmbeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("onEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
-    mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DirectiveComment);
-    mSpecialKinds.insert(QString("call").toLower(), SyntaxKind::Call);
-//    mSpecialKinds.insert(QString("callAsync").toLower(), SyntaxKind::Call);
-//    mSpecialKinds.insert(QString("callAsyncIC").toLower(), SyntaxKind::Call);
-//    mSpecialKinds.insert(QString("callAsyncNC").toLower(), SyntaxKind::Call);
-    mSpecialKinds.insert(QString("hiddenCall").toLower(), SyntaxKind::Call);
+    mSpecialKinds.insert(QString("hidden").toLower(), SyntaxKind::DcoComment);
+    mSpecialKinds.insert(QString("abort").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("call").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("hiddenCall").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("eval").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("evalLocal").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("evalGlobal").toLower(), SyntaxKind::SubDCO);
 }
 
-SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
+SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
@@ -239,7 +246,7 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
             for (SyntaxFormula * sf: mSharedData->allFormula()) {
                 sf->setSpecialDynamicChars(QVector<QChar>() << '!');
             }
-            mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << '!');
+            mSharedData->dcoBody()->setCommentChars(QVector<QChar>() << '!');
          } else if (match.captured(2).startsWith("eolcom", Qt::CaseInsensitive)) {
             int i = match.capturedEnd(2);
             while (isWhitechar(line,i)) ++i;
@@ -250,12 +257,12 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
                 for (SyntaxFormula * sf: mSharedData->allFormula()) {
                     sf->setSpecialDynamicChars(QVector<QChar>() << line.at(i));
                 }
-                mSharedData->directiveBody()->setCommentChars(QVector<QChar>() << line.at(i));
+                mSharedData->dcoBody()->setCommentChars(QVector<QChar>() << line.at(i));
             }
         }
     }
-    SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DirectiveBody);
-    if (mDirectives.contains(match.captured(2), Qt::CaseInsensitive)) {
+    SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DcoBody);
+    if (mDCOs.contains(match.captured(2), Qt::CaseInsensitive)) {
         bool atEnd = match.capturedEnd(0) >= line.length();
         if (next == SyntaxKind::IgnoredHead && atEnd)
             next = SyntaxKind::IgnoredBlock;
@@ -268,51 +275,52 @@ SyntaxBlock SyntaxDirective::find(const SyntaxKind entryKind, int flavor, const 
     }
 }
 
-SyntaxBlock SyntaxDirective::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxDco::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int end = index;
-    while (isWhitechar(line, end)) end++;
+    if (flavor < 16 || flavor > 18)
+        while (isWhitechar(line, end)) end++;
     hasContent = false;
     SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
     return SyntaxBlock(this, flavor, index, end, shift);
 }
 
 
-SyntaxDirectiveBody::SyntaxDirectiveBody(SyntaxKind kind, SharedSyntaxData *sharedData)
+SyntaxDcoBody::SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
-    sharedData->registerDirectiveBody(this);
+    sharedData->registerDcoBody(this);
     if (kind == SyntaxKind::IgnoredHead) {
-        mSubKinds << SyntaxKind::Directive << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
+        mSubKinds << SyntaxKind::Dco << SyntaxKind::IgnoredHead << SyntaxKind::IgnoredBlock;
         mEmptyLineKinds << SyntaxKind::IgnoredBlock;
     }
-    else mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentInline << SyntaxKind::DirectiveBody;
-    Q_ASSERT_X((kind == SyntaxKind::DirectiveBody || kind == SyntaxKind::DirectiveComment || kind == SyntaxKind::Title || kind == SyntaxKind::IgnoredHead),
-               "SyntaxDirectiveBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
+    else mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentInline << SyntaxKind::DcoBody;
+    Q_ASSERT_X((kind == SyntaxKind::DcoBody || kind == SyntaxKind::DcoComment || kind == SyntaxKind::Title || kind == SyntaxKind::IgnoredHead),
+               "SyntaxDcoBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
-void SyntaxDirectiveBody::setCommentChars(QVector<QChar> chars)
+void SyntaxDcoBody::setCommentChars(QVector<QChar> chars)
 {
     mEolComChars = chars;
 }
 
-SyntaxBlock SyntaxDirectiveBody::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
+SyntaxBlock SyntaxDcoBody::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
     int end = index;
     if (index == 0 && entryKind == SyntaxKind::IgnoredHead) return SyntaxBlock();
-    if (entryKind == SyntaxKind::DirectiveBody && end < line.length()
-            && mSharedData->directiveBody()->mEolComChars.contains(line.at(end))) ++end;
-    while (end < line.length() && !mSharedData->directiveBody()->mEolComChars.contains(line.at(end)))
+    if (entryKind == SyntaxKind::DcoBody && end < line.length()
+            && mSharedData->dcoBody()->mEolComChars.contains(line.at(end))) ++end;
+    while (end < line.length() && !mSharedData->dcoBody()->mEolComChars.contains(line.at(end)))
         ++end;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-SyntaxBlock SyntaxDirectiveBody::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxDcoBody::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    while (end < line.length() && !mSharedData->directiveBody()->mEolComChars.contains(line.at(end)))
+    while (end < line.length() && !mSharedData->dcoBody()->mEolComChars.contains(line.at(end)))
         ++end;
     hasContent = end > start;
     return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
@@ -343,7 +351,7 @@ SyntaxBlock SyntaxCommentLine::validTail(const QString &line, int index, int fla
 SyntaxUniformBlock::SyntaxUniformBlock(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::Directive;
+    mSubKinds << SyntaxKind::Dco;
 }
 
 SyntaxBlock SyntaxUniformBlock::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
@@ -402,7 +410,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
     sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
               << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
-              << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Directive << SyntaxKind::Assignment
+              << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Dco << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
               << SyntaxKind::DeclarationVariableType;
     switch (kind) {
@@ -577,24 +585,31 @@ SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, int 
     return SyntaxBlock(this);
 }
 
-SyntaxCall::SyntaxCall(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxKind::Call, sharedData)
+SyntaxSubDCO::SyntaxSubDCO(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxKind::SubDCO, sharedData)
 {
     QList<QPair<QString, QString>> list = SyntaxData::execute();
     for (const QPair<QString,QString> &entry : qAsConst(list)) {
-        if (entry.first != "sync" && entry.first != "embedded")
-            mSubDirective << entry.first;
+        mSubDCOs << entry.first;
     }
-    mSubKinds << SyntaxKind::Call << SyntaxKind::DirectiveBody;
+    mSubKinds << SyntaxKind::SubDCO << SyntaxKind::DcoBody;
 }
 
-SyntaxBlock SyntaxCall::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
-    while (isWhitechar(line, start)) ++start;
     if (start < line.length() && line.at(start) == '.') ++start;
-    while (isWhitechar(line, start)) ++start;
-    for (const QString &sub : mSubDirective) {
+
+    QStringList subDCOs;
+    if (flavor == 16)
+        subDCOs << "noerror";
+    else if (flavor == 17)
+        subDCOs = mSubDCOs;
+    else if (flavor == 18)
+        subDCOs << "set";
+
+    for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {
+        const QString &sub = subDCOs.at(i);
         if (line.length() >= start+sub.length() && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0) {
             SyntaxShift shift = (line.length() == start+sub.length()) ? SyntaxShift::skip : SyntaxShift::shift;
             return SyntaxBlock(this, flavor, index, start+sub.length(), shift);
@@ -603,13 +618,13 @@ SyntaxBlock SyntaxCall::find(const gams::studio::syntax::SyntaxKind entryKind, i
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxCall::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxSubDCO::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) ++end;
     // TODO(JM) review: add silly additional condition, trying to calm down the compiler
-    if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DirectiveBody);
+    if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DcoBody);
     if (end > index) return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
     return SyntaxBlock(this);
 }

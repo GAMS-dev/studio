@@ -49,7 +49,9 @@ CodeEdit::CodeEdit(QWidget *parent)
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
     mSettings = Settings::settings();
+    mCompleterTimer.setSingleShot(true);
 
+    connect(&mCompleterTimer, &QTimer::timeout, this, &CodeEdit::checkCompleterAutoOpen);
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
@@ -57,6 +59,8 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
+    connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::checkAndStartCompleterTimer);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -69,7 +73,6 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
-    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -780,7 +783,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                     int kind;
                     int flavor;
                     emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
-                    if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
+                    if (kind == int(syntax::SyntaxKind::DcoBody)) break;
                     --fileEnd;
                 }
                 endChar = QChar();
@@ -1271,19 +1274,37 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.endEditBlock();
 }
 
+void CodeEdit::checkCompleterAutoOpen()
+{
+    bool canOpen = true;
+    QTextCursor cur(textCursor());
+    if (cur.positionInBlock() > 2) {
+        cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
+        QString part = cur.selectedText();
+        for (int i = 0 ; i < part.size() ; ++i) {
+            QChar ch(cur.selectedText().at(i));
+            if (ch >= '0' && ch <= '9') continue;
+            if (ch >= 'a' && ch <= 'z') continue;
+            if (ch >= 'A' && ch <= 'Z') continue;
+            if (ch != '_' && ch != '.' && ch != '$') canOpen = false;
+        }
+        if (canOpen && prepareCompleter())
+            showCompleter();
+    }
+}
+
 bool CodeEdit::prepareCompleter()
 {
     if (isReadOnly()) return false;
-    if (!mCompleter) {
-        mCompleter = new CodeCompleter(this);
-    }
-    return true;
+    return mCompleter;
 }
 
 void CodeEdit::showCompleter()
 {
-    if (mCompleter)
+    if (mCompleter) {
+        mCompleter->setCodeEdit(this);
         mCompleter->ShowIfData();
+    }
 }
 
 
@@ -1613,6 +1634,11 @@ void CodeEdit::jumpTo(int line, int column)
     AbstractEdit::jumpTo(line, column);
 }
 
+void CodeEdit::setCompleter(CodeCompleter *completer)
+{
+    mCompleter = completer;
+}
+
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
@@ -1730,6 +1756,22 @@ void CodeEdit::recalcExtraSelections()
         extraSelBlockEdit(selections);
         setExtraSelections(selections);
     }
+}
+
+void CodeEdit::startCompleterTimer()
+{
+    if (!isReadOnly() && mSettings->toBool(skEdCompleterAutoOpen)) {
+        if (mCompleter && mCompleter->isVisible())
+            showCompleter();
+        else
+            mCompleterTimer.start(500);
+    }
+}
+
+void CodeEdit::checkAndStartCompleterTimer()
+{
+    if (mCompleter && mCompleter->isVisible())
+        showCompleter();
 }
 
 void CodeEdit::updateExtraSelections()
@@ -1885,8 +1927,8 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
     selection.cursor = cur;
     selection.format.setAnchorHref('"'+file+'"');
-    selection.format.setForeground(Theme::color(Theme::Syntax_directiveBody));
-    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_directiveBody));
+    selection.format.setForeground(Theme::color(Theme::Syntax_dcoBody));
+    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_dcoBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
 }

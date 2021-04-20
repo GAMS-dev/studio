@@ -17,7 +17,7 @@
    <item>
     <widget class="QLabel" name="label">
      <property name="text">
-      <string>Select active character-encodings for the menu</string>
+      <string>Select default encoding and encodings for the menu</string>
      </property>
     </widget>
    </item>
