@@ -608,9 +608,9 @@ void SettingsDialog::setThemeEditable(bool editable)
 //    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
 //        wid->setReadonly(!editable);
 //    }
-//    ui->btRenameTheme->setEnabled(editable);
-//    ui->btRemoveTheme->setEnabled(editable);
-//    ui->btExportTheme->setEnabled(editable);
+    ui->btRenameTheme->setEnabled(editable);
+    ui->btRemoveTheme->setEnabled(editable);
+    ui->btExportTheme->setEnabled(editable);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()
