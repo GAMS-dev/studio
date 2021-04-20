@@ -87,15 +87,15 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::declaration4Var();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + " Variable";
-        mDescription << it->second;
+        mData << it->first + " Variable" << it->first + " Variables";
+        mDescription << it->second << it->second;
         ++it;
     }
     src = syntax::SyntaxData::declaration4Set();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + " Set";
-        mDescription << it->second;
+        mData << it->first + " Set" << it->first + " Sets";
+        mDescription << it->second << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccRes2);
