@@ -37,14 +37,14 @@ Q_NAMESPACE
 
 enum class SyntaxKind {
     Standard,
-    Directive,
-    DirectiveBody,                  // text following the Directive
-    DirectiveComment,               // a DirectiveBody formatted as comment
-    Title,                          // a DirectiveBody formatted as title
+    Dco,
+    DcoBody,                        // text following the DCO
+    DcoComment,                     // a DCO body formatted as comment
+    Title,                          // a DCO body formatted as title
     String,
     Formula,
     Assignment,
-    Call,
+    SubDCO,
 
     CommentLine,
     CommentBlock,
@@ -148,21 +148,21 @@ struct SyntaxBlock
 };
 
 class SyntaxFormula;
-class SyntaxDirectiveBody;
+class SyntaxDcoBody;
 
 class SharedSyntaxData
 {
     QVector<SyntaxFormula*> mSubFormula;
-    SyntaxDirectiveBody *mDirectiveBody = nullptr;
+    SyntaxDcoBody *mDcoBody = nullptr;
     SyntaxCommentEndline *mCommentEndline = nullptr;
 public:
     void addFormula(SyntaxFormula* syntax) { if (syntax) mSubFormula << syntax; }
     void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
-    void registerDirectiveBody(SyntaxDirectiveBody * syntax) { if (syntax) mDirectiveBody = syntax; }
-    bool isValid() { return mCommentEndline && mDirectiveBody && mSubFormula.size() == 4; }
+    void registerDcoBody(SyntaxDcoBody * syntax) { if (syntax) mDcoBody = syntax; }
+    bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 4; }
     const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
     SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
-    SyntaxDirectiveBody *directiveBody() { return mDirectiveBody; }
+    SyntaxDcoBody *dcoBody() { return mDcoBody; }
 };
 
 /// \brief An abstract class to be used inside the <c>SyntaxHighlighter</c>.
@@ -245,17 +245,17 @@ public:
 };
 
 class SyntaxFormula;
-class SyntaxDirectiveBody;
-/// \brief Defines the syntax for a directive.
-class SyntaxDirective : public SyntaxAbstract
+class SyntaxDcoBody;
+/// \brief Defines the syntax for a DCO.
+class SyntaxDco : public SyntaxAbstract
 {
 public:
-    SyntaxDirective(SharedSyntaxData* sharedData, QChar directiveChar = '$');
+    SyntaxDco(SharedSyntaxData* sharedData, QChar dcoChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
     QRegularExpression mRex;
-    QStringList mDirectives;
+    QStringList mDCOs;
     QStringList mDescription;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
@@ -264,11 +264,11 @@ private:
 
 
 /// \brief Defines the syntax for a single comment line.
-class SyntaxDirectiveBody: public SyntaxAbstract
+class SyntaxDcoBody: public SyntaxAbstract
 {
     QVector<QChar> mEolComChars;
 public:
-    SyntaxDirectiveBody(SyntaxKind kind, SharedSyntaxData* sharedData);
+    SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
     void setCommentChars(QVector<QChar> chars);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
@@ -308,12 +308,12 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
-/// \brief Defines the syntax for a multi-line comment block.
-class SyntaxCall: public SyntaxAbstract
+/// \brief Defines the syntax for a sub DCO part.
+class SyntaxSubDCO: public SyntaxAbstract
 {
-    QStringList mSubDirective;
+    QStringList mSubDCOs;
 public:
-    SyntaxCall(SharedSyntaxData* sharedData);
+    SyntaxSubDCO(SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

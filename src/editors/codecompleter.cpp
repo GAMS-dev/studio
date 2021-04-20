@@ -3,10 +3,12 @@
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
+#include "exception.h"
 
 #include <QSortFilterProxyModel>
 #include <QGuiApplication>
 #include <QScreen>
+#include <QAction>
 
 namespace gams {
 namespace studio {
@@ -16,6 +18,17 @@ namespace studio {
 
 CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(parent)
 {
+    mCasing = caseCamel;
+    initData();
+}
+
+void CodeCompleterModel::initData()
+{
+    mData.clear();
+    mDescription.clear();
+    mDescriptIndex.clear();
+    mType.clear();
+
     // DCOs
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
@@ -30,6 +43,7 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
         if (i > 0) mType.insert(i-1, ccDco1);
         mType.insert(i, ccDco2);
     }
+
 
     // declarations
     src = syntax::SyntaxData::declaration();
@@ -73,15 +87,15 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     src = syntax::SyntaxData::declaration4Var();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + " Variable";
-        mDescription << it->second;
+        mData << it->first + " Variable" << it->first + " Variables";
+        mDescription << it->second << it->second;
         ++it;
     }
     src = syntax::SyntaxData::declaration4Set();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + " Set";
-        mDescription << it->second;
+        mData << it->first + " Set" << it->first + " Sets";
+        mDescription << it->second << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccRes2);
@@ -152,15 +166,93 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
     }
     mType.insert(mData.size()-1, ccSolve);
 
-    // execute
+    // sub DCOs
     src = syntax::SyntaxData::execute();
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << it->first + ' ';
         mDescription << it->second;
+        mData << '.' + it->first + ' ';
+        mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccExec);
+    mType.insert(mData.size()-1, ccSubDcoC);
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << "$call." + it->first + ' ';
+        mDescription << it->second;
+        mData << "$hiddenCall." + it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccDco1);
+
+    mData << "set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mData << ".set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mType.insert(mData.size()-1, ccSubDcoE);
+    mData << "$eval.set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mData << "$evalGlobal.set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mData << "$evalLocal.set";
+    mDescription << "compile-time variable based on a GAMS set";
+    mType.insert(mData.size()-1, ccDco1);
+
+    mData << "noError";
+    mDescription << "abort without error";
+    mData << ".noError";
+    mDescription << "abort without error";
+    mType.insert(mData.size()-1, ccSubDcoA);
+    mData << "$abort.noError";
+    mDescription << "abort without error";
+    mType.insert(mData.size()-1, ccDco1);
+
+    for (int i = 0; i < mData.size(); ++i) {
+        mDescriptIndex << i;
+    }
+}
+
+void CodeCompleterModel::addDynamicData()
+{
+    QStringList data;
+    QList<int> descriptIndex;
+    QMap<int, CodeCompleterType> iType;
+    for (int i = 0; i < mData.size(); ++i) {
+        if (mDescriptIndex.at(i) != i) {
+            FATAL() << "ERROR addDynamicData() MUST not be called twice.";
+        }
+        data << mData.at(i);
+        descriptIndex << i;
+        if (mData.at(i).toLower() != mData.at(i)) {
+            data << mData.at(i).toLower();
+            descriptIndex << i;
+        }
+        if (mData.at(i).toUpper() != mData.at(i)) {
+            data << mData.at(i).toUpper();
+            descriptIndex << i;
+        }
+        if (mType.contains(i)) {
+            iType.insert(data.size()-1, mType.value(i));
+        }
+    }
+    mData = data;
+    mDescriptIndex = descriptIndex;
+    mType = iType;
+}
+
+void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
+{
+    bool isDynamic = (mCasing == caseDynamic);
+    mCasing = casing;
+    if (isDynamic != (casing == caseDynamic)) {
+        beginResetModel();
+        initData();
+        if (casing == caseDynamic)
+            addDynamicData();
+        endResetModel();
+    }
 }
 
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
@@ -174,9 +266,10 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     if (!index.isValid()) return QVariant();
     switch (role) {
     case Qt::DisplayRole:
-        return mData.at(index.row());
+        return mCasing == caseLower ? mData.at(index.row()).toLower()
+                                    : mCasing == caseUpper ? mData.at(index.row()).toUpper() : mData.at(index.row());
     case Qt::ToolTipRole:
-        return mDescription.at(index.row());
+        return mDescription.at(mDescriptIndex.at(index.row()));
     case Qt::UserRole:
         return mType.lowerBound(index.row()).value();
     }
@@ -191,12 +284,17 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
     if (!(type & mTypeFilter)) return false;
+    if (type & ccSubDco) {
+        if (sourceModel()->data(index, Qt::DisplayRole).toString().startsWith('.') != mNeedDot)
+            return false;
+    }
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
 }
 
-void FilterCompleterModel::setTypeFilter(int completerTypeFilter)
+void FilterCompleterModel::setTypeFilter(int completerTypeFilter, bool needDot)
 {
     mTypeFilter = completerTypeFilter;
+    mNeedDot = needDot;
     invalidateFilter();
 }
 
@@ -212,12 +310,19 @@ CodeCompleter::CodeCompleter(CodeEdit *parent) :
     if (mEdit) setFont(mEdit->font());
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     mFilterModel->setSourceModel(mModel);
+    mFilterModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     setModel(mFilterModel);
     setWindowFlag(Qt::FramelessWindowHint);
 }
 
 CodeCompleter::~CodeCompleter()
 {
+}
+
+void CodeCompleter::setCodeEdit(CodeEdit *edit)
+{
+    mEdit = edit;
+    if (mEdit) setFont(mEdit->font());
 }
 
 bool CodeCompleter::event(QEvent *event)
@@ -231,7 +336,6 @@ bool CodeCompleter::event(QEvent *event)
 
 void CodeCompleter::showEvent(QShowEvent *event)
 {
-    setCurrentIndex(mFilterModel->index(0,0));
     QListView::showEvent(event);
     setFocus();
 }
@@ -271,9 +375,10 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         insertCurrent();
     }   break;
     default: {
-        mEdit->keyPressEvent(e);
         if (e->key() == Qt::Key_Space)
             hide();
+        if (mEdit)
+            mEdit->keyPressEvent(e);
         updateFilter();
     }
     }
@@ -292,9 +397,9 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Enter:
     case Qt::Key_Return:
     case Qt::Key_Tab:
-            break;
+        break;
     default:
-            mEdit->keyPressEvent(e);
+        if (mEdit) mEdit->keyReleaseEvent(e);
     }
 }
 
@@ -304,22 +409,31 @@ void CodeCompleter::focusOutEvent(QFocusEvent *event)
     hide();
 }
 
+void CodeCompleter::actionEvent(QActionEvent *event)
+{
+    Q_UNUSED(event)
+    hide();
+}
+
 enum CharGroup {
-    clBreak,
     clAlpha,
     clNum,
     clFix,
+    clBreak,
+    clSpace,
 };
 
 CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
     if ((c >= '0' && c <= '9') || c == ':' || c == '.') return clNum;
     if (c == '$') return clFix;
+    if (c == ' ' || c == '\t') return clSpace;
     return clBreak;
 }
 
 void CodeCompleter::updateFilter()
 {
+    if (!mEdit) return;
     QTextCursor cur = mEdit->textCursor();
     QString line = cur.block().text();
     int peekStart = cur.positionInBlock();
@@ -327,8 +441,8 @@ void CodeCompleter::updateFilter()
     while (peekStart > 0) {
         --peekStart;
         CharGroup cg = group(line.at(peekStart));
-        if (cg == clBreak) break;
-        if (cg == clAlpha) validStart = peekStart;
+        if (cg >= clBreak) break;
+        if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clFix) {
             validStart = peekStart;
             break;
@@ -341,16 +455,45 @@ void CodeCompleter::updateFilter()
         mFilterText = line.mid(validStart, len);
     }
 
-    mFilterModel->setTypeFilter(getFilterFromSyntax());
-    if (mFilterText.startsWith('$'))
-        mFilterModel->setFilterRegularExpression("^\\"+mFilterText+".*");
-    else
-        mFilterModel->setFilterRegularExpression('^'+mFilterText+".*");
+    // assign filter
+    if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
+         mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
+    mFilterModel->setTypeFilter(getFilterFromSyntax(), mNeedDot);
+    QString filterRex = mFilterText;
+    filterRex.replace(".", "\\.").replace("$", "\\$");
+    mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
 
-    if (!mFilterModel->rowCount()) hide();
+    if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())
+         mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
-    if (!currentIndex().isValid())
-        setCurrentIndex(mFilterModel->index(0,0));
+    if (!mFilterModel->rowCount() ||
+            (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
+        hide();
+        return;
+    }
+    mFilterModel->sort(0);
+
+    // find best index
+    int validEnd = cur.positionInBlock();
+    for (int i = validEnd+1; i < line.length(); ++i) {
+        CharGroup cg = group(line.at(i));
+        if (cg >= clBreak) break;
+        validEnd = i;
+    }
+    QString fullWord = line.mid(validStart, validEnd - validStart + 1);
+    int bestInd = 0;
+    Qt::CaseSensitivity caseSens = mFilterModel->filterCaseSensitivity();
+    while (bestInd+1 < mFilterModel->rowCount()) {
+        QModelIndex ind = mFilterModel->index(bestInd, 0);
+        QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
+        if (itemWord.compare(fullWord, caseSens) > 0)
+            break;
+        if (itemWord.compare(fullWord, caseSens) == 0)
+            break;
+        ++bestInd;
+    }
+    setCurrentIndex(mFilterModel->index(bestInd, 0));
+    scrollTo(currentIndex());
 
     // adapt size
     cur.setPosition(cur.position() - mFilterText.length());
@@ -386,13 +529,21 @@ int CodeCompleter::rowCount()
 void CodeCompleter::ShowIfData()
 {
     updateFilter();
-    if (rowCount()) {
+    if (rowCount() &&
+            (mFilterModel->rowCount() > 1 || mFilterModel->data(mFilterModel->index(0,0)).toString() != mFilterText)) {
         show();
     }
 }
 
+void CodeCompleter::setCasing(CodeCompleterCasing casing)
+{
+    mModel->setCasing(casing);
+    mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
+}
+
 void CodeCompleter::insertCurrent()
 {
+    if (!mEdit) return;
     if (currentIndex().isValid()) {
         QTextCursor cur = mEdit->textCursor();
         QString line = cur.block().text();
@@ -418,23 +569,28 @@ void CodeCompleter::insertCurrent()
 
 int CodeCompleter::getFilterFromSyntax()
 {
+    if (!mEdit) return ccNone;
     int res = ccAll;
     QTextCursor cur = mEdit->textCursor();
     int syntaxKind = 0;
     int syntaxFlavor = 0;
+    int dcoFlavor = 0;
 
     QMap<int,QPair<int, int>> blockSyntax;
     emit mEdit->scanSyntax(cur.block(), blockSyntax);
 
+    QString line = cur.block().text();
     int start = cur.positionInBlock() - mFilterText.length();
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (it.key() > start) break;
         syntaxKind = it.value().first;
         syntaxFlavor = it.value().second;
-        if (it.key() >= start) break;
+        if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::Dco)
+            dcoFlavor = syntaxFlavor;
     }
 
     // for analysis
-//    DEB() << "--- Line: " << cur.block().text();
+//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
 //    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
 //        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
 //    }
@@ -443,25 +599,27 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::Call:
     case syntax::SyntaxKind::IgnoredHead:
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
         res = ccStart; break;
 
+    case syntax::SyntaxKind::SubDCO:
+        res = ccNone; break;
+
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = ccDco | ccResT; break;
+        res = (syntaxFlavor == 8) ? ccDco | ccResT : ccDco; break;
     case syntax::SyntaxKind::DeclarationSetType:
         res = ccDco | ccResS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
         res = ccDco | ccResV; break;
 
-    case syntax::SyntaxKind::Directive:
+    case syntax::SyntaxKind::Dco:
         res = ccDco; break;
 
-    case syntax::SyntaxKind::DirectiveBody:
-    case syntax::SyntaxKind::DirectiveComment:
+    case syntax::SyntaxKind::DcoBody:
+    case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::CommentBlock:
         res = ccNone; break;
@@ -506,21 +664,42 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccOpt; break;
     default: ;
     }
+
+    start = qMin(start, line.length()-1);
     bool isWhitespace = true;
-    QString text = cur.block().text();
     for (int i = 0; i < start; ++i) {
-        if (text.at(i) != ' ' && text.at(i) != '\t') {
+        if (line.at(i) != ' ' && line.at(i) != '\t') {
             isWhitespace = false;
             break;
         }
     }
+    mNeedDot = false;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
         else if (!(res & ccDco))
             res = res & ccDco;
-    } else
+    } else if (dcoFlavor > 15) {
+        mNeedDot = true;
+        for (int i = start-1; i > 0; --i) {
+            if (mNeedDot && line.at(i) == '.') {
+                mNeedDot = false;
+            } else {
+                CharGroup gr = group(line.at(i));
+                if (gr >= clBreak) return res = res & ccNoDco;
+            }
+        }
+        if (dcoFlavor == 16)
+            res = ccSubDcoA;
+        else if (dcoFlavor == 17)
+            res = ccSubDcoC;
+        else if (dcoFlavor == 18)
+            res = ccSubDcoE;
+        else
+            res = res & ccNoDco;
+    } else {
         res = res & ccNoDco;
+    }
 
 //    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
