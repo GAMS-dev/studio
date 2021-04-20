@@ -298,7 +298,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
-        loadSettings(); // reset changes (mostly font and -size)
+        loadSettings(); // reset instantly applied changes (such as colors, font and -size)
         themeModified();
     }
     emit editorLineWrappingChanged();
@@ -317,6 +317,12 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_sb_tabsize_valueChanged(int size)
 {
     emit editorTabSizeChanged(size);
+}
+
+void SettingsDialog::prepareModifyTheme()
+{
+    if (Theme::instance()->activeTheme() < mFixedThemeCount)
+        on_btCopyTheme_clicked();
 }
 
 void SettingsDialog::appearanceIndexChanged(int index)
@@ -338,9 +344,6 @@ void SettingsDialog::editorBaseColorChanged()
 
 void SettingsDialog::themeModified()
 {
-    if (Theme::instance()->activeTheme() < mFixedThemeCount) {
-        on_btCopyTheme_clicked();
-    }
     setModified();
     emit themeChanged();
     for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
@@ -544,6 +547,7 @@ void SettingsDialog::initColorPage()
         int effectiveRow = row + (row >= sep ? 2 : 1);
 
         grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }
@@ -586,6 +590,7 @@ void SettingsDialog::initColorPage()
         wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         if (fg == Theme::Edit_text)
             connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
@@ -604,6 +609,7 @@ void SettingsDialog::initColorPage()
 //        ThemeWidget *wid = new ThemeWidget(slot1.at(i), box, true);
 //        wid->setTextVisible(false);
 //        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+//        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
 //        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
 //        mColorWidgets.insert(slot1.at(i), wid);
     //    }

@@ -167,6 +167,7 @@ void ThemeWidget::colorChanged(const QColor &color)
     Theme::ColorSlot slot = mSelectedFrame==ui->colorFG ? mSlotFg : mSelectedFrame==ui->colorBG1 ? mSlotBg : mSlotBg2;
     QColor old = Theme::color(slot);
     if (old != color) {
+        emit aboutToChange();
         Theme::setColor(slot, color);
         refresh();
         emit changed();
@@ -181,8 +182,8 @@ void ThemeWidget::fontFlagsChanged()
     }
     Theme::FontFlag flag = ui->btBold->isChecked() ? (ui->btItalic->isChecked() ? Theme::fBoldItalic : Theme::fBold)
                                                    : (ui->btItalic->isChecked() ? Theme::fItalic : Theme::fNormal);
+    emit aboutToChange();
     Theme::setFlags(mSlotFg, flag);
-
     refresh();
     emit changed();
 }
