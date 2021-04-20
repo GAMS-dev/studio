@@ -609,7 +609,7 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccNone; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = ccDco | ccResT; break;
+        res = (syntaxFlavor == 8) ? ccDco | ccResT : ccDco; break;
     case syntax::SyntaxKind::DeclarationSetType:
         res = ccDco | ccResS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
