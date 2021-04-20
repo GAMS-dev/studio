@@ -1,3 +1,7 @@
+Version 1.6.1  *
+==================
+- create a copy on changing a base theme (light or dark)
+
 Version 1.6.0
 ==================
 - added *.inc as common extension for GAMS files
