@@ -310,6 +310,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skOpenLst, scUser, {"openLst"}, false);
     safelyAdd(res, skJumpToError, scUser, {"jumpToErrors"}, true);
     safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
+    safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
 
     // editor settings page

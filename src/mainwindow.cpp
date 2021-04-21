@@ -1249,10 +1249,10 @@ void MainWindow::on_actionOpen_triggered()
                                                       ViewHelper::dialogFileFilterAll().join(";;"),
                                                       nullptr,
                                                       DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    openFiles(files);
+    openFiles(files, false);
 }
 
-void MainWindow::on_actionOpenNew_triggered()
+void MainWindow::on_actionOpenAlternative_triggered()
 {
     QString path = currentPath();
     QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
@@ -2801,7 +2801,7 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         if (answer != QMessageBox::Open) return;
     }
-    openFiles(pathList);
+    openFiles(pathList, false);
 }
 
 bool MainWindow::eventFilter(QObject* sender, QEvent* event)
@@ -2818,6 +2818,71 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     }
 
     return false;
+}
+
+void MainWindow::openFiles(OpenGroupOption opt)
+{
+    QString path = currentPath();
+    const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,
+                                                            ViewHelper::dialogFileFilterAll().join(";;"),
+                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
+    ProjectGroupNode *curGroup = mRecent.group();
+    ProjectGroupNode *group = nullptr;
+    ProjectFileNode *firstNode = nullptr;
+
+    for (const QString &fileName : files) {
+        // detect if the file is already present at the scope
+        ProjectFileNode *fileNode = nullptr;
+        FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(files.first());
+        if (opt == ogFindGroup) {
+            if (fileMeta) {
+                // found, prefer created or current group (over a third group)
+                if (group)
+                    fileNode = group->findFile(fileMeta);
+                else if (curGroup)
+                    fileNode = curGroup->findFile(fileMeta);
+                else
+                    fileNode = mProjectRepo.findFile(fileMeta);
+            }
+        } else if (opt == ogCurrentGroup) {
+            if (!group)
+                group = curGroup;
+            if (group)
+                fileNode = group->findFile(fileMeta);
+        }
+        // create the destination group if necessary
+        if (!group && !fileNode) {
+            QFileInfo fi(fileName);
+            group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+        }
+
+        // create node if missing
+        if (!fileNode) {
+            if (group) {
+                if (fileMeta) {
+                    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(group->id());
+                    if (runGroup)
+                        fileNode = mProjectRepo.findOrCreateFileNode(fileMeta, runGroup);
+                } else {
+                    fileNode = mProjectRepo.findOrCreateFileNode(fileName, group);
+                }
+            } else {
+                DEB() << "OOPS, this shouldn't happen: Neither group nor fileNode defined!";
+            }
+        }
+
+        // open the detected file
+        if (fileNode) {
+            openFileNode(fileNode, false);
+            if (!firstNode) firstNode = fileNode;
+        } else {
+            DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
+        }
+    }
+
+    // at last: activate the first node
+    if (firstNode)
+        openFileNode(firstNode, true);
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew)

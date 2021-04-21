@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -116,7 +116,7 @@
     </property>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
-    <addaction name="actionOpenNew"/>
+    <addaction name="actionOpenAlternative"/>
     <addaction name="separator"/>
     <addaction name="actionRestore_Recently_Closed_Tab"/>
     <addaction name="separator"/>
@@ -638,6 +638,17 @@
     <string>Ctrl+O</string>
    </property>
   </action>
+  <action name="actionOpenAlternative">
+   <property name="text">
+    <string>&amp;Open in current group...</string>
+   </property>
+   <property name="toolTip">
+    <string>Open the file(s) in the current group</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+Shift+O</string>
+   </property>
+  </action>
   <action name="actionSave">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
@@ -1148,17 +1159,6 @@
     <string>Ctrl+Shift+Tab</string>
    </property>
   </action>
-  <action name="actionOpenNew">
-   <property name="text">
-    <string>&amp;Open in new group...</string>
-   </property>
-   <property name="toolTip">
-    <string>Open the file in a new group</string>
-   </property>
-   <property name="shortcut">
-    <string>Ctrl+Shift+O</string>
-   </property>
-  </action>
   <action name="gamsLicensing">
    <property name="text">
     <string>GAMS Licensing</string>
@@ -1478,9 +1478,9 @@
    </property>
   </action>
   <action name="actionStudioHelp">
-    <property name="text">
-      <string>Studio Documentation</string>
-    </property>
+   <property name="text">
+    <string>Studio Documentation</string>
+   </property>
   </action>
   <action name="actionMove_Line_Up">
    <property name="text">

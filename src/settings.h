@@ -80,6 +80,7 @@ enum SettingsKey {
     skJumpToError,
     skForegroundOnDemand,
     skHistorySize,
+    skOpenInCurrent,
 
     // editor settings page
     skEdAppearance,

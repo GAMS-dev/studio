@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -79,6 +79,16 @@
            <widget class="QCheckBox" name="cb_foregroundOnDemand">
             <property name="text">
              <string>Raise GAMS Studio when opening a file</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <widget class="QCheckBox" name="cb_openInCurrentGroup">
+            <property name="toolTip">
+             <string>Toggles the behavior of the &quot;open&quot; entries in the File menu</string>
+            </property>
+            <property name="text">
+             <string>Open files in current group by default</string>
             </property>
            </widget>
           </item>
@@ -652,8 +662,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
