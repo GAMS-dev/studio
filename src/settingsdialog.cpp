@@ -180,7 +180,7 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 {
     if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
         mInitializing = false;
-        for (ThemeWidget *wid : mColorWidgets) {
+        for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
             wid->refresh();
         }
     }
@@ -298,7 +298,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
-        loadSettings(); // reset changes (mostly font and -size)
+        loadSettings(); // reset instantly applied changes (such as colors, font and -size)
         themeModified();
     }
     emit editorLineWrappingChanged();
@@ -317,6 +317,12 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_sb_tabsize_valueChanged(int size)
 {
     emit editorTabSizeChanged(size);
+}
+
+void SettingsDialog::prepareModifyTheme()
+{
+    if (Theme::instance()->activeTheme() < mFixedThemeCount)
+        on_btCopyTheme_clicked();
 }
 
 void SettingsDialog::appearanceIndexChanged(int index)
@@ -340,7 +346,7 @@ void SettingsDialog::themeModified()
 {
     setModified();
     emit themeChanged();
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -541,6 +547,7 @@ void SettingsDialog::initColorPage()
         int effectiveRow = row + (row >= sep ? 2 : 1);
 
         grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }
@@ -583,6 +590,7 @@ void SettingsDialog::initColorPage()
         wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         if (fg == Theme::Edit_text)
             connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
@@ -601,6 +609,7 @@ void SettingsDialog::initColorPage()
 //        ThemeWidget *wid = new ThemeWidget(slot1.at(i), box, true);
 //        wid->setTextVisible(false);
 //        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+//        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
 //        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
 //        mColorWidgets.insert(slot1.at(i), wid);
     //    }
@@ -608,8 +617,8 @@ void SettingsDialog::initColorPage()
 
 void SettingsDialog::setThemeEditable(bool editable)
 {
-    for (ThemeWidget *wid : mColorWidgets) {
-        wid->setReadonly(!editable);
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+        wid->refresh();
     }
     ui->btRenameTheme->setEnabled(editable);
     ui->btRemoveTheme->setEnabled(editable);
@@ -636,7 +645,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -648,7 +657,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
