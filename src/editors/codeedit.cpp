@@ -2542,7 +2542,6 @@ void CodeEdit::BlockEdit::shiftVertical(int offset)
 {
     mCurrentLine = qBound(0, mCurrentLine +offset, mEdit->blockCount()-1);
     mStartLine = qBound(0, mStartLine +offset, mEdit->blockCount()-1);
-
 }
 
 void CodeEdit::moveLines(bool moveLinesUp)
