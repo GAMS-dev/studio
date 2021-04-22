@@ -2538,13 +2538,25 @@ void LineNumberArea::leaveEvent(QEvent *event)
     QWidget::leaveEvent(event);
 }
 
+void CodeEdit::BlockEdit::shiftVertical(int offset)
+{
+    mCurrentLine += offset;
+    mStartLine += offset;
+    if (mCurrentLine < 0)
+        mCurrentLine = 0;
+    if (mStartLine < 0)
+        mStartLine = 0;
+    if (mStartLine > mEdit->blockCount()-1)
+        mStartLine = mEdit->blockCount()-1;
+    if (mCurrentLine > mEdit->blockCount()-1)
+        mCurrentLine = mEdit->blockCount()-1;
+}
 
 void CodeEdit::moveLines(bool moveLinesUp)
 {
-    if (mBlockEdit)
-        return;
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
+    int blockEditOffset = 0;
     cursor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
     QTextBlock firstBlock;
@@ -2563,6 +2575,13 @@ void CodeEdit::moveLines(bool moveLinesUp)
             lastBlock = lastBlock.previous();
             cursor.setPosition(cursor.position()-1);
         }
+    }
+    if (mBlockEdit) {
+        firstBlock = cursor.document()->findBlockByNumber(qMin(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        lastBlock = cursor.document()->findBlockByNumber(qMax(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        blockEditOffset = cursor.positionInBlock();
+        anchor.setPosition(lastBlock.position()+lastBlock.length());
+        cursor.setPosition(firstBlock.position());
     }
     int shift = 0;
     QPoint selection(anchor.position(), cursor.position());
@@ -2595,8 +2614,13 @@ void CodeEdit::moveLines(bool moveLinesUp)
         ncur.insertText(temp);
         shift = temp.length();
     }
-    cursor.setPosition(selection.x() + shift);
-    cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    if (mBlockEdit) {
+        cursor.setPosition(cursor.document()->findBlockByNumber(mBlockEdit->currentLine()).position()+blockEditOffset);
+        mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
+    } else {
+        cursor.setPosition(selection.x() + shift);
+        cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    }
     cursor.endEditBlock();
     setTextCursor(cursor);
 }
