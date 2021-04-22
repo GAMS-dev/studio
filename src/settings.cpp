@@ -329,6 +329,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 3);
     safelyAdd(res, skEdAutoCloseBraces, scUser, {"editor","autoCloseBraces"}, true);
     safelyAdd(res, skEdEditableMaxSizeMB, scUser, {"editor","editableMaxSizeMB"}, 50);
+    safelyAdd(res, skEdCompleterAutoOpen, scUser, {"editor","completerAutoShow"}, true);
+    safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

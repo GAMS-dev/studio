@@ -107,6 +107,7 @@ public:
     void foldAll();
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
+    void setCompleter(CodeCompleter *completer);
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -164,6 +165,8 @@ private slots:
     void blockCountHasChanged(int newBlockCount);
     void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
+    void startCompleterTimer();
+    void checkAndStartCompleterTimer();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();
@@ -184,6 +187,7 @@ private:
     CharType charType(QChar c);
     bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
     void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
+    void checkCompleterAutoOpen();
     bool prepareCompleter();
     void showCompleter();
 
@@ -249,6 +253,7 @@ protected:
 private:
     LineNumberArea *mLineNumberArea;
     CodeCompleter *mCompleter = nullptr;
+    QTimer mCompleterTimer;
     int mCurrentCol;
     QTimer mCursorTimer;
     QPoint mDragStart;

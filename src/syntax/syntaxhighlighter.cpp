@@ -36,20 +36,20 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : BaseHighlighter(doc)
 {
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
-    mSingleLineKinds << SyntaxKind::Directive << SyntaxKind::DirectiveBody << SyntaxKind::CommentEndline
-                     << SyntaxKind::Call << SyntaxKind::CommentLine << SyntaxKind::Title;
+    mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::CommentEndline
+                     << SyntaxKind::SubDCO << SyntaxKind::CommentLine << SyntaxKind::Title;
 
     SharedSyntaxData *d = new SharedSyntaxData();
 
     // To visualize one format in DEBUG: add color index at start e.g. initKind(1, new SyntaxReservedBody());
     initKind(new SyntaxStandard(d), Theme::Syntax_undefined);
     addCode(BlockCode(SyntaxKind::Standard, 0), 0);
-    initKind(new SyntaxDirective(d), Theme::Syntax_directive);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveBody, d), Theme::Syntax_directiveBody);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::DirectiveComment, d), Theme::Syntax_comment);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::Title, d), Theme::Syntax_title);
-    initKind(new SyntaxDirectiveBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_directiveBody);
-    initKind(new SyntaxCall(d), Theme::Syntax_directive);
+    initKind(new SyntaxDco(d), Theme::Syntax_dco);
+    initKind(new SyntaxDcoBody(SyntaxKind::DcoBody, d), Theme::Syntax_dcoBody);
+    initKind(new SyntaxDcoBody(SyntaxKind::DcoComment, d), Theme::Syntax_comment);
+    initKind(new SyntaxDcoBody(SyntaxKind::Title, d), Theme::Syntax_title);
+    initKind(new SyntaxDcoBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_dcoBody);
+    initKind(new SyntaxSubDCO(d), Theme::Syntax_dco);
 
     initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
     initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));
@@ -143,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         SyntaxBlock tailBlock = syntax->validTail(text, index, codeRel.blockCode.flavor(), stack);
         if (stack) emptyLineKinds = false;
 
-        // HOWTO(JM) For kinds redefined with directives:
+        // HOWTO(JM) For kinds redefined with a DCO:
         //   - add new Syntax to mKinds
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
@@ -247,9 +247,9 @@ void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> >
 }
 
 const QVector<SyntaxKind> invalidParenthesesSyntax = {
-    SyntaxKind::Directive,
-    SyntaxKind::DirectiveBody,
-    SyntaxKind::DirectiveComment,
+    SyntaxKind::Dco,
+    SyntaxKind::DcoBody,
+    SyntaxKind::DcoComment,
     SyntaxKind::Title,
     SyntaxKind::String,
     SyntaxKind::Assignment,
@@ -284,7 +284,7 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         parentheses << ParenthesesPos('E', start);
         nestingImpact.addOpener();
         return;
-    } else if (kind == SyntaxKind::Directive && postKind == SyntaxKind::EmbeddedBody) {
+    } else if (kind == SyntaxKind::Dco && postKind == SyntaxKind::EmbeddedBody) {
         parentheses << ParenthesesPos('M', start);
         nestingImpact.addOpener();
         return;
@@ -292,11 +292,11 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         parentheses << ParenthesesPos('e', start);
         nestingImpact.addCloser();
         return;
-    } else if (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Directive) {
+    } else if (preKind == SyntaxKind::EmbeddedBody && kind == SyntaxKind::Dco) {
         parentheses << ParenthesesPos('m', start);
         nestingImpact.addCloser();
         return;
-    } else if (kind == SyntaxKind::Directive) {
+    } else if (kind == SyntaxKind::Dco) {
         if (flavor > 0 && flavor <= flavorChars.size()) {
             parentheses << ParenthesesPos(flavorChars.at(flavor-1), start);
             if (flavor%2)

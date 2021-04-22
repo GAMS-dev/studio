@@ -123,7 +123,7 @@ SyntaxDeclaration::SyntaxDeclaration(SharedSyntaxData *sharedData)
 
     list = QList<QPair<QString, QString>> {{"Variable", ""}, {"Variables", ""}};
     mKeywords.insert(int(SyntaxKind::DeclarationVariableType), new DictList(list));
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
                << SyntaxKind::CommentInline << SyntaxKind::Declaration << SyntaxKind::Identifier;
 }
 
@@ -178,7 +178,7 @@ SyntaxPreDeclaration::SyntaxPreDeclaration(SyntaxKind kind, SharedSyntaxData *sh
     default:
         Q_ASSERT_X(false, "SyntaxPreDeclaration", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
                << SyntaxKind::CommentInline;
 
 }
@@ -206,7 +206,7 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
 {
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
               << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
-              << SyntaxKind::CommentInline << SyntaxKind::Directive << SyntaxKind::Declaration
+              << SyntaxKind::CommentInline << SyntaxKind::Dco << SyntaxKind::Declaration
               << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
     QList<QPair<QString, QString>> list;
     switch (kind) {
@@ -293,7 +293,7 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, int flavor, const Q
 SyntaxEmbeddedBody::SyntaxEmbeddedBody(SharedSyntaxData *sharedData)
     : SyntaxAbstract(SyntaxKind::EmbeddedBody, sharedData)
 {
-    mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Directive;
+    mSubKinds << SyntaxKind::EmbeddedEnd << SyntaxKind::Dco;
 }
 
 SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -310,7 +310,7 @@ SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, int fl
 
 SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     QList<QPair<QString, QString>> list;
     list = SyntaxData::modelTypes();

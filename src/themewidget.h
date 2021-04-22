@@ -51,6 +51,7 @@ public:
     void setReadonly(bool readonly);
 
 signals:
+    void aboutToChange();
     void changed();
 
 private slots:

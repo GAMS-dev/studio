@@ -98,6 +98,8 @@ enum SettingsKey {
     skEdLogBackupCount,
     skEdAutoCloseBraces,
     skEdEditableMaxSizeMB,
+    skEdCompleterAutoOpen,
+    skEdCompleterCasing,
 
     // MIRO settings page
     skMiroInstallPath,

@@ -232,6 +232,8 @@ MainWindow::MainWindow(QWidget *parent)
     restoreFromSettings();
     mSearchDialog = new search::SearchDialog(this);
 
+    mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
+
     // stack help under output
     if (tabifiedDockWidgets(ui->dockHelpView).contains(ui->dockProcessLog)) {
         ui->dockHelpView->setFloating(true);
@@ -279,6 +281,7 @@ MainWindow::MainWindow(QWidget *parent)
     ViewHelper::updateBaseTheme();
     initGamsStandardPaths();
     updateRunState();
+    initCompleterActions();
 
     checkGamsLicense();
 }
@@ -389,6 +392,7 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
+    DEB() << "actionCount: " << actions().size();
 }
 
 void MainWindow::initToolBar()
@@ -1943,7 +1947,7 @@ void MainWindow::on_actionGamsHelp_triggered()
 
                                if (iKind == static_cast<int>(syntax::SyntaxKind::Title)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, "title");
-                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Directive)) {
+                               } else if (iKind == static_cast<int>(syntax::SyntaxKind::Dco)) {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::DollarControl, word);
                                } else {
                                    mHelpWidget->on_helpContentRequested(help::DocumentType::Index, word);
@@ -3244,6 +3248,19 @@ QString MainWindow::readGucValue(QString key)
     return res;
 }
 
+void MainWindow::initCompleterActions()
+{
+    mFileMetaRepo.completer()->addActions(ui->menuFile->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuEdit->actions());
+    mFileMetaRepo.completer()->addActions(ui->menu_GAMs->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuMIRO->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuTools->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuView->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuHelp->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuAdvanced->actions());
+    mFileMetaRepo.completer()->addActions(ui->menuHelp->actions());
+}
+
 void MainWindow::showNeosStartDialog()
 {
     neos::NeosProcess *neosPtr = createNeosProcess();
@@ -3605,6 +3622,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
             connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
             connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
+            ce->addAction(ui->actionRun);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
             tv->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
@@ -3873,6 +3891,7 @@ void MainWindow::on_actionSettings_triggered()
                 ViewHelper::updateBaseTheme();
             }
             ui->actionOpenAlternative->setText(OPEN_ALT_TEXT.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+            mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });
