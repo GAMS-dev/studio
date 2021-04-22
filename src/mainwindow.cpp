@@ -1596,7 +1596,7 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         int index = ui->mainTabs->indexOf(edit);
         if (index >= 0) {
-            ViewHelper::setModified(ui->mainTabs->currentWidget(), fm->isModified());
+            ViewHelper::setModified(ui->mainTabs->widget(index), fm->isModified());
             ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
         }
     }
