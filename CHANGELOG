@@ -3,6 +3,7 @@ Version 1.6.1  *
 - improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
 - create a copy on changing a fixed theme (light or dark)
 - Fixed lost change marker in tab title
+- moving multiple lines up and down feature now works with blockedit mode
 
 Version 1.6.0
 ==================
@@ -34,7 +35,6 @@ Version 1.6.0
 - fixed Find Next/Prev behavior for .opt files
 - added moving multiple lines up and down feature using CTRL+SHIFT+ARROW(Up/Down)
 - added static auto completion using shortcut 'ctrl-space'
-- moving multiple lines up and down feature now works with blockedit mode
 
 Version 1.5.5
 ==================
