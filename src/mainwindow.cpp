@@ -392,7 +392,6 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
-    DEB() << "actionCount: " << actions().size();
 }
 
 void MainWindow::initToolBar()
@@ -2842,7 +2841,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
     for (const QString &fileName : files) {
         // detect if the file is already present at the scope
         ProjectFileNode *fileNode = nullptr;
-        FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(files.first());
+        FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(fileName);
         if (opt == ogFindGroup) {
             if (fileMeta) {
                 // found, prefer created or current group (over a third group)
