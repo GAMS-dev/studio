@@ -2,6 +2,7 @@ Version 1.6.1  *
 ==================
 - improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
 - create a copy on changing a fixed theme (light or dark)
+- Fixed lost change marker in tab title
 - added setting to change the default handling and destination group on opening files
 
 Version 1.6.0
