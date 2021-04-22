@@ -429,7 +429,7 @@ private:
     void checkGamsLicense();
     void goToLine(int result);
     QString readGucValue(QString key);
-
+    void initCompleterActions();
 
 private:
     Ui::MainWindow *ui;

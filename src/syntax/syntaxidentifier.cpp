@@ -28,7 +28,7 @@ namespace syntax {
 SyntaxIdentifier::SyntaxIdentifier(SharedSyntaxData *sharedData) : SyntaxAbstract(SyntaxKind::Identifier, sharedData)
 {
     // sub-kinds to check for all types
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
               << SyntaxKind::IdentifierDim << SyntaxKind::IdentifierAssignment
               << SyntaxKind::IdentifierTableAssignmentColHead << SyntaxKind::CommaIdent;
@@ -76,7 +76,7 @@ SyntaxIdentifierDim::SyntaxIdentifierDim(SharedSyntaxData *sharedData)
     : SyntaxAbstract(SyntaxKind::IdentifierDim, sharedData), mDelimiters("([)]")
 {
     // sub-kinds to check for all types
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierDimEnd;
     mEmptyLineKinds << mSubKinds;
@@ -113,7 +113,7 @@ SyntaxIdentifierDimEnd::SyntaxIdentifierDimEnd(SharedSyntaxData *sharedData)
     : SyntaxAbstract(SyntaxKind::IdentifierDimEnd, sharedData), mDelimiters(")]")
 {
     // sub-kinds to check for all types
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::CommaIdent << SyntaxKind::Semicolon
               << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierTableAssignmentColHead;
@@ -149,7 +149,7 @@ SyntaxBlock SyntaxIdentifierDimEnd::validTail(const QString &line, int index, in
 SyntaxIdentDescript::SyntaxIdentDescript(SharedSyntaxData *sharedData)
     : SyntaxAbstract(SyntaxKind::IdentifierDescription, sharedData)
 {
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mEmptyLineKinds = mSubKinds;
     mEmptyLineKinds << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
@@ -194,7 +194,7 @@ SyntaxBlock SyntaxIdentDescript::validTail(const QString &line, int index, int f
 
 SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Dco << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
 
     switch (kind) {
@@ -241,7 +241,7 @@ SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, int fla
 AssignmentLabel::AssignmentLabel(SharedSyntaxData *sharedData)
      : SyntaxAbstract(SyntaxKind::AssignmentLabel, sharedData)
 {
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
@@ -308,7 +308,7 @@ SyntaxBlock AssignmentLabel::validTail(const QString &line, int index, int flavo
 AssignmentValue::AssignmentValue(SharedSyntaxData *sharedData)
     : SyntaxAbstract(SyntaxKind::AssignmentValue, sharedData)
 {
-    mSubKinds << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
@@ -357,7 +357,7 @@ SyntaxBlock AssignmentValue::validTail(const QString &line, int index, int flavo
 
 SyntaxTableAssign::SyntaxTableAssign(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Directive << SyntaxKind::CommentLine
+    mSubKinds << SyntaxKind::Semicolon << SyntaxKind::Dco << SyntaxKind::CommentLine
                << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     switch (kind) {
     case SyntaxKind::IdentifierTableAssignmentColHead:

@@ -25,6 +25,7 @@
 #include "filemeta.h"
 #include "fileevent.h"
 #include "common.h"
+#include "editors/codecompleter.h"
 
 namespace gams {
 namespace studio {
@@ -58,6 +59,7 @@ public:
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
     void updateRenamed(FileMeta *file, QString oldLocation);
     void setUserGamsTypes(QStringList suffix);
+    CodeCompleter *completer() { return &mCompleter; }
 
     bool askBigFileEdit() const;
     void setAskBigFileEdit(bool askBigFileEdit);
@@ -92,6 +94,7 @@ private:
     QStringList mRemoved; // List to be checked once
     QStringList mMissList; // List to be checked periodically
     QTimer mMissCheckTimer;
+    CodeCompleter mCompleter;
     bool mAskBigFileEdit = true;
     bool mDebug = false;
 
