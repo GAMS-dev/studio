@@ -2587,8 +2587,10 @@ void CodeEdit::moveLines(bool moveLinesUp)
     int shift = 0;
     QPoint selection(anchor.position(), cursor.position());
     if (moveLinesUp) {
-        if (mBlockEdit && (firstBlock == cursor.document()->begin()))
+        if (mBlockEdit && (firstBlock == cursor.document()->firstBlock())) {
+            cursor.endEditBlock();
             return;
+        }
         if (firstBlock.blockNumber()) {
             QTextCursor ncur(firstBlock.previous());
             ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
@@ -2603,10 +2605,11 @@ void CodeEdit::moveLines(bool moveLinesUp)
             shift = -temp.length();
             shiftEstablished = true;
         }
-    } else if (!moveLinesUp) {
-        qDebug() << lastBlock.text() << cursor.document()->end().text();
-        if (mBlockEdit && (lastBlock.text() == cursor.document()->end().text()))
+    } else {
+        if (mBlockEdit && (lastBlock == cursor.document()->lastBlock())){
+            cursor.endEditBlock();
             return;
+        }
         if (lastBlock != document()->lastBlock()) {
             QTextCursor ncur(lastBlock.next());
             bool isEnd = !lastBlock.next().next().isValid();
