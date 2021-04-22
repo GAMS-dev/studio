@@ -2540,16 +2540,9 @@ void LineNumberArea::leaveEvent(QEvent *event)
 
 void CodeEdit::BlockEdit::shiftVertical(int offset)
 {
-    mCurrentLine += offset;
-    mStartLine += offset;
-    if (mCurrentLine < 0)
-        mCurrentLine = 0;
-    if (mStartLine < 0)
-        mStartLine = 0;
-    if (mStartLine > mEdit->blockCount()-1)
-        mStartLine = mEdit->blockCount()-1;
-    if (mCurrentLine > mEdit->blockCount()-1)
-        mCurrentLine = mEdit->blockCount()-1;
+    mCurrentLine = qBound(0, mCurrentLine +offset, mEdit->blockCount()-1);
+    mStartLine = qBound(0, mStartLine +offset, mEdit->blockCount()-1);
+
 }
 
 void CodeEdit::moveLines(bool moveLinesUp)
