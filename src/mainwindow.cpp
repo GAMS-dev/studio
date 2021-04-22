@@ -1260,7 +1260,7 @@ void MainWindow::on_actionOpen_triggered()
 
 void MainWindow::on_actionOpenAlternative_triggered()
 {
-    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogFindGroup : ogCurrentGroup);
+    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
 //    QString path = currentPath();
 //    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
 //                                                      ViewHelper::dialogFileFilterAll().join(";;"),
