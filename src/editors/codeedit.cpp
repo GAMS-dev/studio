@@ -2557,6 +2557,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
     int blockEditOffset = 0;
+    bool shiftEstablished = false;
     cursor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
     QTextBlock firstBlock;
@@ -2585,38 +2586,50 @@ void CodeEdit::moveLines(bool moveLinesUp)
     }
     int shift = 0;
     QPoint selection(anchor.position(), cursor.position());
-    if (moveLinesUp && firstBlock.blockNumber()) {
-        QTextCursor ncur(firstBlock.previous());
-        ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
-        QString temp = ncur.selectedText();
-        ncur.removeSelectedText();
-        if (!lastBlock.next().isValid()) {
-            ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
-            temp = '\n' + temp.left(temp.size() - 1);
-        } else
-            ncur.setPosition(lastBlock.next().position());
-        ncur.insertText(temp);
-        shift = -temp.length();
-    } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
-        QTextCursor ncur(lastBlock.next());
-        bool isEnd = !lastBlock.next().next().isValid();
-        if (isEnd)
-            ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
-        else
-            ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
-        QString temp = ncur.selectedText();
-        ncur.removeSelectedText();
-        if (isEnd) {
-            temp += '\n';
-            ncur.deletePreviousChar();
+    if (moveLinesUp) {
+        if (mBlockEdit && (firstBlock == cursor.document()->begin()))
+            return;
+        if (firstBlock.blockNumber()) {
+            QTextCursor ncur(firstBlock.previous());
+            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (!lastBlock.next().isValid()) {
+                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+                temp = '\n' + temp.left(temp.size() - 1);
+            } else
+                ncur.setPosition(lastBlock.next().position());
+            ncur.insertText(temp);
+            shift = -temp.length();
+            shiftEstablished = true;
         }
-        ncur.setPosition(firstBlock.position());
-        ncur.insertText(temp);
-        shift = temp.length();
+    } else if (!moveLinesUp) {
+        qDebug() << lastBlock.text() << cursor.document()->end().text();
+        if (mBlockEdit && (lastBlock.text() == cursor.document()->end().text()))
+            return;
+        if (lastBlock != document()->lastBlock()) {
+            QTextCursor ncur(lastBlock.next());
+            bool isEnd = !lastBlock.next().next().isValid();
+            if (isEnd)
+                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+            else
+                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (isEnd) {
+                temp += '\n';
+                ncur.deletePreviousChar();
+            }
+            ncur.setPosition(firstBlock.position());
+            ncur.insertText(temp);
+            shift = temp.length();
+            shiftEstablished = true;
+        }
     }
     if (mBlockEdit) {
         cursor.setPosition(cursor.document()->findBlockByNumber(mBlockEdit->currentLine()).position()+blockEditOffset);
-        mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
+        if (shiftEstablished)
+            mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
     } else {
         cursor.setPosition(selection.x() + shift);
         cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
@@ -2624,8 +2637,6 @@ void CodeEdit::moveLines(bool moveLinesUp)
     cursor.endEditBlock();
     setTextCursor(cursor);
 }
-
-
 
 } // namespace studio
 } // namespace gams
