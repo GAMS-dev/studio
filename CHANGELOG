@@ -3,7 +3,7 @@ Version 1.6.1  *
 - improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
 - create a copy on changing a fixed theme (light or dark)
 - Fixed lost change marker in tab title
-- added setting to change the default handling and destination group on opening files
+- added setting to open files in current group by default and replaced the file menu entry "Open in new group" by "Open in current group" if that setting in not set
 
 Version 1.6.0
 ==================
