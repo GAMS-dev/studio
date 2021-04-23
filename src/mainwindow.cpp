@@ -72,6 +72,8 @@
 namespace gams {
 namespace studio {
 
+const QStringList OPEN_ALT_TEXT {"&Open in new group...", "&Open in current group..."};
+
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
@@ -390,7 +392,6 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
-    DEB() << "actionCount: " << actions().size();
 }
 
 void MainWindow::initToolBar()
@@ -1248,22 +1249,24 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    QString path = currentPath();
-    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                      ViewHelper::dialogFileFilterAll().join(";;"),
-                                                      nullptr,
-                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    openFiles(files);
+    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup);
+//    QString path = currentPath();
+//    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
+//                                                      ViewHelper::dialogFileFilterAll().join(";;"),
+//                                                      nullptr,
+//                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
+//    openFiles(files, false);
 }
 
-void MainWindow::on_actionOpenNew_triggered()
+void MainWindow::on_actionOpenAlternative_triggered()
 {
-    QString path = currentPath();
-    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-                                                      ViewHelper::dialogFileFilterAll().join(";;"),
-                                                      nullptr,
-                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    openFiles(files, true);
+    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
+//    QString path = currentPath();
+//    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
+//                                                      ViewHelper::dialogFileFilterAll().join(";;"),
+//                                                      nullptr,
+//                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
+//    openFiles(files, true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -2377,7 +2380,7 @@ void MainWindow::restoreFromSettings()
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
-
+    ui->actionOpenAlternative->setText(OPEN_ALT_TEXT.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
     setOutputViewVisibility(settings->toBool(skViewOutput));
@@ -2394,9 +2397,9 @@ void MainWindow::restoreFromSettings()
 
     // help
 #ifdef QWEBENGINE
-    QVariantList joHelp = settings->toList(skHelpBookmarks);
+    const QVariantList joHelp = settings->toList(skHelpBookmarks);
     QMap<QString, QString> bookmarkMap;
-    for (QVariant joVal: joHelp) {
+    for (const QVariant &joVal: joHelp) {
         if (!joVal.canConvert(QVariant::Map)) continue;
         QVariantMap entry = joVal.toMap();
         bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
@@ -2805,7 +2808,7 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         if (answer != QMessageBox::Open) return;
     }
-    openFiles(pathList);
+    openFiles(pathList, false);
 }
 
 bool MainWindow::eventFilter(QObject* sender, QEvent* event)
@@ -2822,6 +2825,72 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     }
 
     return false;
+}
+
+void MainWindow::openFiles(OpenGroupOption opt)
+{
+    QString path = currentPath();
+    const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,
+                                                            ViewHelper::dialogFileFilterAll().join(";;"),
+                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
+    if (files.isEmpty()) return;
+    ProjectGroupNode *curGroup = mRecent.group();
+    ProjectGroupNode *group = nullptr;
+    ProjectFileNode *firstNode = nullptr;
+
+    for (const QString &fileName : files) {
+        // detect if the file is already present at the scope
+        ProjectFileNode *fileNode = nullptr;
+        FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(fileName);
+        if (opt == ogFindGroup) {
+            if (fileMeta) {
+                // found, prefer created or current group (over a third group)
+                if (group)
+                    fileNode = group->findFile(fileMeta);
+                else if (curGroup)
+                    fileNode = curGroup->findFile(fileMeta);
+                if (!fileNode)
+                    fileNode = mProjectRepo.findFile(fileMeta);
+            }
+        } else if (opt == ogCurrentGroup) {
+            if (!group)
+                group = curGroup;
+            if (group)
+                fileNode = group->findFile(fileMeta);
+        }
+        // create the destination group if necessary
+        if (!group && !fileNode) {
+            QFileInfo fi(fileName);
+            group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+        }
+
+        // create node if missing
+        if (!fileNode) {
+            if (group) {
+                if (fileMeta) {
+                    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(group->id());
+                    if (runGroup)
+                        fileNode = mProjectRepo.findOrCreateFileNode(fileMeta, runGroup);
+                } else {
+                    fileNode = mProjectRepo.findOrCreateFileNode(fileName, group);
+                }
+            } else {
+                DEB() << "OOPS, this shouldn't happen: Neither group nor fileNode defined!";
+            }
+        }
+
+        // open the detected file
+        if (fileNode) {
+            openFileNode(fileNode, false);
+            if (!firstNode) firstNode = fileNode;
+        } else {
+            DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
+        }
+    }
+
+    // at last: activate the first node
+    if (firstNode)
+        openFileNode(firstNode, true);
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew)
@@ -3820,6 +3889,7 @@ void MainWindow::on_actionSettings_triggered()
                 mSettingsDialog->delayBaseThemeChange(false);
                 ViewHelper::updateBaseTheme();
             }
+            ui->actionOpenAlternative->setText(OPEN_ALT_TEXT.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
             mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
