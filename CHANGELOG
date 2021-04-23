@@ -1,10 +1,11 @@
-Version 1.6.1  *
+Version 1.6.1
 ==================
-- improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
-- create a copy on changing a fixed theme (light or dark)
-- Fixed lost change marker in tab title
-- moving multiple lines up and down feature now works with blockedit mode
-- added setting to open files either in any group or in current group and switch the alternative open entry in the file menu to "Open in current group" or "Open in new group"
+- added additional features to static auto completion (sub-DCOs, auto-open, preselect best match)
+- added automatic theme copying when trying to change a default theme
+- fixed incorrect file changed marker in file tabs
+- added block edit support for move line up/down feature
+- added setting to change default open file behavior (new group or current group)
+- adjusted menu entry for alternative file opening behavior (opposite of the one chosen above)
 
 Version 1.6.0
 ==================
