@@ -234,6 +234,7 @@ protected:
         void setOverwriteMode(bool overwrite);
         bool overwriteMode() const;
         void setSize(int size);
+        void shiftVertical(int offset);
 
     private:
         CodeEdit* mEdit;
