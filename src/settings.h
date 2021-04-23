@@ -80,6 +80,7 @@ enum SettingsKey {
     skJumpToError,
     skForegroundOnDemand,
     skHistorySize,
+    skOpenInCurrent,
 
     // editor settings page
     skEdAppearance,
@@ -97,6 +98,8 @@ enum SettingsKey {
     skEdLogBackupCount,
     skEdAutoCloseBraces,
     skEdEditableMaxSizeMB,
+    skEdCompleterAutoOpen,
+    skEdCompleterCasing,
 
     // MIRO settings page
     skMiroInstallPath,

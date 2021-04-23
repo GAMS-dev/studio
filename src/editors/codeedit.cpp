@@ -49,7 +49,9 @@ CodeEdit::CodeEdit(QWidget *parent)
     mWordDelay.setSingleShot(true);
     mParenthesesDelay.setSingleShot(true);
     mSettings = Settings::settings();
+    mCompleterTimer.setSingleShot(true);
 
+    connect(&mCompleterTimer, &QTimer::timeout, this, &CodeEdit::checkCompleterAutoOpen);
     connect(&mBlinkBlockEdit, &QTimer::timeout, this, &CodeEdit::blockEditBlink);
     connect(&mWordDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
     connect(&mParenthesesDelay, &QTimer::timeout, this, &CodeEdit::updateExtraSelections);
@@ -57,6 +59,8 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::updateRequest, this, &CodeEdit::updateLineNumberArea);
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
+    connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::checkAndStartCompleterTimer);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -69,7 +73,6 @@ CodeEdit::~CodeEdit()
 {
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
-    delete mCompleter;
 }
 
 int CodeEdit::lineNumberAreaWidth()
@@ -780,7 +783,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                     int kind;
                     int flavor;
                     emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
-                    if (kind == int(syntax::SyntaxKind::DirectiveBody)) break;
+                    if (kind == int(syntax::SyntaxKind::DcoBody)) break;
                     --fileEnd;
                 }
                 endChar = QChar();
@@ -1271,19 +1274,37 @@ void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int l
     cursor.endEditBlock();
 }
 
+void CodeEdit::checkCompleterAutoOpen()
+{
+    bool canOpen = true;
+    QTextCursor cur(textCursor());
+    if (cur.positionInBlock() > 2) {
+        cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
+        QString part = cur.selectedText();
+        for (int i = 0 ; i < part.size() ; ++i) {
+            QChar ch(cur.selectedText().at(i));
+            if (ch >= '0' && ch <= '9') continue;
+            if (ch >= 'a' && ch <= 'z') continue;
+            if (ch >= 'A' && ch <= 'Z') continue;
+            if (ch != '_' && ch != '.' && ch != '$') canOpen = false;
+        }
+        if (canOpen && prepareCompleter())
+            showCompleter();
+    }
+}
+
 bool CodeEdit::prepareCompleter()
 {
     if (isReadOnly()) return false;
-    if (!mCompleter) {
-        mCompleter = new CodeCompleter(this);
-    }
-    return true;
+    return mCompleter;
 }
 
 void CodeEdit::showCompleter()
 {
-    if (mCompleter)
+    if (mCompleter) {
+        mCompleter->setCodeEdit(this);
         mCompleter->ShowIfData();
+    }
 }
 
 
@@ -1613,6 +1634,11 @@ void CodeEdit::jumpTo(int line, int column)
     AbstractEdit::jumpTo(line, column);
 }
 
+void CodeEdit::setCompleter(CodeCompleter *completer)
+{
+    mCompleter = completer;
+}
+
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
@@ -1730,6 +1756,22 @@ void CodeEdit::recalcExtraSelections()
         extraSelBlockEdit(selections);
         setExtraSelections(selections);
     }
+}
+
+void CodeEdit::startCompleterTimer()
+{
+    if (!isReadOnly() && mSettings->toBool(skEdCompleterAutoOpen)) {
+        if (mCompleter && mCompleter->isVisible())
+            showCompleter();
+        else
+            mCompleterTimer.start(500);
+    }
+}
+
+void CodeEdit::checkAndStartCompleterTimer()
+{
+    if (mCompleter && mCompleter->isVisible())
+        showCompleter();
 }
 
 void CodeEdit::updateExtraSelections()
@@ -1885,8 +1927,8 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
     selection.cursor = cur;
     selection.format.setAnchorHref('"'+file+'"');
-    selection.format.setForeground(Theme::color(Theme::Syntax_directiveBody));
-    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_directiveBody));
+    selection.format.setForeground(Theme::color(Theme::Syntax_dcoBody));
+    selection.format.setUnderlineColor(Theme::color(Theme::Syntax_dcoBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
 }
@@ -2538,13 +2580,18 @@ void LineNumberArea::leaveEvent(QEvent *event)
     QWidget::leaveEvent(event);
 }
 
+void CodeEdit::BlockEdit::shiftVertical(int offset)
+{
+    mCurrentLine = qBound(0, mCurrentLine +offset, mEdit->blockCount()-1);
+    mStartLine = qBound(0, mStartLine +offset, mEdit->blockCount()-1);
+}
 
 void CodeEdit::moveLines(bool moveLinesUp)
 {
-    if (mBlockEdit)
-        return;
     QTextCursor cursor(textCursor());
     QTextCursor anchor = cursor;
+    int blockEditOffset = 0;
+    bool shiftEstablished = false;
     cursor.beginEditBlock();
     anchor.setPosition(cursor.anchor());
     QTextBlock firstBlock;
@@ -2564,44 +2611,69 @@ void CodeEdit::moveLines(bool moveLinesUp)
             cursor.setPosition(cursor.position()-1);
         }
     }
+    if (mBlockEdit) {
+        firstBlock = cursor.document()->findBlockByNumber(qMin(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        lastBlock = cursor.document()->findBlockByNumber(qMax(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        blockEditOffset = cursor.positionInBlock();
+        anchor.setPosition(lastBlock.position()+lastBlock.length());
+        cursor.setPosition(firstBlock.position());
+    }
     int shift = 0;
     QPoint selection(anchor.position(), cursor.position());
-    if (moveLinesUp && firstBlock.blockNumber()) {
-        QTextCursor ncur(firstBlock.previous());
-        ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
-        QString temp = ncur.selectedText();
-        ncur.removeSelectedText();
-        if (!lastBlock.next().isValid()) {
-            ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
-            temp = '\n' + temp.left(temp.size() - 1);
-        } else
-            ncur.setPosition(lastBlock.next().position());
-        ncur.insertText(temp);
-        shift = -temp.length();
-    } else if (!moveLinesUp && lastBlock != document()->lastBlock()) {
-        QTextCursor ncur(lastBlock.next());
-        bool isEnd = !lastBlock.next().next().isValid();
-        if (isEnd)
-            ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
-        else
-            ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
-        QString temp = ncur.selectedText();
-        ncur.removeSelectedText();
-        if (isEnd) {
-            temp += '\n';
-            ncur.deletePreviousChar();
+    if (moveLinesUp) {
+        if (mBlockEdit && (firstBlock == cursor.document()->firstBlock())) {
+            cursor.endEditBlock();
+            return;
         }
-        ncur.setPosition(firstBlock.position());
-        ncur.insertText(temp);
-        shift = temp.length();
+        if (firstBlock.blockNumber()) {
+            QTextCursor ncur(firstBlock.previous());
+            ncur.setPosition(firstBlock.position(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (!lastBlock.next().isValid()) {
+                ncur.setPosition(lastBlock.position() + lastBlock.length() - 1);
+                temp = '\n' + temp.left(temp.size() - 1);
+            } else
+                ncur.setPosition(lastBlock.next().position());
+            ncur.insertText(temp);
+            shift = -temp.length();
+            shiftEstablished = true;
+        }
+    } else {
+        if (mBlockEdit && (lastBlock == cursor.document()->lastBlock())){
+            cursor.endEditBlock();
+            return;
+        }
+        if (lastBlock != document()->lastBlock()) {
+            QTextCursor ncur(lastBlock.next());
+            bool isEnd = !lastBlock.next().next().isValid();
+            if (isEnd)
+                ncur.setPosition(ncur.position() + ncur.block().length() - 1, QTextCursor::KeepAnchor);
+            else
+                ncur.setPosition(ncur.position() + ncur.block().length(), QTextCursor::KeepAnchor);
+            QString temp = ncur.selectedText();
+            ncur.removeSelectedText();
+            if (isEnd) {
+                temp += '\n';
+                ncur.deletePreviousChar();
+            }
+            ncur.setPosition(firstBlock.position());
+            ncur.insertText(temp);
+            shift = temp.length();
+            shiftEstablished = true;
+        }
     }
-    cursor.setPosition(selection.x() + shift);
-    cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    if (mBlockEdit) {
+        cursor.setPosition(cursor.document()->findBlockByNumber(mBlockEdit->currentLine()).position()+blockEditOffset);
+        if (shiftEstablished)
+            mBlockEdit->shiftVertical(moveLinesUp ? -1 : 1);
+    } else {
+        cursor.setPosition(selection.x() + shift);
+        cursor.setPosition(selection.y() + shift, QTextCursor::KeepAnchor);
+    }
     cursor.endEditBlock();
     setTextCursor(cursor);
 }
-
-
 
 } // namespace studio
 } // namespace gams
