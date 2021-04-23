@@ -3,6 +3,7 @@ Version 1.6.1  *
 - improved completer capabilities (added sub-DCOs, auto-open, preselect best match)
 - create a copy on changing a fixed theme (light or dark)
 - Fixed lost change marker in tab title
+- moving multiple lines up and down feature now works with blockedit mode
 - added setting to open files either in any group or in current group and switch the alternative open entry in the file menu to "Open in current group" or "Open in new group"
 
 Version 1.6.0
