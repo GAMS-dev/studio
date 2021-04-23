@@ -91,6 +91,8 @@ private:
 
 class MainWindow : public QMainWindow
 {
+    enum OpenGroupOption { ogFindGroup, ogCurrentGroup, ogNewGroup };
+
     friend MainTabContextMenu;
     friend LogTabContextMenu;
 
@@ -101,7 +103,7 @@ public:
     ~MainWindow() override;
     void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, bool forceNew = false);
+    void openFiles(QStringList files, bool forceNew);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -239,7 +241,7 @@ private slots:
     void on_menuFile_aboutToShow();
     void on_actionNew_triggered();
     void on_actionOpen_triggered();
-    void on_actionOpenNew_triggered();
+    void on_actionOpenAlternative_triggered();
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
@@ -406,6 +408,7 @@ private:
     bool executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode *runGroup, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
                  ProjectFileNode *gmsFileNode = nullptr);
     void execution(ProjectRunGroupNode *runGroup);
+    void openFiles(OpenGroupOption opt);
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -429,7 +432,7 @@ private:
     void checkGamsLicense();
     void goToLine(int result);
     QString readGucValue(QString key);
-
+    void initCompleterActions();
 
 private:
     Ui::MainWindow *ui;

@@ -80,6 +80,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->rb_openInCurrentGroup, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -95,6 +96,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_writeLog, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sb_nrLogBackups, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoclose, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -123,6 +126,9 @@ void SettingsDialog::loadSettings()
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
+    ui->rb_openInCurrentGroup->setChecked(mSettings->toBool(skOpenInCurrent));
+    if (!ui->rb_openInCurrentGroup->isChecked() && !ui->rb_openInAnyGroup->isChecked())
+        ui->rb_openInAnyGroup->setChecked(true);
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
@@ -138,6 +144,8 @@ void SettingsDialog::loadSettings()
     ui->cb_writeLog->setChecked(mSettings->toBool(skEdWriteLog));
     ui->sb_nrLogBackups->setValue(mSettings->toInt(skEdLogBackupCount));
     ui->cb_autoclose->setChecked(mSettings->toBool(skEdAutoCloseBraces));
+    ui->cb_completerAutoOpen->setChecked(mSettings->toBool(skEdCompleterAutoOpen));
+    ui->cb_completerCasing->setCurrentIndex(mSettings->toInt(skEdCompleterCasing));
 
     // MIRO page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
@@ -176,7 +184,7 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 {
     if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
         mInitializing = false;
-        for (ThemeWidget *wid : mColorWidgets) {
+        for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
             wid->refresh();
         }
     }
@@ -231,6 +239,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
+    mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentGroup->isChecked());
 
     // editor page
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());
@@ -246,6 +255,8 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdWriteLog, ui->cb_writeLog->isChecked());
     mSettings->setInt(skEdLogBackupCount, ui->sb_nrLogBackups->value());
     mSettings->setBool(skEdAutoCloseBraces, ui->cb_autoclose->isChecked());
+    mSettings->setBool(skEdCompleterAutoOpen, ui->cb_completerAutoOpen->isChecked());
+    mSettings->setInt(skEdCompleterCasing, ui->cb_completerCasing->currentIndex());
 
     // MIRO page
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
@@ -292,7 +303,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
-        loadSettings(); // reset changes (mostly font and -size)
+        loadSettings(); // reset instantly applied changes (such as colors, font and -size)
         themeModified();
     }
     emit editorLineWrappingChanged();
@@ -311,6 +322,12 @@ void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 void SettingsDialog::on_sb_tabsize_valueChanged(int size)
 {
     emit editorTabSizeChanged(size);
+}
+
+void SettingsDialog::prepareModifyTheme()
+{
+    if (Theme::instance()->activeTheme() < mFixedThemeCount)
+        on_btCopyTheme_clicked();
 }
 
 void SettingsDialog::appearanceIndexChanged(int index)
@@ -334,7 +351,7 @@ void SettingsDialog::themeModified()
 {
     setModified();
     emit themeChanged();
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -513,14 +530,14 @@ void SettingsDialog::initColorPage()
         {Theme::Syntax_declaration},
         {Theme::Syntax_assignLabel},
         {Theme::Syntax_assignValue},
-        {Theme::Syntax_directive},
+        {Theme::Syntax_dco},
         {Theme::Syntax_embedded},
         {Theme::Syntax_keyword},
 
         {Theme::Syntax_identifier},
         {Theme::Syntax_description},
         {Theme::Syntax_tableHeader},
-        {Theme::Syntax_directiveBody},
+        {Theme::Syntax_dcoBody},
         {Theme::Syntax_comment},
     };
     cols = 2;
@@ -535,6 +552,7 @@ void SettingsDialog::initColorPage()
         int effectiveRow = row + (row >= sep ? 2 : 1);
 
         grid->addWidget(wid, effectiveRow, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
         mColorWidgets << wid;
     }
@@ -577,6 +595,7 @@ void SettingsDialog::initColorPage()
         wid = new ThemeWidget(fg, bg1, bg2, box);
         wid->setAlignment(Qt::AlignRight);
         grid->addWidget(wid, row+1, col, Qt::AlignRight);
+        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
         if (fg == Theme::Edit_text)
             connect(wid, &ThemeWidget::changed, this, &SettingsDialog::editorBaseColorChanged);
         connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
@@ -595,6 +614,7 @@ void SettingsDialog::initColorPage()
 //        ThemeWidget *wid = new ThemeWidget(slot1.at(i), box, true);
 //        wid->setTextVisible(false);
 //        grid->addWidget(wid, (i/4)+1, (i%4)+1);
+//        connect(wid, &ThemeWidget::aboutToChange, this, &SettingsDialog::prepareModifyTheme);
 //        connect(wid, &ThemeWidget::changed, this, &SettingsDialog::themeModified);
 //        mColorWidgets.insert(slot1.at(i), wid);
     //    }
@@ -602,8 +622,8 @@ void SettingsDialog::initColorPage()
 
 void SettingsDialog::setThemeEditable(bool editable)
 {
-    for (ThemeWidget *wid : mColorWidgets) {
-        wid->setReadonly(!editable);
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+        wid->refresh();
     }
     ui->btRenameTheme->setEnabled(editable);
     ui->btRemoveTheme->setEnabled(editable);
@@ -630,7 +650,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -642,7 +662,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }

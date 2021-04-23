@@ -144,7 +144,7 @@ void Application::newConnection()
 void Application::receiveFileArguments()
 {
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
-    mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
+    mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts), false);
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
 }
@@ -159,7 +159,7 @@ bool Application::event(QEvent *event)
     if (event->type() == QEvent::FileOpen) {
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
         mMainWindow->setInitialFiles({openEvent->url().path()});
-        mMainWindow->openFiles({openEvent->url().path()});
+        mMainWindow->openFiles({openEvent->url().path()}, false);
         for (auto window : allWindows()) {
             if (!window->isVisible())
                 continue;
