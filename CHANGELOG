@@ -5,7 +5,7 @@ Version 1.6.1
 - fixed incorrect file changed marker in file tabs
 - added block edit support for move line up/down feature
 - added setting to change default open file behavior (new group or current group)
-- adjusted menu entry for alternative file opening behavior (opposite of the one chosen above)
+- adjusted menu entry for alternative file opening behavior
 
 Version 1.6.0
 ==================
