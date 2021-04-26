@@ -352,7 +352,8 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
                                                         ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_DEF_VALUE) ;
     QModelIndex entryNumberIndex = (parentIndex.row()<0) ? ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) :
                                                            ui->gamsParameterTreeView->model()->index(parentIndex.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER) ;
-    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex : index ;
+    QModelIndex selectedValueIndex = (parentIndex.row()<0) ? defValueIndex :
+                                                             ui->gamsParameterTreeView->model()->index(index.row(), OptionDefinitionModel::COLUMN_OPTION_NAME, parentIndex) ;
 
     QString optionNameData = ui->gamsParameterTreeView->model()->data(optionNameIndex).toString();
 
