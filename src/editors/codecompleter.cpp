@@ -187,8 +187,6 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDco1);
 
-    mData << "set";
-    mDescription << "compile-time variable based on a GAMS set";
     mData << ".set";
     mDescription << "compile-time variable based on a GAMS set";
     mType.insert(mData.size()-1, ccSubDcoE);
@@ -681,7 +679,7 @@ int CodeCompleter::getFilterFromSyntax()
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
-        for (int i = start-1; i > 0; --i) {
+        for (int i = start; i > 0; --i) {
             if (mNeedDot && line.at(i) == '.') {
                 mNeedDot = false;
             } else {

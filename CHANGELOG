@@ -1,3 +1,7 @@
+Version 1.6.2  *
+==================
+- fixed issues with "set" in code-completer
+
 Version 1.6.1
 ==================
 - added additional features to static auto completion (sub-DCOs, auto-open, preselect best match)
