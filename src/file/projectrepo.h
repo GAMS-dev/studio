@@ -127,7 +127,7 @@ public:
 
     void setDebugMode(bool debug);
     bool debugMode() const;
-    QIcon runAnimateIcon() const;
+    QIcon runAnimateIcon(int alpha);
 
 signals:
     void gamsProcessStateChanged(ProjectGroupNode* group);
@@ -179,7 +179,7 @@ private:
     TextMarkRepo* mTextMarkRepo = nullptr;
     QVector<ProjectRunGroupNode*> mRunnigGroups;
     QTimer mRunAnimateTimer;
-    QVector<QIcon> mRunIcons;
+    QHash<int, QVector<QIcon>> mRunIcons;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
 };

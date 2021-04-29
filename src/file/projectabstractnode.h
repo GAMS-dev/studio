@@ -65,7 +65,7 @@ public:
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    virtual QIcon icon() = 0;
+    virtual QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) = 0;
 
     virtual void setParentNode(ProjectGroupNode *parent);
     ProjectGroupNode* parentNode() const;

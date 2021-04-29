@@ -55,7 +55,7 @@ public:
 
     /// The icon for this file type.
     /// \return The icon for this file type.
-    QIcon icon() override;
+    QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
 
     /// The caption of this file, which is its extended display name.
     /// \return The caption of this node.

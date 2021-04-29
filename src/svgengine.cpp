@@ -32,8 +32,20 @@ SvgEngine::SvgEngine(const QString &name)
     mController = Theme::instance();
 }
 
+SvgEngine::SvgEngine(const QString &name, int alpha)
+    : QIconEngine(), mName(name), mNameD(name), mAlpha(qBound(0, alpha, 100))
+{
+    mController = Theme::instance();
+}
+
 SvgEngine::SvgEngine(const QString &name, const QString &disabledName)
     : QIconEngine(), mName(name), mNameD(disabledName)
+{
+    mController = Theme::instance();
+}
+
+SvgEngine::SvgEngine(const QString &name, const QString &disabledName, int alpha)
+    : QIconEngine(), mName(name), mNameD(disabledName), mAlpha(qBound(0, alpha, 100))
 {
     mController = Theme::instance();
 }
@@ -76,11 +88,10 @@ void SvgEngine::unbind()
 
 void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QIcon::State state)
 {
-    Q_UNUSED(mode)
     Q_UNUSED(state)
     if (mode == QIcon::Normal) mode = mNormalMode;
     const QString &name = (mode == QIcon::Disabled ? mNameD : mName);
-    QByteArray &data = mController->data(name, mode);
+    QByteArray &data = mController->data(name, mode, mAlpha);
     QSvgRenderer renderer(data);
     QRect pRect = rect;
     if (mForceSquare) pRect.setWidth(pRect.height());

@@ -31,7 +31,9 @@ class SvgEngine : public QIconEngine
 {
 public:
     SvgEngine(const QString &name);
+    SvgEngine(const QString &name, int alpha);
     SvgEngine(const QString &name, const QString &disabledName);
+    SvgEngine(const QString &name, const QString &disabledName, int alpha);
     SvgEngine(const SvgEngine &other);
     ~SvgEngine() override;
     QString iconName() const override;
@@ -46,6 +48,7 @@ private:
     bool mForceSquare = true;
     QString mName;
     QString mNameD;
+    int mAlpha = 0;
     QIcon::Mode mNormalMode = QIcon::Normal;
 
 };

@@ -103,9 +103,9 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
 {
     if (!ind.isValid()) return QVariant();
     switch (role) {
-    case Qt::BackgroundRole:
+    case Qt::BackgroundRole: {
         if (isSelected(ind)) return QColor(102,187,255,68); // "#4466BBFF"
-        break;
+    }   break;
 
     case Qt::DisplayRole:
         return mProjectRepo->node(ind)->name(NameModifier::editState);
@@ -133,8 +133,13 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         }
     }   break;
 
-    case Qt::DecorationRole:
-        return mProjectRepo->node(ind)->icon();
+    case Qt::DecorationRole: {
+        QModelIndex parInd = ind;
+        while (parInd.isValid() && parInd.parent().isValid() && parInd.parent().parent().isValid())
+            parInd = parInd.parent();
+        QIcon::Mode mode = isCurrent(ind) ? QIcon::Active : isSelected(ind) ? QIcon::Selected : QIcon::Normal;
+        return mProjectRepo->node(ind)->icon(mode, isCurrentGroup(parInd) ? 100 : 50);
+    }
 
     case Qt::ToolTipRole:
         return mProjectRepo->node(ind)->tooltip();
@@ -329,17 +334,22 @@ bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const
 void ProjectTreeModel::setCurrent(const QModelIndex& ind)
 {
     if (!isCurrent(ind)) {
+        QVector<QModelIndex> changeList;
         QModelIndex mi = index(mCurrent);
+        while (mi.parent().parent().isValid())
+            mi = mi.parent();
+        changeList << mi << gatherChildren(mi);
+
         mCurrent = nodeId(ind);
-        while (mi.isValid()) { // invalidate old
-            emit dataChanged(mi, mi);
-            mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
-        }
+
         mi = ind;
-        while (mi.isValid()) { // invalidate new
-            emit dataChanged(mi, mi);
-            mi = mProjectRepo->node(mi) ? index(mProjectRepo->node(mi)->parentNode()) : QModelIndex();
-        }
+        while (mi.parent().parent().isValid())
+            mi = mi.parent();
+        if (mi != changeList.at(0))
+            changeList << mi << gatherChildren(mi);
+
+        for (const QModelIndex &mi2 : changeList)
+            emit dataChanged(mi2, mi2);
     }
 }
 
@@ -439,6 +449,16 @@ const QVector<QModelIndex> ProjectTreeModel::popAddGroups()
 void ProjectTreeModel::update(const QModelIndex &ind)
 {
     if (ind.isValid()) emit dataChanged(ind, ind);
+}
+
+QVector<QModelIndex> ProjectTreeModel::gatherChildren(QModelIndex ind)
+{
+    QVector<QModelIndex> res;
+    for (int row = 0; row < rowCount(ind); ++row) {
+        QModelIndex i = index(row, 0, ind);
+        res << i << gatherChildren(i);
+    }
+    return res;
 }
 
 } // namespace studio

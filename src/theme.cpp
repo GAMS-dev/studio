@@ -345,12 +345,13 @@ QHash<QString, QStringList> Theme::iconCodes() const
     return set;
 }
 
-QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
+QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
     QByteArray data = file.readAll();
     file.close();
+    QString alphaString;
 
     int end = data.indexOf("</style");
     if (end < 0) return data;
@@ -378,7 +379,19 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode)
             from += 6;
             int len = data.indexOf(";}", from) - from;
             data.replace(from, len, colorCode.toLatin1());
-//            DEB() << name << " [" << from << ", " << (end) << "] \n" << data;
+        }
+        if (alpha<100 && alpha>=0) {
+            int start = data.indexOf("<style");
+            QByteArray key("fill-opacity:");
+            while (start < end) {
+                start = data.indexOf(key, start);
+                if (start < 0 || start > end) break;
+                start += key.length();
+                int semi = data.indexOf(";", start);
+                if (semi < 0 || semi > start+3) continue;
+                QByteArray sAlpha("0."+QString::number(alpha).toUtf8());
+                data.replace(start, semi-start, sAlpha);
+            }
         }
     }
     return data;
@@ -397,6 +410,12 @@ QString Theme::findUniqueName(const QString &name, const QString &ignore)
     while (mThemeNames.contains(uniqueName) && uniqueName != ignore)
         uniqueName = base + QString::number(++nr);
     return uniqueName;
+}
+
+QString Theme::getNameWithMode(const QString &name, QIcon::Mode mode)
+{
+    QStringList ext {"_N","_D","_A","_S"};
+    return name + ext.at(int(mode));
 }
 
 QColor merge(QColor c1, QColor c2, qreal weight = 0.5)
@@ -465,24 +484,38 @@ void Theme::setColor(Theme::ColorSlot slot, QColor color)
     instance()->mColorThemes[theme].insert(slot, dat);
 }
 
-QIcon Theme::icon(QString name, bool forceSquare, QString disabledName)
+QIcon Theme::icon(const QString &name, QIcon::Mode mode, int alpha)
 {
-    if (name.contains("%")) name = name.arg(instance()->mIconSet);
-    if (!instance()->mIconCache.contains(name)) {
-        SvgEngine *eng = (disabledName.isEmpty() ? new SvgEngine(name) : new SvgEngine(name, disabledName));
-        if (forceSquare) eng->forceSquare(true);
-        instance()->mEngines << eng;
-        instance()->mIconCache.insert(name, QIcon(eng));
-    }
-    return instance()->mIconCache.value(name);
+    QString nameKey = getNameWithMode(name, mode);
+    return icon(name, nameKey, true, QString(), alpha);
 }
 
-QByteArray &Theme::data(QString name, QIcon::Mode mode)
+QIcon Theme::icon(QString name, bool forceSquare, QString disabledName, int alpha)
+{
+    return icon(name, name, forceSquare, disabledName, alpha);
+}
+
+QIcon Theme::icon(QString name, QString nameKey, bool forceSquare, QString disabledName, int alpha)
+{
+    if (name.contains("%")) name = name.arg(instance()->mIconSet);
+    if (nameKey.contains("%")) nameKey = nameKey.arg(instance()->mIconSet);
+    nameKey = nameKey + (alpha<100 && alpha>=0 ? QString::number(alpha) : "");
+    if (!instance()->mIconCache.contains(nameKey)) {
+        SvgEngine *eng = disabledName.isEmpty() ? new SvgEngine(name, alpha)
+                                                : new SvgEngine(name, disabledName, alpha);
+        if (forceSquare) eng->forceSquare(true);
+        instance()->mEngines << eng;
+        instance()->mIconCache.insert(nameKey, QIcon(eng));
+    }
+    return instance()->mIconCache.value(nameKey);
+}
+
+QByteArray &Theme::data(QString name, QIcon::Mode mode, int alpha)
 {
     QStringList ext {"_N","_D","_A","_S"};
-    QString nameKey = name + ext.at(int(mode));
+    QString nameKey = name + ext.at(int(mode)) + (alpha<100 && alpha>=0 ? QString::number(alpha) : "");
     if (!instance()->mDataCache.contains(nameKey)) {
-        QByteArray data(instance()->colorizedContent(name, mode));
+        QByteArray data(instance()->colorizedContent(name, mode, alpha));
         instance()->mDataCache.insert(nameKey, data);
     }
     return instance()->mDataCache[nameKey];

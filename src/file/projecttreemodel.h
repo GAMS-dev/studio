@@ -83,6 +83,9 @@ protected:
     void update(const QModelIndex& ind = QModelIndex());
 
 private:
+    QVector<QModelIndex> gatherChildren(QModelIndex index);
+
+private:
     ProjectRepo *mProjectRepo;
     ProjectGroupNode* mRoot = nullptr;
     bool mDebug = false;
