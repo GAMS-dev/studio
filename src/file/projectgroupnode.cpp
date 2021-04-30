@@ -240,7 +240,7 @@ QIcon ProjectRunGroupNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
         return ProjectGroupNode::icon(mode, alpha);
-    return projectRepo()->runAnimateIcon(alpha);
+    return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
 bool ProjectRunGroupNode::hasLogNode() const
