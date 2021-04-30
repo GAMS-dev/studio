@@ -230,7 +230,7 @@ void FileMetaRepo::setDebugMode(bool debug)
         QString nam = (fm ? fm->name() : "???");
 //        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
     }
-
+    mCompleter.setDebugMode(debug);
 }
 
 bool FileMetaRepo::debugMode() const
