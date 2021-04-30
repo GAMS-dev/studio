@@ -26,20 +26,8 @@
 namespace gams {
 namespace studio {
 
-SvgEngine::SvgEngine(const QString &name)
-    : QIconEngine(), mName(name), mNameD(name)
-{
-    mController = Theme::instance();
-}
-
 SvgEngine::SvgEngine(const QString &name, int alpha)
     : QIconEngine(), mName(name), mNameD(name), mAlpha(qBound(0, alpha, 100))
-{
-    mController = Theme::instance();
-}
-
-SvgEngine::SvgEngine(const QString &name, const QString &disabledName)
-    : QIconEngine(), mName(name), mNameD(disabledName)
 {
     mController = Theme::instance();
 }
