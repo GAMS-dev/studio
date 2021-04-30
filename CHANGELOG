@@ -1,8 +1,5 @@
-Version 1.6.2  *
+Version 1.7.0  *
 ==================
-- fixed issues with enumerated parameters in extended parameter editor
-- fixed issues with "set" in code-completer
-- fixed issues with "option" in code-completer
 - improve the ability to distinguish the current group from other groups
 
 Version 1.6.1
