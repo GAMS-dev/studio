@@ -94,6 +94,7 @@ public:
     int rowCount();
     void ShowIfData();
     void setCasing(CodeCompleterCasing casing);
+    void setDebugMode(bool debug);
 
 protected:
     bool event(QEvent *event) override;
@@ -114,6 +115,7 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     bool mNeedDot = false;
+    bool mDebug = false;
 };
 
 } // namespace studio

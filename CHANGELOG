@@ -2,6 +2,7 @@ Version 1.6.2  *
 ==================
 - fixed issues with enumerated parameters in extended parameter editor
 - fixed issues with "set" in code-completer
+- fixed issues with "option" in code-completer
 
 Version 1.6.1
 ==================
