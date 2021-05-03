@@ -112,19 +112,6 @@ void FileMeta::invalidate()
     }
 }
 
-void FileMeta::takeEditsFrom(FileMeta *other)
-{
-    if (mDocument) return;
-    mEditors = other->mEditors;
-    mDocument = other->mDocument;
-    other->mDocument = nullptr;
-    other->mEditors.clear();
-    for (QWidget *wid: qAsConst(mEditors)) {
-        ViewHelper::setLocation(wid, location());
-        ViewHelper::setFileId(wid, id());
-    }
-}
-
 FileMeta::~FileMeta()
 {
     if (mDocument) unlinkAndFreeDocument();
@@ -446,6 +433,7 @@ void FileMeta::addEditor(QWidget *edit)
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
         if (scEdit && mHighlighter) {
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+            connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
             connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
         }
 
@@ -519,6 +507,7 @@ void FileMeta::removeEditor(QWidget *edit)
     }
     if (scEdit && mHighlighter) {
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+        connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
         disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
     }
 }
@@ -968,7 +957,8 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
     if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        codeEdit  = new CodeEdit(tabWidget);
+        codeEdit = new CodeEdit(tabWidget);
+        codeEdit->setCompleter(mFileRepo->completer());
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth

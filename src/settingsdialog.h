@@ -68,6 +68,7 @@ private slots:
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
     void on_sb_tabsize_valueChanged(int size);
+    void prepareModifyTheme();
     void themeModified();
     void setModified();
     bool setAndCheckUserLib(const QString &path);

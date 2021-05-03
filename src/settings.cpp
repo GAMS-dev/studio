@@ -302,7 +302,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSearchUseRegex, scSys, {"search", "regex"}, false);
     safelyAdd(res, skSearchCaseSens, scSys, {"search", "caseSens"}, false);
     safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, false);
-    safelyAdd(res, skSearchScope, scSys, {"search", "scope"}, 0);
 
     // general settings page
     safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir());
@@ -312,6 +311,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skOpenLst, scUser, {"openLst"}, false);
     safelyAdd(res, skJumpToError, scUser, {"jumpToErrors"}, true);
     safelyAdd(res, skForegroundOnDemand, scUser, {"foregroundOnDemand"}, true);
+    safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
 
     // editor settings page
@@ -330,6 +330,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdLogBackupCount, scUser, {"editor","logBackupCount"}, 3);
     safelyAdd(res, skEdAutoCloseBraces, scUser, {"editor","autoCloseBraces"}, true);
     safelyAdd(res, skEdEditableMaxSizeMB, scUser, {"editor","editableMaxSizeMB"}, 50);
+    safelyAdd(res, skEdCompleterAutoOpen, scUser, {"editor","completerAutoShow"}, true);
+    safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

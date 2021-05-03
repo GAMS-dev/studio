@@ -77,8 +77,8 @@ void Theme::initSlotTexts()
 
     mSlotText.insert(Syntax_formula,            "Formula");
     mSlotText.insert(Syntax_comment,            "Comment");
-    mSlotText.insert(Syntax_directive,          "Dollar Control Option");
-    mSlotText.insert(Syntax_directiveBody,      "Dollar Control Argument");
+    mSlotText.insert(Syntax_dco,          "Dollar Control Option");
+    mSlotText.insert(Syntax_dcoBody,      "Dollar Control Argument");
     mSlotText.insert(Syntax_title,              "Title");
     mSlotText.insert(Syntax_keyword,            "Keyword");
     mSlotText.insert(Syntax_declaration,        "Declaration Keyword");
@@ -147,9 +147,9 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Normal_Yellow,                  QColor(Qt::darkYellow));
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
-    mColorThemes[sNr].insert(Syntax_directive,               Color(QColor(Qt::darkMagenta).darker(120)));
+    mColorThemes[sNr].insert(Syntax_dco,               Color(QColor(Qt::darkMagenta).darker(120)));
     mColorThemes[sNr].insert(Syntax_formula,                 Color(Qt::black));
-    mColorThemes[sNr].insert(Syntax_directiveBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
     mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(120, 120, 120), fItalic)); //QColor(150, 120, 65)
     mColorThemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
@@ -198,7 +198,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
     mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_directive,               QColor(200,60,90));
+    mColorThemes[sNr].insert(Syntax_dco,               QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
@@ -208,7 +208,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
-    mColorThemes[sNr].insert(Syntax_directiveBody,           Color(dark_highlight, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody,           Color(dark_highlight, fItalic));
 
     mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
     mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));
