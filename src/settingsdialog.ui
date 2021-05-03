@@ -652,8 +652,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">
@@ -766,6 +766,13 @@
           <property name="verticalSpacing">
            <number>4</number>
           </property>
+          <item row="4" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states: </string>
+            </property>
+           </widget>
+          </item>
           <item row="3" column="0">
            <widget class="QLabel" name="lbl_wpHistory">
             <property name="text">
@@ -773,14 +780,79 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_openModLib">
+            <property name="text">
+             <string>User model library: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lbl_AutoReloadTypes">
+            <property name="text">
+             <string>Auto-reload extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="3">
            <widget class="QCheckBox" name="confirmNeosCheckBox">
             <property name="text">
              <string>Always agree to NEOS &quot;Terms Of Use&quot;</string>
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
+          <item row="0" column="0">
+           <widget class="QLabel" name="lbl_userGamsTypes">
+            <property name="text">
+             <string>GAMS source file extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="3">
+           <widget class="QLineEdit" name="edAutoReloadTypes"/>
+          </item>
+          <item row="0" column="1" colspan="3">
+           <widget class="QLineEdit" name="edUserGamsTypes">
+            <property name="toolTip">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
+            <property name="text">
+             <string>Reset History</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="btn_resetView">
+            <property name="text">
+             <string>Reset Window</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QPushButton" name="btn_openUserLibLocation">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Select</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" colspan="2">
+           <widget class="QComboBox" name="cb_userLib">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
            <spacer name="horizontalSpacer_2">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -792,71 +864,6 @@
              </size>
             </property>
            </spacer>
-          </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="btn_resetView">
-            <property name="text">
-             <string>Reset Window</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1" colspan="2">
-           <widget class="QLineEdit" name="edUserGamsTypes">
-            <property name="toolTip">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lbl_userGamsTypes">
-            <property name="text">
-             <string>GAMS source file extensions:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="lbl_openModLib">
-            <property name="text">
-             <string>User model library: </string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1">
-           <widget class="QPushButton" name="btn_openUserLibLocation">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Open Location</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="0">
-           <widget class="QLabel" name="lbl_resetView">
-            <property name="text">
-             <string>Reset window size, position and states: </string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="btn_resetHistory">
-            <property name="text">
-             <string>Reset History</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="2">
-           <widget class="QLineEdit" name="edAutoReloadTypes"/>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="lbl_AutoReloadTypes">
-            <property name="text">
-             <string>Auto-reload extensions:</string>
-            </property>
-           </widget>
           </item>
          </layout>
         </widget>

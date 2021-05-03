@@ -292,6 +292,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // user model library directory
     safelyAdd(res, skUserModelLibraryDir, scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());
+    safelyAdd(res, skUserModelLibraryHistory, scSys, {"userModelLibraryHistory"}, QString());
 
     // settings of help page
     safelyAdd(res, skHelpBookmarks, scSys, {"help","bookmarks"}, QJsonArray());

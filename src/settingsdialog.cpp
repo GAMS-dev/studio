@@ -98,6 +98,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
+    connect(ui->cb_userLib, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->cb_userLib, &QComboBox::currentTextChanged, this, &SettingsDialog::checkPath);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -164,6 +166,8 @@ void SettingsDialog::loadSettings()
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
     ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
+    ui->cb_userLib->addItem(mSettings->toString(skUserModelLibraryDir));
+    ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryHistory).split(','));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -176,7 +180,7 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 {
     if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
         mInitializing = false;
-        for (ThemeWidget *wid : mColorWidgets) {
+        for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
             wid->refresh();
         }
     }
@@ -185,6 +189,13 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
+}
+
+void SettingsDialog::checkPath(const QString &path)
+{
+    if (sender() == ui->cb_userLib) {
+        ui->cb_userLib->setStyleSheet( QFileInfo(path).exists() ? "" : "color:"+toColor(Theme::Normal_Red).name()+";");
+    }
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
@@ -260,6 +271,13 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
     mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
 
+    mSettings->setString(skUserModelLibraryDir, ui->cb_userLib->itemText(0));
+    QStringList userModelHist;
+    for (int i = 1; i < ui->cb_userLib->model()->rowCount(); ++i) {
+        userModelHist << ui->cb_userLib->itemText(i);
+    }
+    mSettings->setString(skUserModelLibraryHistory, userModelHist.join(','));
+
     // solver option editor
     mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
@@ -281,7 +299,7 @@ void SettingsDialog::on_btn_browse_clicked()
     filedialog.setFileMode(QFileDialog::Directory);
 
     if (filedialog.exec())
-        workspace = filedialog.selectedFiles().first();
+        workspace = filedialog.selectedFiles().at(0);
 
     ui->txt_workspace->setText(workspace);
 }
@@ -289,6 +307,13 @@ void SettingsDialog::on_btn_browse_clicked()
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
+        if (!ui->cb_userLib->model()->rowCount() || ui->cb_userLib->currentText() != ui->cb_userLib->itemText(0)) {
+            if (QFileInfo(ui->cb_userLib->currentText()).exists()) {
+                int i = ui->cb_userLib->findText(ui->cb_userLib->currentText());
+                if (i > 0) ui->cb_userLib->removeItem(i);
+                ui->cb_userLib->insertItem(0, ui->cb_userLib->currentText());
+            }
+        }
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
@@ -334,14 +359,30 @@ void SettingsDialog::themeModified()
 {
     setModified();
     emit themeChanged();
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->toString(skUserModelLibraryDir)));
+    QString path = (QFileInfo(ui->cb_userLib->currentText()).exists()) ? ui->cb_userLib->currentText()
+                                                                       : mSettings->toString(skUserModelLibraryDir);
+    QFileDialog *fd = new QFileDialog(this, "Select User Library Folder", path);
+    fd->setAcceptMode(QFileDialog::AcceptOpen);
+    fd->setFileMode(QFileDialog::DirectoryOnly);
+    connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
+        const QStringList selFiles = fd->selectedFiles();
+        if (res && !selFiles.isEmpty()) {
+            int i = ui->cb_userLib->findText(selFiles.first());
+            if (i >= 0)
+                ui->cb_userLib->removeItem(i);
+            ui->cb_userLib->insertItem(0, selFiles.first());
+            ui->cb_userLib->setCurrentIndex(0);
+        }
+        fd->deleteLater();
+    });
+    fd->open();
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -602,7 +643,7 @@ void SettingsDialog::initColorPage()
 
 void SettingsDialog::setThemeEditable(bool editable)
 {
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->setReadonly(!editable);
     }
     ui->btRenameTheme->setEnabled(editable);
@@ -630,7 +671,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -642,7 +683,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : mColorWidgets) {
+    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -653,10 +694,11 @@ void SettingsDialog::on_btImportTheme_clicked()
     fd->setAcceptMode(QFileDialog::AcceptOpen);
     fd->setFileMode(QFileDialog::ExistingFiles);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
-        if (res && !fd->selectedFiles().isEmpty()) {
+        const QStringList selFiles = fd->selectedFiles();
+        if (res && !selFiles.isEmpty()) {
             int shift = mFixedThemeCount-2;
             int index = ui->cbThemes->currentIndex() - shift;
-            for (const QString &fName : fd->selectedFiles()) {
+            for (const QString &fName : selFiles) {
                 index = Theme::instance()->readUserTheme(Settings::settings()->importTheme(fName));
                 if (index < 0) {
                     // error

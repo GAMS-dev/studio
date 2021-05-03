@@ -126,6 +126,7 @@ enum SettingsKey {
 
     // user model library directory
     skUserModelLibraryDir,
+    skUserModelLibraryHistory,
 
     // syntax colors
     skUserThemes,

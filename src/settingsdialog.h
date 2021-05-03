@@ -70,6 +70,7 @@ private slots:
     void on_sb_tabsize_valueChanged(int size);
     void themeModified();
     void setModified();
+    void checkPath(const QString &path);
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
 
