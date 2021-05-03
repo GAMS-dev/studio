@@ -70,7 +70,7 @@ private slots:
     void on_sb_tabsize_valueChanged(int size);
     void themeModified();
     void setModified();
-    void checkPath(const QString &path);
+    bool setAndCheckUserLib(const QString &path);
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
 
@@ -106,6 +106,7 @@ private:
     void setModifiedStatus(bool status);
     void initColorPage();
     void setThemeEditable(bool editable);
+    void prependUserLib();
 
 };
 

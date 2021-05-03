@@ -98,8 +98,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
-    connect(ui->cb_userLib, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
-    connect(ui->cb_userLib, &QComboBox::currentTextChanged, this, &SettingsDialog::checkPath);
+    connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -166,8 +165,9 @@ void SettingsDialog::loadSettings()
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
     ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
-    ui->cb_userLib->addItem(mSettings->toString(skUserModelLibraryDir));
-    ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryHistory).split(','));
+    ui->cb_userLib->clear();
+    ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
+    ui->cb_userLib->setCurrentIndex(0);
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -189,13 +189,6 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
-}
-
-void SettingsDialog::checkPath(const QString &path)
-{
-    if (sender() == ui->cb_userLib) {
-        ui->cb_userLib->setStyleSheet( QFileInfo(path).exists() ? "" : "color:"+toColor(Theme::Normal_Red).name()+";");
-    }
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
@@ -271,12 +264,15 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
     mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
 
-    mSettings->setString(skUserModelLibraryDir, ui->cb_userLib->itemText(0));
+    // user model library
+    prependUserLib();
     QStringList userModelHist;
-    for (int i = 1; i < ui->cb_userLib->model()->rowCount(); ++i) {
-        userModelHist << ui->cb_userLib->itemText(i);
+    for (int i = 0; i < ui->cb_userLib->model()->rowCount(); ++i) {
+        QString path = ui->cb_userLib->itemText(i).trimmed();
+        if (!path.isEmpty())
+            userModelHist << path;
     }
-    mSettings->setString(skUserModelLibraryHistory, userModelHist.join(','));
+    mSettings->setString(skUserModelLibraryDir, userModelHist.join(','));
 
     // solver option editor
     mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
@@ -307,13 +303,6 @@ void SettingsDialog::on_btn_browse_clicked()
 void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
-        if (!ui->cb_userLib->model()->rowCount() || ui->cb_userLib->currentText() != ui->cb_userLib->itemText(0)) {
-            if (QFileInfo(ui->cb_userLib->currentText()).exists()) {
-                int i = ui->cb_userLib->findText(ui->cb_userLib->currentText());
-                if (i > 0) ui->cb_userLib->removeItem(i);
-                ui->cb_userLib->insertItem(0, ui->cb_userLib->currentText());
-            }
-        }
         saveSettings();
         emit userGamsTypeChanged();
     } else { // reject
@@ -366,20 +355,18 @@ void SettingsDialog::themeModified()
 
 void SettingsDialog::on_btn_openUserLibLocation_clicked()
 {
-    QString path = (QFileInfo(ui->cb_userLib->currentText()).exists()) ? ui->cb_userLib->currentText()
-                                                                       : mSettings->toString(skUserModelLibraryDir);
+
+    QString path = ui->cb_userLib->currentText();
+    if (!QFileInfo::exists(path))
+        path = mSettings->toString(skUserModelLibraryDir).split(",", Qt::SkipEmptyParts).first();
+
     QFileDialog *fd = new QFileDialog(this, "Select User Library Folder", path);
     fd->setAcceptMode(QFileDialog::AcceptOpen);
     fd->setFileMode(QFileDialog::DirectoryOnly);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
         const QStringList selFiles = fd->selectedFiles();
-        if (res && !selFiles.isEmpty()) {
-            int i = ui->cb_userLib->findText(selFiles.first());
-            if (i >= 0)
-                ui->cb_userLib->removeItem(i);
-            ui->cb_userLib->insertItem(0, selFiles.first());
-            ui->cb_userLib->setCurrentIndex(0);
-        }
+        if (res && !selFiles.isEmpty())
+            setAndCheckUserLib(selFiles.first());
         fd->deleteLater();
     });
     fd->open();
@@ -649,6 +636,33 @@ void SettingsDialog::setThemeEditable(bool editable)
     ui->btRenameTheme->setEnabled(editable);
     ui->btRemoveTheme->setEnabled(editable);
     ui->btExportTheme->setEnabled(editable);
+}
+
+bool SettingsDialog::setAndCheckUserLib(const QString &path)
+{
+    QString veriPath = path.isEmpty() ? ui->cb_userLib->currentText() : path;
+    bool res = QFileInfo::exists(veriPath);
+    ui->cb_userLib->setEditText(veriPath);
+    ui->cb_userLib->setStyleSheet( res ? "" : "color:"+toColor(Theme::Normal_Red).name()+";");
+    setModified();
+    return res;
+}
+
+void SettingsDialog::prependUserLib()
+{
+    QString path = ui->cb_userLib->currentText().trimmed();
+    if (path.endsWith('/') || path.endsWith('\\'))
+        path = path.left(path.length()-1);
+    while (true) {
+        int i = ui->cb_userLib->findText(path);
+        if (i < 0) break;
+        ui->cb_userLib->removeItem(i);
+    }
+    ui->cb_userLib->insertItem(0, path);
+    while (ui->cb_userLib->count() > 10)
+        ui->cb_userLib->removeItem(ui->cb_userLib->count()-1);
+    ui->cb_userLib->setCurrentIndex(0);
+
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()
