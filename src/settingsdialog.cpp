@@ -45,6 +45,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->tabWidget->setCurrentIndex(0);
     ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->tb_userLibRemove->setIcon(Theme::icon(":/%1/delete-all"));
+    ui->tb_userLibOpen->setIcon(Theme::icon(":/%1/forward"));
 
     // Themes
     ui->cbThemes->clear();
@@ -403,7 +404,11 @@ void SettingsDialog::on_tb_userLibRemove_clicked()
     if (ui->cb_userLib->count() == 0)
         ui->cb_userLib->addItem(CommonPaths::userModelLibraryDir());
     ui->cb_userLib->setCurrentIndex(0);
+}
 
+void SettingsDialog::on_tb_userLibOpen_clicked()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(ui->cb_userLib->currentText().trimmed()));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -681,6 +686,7 @@ bool SettingsDialog::setAndCheckUserLib(const QString &path)
     bool res = QFileInfo::exists(veriPath);
     ui->cb_userLib->setEditText(veriPath);
     ui->cb_userLib->setStyleSheet( res ? "" : "color:"+toColor(Theme::Normal_Red).name()+";");
+    ui->tb_userLibRemove->setEnabled(veriPath != CommonPaths::userModelLibraryDir());
     setModified();
     return res;
 }

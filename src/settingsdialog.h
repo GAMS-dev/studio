@@ -91,6 +91,7 @@ private slots:
 
     void on_tb_userLibSelect_clicked();
     void on_tb_userLibRemove_clicked();
+    void on_tb_userLibOpen_clicked();
 
 private:
     Ui::SettingsDialog *ui;
