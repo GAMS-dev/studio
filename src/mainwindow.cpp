@@ -2424,7 +2424,8 @@ QString MainWindow::currentPath()
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
+    QString path = Settings::settings()->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts).first();
+    modeldialog::ModelDialog dialog(path, this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         modeldialog::LibraryItem *item = dialog.selectedLibraryItem();

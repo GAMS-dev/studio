@@ -6,8 +6,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>577</width>
-    <height>491</height>
+    <width>612</width>
+    <height>474</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>4</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -147,7 +147,7 @@
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Automatically save modified files before running GAMS</string>
+             <string>Save modified files before running GAMS</string>
             </property>
            </widget>
           </item>
@@ -640,8 +640,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>535</width>
-            <height>294</height>
+            <width>570</width>
+            <height>277</height>
            </rect>
           </property>
           <attribute name="label">
@@ -800,132 +800,19 @@
        <string>Misc.</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout_7">
-       <item row="0" column="0">
-        <widget class="QGroupBox" name="gb_general_2">
-         <property name="sizePolicy">
-          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
-           <horstretch>0</horstretch>
-           <verstretch>0</verstretch>
-          </sizepolicy>
-         </property>
-         <property name="title">
-          <string>Miscellaneous Settings</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_6">
-          <property name="topMargin">
-           <number>4</number>
-          </property>
-          <property name="verticalSpacing">
-           <number>4</number>
-          </property>
-          <item row="4" column="0">
-           <widget class="QLabel" name="lbl_resetView">
-            <property name="text">
-             <string>Reset window size, position and states: </string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QLabel" name="lbl_wpHistory">
-            <property name="text">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset 'Last Files' list on Welcome Page&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="lbl_openModLib">
-            <property name="text">
-             <string>User model library: </string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="lbl_AutoReloadTypes">
-            <property name="text">
-             <string>Auto-reload extensions:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0" colspan="3">
-           <widget class="QCheckBox" name="confirmNeosCheckBox">
-            <property name="text">
-             <string>Always agree to NEOS &quot;Terms Of Use&quot;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lbl_userGamsTypes">
-            <property name="text">
-             <string>GAMS source file extensions:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="1" column="1" colspan="3">
-           <widget class="QLineEdit" name="edAutoReloadTypes"/>
-          </item>
-          <item row="0" column="1" colspan="3">
-           <widget class="QLineEdit" name="edUserGamsTypes">
-            <property name="toolTip">
-             <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="1">
-           <widget class="QPushButton" name="btn_resetHistory">
-            <property name="text">
-             <string>Reset History</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="btn_resetView">
-            <property name="text">
-             <string>Reset Window</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="3">
-           <widget class="QPushButton" name="btn_openUserLibLocation">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Select</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="1" colspan="2">
-           <widget class="QComboBox" name="cb_userLib">
-            <property name="editable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="2">
-           <spacer name="horizontalSpacer_2">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>1</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="1" column="0">
         <widget class="QGroupBox" name="insertingNewOptionGroupBox">
          <property name="title">
           <string>Solver Option Editor Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_9">
+          <item row="2" column="0">
+           <widget class="QCheckBox" name="addCommentAboveCheckBox">
+            <property name="text">
+             <string>Add option description as comment above</string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="0">
            <widget class="QCheckBox" name="overrideExistingOptionCheckBox">
             <property name="text">
@@ -936,31 +823,17 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="insertingNewOptionLabel">
-            <property name="text">
-             <string>When inserting a new option from definition:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0">
-           <widget class="QCheckBox" name="addEOLCommentCheckBox">
-            <property name="text">
-             <string>Add option description as end of line comment (when available)</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QCheckBox" name="addCommentAboveCheckBox">
-            <property name="text">
-             <string>Add option description as comment above</string>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="deletingOptionLabel">
             <property name="text">
              <string>When deleting or replacing an option:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="insertingNewOptionLabel">
+            <property name="text">
+             <string>When inserting a new option from definition:</string>
             </property>
            </widget>
           </item>
@@ -971,6 +844,13 @@
             </property>
             <property name="checked">
              <bool>false</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QCheckBox" name="addEOLCommentCheckBox">
+            <property name="text">
+             <string>Add option description as end of line comment (when available)</string>
             </property>
            </widget>
           </item>
@@ -990,13 +870,144 @@
          </property>
         </spacer>
        </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="gb_general_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Miscellaneous Settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>4</number>
+          </property>
+          <item row="3" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
+            <property name="text">
+             <string>Reset History</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="btn_resetView">
+            <property name="text">
+             <string>Reset Window</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="2">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>1</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_openModLib">
+            <property name="text">
+             <string>User model library: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="3">
+           <widget class="QToolButton" name="tb_userLibSelect">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/folder-open-bw</normaloff>:/solid/folder-open-bw</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="4">
+           <widget class="QLineEdit" name="edAutoReloadTypes"/>
+          </item>
+          <item row="2" column="4">
+           <widget class="QToolButton" name="tb_userLibRemove">
+            <property name="text">
+             <string/>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1" colspan="2">
+           <widget class="QComboBox" name="cb_userLib">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lbl_userGamsTypes">
+            <property name="text">
+             <string>GAMS source file extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1" colspan="4">
+           <widget class="QLineEdit" name="edUserGamsTypes">
+            <property name="toolTip">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="lbl_wpHistory">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset 'Last Files' list on Welcome Page&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0" colspan="3">
+           <widget class="QCheckBox" name="confirmNeosCheckBox">
+            <property name="text">
+             <string>Always agree to NEOS &quot;Terms Of Use&quot;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lbl_AutoReloadTypes">
+            <property name="text">
+             <string>Auto-reload extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states </string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
     </widget>
    </item>
   </layout>
  </widget>
- <resources/>
+ <resources>
+  <include location="../icons/icons.qrc"/>
+ </resources>
  <connections>
   <connection>
    <sender>buttonBox</sender>

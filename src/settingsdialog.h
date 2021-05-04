@@ -75,7 +75,6 @@ private slots:
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
 
-    void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();
     void on_btn_export_clicked();
     void on_btn_import_clicked();
@@ -90,6 +89,8 @@ private slots:
     void on_btImportTheme_clicked();
     void on_btExportTheme_clicked();
 
+    void on_tb_userLibSelect_clicked();
+    void on_tb_userLibRemove_clicked();
 
 private:
     Ui::SettingsDialog *ui;

@@ -43,6 +43,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->tabWidget->setCurrentIndex(0);
+    ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->tb_userLibRemove->setIcon(Theme::icon(":/%1/delete-all"));
 
     // Themes
     ui->cbThemes->clear();
@@ -370,9 +372,8 @@ void SettingsDialog::themeModified()
     }
 }
 
-void SettingsDialog::on_btn_openUserLibLocation_clicked()
+void SettingsDialog::on_tb_userLibSelect_clicked()
 {
-
     QString path = ui->cb_userLib->currentText();
     if (!QFileInfo::exists(path))
         path = mSettings->toString(skUserModelLibraryDir).split(",", Qt::SkipEmptyParts).first();
@@ -387,6 +388,22 @@ void SettingsDialog::on_btn_openUserLibLocation_clicked()
         fd->deleteLater();
     });
     fd->open();
+}
+
+void SettingsDialog::on_tb_userLibRemove_clicked()
+{
+    QString path = ui->cb_userLib->currentText().trimmed();
+    if (path.endsWith('/') || path.endsWith('\\'))
+        path = path.left(path.length()-1);
+    while (true) {
+        int i = ui->cb_userLib->findText(path);
+        if (i < 0) break;
+        ui->cb_userLib->removeItem(i);
+    }
+    if (ui->cb_userLib->count() == 0)
+        ui->cb_userLib->addItem(CommonPaths::userModelLibraryDir());
+    ui->cb_userLib->setCurrentIndex(0);
+
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -682,7 +699,6 @@ void SettingsDialog::prependUserLib()
     while (ui->cb_userLib->count() > 10)
         ui->cb_userLib->removeItem(ui->cb_userLib->count()-1);
     ui->cb_userLib->setCurrentIndex(0);
-
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()
