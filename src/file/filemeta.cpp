@@ -155,6 +155,16 @@ bool FileMeta::checkActivelySavedAndReset()
     return res;
 }
 
+void FileMeta::updateEditsCompleter()
+{
+    if (!editors().isEmpty()) {
+        for (QWidget *wid : editors()) {
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
+                ce->setCompleter(mHighlighter ? mFileRepo->completer() : nullptr);
+        }
+    }
+}
+
 void FileMeta::linkDocument(QTextDocument *doc)
 {
     // The very first editor opened for this FileMeta should pass it's document here. It takes over parency
@@ -170,6 +180,7 @@ void FileMeta::linkDocument(QTextDocument *doc)
         mHighlighter = new syntax::SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+        updateEditsCompleter();
     }
 }
 
@@ -217,6 +228,7 @@ void FileMeta::refreshType()
                 }
             }
         }
+        updateEditsCompleter();
     }
     emit changed(mId);
 }
