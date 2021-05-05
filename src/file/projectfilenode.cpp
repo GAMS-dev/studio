@@ -48,12 +48,13 @@ void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
     ProjectAbstractNode::setParentNode(parent);
 }
 
-QIcon ProjectFileNode::icon()
+QIcon ProjectFileNode::icon(QIcon::Mode mode, int alpha)
 {
     ProjectGroupNode* par = parentNode();
     while (par && !par->toRunGroup()) par = par->parentNode();
     if (!par) return QIcon();
-    return FileIcon::iconForFileKind(file()->kind(), !file()->isReadOnly(), par->toRunGroup()->parameter("gms") == location());
+    return FileIcon::iconForFileKind(file()->kind(), !file()->isReadOnly(),
+                                     par->toRunGroup()->parameter("gms") == location(), mode, alpha);
 }
 
 QString ProjectFileNode::name(NameModifier mod) const

@@ -1,6 +1,7 @@
 Version 1.7.0  *
 ==================
 - added the possibility to change the "user library path" in the settings
+- improve the ability to distinguish the current group from other groups
 
 Version 1.6.1
 ==================

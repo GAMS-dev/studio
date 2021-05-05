@@ -1,5 +1,7 @@
 #include "codecompleter.h"
 #include "editors/codeedit.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
@@ -187,8 +189,6 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDco1);
 
-    mData << "set";
-    mDescription << "compile-time variable based on a GAMS set";
     mData << ".set";
     mDescription << "compile-time variable based on a GAMS set";
     mType.insert(mData.size()-1, ccSubDcoE);
@@ -283,6 +283,10 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
+//    if (sourceModel()->data(index).toString().startsWith("LimRow", Qt::CaseInsensitive)) {
+//        DEB() << "CHECK: " << sourceModel()->data(index).toString() << "  type " << QString::number(type, 16)
+//              << "  filter " << QString::number(mTypeFilter, 16);
+//    }
     if (!(type & mTypeFilter)) return false;
     if (type & ccSubDco) {
         if (sourceModel()->data(index, Qt::DisplayRole).toString().startsWith('.') != mNeedDot)
@@ -541,6 +545,11 @@ void CodeCompleter::setCasing(CodeCompleterCasing casing)
     mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
 }
 
+void CodeCompleter::setDebugMode(bool debug)
+{
+    mDebug = debug;
+}
+
 void CodeCompleter::insertCurrent()
 {
     if (!mEdit) return;
@@ -590,10 +599,12 @@ int CodeCompleter::getFilterFromSyntax()
     }
 
     // for analysis
-//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
-//    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-//        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
-//    }
+    if (mDebug) {
+        DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+            DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+        }
+    }
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
@@ -651,8 +662,6 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::Solve:
     case syntax::SyntaxKind::SolveBody:
     case syntax::SyntaxKind::SolveKey:
-    case syntax::SyntaxKind::Option:
-    case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
         res = ccStart; break;
 
@@ -660,8 +669,10 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::ExecuteKey:
         res = ccExec; break;
 
+    case syntax::SyntaxKind::OptionKey:
+    case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionBody:
-        res = ccOpt; break;
+        res = ccOpt | ccMod; break;
     default: ;
     }
 
@@ -681,7 +692,7 @@ int CodeCompleter::getFilterFromSyntax()
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
-        for (int i = start-1; i > 0; --i) {
+        for (int i = start; i > 0; --i) {
             if (mNeedDot && line.at(i) == '.') {
                 mNeedDot = false;
             } else {
@@ -701,7 +712,12 @@ int CodeCompleter::getFilterFromSyntax()
         res = res & ccNoDco;
     }
 
-//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+    if (mDebug) {
+        QString debugText = "Completer at " + QString::number(start) + ": "
+                + syntax::syntaxKindName(syntax::SyntaxKind(syntaxKind)) + "[" + QString::number(syntaxFlavor)
+                + "], filters " + QString::number(res, 16);
+        SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
+    }
     return res;
 }
 

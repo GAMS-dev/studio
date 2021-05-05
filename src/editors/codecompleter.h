@@ -27,7 +27,7 @@ enum CodeCompleterType {
     ccNoDco     = 0x7FFFFF00, // no DCOs
 
     ccRes1      = 0x00000100, // declarations
-    ccResS      = 0x00000200, // declaration: Set
+    ccResS      = 0x00000240, // declaration: Set
     ccResV      = 0x00000400, // declaration: Variable
     ccResT      = 0x00000800, // declaration: Table
     ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
@@ -94,6 +94,7 @@ public:
     int rowCount();
     void ShowIfData();
     void setCasing(CodeCompleterCasing casing);
+    void setDebugMode(bool debug);
 
 protected:
     bool event(QEvent *event) override;
@@ -114,6 +115,7 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     bool mNeedDot = false;
+    bool mDebug = false;
 };
 
 } // namespace studio
