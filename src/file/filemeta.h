@@ -135,6 +135,7 @@ private:
     QVector<QPoint> getEditPositions();
     void setEditPositions(QVector<QPoint> edPositions);
     bool checkActivelySavedAndReset();
+    void updateEditsCompleter();
     void linkDocument(QTextDocument *doc);
     void unlinkAndFreeDocument();
     void refreshType();
