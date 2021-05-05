@@ -142,25 +142,14 @@ QString CommonPaths::userModelLibraryDir()
     return userModelLibraryDir.path();
 }
 
-
-// Windows
-// 1. QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS"
-// 2. QStandardPaths::standardLocations(QStandardPaths::DataLocation) + "/GAMS"
-// 3. systemDir()/gamslice.txt
-//
-// Linux
-// 1. QStandardPaths::writableLocation(QStandardPaths::DataLocation) + "/GAMS"
-// 2. QStandardPaths::standardLocations(QStandardPaths::DataLocation) + "/GAMS"
-// 3. systemDir()/gamslice.txt
-QString CommonPaths::gamsLicenseFilePath()
+QString CommonPaths::gamsLicenseFilePath(const QStringList &dataPaths)
 {
-    const QString userLicenseFile = UserLicensePath + "/GAMS/" + LicenseFile;
-    const QString globalLicenseFile = systemDir() + "/" + LicenseFile;
-    if (QFileInfo::exists(userLicenseFile))
-        return QDir::cleanPath(userLicenseFile);
-    if (QFileInfo::exists(globalLicenseFile))
-        return QDir::cleanPath(globalLicenseFile);
-    return QDir::cleanPath(userLicenseFile);
+    Q_FOREACH(const auto &path, dataPaths) {
+        auto filePath = path + "/" +LicenseFile;
+        if (QFileInfo::exists(filePath))
+            return QDir::cleanPath(filePath);
+    }
+    return QDir::cleanPath(systemDir() + "/" + LicenseFile);
 }
 
 QString CommonPaths::gamsUserConfigDir()
@@ -194,7 +183,7 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
     case StandardDataPath: return GamsStandardDataPaths;
     default: {
         QStringList res = GamsStandardConfigPaths;
-        for (const QString &path: GamsStandardDataPaths)
+        Q_FOREACH (const QString &path, GamsStandardDataPaths)
             if (!res.contains(path)) res << path;
         return res; }
     }
@@ -235,6 +224,11 @@ QString CommonPaths::configFile()
 {
     QDir configFile(systemDir() + "/" + ConfigFile);
     return configFile.path();
+}
+
+QString CommonPaths::licenseFile()
+{
+    return LicenseFile;
 }
 
 QString CommonPaths::changelog()

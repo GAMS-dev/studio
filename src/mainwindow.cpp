@@ -56,7 +56,6 @@
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
-#include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
@@ -64,6 +63,7 @@
 #include "option/gamsuserconfig.h"
 #include "keys.h"
 #include "tabbarstyle.h"
+#include "support/gamslicenseinfo.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -510,23 +510,9 @@ QTabWidget* MainWindow::mainTabs()
 
 void MainWindow::initGamsStandardPaths()
 {
-    mInstProcess = new process::GamsInstProcess(this);
-    connect(mInstProcess, &process::GamsInstProcess::finished,
-            this, &MainWindow::gamsInstFinished);
-    connect(mInstProcess, &process::GamsInstProcess::newProcessCall,
-            this, &MainWindow::newProcessCall);
-    mInstProcess->execute();
-}
-
-void MainWindow::gamsInstFinished(NodeId origin, int exitCode)
-{
-    Q_UNUSED(origin)
-    if (exitCode) return;
-    if (!mInstProcess) return;
-    CommonPaths::setGamsStandardPaths(mInstProcess->configPaths(), CommonPaths::StandardConfigPath);
-    CommonPaths::setGamsStandardPaths(mInstProcess->dataPaths(), CommonPaths::StandardDataPath);
-    mInstProcess->deleteLater();
-    mInstProcess = nullptr;
+    support::GamsLicenseInfo licenseInfo;
+    CommonPaths::setGamsStandardPaths(licenseInfo.gamsConfigLocations(), CommonPaths::StandardConfigPath);
+    CommonPaths::setGamsStandardPaths(licenseInfo.gamsDataLocations(), CommonPaths::StandardDataPath);
 }
 
 void MainWindow::getParameterValue(QString param, QString &value)
@@ -4916,7 +4902,8 @@ void MainWindow::checkGamsLicense()
                               " For more options, please check the GAMS documentation.";
     try {
         support::GamsLicensingDialog::createLicenseFile(this);
-        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
+        auto dataPaths = support::GamsLicenseInfo().gamsDataLocations();
+        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath(dataPaths));
         if (QFileInfo::exists(licenseFile)) {
             appendSystemLogInfo("GAMS license found at " + licenseFile);
         } else {

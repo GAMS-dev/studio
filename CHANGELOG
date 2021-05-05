@@ -3,6 +3,7 @@ Version 1.6.3  *
 - removed duplicate file entries in the ProjectExplorer that refer to the same file, but differ in case
 - fixed Studio title bar above top screen bound
 - fixed issues with "File" tab in reference file viewer
+- fixed usage of GAMS license file locations
 
 Version 1.6.2
 ==================

@@ -57,6 +57,8 @@ private slots:
 
     void testSolverLicense();
 
+    void testGamsDataLocations();
+    void testGamsConfigLocations();
 };
 
 #endif // TESTGAMSLICENSEINFO_H
