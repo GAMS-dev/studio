@@ -199,7 +199,7 @@ SyntaxIdentAssign::SyntaxIdentAssign(SyntaxKind kind, SharedSyntaxData *sharedDa
 
     switch (kind) {
     case SyntaxKind::IdentifierAssignment:
-        mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::AssignmentLabel;
+        mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::AssignmentSystemData << SyntaxKind::AssignmentLabel;
         mEmptyLineKinds = mSubKinds;
         break;
     case SyntaxKind::IdentifierAssignmentEnd:
@@ -217,7 +217,8 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, cons
     int start = index;
     bool inside = (kind() != SyntaxKind::IdentifierAssignmentEnd
                    && (entryKind == SyntaxKind::AssignmentLabel
-                       || entryKind == SyntaxKind::AssignmentValue));
+                       || entryKind == SyntaxKind::AssignmentValue
+                       || entryKind == SyntaxKind::AssignmentSystemData));
     QString delims = inside ? (flavor & flavorModel ? ",+-" : ",") : "/";
     while (isWhitechar(line, start))
         ++start;
@@ -244,7 +245,7 @@ AssignmentLabel::AssignmentLabel(SharedSyntaxData *sharedData)
     mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
-              << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue ;
+              << SyntaxKind::AssignmentSystemData << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue;
 }
 
 SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -254,7 +255,8 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
     int start = index;
     while (isWhitechar(line, start)) start++;
     if (start >= line.size()) return SyntaxBlock(this);
-    if (entryKind == SyntaxKind::AssignmentLabel && index != 0) {
+    if ((entryKind == SyntaxKind::AssignmentLabel || entryKind == SyntaxKind::AssignmentSystemData)
+            && index != 0 && !(flavor & flavorBindLabel)) {
         return SyntaxBlock(this);
     }
     int nesting = 0; // (JM) Best, if we can get nesting from prev line
@@ -265,10 +267,16 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
     QString pPairs("()");
     int end = start;
     bool extended = false;
+    if (flavor & flavorBindLabel) {
+        extended = true;
+        flavor -= flavorBindLabel;
+    }
+
     for (int pos = start; pos < line.length(); ++pos) {
         if (extender.contains(line.at(pos))) {
             while (isWhitechar(line, pos+1)) ++pos;
-            extended = true;
+            return SyntaxBlock(this, (flavor | flavorBindLabel), start, pos+1, SyntaxShift::shift);
+//            extended = true;
         } else {
             if (quote.contains(line.at(pos))) {
                 pos = endOfQuotes(line, pos);
@@ -290,9 +298,8 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
         end = pos+1;
     }
 
-    if (end > start) {
+    if (end > start)
         return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
-    }
     return SyntaxBlock(this);
 }
 

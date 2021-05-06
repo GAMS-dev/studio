@@ -127,6 +127,14 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
+class AssignmentSystemData: public SyntaxKeywordBase
+{
+public:
+    AssignmentSystemData(SharedSyntaxData *sharedData);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
 constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }
 
 } // namespace syntax

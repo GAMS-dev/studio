@@ -67,6 +67,7 @@ enum class SyntaxKind {
     IdentifierAssignment,
     AssignmentLabel,
     AssignmentValue,
+    AssignmentSystemData,
     IdentifierAssignmentEnd,        // after assignment to keep declaration-level
 
     IdentifierTableAssignmentColHead,
@@ -100,6 +101,7 @@ enum FlavorFlag {
     flavorTable = 2,
     flavorModel = 4,
     flavorPreTable = 8,
+    flavorBindLabel = 16,
 };
 
 enum class SyntaxShift {

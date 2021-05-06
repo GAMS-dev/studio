@@ -384,6 +384,50 @@ SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, int flavo
     return SyntaxKeywordBase::validTail(line, index, flavor, hasContent);
 }
 
+AssignmentSystemData::AssignmentSystemData(SharedSyntaxData *sharedData)
+    : SyntaxKeywordBase(SyntaxKind::AssignmentSystemData, sharedData)
+{
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
+    mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
+              << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue;
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::systemData();
+    mKeywords.insert(int(SyntaxKind::AssignmentSystemData), new DictList(list));
+}
+
+SyntaxBlock AssignmentSystemData::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+{
+    // TODO(JM) check for which flavors this is valid
+    Q_UNUSED(entryKind)
+    const QString sys("system.");
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    // allways starts with "system."
+    if (line.length() < start+sys.length())
+        return SyntaxBlock(this);
+    for (int i = 0; i < sys.length(); ++i) {
+        if (sys.at(i) != line.at(start+i).toLower())
+            return SyntaxBlock(this);
+    }
+    start += sys.length();
+    // look for system-data keyword
+    int iKey;
+    int end = findEnd(kind(), line, start, iKey);
+    if (end > start) {
+        if (flavor & flavorBindLabel)
+            flavor -= flavorBindLabel;
+        return SyntaxBlock(this, flavor, index, end, false, SyntaxShift::shift, kind());
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, int flavor, bool &hasContent)
+{
+    return SyntaxBlock(this);
+}
+
 
 } // namespace syntax
 } // namespace studio
