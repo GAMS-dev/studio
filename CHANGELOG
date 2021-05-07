@@ -2,8 +2,8 @@ Version 1.6.2  *
 ==================
 - fixed issues with enumerated parameters in extended parameter editor
 - fixed issues with "set", "option", and "table" in code-completer
-- ensure code-completer opens in highlighted files only
-- ensure "Open in current group" is used for "user model library" and "new file"
+- fixed code-completer opening in non-code files
+- fixed "Open in current group" not being used for "User Model Library"
 
 Version 1.6.1
 ==================
