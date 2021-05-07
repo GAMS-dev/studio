@@ -59,19 +59,19 @@ void CodeCompleterModel::initData()
                 mData << "Equation Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Parameter") {
+        } else if (it->first.startsWith("Parameter")) {
             mType.insert(mData.size()-1, ccRes1);
             if (it->first.endsWith("s")) {
                 mData << "Parameter Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Set") {
+        } else if (it->first.startsWith("Set")) {
             mType.insert(mData.size()-1, ccResS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Variable") {
+        } else if (it->first.startsWith("Variable")) {
             mType.insert(mData.size()-1, ccResV);
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
