@@ -392,7 +392,7 @@ AssignmentSystemData::AssignmentSystemData(SharedSyntaxData *sharedData)
     mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue;
     QList<QPair<QString, QString>> list;
-    list = SyntaxData::systemData();
+    list = /*SyntaxData::*/systemData();
     mKeywords.insert(int(SyntaxKind::AssignmentSystemData), new DictList(list));
 }
 
