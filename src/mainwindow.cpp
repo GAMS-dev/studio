@@ -722,9 +722,12 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             int answer = msgBox.exec();
 
             switch(answer) {
-            case 0: // open
-                openFileNode(addNode("", gmsFilePath));
+            case 0: {// open
+                ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+                                                                                                             : nullptr;
+                openFileNode(addNode("", gmsFilePath, group));
                 return;
+            }
             case 1: // replace
                 fm->renameToBackup();
                 // and continue;
@@ -1244,7 +1247,10 @@ void MainWindow::on_menuFile_aboutToShow()
 
 void MainWindow::on_actionNew_triggered()
 {
-    newFileDialog();
+    QVector<ProjectGroupNode*> groups;
+    if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group())
+        groups << mRecent.group();
+    newFileDialog(groups);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -1887,9 +1893,11 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
+    ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+                                                                                                 : nullptr;
+    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile(), group);
     if (!node)
-        node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
+        node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), group);
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log)
