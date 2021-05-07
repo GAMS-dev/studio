@@ -88,6 +88,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new AssignmentLabel(d), Theme::Syntax_assignLabel);
     initKind(new AssignmentValue(d), Theme::Syntax_assignValue);
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd, d), Theme::Syntax_assignLabel);
+    initKind(new AssignmentSystemData(d), Theme::Syntax_assignLabel);
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentColHead, d), Theme::Syntax_tableHeader);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead, d), Theme::Syntax_tableHeader);

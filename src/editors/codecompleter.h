@@ -40,6 +40,8 @@ enum CodeCompleterType {
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
+    ccSysDat    = 0x00100000, // system data
+
     ccStart     = 0x7FF0F7FD, // all starting keywords
 
     ccAll       = 0x7FFFFFFF
@@ -106,7 +108,7 @@ protected:
 
 private:
     void insertCurrent();
-    int getFilterFromSyntax();
+    int getFilterFromSyntax(const QMap<int, QPair<int, int> > &blockSyntax);
 
 private:
     CodeEdit *mEdit;

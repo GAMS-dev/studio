@@ -209,6 +209,17 @@ void CodeCompleterModel::initData()
     mDescription << "abort without error";
     mType.insert(mData.size()-1, ccDco1);
 
+    // system data
+    src = syntax::/*SyntaxData::*/systemData();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << "system."+it->first;
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccSysDat);
+
+
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
@@ -418,6 +429,7 @@ void CodeCompleter::actionEvent(QActionEvent *event)
 enum CharGroup {
     clAlpha,
     clNum,
+    clNumSym,
     clFix,
     clBreak,
     clSpace,
@@ -425,7 +437,8 @@ enum CharGroup {
 
 CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
-    if ((c >= '0' && c <= '9') || c == ':' || c == '.') return clNum;
+    if (c >= '0' && c <= '9') return clNum;
+    if (c == ':' || c == '.') return clNumSym;
     if (c == '$') return clFix;
     if (c == ' ' || c == '\t') return clSpace;
     return clBreak;
@@ -435,14 +448,33 @@ void CodeCompleter::updateFilter()
 {
     if (!mEdit) return;
     QTextCursor cur = mEdit->textCursor();
+    QMap<int,QPair<int, int>> blockSyntax;
+    emit mEdit->scanSyntax(cur.block(), blockSyntax);
     QString line = cur.block().text();
     int peekStart = cur.positionInBlock();
+    int syntaxKind = 0;
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (it.key() > peekStart) break;
+        syntaxKind = it.value().first;
+    }
+
     int validStart = peekStart;
     while (peekStart > 0) {
         --peekStart;
         CharGroup cg = group(line.at(peekStart));
         if (cg >= clBreak) break;
         if (cg == clAlpha || cg == clNum) validStart = peekStart;
+        if (cg == clNumSym) {
+            if (syntaxKind == int(syntax::SyntaxKind::Assignment) || syntaxKind == int(syntax::SyntaxKind::AssignmentLabel)) {
+                if (line.at(peekStart) == '.') {
+                    const QString sys("system.");
+                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0)
+                        validStart -= sys.length();
+                    break;
+                }
+            } else
+                validStart = peekStart;
+        }
         if (cg == clFix) {
             validStart = peekStart;
             break;
@@ -458,7 +490,7 @@ void CodeCompleter::updateFilter()
     // assign filter
     if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
-    mFilterModel->setTypeFilter(getFilterFromSyntax(), mNeedDot);
+    mFilterModel->setTypeFilter(getFilterFromSyntax(blockSyntax), mNeedDot);
     QString filterRex = mFilterText;
     filterRex.replace(".", "\\.").replace("$", "\\$");
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
@@ -567,7 +599,7 @@ void CodeCompleter::insertCurrent()
     hide();
 }
 
-int CodeCompleter::getFilterFromSyntax()
+int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyntax)
 {
     if (!mEdit) return ccNone;
     int res = ccAll;
@@ -575,9 +607,6 @@ int CodeCompleter::getFilterFromSyntax()
     int syntaxKind = 0;
     int syntaxFlavor = 0;
     int dcoFlavor = 0;
-
-    QMap<int,QPair<int, int>> blockSyntax;
-    emit mEdit->scanSyntax(cur.block(), blockSyntax);
 
     QString line = cur.block().text();
     int start = cur.positionInBlock() - mFilterText.length();
@@ -590,7 +619,7 @@ int CodeCompleter::getFilterFromSyntax()
     }
 
     // for analysis
-//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
 //    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
 //        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
 //    }
@@ -606,6 +635,7 @@ int CodeCompleter::getFilterFromSyntax()
         res = ccStart; break;
 
     case syntax::SyntaxKind::SubDCO:
+    case syntax::SyntaxKind::AssignmentSystemData:
         res = ccNone; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
@@ -635,14 +665,15 @@ int CodeCompleter::getFilterFromSyntax()
     case syntax::SyntaxKind::IdentifierDim:
     case syntax::SyntaxKind::IdentifierDimEnd:
     case syntax::SyntaxKind::IdentifierDescription:
-    case syntax::SyntaxKind::IdentifierAssignment:
-    case syntax::SyntaxKind::AssignmentLabel:
     case syntax::SyntaxKind::AssignmentValue:
     case syntax::SyntaxKind::IdentifierAssignmentEnd:
     case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRow:
         res = ccDco; break;
+    case syntax::SyntaxKind::IdentifierAssignment:
+    case syntax::SyntaxKind::AssignmentLabel:
+        res = ccDco | ccSysDat; break;
 
     case syntax::SyntaxKind::Embedded:
     case syntax::SyntaxKind::EmbeddedBody:
@@ -701,7 +732,7 @@ int CodeCompleter::getFilterFromSyntax()
         res = res & ccNoDco;
     }
 
-//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 
