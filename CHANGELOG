@@ -4,7 +4,7 @@ Version 1.6.2
 - fixed issues with "set", "option", and "table" in code-completer
 - fixed code-completer opening in non-code files
 - fixed "Open in current group" not being used for "User Model Library"
-- adjusted visualization of Project Explorer to better highlight current active group and file
+- adjusted visualization of Project Explorer to better highlight current active group and files
 
 Version 1.6.1
 ==================
