@@ -275,8 +275,10 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
     for (int pos = start; pos < line.length(); ++pos) {
         if (extender.contains(line.at(pos))) {
             while (isWhitechar(line, pos+1)) ++pos;
-            return SyntaxBlock(this, (flavor | flavorBindLabel), start, pos+1, SyntaxShift::shift);
-//            extended = true;
+            if (line.at(pos) == '*')
+                extended = true;
+            else
+                return SyntaxBlock(this, (flavor | flavorBindLabel), start, pos+1, SyntaxShift::shift);
         } else {
             if (quote.contains(line.at(pos))) {
                 pos = endOfQuotes(line, pos);
