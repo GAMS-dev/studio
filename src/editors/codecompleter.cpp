@@ -399,7 +399,7 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
     case Qt::Key_Return:
     case Qt::Key_Tab: {
         e->accept();
-        insertCurrent();
+        insertCurrent(e->key() == Qt::Key_Tab);
     }   break;
     default: {
         if (e->key() == Qt::Key_Space)
@@ -589,9 +589,10 @@ void CodeCompleter::setCasing(CodeCompleterCasing casing)
     mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
 }
 
-void CodeCompleter::insertCurrent()
+void CodeCompleter::insertCurrent(bool equalPartOnly)
 {
     if (!mEdit) return;
+    bool changed = false;
     if (currentIndex().isValid()) {
         QTextCursor cur = mEdit->textCursor();
         QString line = cur.block().text();
@@ -600,6 +601,23 @@ void CodeCompleter::insertCurrent()
             cur.setPosition(cur.position()-mFilterText.length());
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();
+
+        if (equalPartOnly && res.length() > mFilterText.length()+1) {
+            int pos = mFilterText.length();
+            QString resTwo = res.mid(pos, 2);
+            int indBefore = findBound(pos, resTwo, currentIndex().row(), 0);
+            int indAfter = findBound(pos, resTwo, currentIndex().row(), rowCount()-1);
+            QModelIndex fromInd = model()->index(indBefore, 0);
+            QModelIndex toInd = model()->index(indAfter, 0);
+            QString first = fromInd.isValid() ? model()->data(fromInd).toString() : res;
+            QString last  = toInd.isValid() ? model()->data(toInd).toString() : res;
+            int j = mFilterText.length();
+            while (first.length() > j && last.length() > j && first.at(j).toLower() == last.at(j).toLower())
+                ++j;
+            if (j > mFilterText.length()) {
+                res = res.left(j);
+            }
+        }
         int i = mFilterText.length();
         for ( ; i < res.length() && start+i < line.length(); ++i) {
             if (line.at(start+i).toLower() != res.at(i).toLower()) break;
@@ -607,12 +625,26 @@ void CodeCompleter::insertCurrent()
         if (i > 0)
             cur.setPosition(cur.position() + i, QTextCursor::KeepAnchor);
 
+        changed = (res != mFilterText);
         cur.insertText(res);
         cur.endEditBlock();
         mEdit->setTextCursor(cur);
     }
-    mEdit->setFocus();
-    hide();
+    if (!equalPartOnly || !changed) {
+        mEdit->setFocus();
+        hide();
+    }
+}
+
+int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look)
+{
+    if (nextTwo.length() != 2) return -1;
+    int ind = (good + look) / 2;
+    if (good == ind || look == ind) return good;
+    QString str = model()->data(model()->index(ind, 0)).toString();
+    if (str.length() > pos && str.midRef(pos, 2).compare(nextTwo, Qt::CaseInsensitive) == 0)
+        return findBound(pos, nextTwo, ind, look);
+    return findBound(pos, nextTwo, good, ind);
 }
 
 int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyntax)
@@ -635,7 +667,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     }
 
     // for analysis
-    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
 //    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
 //        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
 //    }
@@ -748,7 +780,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
         res = res & ccNoDco;
     }
 
-    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 

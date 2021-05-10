@@ -109,7 +109,8 @@ protected:
     void actionEvent(QActionEvent *event) override;
 
 private:
-    void insertCurrent();
+    void insertCurrent(bool equalPartOnly = false);
+    int findBound(int pos, const QString &nextTwo, int good, int look);
     int getFilterFromSyntax(const QMap<int, QPair<int, int> > &blockSyntax);
 
 private:
