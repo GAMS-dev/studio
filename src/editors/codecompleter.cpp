@@ -213,12 +213,28 @@ void CodeCompleterModel::initData()
     src = syntax::/*SyntaxData::*/systemData();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << "system."+it->first;
+        mData << "system." + it->first;
         mDescription << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccSysDat);
 
+    // system data
+    src = syntax::/*SyntaxData::*/systemAttributes();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << "system." + it->first;
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccSysSufR);
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << "%system." + it->first + "%";
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccSysSufC);
 
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;

@@ -41,6 +41,8 @@ enum CodeCompleterType {
     ccExec      = 0x00080000, // execute additions
 
     ccSysDat    = 0x00100000, // system data
+    ccSysSufC   = 0x00200000, // system suffix compile-time
+    ccSysSufR   = 0x00400000, // system suffix run-time
 
     ccStart     = 0x7FF0F7FD, // all starting keywords
 
