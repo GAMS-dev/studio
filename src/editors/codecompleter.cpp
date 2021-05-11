@@ -481,7 +481,9 @@ void CodeCompleter::updateFilter()
         if (cg >= clBreak) break;
         if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clNumSym) {
-            if (syntaxKind == int(syntax::SyntaxKind::Assignment) || syntaxKind == int(syntax::SyntaxKind::AssignmentLabel)) {
+            if (syntaxKind == int(syntax::SyntaxKind::IdentifierAssignment)
+                    || syntaxKind == int(syntax::SyntaxKind::AssignmentLabel)
+                    || syntaxKind == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
                     const QString sys("system.");
                     if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0)
@@ -522,25 +524,32 @@ void CodeCompleter::updateFilter()
     mFilterModel->sort(0);
 
     // find best index
-    int validEnd = cur.positionInBlock();
-    for (int i = validEnd+1; i < line.length(); ++i) {
-        CharGroup cg = group(line.at(i));
-        if (cg >= clBreak) break;
-        validEnd = i;
+    if (!mPreferredText.isEmpty()) {
+        QModelIndex ind = mFilterModel->index(findFilterRow(mPreferredText, 0, mFilterModel->rowCount()-1), 0);
+        if (ind.isValid())
+            setCurrentIndex(ind);
+    } else {
+        int validEnd = cur.positionInBlock();
+        for (int i = validEnd+1; i < line.length(); ++i) {
+            CharGroup cg = group(line.at(i));
+            if (cg >= clBreak) break;
+            validEnd = i;
+        }
+        QString fullWord = line.mid(validStart, validEnd - validStart + 1);
+        int bestInd = 0;
+        Qt::CaseSensitivity caseSens = mFilterModel->filterCaseSensitivity();
+        while (bestInd+1 < mFilterModel->rowCount()) {
+            QModelIndex ind = mFilterModel->index(bestInd, 0);
+            QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
+            if (itemWord.compare(fullWord, caseSens) > 0)
+                break;
+            if (itemWord.compare(fullWord, caseSens) == 0)
+                break;
+            ++bestInd;
+        }
+        setCurrentIndex(mFilterModel->index(bestInd, 0));
     }
-    QString fullWord = line.mid(validStart, validEnd - validStart + 1);
-    int bestInd = 0;
-    Qt::CaseSensitivity caseSens = mFilterModel->filterCaseSensitivity();
-    while (bestInd+1 < mFilterModel->rowCount()) {
-        QModelIndex ind = mFilterModel->index(bestInd, 0);
-        QString itemWord = mFilterModel->data(ind).toString().left(fullWord.length());
-        if (itemWord.compare(fullWord, caseSens) > 0)
-            break;
-        if (itemWord.compare(fullWord, caseSens) == 0)
-            break;
-        ++bestInd;
-    }
-    setCurrentIndex(mFilterModel->index(bestInd, 0));
+
     scrollTo(currentIndex());
 
     // adapt size
@@ -562,6 +571,19 @@ void CodeCompleter::updateFilter()
     rect.setWidth(wid + 25);
     setGeometry(rect);
 }
+
+int CodeCompleter::findFilterRow(const QString &text, int top, int bot)
+{
+    int ind = (top + bot) / 2;
+    if (top == ind || bot == ind) return -1;
+    QString str = model()->data(model()->index(ind, 0)).toString();
+    int res = str.compare(text);
+//    DEB() << "         " << str << " " << res;
+    if (res < 0) return findFilterRow(text, ind, bot);
+    if (res > 0) return findFilterRow(text, top, ind);
+    return ind;
+}
+
 
 void CodeCompleter::updateDynamicData(QStringList symbols)
 {
@@ -589,6 +611,12 @@ void CodeCompleter::setCasing(CodeCompleterCasing casing)
     mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
 }
 
+void CodeCompleter::setVisible(bool visible)
+{
+    if (!visible) mPreferredText = QString();
+    QListView::setVisible(visible);
+}
+
 void CodeCompleter::insertCurrent(bool equalPartOnly)
 {
     if (!mEdit) return;
@@ -601,6 +629,7 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             cur.setPosition(cur.position()-mFilterText.length());
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();
+        mPreferredText = res;
 
         if (equalPartOnly && res.length() > mFilterText.length()+1) {
             int pos = mFilterText.length();
@@ -640,10 +669,14 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
 {
     if (nextTwo.length() != 2) return -1;
     int ind = (good + look) / 2;
-    if (good == ind || look == ind) return good;
+    if (good == ind) {
+        if (good == look) return ind;
+        ind = look;
+    }
     QString str = model()->data(model()->index(ind, 0)).toString();
     if (str.length() > pos && str.midRef(pos, 2).compare(nextTwo, Qt::CaseInsensitive) == 0)
         return findBound(pos, nextTwo, ind, look);
+    if (ind == look) return ind;
     return findBound(pos, nextTwo, good, ind);
 }
 
@@ -667,7 +700,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     }
 
     // for analysis
-//    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
 //    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
 //        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
 //    }
@@ -780,7 +813,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
         res = res & ccNoDco;
     }
 
-//    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
     return res;
 }
 

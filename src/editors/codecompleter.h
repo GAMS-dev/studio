@@ -17,8 +17,16 @@ enum CodeCompleterCasing {
 
 enum CodeCompleterType {
     ccNone      = 0x00000000,
+
+    ccBitFlags  = 0x7FFFFF00, // [Prepare] BIT filter for all flags
+    ccBitValue  = 0x000000FF, // [Prepare] BIT filter for the int value part
+
+    // TODO(JM)  Reduce bit-consumption by reserving the lowest byte as normal int value (the current DCO bits). The
+    //   |       bit-filter then is only applied to the remain (see ccBitFlags and ccBitValue above). Some flags can
+    //   V       can be combined and get a different value part to distinct them (like starter and ender DCOs)
+
     ccDco1      = 0x00000001, // DCO (starter and standalone)
-    ccDco2      = 0x00000002, // DCO $offText
+    ccDco2      = 0x00000002, // DCO (ender, e.g. $offText)
     ccSubDcoA   = 0x00000010, // sub DCO of $abort
     ccSubDcoC   = 0x00000020, // sub DCO of $call
     ccSubDcoE   = 0x00000040, // sub DCO of $eval
@@ -99,6 +107,9 @@ public:
     void ShowIfData();
     void setCasing(CodeCompleterCasing casing);
 
+public slots:
+    void setVisible(bool visible) override;
+
 protected:
     bool event(QEvent *event) override;
     void showEvent(QShowEvent *event) override;
@@ -111,6 +122,7 @@ protected:
 private:
     void insertCurrent(bool equalPartOnly = false);
     int findBound(int pos, const QString &nextTwo, int good, int look);
+    int findFilterRow(const QString &text, int top, int bot);
     int getFilterFromSyntax(const QMap<int, QPair<int, int> > &blockSyntax);
 
 private:
@@ -118,6 +130,7 @@ private:
     CodeCompleterModel *mModel;
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
+    QString mPreferredText;
     bool mNeedDot = false;
 };
 
