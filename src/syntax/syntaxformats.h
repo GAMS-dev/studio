@@ -244,6 +244,8 @@ enum class SyntaxKind {
     Formula,
     Assignment,
     SubDCO,
+    SystemCompileAttrib,
+    SystemRunAttrib,
 
     CommentLine,
     CommentBlock,
@@ -538,10 +540,11 @@ public:
     void setSpecialDynamicChars(QVector<QChar> chars);
 };
 
-class SyntaxString : public SyntaxAbstract
+class SyntaxQuoted : public SyntaxAbstract
 {
+    QString mDelimiters;
 public:
-    SyntaxString(SharedSyntaxData* sharedData);
+    SyntaxQuoted(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

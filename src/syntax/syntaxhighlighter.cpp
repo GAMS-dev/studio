@@ -57,7 +57,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
-    initKind(new SyntaxString(d), Theme::Syntax_neutral);
+    initKind(new SyntaxQuoted(SyntaxKind::String, d), Theme::Syntax_description);
     initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock, d), Theme::Syntax_comment);
     initKind(new SyntaxCommentEndline(d), Theme::Syntax_comment);
@@ -143,6 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, codeRel.blockCode.flavor(), stack);
         if (stack) emptyLineKinds = false;
+        int prevFlavor = tailBlock.isValid() ? tailBlock.flavor : codeRel.blockCode.flavor();
 
         // HOWTO(JM) For kinds redefined with a DCO:
         //   - add new Syntax to mKinds
@@ -152,7 +153,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         for (SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = mKinds.value(nextKind);
             if (testSyntax) {
-                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), tailBlock.flavor, text, index);
+                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), prevFlavor, text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
@@ -177,7 +178,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
 //                        if (tailBlock.syntax)
 //                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-//                                  << tailBlock.syntax->kind() << " flav_" << tailBlock.flavor << "  (tail from " << syntax->kind() << ")";
+//                                  << tailBlock.syntax->kind() << " flav_" << prevFlavor << "  (tail from " << syntax->kind() << ")";
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);

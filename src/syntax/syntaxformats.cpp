@@ -478,26 +478,48 @@ void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
         mSpecialDynamicChars << '=';
 }
 
-SyntaxString::SyntaxString(SharedSyntaxData *sharedData)
-    : SyntaxAbstract(SyntaxKind::String, sharedData)
-{}
+SyntaxQuoted::SyntaxQuoted(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
+{
+    mSubKinds << SyntaxKind::String;
+    if (kind == SyntaxKind::String) {
+        mDelimiters = "%'\"";
+//        mSubKinds << SyntaxKind::SystemCompileAttrib;
+    } else {
+        mDelimiters = "%";
+    }
+}
 
-SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxQuoted::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    if (start < line.length() && (line.at(start) == '\'' || line.at(start) == '"')) {
-        while (++end < line.length() && line.at(end) != line.at(start)) ;
-        if (end < line.length() && line.at(end) == line.at(start))
-            return SyntaxBlock(this, flavor, start, end+1, SyntaxShift::skip);
+    if (start < line.length() && flavor == 0 && mDelimiters.indexOf(line.at(start)) > 0) {
+        // starting part, remember flavor
+        flavor = mDelimiters.indexOf(line.at(start));
     }
+    while (++end < line.length() && line.at(end) != mDelimiters.at(flavor) && line.at(end) != '%')
+        ;
+    if (end < line.length()) {
+        if (entryKind == SyntaxKind::String) {
+            if (line.at(end) == mDelimiters.at(flavor))
+                return SyntaxBlock(this, 0, start, end+1, SyntaxShift::out);
+            if (line.at(end) == '%')
+                return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+        } else {
+            if (line.at(end) == mDelimiters.at(flavor))
+                return SyntaxBlock(this, 0, start, end+1, SyntaxShift::skip);
+            if (line.at(end) == '%')
+                return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+        }
+    }
+
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxString::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxQuoted::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     Q_UNUSED(line)
     Q_UNUSED(index)
