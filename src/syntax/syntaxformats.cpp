@@ -408,14 +408,17 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, int flavo
 SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
     sharedData->addFormula(this);
-    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
-              << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
-              << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Dco << SyntaxKind::Assignment
-              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
-              << SyntaxKind::DeclarationVariableType;
+    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::String
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute << SyntaxKind::Reserved
+              << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
+              << SyntaxKind::Dco << SyntaxKind::Assignment
+              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
     switch (kind) {
     case SyntaxKind::Formula:
         mSubKinds << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::PutFormula:
+        mSubKinds << SyntaxKind::SystemRunAttrib << SyntaxKind::PutFormula;
         break;
     case SyntaxKind::SolveBody:
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
@@ -443,6 +446,8 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
 
     int end = start;
     int chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
+    if (kind() == SyntaxKind::PutFormula && start > index && chKind == 2)
+        return SyntaxBlock(this, flavor, index, start, SyntaxShift::shift);
     bool skipWord = (chKind == 2);
     if (chKind == 1) --end;
 
@@ -465,7 +470,7 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, int flavor,
         else return SyntaxBlock(this);
     }
     int prev = 0;
-    int cb1 = end < line.length() ? charClass(line.at(end), prev, mSpecialDynamicChars) : 0;
+    int cb1 = charClass(line.at(end), prev, mSpecialDynamicChars);
     while (++end < line.length() && charClass(line.at(end), prev, mSpecialDynamicChars) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
@@ -475,7 +480,7 @@ void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
 {
     mSpecialDynamicChars = chars;
     if (kind() == SyntaxKind::Formula)
-        mSpecialDynamicChars << '=';
+        mSpecialDynamicChars << '='; // << '\'' << '"' << '%';
 }
 
 SyntaxQuoted::SyntaxQuoted(SyntaxKind kind, SharedSyntaxData *sharedData)

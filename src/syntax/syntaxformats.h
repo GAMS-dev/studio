@@ -150,6 +150,49 @@ static QList<QPair<QString, QString>> systemData() {
 }
 
 
+static QList<QPair<QString, QString>> keyPut() {
+    QList<QPair<QString, QString>> list = {
+        {"put", "Write output to defined file"},//
+        {"put_utilities", "Execute external programs using put syntax"},//
+        {"put_utility", "Execute external programs using put syntax"},//
+        {"putclear", "Delete the title and header blocks of a put file"},
+        {"putclose", "Close a put file (and write to it)"},
+        {"putfmcl", "Delete the title and header blocks of a put file"},
+        {"puthd", "Write to the header block of a put page"},//
+        {"putheader", "Write to the header block of a put page"},//
+        {"putpage", "Start a new page in a put file"},//
+        {"puttitle", "Write to the title block of a put page"},//
+        {"puttl", "Write to the title block of a put page"},//
+    };
+    return list;
+}
+
+
+static QList<QPair<QString, QString>> keySolve() {
+    QList<QPair<QString, QString>> list = {
+        {"solve", ""},
+    };
+    return list;
+}
+
+
+static QList<QPair<QString, QString>> keyOption() {
+    QList<QPair<QString, QString>> list = {
+        {"option", ""},
+        {"options", ""},
+    };
+    return list;
+}
+
+
+static QList<QPair<QString, QString>> keyExecute() {
+    QList<QPair<QString, QString>> list = {
+        {"execute", ""},
+    };
+    return list;
+}
+
+
 static QList<QPair<QString, QString>> systemCTConstText() {
     QList<QPair<QString, QString>> list = {
         {"solPrint", "Solution report print"},
@@ -226,6 +269,8 @@ static QList<QPair<QString, int>> systemCTConstants() {
     };
     return list;
 }
+
+
 // TODO(JM) REMOVE-END ===========================================================================================
 
 
@@ -237,9 +282,9 @@ Q_NAMESPACE
 enum class SyntaxKind {
     Standard,
     Dco,
-    DcoBody,                        // text following the DCO
-    DcoComment,                     // a DCO body formatted as comment
-    Title,                          // a DCO body formatted as title
+    DcoBody,                            // text following the DCO
+    DcoComment,                         // a DCO body formatted as comment
+    Title,                              // a DCO body formatted as title
     String,
     Formula,
     Assignment,
@@ -256,24 +301,24 @@ enum class SyntaxKind {
 
     Semicolon,
     CommaIdent,
-    DeclarationSetType,             // must be followed by Declaration
-    DeclarationVariableType,        // must be followed by Declaration
-    Declaration,                    // uses flavor bits > 1
+    DeclarationSetType,                 // must be followed by Declaration
+    DeclarationVariableType,            // must be followed by Declaration
+    Declaration,                        // uses flavor bits > 1
 
     Identifier,
-    IdentifierDim,                  // dimension started with '(' or '[' - uses flavor bit 1
-    IdentifierDimEnd,               // dimension end with ')' or ']' - uses flavor bit 1
+    IdentifierDim,                      // dimension started with '(' or '[' - uses flavor bit 1
+    IdentifierDimEnd,                   // dimension end with ')' or ']' - uses flavor bit 1
     IdentifierDescription,
 
     IdentifierAssignment,
     AssignmentLabel,
     AssignmentValue,
     AssignmentSystemData,
-    IdentifierAssignmentEnd,        // after assignment to keep declaration-level
+    IdentifierAssignmentEnd,            // after assignment to keep declaration-level
 
     IdentifierTableAssignmentColHead,
     IdentifierTableAssignmentRowHead,
-    IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
+    IdentifierTableAssignmentRow,       // after assignment to keep declaration-level
 
     Embedded,
     EmbeddedBody,
@@ -288,6 +333,8 @@ enum class SyntaxKind {
     Execute,
     ExecuteBody,
     ExecuteKey,
+    Put,
+    PutFormula,                         // Formula that allows SystemRunAttrib
 
     KindCount
 };

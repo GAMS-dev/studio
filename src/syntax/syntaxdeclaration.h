@@ -48,7 +48,7 @@ private:
 class DictList
 {
 public:
-    DictList(QList<QPair<QString, QString>> list);
+    DictList(QList<QPair<QString, QString>> list, const QString &prefix = QString());
     virtual ~DictList() { while (!mEntries.isEmpty()) delete mEntries.takeFirst(); }
     inline int equalToPrevious(int i) const { return mEqualStart.at(i); }
     inline const DictEntry &at(int i) const { return *mEntries.at(i); }
@@ -101,6 +101,14 @@ class SyntaxReserved: public SyntaxKeywordBase
 public:
     SyntaxReserved(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+};
+
+class SyntaxSimpleKeyword: public SyntaxKeywordBase
+{
+public:
+    SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData* sharedData);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
 class SyntaxSubsetKey: public SyntaxKeywordBase

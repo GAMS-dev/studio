@@ -52,6 +52,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxSubDCO(d), Theme::Syntax_dco);
 
     initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
+    initKind(new SyntaxFormula(SyntaxKind::PutFormula, d), Theme::Syntax_formula);
     initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));
     initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
     initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
