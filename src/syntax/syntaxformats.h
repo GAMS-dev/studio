@@ -409,7 +409,7 @@ public:
     void addFormula(SyntaxFormula* syntax) { if (syntax) mSubFormula << syntax; }
     void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
     void registerDcoBody(SyntaxDcoBody * syntax) { if (syntax) mDcoBody = syntax; }
-    bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 4; }
+    bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 5; }
     const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
     SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
     SyntaxDcoBody *dcoBody() { return mDcoBody; }

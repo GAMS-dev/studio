@@ -205,6 +205,7 @@ SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, int flavor, c
 
 SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
+    // TODO(JM) check if other specialized reserved-types beneath solve need to be added here
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
               << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::Dco << SyntaxKind::Declaration
@@ -254,10 +255,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
         case SyntaxKind::Option:
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
+        case SyntaxKind::Put:
+            return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
         case SyntaxKind::Execute: {
             if (end==line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteKey);
-        }
+        } break;
         default:
             break;
         }
@@ -440,6 +443,7 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
 {
     QList<QPair<QString, QString>> list;
     list = /*SyntaxData::*/systemAttributes();
+    list.append(SyntaxData::modelTypes());
     if (kind == SyntaxKind::SystemRunAttrib) {
         mKeywords.insert(int(kind), new DictList(list, QStringLiteral(u"system.")));
     } else if (kind == SyntaxKind::SystemCompileAttrib) {

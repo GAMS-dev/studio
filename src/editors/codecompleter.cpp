@@ -766,6 +766,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
+    case syntax::SyntaxKind::Put:
         res = ccStart; break;
 
     case syntax::SyntaxKind::ExecuteBody:

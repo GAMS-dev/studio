@@ -57,6 +57,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
     initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
+    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemRunAttrib, d), Theme::Syntax_description);
+
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
     initKind(new SyntaxQuoted(SyntaxKind::String, d), Theme::Syntax_description);
     initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
@@ -74,6 +76,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxReserved(SyntaxKind::Solve, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Option, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Execute, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Put, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::Embedded, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbeddedBody(d), Theme::Syntax_embedded);

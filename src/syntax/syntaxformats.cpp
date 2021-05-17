@@ -115,6 +115,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
               << SyntaxKind::Solve
               << SyntaxKind::Option
               << SyntaxKind::Execute
+              << SyntaxKind::Put
               << SyntaxKind::Reserved
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
@@ -409,7 +410,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
 {
     sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::String
-              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute << SyntaxKind::Reserved
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute << SyntaxKind::Put << SyntaxKind::Reserved
               << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
               << SyntaxKind::Dco << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
