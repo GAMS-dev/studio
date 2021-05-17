@@ -96,6 +96,7 @@ private:
     QTimer mMissCheckTimer;
     CodeCompleter mCompleter;
     bool mAskBigFileEdit = true;
+    bool mFsCaseSensitive = false;
     bool mDebug = false;
 
 };
