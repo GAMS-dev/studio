@@ -1,3 +1,7 @@
+Version 1.6.3  *
+==================
+- fixed Studio title bar above top screen bound
+
 Version 1.6.2
 ==================
 - fixed issues with enumerated parameters in extended parameter editor

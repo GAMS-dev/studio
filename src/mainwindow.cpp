@@ -3556,7 +3556,7 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::ensureInScreen()
 {
-    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableGeometry();
     QRect appGeo = geometry();
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
