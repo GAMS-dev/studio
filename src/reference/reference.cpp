@@ -201,7 +201,6 @@ bool Reference::parseFile(QString referenceFile)
         addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
         if (!locationList.contains(location)) {
             locationList.append(location);
-            mFileReference.append(ref);
         }
     }
     if (in.atEnd()) {
@@ -282,6 +281,9 @@ bool Reference::parseFile(QString referenceFile)
              break;
          case SymbolDataType::Funct :
              mFunctionReference.append( ref );
+             break;
+         case SymbolDataType::File :
+             mFileReference.append( ref );
              break;
          default:
              break;
