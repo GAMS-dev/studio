@@ -204,8 +204,14 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
 
-        if (scanBlock)
-            mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+        if (scanBlock) {
+            if (mScannedBlockSyntax.last().first == int(SyntaxKind::String))
+                mScannedBlockSyntax.insert(nextBlock.start, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+            if (nextBlock.syntax->kind() == SyntaxKind::String)
+                mScannedBlockSyntax.insert(nextBlock.start+1, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+            else
+                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+        }
 
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();

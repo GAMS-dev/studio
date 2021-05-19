@@ -458,7 +458,7 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
         if (chKind != 2) skipWord = false;
         else if (!skipWord) break;
     }
-    return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, int flavor, bool &hasContent)

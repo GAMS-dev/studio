@@ -701,9 +701,9 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
 
     // for analysis
     DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
-//    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-//        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
-//    }
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+    }
 
     switch (syntax::SyntaxKind(syntaxKind)) {
     case syntax::SyntaxKind::Standard:
@@ -733,13 +733,13 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::CommentBlock:
-        res = ccNone; break;
-
-    case syntax::SyntaxKind::String:
     case syntax::SyntaxKind::CommentLine:
     case syntax::SyntaxKind::CommentEndline:
     case syntax::SyntaxKind::CommentInline:
-        res = ccNoDco; break;
+        res = ccNone; break;
+
+    case syntax::SyntaxKind::String:
+        res = ccSysSufC; break;
 
     case syntax::SyntaxKind::Identifier:
         res = ccDco | ccResT; break;
@@ -751,10 +751,10 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRow:
-        res = ccDco; break;
+        res = ccDco | ccSysSufC; break;
     case syntax::SyntaxKind::IdentifierAssignment:
     case syntax::SyntaxKind::AssignmentLabel:
-        res = ccDco | ccSysDat; break;
+        res = ccDco | ccSysDat | ccSysSufC; break;
 
     case syntax::SyntaxKind::Embedded:
     case syntax::SyntaxKind::EmbeddedBody:
@@ -766,15 +766,17 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
+        res = ccStart | ccSysSufC; break;
     case syntax::SyntaxKind::Put:
-        res = ccStart; break;
+    case syntax::SyntaxKind::PutFormula:
+        res = ccStart | ccSysSufR | ccSysSufC; break;
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
-        res = ccExec; break;
+        res = ccExec | ccSysSufC; break;
 
     case syntax::SyntaxKind::OptionBody:
-        res = ccOpt; break;
+        res = ccOpt | ccMod; break;
     default: ;
     }
 

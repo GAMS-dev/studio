@@ -52,7 +52,7 @@ enum CodeCompleterType {
     ccSysSufC   = 0x00200000, // system suffix compile-time
     ccSysSufR   = 0x00400000, // system suffix run-time
 
-    ccStart     = 0x7FF0F7FD, // all starting keywords
+    ccStart     = 0x7F00F7FD, // all starting keywords
 
     ccAll       = 0x7FFFFFFF
 };
