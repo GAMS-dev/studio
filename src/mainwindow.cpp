@@ -3556,7 +3556,9 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::ensureInScreen()
 {
+    int titleHeight = QApplication::style()->pixelMetric(QStyle::PM_TitleBarHeight);
     QRect screenGeo = QGuiApplication::primaryScreen()->availableGeometry();
+    screenGeo.setTop(screenGeo.top() + titleHeight);
     QRect appGeo = geometry();
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
