@@ -168,7 +168,6 @@ bool Reference::parseFile(QString referenceFile)
     in.setCodec(mCodec);
 
     QStringList recordList;
-    QStringList locationList;
     QString idx;
     while (!in.atEnd()) {
         QString line = in.readLine();
@@ -199,9 +198,6 @@ bool Reference::parseFile(QString referenceFile)
             mReference[id.toInt()] = new SymbolReferenceItem(id.toInt(), symbolName, type);
         SymbolReferenceItem* ref = mReference[id.toInt()];
         addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
-        if (!locationList.contains(location)) {
-            locationList.append(location);
-        }
     }
     if (in.atEnd()) {
         mLastErrorLine=lineread;
