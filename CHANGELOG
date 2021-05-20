@@ -1,5 +1,6 @@
 Version 1.6.3  *
 ==================
+- removed duplicate file entries in the ProjectExplorer that refer to the same file, but differ in case
 - fixed Studio title bar above top screen bound
 
 Version 1.6.2
