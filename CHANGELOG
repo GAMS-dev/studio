@@ -1,3 +1,7 @@
+Version 1.6.3  *
+==================
+- removed duplicate file entries in the ProjectExplorer that refer to the same file, but differ in case
+
 Version 1.6.2
 ==================
 - fixed issues with enumerated parameters in extended parameter editor
