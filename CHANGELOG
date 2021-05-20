@@ -1,6 +1,6 @@
 Version 1.6.3  *
 ==================
-- fixed second entry to the same file in ProjectExplorer only differing in case
+- removed duplicate file entries in the ProjectExplorer that refer to the same file, but differ in case
 
 Version 1.6.2
 ==================
