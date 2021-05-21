@@ -3561,8 +3561,17 @@ void MainWindow::ensureInScreen()
     QRect appFGeo = frameGeometry();
     QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
                      appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
-
-    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry() - margins;
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    QVector<QRect> frames;
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QRect rect = screen->availableGeometry();
+        QRect sect = rect.intersected(appGeo);
+        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
+            frames << rect;
+    }
+    if (frames.size() == 1)
+        screenGeo = frames.at(0);
+    screenGeo -= margins;
 
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
