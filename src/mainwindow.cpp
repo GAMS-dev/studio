@@ -2379,6 +2379,7 @@ void MainWindow::restoreFromSettings()
     resize(settings->toSize(skWinSize));
     move(settings->toPoint(skWinPos));
     ensureInScreen();
+    QTimer::singleShot(0, this, &MainWindow::ensureInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
@@ -3556,8 +3557,22 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::ensureInScreen()
 {
-    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
     QRect appGeo = geometry();
+    QRect appFGeo = frameGeometry();
+    QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
+                     appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    QVector<QRect> frames;
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QRect rect = screen->availableGeometry();
+        QRect sect = rect.intersected(appGeo);
+        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
+            frames << rect;
+    }
+    if (frames.size() == 1)
+        screenGeo = frames.at(0);
+    screenGeo -= margins;
+
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
     if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
@@ -3565,6 +3580,7 @@ void MainWindow::ensureInScreen()
     if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
     if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
     if (appGeo != geometry()) setGeometry(appGeo);
+
 }
 
 void MainWindow::raiseEdit(QWidget *widget)

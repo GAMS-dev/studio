@@ -64,7 +64,7 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
     return fileMeta(editor->property("location").toString());
 }
 
-QList<FileMeta*> FileMetaRepo::fileMetas() const
+const QList<FileMeta *> FileMetaRepo::fileMetas() const
 {
     QList<FileMeta*> res;
     QHashIterator<FileId, FileMeta*> i(mFiles);
