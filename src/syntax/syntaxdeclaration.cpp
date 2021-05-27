@@ -458,13 +458,19 @@ SyntaxBlock SyntaxSimpleKeyword::find(const SyntaxKind entryKind, int flavor, co
     Q_UNUSED(entryKind)
     int start = index;
     int iKey;
-    if (kind() == SyntaxKind::SystemCompileAttrib && (start >= line.length() || line.at(start) != '%')) {
-        return SyntaxBlock(this);
+    if (kind() == SyntaxKind::SystemCompileAttrib) {
+        if (start+1 >= line.length() || line.at(start) != '%')
+            return SyntaxBlock(this);
+        ++start;
     }
     int end = findEnd(kind(), line, start, iKey);
     if (end > start) {
-        if (kind() == SyntaxKind::SystemCompileAttrib && (end+1 >= line.length() || line.at(end+1) != '%'))
-            return SyntaxBlock(this);
+        if (kind() == SyntaxKind::SystemCompileAttrib) {
+            if (end >= line.length() || line.at(end) != '%')
+                return SyntaxBlock(this);
+            --start;
+            ++end;
+        }
         return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::skip);
     }
     return SyntaxBlock(this);

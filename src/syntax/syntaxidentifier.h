@@ -95,6 +95,14 @@ public:
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
+class SyntaxSimpleWord: public SyntaxAbstract
+{
+public:
+    SyntaxSimpleWord(SharedSyntaxData* sharedData);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
 
 } // namespace syntax
 } // namespace studio

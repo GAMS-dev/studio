@@ -83,6 +83,8 @@ private:
     int mLastSyntaxKind = 0;
     int mLastFlavor = 0;
     QVector<SyntaxKind> mSingleLineKinds;
+    QVector<SyntaxKind> mPostKindBlocker;
+    QVector<SyntaxAbstract*> mPostSyntax;
     Kinds mKinds;
     CodeRelations mCodes;
 };

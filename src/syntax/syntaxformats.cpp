@@ -409,11 +409,13 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, int flavo
 SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
     sharedData->addFormula(this);
-    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::String
-              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute << SyntaxKind::Put << SyntaxKind::Reserved
+    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon
               << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
-              << SyntaxKind::Dco << SyntaxKind::Assignment
-              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute
+              << SyntaxKind::Put << SyntaxKind::Reserved << SyntaxKind::Dco << SyntaxKind::Assignment
+              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+              << SyntaxKind::String;
+
     switch (kind) {
     case SyntaxKind::Formula:
         mSubKinds << SyntaxKind::Formula;
@@ -481,19 +483,16 @@ void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
 {
     mSpecialDynamicChars = chars;
     if (kind() == SyntaxKind::Formula)
-        mSpecialDynamicChars << '='; // << '\'' << '"' << '%';
+        mSpecialDynamicChars << '='; // << '\'' << '"';
 }
 
 SyntaxQuoted::SyntaxQuoted(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::String;
     if (kind == SyntaxKind::String) {
-        mDelimiters = "%'\"";
-//        mSubKinds << SyntaxKind::SystemCompileAttrib;
-    } else {
-        mDelimiters = "%";
+        mDelimiters = "'\"";
     }
+    mSubKinds << SyntaxKind::String;
 }
 
 SyntaxBlock SyntaxQuoted::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
@@ -502,23 +501,21 @@ SyntaxBlock SyntaxQuoted::find(const SyntaxKind entryKind, int flavor, const QSt
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    if (start < line.length() && flavor == 0 && mDelimiters.indexOf(line.at(start)) > 0) {
-        // starting part, remember flavor
-        flavor = mDelimiters.indexOf(line.at(start));
+    if ((flavor & flavorQuotePart) == 0) {
+        if (start < line.length() && mDelimiters.indexOf(line.at(start)) > 0) {
+            // starting part, remember flavor
+            flavor += mDelimiters.indexOf(line.at(start));
+        }
+        while (++end < line.length() && line.at(end) != mDelimiters.at(flavor & flavorQuotePart))
+            ;
     }
-    while (++end < line.length() && line.at(end) != mDelimiters.at(flavor) && line.at(end) != '%')
-        ;
     if (end < line.length()) {
         if (entryKind == SyntaxKind::String) {
-            if (line.at(end) == mDelimiters.at(flavor))
+            if (line.at(end) == mDelimiters.at(flavor & flavorQuotePart))
                 return SyntaxBlock(this, 0, start, end+1, SyntaxShift::out);
-            if (line.at(end) == '%')
-                return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
         } else {
-            if (line.at(end) == mDelimiters.at(flavor))
+            if (line.at(end) == mDelimiters.at(flavor & flavorQuotePart))
                 return SyntaxBlock(this, 0, start, end+1, SyntaxShift::skip);
-            if (line.at(end) == '%')
-                return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
         }
     }
 

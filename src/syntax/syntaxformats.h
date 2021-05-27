@@ -289,6 +289,7 @@ enum class SyntaxKind {
     Formula,
     Assignment,
     SubDCO,
+    UserCompileAttrib,
     SystemCompileAttrib,
     SystemRunAttrib,
 
@@ -344,12 +345,18 @@ Q_ENUM_NS(SyntaxKind);
 
 QString syntaxKindName(SyntaxKind kind);
 
+// TODO(JM) this needs to be more compact, drag disjunct parts to multi-bit regions together:
+//          - check if Table, Model, and preTable can be joined (like done with flavorQuotePart)
 enum FlavorFlag {
-    flavorBrace = 1,
-    flavorTable = 2,
-    flavorModel = 4,
-    flavorPreTable = 8,
-    flavorBindLabel = 16,
+    flavorQuote1 = 1,       // in AssignmentLabel and AssignmentValue
+    flavorQuote2 = 2,       // in AssignmentLabel and AssignmentValue
+    flavorBrace = 3,        // only in SyntaxIdentifierDim
+    flavorQuotePart = 3,
+
+    flavorTable = 4,
+    flavorModel = 8,
+    flavorPreTable = 16,
+    flavorBindLabel = 32,
 };
 
 enum class SyntaxShift {
