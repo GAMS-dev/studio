@@ -455,9 +455,36 @@ CharGroup group(const QChar &c) {
     if ((c >= 'a' && c <= 'z') || (c >= 'A' && c <= 'Z') || c == '_') return clAlpha;
     if (c >= '0' && c <= '9') return clNum;
     if (c == ':' || c == '.') return clNumSym;
-    if (c == '$') return clFix;
+    if (c == '$' || c == '%') return clFix;
     if (c == ' ' || c == '\t') return clSpace;
     return clBreak;
+}
+
+QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor)
+{
+    QPair<int, int> res(0, 0);
+    QMap<int, QPair<int, int>> blockSyntax;
+    emit mEdit->scanSyntax(block, blockSyntax);
+    int lastEnd = 0;
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (it.key() > pos) {
+            if (res.first == int(syntax::SyntaxKind::String)) {
+                res = it.value();
+            }
+            if (it.value().first == int(syntax::SyntaxKind::String) && lastEnd != pos)
+                res = it.value();
+            break;
+        }
+        lastEnd = it.key();
+        res = it.value();
+        if (syntax::SyntaxKind(res.first) == syntax::SyntaxKind::Dco)
+            dcoFlavor = res.second;
+    }
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+    }
+
+    return res;
 }
 
 void CodeCompleter::updateFilter()
@@ -465,14 +492,12 @@ void CodeCompleter::updateFilter()
     if (!mEdit) return;
     QTextCursor cur = mEdit->textCursor();
     QMap<int,QPair<int, int>> blockSyntax;
-    emit mEdit->scanSyntax(cur.block(), blockSyntax);
-    QString line = cur.block().text();
     int peekStart = cur.positionInBlock();
-    int syntaxKind = 0;
-    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        if (it.key() > peekStart) break;
-        syntaxKind = it.value().first;
-    }
+    QString line = cur.block().text();
+
+    int dcoFlavor = 0;
+    QPair<int,int> syntax = getSyntax(cur.block(), cur.positionInBlock(), dcoFlavor);
+    DEB() << "=== Kind in filter: " << syntax::SyntaxKind(syntax.first);
 
     int validStart = peekStart;
     while (peekStart > 0) {
@@ -481,13 +506,17 @@ void CodeCompleter::updateFilter()
         if (cg >= clBreak) break;
         if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clNumSym) {
-            if (syntaxKind == int(syntax::SyntaxKind::IdentifierAssignment)
-                    || syntaxKind == int(syntax::SyntaxKind::AssignmentLabel)
-                    || syntaxKind == int(syntax::SyntaxKind::AssignmentSystemData)) {
+            if (syntax.first == int(syntax::SyntaxKind::IdentifierAssignment)
+                    || syntax.first == int(syntax::SyntaxKind::AssignmentLabel)
+                    || syntax.first == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
                     const QString sys("system.");
-                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0)
+                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
                         validStart -= sys.length();
+                        if (validStart > 0 && line.at(validStart-1) == '%')
+                            --validStart;
+                    }
+
                     break;
                 }
             } else
@@ -508,7 +537,7 @@ void CodeCompleter::updateFilter()
     // assign filter
     if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
-    mFilterModel->setTypeFilter(getFilterFromSyntax(blockSyntax), mNeedDot);
+    mFilterModel->setTypeFilter(getFilterFromSyntax(syntax, dcoFlavor), mNeedDot);
     QString filterRex = mFilterText;
     filterRex.replace(".", "\\.").replace("$", "\\$");
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
@@ -680,32 +709,19 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
     return findBound(pos, nextTwo, good, ind);
 }
 
-int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyntax)
+int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor)
 {
     if (!mEdit) return ccNone;
     int res = ccAll;
     QTextCursor cur = mEdit->textCursor();
-    int syntaxKind = 0;
-    int syntaxFlavor = 0;
-    int dcoFlavor = 0;
 
     QString line = cur.block().text();
     int start = cur.positionInBlock() - mFilterText.length();
-    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        if (it.key() > start) break;
-        syntaxKind = it.value().first;
-        syntaxFlavor = it.value().second;
-        if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::Dco)
-            dcoFlavor = syntaxFlavor;
-    }
 
     // for analysis
     DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
-    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
-    }
 
-    switch (syntax::SyntaxKind(syntaxKind)) {
+    switch (syntax::SyntaxKind(syntax.first)) {
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
@@ -717,27 +733,29 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
 
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
+    case syntax::SyntaxKind::SystemCompileAttrib:
+    case syntax::SyntaxKind::UserCompileAttrib:
         res = ccNone; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = (syntaxFlavor == 8) ? ccDco | ccResT : ccDco; break;
+        res = (syntax.second == 8) ? ccDco | ccResT : ccDco; break;
     case syntax::SyntaxKind::DeclarationSetType:
         res = ccDco | ccResS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
         res = ccDco | ccResV; break;
 
     case syntax::SyntaxKind::Dco:
-        res = ccDco; break;
+        res = ccDco | ccSysSufC; break;
 
-    case syntax::SyntaxKind::DcoBody:
     case syntax::SyntaxKind::DcoComment:
-    case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::CommentBlock:
     case syntax::SyntaxKind::CommentLine:
     case syntax::SyntaxKind::CommentEndline:
     case syntax::SyntaxKind::CommentInline:
         res = ccNone; break;
 
+    case syntax::SyntaxKind::DcoBody:
+    case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::String:
         res = ccSysSufC; break;
 
@@ -790,7 +808,7 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
     }
     mNeedDot = false;
     if (isWhitespace) {
-        if (syntax::SyntaxKind(syntaxKind) == syntax::SyntaxKind::CommentBlock)
+        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
         else if (!(res & ccDco))
             res = res & ccDco;
@@ -801,22 +819,25 @@ int CodeCompleter::getFilterFromSyntax(const QMap<int,QPair<int, int>> &blockSyn
                 mNeedDot = false;
             } else {
                 CharGroup gr = group(line.at(i));
-                if (gr >= clBreak) return res = res & ccNoDco;
+                if (gr >= clBreak) {
+                    res = res & ccNoDco;
+                    break;
+                }
             }
         }
         if (dcoFlavor == 16)
-            res = ccSubDcoA;
+            res = ccSubDcoA | ccSysSufC;
         else if (dcoFlavor == 17)
-            res = ccSubDcoC;
+            res = ccSubDcoC | ccSysSufC;
         else if (dcoFlavor == 18)
-            res = ccSubDcoE;
+            res = ccSubDcoE | ccSysSufC;
         else
             res = res & ccNoDco;
     } else {
         res = res & ccNoDco;
     }
 
-    DEB() << " -> selected: " << syntax::SyntaxKind(syntaxKind) << ":" << syntaxFlavor << "     filter: " << QString::number(res, 16);
+    DEB() << " -> selected: " << syntax::SyntaxKind(syntax.first) << ":" << syntax.second << "     filter: " << QString::number(res, 16);
     return res;
 }
 

@@ -4,6 +4,7 @@
 #include <QListView>
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
+#include <QTextBlock>
 
 namespace gams {
 namespace studio {
@@ -123,7 +124,8 @@ private:
     void insertCurrent(bool equalPartOnly = false);
     int findBound(int pos, const QString &nextTwo, int good, int look);
     int findFilterRow(const QString &text, int top, int bot);
-    int getFilterFromSyntax(const QMap<int, QPair<int, int> > &blockSyntax);
+    int getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor);
+    QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor);
 
 private:
     CodeEdit *mEdit;

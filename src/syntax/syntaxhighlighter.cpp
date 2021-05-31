@@ -36,8 +36,9 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : BaseHighlighter(doc)
 {
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
-    mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::CommentEndline
-                     << SyntaxKind::SubDCO << SyntaxKind::CommentLine << SyntaxKind::Title;
+    mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::SubDCO << SyntaxKind::Title
+                     << SyntaxKind::CommentEndline << SyntaxKind::CommentLine << SyntaxKind::String
+                     << SyntaxKind::SystemRunAttrib << SyntaxKind::SystemCompileAttrib << SyntaxKind::UserCompileAttrib;
 
     mPostKindBlocker << SyntaxKind::CommentLine << SyntaxKind::CommentBlock << SyntaxKind::CommentEndline
                      << SyntaxKind::CommentInline;
@@ -221,11 +222,11 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
 
         if (scanBlock) {
-            if (mScannedBlockSyntax.last().first == int(SyntaxKind::String))
-                mScannedBlockSyntax.insert(nextBlock.start, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
-            if (nextBlock.syntax->kind() == SyntaxKind::String)
-                mScannedBlockSyntax.insert(nextBlock.start+1, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
-            else
+//            if (mScannedBlockSyntax.last().first == int(SyntaxKind::String))
+//                mScannedBlockSyntax.insert(nextBlock.start, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+//            if (nextBlock.syntax->kind() == SyntaxKind::String)
+//                mScannedBlockSyntax.insert(nextBlock.start+1, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+//            else
                 mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
         }
 
@@ -248,6 +249,14 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                                 DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
                                       << " " << nextBlock.syntax->kind();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
+                            if (scanBlock) {
+                                QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
+                                if (it == mScannedBlockSyntax.constEnd()) {
+                                    --it;
+                                }
+                                QPair<int,int> currentVal = it.value();
+//                                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+                            }
                             break;
                         }
                     }
