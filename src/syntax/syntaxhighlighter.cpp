@@ -143,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
-    DEB() << text;
+//    DEB() << text;
 
     NestingImpact nestingImpact;
     while (index < text.length()) {
@@ -190,9 +190,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
-                        if (tailBlock.syntax)
-                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-                                  << tailBlock.syntax->kind() << " flav_" << prevFlavor << "  (tail from " << syntax->kind() << ")";
+//                        if (tailBlock.syntax)
+//                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
+//                                  << tailBlock.syntax->kind() << " flav_" << prevFlavor << "  (tail from " << syntax->kind() << ")";
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
@@ -221,14 +221,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
 
-        if (scanBlock) {
-//            if (mScannedBlockSyntax.last().first == int(SyntaxKind::String))
-//                mScannedBlockSyntax.insert(nextBlock.start, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
-//            if (nextBlock.syntax->kind() == SyntaxKind::String)
-//                mScannedBlockSyntax.insert(nextBlock.start+1, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
-//            else
-                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
-        }
+        if (scanBlock)
+            mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
 
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
@@ -245,9 +239,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                     if (testSyntax) {
                         SyntaxBlock nextBlock = testSyntax->find(SyntaxKind::Standard, 0, text, i);
                         if (nextBlock.isValid()) {
-                            if (nextBlock.syntax)
-                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-                                      << " " << nextBlock.syntax->kind();
+//                            if (nextBlock.syntax)
+//                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                                      << " " << nextBlock.syntax->kind();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
@@ -279,7 +273,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     } else
         textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
-    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
+//    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
