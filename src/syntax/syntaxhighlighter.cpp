@@ -211,9 +211,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             }
 
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-            if (nextBlock.syntax)
-                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
+//            if (nextBlock.syntax)
+//                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
