@@ -57,6 +57,10 @@ public:
 
     bool isLicenseValid(const QStringList &license);
 
+    QStringList gamsDataLocations();
+
+    QStringList gamsConfigLocations();
+
 private:
     QString solverCodes(int solverId) const;
 
