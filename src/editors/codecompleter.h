@@ -5,6 +5,8 @@
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
 #include <QTextBlock>
+#include <QPlainTextEdit>
+#include <QMetaEnum>
 
 namespace gams {
 namespace studio {
@@ -19,21 +21,18 @@ enum CodeCompleterCasing {
 enum CodeCompleterType {
     ccNone      = 0x00000000,
 
-    ccBitFlags  = 0x7FFFFF00, // [Prepare] BIT filter for all flags
-    ccBitValue  = 0x000000FF, // [Prepare] BIT filter for the int value part
-
-    // TODO(JM)  Reduce bit-consumption by reserving the lowest byte as normal int value (the current DCO bits). The
-    //   |       bit-filter then is only applied to the remain (see ccBitFlags and ccBitValue above). Some flags can
-    //   V       can be combined and get a different value part to distinct them (like starter and ender DCOs)
-
     ccDco1      = 0x00000001, // DCO (starter and standalone)
     ccDco2      = 0x00000002, // DCO (ender, e.g. $offText)
-    ccSubDcoA   = 0x00000010, // sub DCO of $abort
-    ccSubDcoC   = 0x00000020, // sub DCO of $call
-    ccSubDcoE   = 0x00000040, // sub DCO of $eval
-    ccDco       = 0x000000FF, // all DCOs
-    ccSubDco    = 0x000000F0, // all sub DCOs
-    ccNoDco     = 0x7FFFFF00, // no DCOs
+    ccSubDcoA   = 0x00000004, // sub DCO of $abort
+    ccSubDcoC   = 0x00000008, // sub DCO of $call
+    ccSubDcoE   = 0x00000010, // sub DCO of $eval
+
+    ccDco       = 0x0000001F, // all DCOs
+    ccSubDco    = 0x0000001C, // all sub DCOs
+
+    ccSysDat    = 0x00000020, // system data
+    ccSysSufR   = 0x00000040, // system suffix run-time
+    ccSysSufC   = 0x00000080, // system suffix compile-time
 
     ccRes1      = 0x00000100, // declarations
     ccResS      = 0x00000200, // declaration: Set
@@ -42,24 +41,24 @@ enum CodeCompleterType {
     ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
     ccRes3      = 0x00002000, // other reserved words
     ccRes4      = 0x00004000, // embedded end
-    ccRes       = 0x0000FF00, // all declarations
+    ccRes       = 0x00007F00, // all reserved words
 
     ccOpt       = 0x00010000, // options
     ccMod       = 0x00020000, // models
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    ccSysDat    = 0x00100000, // system data
-    ccSysSufC   = 0x00200000, // system suffix compile-time
-    ccSysSufR   = 0x00400000, // system suffix run-time
-
-    ccStart     = 0x7F00F7FD, // all starting keywords
+    ccStart     = 0x00007FA3, // all starting keywords
 
     ccAll       = 0x7FFFFFFF
 };
 
 class CodeCompleterModel : public QAbstractListModel
 {
+public:
+
+
+private:
     QStringList mData;
     QStringList mDescription;
     QList<int> mDescriptIndex;
@@ -89,24 +88,31 @@ public:
     FilterCompleterModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
      ~FilterCompleterModel() override {}
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    bool test(int type, int flagPattern) const;
     void setTypeFilter(int completerTypeFilter, bool needDot);
+    int typeFilter() const { return mTypeFilter; }
     void setFilterText(QString filterText);
 };
-
-class CodeEdit;
 
 class CodeCompleter : public QListView
 {
     Q_OBJECT
 public:
-    CodeCompleter(CodeEdit *parent = nullptr);
+    CodeCompleter(QPlainTextEdit *parent = nullptr);
     ~CodeCompleter() override;
-    void setCodeEdit(CodeEdit *edit);
-    void updateFilter();
+    void setCodeEdit(QPlainTextEdit *edit);
+    QPlainTextEdit* codeEdit() { return mEdit; }
+    void updateFilter(int posInBlock = -1, QString line = QString());
     void updateDynamicData(QStringList symbols);
     int rowCount();
     void ShowIfData();
     void setCasing(CodeCompleterCasing casing);
+    QString filterText() const;
+    int typeFilter() const;
+    QStringList splitTypes();
+
+signals:
+    void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax);
 
 public slots:
     void setVisible(bool visible) override;
@@ -124,11 +130,11 @@ private:
     void insertCurrent(bool equalPartOnly = false);
     int findBound(int pos, const QString &nextTwo, int good, int look);
     int findFilterRow(const QString &text, int top, int bot);
-    int getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor);
+    int getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos);
     QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor);
 
 private:
-    CodeEdit *mEdit;
+    QPlainTextEdit *mEdit;
     CodeCompleterModel *mModel;
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
@@ -138,4 +144,5 @@ private:
 
 } // namespace studio
 } // namespace gams
+
 #endif // GAMS_STUDIO_SYNTAX_CODECOMPLETER_H

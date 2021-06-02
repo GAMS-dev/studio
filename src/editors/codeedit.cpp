@@ -1302,7 +1302,9 @@ bool CodeEdit::prepareCompleter()
 void CodeEdit::showCompleter()
 {
     if (mCompleter) {
+        if (mCompleter->codeEdit()) mCompleter->disconnect();
         mCompleter->setCodeEdit(this);
+        connect(mCompleter, &CodeCompleter::scanSyntax, this, &CodeEdit::scanSyntax);
         mCompleter->ShowIfData();
     }
 }

@@ -1,10 +1,11 @@
 #include "codecompleter.h"
-#include "editors/codeedit.h"
+//#include "editors/codeedit.h"
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
 #include "exception.h"
 
+#include <QPlainTextEdit>
 #include <QSortFilterProxyModel>
 #include <QGuiApplication>
 #include <QScreen>
@@ -310,12 +311,17 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
-    if (!(type & mTypeFilter)) return false;
+    if (!test(type, mTypeFilter)) return false;
     if (type & ccSubDco) {
         if (sourceModel()->data(index, Qt::DisplayRole).toString().startsWith('.') != mNeedDot)
             return false;
     }
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+}
+
+bool FilterCompleterModel::test(int type, int flagPattern) const
+{
+    return type & flagPattern;
 }
 
 void FilterCompleterModel::setTypeFilter(int completerTypeFilter, bool needDot)
@@ -328,7 +334,7 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, bool needDot)
 
 // ----------- Completer ---------------
 
-CodeCompleter::CodeCompleter(CodeEdit *parent) :
+CodeCompleter::CodeCompleter(QPlainTextEdit *parent) :
     QListView(nullptr),
     mEdit(parent),
     mModel(new CodeCompleterModel(parent)),
@@ -346,7 +352,7 @@ CodeCompleter::~CodeCompleter()
 {
 }
 
-void CodeCompleter::setCodeEdit(CodeEdit *edit)
+void CodeCompleter::setCodeEdit(QPlainTextEdit *edit)
 {
     mEdit = edit;
     if (mEdit) setFont(mEdit->font());
@@ -405,7 +411,8 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         if (e->key() == Qt::Key_Space)
             hide();
         if (mEdit)
-            mEdit->keyPressEvent(e);
+            qApp->sendEvent(mEdit, e);
+//            mEdit->keyPressEvent(e);
         updateFilter();
     }
     }
@@ -426,7 +433,7 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Tab:
         break;
     default:
-        if (mEdit) mEdit->keyReleaseEvent(e);
+        if (mEdit) qApp->sendEvent(mEdit, e); // mEdit->keyReleaseEvent(e);
     }
 }
 
@@ -464,7 +471,7 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
 {
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
-    emit mEdit->scanSyntax(block, blockSyntax);
+    emit scanSyntax(block, blockSyntax);
     int lastEnd = 0;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         if (it.key() > pos) {
@@ -480,24 +487,30 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
         if (syntax::SyntaxKind(res.first) == syntax::SyntaxKind::Dco)
             dcoFlavor = res.second;
     }
+
+    // uncomment this to generate elements for testcompleter
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        DEB() << "pos: " << it.key() << " = " << syntax::SyntaxKind(it.value().first) << ":" << it.value().second;
+        DEB() << "    " << it.key() << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second;
     }
 
     return res;
 }
 
-void CodeCompleter::updateFilter()
+void CodeCompleter::updateFilter(int posInBlock, QString line)
 {
-    if (!mEdit) return;
-    QTextCursor cur = mEdit->textCursor();
-    QMap<int,QPair<int, int>> blockSyntax;
-    int peekStart = cur.positionInBlock();
-    QString line = cur.block().text();
+    if (!mEdit && posInBlock < 0) return;
+    QTextBlock block;
+    if (posInBlock < 0 && mEdit) {
+        QTextCursor cur = mEdit->textCursor();
+        block = cur.block();
+        line = cur.block().text();
+        posInBlock = cur.positionInBlock();
+    }
+
+    int peekStart = posInBlock;
 
     int dcoFlavor = 0;
-    QPair<int,int> syntax = getSyntax(cur.block(), cur.positionInBlock(), dcoFlavor);
-    DEB() << "=== Kind in filter: " << syntax::SyntaxKind(syntax.first);
+    QPair<int,int> syntax = getSyntax(block, posInBlock, dcoFlavor);
 
     int validStart = peekStart;
     while (peekStart > 0) {
@@ -527,7 +540,7 @@ void CodeCompleter::updateFilter()
             break;
         }
     }
-    int len = cur.positionInBlock() - validStart;
+    int len = posInBlock - validStart;
     if (!len) {
         mFilterText = "";
     } else {
@@ -537,7 +550,8 @@ void CodeCompleter::updateFilter()
     // assign filter
     if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
-    mFilterModel->setTypeFilter(getFilterFromSyntax(syntax, dcoFlavor), mNeedDot);
+
+    mFilterModel->setTypeFilter(getFilterFromSyntax(syntax, dcoFlavor, line, posInBlock), mNeedDot);
     QString filterRex = mFilterText;
     filterRex.replace(".", "\\.").replace("$", "\\$");
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
@@ -558,7 +572,7 @@ void CodeCompleter::updateFilter()
         if (ind.isValid())
             setCurrentIndex(ind);
     } else {
-        int validEnd = cur.positionInBlock();
+        int validEnd = posInBlock;
         for (int i = validEnd+1; i < line.length(); ++i) {
             CharGroup cg = group(line.at(i));
             if (cg >= clBreak) break;
@@ -582,9 +596,11 @@ void CodeCompleter::updateFilter()
     scrollTo(currentIndex());
 
     // adapt size
+    if (!mEdit) return;
+    QTextCursor cur = mEdit->textCursor();
     cur.setPosition(cur.position() - mFilterText.length());
     QPoint pos = mEdit->cursorRect(cur).bottomLeft()
-            + QPoint(mEdit->viewportMargins().left(), mEdit->viewportMargins().top());
+            + QPoint(mEdit->viewport()->contentsMargins().left(), mEdit->viewport()->contentsMargins().top());
 
     QRect rect = QRect(mEdit->mapToGlobal(pos), geometry().size());
     int hei = sizeHintForRow(0) * qMin(10, rowCount());
@@ -638,6 +654,32 @@ void CodeCompleter::setCasing(CodeCompleterCasing casing)
 {
     mModel->setCasing(casing);
     mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
+}
+
+QString CodeCompleter::filterText() const
+{
+    return mFilterText;
+}
+
+int CodeCompleter::typeFilter() const
+{
+    return mFilterModel->typeFilter();
+}
+
+QStringList CodeCompleter::splitTypes()
+{
+    static const QMap<CodeCompleterType, QString> baseTypes {
+        {ccDco1,"ccDco1"}, {ccDco2,"ccDco2"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccRes1,"ccRes1"}, {ccRes2,"ccRes2"},
+        {ccRes3,"ccRes3"}, {ccRes4,"ccRes4"}, {ccResS,"ccResS"}, {ccResV,"ccResV"}, {ccResT,"ccResT"},
+        {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
+    };
+    QStringList res;
+    for (QMap<CodeCompleterType, QString>::ConstIterator it = baseTypes.constBegin() ; it != baseTypes.constEnd() ; ++it) {
+        if (mFilterModel->test(it.key(), typeFilter()))
+            res << it.value();
+    }
+    return res;
 }
 
 void CodeCompleter::setVisible(bool visible)
@@ -709,17 +751,10 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
     return findBound(pos, nextTwo, good, ind);
 }
 
-int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor)
+int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos)
 {
-    if (!mEdit) return ccNone;
     int res = ccAll;
-    QTextCursor cur = mEdit->textCursor();
-
-    QString line = cur.block().text();
-    int start = cur.positionInBlock() - mFilterText.length();
-
-    // for analysis
-    DEB() << "--- Line: \"" << cur.block().text() << "\"   start:" << start;
+    int start = pos - mFilterText.length();
 
     switch (syntax::SyntaxKind(syntax.first)) {
     case syntax::SyntaxKind::Standard:
@@ -810,7 +845,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock)
             res = ccDco2;
-        else if (!(res & ccDco))
+        else if (!mFilterModel->test(res, ccDco))
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
@@ -820,7 +855,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
             } else {
                 CharGroup gr = group(line.at(i));
                 if (gr >= clBreak) {
-                    res = res & ccNoDco;
+                    res = res & ~ccDco;
                     break;
                 }
             }
@@ -832,12 +867,15 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         else if (dcoFlavor == 18)
             res = ccSubDcoE | ccSysSufC;
         else
-            res = res & ccNoDco;
+            res = res & ~ccDco;
     } else {
-        res = res & ccNoDco;
+        res = res & ~ccDco;
     }
 
-    DEB() << " -> selected: " << syntax::SyntaxKind(syntax.first) << ":" << syntax.second << "     filter: " << QString::number(res, 16);
+    // for analysis
+    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second << "   filter: " << QString::number(res, 16);
+    DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+
     return res;
 }
 

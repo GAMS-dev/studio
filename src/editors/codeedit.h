@@ -176,7 +176,6 @@ private slots:
 private:
     friend class BlockEdit;
     friend class LineNumberArea;
-    friend class CodeCompleter;
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
