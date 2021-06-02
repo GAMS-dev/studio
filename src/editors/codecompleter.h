@@ -19,16 +19,16 @@ enum CodeCompleterCasing {
 };
 
 enum CodeCompleterType {
-    ccNone      = 0x00000000,
+    cc_None     = 0x00000000,
 
-    ccDco1      = 0x00000001, // DCO (starter and standalone)
-    ccDco2      = 0x00000002, // DCO (ender, e.g. $offText)
+    ccDcoS      = 0x00000001, // DCO (starter and standalone)
+    ccDcoE      = 0x00000002, // DCO (ender, e.g. $offText)
     ccSubDcoA   = 0x00000004, // sub DCO of $abort
     ccSubDcoC   = 0x00000008, // sub DCO of $call
     ccSubDcoE   = 0x00000010, // sub DCO of $eval
 
-    ccDco       = 0x0000001F, // all DCOs
-    ccSubDco    = 0x0000001C, // all sub DCOs
+    cc_Dco      = 0x0000001F, // all DCOs
+    cc_SubDco   = 0x0000001C, // all sub DCOs
 
     ccSysDat    = 0x00000020, // system data
     ccSysSufR   = 0x00000040, // system suffix run-time
@@ -41,16 +41,16 @@ enum CodeCompleterType {
     ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
     ccRes3      = 0x00002000, // other reserved words
     ccRes4      = 0x00004000, // embedded end
-    ccRes       = 0x00007F00, // all reserved words
+    cc_Res      = 0x00007F00, // all reserved words
 
     ccOpt       = 0x00010000, // options
     ccMod       = 0x00020000, // models
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    ccStart     = 0x00007FA3, // all starting keywords
+    cc_Start    = 0x00007FA3, // all starting keywords
 
-    ccAll       = 0x7FFFFFFF
+    cc_All      = 0x7FFFFFFF
 };
 
 class CodeCompleterModel : public QAbstractListModel

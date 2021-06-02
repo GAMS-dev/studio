@@ -38,11 +38,11 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDco1);
+    mType.insert(mData.size()-1, ccDcoS);
     int i = mData.indexOf("$offText");
     if (i >= 0) {
-        if (i > 0) mType.insert(i-1, ccDco1);
-        mType.insert(i, ccDco2);
+        if (i > 0) mType.insert(i-1, ccDcoS);
+        mType.insert(i, ccDcoE);
     }
 
 
@@ -186,7 +186,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDco1);
+    mType.insert(mData.size()-1, ccDcoS);
 
     mData << "set";
     mDescription << "compile-time variable based on a GAMS set";
@@ -199,7 +199,7 @@ void CodeCompleterModel::initData()
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalLocal.set";
     mDescription << "compile-time variable based on a GAMS set";
-    mType.insert(mData.size()-1, ccDco1);
+    mType.insert(mData.size()-1, ccDcoS);
 
     mData << "noError";
     mDescription << "abort without error";
@@ -208,7 +208,7 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccSubDcoA);
     mData << "$abort.noError";
     mDescription << "abort without error";
-    mType.insert(mData.size()-1, ccDco1);
+    mType.insert(mData.size()-1, ccDcoS);
 
     // system data
     src = syntax::/*SyntaxData::*/systemData();
@@ -669,7 +669,7 @@ int CodeCompleter::typeFilter() const
 QStringList CodeCompleter::splitTypes()
 {
     static const QMap<CodeCompleterType, QString> baseTypes {
-        {ccDco1,"ccDco1"}, {ccDco2,"ccDco2"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccDcoS,"ccDco1"}, {ccDcoE,"ccDco2"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccRes1,"ccRes1"}, {ccRes2,"ccRes2"},
         {ccRes3,"ccRes3"}, {ccRes4,"ccRes4"}, {ccResS,"ccResS"}, {ccResV,"ccResV"}, {ccResT,"ccResT"},
         {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
@@ -844,7 +844,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     mNeedDot = false;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock)
-            res = ccDco2;
+            res = ccDcoE;
         else if (!mFilterModel->test(res, ccDco))
             res = res & ccDco;
     } else if (dcoFlavor > 15) {
