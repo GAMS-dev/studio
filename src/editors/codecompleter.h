@@ -64,6 +64,8 @@ private:
     QList<int> mDescriptIndex;
     QMap<int, CodeCompleterType> mType;
     CodeCompleterCasing mCasing;
+    int mDollarGroupRow = -1;
+    int mPercentGroupRow = -1;
     Q_OBJECT
 public:
     CodeCompleterModel(QObject *parent = nullptr);
@@ -72,6 +74,8 @@ public:
     CodeCompleterCasing casing() { return mCasing; }
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    int dollarGroupRow() { return mDollarGroupRow; }
+    int percentGroupRow() { return mPercentGroupRow; }
 
 private:
     void initData();
@@ -80,18 +84,23 @@ private:
 
 class FilterCompleterModel : public QSortFilterProxyModel
 {
-    QString mFilterText;
     int mTypeFilter = 0;
     bool mNeedDot = true;
+    bool mEmpty = true;
+    int mDollarGroupRow = -1;
+    int mPercentGroupRow = -1;
     Q_OBJECT
 public:
     FilterCompleterModel(QObject *parent = nullptr) : QSortFilterProxyModel(parent) {}
      ~FilterCompleterModel() override {}
     bool filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const override;
+    void setGroupRows(int dollarRow, int percentRow);
+    bool isGroupRow(int row);
     bool test(int type, int flagPattern) const;
     void setTypeFilter(int completerTypeFilter, bool needDot);
     int typeFilter() const { return mTypeFilter; }
     void setFilterText(QString filterText);
+    void setEmpty(bool isEmpty);
 };
 
 class CodeCompleter : public QListView

@@ -31,6 +31,9 @@ void CodeCompleterModel::initData()
     mType.clear();
 
     // DCOs
+    mDollarGroupRow = mData.size();
+    mData << "$...";
+    mDescription << "";
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
@@ -229,6 +232,10 @@ void CodeCompleterModel::initData()
         ++it;
     }
     mType.insert(mData.size()-1, ccSysSufR);
+
+    mPercentGroupRow = mData.size();
+    mData << "%...";
+    mDescription << "";
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << "%system." + it->first + "%";
@@ -264,6 +271,10 @@ void CodeCompleterModel::addDynamicData()
         if (mType.contains(i)) {
             iType.insert(data.size()-1, mType.value(i));
         }
+        if (i == mDollarGroupRow)
+            mDollarGroupRow = data.size()-1;
+        if (i == mPercentGroupRow)
+            mPercentGroupRow = data.size()-1;
     }
     mData = data;
     mDescriptIndex = descriptIndex;
@@ -307,16 +318,42 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
 
 // ----------- Filter ---------------
 
+void FilterCompleterModel::setEmpty(bool isEmpty)
+{
+    mEmpty = isEmpty;
+}
+
 bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &sourceParent) const
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
     if (!test(type, mTypeFilter)) return false;
-    if (type & ccSubDco) {
-        if (sourceModel()->data(index, Qt::DisplayRole).toString().startsWith('.') != mNeedDot)
+    QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
+    if (type & cc_SubDco) {
+        if (text.startsWith('.') != mNeedDot)
             return false;
     }
+    if (mEmpty) {
+        if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
+            return true;
+        else if (text.startsWith('$') || text.startsWith('%'))
+            return false;
+    } else if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
+        return false;
+
     return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
+}
+
+void FilterCompleterModel::setGroupRows(int dollarRow, int percentRow)
+{
+    mDollarGroupRow = dollarRow;
+    mPercentGroupRow = percentRow;
+}
+
+bool FilterCompleterModel::isGroupRow(int row)
+{
+    QModelIndex ind = mapToSource(index(row, 0));
+    return ind.row() == mDollarGroupRow || ind.row() == mPercentGroupRow;
 }
 
 bool FilterCompleterModel::test(int type, int flagPattern) const
@@ -546,11 +583,12 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     } else {
         mFilterText = line.mid(validStart, len);
     }
+    mFilterModel->setEmpty(!len);
 
     // assign filter
     if (mModel->casing() == caseDynamic && mFilterModel->filterCaseSensitivity() == Qt::CaseInsensitive)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
-
+    mFilterModel->setGroupRows(mModel->dollarGroupRow(), mModel->percentGroupRow());
     mFilterModel->setTypeFilter(getFilterFromSyntax(syntax, dcoFlavor, line, posInBlock), mNeedDot);
     QString filterRex = mFilterText;
     filterRex.replace(".", "\\.").replace("$", "\\$");
@@ -620,10 +658,9 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 int CodeCompleter::findFilterRow(const QString &text, int top, int bot)
 {
     int ind = (top + bot) / 2;
-    if (top == ind || bot == ind) return -1;
+    if (top == ind || bot == ind) return 0;
     QString str = model()->data(model()->index(ind, 0)).toString();
     int res = str.compare(text);
-//    DEB() << "         " << str << " " << res;
     if (res < 0) return findFilterRow(text, ind, bot);
     if (res > 0) return findFilterRow(text, top, ind);
     return ind;
@@ -691,7 +728,7 @@ void CodeCompleter::setVisible(bool visible)
 void CodeCompleter::insertCurrent(bool equalPartOnly)
 {
     if (!mEdit) return;
-    bool changed = false;
+    bool hideIt = !equalPartOnly;
     if (currentIndex().isValid()) {
         QTextCursor cur = mEdit->textCursor();
         QString line = cur.block().text();
@@ -700,6 +737,8 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             cur.setPosition(cur.position()-mFilterText.length());
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();
+        if (mFilterModel->isGroupRow(currentIndex().row()))
+            res = res.left(1);
         mPreferredText = res;
 
         if (equalPartOnly && res.length() > mFilterText.length()+1) {
@@ -725,12 +764,15 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
         if (i > 0)
             cur.setPosition(cur.position() + i, QTextCursor::KeepAnchor);
 
-        changed = (res != mFilterText);
+        if (res.length() == 1)
+            hideIt = false;
+        else
+            hideIt = (res == mFilterText) || hideIt;
         cur.insertText(res);
         cur.endEditBlock();
         mEdit->setTextCursor(cur);
     }
-    if (!equalPartOnly || !changed) {
+    if (hideIt) {
         mEdit->setFocus();
         hide();
     }
@@ -753,7 +795,7 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
 
 int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos)
 {
-    int res = ccAll;
+    int res = cc_All;
     int start = pos - mFilterText.length();
 
     switch (syntax::SyntaxKind(syntax.first)) {
@@ -764,30 +806,30 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
-        res = ccStart; break;
+        res = cc_Start; break;
 
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
     case syntax::SyntaxKind::SystemCompileAttrib:
     case syntax::SyntaxKind::UserCompileAttrib:
-        res = ccNone; break;
+        res = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = (syntax.second == 8) ? ccDco | ccResT : ccDco; break;
+        res = (syntax.second == 8) ? cc_Dco | ccResT : cc_Dco; break;
     case syntax::SyntaxKind::DeclarationSetType:
-        res = ccDco | ccResS; break;
+        res = cc_Dco | ccResS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
-        res = ccDco | ccResV; break;
+        res = cc_Dco | ccResV; break;
 
     case syntax::SyntaxKind::Dco:
-        res = ccDco | ccSysSufC; break;
+        res = cc_Dco | ccSysSufC; break;
 
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::CommentBlock:
     case syntax::SyntaxKind::CommentLine:
     case syntax::SyntaxKind::CommentEndline:
     case syntax::SyntaxKind::CommentInline:
-        res = ccNone; break;
+        res = cc_None; break;
 
     case syntax::SyntaxKind::DcoBody:
     case syntax::SyntaxKind::Title:
@@ -795,7 +837,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         res = ccSysSufC; break;
 
     case syntax::SyntaxKind::Identifier:
-        res = ccDco | ccResT; break;
+        res = cc_Dco | ccResT; break;
     case syntax::SyntaxKind::IdentifierDim:
     case syntax::SyntaxKind::IdentifierDimEnd:
     case syntax::SyntaxKind::IdentifierDescription:
@@ -804,10 +846,10 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRow:
-        res = ccDco | ccSysSufC; break;
+        res = cc_Dco | ccSysSufC; break;
     case syntax::SyntaxKind::IdentifierAssignment:
     case syntax::SyntaxKind::AssignmentLabel:
-        res = ccDco | ccSysDat | ccSysSufC; break;
+        res = cc_Dco | ccSysDat | ccSysSufC; break;
 
     case syntax::SyntaxKind::Embedded:
     case syntax::SyntaxKind::EmbeddedBody:
@@ -819,10 +861,10 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
-        res = ccStart | ccSysSufC; break;
+        res = cc_Start | ccSysSufC; break;
     case syntax::SyntaxKind::Put:
     case syntax::SyntaxKind::PutFormula:
-        res = ccStart | ccSysSufR | ccSysSufC; break;
+        res = cc_Start | ccSysSufR | ccSysSufC; break;
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
@@ -845,8 +887,8 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock)
             res = ccDcoE;
-        else if (!mFilterModel->test(res, ccDco))
-            res = res & ccDco;
+        else if (!mFilterModel->test(res, cc_Dco))
+            res = res & cc_Dco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
         for (int i = start-1; i > 0; --i) {
@@ -855,7 +897,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
             } else {
                 CharGroup gr = group(line.at(i));
                 if (gr >= clBreak) {
-                    res = res & ~ccDco;
+                    res = res & ~cc_Dco;
                     break;
                 }
             }
@@ -867,9 +909,9 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         else if (dcoFlavor == 18)
             res = ccSubDcoE | ccSysSufC;
         else
-            res = res & ~ccDco;
+            res = res & ~cc_Dco;
     } else {
-        res = res & ~ccDco;
+        res = res & ~cc_Dco;
     }
 
     // for analysis

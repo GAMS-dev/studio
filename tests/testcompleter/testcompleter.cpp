@@ -40,11 +40,11 @@ void TestCompleter::testDco()
     mSynSim.addBlockSyntax(23, SyntaxKind::String, 0);
     mSynSim.addBlockSyntax(24, SyntaxKind::Semicolon, 0);
     mCompleter->updateFilter(3, "put 'abc %system.Date%';");
-    QVERIFY2(mCompleter->typeFilter() == ccStart, descript.arg(QString::number(mCompleter->typeFilter(), 16),
+    QVERIFY2(mCompleter->typeFilter() == cc_Start, descript.arg(QString::number(mCompleter->typeFilter(), 16),
                                                                mCompleter->splitTypes().join(",")).toLatin1());
 
     mCompleter->updateFilter(6, "put 'abc %system.Date%';");
-    QVERIFY2(mCompleter->typeFilter() == ccStart, descript.arg(QString::number(mCompleter->typeFilter(), 16),
+    QVERIFY2(mCompleter->typeFilter() == cc_Start, descript.arg(QString::number(mCompleter->typeFilter(), 16),
                                                                mCompleter->splitTypes().join(",")).toLatin1());
 }
 
