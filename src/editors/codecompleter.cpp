@@ -864,10 +864,10 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::SolveBody:
     case syntax::SyntaxKind::SolveKey:
     case syntax::SyntaxKind::Execute:
-        res = cc_Start | ccSysSufC; break;
     case syntax::SyntaxKind::Put:
+        res = cc_Start; break;
     case syntax::SyntaxKind::PutFormula:
-        res = cc_Start | ccSysSufR | ccSysSufC; break;
+        res = cc_Start | ccSysSufR; break;
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:

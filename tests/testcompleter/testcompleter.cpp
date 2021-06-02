@@ -23,6 +23,15 @@
 using namespace gams::studio;
 using namespace gams::studio::syntax;
 
+QByteArray TestCompleter::describe(int receive, int expect, QStringList types)
+{
+    QString descript("Filter: %1 != %2  -> diff: %3\n[%4]");
+    return descript.arg(QString::number(receive, 16),
+                        QString::number(expect, 16),
+                        QString::number((expect & ~receive) | (receive & ~expect), 16),
+                        types.join(",")).toLatin1();
+}
+
 void TestCompleter::initTestCase()
 {
     mCompleter = new CodeCompleter(nullptr);
@@ -31,21 +40,25 @@ void TestCompleter::initTestCase()
 
 void TestCompleter::testDco()
 {
-    QString descript("Filter: %1 [%2]");
-
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::Standard, 0);
     mSynSim.addBlockSyntax(3, SyntaxKind::Put, 0);
     mSynSim.addBlockSyntax(4, SyntaxKind::PutFormula, 0);
     mSynSim.addBlockSyntax(23, SyntaxKind::String, 0);
     mSynSim.addBlockSyntax(24, SyntaxKind::Semicolon, 0);
-    mCompleter->updateFilter(3, "put 'abc %system.Date%';");
-    QVERIFY2(mCompleter->typeFilter() == cc_Start, descript.arg(QString::number(mCompleter->typeFilter(), 16),
-                                                               mCompleter->splitTypes().join(",")).toLatin1());
 
-    mCompleter->updateFilter(6, "put 'abc %system.Date%';");
-    QVERIFY2(mCompleter->typeFilter() == cc_Start, descript.arg(QString::number(mCompleter->typeFilter(), 16),
-                                                               mCompleter->splitTypes().join(",")).toLatin1());
+    QString line = "put 'abc %system.Date%';";
+    int expect = cc_Start;
+    mCompleter->updateFilter( 3, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    expect = ccSysSufC;
+    mCompleter->updateFilter( 6, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    expect = cc_Start & ~(ccDcoS | ccDcoE);
+    mCompleter->updateFilter(24, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 }
 
 

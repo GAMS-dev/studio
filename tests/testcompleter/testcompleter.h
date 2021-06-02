@@ -37,6 +37,8 @@ private:
     gams::studio::CodeCompleter *mCompleter = nullptr;
     SyntaxSimulator mSynSim;
 
+    QByteArray describe(int receive, int expect, QStringList types);
+
 private slots:
     void initTestCase();
 
