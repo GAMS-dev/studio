@@ -57,7 +57,9 @@ private slots:
     void testAbsolutePathNotExisting();
 
     void testConfigFile();
+    void testLicenseFile();
 
+    void testGamsLicenseFilePath_data();
     void testGamsLicenseFilePath();
 };
 

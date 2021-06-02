@@ -26,6 +26,7 @@
 #include "palmcc.h"
 #include "gclgms.h"
 
+#include <QDir>
 #include <QClipboard>
 #include <QGuiApplication>
 
@@ -49,9 +50,11 @@ GamsLicenseInfo::GamsLicenseInfo()
         logger->append(msg, LogMsgType::Error);
         EXCEPT() << "Could not create PAL object. " << msg;
     }
+
     int rc; // additional return code, not used here
+    auto dataPaths = gamsDataLocations();
     mLicenseAvailable = palLicenseReadU(mPAL,
-                                        CommonPaths::gamsLicenseFilePath().toStdString().c_str(),
+                                        CommonPaths::gamsLicenseFilePath(dataPaths).toStdString().c_str(),
                                         msg,
                                         &rc);
 }
@@ -137,11 +140,61 @@ QStringList GamsLicenseInfo::licenseFromClipboard()
 bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
 {
     int i = 1;
-    for (auto line: license) {
+    for (const auto& line: license) {
         palLicenseRegisterGAMS(mPAL, i++, line.toStdString().c_str());
     }
     palLicenseRegisterGAMSDone(mPAL);
     return palLicenseValidation(mPAL) ? false : true;
+}
+
+QStringList GamsLicenseInfo::gamsDataLocations()
+{
+    char buffer[2048];
+    const int nOffset = 8;
+    int offset[nOffset];
+    int numdirs;
+    QStringList dataPaths;
+    auto systemDir = QDir::toNativeSeparators(CommonPaths::systemDir().toStdString().c_str());
+    if (!palDataDirs(mPAL, buffer, 2048, &numdirs, offset, nOffset,
+                    systemDir.toStdString().c_str()))
+        return dataPaths;
+
+    auto currentPath = QDir::toNativeSeparators(QDir::currentPath());
+    for (int i=0; i<nOffset && i<numdirs; i++) {
+#ifdef _WIN32
+        QString path(buffer+offset[i]);
+        if (path == currentPath) {
+            continue;
+        } else if (path.startsWith(currentPath)) {
+            path = path.replace(0, currentPath.length(), CommonPaths::systemDir());
+            dataPaths << QDir::toNativeSeparators(path);
+            continue;
+        }
+#endif
+        dataPaths << buffer+offset[i];
+    }
+
+
+
+    return dataPaths;
+}
+
+QStringList GamsLicenseInfo::gamsConfigLocations()
+{
+    char buffer[2048];
+    const int nOffset = 8;
+    int offset[nOffset];
+    int numdirs;
+    QStringList configPaths;
+    auto systemDir = QDir::toNativeSeparators(CommonPaths::systemDir().toStdString().c_str());
+    if (!palConfigDirs(mPAL, buffer, 2048, &numdirs, offset, nOffset,
+                       systemDir.toStdString().c_str()))
+        return configPaths;
+
+    for (int i=0; i<nOffset && i<numdirs; i++) {
+        configPaths << buffer+offset[i];
+    }
+    return configPaths;
 }
 
 QString GamsLicenseInfo::solverCodes(int solverId) const

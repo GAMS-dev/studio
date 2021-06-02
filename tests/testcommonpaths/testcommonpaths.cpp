@@ -190,16 +190,48 @@ void TestCommonPaths::testConfigFile()
     QCOMPARE(actual, expected.path());
 }
 
+void TestCommonPaths::testLicenseFile()
+{
+    QString actual = CommonPaths::licenseFile();
+    QString expected = "gamslice.txt";
+
+    QCOMPARE(actual, expected);
+}
+
+void TestCommonPaths::testGamsLicenseFilePath_data()
+{
+    QTest::addColumn<QStringList>("dataPaths");
+    QTest::addColumn<QString>("expected");
+
+    QTest::newRow("empty") << QStringList() << CommonPaths::systemDir() + "/" +
+                              CommonPaths::licenseFile();
+
+    QTest::newRow("file") << QStringList(".") << QString(".") + "/" +
+                             CommonPaths::licenseFile();
+    QFile file1(QDir(".").path() + "/" + CommonPaths::licenseFile());
+    if (!file1.open(QIODevice::WriteOnly))
+        QFAIL("Error creating test file");
+
+    QStringList paths {"nodir", "./test"};
+    QTest::newRow("subfolder") << paths << paths.at(1) + "/" +
+                                  CommonPaths::licenseFile();
+    if (!QDir().mkpath("./test"))
+        QFAIL("Error creating test directory");
+    else
+        file1.close();
+    QFile file2(QDir("./test").path() + "/" + CommonPaths::licenseFile());
+    if (!file2.open(QIODevice::WriteOnly))
+        QFAIL("Error creating test file");
+    else
+        file2.close();
+}
+
 void TestCommonPaths::testGamsLicenseFilePath()
 {
-    auto actual = CommonPaths::gamsLicenseFilePath();
-#ifdef WIN32
-    auto expected = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) +
-            "/GAMS/gamslice.txt";
-#else
-    auto expected = QStandardPaths::writableLocation(QStandardPaths::RuntimeLocation) +
-            "/GAMS/gamslice.txt";
-#endif
+    QFETCH(QStringList, dataPaths);
+    QFETCH(QString, expected);
+
+    auto actual = CommonPaths::gamsLicenseFilePath(dataPaths);
     QCOMPARE(QFileInfo(actual).canonicalFilePath(),
              QFileInfo(expected).canonicalFilePath());
 }
