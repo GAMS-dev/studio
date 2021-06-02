@@ -344,6 +344,7 @@ Q_ENUM_NS(SyntaxKind);
 //inline QTextStream &operator <<(QTextStream &steam, SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
 
 QString syntaxKindName(SyntaxKind kind);
+QString syntaxKindName(int kind);
 
 // TODO(JM) this needs to be more compact, drag disjunct parts to multi-bit regions together:
 //          - check if Table, Model, and preTable can be joined (like done with flavorQuotePart)
@@ -429,6 +430,7 @@ public:
     SyntaxAbstract(SyntaxKind kind, SharedSyntaxData* sharedData) : mKind(kind), mSharedData(sharedData) {}
     virtual ~SyntaxAbstract() {}
     SyntaxKind kind() const { return mKind; }
+    QString name() const { return syntaxKindName(mKind); }
     void assignColorSlot(Theme::ColorSlot slot);
     Theme::ColorSlot colorSlot() const { return mColorSlot; }
 

@@ -33,6 +33,11 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
+QString syntaxKindName(int kind)
+{
+    return syntaxKindName(SyntaxKind(kind));
+}
+
 void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
 {
     mColorSlot = slot;

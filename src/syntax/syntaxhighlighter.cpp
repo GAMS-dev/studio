@@ -192,7 +192,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
 //                        if (tailBlock.syntax)
 //                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-//                                  << tailBlock.syntax->kind() << " flav_" << prevFlavor << "  (tail from " << syntax->kind() << ")";
+//                                  << tailBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntax->name() << ")";
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
@@ -213,7 +213,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
 //            if (nextBlock.syntax)
 //                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-//                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
+//                      << " " << nextBlock.syntax->name() << " flav_" << nextBlock.flavor << "  (next from " << syntax->name() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
@@ -241,7 +241,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         if (nextBlock.isValid()) {
 //                            if (nextBlock.syntax)
 //                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-//                                      << " " << nextBlock.syntax->kind();
+//                                      << " " << nextBlock.syntax->name();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
