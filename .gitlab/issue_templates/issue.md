@@ -6,6 +6,6 @@ t.b.d.
 **Steps**
 - [ ] t.b.d.
 - [ ] Update CHANGELOG
-- [ ] Update GAMS documenation
+- [ ] Update GAMS documentation
 - [ ] Unit Tests
 - [ ] UI Tests

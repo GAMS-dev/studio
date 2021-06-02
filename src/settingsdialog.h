@@ -71,10 +71,10 @@ private slots:
     void prepareModifyTheme();
     void themeModified();
     void setModified();
+    bool setAndCheckUserLib(const QString &path);
     void appearanceIndexChanged(int index);
     void editorBaseColorChanged();
 
-    void on_btn_openUserLibLocation_clicked();
     void on_btn_browse_clicked();
     void on_btn_export_clicked();
     void on_btn_import_clicked();
@@ -89,6 +89,9 @@ private slots:
     void on_btImportTheme_clicked();
     void on_btExportTheme_clicked();
 
+    void on_tb_userLibSelect_clicked();
+    void on_tb_userLibRemove_clicked();
+    void on_tb_userLibOpen_clicked();
 
 private:
     Ui::SettingsDialog *ui;
@@ -106,6 +109,7 @@ private:
     void setModifiedStatus(bool status);
     void initColorPage();
     void setThemeEditable(bool editable);
+    void prependUserLib();
 
 };
 

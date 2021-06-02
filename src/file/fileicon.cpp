@@ -26,21 +26,21 @@ FileIcon::FileIcon()
 
 }
 
-QIcon FileIcon::iconForFileKind(FileKind kind, bool isReadonly, bool isMain)
+QIcon FileIcon::iconForFileKind(FileKind kind, bool isReadonly, bool isMain, QIcon::Mode mode, int alpha)
 {
     QString runMark = isMain ? "-run" : "";
-    if (kind == FileKind::Gms) return Theme::icon(":/img/gams-w"+runMark, true);
-    if (kind == FileKind::Gdx) return Theme::icon(":/img/database", true);
-    if (kind == FileKind::Ref) return Theme::icon(":/img/ref-file", true);
-    if (kind == FileKind::Opt) return Theme::icon(":/img/option-file", true);
-    if (kind == FileKind::Guc) return Theme::icon(":/img/gams-config-file", true);
-    if (kind == FileKind::Lst) return Theme::icon(":/img/file-alt", true);
-    if (kind == FileKind::Lxi) return Theme::icon(":/img/file-alt", true);
-    if (kind == FileKind::Log) return Theme::icon(":/img/file-alt", true);
-    if (kind == FileKind::Txt) return Theme::icon(":/img/file-edit", true);
-    if (kind == FileKind::TxtRO) return Theme::icon(":/img/file-alt", true);
-    if (!isReadonly) return Theme::icon(":/img/file-edit", true);
-    return Theme::icon(":/img/file-alt", true);
+    if (kind == FileKind::Gms) return Theme::icon(":/img/gams-w"+runMark, mode, alpha);
+    if (kind == FileKind::Gdx) return Theme::icon(":/img/database", mode, alpha);
+    if (kind == FileKind::Ref) return Theme::icon(":/img/ref-file", mode, alpha);
+    if (kind == FileKind::Opt) return Theme::icon(":/img/option-file", mode, alpha);
+    if (kind == FileKind::Guc) return Theme::icon(":/img/gams-config-file", mode, alpha);
+    if (kind == FileKind::Lst) return Theme::icon(":/img/file-alt", mode, alpha);
+    if (kind == FileKind::Lxi) return Theme::icon(":/img/file-alt", mode, alpha);
+    if (kind == FileKind::Log) return Theme::icon(":/img/file-alt", mode, alpha);
+    if (kind == FileKind::Txt) return Theme::icon(":/img/file-edit", mode, alpha);
+    if (kind == FileKind::TxtRO) return Theme::icon(":/img/file-alt", mode, alpha);
+    if (!isReadonly) return Theme::icon(":/img/file-edit", mode, alpha);
+    return Theme::icon(":/img/file-alt", mode, alpha);
 
 }
 

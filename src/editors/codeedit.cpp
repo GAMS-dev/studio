@@ -1762,7 +1762,7 @@ void CodeEdit::recalcExtraSelections()
 
 void CodeEdit::startCompleterTimer()
 {
-    if (!isReadOnly() && mSettings->toBool(skEdCompleterAutoOpen)) {
+    if (mCompleter && mSettings->toBool(skEdCompleterAutoOpen)) {
         if (mCompleter && mCompleter->isVisible())
             showCompleter();
         else

@@ -155,6 +155,16 @@ bool FileMeta::checkActivelySavedAndReset()
     return res;
 }
 
+void FileMeta::updateEditsCompleter()
+{
+    if (!editors().isEmpty()) {
+        for (QWidget *wid : editors()) {
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
+                ce->setCompleter(mHighlighter ? mFileRepo->completer() : nullptr);
+        }
+    }
+}
+
 void FileMeta::linkDocument(QTextDocument *doc)
 {
     // The very first editor opened for this FileMeta should pass it's document here. It takes over parency
@@ -170,6 +180,7 @@ void FileMeta::linkDocument(QTextDocument *doc)
         mHighlighter = new syntax::SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+        updateEditsCompleter();
     }
 }
 
@@ -217,6 +228,7 @@ void FileMeta::refreshType()
                 }
             }
         }
+        updateEditsCompleter();
     }
     emit changed(mId);
 }
@@ -432,6 +444,7 @@ void FileMeta::addEditor(QWidget *edit)
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
         if (scEdit && mHighlighter) {
+            scEdit->setCompleter(mFileRepo->completer());
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
             connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
             connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
@@ -506,6 +519,7 @@ void FileMeta::removeEditor(QWidget *edit)
         mFileRepo->watch(this);
     }
     if (scEdit && mHighlighter) {
+        scEdit->setCompleter(nullptr);
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
         connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
         disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
@@ -958,7 +972,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit = new CodeEdit(tabWidget);
-        codeEdit->setCompleter(mFileRepo->completer());
         edit = (kind() == FileKind::Txt) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                          : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth

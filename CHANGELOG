@@ -1,3 +1,22 @@
+Version 1.7.0  *
+==================
+- added the possibility to change the "user library path" in the settings
+- improve the ability to distinguish the current group from other groups
+- Updated AppImage now requires glibc 2.27, therefore Ubuntu 16.04 LTS and openSuse Leap 15.2 are not supported any longer
+
+Version 1.6.3  *
+==================
+- removed duplicate file entries in the ProjectExplorer that refer to the same file, but differ in case
+- fixed Studio title bar above top screen bound
+- fixed issues with "File" tab in reference file viewer
+
+Version 1.6.2
+==================
+- fixed issues with enumerated parameters in extended parameter editor
+- fixed issues with "set", "option", and "table" in code-completer
+- fixed code-completer opening in non-code files
+- fixed "Open in current group" not being used for "User Model Library" and "New file"
+
 Version 1.6.1
 ==================
 - added additional features to static auto completion (sub-DCOs, auto-open, preselect best match)

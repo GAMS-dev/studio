@@ -38,6 +38,9 @@ FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
     mSettings = Settings::settings();
+#ifdef __unix__
+    mFsCaseSensitive = true;
+#endif
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
@@ -47,15 +50,12 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    return mFileNames.value(location);
-
-    // If we need comparing QFileInfo (to distinct different paths to the same file)
-
-//    QFileInfo fi(location);
-//    for (FileMeta* fm: mFiles.values()) {
-//        if (FileMetaRepo::equals(QFileInfo(fm->location()), fi))
-//            return fm;
-//    }
+    QFileInfo fi(location);
+    if (!fi.exists())
+        return nullptr;
+    if (mFsCaseSensitive)
+        return mFileNames.value(location);
+    return mFileNames.value(location.toLower());
 }
 
 FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
@@ -64,7 +64,7 @@ FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
     return fileMeta(editor->property("location").toString());
 }
 
-QList<FileMeta*> FileMetaRepo::fileMetas() const
+const QList<FileMeta *> FileMetaRepo::fileMetas() const
 {
     QList<FileMeta*> res;
     QHashIterator<FileId, FileMeta*> i(mFiles);
@@ -78,7 +78,10 @@ QList<FileMeta*> FileMetaRepo::fileMetas() const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
-    mFileNames.insert(fileMeta->location(), fileMeta);
+    if (mFsCaseSensitive)
+        mFileNames.insert(fileMeta->location(), fileMeta);
+    else
+        mFileNames.insert(fileMeta->location().toLower(), fileMeta);
     watch(fileMeta);
 }
 
@@ -96,7 +99,10 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());
-        mFileNames.remove(fileMeta->location());
+        if (mFsCaseSensitive)
+            mFileNames.remove(fileMeta->location());
+        else
+            mFileNames.remove(fileMeta->location().toLower());
         unwatch(fileMeta);
         if (fileMeta->isAutoReload())
             mAutoReloadLater << fileMeta->location();
@@ -230,7 +236,7 @@ void FileMetaRepo::setDebugMode(bool debug)
         QString nam = (fm ? fm->name() : "???");
 //        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
     }
-
+    mCompleter.setDebugMode(debug);
 }
 
 bool FileMetaRepo::debugMode() const
@@ -245,8 +251,13 @@ bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
 
 void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
 {
-    mFileNames.remove(oldLocation);
-    mFileNames.insert(file->location(), file);
+    if (mFsCaseSensitive) {
+        mFileNames.remove(oldLocation);
+        mFileNames.insert(file->location(), file);
+    } else {
+        mFileNames.remove(oldLocation.toLower());
+        mFileNames.insert(file->location().toLower(), file);
+    }
 }
 
 void FileMetaRepo::setUserGamsTypes(QStringList suffix)
@@ -372,6 +383,7 @@ void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownType)
 {
     if (location.isEmpty()) return nullptr;
+    QString adaptedLocation;
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);

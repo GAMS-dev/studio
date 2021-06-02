@@ -291,7 +291,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
 
     // user model library directory
-    safelyAdd(res, skUserModelLibraryDir, scSys, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());
+    safelyAdd(res, skUserModelLibraryDir, scUser, {"userModelLibraryDir"}, CommonPaths::userModelLibraryDir());
+//    safelyAdd(res, skUserModelLibraryHistory, scUser, {"userModelLibraryHistory"}, QString());
 
     // settings of help page
     safelyAdd(res, skHelpBookmarks, scSys, {"help","bookmarks"}, QJsonArray());
@@ -889,11 +890,6 @@ void Settings::loadFile(Scope scope)
     }
 
 //    Theme::instance()->initDefault();
-
-
-    // the location for user model libraries is not modifyable right now
-    // anyhow, it is part of StudioSettings since it might become modifyable in the future
-    setString(skUserModelLibraryDir, CommonPaths::userModelLibraryDir());
 }
 
 void Settings::importSettings(const QString &path)

@@ -35,7 +35,7 @@ enum CodeCompleterType {
     ccSysSufC   = 0x00000080, // system suffix compile-time
 
     ccRes1      = 0x00000100, // declarations
-    ccResS      = 0x00000200, // declaration: Set
+    ccResS      = 0x00000240, // declaration: Set
     ccResV      = 0x00000400, // declaration: Variable
     ccResT      = 0x00000800, // declaration: Table
     ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
@@ -119,6 +119,7 @@ public:
     QString filterText() const;
     int typeFilter() const;
     QStringList splitTypes();
+    void setDebugMode(bool debug);
 
 signals:
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax);
@@ -149,6 +150,7 @@ private:
     QString mFilterText;
     QString mPreferredText;
     bool mNeedDot = false;
+    bool mDebug = false;
 };
 
 } // namespace studio

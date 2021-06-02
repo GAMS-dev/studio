@@ -1,5 +1,7 @@
 #include "codecompleter.h"
 //#include "editors/codeedit.h"
+#include "editors/sysloglocator.h"
+#include "editors/abstractsystemlogger.h"
 #include "syntaxdata.h"
 #include "syntax/syntaxformats.h"
 #include "logger.h"
@@ -61,19 +63,19 @@ void CodeCompleterModel::initData()
                 mData << "Equation Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Parameter") {
+        } else if (it->first.startsWith("Parameter")) {
             mType.insert(mData.size()-1, ccRes1);
             if (it->first.endsWith("s")) {
                 mData << "Parameter Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Set") {
+        } else if (it->first.startsWith("Set")) {
             mType.insert(mData.size()-1, ccResS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
-        } else if (it->first == "Variable") {
+        } else if (it->first.startsWith("Variable")) {
             mType.insert(mData.size()-1, ccResV);
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
@@ -191,8 +193,6 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDcoS);
 
-    mData << "set";
-    mDescription << "compile-time variable based on a GAMS set";
     mData << ".set";
     mDescription << "compile-time variable based on a GAMS set";
     mType.insert(mData.size()-1, ccSubDcoE);
@@ -693,6 +693,11 @@ void CodeCompleter::setCasing(CodeCompleterCasing casing)
     mFilterModel->setFilterCaseSensitivity(casing == caseDynamic ? Qt::CaseSensitive : Qt::CaseInsensitive);
 }
 
+void CodeCompleter::setDebugMode(bool debug)
+{
+    mDebug = debug;
+}
+
 QString CodeCompleter::filterText() const
 {
     return mFilterText;
@@ -858,8 +863,6 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::Solve:
     case syntax::SyntaxKind::SolveBody:
     case syntax::SyntaxKind::SolveKey:
-    case syntax::SyntaxKind::Option:
-    case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Execute:
         res = cc_Start | ccSysSufC; break;
     case syntax::SyntaxKind::Put:
@@ -870,6 +873,8 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     case syntax::SyntaxKind::ExecuteKey:
         res = ccExec | ccSysSufC; break;
 
+    case syntax::SyntaxKind::OptionKey:
+    case syntax::SyntaxKind::Option:
     case syntax::SyntaxKind::OptionBody:
         res = ccOpt | ccMod; break;
     default: ;
@@ -891,7 +896,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
             res = res & cc_Dco;
     } else if (dcoFlavor > 15) {
         mNeedDot = true;
-        for (int i = start-1; i > 0; --i) {
+        for (int i = start; i > 0; --i) {
             if (mNeedDot && line.at(i) == '.') {
                 mNeedDot = false;
             } else {
@@ -918,6 +923,12 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second << "   filter: " << QString::number(res, 16);
     DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 
+    if (mDebug) {
+        QString debugText = "Completer at " + QString::number(start) + ": "
+                + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
+                + "], filters " + QString::number(res, 16);
+        SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
+    }
     return res;
 }
 

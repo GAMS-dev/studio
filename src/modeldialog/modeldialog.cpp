@@ -105,7 +105,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
 
     // bind filter mechanism to textChanged
     for (int i=0; i<proxyModelList.size(); i++)
-        connect(ui->lineEdit, &QLineEdit::textChanged, [this, i]( const QString &value ) { this->applyFilter(value, i); });
+        connect(ui->lineEdit, &QLineEdit::textChanged, this, [this, i]( const QString &value ) { this->applyFilter(value, i); });
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::jumpToNonEmptyTab);
 }
 

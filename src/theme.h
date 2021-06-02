@@ -133,8 +133,10 @@ public:
     static bool hasFontProps(ColorSlot slot);
     static QColor color(ColorSlot slot);
     static void setColor(ColorSlot slot, QColor color);
-    static QIcon icon(QString name, bool forceSquare = false, QString disabledName = QString());
-    static QByteArray &data(QString name, QIcon::Mode mode);
+    static QIcon icon(const QString &name, QIcon::Mode mode, int alpha = 100);
+    static QIcon icon(QString name, bool forceSquare = false, QString disabledName = QString(), int alpha = 100);
+    static QIcon icon(QString name, QString nameKey, bool forceSquare, QString disabledName, int alpha);
+    static QByteArray &data(QString name, QIcon::Mode mode, int alpha = 100);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);
 
@@ -145,8 +147,9 @@ private:
     explicit Theme(QObject *parent = nullptr);
     void initSlotTexts();
     QHash<QString, QStringList> iconCodes() const;
-    QByteArray colorizedContent(QString name, QIcon::Mode mode = QIcon::Normal);
+    QByteArray colorizedContent(QString name, QIcon::Mode mode, int alpha);
     QString findUniqueName(const QString &name, const QString &ignore = QString());
+    static QString getNameWithMode(const QString &name, QIcon::Mode mode);
 
 private:
     static Theme *mInstance;

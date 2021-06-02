@@ -722,9 +722,12 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             int answer = msgBox.exec();
 
             switch(answer) {
-            case 0: // open
-                openFileNode(addNode("", gmsFilePath));
+            case 0: {// open
+                ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+                                                                                                             : nullptr;
+                openFileNode(addNode("", gmsFilePath, group));
                 return;
+            }
             case 1: // replace
                 fm->renameToBackup();
                 // and continue;
@@ -1244,7 +1247,10 @@ void MainWindow::on_menuFile_aboutToShow()
 
 void MainWindow::on_actionNew_triggered()
 {
-    newFileDialog();
+    QVector<ProjectGroupNode*> groups;
+    if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group())
+        groups << mRecent.group();
+    newFileDialog(groups);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -1887,9 +1893,11 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile());
+    ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+                                                                                                 : nullptr;
+    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile(), group);
     if (!node)
-        node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile());
+        node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), group);
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log)
@@ -2371,6 +2379,7 @@ void MainWindow::restoreFromSettings()
     resize(settings->toSize(skWinSize));
     move(settings->toPoint(skWinPos));
     ensureInScreen();
+    QTimer::singleShot(0, this, &MainWindow::ensureInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
@@ -2424,7 +2433,8 @@ QString MainWindow::currentPath()
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
+    QString path = Settings::settings()->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts).first();
+    modeldialog::ModelDialog dialog(path, this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
@@ -3548,8 +3558,22 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::ensureInScreen()
 {
-    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
     QRect appGeo = geometry();
+    QRect appFGeo = frameGeometry();
+    QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
+                     appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    QVector<QRect> frames;
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QRect rect = screen->availableGeometry();
+        QRect sect = rect.intersected(appGeo);
+        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
+            frames << rect;
+    }
+    if (frames.size() == 1)
+        screenGeo = frames.at(0);
+    screenGeo -= margins;
+
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
     if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
@@ -3557,6 +3581,7 @@ void MainWindow::ensureInScreen()
     if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
     if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
     if (appGeo != geometry()) setGeometry(appGeo);
+
 }
 
 void MainWindow::raiseEdit(QWidget *widget)

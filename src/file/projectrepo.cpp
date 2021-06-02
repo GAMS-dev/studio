@@ -39,10 +39,12 @@ ProjectRepo::ProjectRepo(QObject* parent)
 {
     addToIndex(mTreeModel->rootNode());
     mRunAnimateTimer.setInterval(150);
-    mRunIcons << Theme::icon(":/img/folder-run1", true);
-    mRunIcons << Theme::icon(":/img/folder-run2", true);
-    mRunIcons << Theme::icon(":/img/folder-run3", true);
-    mRunIcons << Theme::icon(":/img/folder-run4", true);
+    QVector<QIcon> runIcons;
+    runIcons << Theme::icon(":/img/folder-run1", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/folder-run2", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/folder-run3", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/folder-run4", QIcon::Normal, 100);
+    mRunIcons.insert(QPair<QIcon::Mode, int>(QIcon::Normal, 100), runIcons);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
@@ -685,9 +687,18 @@ bool ProjectRepo::parseGdxHeader(QString location)
     return false;
 }
 
-QIcon ProjectRepo::runAnimateIcon() const
+QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
 {
-    return mRunIcons.at(mRunAnimateIndex);
+    QPair<QIcon::Mode, int> key(mode, alpha);
+    if (!mRunIcons.contains(key)) {
+        QVector<QIcon> runIcons;
+        runIcons << Theme::icon(":/img/folder-run1", mode, alpha);
+        runIcons << Theme::icon(":/img/folder-run2", mode, alpha);
+        runIcons << Theme::icon(":/img/folder-run3", mode, alpha);
+        runIcons << Theme::icon(":/img/folder-run4", mode, alpha);
+        mRunIcons.insert(key, runIcons);
+    }
+    return mRunIcons.value(key).at(mRunAnimateIndex);
 }
 
 void ProjectRepo::gamsProcessStateChange(ProjectGroupNode *group)

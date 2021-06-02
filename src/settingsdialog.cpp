@@ -43,6 +43,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->tabWidget->setCurrentIndex(0);
+    ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->tb_userLibRemove->setIcon(Theme::icon(":/%1/delete-all"));
+    ui->tb_userLibOpen->setIcon(Theme::icon(":/%1/forward"));
 
     // Themes
     ui->cbThemes->clear();
@@ -101,6 +104,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
+    connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -172,6 +176,9 @@ void SettingsDialog::loadSettings()
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
     ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
+    ui->cb_userLib->clear();
+    ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
+    ui->cb_userLib->setCurrentIndex(0);
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -271,6 +278,16 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
     mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
 
+    // user model library
+    prependUserLib();
+    QStringList userModelHist;
+    for (int i = 0; i < ui->cb_userLib->model()->rowCount(); ++i) {
+        QString path = ui->cb_userLib->itemText(i).trimmed();
+        if (!path.isEmpty())
+            userModelHist << path;
+    }
+    mSettings->setString(skUserModelLibraryDir, userModelHist.join(','));
+
     // solver option editor
     mSettings->setBool(skSoOverrideExisting, ui->overrideExistingOptionCheckBox->isChecked());
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
@@ -292,7 +309,7 @@ void SettingsDialog::on_btn_browse_clicked()
     filedialog.setFileMode(QFileDialog::Directory);
 
     if (filedialog.exec())
-        workspace = filedialog.selectedFiles().first();
+        workspace = filedialog.selectedFiles().at(0);
 
     ui->txt_workspace->setText(workspace);
 }
@@ -356,9 +373,42 @@ void SettingsDialog::themeModified()
     }
 }
 
-void SettingsDialog::on_btn_openUserLibLocation_clicked()
+void SettingsDialog::on_tb_userLibSelect_clicked()
 {
-    QDesktopServices::openUrl(QUrl::fromLocalFile(mSettings->toString(skUserModelLibraryDir)));
+    QString path = ui->cb_userLib->currentText();
+    if (!QFileInfo::exists(path))
+        path = mSettings->toString(skUserModelLibraryDir).split(",", Qt::SkipEmptyParts).first();
+
+    QFileDialog *fd = new QFileDialog(this, "Select User Library Folder", path);
+    fd->setAcceptMode(QFileDialog::AcceptOpen);
+    fd->setFileMode(QFileDialog::DirectoryOnly);
+    connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
+        const QStringList selFiles = fd->selectedFiles();
+        if (res && !selFiles.isEmpty())
+            setAndCheckUserLib(selFiles.first());
+        fd->deleteLater();
+    });
+    fd->open();
+}
+
+void SettingsDialog::on_tb_userLibRemove_clicked()
+{
+    QString path = ui->cb_userLib->currentText().trimmed();
+    if (path.endsWith('/') || path.endsWith('\\'))
+        path = path.left(path.length()-1);
+    while (true) {
+        int i = ui->cb_userLib->findText(path);
+        if (i < 0) break;
+        ui->cb_userLib->removeItem(i);
+    }
+    if (ui->cb_userLib->count() == 0)
+        ui->cb_userLib->addItem(CommonPaths::userModelLibraryDir());
+    ui->cb_userLib->setCurrentIndex(0);
+}
+
+void SettingsDialog::on_tb_userLibOpen_clicked()
+{
+    QDesktopServices::openUrl(QUrl::fromLocalFile(ui->cb_userLib->currentText().trimmed()));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -630,6 +680,33 @@ void SettingsDialog::setThemeEditable(bool editable)
     ui->btExportTheme->setEnabled(editable);
 }
 
+bool SettingsDialog::setAndCheckUserLib(const QString &path)
+{
+    QString veriPath = path.isEmpty() ? ui->cb_userLib->currentText() : path;
+    bool res = QFileInfo::exists(veriPath);
+    ui->cb_userLib->setEditText(veriPath);
+    ui->cb_userLib->setStyleSheet( res ? "" : "color:"+toColor(Theme::Normal_Red).name()+";");
+    ui->tb_userLibRemove->setEnabled(veriPath != CommonPaths::userModelLibraryDir());
+    setModified();
+    return res;
+}
+
+void SettingsDialog::prependUserLib()
+{
+    QString path = ui->cb_userLib->currentText().trimmed();
+    if (path.endsWith('/') || path.endsWith('\\'))
+        path = path.left(path.length()-1);
+    while (true) {
+        int i = ui->cb_userLib->findText(path);
+        if (i < 0) break;
+        ui->cb_userLib->removeItem(i);
+    }
+    ui->cb_userLib->insertItem(0, path);
+    while (ui->cb_userLib->count() > 10)
+        ui->cb_userLib->removeItem(ui->cb_userLib->count()-1);
+    ui->cb_userLib->setCurrentIndex(0);
+}
+
 void SettingsDialog::on_btn_resetHistory_clicked()
 {
     mMain->resetHistory();
@@ -673,10 +750,11 @@ void SettingsDialog::on_btImportTheme_clicked()
     fd->setAcceptMode(QFileDialog::AcceptOpen);
     fd->setFileMode(QFileDialog::ExistingFiles);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
-        if (res && !fd->selectedFiles().isEmpty()) {
+        const QStringList selFiles = fd->selectedFiles();
+        if (res && !selFiles.isEmpty()) {
             int shift = mFixedThemeCount-2;
             int index = ui->cbThemes->currentIndex() - shift;
-            for (const QString &fName : fd->selectedFiles()) {
+            for (const QString &fName : selFiles) {
                 index = Theme::instance()->readUserTheme(Settings::settings()->importTheme(fName));
                 if (index < 0) {
                     // error
