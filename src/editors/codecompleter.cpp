@@ -927,7 +927,8 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         QString debugText = "Completer at " + QString::number(start) + ": "
                 + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
                 + "], filters " + QString::number(res, 16);
-        SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
+        if (SysLogLocator::systemLog())
+            SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
     }
     return res;
 }
