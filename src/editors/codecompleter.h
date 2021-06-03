@@ -34,13 +34,13 @@ enum CodeCompleterType {
     ccSysSufR   = 0x00000040, // system suffix run-time
     ccSysSufC   = 0x00000080, // system suffix compile-time
 
-    ccRes1      = 0x00000100, // declarations
-    ccResS      = 0x00000240, // declaration: Set
-    ccResV      = 0x00000400, // declaration: Variable
-    ccResT      = 0x00000800, // declaration: Table
-    ccRes2      = 0x00001000, // declaration additions for "variable" and "set"
-    ccRes3      = 0x00002000, // other reserved words
-    ccRes4      = 0x00004000, // embedded end
+    ccDecl      = 0x00000100, // declarations
+    ccDeclS     = 0x00000240, // declaration: Set
+    ccDeclV     = 0x00000400, // declaration: Variable
+    ccDeclT     = 0x00000800, // declaration: Table
+    ccDeclAdd   = 0x00001000, // declaration additions for "variable" and "set"
+    ccRes       = 0x00002000, // other reserved words
+    ccResEnd    = 0x00004000, // embedded end
     cc_Res      = 0x00007F00, // all reserved words
 
     ccOpt       = 0x00010000, // options
@@ -118,7 +118,7 @@ public:
     void setCasing(CodeCompleterCasing casing);
     QString filterText() const;
     int typeFilter() const;
-    QStringList splitTypes();
+    QStringList splitTypes(int filter = -1);
     void setDebugMode(bool debug);
 
 signals:

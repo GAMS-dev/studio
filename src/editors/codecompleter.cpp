@@ -58,33 +58,33 @@ void CodeCompleterModel::initData()
         mData << it->first;
         mDescription << it->second;
         if (it->first.startsWith("Equation")) {
-            mType.insert(mData.size()-1, ccRes1);
+            mType.insert(mData.size()-1, ccDecl);
             if (it->first.endsWith("s")) {
                 mData << "Equation Table";
                 mDescription << it->second;
             }
         } else if (it->first.startsWith("Parameter")) {
-            mType.insert(mData.size()-1, ccRes1);
+            mType.insert(mData.size()-1, ccDecl);
             if (it->first.endsWith("s")) {
                 mData << "Parameter Table";
                 mDescription << it->second;
             }
         } else if (it->first.startsWith("Set")) {
-            mType.insert(mData.size()-1, ccResS);
+            mType.insert(mData.size()-1, ccDeclS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
         } else if (it->first.startsWith("Variable")) {
-            mType.insert(mData.size()-1, ccResV);
+            mType.insert(mData.size()-1, ccDeclV);
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
                 mDescription << it->second;
             }
         } else if (it->first == "Table") {
-            mType.insert(mData.size()-1, ccResT);
+            mType.insert(mData.size()-1, ccDeclT);
         } else {
-            mType.insert(mData.size()-1, ccRes1);
+            mType.insert(mData.size()-1, ccDecl);
         }
         ++it;
     }
@@ -104,7 +104,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccRes2);
+    mType.insert(mData.size()-1, ccDeclAdd);
 
     // reserved
     src = syntax::SyntaxData::reserved();
@@ -130,7 +130,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccRes3);
+    mType.insert(mData.size()-1, ccRes);
 
     // embedded end
     src = syntax::SyntaxData::embeddedEnd();
@@ -140,7 +140,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccRes4);
+    mType.insert(mData.size()-1, ccResEnd);
 
     // options
     src = syntax::SyntaxData::options();
@@ -336,7 +336,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (mEmpty) {
         if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
             return true;
-        else if (text.startsWith('$') || text.startsWith('%'))
+        else if ((text.startsWith('$') || text.startsWith('%')) && type != ccDcoE)
             return false;
     } else if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
         return false;
@@ -504,6 +504,8 @@ CharGroup group(const QChar &c) {
     return clBreak;
 }
 
+const QSet<int> CEnteringSyntax {int(syntax::SyntaxKind::IdentifierDescription), int(syntax::SyntaxKind::String)};
+
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor)
 {
     QPair<int, int> res(0, 0);
@@ -512,10 +514,12 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         if (it.key() > pos) {
-            if (res.first == int(syntax::SyntaxKind::String)) {
+            if (CEnteringSyntax.contains(res.first)) {
+                if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
+                    break;
                 res = it.value();
             }
-            if (it.value().first == int(syntax::SyntaxKind::String) && lastEnd != pos)
+            if (CEnteringSyntax.contains(it.value().first) && lastEnd < pos)
                 res = it.value();
             break;
         }
@@ -708,17 +712,18 @@ int CodeCompleter::typeFilter() const
     return mFilterModel->typeFilter();
 }
 
-QStringList CodeCompleter::splitTypes()
+QStringList CodeCompleter::splitTypes(int filter)
 {
     static const QMap<CodeCompleterType, QString> baseTypes {
-        {ccDcoS,"ccDco1"}, {ccDcoE,"ccDco2"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
-        {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccRes1,"ccRes1"}, {ccRes2,"ccRes2"},
-        {ccRes3,"ccRes3"}, {ccRes4,"ccRes4"}, {ccResS,"ccResS"}, {ccResV,"ccResV"}, {ccResT,"ccResT"},
-        {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
+        {ccDcoS,"ccDcoS"}, {ccDcoE,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccDecl,"ccDecl"},
+        {ccDeclAdd,"ccDeclAdd"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"}, {ccDeclV,"ccDeclV"},
+        {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
     };
     QStringList res;
+    if (filter < 0) filter = typeFilter();
     for (QMap<CodeCompleterType, QString>::ConstIterator it = baseTypes.constBegin() ; it != baseTypes.constEnd() ; ++it) {
-        if (mFilterModel->test(it.key(), typeFilter()))
+        if (mFilterModel->test(it.key(), (filter)))
             res << it.value();
     }
     return res;
@@ -820,11 +825,11 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         res = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        res = (syntax.second == 8) ? cc_Dco | ccResT : cc_Dco; break;
+        res = ((syntax.second == 8) ? cc_Dco | ccDeclT : cc_Dco) | ccSysSufC; break;
     case syntax::SyntaxKind::DeclarationSetType:
-        res = cc_Dco | ccResS; break;
+        res = cc_Dco | ccDeclS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
-        res = cc_Dco | ccResV; break;
+        res = cc_Dco | ccDeclV; break;
 
     case syntax::SyntaxKind::Dco:
         res = cc_Dco | ccSysSufC; break;
@@ -842,7 +847,6 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
         res = ccSysSufC; break;
 
     case syntax::SyntaxKind::Identifier:
-        res = cc_Dco | ccResT; break;
     case syntax::SyntaxKind::IdentifierDim:
     case syntax::SyntaxKind::IdentifierDimEnd:
     case syntax::SyntaxKind::IdentifierDescription:
@@ -880,7 +884,7 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     default: ;
     }
 
-    start = qMin(start, line.length()-1);
+    start = qMin(start, qMax(0, line.length()-1));
     bool isWhitespace = true;
     for (int i = 0; i < start; ++i) {
         if (line.at(i) != ' ' && line.at(i) != '\t') {
@@ -920,7 +924,8 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     }
 
     // for analysis
-    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second << "   filter: " << QString::number(res, 16);
+    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+          << "   filter: " << QString::number(res, 16) << " [" << splitTypes(res).join(",") << "]";
     DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 
     if (mDebug) {
