@@ -52,12 +52,22 @@ void TestCompleter::testDco()
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    // ===== TEST: empty line in comment block
+    // ===== TEST: empty line in non-GAMS blocks
     line = "";
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::CommentBlock, 0);
 
     expect = ccDcoE;
+    mCompleter->updateFilter( 0, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    mSynSim.clearBlockSyntax();
+    mSynSim.addBlockSyntax(0, SyntaxKind::IgnoredBlock, 5);
+    mCompleter->updateFilter( 0, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    mSynSim.clearBlockSyntax();
+    mSynSim.addBlockSyntax(0, SyntaxKind::EmbeddedBody, 0);
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 

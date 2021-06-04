@@ -48,7 +48,7 @@ enum CodeCompleterType {
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    cc_Start    = 0x00007F83, // all starting keywords
+    cc_Start    = 0x00007F81, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
 };
@@ -85,6 +85,7 @@ private:
 class FilterCompleterModel : public QSortFilterProxyModel
 {
     int mTypeFilter = 0;
+    int mSubType = 0;
     bool mNeedDot = true;
     bool mEmpty = true;
     int mDollarGroupRow = -1;
@@ -97,7 +98,7 @@ public:
     void setGroupRows(int dollarRow, int percentRow);
     bool isGroupRow(int row);
     bool test(int type, int flagPattern) const;
-    void setTypeFilter(int completerTypeFilter, bool needDot);
+    void setTypeFilter(int completerTypeFilter, int subType, bool needDot);
     int typeFilter() const { return mTypeFilter; }
     void setFilterText(QString filterText);
     void setEmpty(bool isEmpty);
@@ -140,7 +141,7 @@ private:
     void insertCurrent(bool equalPartOnly = false);
     int findBound(int pos, const QString &nextTwo, int good, int look);
     int findFilterRow(const QString &text, int top, int bot);
-    int getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos);
+    void updateFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos);
     QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor);
 
 private:
@@ -149,7 +150,6 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     QString mPreferredText;
-    bool mNeedDot = false;
     bool mDebug = false;
 };
 

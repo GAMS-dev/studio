@@ -197,6 +197,15 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("eval").toLower(), 18);
     mFlavors.insert(QString("evalLocal").toLower(), 18);
     mFlavors.insert(QString("evalGlobal").toLower(), 18);
+    mFlavors.insert(QString("onEmbeddedCode").toLower(), 19);
+    mFlavors.insert(QString("onEmbeddedCodeS").toLower(), 19);
+    mFlavors.insert(QString("onEmbeddedCodeV").toLower(), 19);
+    mFlavors.insert(QString("embeddedCode").toLower(), 20);
+    mFlavors.insert(QString("embeddedCodeS").toLower(), 20);
+    mFlavors.insert(QString("embeddedCodeV").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCode").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), 20);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
