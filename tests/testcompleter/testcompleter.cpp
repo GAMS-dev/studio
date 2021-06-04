@@ -43,6 +43,15 @@ void TestCompleter::testDco()
     QString line;
     int expect;
 
+    // ===== TEST: empty line
+    line = "";
+    mSynSim.clearBlockSyntax();
+    mSynSim.addBlockSyntax(0, SyntaxKind::Standard, 0);
+
+    expect = cc_Start;
+    mCompleter->updateFilter( 0, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
     // ===== TEST: empty line in comment block
     line = "";
     mSynSim.clearBlockSyntax();
@@ -52,30 +61,45 @@ void TestCompleter::testDco()
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    // ===== TEST: intside of a set declatarion
-    line =        "   i 'canning plants' / seattle,  san-diego /";
+}
+
+void TestCompleter::testDeclaration()
+{
+    QString line;
+    int expect;
+
+    // ===== TEST: set declaration
+    line = "    i 'canning plants' / seattle,  san-diego /;";
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::Declaration, 16);
-    mSynSim.addBlockSyntax(3, SyntaxKind::Declaration, 16);
-    mSynSim.addBlockSyntax(5, SyntaxKind::Identifier, 16);
-    mSynSim.addBlockSyntax(21, SyntaxKind::IdentifierDescription, 16);
-    mSynSim.addBlockSyntax(23, SyntaxKind::IdentifierAssignment, 16);
-    mSynSim.addBlockSyntax(31, SyntaxKind::AssignmentLabel, 16);
-    mSynSim.addBlockSyntax(32, SyntaxKind::IdentifierAssignment, 16);
-    mSynSim.addBlockSyntax(43, SyntaxKind::AssignmentLabel, 16);
-    mSynSim.addBlockSyntax(45, SyntaxKind::IdentifierAssignmentEnd, 16);
+    mSynSim.addBlockSyntax(4, SyntaxKind::Declaration, 16);
+    mSynSim.addBlockSyntax(6, SyntaxKind::Identifier, 16);
+    mSynSim.addBlockSyntax(22, SyntaxKind::IdentifierDescription, 16);
+    mSynSim.addBlockSyntax(24, SyntaxKind::IdentifierAssignment, 16);
+    mSynSim.addBlockSyntax(32, SyntaxKind::AssignmentLabel, 16);
+    mSynSim.addBlockSyntax(33, SyntaxKind::IdentifierAssignment, 16);
+    mSynSim.addBlockSyntax(44, SyntaxKind::AssignmentLabel, 16);
+    mSynSim.addBlockSyntax(46, SyntaxKind::IdentifierAssignmentEnd, 16);
+    mSynSim.addBlockSyntax(47, SyntaxKind::Semicolon, 16);
 
     expect = cc_Dco | ccSysSufC;
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
     expect = ccSysSufC;
-    mCompleter->updateFilter( 21, line);
+    mCompleter->updateFilter(21, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
     expect = ccSysSufC | ccSysDat;
-    mCompleter->updateFilter( 24, line);
+    mCompleter->updateFilter(24, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+}
+
+void TestCompleter::testPut()
+{
+    QString line;
+    int expect;
 
     // ===== TEST: put command with system constant
     line = "put 'abc %system.Date%';";
@@ -90,6 +114,10 @@ void TestCompleter::testDco()
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
+    expect = cc_Res | ccSysSufR | ccSysSufC;
+    mCompleter->updateFilter( 4, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
     expect = ccSysSufC;
     mCompleter->updateFilter( 6, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
@@ -97,7 +125,6 @@ void TestCompleter::testDco()
     expect = cc_Start & ~(ccDcoS | ccDcoE);
     mCompleter->updateFilter(24, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
-
 }
 
 

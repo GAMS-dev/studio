@@ -35,7 +35,7 @@ enum CodeCompleterType {
     ccSysSufC   = 0x00000080, // system suffix compile-time
 
     ccDecl      = 0x00000100, // declarations
-    ccDeclS     = 0x00000240, // declaration: Set
+    ccDeclS     = 0x00000200, // declaration: Set
     ccDeclV     = 0x00000400, // declaration: Variable
     ccDeclT     = 0x00000800, // declaration: Table
     ccDeclAdd   = 0x00001000, // declaration additions for "variable" and "set"
@@ -48,7 +48,7 @@ enum CodeCompleterType {
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    cc_Start    = 0x00007FA3, // all starting keywords
+    cc_Start    = 0x00007F83, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
 };

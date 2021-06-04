@@ -16,6 +16,7 @@
 namespace gams {
 namespace studio {
 
+const bool CGenerateTestCode = true;
 
 // ----------- Model ---------------
 
@@ -530,8 +531,13 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     }
 
     // uncomment this to generate elements for testcompleter
-    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        DEB() << "    " << it.key() << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second;
+    if (CGenerateTestCode && mEdit) {
+        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+            if (block.isValid())
+                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+        }
     }
 
     return res;
@@ -546,6 +552,11 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         block = cur.block();
         line = cur.block().text();
         posInBlock = cur.positionInBlock();
+        // uncomment this to generate elements for testcompleter
+        if (CGenerateTestCode) {
+            QString debugLine = line;
+            DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+        }
     }
 
     int peekStart = posInBlock;
@@ -714,6 +725,10 @@ int CodeCompleter::typeFilter() const
 
 QStringList CodeCompleter::splitTypes(int filter)
 {
+    static const QMap<CodeCompleterType, QString> groupTypes {
+        {cc_None,"cc_None"}, {cc_Dco,"cc_Dco"}, {cc_SubDco,"ccSubDcoC"}, {cc_Res,"cc_Res"},
+        {cc_Start,"cc_Start"}, {cc_All,"cc_All"},
+    };
     static const QMap<CodeCompleterType, QString> baseTypes {
         {ccDcoS,"ccDcoS"}, {ccDcoE,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccDecl,"ccDecl"},
@@ -721,10 +736,25 @@ QStringList CodeCompleter::splitTypes(int filter)
         {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
     };
     QStringList res;
+    int merge = 0;
     if (filter < 0) filter = typeFilter();
-    for (QMap<CodeCompleterType, QString>::ConstIterator it = baseTypes.constBegin() ; it != baseTypes.constEnd() ; ++it) {
-        if (mFilterModel->test(it.key(), (filter)))
+
+    for (QMap<CodeCompleterType, QString>::ConstIterator it = groupTypes.constBegin() ; it != groupTypes.constEnd() ; ++it) {
+        if (filter == it.key()) {
+            return QStringList() << it.value();
+        }
+        if (it == groupTypes.constBegin()) continue;
+        if ((filter & it.key()) == it.key()) {
             res << it.value();
+            merge = it.key();
+        }
+    }
+    if (res.size() != 1) merge = 0;
+    for (QMap<CodeCompleterType, QString>::ConstIterator it = baseTypes.constBegin() ; it != baseTypes.constEnd() ; ++it) {
+        if (mFilterModel->test(it.key(), (filter))) {
+            if (!merge || !(merge & it.key()))
+                res << it.value();
+        }
     }
     return res;
 }
@@ -924,9 +954,11 @@ int CodeCompleter::getFilterFromSyntax(const QPair<int, int> &syntax, int dcoFla
     }
 
     // for analysis
-    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-          << "   filter: " << QString::number(res, 16) << " [" << splitTypes(res).join(",") << "]";
-    DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+    if (mEdit) {
+        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+              << "   filter: " << QString::number(res, 16) << " [" << splitTypes(res).join(",") << "]";
+        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+    }
 
     if (mDebug) {
         QString debugText = "Completer at " + QString::number(start) + ": "

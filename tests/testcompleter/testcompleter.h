@@ -43,6 +43,8 @@ private slots:
     void initTestCase();
 
     void testDco();
+    void testDeclaration();
+    void testPut();
 
 };
 
