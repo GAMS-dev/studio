@@ -67,6 +67,17 @@ void TestCompleter::testDco()
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
     mSynSim.clearBlockSyntax();
+    mSynSim.addBlockSyntax(0, SyntaxKind::EmbeddedBody, 19);
+    mCompleter->updateFilter( 0, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    mSynSim.clearBlockSyntax();
+    mSynSim.addBlockSyntax(0, SyntaxKind::EmbeddedBody, 20);
+    mCompleter->updateFilter( 0, line);
+    QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
+
+    expect = ccResEnd;
+    mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::EmbeddedBody, 0);
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
