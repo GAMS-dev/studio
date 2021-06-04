@@ -26,6 +26,7 @@
 #include "option.h"
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -487,6 +488,11 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
         return false;
     }
 
+    gams::studio::support::SolverConfigInfo solverConfigInfo;
+    QMap<QString, int> modeltypes;
+    for (int i=1; i<solverConfigInfo.modelTypes(); ++i) {
+        modeltypes[solverConfigInfo.modelTypeName(i)] = i;
+    }
     if (!optReadDefinition(mOPTHandle, QDir(optionFilePath).filePath(optionFileName).toLatin1())) {
 
          QMultiMap<QString, QString> synonym;
@@ -602,6 +608,16 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
                   break;
              }
              case optTypeString:
+                 char sdefval[GMS_SSSIZE];
+                 optGetDefaultStr(mOPTHandle, i, sdefval);
+                 opt.defaultValue = QVariant(sdefval);
+                 if (modeltypes.contains(nameStr)) {
+                     QStringList solvers = solverConfigInfo.solversForModelType( modeltypes[nameStr] );
+                     for (const QString &s : solvers) {
+                         opt.valueList.append( OptionValue(QVariant(s), "", false, false ) );
+                     }
+                 }
+                 break;
              case optTypeStrList :
              case optTypeEnumStr: {
 //                     case optTypeImmediate: {

@@ -37,6 +37,9 @@ private slots:
     void testOptionStringType_data();
     void testOptionStringType();
 
+    void testOptionModelTypeString_data();
+    void testOptionModelTypeString();
+
     void testOptionEnumStrType_data();
     void testOptionEnumStrType();
 
