@@ -1,12 +1,12 @@
 Version 1.7.0
 ==================
-- added setting for "User Library Path"
+- allow specifying location of User Model Libraries in settings dialog
 - improved distinction between current and other groups
 - dropped support for Ubuntu 16.04 LTS and openSUSE Leap 15.2 because of updated AppImage now requiring glibc 2.27
 - fixed duplicate file entries in the Project Explorer when having two references with different case to a single file
 - fixed Studio title bar appearing outside of screen
-- fixed issues with "File" tab in Reference File Viewer
-- fixed usage of GAMS license file locations
+- fixed wrong content of "File" tab in Reference File Viewer
+- fixed missing check of some data locations for GAMS license file
 
 Version 1.6.2
 ==================
