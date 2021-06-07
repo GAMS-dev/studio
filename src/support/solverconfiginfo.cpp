@@ -162,7 +162,7 @@ bool SolverConfigInfo::solverCapability(int solver, int modelType) const
 QStringList SolverConfigInfo::solversForModelType(int modelType) const
 {
     QStringList solverList;
-    for (int i=1; i<solvers(); ++i) {
+    for (int i=1; i<=solvers(); ++i) {
         if (cfgAlgCapability(mCFG, i, modelType) && !cfgAlgHidden(mCFG, i)) {
             solverList << solverName(i);
         }
