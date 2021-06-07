@@ -1,3 +1,7 @@
+Version 1.7.1  *
+==================
+- added a list of solvers for each model type to be select in extended parameter editor and configuration editor
+
 Version 1.7.0
 ==================
 - allow specifying location of User Model Libraries in settings dialog
