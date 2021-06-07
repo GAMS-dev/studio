@@ -35,27 +35,27 @@ class ProjectTreeModel : public QAbstractItemModel
 public:
     explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
 
-    QModelIndex index(int row, int column, const QModelIndex &parent) const;
-    QModelIndex parent(const QModelIndex &child) const;
-    int rowCount(const QModelIndex &parent = QModelIndex()) const;
-    int columnCount(const QModelIndex &parent = QModelIndex()) const;
-    QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const;
+    QModelIndex index(int row, int column, const QModelIndex &parent) const override;
+    QModelIndex parent(const QModelIndex &child) const override;
+    int rowCount(const QModelIndex &parent = QModelIndex()) const override;
+    int columnCount(const QModelIndex &parent = QModelIndex()) const override;
+    QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const override;
 
     QModelIndex index(const ProjectAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
     ProjectGroupNode* rootNode() const;
-    bool removeRows(int row, int count, const QModelIndex &parent);
+    bool removeRows(int row, int count, const QModelIndex &parent) override;
     void setDebugMode(bool debug);
-    bool setData(const QModelIndex &index, const QVariant &value, int role);
-    Qt::ItemFlags flags(const QModelIndex &index) const;
+    bool setData(const QModelIndex &index, const QVariant &value, int role) override;
+    Qt::ItemFlags flags(const QModelIndex &index) const override;
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
-    QMap<int, QVariant> itemData(const QModelIndex &index) const;
+    QMap<int, QVariant> itemData(const QModelIndex &index) const override;
     void sortChildNodes(ProjectGroupNode *group);
 
 signals:
     void childrenChanged();
-    void parentAssigned(const ProjectAbstractNode *node);
+    void parentAssigned(const gams::studio::ProjectAbstractNode *node);
 
 protected:
     friend class ProjectRepo;
@@ -81,6 +81,9 @@ protected:
     const QVector<QModelIndex> popAddGroups();
 
     void update(const QModelIndex& ind = QModelIndex());
+
+private:
+    QVector<QModelIndex> gatherChildren(QModelIndex index);
 
 private:
     ProjectRepo *mProjectRepo;

@@ -204,7 +204,7 @@ void TestGamsLicenseInfo::testSolverLicense()
     GamsLicenseInfo gamsLicenseInfo;
     auto solverKeys = gamsLicenseInfo.solverNames().keys();
     QVERIFY(gamsLicenseInfo.solvers() >= solverKeys.size());
-    for (auto solverId : solverKeys) {
+    Q_FOREACH(auto solverId, solverKeys) {
         auto solverName = gamsLicenseInfo.solverName(solverId);
         auto result = gamsLicenseInfo.solverLicense(solverName, solverId);
         test = result.contains("Demo") || result.contains("Full") ||
@@ -213,6 +213,20 @@ void TestGamsLicenseInfo::testSolverLicense()
         if (!test) break;
     }
     QVERIFY(test);
+}
+
+void TestGamsLicenseInfo::testGamsDataLocations()
+{
+    auto actual = GamsLicenseInfo().gamsDataLocations();
+    qDebug() << actual;
+    QVERIFY(!actual.isEmpty());
+}
+
+void TestGamsLicenseInfo::testGamsConfigLocations()
+{
+    auto actual = GamsLicenseInfo().gamsConfigLocations();
+    qDebug() << actual;
+    QVERIFY(!actual.isEmpty());
 }
 
 QTEST_MAIN(TestGamsLicenseInfo)

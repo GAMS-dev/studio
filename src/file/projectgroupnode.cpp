@@ -50,9 +50,9 @@ ProjectGroupNode::~ProjectGroupNode()
         DEB() << "Group must be empty before deletion";
 }
 
-QIcon ProjectGroupNode::icon()
+QIcon ProjectGroupNode::icon(QIcon::Mode mode, int alpha)
 {
-    return Theme::icon(":/img/folder-open", true);
+    return Theme::icon(":/img/folder-open", mode, alpha);
 }
 
 int ProjectGroupNode::childCount() const
@@ -236,11 +236,11 @@ AbstractProcess *ProjectRunGroupNode::process() const
     return mGamsProcess.get();
 }
 
-QIcon ProjectRunGroupNode::icon()
+QIcon ProjectRunGroupNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
-        return ProjectGroupNode::icon();
-    return projectRepo()->runAnimateIcon();
+        return ProjectGroupNode::icon(mode, alpha);
+    return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
 bool ProjectRunGroupNode::hasLogNode() const

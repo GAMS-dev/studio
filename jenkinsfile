@@ -17,7 +17,7 @@ def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
 def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
-def GAMS_FOR_LINUX = "/opt/gams/gams35.0_linux_x64_64_sfx"
+def GAMS_FOR_LINUX = "/opt/gams/gams35.2_linux_x64_64_sfx"
 def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/35/Resources"
 def GAMS_FOR_WINDOWS = "C:\\GAMS\\35"
 
@@ -201,7 +201,7 @@ pipeline {
                             mkdir -p appdir/usr/lib
                             cp /usr/lib/x86_64-linux-gnu/nss/* ./appdir/usr/lib
 
-                            linuxdeployqt-6-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines
+                            linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines
                         '''
                     }
                 }

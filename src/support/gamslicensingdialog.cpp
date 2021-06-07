@@ -115,7 +115,7 @@ void GamsLicensingDialog::createLicenseFile(QWidget *parent)
     if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
         return;
 
-    QFile licenseFile(CommonPaths::gamsLicenseFilePath());
+    QFile licenseFile(CommonPaths::gamsLicenseFilePath(licenseInfo.gamsDataLocations()));
     if (licenseFile.exists()) {
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",

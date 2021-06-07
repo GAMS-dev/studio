@@ -73,7 +73,7 @@ public:
 
     static QString userModelLibraryDir();
 
-    static QString gamsLicenseFilePath();
+    static QString gamsLicenseFilePath(const QStringList &dataPaths);
 
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
@@ -109,6 +109,12 @@ public:
     /// \return Returns GAMS config file name.
     ///
     static QString configFile();
+
+    ///
+    /// \brief Get GAMS license file name (without path).
+    /// \return Returns GAMS license file name.
+    ///
+    static QString licenseFile();
 
     ///
     /// \brief Get the changelog file including its path.

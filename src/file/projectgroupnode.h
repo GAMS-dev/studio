@@ -47,7 +47,7 @@ class ProjectGroupNode : public ProjectAbstractNode
 public:
     virtual ~ProjectGroupNode() override;
 
-    QIcon icon() override;
+    QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     int childCount() const;
     bool isEmpty();
     ProjectAbstractNode* childNode(int index) const;
@@ -87,7 +87,7 @@ class ProjectRunGroupNode : public ProjectGroupNode
 {
     Q_OBJECT
 public:
-    QIcon icon() override;
+    QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     bool hasLogNode() const;
     ProjectLogNode* logNode();
     FileMeta *runnableGms() const;

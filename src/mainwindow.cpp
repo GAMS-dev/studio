@@ -56,7 +56,6 @@
 #include "miro/miroprocess.h"
 #include "miro/mirodeploydialog.h"
 #include "miro/mirodeployprocess.h"
-#include "process/gamsinstprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "engine/enginestartdialog.h"
@@ -64,6 +63,7 @@
 #include "option/gamsuserconfig.h"
 #include "keys.h"
 #include "tabbarstyle.h"
+#include "support/gamslicenseinfo.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -510,23 +510,9 @@ QTabWidget* MainWindow::mainTabs()
 
 void MainWindow::initGamsStandardPaths()
 {
-    mInstProcess = new process::GamsInstProcess(this);
-    connect(mInstProcess, &process::GamsInstProcess::finished,
-            this, &MainWindow::gamsInstFinished);
-    connect(mInstProcess, &process::GamsInstProcess::newProcessCall,
-            this, &MainWindow::newProcessCall);
-    mInstProcess->execute();
-}
-
-void MainWindow::gamsInstFinished(NodeId origin, int exitCode)
-{
-    Q_UNUSED(origin)
-    if (exitCode) return;
-    if (!mInstProcess) return;
-    CommonPaths::setGamsStandardPaths(mInstProcess->configPaths(), CommonPaths::StandardConfigPath);
-    CommonPaths::setGamsStandardPaths(mInstProcess->dataPaths(), CommonPaths::StandardDataPath);
-    mInstProcess->deleteLater();
-    mInstProcess = nullptr;
+    support::GamsLicenseInfo licenseInfo;
+    CommonPaths::setGamsStandardPaths(licenseInfo.gamsConfigLocations(), CommonPaths::StandardConfigPath);
+    CommonPaths::setGamsStandardPaths(licenseInfo.gamsDataLocations(), CommonPaths::StandardDataPath);
 }
 
 void MainWindow::getParameterValue(QString param, QString &value)
@@ -2379,6 +2365,7 @@ void MainWindow::restoreFromSettings()
     resize(settings->toSize(skWinSize));
     move(settings->toPoint(skWinPos));
     ensureInScreen();
+    QTimer::singleShot(0, this, &MainWindow::ensureInScreen);
 
     mMaximizedBeforeFullScreen = settings->toBool(skWinMaximized);
     if (settings->toBool(skWinFullScreen)) {
@@ -2432,7 +2419,8 @@ QString MainWindow::currentPath()
 
 void MainWindow::on_actionGAMS_Library_triggered()
 {
-    modeldialog::ModelDialog dialog(Settings::settings()->toString(skUserModelLibraryDir), this);
+    QString path = Settings::settings()->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts).first();
+    modeldialog::ModelDialog dialog(path, this);
     if(dialog.exec() == QDialog::Accepted) {
         QMessageBox msgBox;
         modeldialog::LibraryItem *item = dialog.selectedLibraryItem();
@@ -3556,8 +3544,22 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::ensureInScreen()
 {
-    QRect screenGeo = QGuiApplication::primaryScreen()->virtualGeometry();
     QRect appGeo = geometry();
+    QRect appFGeo = frameGeometry();
+    QMargins margins(appGeo.left() - appFGeo.left(), appGeo.top() - appFGeo.top(),
+                     appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
+    QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
+    QVector<QRect> frames;
+    for (QScreen *screen : QGuiApplication::screens()) {
+        QRect rect = screen->availableGeometry();
+        QRect sect = rect.intersected(appGeo);
+        if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
+            frames << rect;
+    }
+    if (frames.size() == 1)
+        screenGeo = frames.at(0);
+    screenGeo -= margins;
+
     if (appGeo.width() > screenGeo.width()) appGeo.setWidth(screenGeo.width());
     if (appGeo.height() > screenGeo.height()) appGeo.setHeight(screenGeo.height());
     if (appGeo.x() < screenGeo.x()) appGeo.moveLeft(screenGeo.x());
@@ -3565,6 +3567,7 @@ void MainWindow::ensureInScreen()
     if (appGeo.right() > screenGeo.right()) appGeo.moveLeft(screenGeo.right()-appGeo.width());
     if (appGeo.bottom() > screenGeo.bottom()) appGeo.moveTop(screenGeo.bottom()-appGeo.height());
     if (appGeo != geometry()) setGeometry(appGeo);
+
 }
 
 void MainWindow::raiseEdit(QWidget *widget)
@@ -4900,7 +4903,8 @@ void MainWindow::checkGamsLicense()
                               " For more options, please check the GAMS documentation.";
     try {
         support::GamsLicensingDialog::createLicenseFile(this);
-        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath());
+        auto dataPaths = support::GamsLicenseInfo().gamsDataLocations();
+        auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath(dataPaths));
         if (QFileInfo::exists(licenseFile)) {
             appendSystemLogInfo("GAMS license found at " + licenseFile);
         } else {
