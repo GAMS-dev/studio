@@ -16,8 +16,6 @@
 namespace gams {
 namespace studio {
 
-const bool CGenerateTestCode = true;
-
 // ----------- Model ---------------
 
 CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(parent)
@@ -76,11 +74,12 @@ void CodeCompleterModel::initData()
             }
             mType.insert(mData.size()-1, ccDecl);
         } else if (it->first.startsWith("Set")) {
+            mType.insert(mData.size()-1, ccDeclS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
-            mType.insert(mData.size()-1, ccDeclS);
+            mType.insert(mData.size()-1, ccDecl);
         } else if (it->first.startsWith("Variable")) {
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
@@ -289,8 +288,6 @@ void CodeCompleterModel::addDynamicData()
             mDollarGroupRow = data.size()-1;
         if (i == mPercentGroupRow)
             mPercentGroupRow = data.size()-1;
-        if (mData.at(i).trimmed().contains(' '))
-            DEB() << mData.at(i) << "  [" << QString::number(mType.lowerBound(i).value(),16) << "]";
     }
     mData = data;
     mDescriptIndex = descriptIndex;
@@ -559,15 +556,17 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
             dcoFlavor = res.second;
     }
 
+#ifdef QT_DEBUG
     // uncomment this to generate elements for testcompleter
-    if (CGenerateTestCode && mEdit) {
-        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-            if (block.isValid())
-                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
-                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
-        }
-    }
+//    if (mEdit) {
+//        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+//        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+//            if (block.isValid())
+//                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+//                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+//        }
+//    }
+#endif
 
     return res;
 }
@@ -582,10 +581,10 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         line = cur.block().text();
         posInBlock = cur.positionInBlock();
         // uncomment this to generate elements for testcompleter
-        if (CGenerateTestCode) {
-            QString debugLine = line;
-            DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
-        }
+#ifdef QT_DEBUG
+        QString debugLine = line;
+        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+#endif
     }
 
     int peekStart = posInBlock;
@@ -996,11 +995,11 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     }
 
     // for analysis
-    if (mEdit) {
-        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
-        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
-    }
+#ifdef QT_DEBUG
+    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+          << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
+    DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+#endif
 
     if (mDebug) {
         QString debugText = "Completer at " + QString::number(start) + ": "
