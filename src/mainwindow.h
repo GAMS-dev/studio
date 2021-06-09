@@ -60,9 +60,6 @@ class AbstractProcess;
 class FileEventHandler;
 class GamsProcess;
 class GamsLibProcess;
-namespace process {
-class GamsInstProcess;
-}
 class WelcomePage;
 class Settings;
 class SearchResultList;
@@ -260,7 +257,6 @@ private slots:
     void on_actionInterrupt_triggered();
     void on_actionStop_triggered();
     void on_actionGAMS_Library_triggered();
-    void gamsInstFinished(NodeId origin, int exitCode);
     void getParameterValue(QString param, QString &value);
 
     // MIRO
@@ -459,7 +455,6 @@ private:
     QPrintDialog *mPrintDialog;
 
     GamsLibProcess *mLibProcess = nullptr;
-    process::GamsInstProcess *mInstProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
     QActionGroup *mCodecGroupReload;
     RecentData mRecent;

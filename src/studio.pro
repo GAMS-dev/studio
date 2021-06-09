@@ -207,7 +207,6 @@ SOURCES += \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
     process/abstractprocess.cpp \
-    process/gamsinstprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
@@ -400,7 +399,6 @@ HEADERS += \
     option/solveroptionwidget.h \
     process.h \
     process/abstractprocess.h \
-    process/gamsinstprocess.h \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
