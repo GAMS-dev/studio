@@ -64,29 +64,29 @@ void CodeCompleterModel::initData()
         mData << it->first;
         mDescription << it->second;
         if (it->first.startsWith("Equation")) {
-            mType.insert(mData.size()-1, ccDecl);
             if (it->first.endsWith("s")) {
                 mData << "Equation Table";
                 mDescription << it->second;
             }
-        } else if (it->first.startsWith("Parameter")) {
             mType.insert(mData.size()-1, ccDecl);
+        } else if (it->first.startsWith("Parameter")) {
             if (it->first.endsWith("s")) {
                 mData << "Parameter Table";
                 mDescription << it->second;
             }
+            mType.insert(mData.size()-1, ccDecl);
         } else if (it->first.startsWith("Set")) {
-            mType.insert(mData.size()-1, ccDeclS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
+            mType.insert(mData.size()-1, ccDeclS);
         } else if (it->first.startsWith("Variable")) {
-            mType.insert(mData.size()-1, ccDeclV);
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
                 mDescription << it->second;
             }
+            mType.insert(mData.size()-1, ccDeclV);
         } else if (it->first == "Table") {
             mType.insert(mData.size()-1, ccDeclT);
         } else {
@@ -884,7 +884,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         filter = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        filter = ((syntax.second == 8) ? cc_Dco | ccDeclT : cc_Dco) | ccSysSufC; break;
+        filter = ((syntax.second == 16) ? cc_Dco | ccDeclT : cc_Dco) | ccSysSufC; break;
     case syntax::SyntaxKind::DeclarationSetType:
         filter = cc_Dco | ccDeclS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
