@@ -21,8 +21,8 @@ enum CodeCompleterCasing {
 enum CodeCompleterType {
     cc_None     = 0x00000000,
 
-    ccDcoS      = 0x00000001, // DCO (starter and standalone)
-    ccDcoE      = 0x00000002, // DCO (ender, e.g. $offText)
+    ccDcoStrt   = 0x00000001, // DCO (starter and standalone)
+    ccDcoEnd    = 0x00000002, // DCO (ender, e.g. $offText)
     ccSubDcoA   = 0x00000004, // sub DCO of $abort
     ccSubDcoC   = 0x00000008, // sub DCO of $call
     ccSubDcoE   = 0x00000010, // sub DCO of $eval
@@ -38,17 +38,18 @@ enum CodeCompleterType {
     ccDeclS     = 0x00000200, // declaration: Set
     ccDeclV     = 0x00000400, // declaration: Variable
     ccDeclT     = 0x00000800, // declaration: Table
-    ccDeclAdd   = 0x00001000, // declaration additions for "variable" and "set"
-    ccRes       = 0x00002000, // other reserved words
-    ccResEnd    = 0x00004000, // embedded end
-    cc_Res      = 0x00007F00, // all reserved words
+    ccDeclAddV  = 0x00001000, // declaration additions for "variable"
+    ccDeclAddS  = 0x00002000, // declaration additions for "set"
+    ccRes       = 0x00004000, // other reserved words
+    ccResEnd    = 0x00008000, // embedded end
+    cc_Res      = 0x0000FF00, // all reserved words
 
     ccOpt       = 0x00010000, // options
     ccMod       = 0x00020000, // models
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    cc_Start    = 0x00007F81, // all starting keywords
+    cc_Start    = 0x00003F81, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
 };

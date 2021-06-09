@@ -57,7 +57,7 @@ void TestCompleter::testDco()
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::CommentBlock, 0);
 
-    expect = ccDcoE;
+    expect = ccDcoEnd;
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
@@ -90,7 +90,7 @@ void TestCompleter::testDeclaration()
     int expect;
 
     // ===== TEST: set declaration
-    line = "    i 'canning plants' / seattle,  san-diego /;";
+    line = "    i 'canning plants' / seattle  san-diego /;";
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::Declaration, 16);
     mSynSim.addBlockSyntax(4, SyntaxKind::Declaration, 16);
@@ -143,7 +143,7 @@ void TestCompleter::testPut()
     mCompleter->updateFilter( 6, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = cc_Start & ~(ccDcoS | ccDcoE);
+    expect = cc_Start & ~(ccDcoStrt | ccDcoEnd);
     mCompleter->updateFilter(24, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 }

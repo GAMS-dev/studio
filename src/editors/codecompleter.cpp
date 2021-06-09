@@ -50,12 +50,12 @@ void CodeCompleterModel::initData()
         }
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoS);
+    mType.insert(mData.size()-1, ccDcoStrt);
     for (const QList<QPair<QString, QString>>::ConstIterator &it : qAsConst(delayedIterators)) {
         mData << '$' + it->first;
         mDescription << it->second;
     }
-    mType.insert(mData.size()-1, ccDcoE);
+    mType.insert(mData.size()-1, ccDcoEnd);
 
     // declarations
     src = syntax::SyntaxData::declaration();
@@ -103,6 +103,14 @@ void CodeCompleterModel::initData()
         mDescription << it->second << it->second;
         ++it;
     }
+    mType.insert(mData.size()-1, ccDeclAddV);
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + " Variable Table" << it->first + " Variables Table";
+        mDescription << it->second << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccDeclAddV);
     src = syntax::SyntaxData::declaration4Set();
     it = src.constBegin();
     while (it != src.constEnd()) {
@@ -110,7 +118,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDeclAdd);
+    mType.insert(mData.size()-1, ccDeclAddS);
 
     // reserved
     src = syntax::SyntaxData::reserved();
@@ -197,7 +205,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoS);
+    mType.insert(mData.size()-1, ccDcoStrt);
 
     mData << ".set";
     mDescription << "compile-time variable based on a GAMS set";
@@ -208,7 +216,7 @@ void CodeCompleterModel::initData()
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalLocal.set";
     mDescription << "compile-time variable based on a GAMS set";
-    mType.insert(mData.size()-1, ccDcoS);
+    mType.insert(mData.size()-1, ccDcoStrt);
 
     mData << "noError";
     mDescription << "abort without error";
@@ -217,7 +225,7 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccSubDcoA);
     mData << "$abort.noError";
     mDescription << "abort without error";
-    mType.insert(mData.size()-1, ccDcoS);
+    mType.insert(mData.size()-1, ccDcoStrt);
 
     // system data
     src = syntax::/*SyntaxData::*/systemData();
@@ -281,6 +289,8 @@ void CodeCompleterModel::addDynamicData()
             mDollarGroupRow = data.size()-1;
         if (i == mPercentGroupRow)
             mPercentGroupRow = data.size()-1;
+        if (mData.at(i).trimmed().contains(' '))
+            DEB() << mData.at(i) << "  [" << QString::number(mType.lowerBound(i).value(),16) << "]";
     }
     mData = data;
     mDescriptIndex = descriptIndex;
@@ -339,7 +349,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
         if (text.startsWith('.') != mNeedDot)
             return false;
     }
-    if (type == ccDcoE) {
+    if (type == ccDcoEnd) {
         switch (mSubType) {
         case 1: if (text.toLower() != "$offtext") return false; break;
         case 2: if (text.toLower() != "$offput") return false; break;
@@ -355,7 +365,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (mEmpty) {
         if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
             return true;
-        else if ((text.startsWith('$') || text.startsWith('%')) && type != ccDcoE)
+        else if ((text.startsWith('$') || text.startsWith('%')) && type != ccDcoEnd)
             return false;
     } else if (sourceRow == mDollarGroupRow || sourceRow == mPercentGroupRow)
         return false;
@@ -749,10 +759,10 @@ QStringList CodeCompleter::splitTypes(int filter)
         {cc_Start,"cc_Start"}, {cc_All,"cc_All"},
     };
     static const QMap<CodeCompleterType, QString> baseTypes {
-        {ccDcoS,"ccDcoS"}, {ccDcoE,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccDcoStrt,"ccDcoS"}, {ccDcoEnd,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccDecl,"ccDecl"},
-        {ccDeclAdd,"ccDeclAdd"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"}, {ccDeclV,"ccDeclV"},
-        {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
+        {ccDeclAddS,"ccDeclAddS"}, {ccDeclAddS,"ccDeclAddV"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"},
+        {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
     };
     QStringList res;
     int merge = 0;
@@ -946,16 +956,16 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     int subType = 0;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
-            filter = ccDcoE;
+            filter = ccDcoEnd;
             subType = 1;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock && syntax.second == 5) {
-            filter = ccDcoE;
+            filter = ccDcoEnd;
             subType = 2;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = ccResEnd;
             } else {
-                filter = ccDcoE;
+                filter = ccDcoEnd;
                 subType = (syntax.second == 19) ? 3 : 4;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))

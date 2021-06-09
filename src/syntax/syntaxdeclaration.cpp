@@ -139,11 +139,13 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
 
         // search for kind-valid declaration keyword
         end = findEnd(entryKind, line, start, iKey);
-        if (end > start) return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, SyntaxShift::shift);
+        if (entryKind != SyntaxKind::DeclarationSetType)
+            flavor = flavor | mFlavors.value(iKey);
+        if (end > start) return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
 
         // search for invalid new declaration keyword
         end = findEnd(kind(), line, start, iKey);
-        if (end > start) return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
+        if (end > start) return SyntaxBlock(this, flavor, start, end, true, SyntaxShift::reset);
 
         return SyntaxBlock(this);
     }
@@ -152,6 +154,7 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
     if (end > start) {
         if (entryKind == SyntaxKind::Declaration) {
             if (flavor & flavorPreTable && mFlavors.value(iKey) == flavorTable) {
+                flavor -= flavorPreTable;
                 return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::shift, kind());
             }
             return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
