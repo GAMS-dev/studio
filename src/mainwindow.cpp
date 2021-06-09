@@ -4896,8 +4896,10 @@ void MainWindow::on_actionPrint_triggered()
         }
         printDocument();
 #else
-    int answer = msgBox.exec();
-    if (answer == QMessageBox::No) return;
+    if (numberLines>5000) {
+        int answer = msgBox.exec();
+        if (answer == QMessageBox::No) return;
+    }
     mPrintDialog->open(this, SLOT(printDocument()));
 #endif
 }
