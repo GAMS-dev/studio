@@ -25,14 +25,15 @@ enum CodeCompleterType {
     ccDcoEnd    = 0x00000002, // DCO (ender, e.g. $offText)
     ccSubDcoA   = 0x00000004, // sub DCO of $abort
     ccSubDcoC   = 0x00000008, // sub DCO of $call
-    ccSubDcoE   = 0x00000010, // sub DCO of $eval
+    ccSubDcoE   = 0x0000000C, // sub DCO of $eval (disjunct to A and C, can be combined, filter adapted)
 
-    cc_Dco      = 0x0000001F, // all DCOs
-    cc_SubDco   = 0x0000001C, // all sub DCOs
+    cc_Dco      = 0x0000000F, // all DCOs
+    cc_SubDco   = 0x0000000C, // all sub DCOs
 
-    ccSysDat    = 0x00000020, // system data
-    ccSysSufR   = 0x00000040, // system suffix run-time
-    ccSysSufC   = 0x00000080, // system suffix compile-time
+    ccSysDat    = 0x00000010, // system data
+    ccSysSufR   = 0x00000020, // system suffix run-time
+    ccSysSufC   = 0x00000040, // system suffix compile-time
+    ccCtConst   = 0x00000080, // system data
 
     ccDecl      = 0x00000100, // declarations
     ccDeclS     = 0x00000200, // declaration: Set

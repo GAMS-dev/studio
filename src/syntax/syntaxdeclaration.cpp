@@ -450,7 +450,18 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
     if (kind == SyntaxKind::SystemRunAttrib) {
         mKeywords.insert(int(kind), new DictList(list, QStringLiteral(u"system.")));
     } else if (kind == SyntaxKind::SystemCompileAttrib) {
-        mKeywords.insert(int(kind), new DictList(list, QStringLiteral(u"system.")));
+        QList<QPair<QString, QString>> list2;
+        for (const QPair<QString, QString> &entry : qAsConst(list)) {
+            list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
+        }
+        QHash<QString, QString> descript;
+        for (const QPair<QString, QString> &entry : /*SyntaxData::*/systemCTConstText())
+            descript.insert(entry.first, entry.second);
+        for (const QPair<QString, int> &entry : /*SyntaxData::*/systemCTConstants()) {
+            QString key = entry.first.left(entry.first.indexOf('.'));
+            list2.append(QPair<QString, QString>(entry.first, descript.value(key) + ": " + QString::number(entry.second)));
+        }
+        mKeywords.insert(int(kind), new DictList(list2));
     } else {
         Q_ASSERT_X(false, "SyntaxSimpleKeyword", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
     }

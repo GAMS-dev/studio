@@ -61,12 +61,12 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
     initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
-    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemRunAttrib, d), Theme::Syntax_description);
+    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemRunAttrib, d), Theme::Syntax_embedded);
     initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemCompileAttrib, d), Theme::Syntax_embedded);
     initKind(new SyntaxSimpleWord(d), Theme::Syntax_embedded);
 
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
-    initKind(new SyntaxQuoted(SyntaxKind::String, d), Theme::Syntax_description);
+    initKind(new SyntaxQuoted(SyntaxKind::String, d), Theme::Syntax_assignLabel);
     initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock, d), Theme::Syntax_comment);
     initKind(new SyntaxCommentEndline(d), Theme::Syntax_comment);
@@ -254,12 +254,13 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
 //                                      << " " << nextBlock.syntax->name();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
+                            i = nextBlock.end;
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
                                 if (it == mScannedBlockSyntax.constEnd()) {
                                     --it;
                                 }
-                                QPair<int,int> currentVal = it.value();
+//                                QPair<int,int> currentVal = it.value();
 //                                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
                             }
                             break;

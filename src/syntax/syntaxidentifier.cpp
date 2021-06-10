@@ -322,7 +322,7 @@ AssignmentValue::AssignmentValue(SharedSyntaxData *sharedData)
 {
     mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
-    mSubKinds /*<< SyntaxKind::SystemCompileAttrib*/ << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
+    mSubKinds << SyntaxKind::IdentifierAssignment << SyntaxKind::IdentifierAssignmentEnd;
 }
 
 SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)

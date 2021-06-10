@@ -257,6 +257,21 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccSysSufC);
 
+    QHash<QString, QString> descript;
+    for (const QPair<QString, QString> &entry : syntax::/*SyntaxData::*/systemCTConstText())
+        descript.insert(entry.first, entry.second);
+    {
+        QList<QPair<QString, int>> src = syntax::/*SyntaxData::*/systemCTConstants();
+        QList<QPair<QString, int>>::ConstIterator it = src.constBegin();
+        while (it != src.constEnd()) {
+            mData << '%'+it->first+'%';
+            QString key = it->first.left(it->first.indexOf('.'));
+            mDescription << descript.value(key) + ": " + QString::number(it->second);
+            ++it;
+        }
+        mType.insert(mData.size()-1, ccCtConst);
+    }
+
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
@@ -384,6 +399,11 @@ bool FilterCompleterModel::isGroupRow(int row)
 
 bool FilterCompleterModel::test(int type, int flagPattern) const
 {
+    if (type & cc_SubDco && flagPattern & cc_SubDco) {
+        if ((type & cc_SubDco) == (flagPattern & cc_SubDco))
+            return true;
+        flagPattern -= flagPattern & cc_SubDco;
+    }
     return type & flagPattern;
 }
 
@@ -558,14 +578,14 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
 
 #ifdef QT_DEBUG
     // uncomment this to generate elements for testcompleter
-//    if (mEdit) {
-//        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-//        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-//            if (block.isValid())
-//                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
-//                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
-//        }
-//    }
+    if (mEdit) {
+        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+            if (block.isValid())
+                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+        }
+    }
 #endif
 
     return res;
@@ -754,12 +774,12 @@ int CodeCompleter::typeFilter() const
 QStringList CodeCompleter::splitTypes(int filter)
 {
     static const QMap<CodeCompleterType, QString> groupTypes {
-        {cc_None,"cc_None"}, {cc_Dco,"cc_Dco"}, {cc_SubDco,"ccSubDcoC"}, {cc_Res,"cc_Res"},
+        {cc_None,"cc_None"}, {cc_Dco,"cc_Dco"}, {cc_SubDco,"ccSubDco"}, {cc_Res,"cc_Res"},
         {cc_Start,"cc_Start"}, {cc_All,"cc_All"},
     };
     static const QMap<CodeCompleterType, QString> baseTypes {
         {ccDcoStrt,"ccDcoS"}, {ccDcoEnd,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
-        {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccDecl,"ccDecl"},
+        {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccCtConst,"ccCtConst"}, {ccDecl,"ccDecl"},
         {ccDeclAddS,"ccDeclAddS"}, {ccDeclAddS,"ccDeclAddV"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"},
         {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
     };
@@ -883,14 +903,14 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         filter = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        filter = ((syntax.second == 16) ? cc_Dco | ccDeclT : cc_Dco) | ccSysSufC; break;
+        filter = ((syntax.second == 16) ? ccDcoStrt | ccDeclT : ccDcoStrt) | ccSysSufC | ccCtConst; break;
     case syntax::SyntaxKind::DeclarationSetType:
-        filter = cc_Dco | ccDeclS; break;
+        filter = ccDcoStrt | ccDeclS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
-        filter = cc_Dco | ccDeclV; break;
+        filter = ccDcoStrt | ccDeclV; break;
 
     case syntax::SyntaxKind::Dco:
-        filter = cc_Dco | ccSysSufC; break;
+        filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::CommentBlock:
@@ -902,7 +922,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::DcoBody:
     case syntax::SyntaxKind::Title:
     case syntax::SyntaxKind::String:
-        filter = ccSysSufC; break;
+        filter = ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::Identifier:
     case syntax::SyntaxKind::IdentifierDim:
@@ -913,10 +933,10 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::IdentifierTableAssignmentColHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRowHead:
     case syntax::SyntaxKind::IdentifierTableAssignmentRow:
-        filter = cc_Dco | ccSysSufC; break;
+        filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
     case syntax::SyntaxKind::IdentifierAssignment:
     case syntax::SyntaxKind::AssignmentLabel:
-        filter = cc_Dco | ccSysDat | ccSysSufC; break;
+        filter = ccDcoStrt | ccSysDat | ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::Embedded:
     case syntax::SyntaxKind::EmbeddedBody:
@@ -934,7 +954,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
-        filter = ccExec | ccSysSufC; break;
+        filter = ccExec | ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Option:
@@ -968,7 +988,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
                 subType = (syntax.second == 19) ? 3 : 4;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
-            filter = filter & cc_Dco;
+            filter = filter & ccDcoStrt;
     } else if (dcoFlavor > 15) {
         needDot = true;
         for (int i = start; i > 0; --i) {
@@ -983,11 +1003,11 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             }
         }
         if (dcoFlavor == 16)
-            filter = ccSubDcoA | ccSysSufC;
+            filter = ccSubDcoA | ccSysSufC | ccCtConst;
         else if (dcoFlavor == 17)
-            filter = ccSubDcoC | ccSysSufC;
+            filter = ccSubDcoC | ccSysSufC | ccCtConst;
         else if (dcoFlavor == 18)
-            filter = ccSubDcoE | ccSysSufC;
+            filter = ccSubDcoE | ccSysSufC | ccCtConst;
         else
             filter = filter & ~cc_Dco;
     } else {
