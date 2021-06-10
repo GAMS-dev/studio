@@ -103,15 +103,15 @@ void TestCompleter::testDeclaration()
     mSynSim.addBlockSyntax(46, SyntaxKind::IdentifierAssignmentEnd, 16);
     mSynSim.addBlockSyntax(47, SyntaxKind::Semicolon, 16);
 
-    expect = cc_Dco | ccSysSufC;
+    expect = ccDcoStrt | ccSysSufC | ccCtConst | ccDeclT;
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = ccSysSufC;
+    expect = ccSysSufC | ccCtConst;
     mCompleter->updateFilter(21, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = ccSysSufC | ccSysDat;
+    expect = ccSysSufC | ccCtConst | ccSysDat;
     mCompleter->updateFilter(24, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
@@ -135,11 +135,11 @@ void TestCompleter::testPut()
     mCompleter->updateFilter( 3, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = cc_Res | ccSysSufR | ccSysSufC;
+    expect = cc_Res | ccSysSufR | ccSysSufC | ccCtConst;
     mCompleter->updateFilter( 4, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = ccSysSufC;
+    expect = ccSysSufC | ccCtConst;
     mCompleter->updateFilter( 6, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 

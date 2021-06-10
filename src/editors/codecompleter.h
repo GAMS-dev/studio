@@ -33,7 +33,7 @@ enum CodeCompleterType {
     ccSysDat    = 0x00000010, // system data
     ccSysSufR   = 0x00000020, // system suffix run-time
     ccSysSufC   = 0x00000040, // system suffix compile-time
-    ccCtConst   = 0x00000080, // system data
+    ccCtConst   = 0x00000080, // compile time constants
 
     ccDecl      = 0x00000100, // declarations
     ccDeclS     = 0x00000200, // declaration: Set
@@ -43,14 +43,14 @@ enum CodeCompleterType {
     ccDeclAddS  = 0x00002000, // declaration additions for "set"
     ccRes       = 0x00004000, // other reserved words
     ccResEnd    = 0x00008000, // embedded end
-    cc_Res      = 0x0000FF00, // all reserved words
+    cc_Res      = 0x00007F00, // all reserved words (w/o embeddedEnd)
 
     ccOpt       = 0x00010000, // options
     ccMod       = 0x00020000, // models
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    cc_Start    = 0x00007F81, // all starting keywords
+    cc_Start    = 0x00007FE1, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
 };

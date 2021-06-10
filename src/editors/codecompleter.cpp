@@ -778,7 +778,7 @@ QStringList CodeCompleter::splitTypes(int filter)
         {cc_Start,"cc_Start"}, {cc_All,"cc_All"},
     };
     static const QMap<CodeCompleterType, QString> baseTypes {
-        {ccDcoStrt,"ccDcoS"}, {ccDcoEnd,"ccDcoE"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccDcoStrt,"ccDcoStrt"}, {ccDcoEnd,"ccDcoEnd"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccCtConst,"ccCtConst"}, {ccDecl,"ccDecl"},
         {ccDeclAddS,"ccDeclAddS"}, {ccDeclAddS,"ccDeclAddV"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"},
         {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
@@ -950,7 +950,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Put:
         filter = cc_Start; break;
     case syntax::SyntaxKind::PutFormula:
-        filter = cc_Start | ccSysSufR; break;
+        filter = cc_Start; break;
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
