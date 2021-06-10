@@ -49,7 +49,7 @@ enum CodeCompleterType {
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
-    cc_Start    = 0x00003F81, // all starting keywords
+    cc_Start    = 0x00007F81, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
 };

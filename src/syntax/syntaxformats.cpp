@@ -504,7 +504,7 @@ SyntaxQuoted::SyntaxQuoted(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
     if (kind == SyntaxKind::String) {
-        mDelimiters = "'\"";
+        mDelimiters = " '\"";
     }
     mSubKinds << SyntaxKind::String;
 }
@@ -519,10 +519,11 @@ SyntaxBlock SyntaxQuoted::find(const SyntaxKind entryKind, int flavor, const QSt
         if (start < line.length() && mDelimiters.indexOf(line.at(start)) > 0) {
             // starting part, remember flavor
             flavor += mDelimiters.indexOf(line.at(start));
-        }
-        while (++end < line.length() && line.at(end) != mDelimiters.at(flavor & flavorQuotePart))
-            ;
+        } else
+            return SyntaxBlock(this);
     }
+    while (++end < line.length() && line.at(end) != mDelimiters.at(flavor & flavorQuotePart))
+        ;
     if (end < line.length()) {
         if (entryKind == SyntaxKind::String) {
             if (line.at(end) == mDelimiters.at(flavor & flavorQuotePart))
