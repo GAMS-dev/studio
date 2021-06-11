@@ -41,6 +41,7 @@ SOURCES += \
     $$SRCPATH/option/optiontokenizer.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/support/solverconfiginfo.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp
 
