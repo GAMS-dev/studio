@@ -439,7 +439,7 @@ public:
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) = 0;
-    virtual SyntaxTransitions nextKinds(bool emptyLine = false);
+    virtual const SyntaxTransitions nextKinds(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual int maxNesting() { return 0; }
