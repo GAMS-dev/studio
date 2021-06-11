@@ -463,15 +463,15 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
 
     int end = start;
     int chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
-    if (kind() == SyntaxKind::PutFormula && start > index && chKind == 2)
+    if (/*kind() == SyntaxKind::PutFormula &&*/ start > index && chKind == ccAlpha)
         return SyntaxBlock(this, flavor, index, start, SyntaxShift::shift);
-    bool skipWord = (chKind == 2);
-    if (chKind == 1) --end;
+    bool skipWord = (chKind == ccAlpha);
+    if (chKind == ccSpecial) --end;
 
     while (++end < line.length()) {
         chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
-        if (chKind == 1) break;
-        if (chKind != 2) skipWord = false;
+        if (chKind == ccSpecial) break;
+        if (chKind != ccAlpha) skipWord = false;
         else if (!skipWord) break;
     }
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);

@@ -69,16 +69,20 @@ class SyntaxKeywordBase: public SyntaxAbstract
 
 public:
     ~SyntaxKeywordBase() override;
-    SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData) : SyntaxAbstract(kind, sharedData) {}
+    SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData)
+        : SyntaxAbstract(kind, sharedData), mExtraKeywordChars("._") {}
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 
 protected:
     int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
+    void setExtraKeywordChars(QString keywordChars) { mExtraKeywordChars = keywordChars; }
+
     QHash<int, DictList*> mKeywords;
     QHash<int, int> mFlavors;
+    QString mExtraKeywordChars;
 
 private:
-    inline QStringList swapStringCase(QStringList list);
+    inline QStringList swapStringCase(const QStringList &list);
 };
 
 class SyntaxDeclaration: public SyntaxKeywordBase

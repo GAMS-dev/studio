@@ -36,8 +36,8 @@ namespace syntax {
 // ===============================================================================================================
 // TODO(JM) REMOVE-START |  these declarations are temporary until the definitions are available in syntaxdata.h
 
-static QList<QPair<QString, QString>> systemAttributes() {
-    QList<QPair<QString, QString>> list = {
+static const QList<QPair<QString, QString>> systemAttributes() {
+    static const QList<QPair<QString, QString>> list = {
         {"Page", "Current page number"},
         {"ILine", "Current source line number beeing executed"},
         {"OPage", "Current listing page number"},
@@ -193,8 +193,8 @@ static QList<QPair<QString, QString>> keyExecute() {
 }
 
 
-static QList<QPair<QString, QString>> systemCTConstText() {
-    QList<QPair<QString, QString>> list = {
+static const QList<QPair<QString, QString>> systemCTConstText() {
+    static const QList<QPair<QString, QString>> list = {
         {"solPrint", "Solution report print"},
         {"handleStatus", "Status of model instance"},
         {"solveLink", "Solver link option"},
@@ -207,8 +207,8 @@ static QList<QPair<QString, QString>> systemCTConstText() {
 }
 
 
-static QList<QPair<QString, int>> systemCTConstants() {
-    QList<QPair<QString, int>> list = {
+static const QList<QPair<QString, int>> systemCTConstants() {
+    static const QList<QPair<QString, int>> list = {
         {"solPrint.Summary", 0},
         {"solPrint.Report", 1},
         {"solPrint.Quiet", 2},
@@ -452,6 +452,7 @@ public:
 protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
+    enum CharClass {ccOther, ccSpecial, ccAlpha};
     inline int charClass(QChar ch, int &prev, QVector<QChar> moreSpecialChars = QVector<QChar>()) {
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
@@ -470,8 +471,8 @@ protected:
     int endOfQuotes(const QString &line, const int &start);
     int endOfParentheses(const QString &line, const int &start, const QString &validPairs, int &nest);
 
-    inline bool isKeywordChar(const QChar& ch) {
-        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    inline bool isKeywordChar(const QChar& ch, const QString &extraChars = QString()) {
+        return (ch.isLetterOrNumber() || extraChars.contains(ch));
     }
     inline bool isKeywordChar(const QString& line, int index) {
         if (index >= line.length()) return false;
