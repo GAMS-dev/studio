@@ -42,4 +42,5 @@ SOURCES += \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/support/solverconfiginfo.cpp \
     $$SRCPATH/exception.cpp
