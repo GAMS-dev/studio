@@ -50,7 +50,7 @@ void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
     charFormat().setFontItalic(Theme::hasFlag(slot, Theme::fItalic));
 }
 
-SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
+const SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 {
     if (emptyLine && !mEmptyLineKinds.isEmpty()) return mEmptyLineKinds;
     return mSubKinds;

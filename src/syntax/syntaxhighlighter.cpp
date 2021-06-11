@@ -164,7 +164,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
+        for (const SyntaxKind &nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = mKinds.value(nextKind);
             if (testSyntax) {
                 SyntaxBlock testBlock = testSyntax->find(syntax->kind(), prevFlavor, text, index);
@@ -309,7 +309,7 @@ void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> >
     mScanBlockNr = -1;
 }
 
-const QVector<SyntaxKind> invalidParenthesesSyntax = {
+const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
     SyntaxKind::Dco,
     SyntaxKind::DcoBody,
     SyntaxKind::DcoComment,
@@ -329,9 +329,9 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::EmbeddedEnd,
 };
 
-const QString validParentheses("{[(}])/");
-const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
-const QString flavorChars("TtCcPpIiOoFfUu");
+const QString SyntaxHighlighter::cValidParentheses("{[(}])/");
+const QString SyntaxHighlighter::cSpecialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
+const QString SyntaxHighlighter::cFlavorChars("TtCcPpIiOoFfUu");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind,
                                         QVector<ParenthesesPos> &parentheses, NestingImpact &nestingImpact)
@@ -360,8 +360,8 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         nestingImpact.addCloser();
         return;
     } else if (kind == SyntaxKind::Dco) {
-        if (flavor > 0 && flavor <= flavorChars.size()) {
-            parentheses << ParenthesesPos(flavorChars.at(flavor-1), start);
+        if (flavor > 0 && flavor <= cFlavorChars.size()) {
+            parentheses << ParenthesesPos(cFlavorChars.at(flavor-1), start);
             if (flavor%2)
                 nestingImpact.addOpener();
             else
@@ -369,10 +369,10 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
             return;
         }
     }
-    if (invalidParenthesesSyntax.contains(kind)) return;
+    if (cInvalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
         if (i >= text.length()) break;
-        int iPara = validParentheses.indexOf(text.at(i));
+        int iPara = cValidParentheses.indexOf(text.at(i));
         if (iPara == 6) {
             if (kind == SyntaxKind::IdentifierAssignmentEnd) {
                 parentheses << ParenthesesPos('\\', i);
@@ -389,9 +389,9 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
                 nestingImpact.addCloser();
 
         }
-        int blockKind = specialBlocks.indexOf(text.at(i));
-        if (!inBlock && blockKind >= 0 && blockKind < specialBlocks.length()/2) {
-            int iEnd = text.indexOf(specialBlocks.at(blockKind + specialBlocks.length()/2), i+1);
+        int blockKind = cSpecialBlocks.indexOf(text.at(i));
+        if (!inBlock && blockKind >= 0 && blockKind < cSpecialBlocks.length()/2) {
+            int iEnd = text.indexOf(cSpecialBlocks.at(blockKind + cSpecialBlocks.length()/2), i+1);
             i = (iEnd > 0) ? iEnd-1 : text.length()-1;
             inBlock = true;
         } else {
@@ -426,7 +426,7 @@ void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Theme::ColorSlot slot)
 
 void SyntaxHighlighter::reloadColors()
 {
-    for (SyntaxAbstract* syntax: mKinds) {
+    for (SyntaxAbstract* syntax: qAsConst(mKinds)) {
         syntax->assignColorSlot(syntax->colorSlot());
     }
 }
