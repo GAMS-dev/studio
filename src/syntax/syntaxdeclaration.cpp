@@ -49,7 +49,7 @@ DictList::DictList(QList<QPair<QString, QString> > list, const QString &prefix)
 SyntaxKeywordBase::~SyntaxKeywordBase()
 {
     while (!mKeywords.isEmpty())
-        delete mKeywords.take(int(mKeywords.keys().at(0)));
+        delete mKeywords.take(mKeywords.begin().key());
 }
 
 SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, int flavor, bool &hasContent)

@@ -66,7 +66,7 @@ CodeEdit::CodeEdit(QWidget *parent)
 
     setMouseTracking(true);
     viewport()->setMouseTracking(true);
-    QTimer::singleShot(0, [this](){ setCursorWidth(2); });
+    QTimer::singleShot(0, this, [this](){ setCursorWidth(2); });
 }
 
 CodeEdit::~CodeEdit()
@@ -398,7 +398,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber()) {
             QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
             QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
-            emit mouseMoveEvent(&me);
+            mouseMoveEvent(&me);
         }
         return;
     }
@@ -539,7 +539,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber() || vertScroll != verticalScrollBar()->sliderPosition()) {
         QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
         QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
-        emit mouseMoveEvent(&me);
+        mouseMoveEvent(&me);
     }
 }
 
@@ -872,7 +872,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
     if (e->key() == Qt::Key_Control) {
         QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
         QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
-        emit mouseMoveEvent(&me);
+        mouseMoveEvent(&me);
     }
     // return pressed: ignore here
     if (!isReadOnly() && e->key() == Hotkey::NewLine) {
@@ -1117,7 +1117,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         TextLinkType linkType = checkLinks(e->pos(), true, &fileName);
         updateLinkAppearance(e->pos(), false);
 
-        QAction *actLink = menu->addAction("Open link", [this, e]() { jumpToCurrentLink(e->pos()); });
+        QAction *actLink = menu->addAction("Open link", this, [this, e]() { jumpToCurrentLink(e->pos()); });
         actLink->setShortcut(Keys::instance().keySequence(Hotkey::JumpToContext).first());
         if (linkType != linkDirect/* || linkType == linkMark*/) {
             actLink->setEnabled(false);
@@ -1475,7 +1475,7 @@ void dumpClipboard()
     const QMimeData * mime = clip->mimeData();
     DEB() << "----------------- Clipboard --------------------" ;
     DEB() << "  C " << clip->ownsClipboard()<< "  F " << clip->ownsFindBuffer()<< "  S " << clip->ownsSelection();
-    for (QString fmt: mime->formats()) {
+    for (const QString &fmt: mime->formats()) {
         DEB() << "   -- " << fmt << "   L:" << mime->data(fmt).length()
               << "\n" << mime->data(fmt)
               << "\n" << QString(mime->data(fmt).toHex(' '));
@@ -2435,10 +2435,10 @@ void CodeEdit::BlockEdit::replaceBlockText(QString text)
     replaceBlockText(QStringList() << text);
 }
 
-void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
+void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
 {
     if (mEdit->isReadOnly()) return;
-    if (texts.isEmpty()) texts << "";
+    const QStringList texts = inTexts.isEmpty() ? QStringList() << "" : inTexts;
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
     bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
@@ -2506,8 +2506,8 @@ void CodeEdit::BlockEdit::replaceBlockText(QStringList texts)
 
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;
-    for (QString s: texts) {
-        for (QStringRef ref: s.splitRef('\n')) {
+    for (const QString &s: texts) {
+        for (const QStringRef &ref: s.splitRef('\n')) {
             if (insertWidth < ref.length()) insertWidth = ref.length();
         }
     }

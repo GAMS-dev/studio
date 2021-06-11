@@ -271,9 +271,9 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
         extended = true;
         flavor -= flavorBindLabel;
     }
-    int quoteType = (flavor & flavorQuotePart) - 1;
-    if (quoteType > 1 || entryKind != SyntaxKind::AssignmentLabel)
-        quoteType = -1;
+//    int quoteType = (flavor & flavorQuotePart) - 1;
+//    if (quoteType > 1 || entryKind != SyntaxKind::AssignmentLabel)
+//        quoteType = -1;
 
     for (int pos = start; pos < line.length(); ++pos) {
         if (extender.contains(line.at(pos))) {
@@ -285,7 +285,6 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
         } else {
             if (quote.contains(line.at(pos))) {
                 pos = endOfQuotes(line, pos);
-                extended = false;
                 if (pos < start) return SyntaxBlock(this);
             } else if (line.at(pos) == '(') {
                 ++nesting;
@@ -336,8 +335,8 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const 
     // get delimiters
     QString delim("\"\'[");
     QString special("/,");
-    int end = start;
     int pos = start;
+    int end;
     // we are at the first non-white-char
     if (int quoteKind = delim.indexOf(line.at(pos))+1) {
         // find matching quote
@@ -347,7 +346,7 @@ SyntaxBlock AssignmentValue::find(const SyntaxKind entryKind, int flavor, const 
             return SyntaxBlock(this, flavor, start, pos+1, SyntaxShift::out, true);
         pos = end+1;
     } else {
-        while (++pos < line.length() && !special.contains(line.at(pos))) end = pos;
+        while (++pos < line.length() && !special.contains(line.at(pos))) ;
     }
     end = pos;
 //    while (isWhitechar(line, pos)) ++pos;

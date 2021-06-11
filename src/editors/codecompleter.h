@@ -153,6 +153,8 @@ private:
     QString mFilterText;
     QString mPreferredText;
     bool mDebug = false;
+
+    static const QSet<int> cEnteringSyntax;
 };
 
 } // namespace studio

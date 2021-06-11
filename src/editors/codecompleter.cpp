@@ -551,7 +551,7 @@ CharGroup group(const QChar &c) {
     return clBreak;
 }
 
-const QSet<int> CEnteringSyntax {int(syntax::SyntaxKind::IdentifierDescription), int(syntax::SyntaxKind::String)};
+const QSet<int> CodeCompleter::cEnteringSyntax {int(syntax::SyntaxKind::IdentifierDescription), int(syntax::SyntaxKind::String)};
 
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor)
 {
@@ -561,12 +561,12 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         if (it.key() > pos) {
-            if (CEnteringSyntax.contains(res.first)) {
+            if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
                 res = it.value();
             }
-            if (CEnteringSyntax.contains(it.value().first) && lastEnd < pos)
+            if (cEnteringSyntax.contains(it.value().first) && lastEnd < pos)
                 res = it.value();
             break;
         }
@@ -825,8 +825,8 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             cur.setPosition(cur.position()-mFilterText.length());
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();
-        if (mFilterModel->isGroupRow(currentIndex().row()))
-            res = res.left(1);
+        if (mFilterModel->isGroupRow(currentIndex().row()) && !res.isEmpty())
+            res = res.at(0);
         mPreferredText = res;
 
         if (equalPartOnly && res.length() > mFilterText.length()+1) {
