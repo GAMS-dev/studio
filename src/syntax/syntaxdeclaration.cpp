@@ -261,6 +261,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
         case SyntaxKind::Put:
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
         case SyntaxKind::Execute: {
+            // TODO(JM) open this. Don't force SyntaxKind::ExecuteKey or SyntaxKind::ExecuteBody here!
             if (end==line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteKey);
         } break;

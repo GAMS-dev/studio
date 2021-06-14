@@ -143,6 +143,14 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    // execute
+    src = syntax::SyntaxData::keyExecute();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
     mType.insert(mData.size()-1, ccRes);
 
     // embedded end

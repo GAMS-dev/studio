@@ -457,13 +457,13 @@ protected:
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
         if (ch < '"' || ch > 'z')
-            prev = 0;
+            prev = ccOther;
         else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
-            prev = 2;  // break by keyword kind
+            prev = ccAlpha;  // break by keyword kind
         else if (ch >= '0' && ch <= '9') {
-            if (prev != 2) prev = 0;
+            if (prev != ccAlpha) prev = ccOther;
         } else {
-            prev = (cSpecialCharacters.contains(ch) || moreSpecialChars.contains(ch)) ? 1 : 0;
+            prev = (cSpecialCharacters.contains(ch) || moreSpecialChars.contains(ch)) ? ccSpecial : ccOther;
         }
         return prev;
     }
