@@ -220,19 +220,19 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
         mSubKinds << SyntaxKind::Formula;
         break;
     case SyntaxKind::Solve:
-        list = /*SyntaxData::*/keySolve();
+        list = SyntaxData::keySolve();
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
         break;
     case SyntaxKind::Option:
-        list = /*SyntaxData::*/keyOption();
+        list = SyntaxData::keyOption();
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         break;
     case SyntaxKind::Execute:
-        list = /*SyntaxData::*/keyExecute();
+        list = SyntaxData::keyExecute();
         mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
         break;
     case SyntaxKind::Put:
-        list = /*SyntaxData::*/keyPut();
+        list = SyntaxData::keyPut();
         mSubKinds << SyntaxKind::PutFormula;
         break;
     default:
@@ -403,7 +403,7 @@ AssignmentSystemData::AssignmentSystemData(SharedSyntaxData *sharedData)
               << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
     mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
               << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue;
-    QList<QPair<QString, QString>> list = /*SyntaxData::*/systemData();
+    QList<QPair<QString, QString>> list = SyntaxData::systemData();
     mKeywords.insert(int(SyntaxKind::AssignmentSystemData), new DictList(list));
 }
 
@@ -446,7 +446,7 @@ SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, int 
 SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     QList<QPair<QString, QString>> list;
-    list = /*SyntaxData::*/systemAttributes();
+    list = SyntaxData::systemAttributes();
     list.append(SyntaxData::modelTypes());
     if (kind == SyntaxKind::SystemRunAttrib) {
         mKeywords.insert(int(kind), new DictList(list, QStringLiteral(u"system.")));
@@ -457,9 +457,9 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
             list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
         }
         QHash<QString, QString> descript;
-        for (const QPair<QString, QString> &entry : /*SyntaxData::*/systemCTConstText())
+        for (const QPair<QString, QString> &entry : SyntaxData::systemCTConstText())
             descript.insert(entry.first, entry.second);
-        for (const QPair<QString, int> &entry : /*SyntaxData::*/systemCTConstants()) {
+        for (const QPair<QString, int> &entry : SyntaxData::systemCTConstants()) {
             QString key = entry.first.left(entry.first.indexOf('.'));
             list2.append(QPair<QString, QString>(entry.first, descript.value(key) + ": " + QString::number(entry.second)));
         }

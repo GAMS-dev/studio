@@ -235,7 +235,7 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccDcoStrt);
 
     // system data
-    src = syntax::/*SyntaxData::*/systemData();
+    src = syntax::SyntaxData::systemData();
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << "system." + it->first;
@@ -245,7 +245,7 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccSysDat);
 
     // system data
-    src = syntax::/*SyntaxData::*/systemAttributes();
+    src = syntax::SyntaxData::systemAttributes();
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << "system." + it->first;
@@ -266,10 +266,10 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccSysSufC);
 
     QHash<QString, QString> descript;
-    for (const QPair<QString, QString> &entry : syntax::/*SyntaxData::*/systemCTConstText())
+    for (const QPair<QString, QString> &entry : syntax::SyntaxData::systemCTConstText())
         descript.insert(entry.first, entry.second);
     {
-        QList<QPair<QString, int>> src = syntax::/*SyntaxData::*/systemCTConstants();
+        QList<QPair<QString, int>> src = syntax::SyntaxData::systemCTConstants();
         QList<QPair<QString, int>>::ConstIterator it = src.constBegin();
         while (it != src.constEnd()) {
             mData << '%'+it->first+'%';
