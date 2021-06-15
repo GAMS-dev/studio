@@ -143,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
-    DEB() << text;
+//    DEB() << text;
 
     NestingImpact nestingImpact;
     while (index < text.length()) {
@@ -190,9 +190,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (tailBlock.isValid()) {
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
-                        if (tailBlock.syntax)
-                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-                                  << tailBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntax->name() << ")";
+//                        if (tailBlock.syntax)
+//                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
+//                                  << tailBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntax->name() << ")";
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
@@ -211,9 +211,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             }
 
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-            if (nextBlock.syntax)
-                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-                      << " " << nextBlock.syntax->name() << " flav_" << nextBlock.flavor << "  (next from " << syntax->name() << ")";
+//            if (nextBlock.syntax)
+//                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                      << " " << nextBlock.syntax->name() << " flav_" << nextBlock.flavor << "  (next from " << syntax->name() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
@@ -285,7 +285,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     } else
         textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
-    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
+//    DEB() << text << "      _" << codeDeb(cri) << " [nesting " << nestingImpact.impact() << "]";
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
