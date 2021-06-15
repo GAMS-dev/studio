@@ -4874,11 +4874,12 @@ void MainWindow::on_actionPrint_triggered()
     if (!enabledPrintAction()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget()) return;
-    int numberLines = fm->document()->lineCount();
-
-
-
-
+    int numberLines = 0;
+    if (TextView *tv = ViewHelper::toTextView(fm->editors().first())) {
+        if (tv->lineCount() == tv->knownLines()) numberLines = tv->lineCount();
+    } else {
+        numberLines = fm->document()->lineCount();
+    }
     QMessageBox msgBox;
     msgBox.setWindowTitle("Print huge file size");
     msgBox.setText("The file you intend to print contains " + QString::number(numberLines) + " lines. It might take several minutes to print. Are you sure you want to continue ?");
