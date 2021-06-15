@@ -176,7 +176,6 @@ private slots:
 private:
     friend class BlockEdit;
     friend class LineNumberArea;
-    friend class CodeCompleter;
 
     void adjustIndent(QTextCursor cursor);
     void truncate(QTextBlock block);
@@ -219,7 +218,7 @@ protected:
         void refreshCursors();
         void paintEvent(QPaintEvent *e);
         void replaceBlockText(QString text);
-        void replaceBlockText(QStringList texts);
+        void replaceBlockText(const QStringList &inTexts);
         void updateExtraSelections();
         void adjustCursor();
         void selectTo(int blockNr, int colNr);

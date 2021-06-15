@@ -33,6 +33,11 @@ QString syntaxKindName(SyntaxKind kind)
     return QVariant::fromValue(kind).toString();
 }
 
+QString syntaxKindName(int kind)
+{
+    return syntaxKindName(SyntaxKind(kind));
+}
+
 void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
 {
     mColorSlot = slot;
@@ -45,7 +50,7 @@ void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
     charFormat().setFontItalic(Theme::hasFlag(slot, Theme::fItalic));
 }
 
-SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
+const SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)
 {
     if (emptyLine && !mEmptyLineKinds.isEmpty()) return mEmptyLineKinds;
     return mSubKinds;
@@ -115,6 +120,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
               << SyntaxKind::Solve
               << SyntaxKind::Option
               << SyntaxKind::Execute
+              << SyntaxKind::Put
               << SyntaxKind::Reserved
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
@@ -191,6 +197,15 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("eval").toLower(), 18);
     mFlavors.insert(QString("evalLocal").toLower(), 18);
     mFlavors.insert(QString("evalGlobal").toLower(), 18);
+    mFlavors.insert(QString("onEmbeddedCode").toLower(), 19);
+    mFlavors.insert(QString("onEmbeddedCodeS").toLower(), 19);
+    mFlavors.insert(QString("onEmbeddedCodeV").toLower(), 19);
+    mFlavors.insert(QString("embeddedCode").toLower(), 20);
+    mFlavors.insert(QString("embeddedCodeS").toLower(), 20);
+    mFlavors.insert(QString("embeddedCodeV").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCode").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), 20);
+    mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), 20);
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -408,14 +423,19 @@ SyntaxBlock SyntaxDelimiter::validTail(const QString &line, int index, int flavo
 SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxAbstract(kind, sharedData)
 {
     sharedData->addFormula(this);
-    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon << SyntaxKind::Solve << SyntaxKind::Option
-              << SyntaxKind::Execute << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
-              << SyntaxKind::CommentInline << SyntaxKind::String << SyntaxKind::Dco << SyntaxKind::Assignment
-              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
-              << SyntaxKind::DeclarationVariableType;
+    mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon
+              << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute
+              << SyntaxKind::Put << SyntaxKind::Reserved << SyntaxKind::Dco << SyntaxKind::Assignment
+              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
+              << SyntaxKind::String;
+
     switch (kind) {
     case SyntaxKind::Formula:
         mSubKinds << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::PutFormula:
+        mSubKinds << SyntaxKind::SystemRunAttrib << SyntaxKind::PutFormula;
         break;
     case SyntaxKind::SolveBody:
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
@@ -443,16 +463,18 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
 
     int end = start;
     int chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
-    bool skipWord = (chKind == 2);
-    if (chKind == 1) --end;
+    if (/*kind() == SyntaxKind::PutFormula &&*/ start > index && chKind == ccAlpha)
+        return SyntaxBlock(this, flavor, index, start, SyntaxShift::shift);
+    bool skipWord = (chKind == ccAlpha);
+    if (chKind == ccSpecial) --end;
 
     while (++end < line.length()) {
         chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
-        if (chKind == 1) break;
-        if (chKind != 2) skipWord = false;
+        if (chKind == ccSpecial) break;
+        if (chKind != ccAlpha) skipWord = false;
         else if (!skipWord) break;
     }
-    return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
 SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -465,7 +487,7 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, int flavor,
         else return SyntaxBlock(this);
     }
     int prev = 0;
-    int cb1 = end < line.length() ? charClass(line.at(end), prev, mSpecialDynamicChars) : 0;
+    int cb1 = charClass(line.at(end), prev, mSpecialDynamicChars);
     while (++end < line.length() && charClass(line.at(end), prev, mSpecialDynamicChars) == cb1) ;
     hasContent = false;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
@@ -475,29 +497,47 @@ void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
 {
     mSpecialDynamicChars = chars;
     if (kind() == SyntaxKind::Formula)
-        mSpecialDynamicChars << '=';
+        mSpecialDynamicChars << '='; // << '\'' << '"';
 }
 
-SyntaxString::SyntaxString(SharedSyntaxData *sharedData)
-    : SyntaxAbstract(SyntaxKind::String, sharedData)
-{}
+SyntaxQuoted::SyntaxQuoted(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
+{
+    if (kind == SyntaxKind::String) {
+        mDelimiters = " '\"";
+    }
+    mSubKinds << SyntaxKind::String;
+}
 
-SyntaxBlock SyntaxString::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxQuoted::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start)) start++;
     int end = start;
-    if (start < line.length() && (line.at(start) == '\'' || line.at(start) == '"')) {
-        while (++end < line.length() && line.at(end) != line.at(start)) ;
-        if (end < line.length() && line.at(end) == line.at(start))
-            return SyntaxBlock(this, flavor, start, end+1, SyntaxShift::skip);
+    if ((flavor & flavorQuotePart) == 0) {
+        if (start < line.length() && mDelimiters.indexOf(line.at(start)) > 0) {
+            // starting part, remember flavor
+            flavor += mDelimiters.indexOf(line.at(start));
+        } else
+            return SyntaxBlock(this);
     }
+    while (++end < line.length() && line.at(end) != mDelimiters.at(flavor & flavorQuotePart))
+        ;
+    if (end < line.length()) {
+        if (entryKind == SyntaxKind::String) {
+            if (line.at(end) == mDelimiters.at(flavor & flavorQuotePart))
+                return SyntaxBlock(this, 0, start, end+1, SyntaxShift::out);
+        } else {
+            if (line.at(end) == mDelimiters.at(flavor & flavorQuotePart))
+                return SyntaxBlock(this, 0, start, end+1, SyntaxShift::skip);
+        }
+    }
+
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxString::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxQuoted::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     Q_UNUSED(line)
     Q_UNUSED(index)

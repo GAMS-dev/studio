@@ -31,14 +31,15 @@ bool cmpStr(const QPair<QString, QString>& lhs,const QPair<QString, QString>& rh
     return lhs.first.compare(rhs.first, Qt::CaseInsensitive) < 0;
 }
 
-DictList::DictList(QList<QPair<QString, QString> > list) : mEntries(QVector<DictEntry*>(list.size())), mEqualStart(QVector<int>(list.size()))
+DictList::DictList(QList<QPair<QString, QString> > list, const QString &prefix)
+    : mEntries(QVector<DictEntry*>(list.size())), mEqualStart(QVector<int>(list.size()))
 {
     std::sort(list.begin(), list.end(), cmpStr);
     QString prevS;
     mEntries.reserve(list.size());
     mEqualStart.reserve(list.size());
     for (int i = 0; i < list.size(); ++i) {
-        const QString &s(list.at(i).first);
+        const QString &s( prefix.isNull() ? list.at(i).first : prefix + list.at(i).first);
         mEntries[i] = new DictEntry(s);
         mEqualStart[i] = equalStart(s, prevS);
         prevS = s;
@@ -48,7 +49,7 @@ DictList::DictList(QList<QPair<QString, QString> > list) : mEntries(QVector<Dict
 SyntaxKeywordBase::~SyntaxKeywordBase()
 {
     while (!mKeywords.isEmpty())
-        delete mKeywords.take(int(mKeywords.keys().first()));
+        delete mKeywords.take(mKeywords.begin().key());
 }
 
 SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, int flavor, bool &hasContent)
@@ -59,10 +60,10 @@ SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, int fla
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
-QStringList SyntaxKeywordBase::swapStringCase(QStringList list)
+QStringList SyntaxKeywordBase::swapStringCase(const QStringList &list)
 {
     QStringList res;
-    for (QString s: list) {
+    for (const QString &s: list) {
         QString swapped("");
         for (QChar c: s) {
             swapped += (c.isUpper() ? c.toLower() : c.toUpper());
@@ -78,7 +79,7 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
     int iChar = 0;
     while (true) {
         const DictEntry *dEntry = &mKeywords.value(int(kind))->at(iKey);
-        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index))) {
+        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index), mExtraKeywordChars)) {
             if (dEntry->length() > iChar) return -1;
             return iChar+index; // reached an valid end
         } else if (iChar < dEntry->length() &&  dEntry->is(line.at(iChar+index), iChar) ) {
@@ -138,11 +139,13 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
 
         // search for kind-valid declaration keyword
         end = findEnd(entryKind, line, start, iKey);
-        if (end > start) return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, SyntaxShift::shift);
+        if (entryKind != SyntaxKind::DeclarationSetType)
+            flavor = flavor | mFlavors.value(iKey);
+        if (end > start) return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
 
         // search for invalid new declaration keyword
         end = findEnd(kind(), line, start, iKey);
-        if (end > start) return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
+        if (end > start) return SyntaxBlock(this, flavor, start, end, true, SyntaxShift::reset);
 
         return SyntaxBlock(this);
     }
@@ -151,6 +154,7 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, int flavor, cons
     if (end > start) {
         if (entryKind == SyntaxKind::Declaration) {
             if (flavor & flavorPreTable && mFlavors.value(iKey) == flavorTable) {
+                flavor -= flavorPreTable;
                 return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::shift, kind());
             }
             return SyntaxBlock(this, (flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
@@ -204,6 +208,7 @@ SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, int flavor, c
 
 SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
+    // TODO(JM) check if other specialized reserved-types beneath solve need to be added here
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
               << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::Dco << SyntaxKind::Declaration
@@ -215,16 +220,20 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
         mSubKinds << SyntaxKind::Formula;
         break;
     case SyntaxKind::Solve:
-        list = QList<QPair<QString, QString>> {{"solve",""}};
+        list = SyntaxData::keySolve();
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
         break;
     case SyntaxKind::Option:
-        list = QList<QPair<QString, QString>> {{"option",""}, {"options",""}};
+        list = SyntaxData::keyOption();
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         break;
     case SyntaxKind::Execute:
-        list = QList<QPair<QString, QString>> {{"execute",""}};
+        list = SyntaxData::keyExecute();
         mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        break;
+    case SyntaxKind::Put:
+        list = SyntaxData::keyPut();
+        mSubKinds << SyntaxKind::PutFormula;
         break;
     default:
         Q_ASSERT_X(false, "SyntaxReserved", ("Invalid SyntaxKind: "+syntaxKindName(kind)).toLatin1());
@@ -249,10 +258,13 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
         case SyntaxKind::Option:
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
+        case SyntaxKind::Put:
+            return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
         case SyntaxKind::Execute: {
+            // TODO(JM) open this. Don't force SyntaxKind::ExecuteKey or SyntaxKind::ExecuteBody here!
             if (end==line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteKey);
-        }
+        } break;
         default:
             break;
         }
@@ -382,6 +394,111 @@ SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, int flavo
         return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
     }
     return SyntaxKeywordBase::validTail(line, index, flavor, hasContent);
+}
+
+AssignmentSystemData::AssignmentSystemData(SharedSyntaxData *sharedData)
+    : SyntaxKeywordBase(SyntaxKind::AssignmentSystemData, sharedData)
+{
+    mSubKinds << SyntaxKind::Dco << SyntaxKind::CommentLine
+              << SyntaxKind::CommentEndline << SyntaxKind::CommentInline;
+    mSubKinds << SyntaxKind::IdentifierAssignmentEnd << SyntaxKind::IdentifierAssignment
+              << SyntaxKind::AssignmentLabel << SyntaxKind::AssignmentValue;
+    QList<QPair<QString, QString>> list = SyntaxData::systemData();
+    mKeywords.insert(int(SyntaxKind::AssignmentSystemData), new DictList(list));
+}
+
+SyntaxBlock AssignmentSystemData::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+{
+    // TODO(JM) check for which flavors this is valid
+    Q_UNUSED(entryKind)
+    const QString sys("system.");
+    int start = index;
+    while (isWhitechar(line, start))
+        ++start;
+    // allways starts with "system."
+    if (line.length() < start+sys.length())
+        return SyntaxBlock(this);
+    for (int i = 0; i < sys.length(); ++i) {
+        if (sys.at(i) != line.at(start+i).toLower())
+            return SyntaxBlock(this);
+    }
+    start += sys.length();
+    // look for system-data keyword
+    int iKey;
+    int end = findEnd(kind(), line, start, iKey);
+    if (end > start) {
+        if (flavor & flavorBindLabel)
+            flavor -= flavorBindLabel;
+        return SyntaxBlock(this, flavor, index, end, false, SyntaxShift::shift, kind());
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, int flavor, bool &hasContent)
+{
+    Q_UNUSED(line)
+    Q_UNUSED(index)
+    Q_UNUSED(flavor)
+    Q_UNUSED(hasContent)
+    return SyntaxBlock(this);
+}
+
+SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
+{
+    QList<QPair<QString, QString>> list;
+    list = SyntaxData::systemAttributes();
+    list.append(SyntaxData::modelTypes());
+    if (kind == SyntaxKind::SystemRunAttrib) {
+        mKeywords.insert(int(kind), new DictList(list, QStringLiteral(u"system.")));
+    } else if (kind == SyntaxKind::SystemCompileAttrib) {
+        setExtraKeywordChars("._ ");
+        QList<QPair<QString, QString>> list2;
+        for (const QPair<QString, QString> &entry : qAsConst(list)) {
+            list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
+        }
+        QHash<QString, QString> descript;
+        for (const QPair<QString, QString> &entry : SyntaxData::systemCTConstText())
+            descript.insert(entry.first, entry.second);
+        for (const QPair<QString, int> &entry : SyntaxData::systemCTConstants()) {
+            QString key = entry.first.left(entry.first.indexOf('.'));
+            list2.append(QPair<QString, QString>(entry.first, descript.value(key) + ": " + QString::number(entry.second)));
+        }
+        mKeywords.insert(int(kind), new DictList(list2));
+    } else {
+        Q_ASSERT_X(false, "SyntaxSimpleKeyword", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
+    }
+}
+
+SyntaxBlock SyntaxSimpleKeyword::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+{
+    Q_UNUSED(entryKind)
+    int start = index;
+    int iKey;
+    if (kind() == SyntaxKind::SystemCompileAttrib) {
+        if (start+1 >= line.length() || line.at(start) != '%')
+            return SyntaxBlock(this);
+        ++start;
+    }
+    int end = findEnd(kind(), line, start, iKey, true);
+    if (end > start) {
+        if (kind() == SyntaxKind::SystemCompileAttrib) {
+            if (end >= line.length() || line.at(end) != '%')
+                return SyntaxBlock(this);
+            --start;
+            ++end;
+        }
+        return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::skip);
+    }
+    return SyntaxBlock(this);
+}
+
+SyntaxBlock SyntaxSimpleKeyword::validTail(const QString &line, int index, int flavor, bool &hasContent)
+{
+    Q_UNUSED(line)
+    Q_UNUSED(index)
+    Q_UNUSED(flavor)
+    Q_UNUSED(hasContent)
+    return SyntaxBlock(this);
 }
 
 

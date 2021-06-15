@@ -38,13 +38,16 @@ Q_NAMESPACE
 enum class SyntaxKind {
     Standard,
     Dco,
-    DcoBody,                        // text following the DCO
-    DcoComment,                     // a DCO body formatted as comment
-    Title,                          // a DCO body formatted as title
+    DcoBody,                            // text following the DCO
+    DcoComment,                         // a DCO body formatted as comment
+    Title,                              // a DCO body formatted as title
     String,
     Formula,
     Assignment,
     SubDCO,
+    UserCompileAttrib,
+    SystemCompileAttrib,
+    SystemRunAttrib,
 
     CommentLine,
     CommentBlock,
@@ -55,23 +58,24 @@ enum class SyntaxKind {
 
     Semicolon,
     CommaIdent,
-    DeclarationSetType,             // must be followed by Declaration
-    DeclarationVariableType,        // must be followed by Declaration
-    Declaration,                    // uses flavor bits > 1
+    DeclarationSetType,                 // must be followed by Declaration
+    DeclarationVariableType,            // must be followed by Declaration
+    Declaration,                        // uses flavor bits > 1
 
     Identifier,
-    IdentifierDim,                  // dimension started with '(' or '[' - uses flavor bit 1
-    IdentifierDimEnd,               // dimension end with ')' or ']' - uses flavor bit 1
+    IdentifierDim,                      // dimension started with '(' or '[' - uses flavor bit 1
+    IdentifierDimEnd,                   // dimension end with ')' or ']' - uses flavor bit 1
     IdentifierDescription,
 
     IdentifierAssignment,
     AssignmentLabel,
     AssignmentValue,
-    IdentifierAssignmentEnd,        // after assignment to keep declaration-level
+    AssignmentSystemData,
+    IdentifierAssignmentEnd,            // after assignment to keep declaration-level
 
     IdentifierTableAssignmentColHead,
     IdentifierTableAssignmentRowHead,
-    IdentifierTableAssignmentRow,   // after assignment to keep declaration-level
+    IdentifierTableAssignmentRow,       // after assignment to keep declaration-level
 
     Embedded,
     EmbeddedBody,
@@ -86,6 +90,8 @@ enum class SyntaxKind {
     Execute,
     ExecuteBody,
     ExecuteKey,
+    Put,
+    PutFormula,                         // Formula that allows SystemRunAttrib
 
     KindCount
 };
@@ -94,12 +100,20 @@ Q_ENUM_NS(SyntaxKind);
 //inline QTextStream &operator <<(QTextStream &steam, SyntaxKind key) noexcept { return steam << QVariant::fromValue(key).toString(); }
 
 QString syntaxKindName(SyntaxKind kind);
+QString syntaxKindName(int kind);
 
+// TODO(JM) this needs to be more compact, drag disjunct parts to multi-bit regions together:
+//          - check if Table, Model, and preTable can be joined (like done with flavorQuotePart)
 enum FlavorFlag {
-    flavorBrace = 1,
-    flavorTable = 2,
-    flavorModel = 4,
-    flavorPreTable = 8,
+    flavorQuote1 = 1,       // in AssignmentLabel and AssignmentValue
+    flavorQuote2 = 2,       // in AssignmentLabel and AssignmentValue
+    flavorBrace = 3,        // only in SyntaxIdentifierDim
+    flavorQuotePart = 3,
+
+    flavorTable = 4,
+    flavorModel = 8,
+    flavorPreTable = 16,
+    flavorBindLabel = 32,
 };
 
 enum class SyntaxShift {
@@ -159,7 +173,7 @@ public:
     void addFormula(SyntaxFormula* syntax) { if (syntax) mSubFormula << syntax; }
     void registerCommentEndLine(SyntaxCommentEndline * syntax) { if (syntax) mCommentEndline = syntax; }
     void registerDcoBody(SyntaxDcoBody * syntax) { if (syntax) mDcoBody = syntax; }
-    bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 4; }
+    bool isValid() { return mCommentEndline && mDcoBody && mSubFormula.size() == 5; }
     const QVector<SyntaxFormula*> allFormula() { return mSubFormula; }
     SyntaxCommentEndline *commentEndLine() { return mCommentEndline; }
     SyntaxDcoBody *dcoBody() { return mDcoBody; }
@@ -172,6 +186,7 @@ public:
     SyntaxAbstract(SyntaxKind kind, SharedSyntaxData* sharedData) : mKind(kind), mSharedData(sharedData) {}
     virtual ~SyntaxAbstract() {}
     SyntaxKind kind() const { return mKind; }
+    QString name() const { return syntaxKindName(mKind); }
     void assignColorSlot(Theme::ColorSlot slot);
     Theme::ColorSlot colorSlot() const { return mColorSlot; }
 
@@ -180,7 +195,7 @@ public:
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) = 0;
-    virtual SyntaxTransitions nextKinds(bool emptyLine = false);
+    virtual const SyntaxTransitions nextKinds(bool emptyLine = false);
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual int maxNesting() { return 0; }
@@ -193,17 +208,18 @@ public:
 protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
+    enum CharClass {ccOther, ccSpecial, ccAlpha};
     inline int charClass(QChar ch, int &prev, QVector<QChar> moreSpecialChars = QVector<QChar>()) {
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
         if (ch < '"' || ch > 'z')
-            prev = 0;
+            prev = ccOther;
         else if (ch >= 'a' || (ch >= 'A' && ch <= 'Z') || ch == '_')
-            prev = 2;  // break by keyword kind
+            prev = ccAlpha;  // break by keyword kind
         else if (ch >= '0' && ch <= '9') {
-            if (prev != 2) prev = 0;
+            if (prev != ccAlpha) prev = ccOther;
         } else {
-            prev = (cSpecialCharacters.contains(ch) || moreSpecialChars.contains(ch)) ? 1 : 0;
+            prev = (cSpecialCharacters.contains(ch) || moreSpecialChars.contains(ch)) ? ccSpecial : ccOther;
         }
         return prev;
     }
@@ -211,8 +227,8 @@ protected:
     int endOfQuotes(const QString &line, const int &start);
     int endOfParentheses(const QString &line, const int &start, const QString &validPairs, int &nest);
 
-    inline bool isKeywordChar(const QChar& ch) {
-        return (ch.isLetterOrNumber() || ch == '_' || ch == '.');
+    inline bool isKeywordChar(const QChar& ch, const QString &extraChars = QString()) {
+        return (ch.isLetterOrNumber() || extraChars.contains(ch));
     }
     inline bool isKeywordChar(const QString& line, int index) {
         if (index >= line.length()) return false;
@@ -337,10 +353,11 @@ public:
     void setSpecialDynamicChars(QVector<QChar> chars);
 };
 
-class SyntaxString : public SyntaxAbstract
+class SyntaxQuoted : public SyntaxAbstract
 {
+    QString mDelimiters;
 public:
-    SyntaxString(SharedSyntaxData* sharedData);
+    SyntaxQuoted(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
