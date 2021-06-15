@@ -40,6 +40,8 @@ public:
     EngineProcess(QObject *parent = nullptr);
     ~EngineProcess() override;
 
+    static void startupInit();
+
     void execute() override;
     void interrupt() override;
     void terminate() override;

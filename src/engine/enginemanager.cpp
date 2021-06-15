@@ -33,6 +33,8 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+bool EngineManager::mStartupDone = false;
+
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
       mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
@@ -64,7 +66,8 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString ) {
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
+        DEB() << "ERR: " << e << "  STR: " << s;
         emit reVersionError(worker->error_str);
     });
 
@@ -130,6 +133,15 @@ EngineManager::~EngineManager()
     mJobsApi->deleteLater();
 }
 
+void EngineManager::startupInit()
+{
+    if (!mStartupDone) {
+        OAIHttpRequestWorker::sslDefaultConfiguration = new QSslConfiguration();
+
+        mStartupDone = true;
+    }
+}
+
 void EngineManager::setWorkingDirectory(const QString &dir)
 {
     mJobsApi->setWorkingDirectory(dir);
@@ -137,6 +149,9 @@ void EngineManager::setWorkingDirectory(const QString &dir)
 
 void EngineManager::setUrl(const QString &url)
 {
+    QUrl _url(url);
+    DEB() << "EngineManager::setUrl: " << url << " -> " << _url.toString();
+
     mJobsApi->setNewServerForAllOperations(url);
     mDefaultApi->setNewServerForAllOperations(url);
 }

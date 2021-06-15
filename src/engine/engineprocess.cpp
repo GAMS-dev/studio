@@ -63,6 +63,11 @@ EngineProcess::~EngineProcess()
     delete mManager;
 }
 
+void EngineProcess::startupInit()
+{
+    EngineManager::startupInit();
+}
+
 void EngineProcess::execute()
 {
     QStringList params = compileParameters();
@@ -303,7 +308,7 @@ bool EngineProcess::setUrl(const QString &url)
 
     QString port = "443";
     if (sp3 > 0) {
-        port = host.right(host.length()-sp3);
+        port = host.right(host.length()-sp3-1);
         host = host.left(sp3);
     }
 

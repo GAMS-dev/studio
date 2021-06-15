@@ -51,6 +51,8 @@ public:
 public:
     EngineManager(QObject *parent = nullptr);
     ~EngineManager() override;
+    static void startupInit();
+
     void setWorkingDirectory(const QString &dir);
     void setUrl(const QString &url);
     void setIgnoreSslErrors();
@@ -102,6 +104,7 @@ private:
     int mJobNumber = 0;
     QString mToken;
     bool mQueueFinished = false;
+    static bool mStartupDone;
 };
 
 } // namespace engine
