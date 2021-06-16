@@ -364,7 +364,7 @@ bool EngineStartDialog::fetchNextUrl()
         DEB() << "ucApiHttp> " << mUrl;
         return true;
     }
-    // then check for the protokol
+    // then check for the protocol
     if (mUrlChecks.testFlag(ucHttps)) {
         mUrl = "https" + mUrl.mid(mUrl.indexOf(':'), mUrl.length());
         mUrlChecks.setFlag(ucHttps, false);
