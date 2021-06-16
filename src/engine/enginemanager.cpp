@@ -39,8 +39,6 @@ EngineManager::EngineManager(QObject* parent)
     : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
       mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
 {
-//    mAuthApi->setScheme("https");
-//    mAuthApi->setPort(443);
 //    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal, this,
 //            [this](OAIModel_auth_token summary) {
 //        emit reAuth(summary.getToken());
@@ -52,8 +50,6 @@ EngineManager::EngineManager(QObject* parent)
 
 
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
-//    mDefaultApi->setScheme("https");
-//    mDefaultApi->setPort(443);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
             [this](OAIHttpRequestWorker *worker) {
@@ -66,8 +62,8 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
-        DEB() << "ERR: " << e << "  STR: " << s;
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString ) {
+//        DEB() << "ERR: " << e << "  STR: " << s;
         emit reVersionError(worker->error_str);
     });
 
@@ -149,11 +145,9 @@ void EngineManager::setWorkingDirectory(const QString &dir)
 
 void EngineManager::setUrl(const QString &url)
 {
-    QUrl _url(url);
-    DEB() << "EngineManager::setUrl: " << url << " -> " << _url.toString();
-
-    mJobsApi->setNewServerForAllOperations(url);
-    mDefaultApi->setNewServerForAllOperations(url);
+    mUrl = QUrl(url);
+    mDefaultApi->setNewServerForAllOperations(mUrl);
+    mJobsApi->setNewServerForAllOperations(mUrl);
 }
 
 void EngineManager::setIgnoreSslErrors()

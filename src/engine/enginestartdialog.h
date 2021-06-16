@@ -46,6 +46,10 @@ enum ServerConnectionState {
 class EngineStartDialog : public QDialog
 {
     Q_OBJECT
+public:
+    enum UrlCheck { ucNone = 0x00, ucHttps = 0x01, ucHttp = 0x02, ucApiHttps = 0x04, ucApiHttp = 0x08, ucAll = 0x0F };
+    Q_DECLARE_FLAGS(UrlChecks, UrlCheck)
+    Q_FLAG(UrlChecks)
 
 public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
@@ -77,6 +81,8 @@ protected:
     QString ensureApi(const QString &url) const;
     void setCanStart(bool valid);
     void setConnectionState(ServerConnectionState state);
+    void initUrlAndChecks(QString url);
+    bool fetchNextUrl();
 
 private slots:
     void urlEdited(const QString &text);
@@ -94,6 +100,7 @@ private:
     ServerConnectionState mConnectState = scsNone;
     QString mUrl;
     QString mValidUrl;
+    UrlChecks mUrlChecks;
 //    bool mPendingRequest = false;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;

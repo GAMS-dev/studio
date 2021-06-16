@@ -306,7 +306,7 @@ bool EngineProcess::setUrl(const QString &url)
     QString host = url.mid(sp1, sp2-sp1);
     int sp3 = host.indexOf(':');
 
-    QString port = "443";
+    QString port = scheme.compare("https", Qt::CaseInsensitive)==0 ? "443" : "80";
     if (sp3 > 0) {
         port = host.right(host.length()-sp3-1);
         host = host.left(sp3);
@@ -316,7 +316,12 @@ bool EngineProcess::setUrl(const QString &url)
 
     QString completeUrl = scheme+"://"+host+":"+port+basePath;
     mManager->setUrl(completeUrl);
-    return true;
+    return mManager->url().isValid();
+}
+
+QUrl EngineProcess::url()
+{
+    return mManager->url();
 }
 
 void EngineProcess::authenticate(const QString &username, const QString &password)

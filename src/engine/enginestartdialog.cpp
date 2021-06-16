@@ -22,6 +22,7 @@
 #include "engineprocess.h"
 #include <QPushButton>
 #include <QEvent>
+#include <QUrl>
 
 namespace gams {
 namespace studio {
@@ -134,9 +135,8 @@ void EngineStartDialog::setEngineVersion(QString version)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
-        ui->edUrl->setText(mUrl.trimmed());
-    }
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
+        ui->edUrl->setText(mUrl);
     return QDialog::eventFilter(watched, event);
 }
 
@@ -171,7 +171,7 @@ void EngineStartDialog::getVersion()
 {
     setConnectionState(scsWaiting);
     if (mProc) {
-        if (mProc->setUrl(mUrl.trimmed())) {
+        if (mProc->setUrl(mUrl)) {
             mUrlChanged = false;
             mProc->getVersions();
         } else {
@@ -207,9 +207,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
-    mUrlChanged = true;
-    mValidUrl = QString();
-    mUrl = text;
+    initUrlAndChecks(text);
     getVersion();
 }
 
@@ -232,10 +230,9 @@ void EngineStartDialog::btAlwaysClicked()
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
 {
-//    mPendingRequest = false;
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
-    mValidUrl = mUrl;
+    mValidUrl = mProc->url().toString();
     setConnectionState(scsValid);
 }
 
@@ -243,18 +240,17 @@ void EngineStartDialog::reVersionError(const QString &errorText)
 {
     if (!mValidUrl.isEmpty()) return;
     Q_UNUSED(errorText)
-//    mPendingRequest = false;
+
     if (mUrlChanged) {
         getVersion();
         return;
     }
     // if the raw input failed, try with "/api"
-    if (mUrl == ui->edUrl->text()) {
-        mUrl = ensureApi(mUrl.trimmed());
+    if (fetchNextUrl()) {
         getVersion();
         return;
     }
-    // neither user-input nor user-input with "/api" is valid, so reset mUrl to user-input
+    // neither user-input nor user-input with modifications is valid, so reset mUrl to user-input
     setConnectionState(scsInvalid);
     if (mUrl != mValidUrl)
         mUrl = ui->edUrl->text();
@@ -330,6 +326,58 @@ void EngineStartDialog::updateConnectStateAppearance()
         setCanStart(false);
     } break;
     }
+}
+
+void EngineStartDialog::initUrlAndChecks(QString url)
+{
+    mUrlChanged = true;
+    mValidUrl = QString();
+    mUrl = url.trimmed();
+    mUrlChecks = ucAll;
+    if (!mUrl.endsWith('/'))
+            mUrl += '/';
+    if (mUrl.endsWith("/api/", Qt::CaseInsensitive)) {
+        mUrlChecks.setFlag(ucApiHttps, false);
+        mUrlChecks.setFlag(ucApiHttp, false);
+    }
+    if (mUrl.startsWith("http://", Qt::CaseInsensitive)) {
+        mUrlChecks.setFlag(ucHttp, false);
+    } else {
+        if (!mUrl.startsWith("https://", Qt::CaseInsensitive))
+            mUrl = "https://" + mUrl;
+        mUrlChecks.setFlag(ucHttps, false);
+    }
+}
+
+bool EngineStartDialog::fetchNextUrl()
+{
+    // first check for a missing "api/"
+    if (!mUrlChecks.testFlag(ucHttps) && mUrlChecks.testFlag(ucApiHttps)) {
+        mUrl += "api/";
+        mUrlChecks.setFlag(ucApiHttps, false);
+        DEB() << "ucApiHttps> " << mUrl;
+        return true;
+    }
+    if (!mUrlChecks.testFlag(ucHttp) && mUrlChecks.testFlag(ucApiHttp)) {
+        mUrl += "api/";
+        mUrlChecks.setFlag(ucApiHttp, false);
+        DEB() << "ucApiHttp> " << mUrl;
+        return true;
+    }
+    // then check for the protokol
+    if (mUrlChecks.testFlag(ucHttps)) {
+        mUrl = "https" + mUrl.mid(mUrl.indexOf(':'), mUrl.length());
+        mUrlChecks.setFlag(ucHttps, false);
+        DEB() << "ucHttps> " << mUrl;
+        return true;
+    }
+    if (mUrlChecks.testFlag(ucHttp)) {
+        mUrl = "http" + mUrl.mid(mUrl.indexOf(':'), mUrl.length());
+        mUrlChecks.setFlag(ucHttp, false);
+        DEB() << "ucHttp> " << mUrl;
+        return true;
+    }
+    return false;
 }
 
 } // namespace engine

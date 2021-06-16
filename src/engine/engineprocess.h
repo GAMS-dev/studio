@@ -51,6 +51,7 @@ public:
     bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
+    QUrl url();
     void authenticate(const QString &username, const QString &password);
     void authenticate(const QString &bearerToken);
     void setNamespace(const QString &nSpace);

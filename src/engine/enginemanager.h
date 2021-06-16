@@ -55,6 +55,7 @@ public:
 
     void setWorkingDirectory(const QString &dir);
     void setUrl(const QString &url);
+    QUrl url() { return mUrl; }
     void setIgnoreSslErrors();
     bool ignoreSslErrors();
     QString getToken() const;
@@ -98,6 +99,7 @@ private:
 
 private:
 //    OpenAPI::OAIAuthApi *mAuthApi;
+    QUrl mUrl;
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
     QNetworkAccessManager *mNetworkManager;
