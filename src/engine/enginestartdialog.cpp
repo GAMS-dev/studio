@@ -39,6 +39,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
+    ui->cbAcceptCert->setVisible(false);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
     ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
@@ -51,6 +52,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::CertAcceptChanged);
+
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
@@ -81,6 +84,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc = process;
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
     urlEdited(ui->edUrl->text());
 }
@@ -88,6 +92,18 @@ void EngineStartDialog::setProcess(EngineProcess *process)
 EngineProcess *EngineStartDialog::process() const
 {
     return mProc;
+}
+
+void EngineStartDialog::setAcceptCert()
+{
+    if (!ui->cbAcceptCert->isVisible())
+        ui->cbAcceptCert->setVisible(true);
+    ui->cbAcceptCert->setChecked(true);
+}
+
+bool EngineStartDialog::isCertAccepted()
+{
+    return ui->cbAcceptCert->isChecked();
 }
 
 QString EngineStartDialog::url() const
@@ -135,8 +151,20 @@ void EngineStartDialog::setEngineVersion(QString version)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
-        ui->edUrl->setText(mUrl);
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
+        QString url = mUrl;
+        // strip off defaults
+        if (url.startsWith("https://", Qt::CaseInsensitive))
+            url = url.right(url.length()-8);
+        if (url.startsWith("http://", Qt::CaseInsensitive)) {
+            if (url.contains(":80/"))
+                url.replace(":80/", "/");
+        } else {
+            if (url.contains(":443/"))
+                url.replace(":443/", "/");
+        }
+        ui->edUrl->setText(url);
+    }
     return QDialog::eventFilter(watched, event);
 }
 
@@ -172,6 +200,7 @@ void EngineStartDialog::getVersion()
     setConnectionState(scsWaiting);
     if (mProc) {
         if (mProc->setUrl(mUrl)) {
+            DEB() << "REQUEST: " << mUrl;
             mUrlChanged = false;
             mProc->getVersions();
         } else {
@@ -192,7 +221,8 @@ void EngineStartDialog::setCanStart(bool canStart)
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
     canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
+            && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (canStart != bOk->isEnabled())
         bOk->setEnabled(canStart);
     if (canStart != ui->bAlways->isEnabled())
@@ -203,6 +233,13 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 {
     mConnectState = state;
     mConnectStateUpdater.start();
+}
+
+void EngineStartDialog::CertAcceptChanged()
+{
+    mProc->abortRequests();
+    mProc->setIgnoreSslErrors(ui->cbAcceptCert->isChecked());
+    urlEdited(ui->edUrl->text());
 }
 
 void EngineStartDialog::urlEdited(const QString &text)
@@ -233,6 +270,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
     mValidUrl = mProc->url().toString();
+    mUrlChecks = ucNone;
     setConnectionState(scsValid);
 }
 
@@ -259,6 +297,11 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     if (!isVisible() && mHiddenCheck) {
         open();
     }
+}
+
+void EngineStartDialog::selfSignedCertFound()
+{
+    ui->cbAcceptCert->setVisible(true);
 }
 
 void EngineStartDialog::forceGdxStateChanged(int state)
@@ -318,10 +361,17 @@ void EngineStartDialog::updateConnectStateAppearance()
         setCanStart(true);
     } break;
     case scsInvalid: {
-        ui->laEngGamsVersion->setText("");
-        ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("No GAMS Engine server");
-        ui->laWarn->setToolTip("");
+        if (ui->cbAcceptCert->isVisible()) {
+            ui->laEngGamsVersion->setText("");
+            ui->laEngineVersion->setText(CUnavailable);
+            ui->laWarn->setText("Self-signed certificate found");
+            ui->laWarn->setToolTip("Use checkbox below to connect anyway");
+        } else {
+            ui->laEngGamsVersion->setText("");
+            ui->laEngineVersion->setText(CUnavailable);
+            ui->laWarn->setText("No GAMS Engine server");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanStart(false);
     } break;
@@ -341,6 +391,8 @@ void EngineStartDialog::initUrlAndChecks(QString url)
         mUrlChecks.setFlag(ucApiHttp, false);
     }
     if (mUrl.startsWith("http://", Qt::CaseInsensitive)) {
+        if (mUrl.contains(":443/"))
+            mUrl = mUrl.replace(":443/", "/");
         mUrlChecks.setFlag(ucHttp, false);
     } else {
         if (!mUrl.startsWith("https://", Qt::CaseInsensitive))
@@ -355,26 +407,24 @@ bool EngineStartDialog::fetchNextUrl()
     if (!mUrlChecks.testFlag(ucHttps) && mUrlChecks.testFlag(ucApiHttps)) {
         mUrl += "api/";
         mUrlChecks.setFlag(ucApiHttps, false);
-        DEB() << "ucApiHttps> " << mUrl;
         return true;
     }
     if (!mUrlChecks.testFlag(ucHttp) && mUrlChecks.testFlag(ucApiHttp)) {
         mUrl += "api/";
         mUrlChecks.setFlag(ucApiHttp, false);
-        DEB() << "ucApiHttp> " << mUrl;
         return true;
     }
     // then check for the protocol
     if (mUrlChecks.testFlag(ucHttps)) {
-        mUrl = "https" + mUrl.mid(mUrl.indexOf(':'), mUrl.length());
+        mUrl = "https" + mUrl.mid(mUrl.indexOf("://"), mUrl.length());
         mUrlChecks.setFlag(ucHttps, false);
-        DEB() << "ucHttps> " << mUrl;
         return true;
     }
     if (mUrlChecks.testFlag(ucHttp)) {
-        mUrl = "http" + mUrl.mid(mUrl.indexOf(':'), mUrl.length());
+        mUrl = "http" + mUrl.mid(mUrl.indexOf("://"), mUrl.length());
+        if (mUrl.contains(":443/"))
+            mUrl.replace(":443/", "/");
         mUrlChecks.setFlag(ucHttp, false);
-        DEB() << "ucHttp> " << mUrl;
         return true;
     }
     return false;

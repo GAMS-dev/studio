@@ -24,6 +24,7 @@
 #include <QString>
 #include <iostream>
 #include <QFile>
+#include <QSslConfiguration>
 
 #include "networkmanager.h"
 
@@ -34,6 +35,8 @@ namespace studio {
 namespace engine {
 
 bool EngineManager::mStartupDone = false;
+QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOn;
+QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOff;
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
@@ -62,11 +65,11 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString ) {
-//        DEB() << "ERR: " << e << "  STR: " << s;
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
         emit reVersionError(worker->error_str);
     });
 
+    connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
 
     mJobsApi->setNetworkAccessManager(mNetworkManager);
 //    mJobsApi->setScheme("https");
@@ -118,7 +121,9 @@ EngineManager::EngineManager(QObject* parent)
 
     });
 
-    connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
+    connect(mJobsApi, &OAIJobsApi::allPendingRequestsCompleted, this, [this]() {
+        emit allPendingRequestsCompleted();
+    });
     connect(this, &EngineManager::syncKillJob, this, &EngineManager::killJob, Qt::QueuedConnection);
 
 }
@@ -132,8 +137,8 @@ EngineManager::~EngineManager()
 void EngineManager::startupInit()
 {
     if (!mStartupDone) {
-        OAIHttpRequestWorker::sslDefaultConfiguration = new QSslConfiguration();
-
+        mSslConfigurationIgnoreErrOn.setPeerVerifyMode(QSslSocket::VerifyNone);
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
         mStartupDone = true;
     }
 }
@@ -150,8 +155,17 @@ void EngineManager::setUrl(const QString &url)
     mJobsApi->setNewServerForAllOperations(mUrl);
 }
 
-void EngineManager::setIgnoreSslErrors()
+void EngineManager::setIgnoreSslErrors(bool ignore)
 {
+    if (ignore) {
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOn;
+        mDefaultApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
+        mJobsApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
+    } else {
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+        mDefaultApi->setNetworkAccessManager(NetworkManager::manager());
+        mJobsApi->setNetworkAccessManager(NetworkManager::manager());
+    }
 }
 
 bool EngineManager::ignoreSslErrors()
@@ -230,11 +244,6 @@ void EngineManager::debugReceived(QString name, QVariant data)
     qDebug() << "\nResult from " << name << ":\n" << data;
 }
 
-void EngineManager::abortRequestsSignal()
-{
-
-}
-
 bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams) const
 {
     QJsonDocument jDoc = QJsonDocument::fromJson(json);
@@ -258,6 +267,7 @@ void EngineManager::setToken(const QString &token)
 
 void EngineManager::abortRequests()
 {
+    mDefaultApi->abortRequests();
     mJobsApi->abortRequests();
 }
 

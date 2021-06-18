@@ -25,6 +25,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
+#include <QNetworkConfiguration>
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -52,6 +53,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
+    connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
@@ -200,13 +202,19 @@ void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatu
     completed(exitCode);
 }
 
-void EngineProcess::sslErrors(const QStringList &errors)
+void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
-    QString data("\n*** SSL errors:\n%1\n");
-    emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
-    if (mProcState == ProcCheck) {
-        emit sslValidation(errors.join("\n").toUtf8());
+    Q_UNUSED(reply)
+    QString data("\n*** SSL errors:\n");
+    bool isSelfSigned = false;
+    for (const QSslError &err : errors) {
+        data.append(QString(" [%1] %2\n").arg(err.error()).arg(err.errorString()));
+        if (err.error() == QSslError::SelfSignedCertificate || err.error() == QSslError::SelfSignedCertificateInChain)
+            isSelfSigned = true;
     }
+    emit newStdChannelData(data.toUtf8());
+    if (isSelfSigned)
+        emit sslSelfSigned();
 }
 
 void EngineProcess::parseUnZipStdOut(const QByteArray &data)
@@ -343,9 +351,9 @@ void EngineProcess::setNamespace(const QString &nSpace)
     mNamespace = nSpace;
 }
 
-void EngineProcess::setIgnoreSslErrors()
+void EngineProcess::setIgnoreSslErrors(bool ignore)
 {
-    mManager->setIgnoreSslErrors();
+    mManager->setIgnoreSslErrors(ignore);
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }

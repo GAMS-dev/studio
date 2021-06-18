@@ -58,6 +58,8 @@ public:
 
     void setProcess(EngineProcess *process);
     EngineProcess *process() const;
+    void setAcceptCert();
+    bool isCertAccepted();
     QString url() const;
     QString nSpace() const;
     QString user() const;
@@ -92,6 +94,8 @@ private slots:
     void reVersionError(const QString &errorText);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
+    void selfSignedCertFound();
+    void CertAcceptChanged();
 
 private:
     Ui::EngineStartDialog *ui;

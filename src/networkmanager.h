@@ -30,8 +30,12 @@ class NetworkManager
 {
     NetworkManager();
     static QNetworkAccessManager *mNetworkManager;
+    static QNetworkAccessManager *mOpenNetworkManager;
     static bool mLock;
 public:
+    ///
+    /// manager: manager to be used for all purposes except self-signed ssl-certificates (see
+    ///
     static QNetworkAccessManager *manager() {
         if (mLock)
             EXCEPT() << "NetworkManager already deleted";
@@ -40,9 +44,31 @@ public:
         }
         return mNetworkManager;
     }
+
+    ///
+    /// managerSelfCert: manager to be used for self-signed ssl-certificates. The peer mode of the  *QSslCertification*
+    /// should be set to *QSslSocket::VerifyNone* on the first connection
+    ///
+    static QNetworkAccessManager *managerSelfCert() {
+        if (mLock)
+            EXCEPT() << "NetworkManager already deleted";
+        if (!mOpenNetworkManager) {
+            mOpenNetworkManager = new QNetworkAccessManager();
+        }
+        return mOpenNetworkManager;
+    }
+
+    ///
+    /// cleanup: singleton-like: after cleanup the recreation of the manager is locked
+    ///
     static void cleanup() {
         if (mNetworkManager) {
             delete mNetworkManager;
+            mNetworkManager = nullptr;
+        }
+        if (mOpenNetworkManager) {
+            delete mOpenNetworkManager;
+            mOpenNetworkManager = nullptr;
         }
         mLock = true;
     }

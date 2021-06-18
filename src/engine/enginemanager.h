@@ -56,8 +56,9 @@ public:
     void setWorkingDirectory(const QString &dir);
     void setUrl(const QString &url);
     QUrl url() { return mUrl; }
-    void setIgnoreSslErrors();
+    void setIgnoreSslErrors(bool ignore);
     bool ignoreSslErrors();
+    void setSelfCert(const QSslCertificate &cert);
     QString getToken() const;
     void setToken(const QString &token);
     void abortRequests();
@@ -86,13 +87,13 @@ signals:
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
-    void sslErrors(const QStringList &errors);
+    void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
+    void allPendingRequestsCompleted();
 
 private slots:
     void killJob(bool hard);
     void debugReceived(QString name, QVariant data);
 
-    void abortRequestsSignal();
 
 private:
     bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
@@ -103,6 +104,8 @@ private:
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
     QNetworkAccessManager *mNetworkManager;
+    static QSslConfiguration mSslConfigurationIgnoreErrOn;
+    static QSslConfiguration mSslConfigurationIgnoreErrOff;
     int mJobNumber = 0;
     QString mToken;
     bool mQueueFinished = false;

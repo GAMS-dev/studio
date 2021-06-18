@@ -227,6 +227,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    engine::EngineProcess::startupInit();
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
@@ -3366,6 +3367,7 @@ void MainWindow::showEngineStartDialog()
     dialog->setProcess(createEngineProcess());
     connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
     dialog->setModal(true);
+    if (mEngineAcceptSelfCert) dialog->setAcceptCert();
 
     if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
         dialog->hiddenCheck();
@@ -3390,6 +3392,7 @@ void MainWindow::engineDialogDecision(bool start, bool always)
     } else {
         dialog->close();
     }
+    mEngineAcceptSelfCert = dialog->isCertAccepted();
     dialog->deleteLater();
 }
 
