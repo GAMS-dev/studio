@@ -4877,11 +4877,33 @@ void MainWindow::on_actionPrint_triggered()
     if (!enabledPrintAction()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget()) return;
+    int numberLines = 0;
+    if (TextView *tv = ViewHelper::toTextView(fm->editors().first())) {
+        if (tv->lineCount() == tv->knownLines()) numberLines = tv->lineCount();
+    } else {
+        numberLines = fm->document()->lineCount();
+    }
+    QMessageBox msgBox;
+    msgBox.setWindowTitle("Print large file?");
+    msgBox.setText("The file you intend to print contains " + QString::number(numberLines) + " lines. It might take several minutes to print. Are you sure you want to continue?");
+    msgBox.setStandardButtons(QMessageBox::Yes);
+    msgBox.addButton(QMessageBox::No);
+    msgBox.setDefaultButton(QMessageBox::No);
+
 #ifdef __APPLE__
     int ret = mPrintDialog->exec();
     if (ret == QDialog::Accepted)
+        if (numberLines>5000) {
+             int answer = msgBox.exec();
+             if (answer == QMessageBox::No)
+                 return;
+        }
         printDocument();
 #else
+    if (numberLines>5000) {
+        int answer = msgBox.exec();
+        if (answer == QMessageBox::No) return;
+    }
     mPrintDialog->open(this, SLOT(printDocument()));
 #endif
 }
