@@ -83,8 +83,15 @@ private:
     int mLastSyntaxKind = 0;
     int mLastFlavor = 0;
     QVector<SyntaxKind> mSingleLineKinds;
+    QVector<SyntaxKind> mPostKindBlocker;
+    QVector<SyntaxAbstract*> mPostSyntax;
     Kinds mKinds;
     CodeRelations mCodes;
+
+    static const QVector<SyntaxKind> cInvalidParenthesesSyntax;
+    static const QString cValidParentheses;
+    static const QString cSpecialBlocks;
+    static const QString cFlavorChars;
 };
 
 } // namespace syntax

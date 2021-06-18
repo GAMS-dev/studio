@@ -48,7 +48,7 @@ private:
 class DictList
 {
 public:
-    DictList(QList<QPair<QString, QString>> list);
+    DictList(QList<QPair<QString, QString>> list, const QString &prefix = QString());
     virtual ~DictList() { while (!mEntries.isEmpty()) delete mEntries.takeFirst(); }
     inline int equalToPrevious(int i) const { return mEqualStart.at(i); }
     inline const DictEntry &at(int i) const { return *mEntries.at(i); }
@@ -69,16 +69,20 @@ class SyntaxKeywordBase: public SyntaxAbstract
 
 public:
     ~SyntaxKeywordBase() override;
-    SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData) : SyntaxAbstract(kind, sharedData) {}
+    SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData)
+        : SyntaxAbstract(kind, sharedData), mExtraKeywordChars("._") {}
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 
 protected:
     int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
+    void setExtraKeywordChars(QString keywordChars) { mExtraKeywordChars = keywordChars; }
+
     QHash<int, DictList*> mKeywords;
     QHash<int, int> mFlavors;
+    QString mExtraKeywordChars;
 
 private:
-    inline QStringList swapStringCase(QStringList list);
+    inline QStringList swapStringCase(const QStringList &list);
 };
 
 class SyntaxDeclaration: public SyntaxKeywordBase
@@ -103,6 +107,14 @@ public:
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
 };
 
+class SyntaxSimpleKeyword: public SyntaxKeywordBase
+{
+public:
+    SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData* sharedData);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
 class SyntaxSubsetKey: public SyntaxKeywordBase
 {
     QVector<int> mOtherKey;
@@ -123,6 +135,14 @@ class SyntaxEmbeddedBody: public SyntaxAbstract
 {
 public:
     SyntaxEmbeddedBody(SharedSyntaxData* sharedData);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
+class AssignmentSystemData: public SyntaxKeywordBase
+{
+public:
+    AssignmentSystemData(SharedSyntaxData *sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

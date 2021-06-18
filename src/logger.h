@@ -98,7 +98,7 @@ public:
         }
         incDepth();
     }
-    ~Tracer() {
+    ~Tracer() override {
         decDepth();
         if (!mFunctionName.isEmpty())
             QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "OUT " << mFunctionName;

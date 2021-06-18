@@ -63,6 +63,11 @@ int SolverConfigInfo::solvers() const
     return cfgNumAlgs(mCFG);
 }
 
+int SolverConfigInfo::modelTypes() const
+{
+    return cfgProc_nrofmodeltypes;
+}
+
 int SolverConfigInfo::solverId(const QString &name) const
 {
     return cfgAlgNumber(mCFG, name.toStdString().c_str());
@@ -131,6 +136,13 @@ QMap<int, int> SolverConfigInfo::solverIndices()
     return indices;
 }
 
+QString SolverConfigInfo::modelTypeName(int id) const
+{
+    char modelType[GMS_SSSIZE];
+    cfgModelTypeName(mCFG, id, modelType);
+    return QString(modelType);
+}
+
 QMap<int, QString> SolverConfigInfo::modelTypeNames()
 {
     QMap<int, QString> modelTypes;
@@ -145,6 +157,17 @@ QMap<int, QString> SolverConfigInfo::modelTypeNames()
 bool SolverConfigInfo::solverCapability(int solver, int modelType) const
 {
     return cfgAlgCapability(mCFG, solver, modelType);
+}
+
+QStringList SolverConfigInfo::solversForModelType(int modelType) const
+{
+    QStringList solverList;
+    for (int i=1; i<=solvers(); ++i) {
+        if (cfgAlgCapability(mCFG, i, modelType) && !cfgAlgHidden(mCFG, i)) {
+            solverList << solverName(i);
+        }
+    }
+    return solverList;
 }
 
 QString SolverConfigInfo::solverCodes(int solverId) const

@@ -1,3 +1,11 @@
+Version 1.7.1  *
+==================
+- added a list of solvers for each model type to be select in extended parameter editor and configuration editor
+- added system attributes and compile-time constants to syntax highlighter and code completer
+- support of quoted elements in syntax highlighter
+- recognize disabled code blocks in code completer (like embeddedCode, $onEmbeddedCode, and $onPut)
+- added a warning message before printing large files
+
 Version 1.7.0
 ==================
 - allow specifying location of User Model Libraries in settings dialog
