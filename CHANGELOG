@@ -1,3 +1,8 @@
+Version 1.7.2  *
+==================
+- support GAMS Engine server with self-signed certificate
+- support GAMS Engine server with http protocol
+
 Version 1.7.1  *
 ==================
 - added a list of solvers for each model type to be select in extended parameter editor and configuration editor
