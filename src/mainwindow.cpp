@@ -4882,7 +4882,7 @@ void MainWindow::on_actionPrint_triggered()
     }
     QMessageBox msgBox;
     msgBox.setWindowTitle("Print huge file size");
-    msgBox.setText("The file you intend to print contains " + QString::number(numberLines) + " lines. It might take several minutes to print. Are you sure you want to continue ?");
+    msgBox.setText("The file you intend to print contains " + QString::number(numberLines) + " lines. It might take several minutes to print. Are you sure you want to continue?");
     msgBox.setStandardButtons(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
