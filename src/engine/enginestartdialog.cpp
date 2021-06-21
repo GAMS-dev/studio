@@ -210,12 +210,6 @@ void EngineStartDialog::getVersion()
     }
 }
 
-QString EngineStartDialog::ensureApi(const QString &url) const
-{
-    if (url.endsWith("/")) return url + "api";
-    return url + "/api";
-}
-
 void EngineStartDialog::setCanStart(bool canStart)
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
@@ -399,29 +393,32 @@ void EngineStartDialog::initUrlAndChecks(QString url)
             mUrl = "https://" + mUrl;
         mUrlChecks.setFlag(ucHttps, false);
     }
+    mRawUrl = mUrl;
 }
 
 bool EngineStartDialog::fetchNextUrl()
 {
     // first check for a missing "api/"
     if (!mUrlChecks.testFlag(ucHttps) && mUrlChecks.testFlag(ucApiHttps)) {
-        mUrl += "api/";
+        mUrl = "https" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()) + "api/";
         mUrlChecks.setFlag(ucApiHttps, false);
         return true;
     }
     if (!mUrlChecks.testFlag(ucHttp) && mUrlChecks.testFlag(ucApiHttp)) {
-        mUrl += "api/";
+        mUrl = "http" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()) + "api/";
+        if (mUrl.contains(":443/"))
+            mUrl.replace(":443/", "/");
         mUrlChecks.setFlag(ucApiHttp, false);
         return true;
     }
     // then check for the protocol
     if (mUrlChecks.testFlag(ucHttps)) {
-        mUrl = "https" + mUrl.mid(mUrl.indexOf("://"), mUrl.length());
+        mUrl = "https" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length());
         mUrlChecks.setFlag(ucHttps, false);
         return true;
     }
     if (mUrlChecks.testFlag(ucHttp)) {
-        mUrl = "http" + mUrl.mid(mUrl.indexOf("://"), mUrl.length());
+        mUrl = "http" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length());
         if (mUrl.contains(":443/"))
             mUrl.replace(":443/", "/");
         mUrlChecks.setFlag(ucHttp, false);

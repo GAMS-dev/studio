@@ -80,7 +80,6 @@ protected:
     void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
     void getVersion();
-    QString ensureApi(const QString &url) const;
     void setCanStart(bool valid);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
@@ -102,6 +101,7 @@ private:
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
+    QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
     UrlChecks mUrlChecks;

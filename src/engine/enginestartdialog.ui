@@ -248,6 +248,15 @@
    </item>
   </layout>
  </widget>
+ <tabstops>
+  <tabstop>edUrl</tabstop>
+  <tabstop>edNamespace</tabstop>
+  <tabstop>edUser</tabstop>
+  <tabstop>edPassword</tabstop>
+  <tabstop>cbForceGdx</tabstop>
+  <tabstop>cbAcceptCert</tabstop>
+  <tabstop>bAlways</tabstop>
+ </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>
  </resources>
