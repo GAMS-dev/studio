@@ -93,8 +93,8 @@ private slots:
     void reVersionError(const QString &errorText);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
-    void selfSignedCertFound();
-    void CertAcceptChanged();
+    void selfSignedCertFound(int sslError);
+    void certAcceptChanged();
 
 private:
     Ui::EngineStartDialog *ui;
@@ -105,6 +105,7 @@ private:
     QString mUrl;
     QString mValidUrl;
     UrlChecks mUrlChecks;
+    int mLastSslError = 0;
 //    bool mPendingRequest = false;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;

@@ -66,6 +66,11 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
             [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
+#ifdef __APPLE__
+        if (e == QNetworkReply::SslHandshakeFailedError) {
+            emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
+        }
+#endif
         emit reVersionError(worker->error_str);
     });
 

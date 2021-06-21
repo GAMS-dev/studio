@@ -23,6 +23,7 @@
 #include <QPushButton>
 #include <QEvent>
 #include <QUrl>
+#include <QSslError>
 
 namespace gams {
 namespace studio {
@@ -52,7 +53,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
     connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
-    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::CertAcceptChanged);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
 
     GamsProcess gp;
     QString about = gp.aboutGAMS();
@@ -229,7 +230,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
     mConnectStateUpdater.start();
 }
 
-void EngineStartDialog::CertAcceptChanged()
+void EngineStartDialog::certAcceptChanged()
 {
     mProc->abortRequests();
     mProc->setIgnoreSslErrors(ui->cbAcceptCert->isChecked());
@@ -293,8 +294,9 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
 }
 
-void EngineStartDialog::selfSignedCertFound()
+void EngineStartDialog::selfSignedCertFound(int sslError)
 {
+    mLastSslError = sslError;
     ui->cbAcceptCert->setVisible(true);
 }
 
@@ -358,7 +360,10 @@ void EngineStartDialog::updateConnectStateAppearance()
         if (ui->cbAcceptCert->isVisible()) {
             ui->laEngGamsVersion->setText("");
             ui->laEngineVersion->setText(CUnavailable);
-            ui->laWarn->setText("Self-signed certificate found");
+            if (mLastSslError==int(QSslError::CertificateUntrusted))
+                ui->laWarn->setText("Certification error");
+            else
+                ui->laWarn->setText("Self-signed certificate found");
             ui->laWarn->setToolTip("Use checkbox below to connect anyway");
         } else {
             ui->laEngGamsVersion->setText("");

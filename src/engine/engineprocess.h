@@ -73,7 +73,7 @@ signals:
     void sslValidation(const QString &errorMessage);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
-    void sslSelfSigned();
+    void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
 
 protected slots:

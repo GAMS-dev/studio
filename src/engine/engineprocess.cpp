@@ -55,6 +55,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
+    setIgnoreSslErrors(false);
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
@@ -206,15 +207,17 @@ void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &erro
 {
     Q_UNUSED(reply)
     QString data("\n*** SSL errors:\n");
-    bool isSelfSigned = false;
+    int sslError = 0;
     for (const QSslError &err : errors) {
         data.append(QString(" [%1] %2\n").arg(err.error()).arg(err.errorString()));
-        if (err.error() == QSslError::SelfSignedCertificate || err.error() == QSslError::SelfSignedCertificateInChain)
-            isSelfSigned = true;
+        if (err.error() == QSslError::SelfSignedCertificate ||
+                err.error() == QSslError::SelfSignedCertificateInChain ||
+                err.error() == QSslError::CertificateStatusUnknown)
+            sslError = err.error();
     }
     emit newStdChannelData(data.toUtf8());
-    if (isSelfSigned)
-        emit sslSelfSigned();
+    if (sslError)
+        emit sslSelfSigned(sslError);
 }
 
 void EngineProcess::parseUnZipStdOut(const QByteArray &data)
