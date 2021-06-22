@@ -149,6 +149,8 @@ QString CommonPaths::gamsLicenseFilePath(const QStringList &dataPaths)
         if (QFileInfo::exists(filePath))
             return QDir::cleanPath(filePath);
     }
+    if (!dataPaths.isEmpty())
+        return QDir::cleanPath(dataPaths.first() + "/" + LicenseFile);
     return QDir::cleanPath(systemDir() + "/" + LicenseFile);
 }
 

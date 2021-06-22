@@ -7,6 +7,7 @@ Version 1.7.0
 - fixed Studio title bar appearing outside of screen
 - fixed wrong content of "File" tab in Reference File Viewer
 - fixed missing check of some data locations for GAMS license file
+- fixed default gamslice.txt location if no GAMS license is configures, which will be the users home directory
 - added a list of solvers for each model type to be selected in Extended Parameter Editor and Configuration Editor
 - added system attributes and compile-time constants to syntax highlighter and code completer
 - added support of quoted elements in syntax highlighter
