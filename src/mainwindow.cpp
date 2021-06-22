@@ -3112,6 +3112,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
+    int logIndex = ui->logTabs->indexOf(logNode->file()->editors().first());
+    if (logIndex >= 0)
+        ui->logTabs->setTabText(logIndex, logNode->name());
 
     groupProc->setGroupId(runGroup->id());
     groupProc->setWorkingDirectory(workDir);
