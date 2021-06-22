@@ -39,7 +39,9 @@ class EngineStartDialog;
 enum ServerConnectionState {
     scsNone,
     scsWaiting,
+    scsValidOtherProtocol,
     scsValid,
+    scsInvalidOtherProtocol,
     scsInvalid
 };
 
@@ -84,6 +86,7 @@ protected:
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
+    UrlCheck protocol(QString url);
 
 private slots:
     void urlEdited(const QString &text);
@@ -105,6 +108,7 @@ private:
     QString mUrl;
     QString mValidUrl;
     UrlChecks mUrlChecks;
+    UrlCheck mInitialProtocol = ucNone;
     int mLastSslError = 0;
 //    bool mPendingRequest = false;
     bool mUrlChanged = false;

@@ -82,6 +82,7 @@ void SvgEngine::paint(QPainter *painter, const QRect &rect, QIcon::Mode mode, QI
     QByteArray &data = mController->data(name, mode, mAlpha);
     QSvgRenderer renderer(data);
     QRect pRect = rect;
+    if (pRect.height() == 27) qDebug() << "SvgEngine.rect.width: " << pRect.width();
     if (mForceSquare) pRect.setWidth(pRect.height());
     renderer.render(painter, pRect);
 }
