@@ -58,7 +58,6 @@ public:
     QUrl url() { return mUrl; }
     void setIgnoreSslErrors(bool ignore);
     bool ignoreSslErrors();
-    void setSelfCert(const QSslCertificate &cert);
     QString getToken() const;
     void setToken(const QString &token);
     void abortRequests();

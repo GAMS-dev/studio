@@ -65,13 +65,12 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
-#ifdef __APPLE__
-        if (e == QNetworkReply::SslHandshakeFailedError) {
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString ) {
+        if (!QSslSocket::sslLibraryVersionString().startsWith("OpenSSL", Qt::CaseInsensitive)
+                && e == QNetworkReply::SslHandshakeFailedError)
             emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
-        }
-#endif
-        emit reVersionError(worker->error_str);
+        else
+            emit reVersionError(worker->error_str);
     });
 
     connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
