@@ -3378,7 +3378,7 @@ void MainWindow::showEngineStartDialog()
     }
 }
 
-void MainWindow::engineDialogDecision(bool start, bool always)
+void MainWindow::engineDialogDecision(bool start)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
     if (!dialog) return;
@@ -3388,7 +3388,7 @@ void MainWindow::engineDialogDecision(bool start, bool always)
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineAuthToken = dialog->authorizeToken();
-        mEngineNoDialog = always;
+        mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password(), dialog->authorizeToken());
     } else {
         dialog->close();
