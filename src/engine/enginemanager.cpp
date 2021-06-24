@@ -39,17 +39,22 @@ QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOn;
 QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOff;
 
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
+    : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
       mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
 {
-//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal, this,
-//            [this](OAIModel_auth_token summary) {
-//        emit reAuth(summary.getToken());
-//    });
-//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalEFull, this,
-//            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString) {
-//        emit reError("From postW: "+worker->error_str);
-//    });
+    mAuthApi->initializeServerConfigs();
+    mAuthApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignal, this,
+            [this](OAIModel_auth_token summary) {
+        emit reAuthorize(summary.getToken());
+    });
+    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
+        Q_UNUSED(worker)
+        DEB() << "Authentification error [" << int(e) << "] "  << s;
+        emit reAuthorizeFailed();
+    });
 
 
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
@@ -70,6 +75,9 @@ EngineManager::EngineManager(QObject* parent)
         if (e == QNetworkReply::SslHandshakeFailedError) {
             emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
         }
+#else
+     Q_UNUSED(e)
+     Q_UNUSED(s)
 #endif
         emit reVersionError(worker->error_str);
     });
@@ -135,7 +143,9 @@ EngineManager::EngineManager(QObject* parent)
 
 EngineManager::~EngineManager()
 {
-    mJobsApi->abortRequests();
+    abortRequests();
+    mAuthApi->deleteLater();
+    mDefaultApi->deleteLater();
     mJobsApi->deleteLater();
 }
 
@@ -155,7 +165,8 @@ void EngineManager::setWorkingDirectory(const QString &dir)
 
 void EngineManager::setUrl(const QString &url)
 {
-    mUrl = QUrl(url);
+    mUrl = QUrl(url.endsWith('/') ? url.left(url.length()-1) : url);
+    mAuthApi->setNewServerForAllOperations(mUrl);
     mDefaultApi->setNewServerForAllOperations(mUrl);
     mJobsApi->setNewServerForAllOperations(mUrl);
 }
@@ -164,10 +175,12 @@ void EngineManager::setIgnoreSslErrors(bool ignore)
 {
     if (ignore) {
         OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOn;
+        mAuthApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
         mDefaultApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
         mJobsApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
     } else {
         OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+        mAuthApi->setNetworkAccessManager(NetworkManager::manager());
         mDefaultApi->setNetworkAccessManager(NetworkManager::manager());
         mJobsApi->setNetworkAccessManager(NetworkManager::manager());
     }
@@ -178,14 +191,16 @@ bool EngineManager::ignoreSslErrors()
     return false;
 }
 
-void EngineManager::authenticate(const QString &user, const QString &password)
+void EngineManager::authorize(const QString &user, const QString &password)
 {
-    mJobsApi->setUsername(user);
-    mJobsApi->setPassword(password);
+    mAuthApi->createJWTTokenJSON(user, password);
+//    mJobsApi->setUsername(user);
+//    mJobsApi->setPassword(password);
 }
 
-void EngineManager::authenticate(const QString &bearerToken)
+void EngineManager::authorize(const QString &bearerToken)
 {
+    DEB() << "BEARER-TOKEN: " << bearerToken;
     // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
     mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mJobsApi->setPassword("");
@@ -209,29 +224,29 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
 
 void EngineManager::getJobStatus()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->getJob(mToken, QString("status process_status"));
+    if (!mJobToken.isEmpty())
+        mJobsApi->getJob(mJobToken, QString("status process_status"));
 }
 
 void EngineManager::killJob(bool hard)
 {
-    bool ok = !mToken.isEmpty();
+    bool ok = !mJobToken.isEmpty();
     if (ok) {
-        mJobsApi->killJob(mToken, hard);
+        mJobsApi->killJob(mJobToken, hard);
     }
 }
 
 void EngineManager::getLog()
 {
-    if (!mToken.isEmpty()) {
-        mJobsApi->popJobLogs(mToken);
+    if (!mJobToken.isEmpty()) {
+        mJobsApi->popJobLogs(mJobToken);
     }
 }
 
 void EngineManager::getOutputFile()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->getJobZip(mToken);
+    if (!mJobToken.isEmpty())
+        mJobsApi->getJobZip(mJobToken);
 }
 
 void EngineManager::setDebug(bool debug)
@@ -260,26 +275,27 @@ bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vG
     return true;
 }
 
-QString EngineManager::getToken() const
+QString EngineManager::getJobToken() const
 {
-    return mToken;
+    return mJobToken;
 }
 
 void EngineManager::setToken(const QString &token)
 {
-    mToken = token;
+    mJobToken = token;
 }
 
 void EngineManager::abortRequests()
 {
+    mAuthApi->abortRequests();
     mDefaultApi->abortRequests();
     mJobsApi->abortRequests();
 }
 
 void EngineManager::cleanup()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->deleteJobZip(mToken);
+    if (!mJobToken.isEmpty())
+        mJobsApi->deleteJobZip(mJobToken);
 }
 
 } // namespace engine

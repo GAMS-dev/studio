@@ -55,8 +55,8 @@ public:
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
     QUrl url();
-    void authenticate(const QString &username, const QString &password);
-    void authenticate(const QString &bearerToken);
+    void authorize(const QString &username, const QString &password);
+    void authorize(const QString &bearerToken);
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrors(bool ignore);
     void getVersions();
@@ -67,7 +67,8 @@ public:
     void abortRequests();
 
 signals:
-    void authenticated(const QString &token);
+    void authorized(const QString &token);
+    void notAuthorized();
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
@@ -85,6 +86,7 @@ protected slots:
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
+    void reAuthorize(const QString &token);
 
 private slots:
     void pullStatus();

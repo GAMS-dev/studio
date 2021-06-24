@@ -36,6 +36,9 @@ void OAIModel_version::initializeModel() {
     m_gams_version_isSet = false;
     m_gams_version_isValid = false;
 
+    m_in_kubernetes_isSet = false;
+    m_in_kubernetes_isValid = false;
+
     m_version_isSet = false;
     m_version_isValid = false;
 }
@@ -52,6 +55,9 @@ void OAIModel_version::fromJsonObject(QJsonObject json) {
     m_gams_version_isValid = ::OpenAPI::fromJsonValue(gams_version, json[QString("gams_version")]);
     m_gams_version_isSet = !json[QString("gams_version")].isNull() && m_gams_version_isValid;
 
+    m_in_kubernetes_isValid = ::OpenAPI::fromJsonValue(in_kubernetes, json[QString("in_kubernetes")]);
+    m_in_kubernetes_isSet = !json[QString("in_kubernetes")].isNull() && m_in_kubernetes_isValid;
+
     m_version_isValid = ::OpenAPI::fromJsonValue(version, json[QString("version")]);
     m_version_isSet = !json[QString("version")].isNull() && m_version_isValid;
 }
@@ -67,6 +73,9 @@ QJsonObject OAIModel_version::asJsonObject() const {
     QJsonObject obj;
     if (m_gams_version_isSet) {
         obj.insert(QString("gams_version"), ::OpenAPI::toJsonValue(gams_version));
+    }
+    if (m_in_kubernetes_isSet) {
+        obj.insert(QString("in_kubernetes"), ::OpenAPI::toJsonValue(in_kubernetes));
     }
     if (m_version_isSet) {
         obj.insert(QString("version"), ::OpenAPI::toJsonValue(version));
@@ -90,6 +99,22 @@ bool OAIModel_version::is_gams_version_Valid() const{
     return m_gams_version_isValid;
 }
 
+bool OAIModel_version::isInKubernetes() const {
+    return in_kubernetes;
+}
+void OAIModel_version::setInKubernetes(const bool &in_kubernetes) {
+    this->in_kubernetes = in_kubernetes;
+    this->m_in_kubernetes_isSet = true;
+}
+
+bool OAIModel_version::is_in_kubernetes_Set() const{
+    return m_in_kubernetes_isSet;
+}
+
+bool OAIModel_version::is_in_kubernetes_Valid() const{
+    return m_in_kubernetes_isValid;
+}
+
 QString OAIModel_version::getVersion() const {
     return version;
 }
@@ -110,6 +135,11 @@ bool OAIModel_version::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (m_gams_version_isSet) {
+            isObjectUpdated = true;
+            break;
+        }
+
+        if (m_in_kubernetes_isSet) {
             isObjectUpdated = true;
             break;
         }

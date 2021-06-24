@@ -36,6 +36,9 @@ void OAIMessage_and_token::initializeModel() {
     m_message_isSet = false;
     m_message_isValid = false;
 
+    m_quota_warning_isSet = false;
+    m_quota_warning_isValid = false;
+
     m_token_isSet = false;
     m_token_isValid = false;
 }
@@ -52,6 +55,9 @@ void OAIMessage_and_token::fromJsonObject(QJsonObject json) {
     m_message_isValid = ::OpenAPI::fromJsonValue(message, json[QString("message")]);
     m_message_isSet = !json[QString("message")].isNull() && m_message_isValid;
 
+    m_quota_warning_isValid = ::OpenAPI::fromJsonValue(quota_warning, json[QString("quota_warning")]);
+    m_quota_warning_isSet = !json[QString("quota_warning")].isNull() && m_quota_warning_isValid;
+
     m_token_isValid = ::OpenAPI::fromJsonValue(token, json[QString("token")]);
     m_token_isSet = !json[QString("token")].isNull() && m_token_isValid;
 }
@@ -67,6 +73,9 @@ QJsonObject OAIMessage_and_token::asJsonObject() const {
     QJsonObject obj;
     if (m_message_isSet) {
         obj.insert(QString("message"), ::OpenAPI::toJsonValue(message));
+    }
+    if (quota_warning.size() > 0) {
+        obj.insert(QString("quota_warning"), ::OpenAPI::toJsonValue(quota_warning));
     }
     if (m_token_isSet) {
         obj.insert(QString("token"), ::OpenAPI::toJsonValue(token));
@@ -90,6 +99,22 @@ bool OAIMessage_and_token::is_message_Valid() const{
     return m_message_isValid;
 }
 
+QList<OAIQuota> OAIMessage_and_token::getQuotaWarning() const {
+    return quota_warning;
+}
+void OAIMessage_and_token::setQuotaWarning(const QList<OAIQuota> &quota_warning) {
+    this->quota_warning = quota_warning;
+    this->m_quota_warning_isSet = true;
+}
+
+bool OAIMessage_and_token::is_quota_warning_Set() const{
+    return m_quota_warning_isSet;
+}
+
+bool OAIMessage_and_token::is_quota_warning_Valid() const{
+    return m_quota_warning_isValid;
+}
+
 QString OAIMessage_and_token::getToken() const {
     return token;
 }
@@ -110,6 +135,11 @@ bool OAIMessage_and_token::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (m_message_isSet) {
+            isObjectUpdated = true;
+            break;
+        }
+
+        if (quota_warning.size() > 0) {
             isObjectUpdated = true;
             break;
         }

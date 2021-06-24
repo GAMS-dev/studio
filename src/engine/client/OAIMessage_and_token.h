@@ -20,6 +20,8 @@
 
 #include <QJsonObject>
 
+#include "OAIQuota.h"
+#include <QList>
 #include <QString>
 
 #include "OAIEnum.h"
@@ -43,6 +45,11 @@ public:
     bool is_message_Set() const;
     bool is_message_Valid() const;
 
+    QList<OAIQuota> getQuotaWarning() const;
+    void setQuotaWarning(const QList<OAIQuota> &quota_warning);
+    bool is_quota_warning_Set() const;
+    bool is_quota_warning_Valid() const;
+
     QString getToken() const;
     void setToken(const QString &token);
     bool is_token_Set() const;
@@ -57,6 +64,10 @@ private:
     QString message;
     bool m_message_isSet;
     bool m_message_isValid;
+
+    QList<OAIQuota> quota_warning;
+    bool m_quota_warning_isSet;
+    bool m_quota_warning_isValid;
 
     QString token;
     bool m_token_isSet;

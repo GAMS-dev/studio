@@ -22,6 +22,7 @@
 #include "OAILog_piece.h"
 #include "OAIMessage.h"
 #include "OAIMessage_and_token.h"
+#include "OAIQuota_exceeded.h"
 #include "OAIStatus_code_meaning.h"
 #include "OAIStream_entry.h"
 #include "OAIText_entry.h"

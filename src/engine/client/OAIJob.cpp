@@ -48,6 +48,9 @@ void OAIJob::initializeModel() {
     m_is_temporary_model_isSet = false;
     m_is_temporary_model_isValid = false;
 
+    m_labels_isSet = false;
+    m_labels_isValid = false;
+
     m_model_isSet = false;
     m_model_isValid = false;
 
@@ -106,6 +109,9 @@ void OAIJob::fromJsonObject(QJsonObject json) {
     m_is_temporary_model_isValid = ::OpenAPI::fromJsonValue(is_temporary_model, json[QString("is_temporary_model")]);
     m_is_temporary_model_isSet = !json[QString("is_temporary_model")].isNull() && m_is_temporary_model_isValid;
 
+    m_labels_isValid = ::OpenAPI::fromJsonValue(labels, json[QString("labels")]);
+    m_labels_isSet = !json[QString("labels")].isNull() && m_labels_isValid;
+
     m_model_isValid = ::OpenAPI::fromJsonValue(model, json[QString("model")]);
     m_model_isSet = !json[QString("model")].isNull() && m_model_isValid;
 
@@ -163,6 +169,9 @@ QJsonObject OAIJob::asJsonObject() const {
     }
     if (m_is_temporary_model_isSet) {
         obj.insert(QString("is_temporary_model"), ::OpenAPI::toJsonValue(is_temporary_model));
+    }
+    if (labels.isSet()) {
+        obj.insert(QString("labels"), ::OpenAPI::toJsonValue(labels));
     }
     if (m_model_isSet) {
         obj.insert(QString("model"), ::OpenAPI::toJsonValue(model));
@@ -278,6 +287,22 @@ bool OAIJob::is_is_temporary_model_Set() const{
 
 bool OAIJob::is_is_temporary_model_Valid() const{
     return m_is_temporary_model_isValid;
+}
+
+OAIModel_job_labels OAIJob::getLabels() const {
+    return labels;
+}
+void OAIJob::setLabels(const OAIModel_job_labels &labels) {
+    this->labels = labels;
+    this->m_labels_isSet = true;
+}
+
+bool OAIJob::is_labels_Set() const{
+    return m_labels_isSet;
+}
+
+bool OAIJob::is_labels_Valid() const{
+    return m_labels_isValid;
 }
 
 QString OAIJob::getModel() const {
@@ -480,6 +505,11 @@ bool OAIJob::isSet() const {
         }
 
         if (m_is_temporary_model_isSet) {
+            isObjectUpdated = true;
+            break;
+        }
+
+        if (labels.isSet()) {
             isObjectUpdated = true;
             break;
         }

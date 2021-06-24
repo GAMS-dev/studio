@@ -62,12 +62,15 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
+    bool isAlways();
     QString url() const;
     QString nSpace() const;
     QString user() const;
     QString password() const;
+    QString authorizeToken() const;
     bool forceGdx() const;
     void setLastPassword(QString lastPassword);
+    void setLastAuthToken(QString lastAuthToken);
     void focusEmptyField();
     void setEngineVersion(QString version);
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -75,7 +78,8 @@ public:
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
-    void ready(bool start, bool always);
+    void authorizeTokenReceived(const QString &token);
+    void ready(bool start);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -89,6 +93,7 @@ protected:
     UrlCheck protocol(QString url);
 
 private slots:
+    void authorized(const QString &token);
     void urlEdited(const QString &text);
     void textChanged(const QString &);
     void btAlwaysClicked();
@@ -104,6 +109,7 @@ private:
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
+    QString mAuthToken;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
@@ -114,6 +120,7 @@ private:
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
     bool mHiddenCheck = false;
+    bool mAlways = false;
     QTimer mConnectStateUpdater;
     QString mEngineVersion;
     QString mGamsVersion;

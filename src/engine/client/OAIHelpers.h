@@ -21,6 +21,7 @@
 #include <QList>
 #include <QMap>
 #include <QSet>
+#include <QVariant>
 
 #include "OAIEnum.h"
 #include "OAIHttpFileElement.h"
@@ -49,7 +50,8 @@ public:
     }
 };
 
-bool setDateTimeFormat(const QString&);
+bool setDateTimeFormat(const QString &format);
+bool setDateTimeFormat(const Qt::DateFormat &format);
 
 template <typename T>
 QString toStringValue(const QList<T> &val);

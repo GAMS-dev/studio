@@ -3363,8 +3363,9 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-    dialog->setLastPassword(mEngineTempPassword);
+//    dialog->setLastPassword(mEngineAuthToken);
     dialog->setProcess(createEngineProcess());
+    dialog->setLastAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
     connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
     dialog->setModal(true);
     if (mEngineAcceptSelfCert) dialog->setAcceptCert();
@@ -3386,9 +3387,9 @@ void MainWindow::engineDialogDecision(bool start, bool always)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
-        mEngineTempPassword = dialog->password();
+        mEngineAuthToken = dialog->authorizeToken();
         mEngineNoDialog = always;
-        prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password());
+        prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password(), dialog->authorizeToken());
     } else {
         dialog->close();
     }
@@ -3418,7 +3419,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     return qobject_cast<engine::EngineProcess*>(runGroup->process());
 }
 
-void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user, QString password)
+void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user, QString password, QString authorizeToken)
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
@@ -3429,7 +3430,10 @@ void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user,
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     engineProcess->setUrl(url);
     engineProcess->setNamespace(nSpace);
-    engineProcess->authenticate(user, password);
+    if (password.isEmpty())
+        engineProcess->authorize(authorizeToken);
+    else
+        engineProcess->authorize(user, password);
     // TODO(JM) create token for the user and store it (if the user allowed it)
 //    if (!mIgnoreSslErrors) {
 //        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());

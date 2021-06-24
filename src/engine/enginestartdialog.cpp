@@ -86,6 +86,7 @@ void EngineStartDialog::hiddenCheck()
 void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
+    connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorized);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
@@ -110,6 +111,11 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
+bool EngineStartDialog::isAlways()
+{
+    return mAlways;
+}
+
 QString EngineStartDialog::url() const
 {
     return mValidUrl;
@@ -130,6 +136,11 @@ QString EngineStartDialog::password() const
     return ui->edPassword->text();
 }
 
+QString EngineStartDialog::authorizeToken() const
+{
+    return mAuthToken;
+}
+
 bool EngineStartDialog::forceGdx() const
 {
     return ui->cbForceGdx->isChecked();
@@ -138,6 +149,11 @@ bool EngineStartDialog::forceGdx() const
 void EngineStartDialog::setLastPassword(QString lastPassword)
 {
     ui->edPassword->setText(lastPassword);
+}
+
+void EngineStartDialog::setLastAuthToken(QString lastAuthToken)
+{
+    mAuthToken = lastAuthToken;
 }
 
 void EngineStartDialog::focusEmptyField()
@@ -193,10 +209,10 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
-    bool always = button == ui->bAlways;
-    bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
+    mAlways = button == ui->bAlways;
+    bool start = mAlways || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
-    emit ready(start, always);
+    emit ready(start);
 }
 
 void EngineStartDialog::getVersion()
@@ -219,7 +235,8 @@ void EngineStartDialog::setCanStart(bool canStart)
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
     canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
+            && !ui->edUser->text().isEmpty()
+            && (!ui->edPassword->text().isEmpty() || !mAuthToken.isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (canStart != bOk->isEnabled())
         bOk->setEnabled(canStart);
@@ -355,7 +372,8 @@ void EngineStartDialog::updateConnectStateAppearance()
             if (!isVisible()) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
-                emit ready(true, true);
+                mAlways = true;
+                emit ready(true);
             }
         } else {
             ui->laWarn->setText("");
@@ -450,6 +468,13 @@ EngineStartDialog::UrlCheck EngineStartDialog::protocol(QString url)
     if (url.startsWith("https://", Qt::CaseInsensitive))
         return ucHttps;
     return ucNone;
+}
+
+void EngineStartDialog::authorized(const QString &token)
+{
+    DEB() << "TOKEN: " << token;
+    emit authorizeTokenReceived(token);
+    ui->edPassword->setText("");
 }
 
 } // namespace engine

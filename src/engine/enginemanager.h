@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QMetaEnum>
 #include <QNetworkReply>
+#include "client/OAIModel_auth_token.h"
+
 
 namespace OpenAPI {
 class OAIAuthApi;
@@ -59,13 +61,13 @@ public:
     void setIgnoreSslErrors(bool ignore);
     bool ignoreSslErrors();
     void setSelfCert(const QSslCertificate &cert);
-    QString getToken() const;
+    QString getJobToken() const;
     void setToken(const QString &token);
     void abortRequests();
     void cleanup();
 
-    void authenticate(const QString &user, const QString &password);
-    void authenticate(const QString &bearerToken);
+    void authorize(const QString &user, const QString &password);
+    void authorize(const QString &bearerToken);
     void getVersion();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
@@ -77,7 +79,8 @@ public:
 signals:
     void syncKillJob(bool hard);
 
-    void reAuth(const QString &token);
+    void reAuthorize(const QString &token);
+    void reAuthorizeFailed();
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
@@ -94,12 +97,11 @@ private slots:
     void killJob(bool hard);
     void debugReceived(QString name, QVariant data);
 
-
 private:
     bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
 
 private:
-//    OpenAPI::OAIAuthApi *mAuthApi;
+    OpenAPI::OAIAuthApi *mAuthApi;
     QUrl mUrl;
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
@@ -107,7 +109,7 @@ private:
     static QSslConfiguration mSslConfigurationIgnoreErrOn;
     static QSslConfiguration mSslConfigurationIgnoreErrOff;
     int mJobNumber = 0;
-    QString mToken;
+    QString mJobToken;
     bool mQueueFinished = false;
     static bool mStartupDone;
 };

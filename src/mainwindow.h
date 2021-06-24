@@ -361,7 +361,7 @@ private slots:
     void showEngineStartDialog();
     void engineDialogDecision(bool start, bool always);
     engine::EngineProcess *createEngineProcess();
-    void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
+    void prepareEngineProcess(QString url, QString nSpace, QString user, QString password, QString authorizeToken);
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
@@ -487,7 +487,7 @@ private:
 
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
-    QString mEngineTempPassword;
+    QString mEngineAuthToken;
     bool mEngineAcceptSelfCert = false;
     bool mEngineNoDialog = false;
 

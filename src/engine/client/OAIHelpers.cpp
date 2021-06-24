@@ -17,47 +17,83 @@ namespace OpenAPI {
 
 class OAISerializerSettings {
 public:
-    static void setDateTimeFormat(const QString & dtFormat){
-        getInstance()->dateTimeFormat = dtFormat;
+    struct CustomDateTimeFormat{
+        bool isStringSet = false;
+        QString formatString;
+        bool isEnumSet = false;
+        Qt::DateFormat formatEnum;
+    };
+
+    static CustomDateTimeFormat getCustomDateTimeFormat() {
+        return getInstance()->customDateTimeFormat;
     }
-    static QString getDateTimeFormat() {
-        return getInstance()->dateTimeFormat;
+
+    static void setDateTimeFormatString(const QString &dtFormat){
+        getInstance()->customDateTimeFormat.isStringSet = true;
+        getInstance()->customDateTimeFormat.isEnumSet = false;
+        getInstance()->customDateTimeFormat.formatString = dtFormat;
     }
+
+    static void setDateTimeFormatEnum(const Qt::DateFormat &dtFormat){
+        getInstance()->customDateTimeFormat.isEnumSet = true;
+        getInstance()->customDateTimeFormat.isStringSet = false;
+        getInstance()->customDateTimeFormat.formatEnum = dtFormat;
+    }
+
     static OAISerializerSettings *getInstance(){
         if(instance == nullptr){
             instance = new OAISerializerSettings();
         }
         return instance;
     }
+
 private:
     explicit OAISerializerSettings(){
         instance = this;
-        dateTimeFormat.clear();
+        customDateTimeFormat.isStringSet = false;
+        customDateTimeFormat.isEnumSet = false;
     }
     static OAISerializerSettings *instance;
-    QString dateTimeFormat;
+    CustomDateTimeFormat customDateTimeFormat;
 };
 
 OAISerializerSettings * OAISerializerSettings::instance = nullptr;
 
-bool setDateTimeFormat(const QString& dateTimeFormat){
+bool setDateTimeFormat(const QString &dateTimeFormat){
     bool success = false;
     auto dt = QDateTime::fromString(QDateTime::currentDateTime().toString(dateTimeFormat), dateTimeFormat);
-    if(dt.isValid()){
+    if (dt.isValid()) {
         success = true;
-        OAISerializerSettings::setDateTimeFormat(dateTimeFormat);
+        OAISerializerSettings::setDateTimeFormatString(dateTimeFormat);
     }
     return success;
 }
 
+bool setDateTimeFormat(const Qt::DateFormat &dateTimeFormat){
+    bool success = false;
+    auto dt = QDateTime::fromString(QDateTime::currentDateTime().toString(dateTimeFormat), dateTimeFormat);
+    if (dt.isValid()) {
+        success = true;
+        OAISerializerSettings::setDateTimeFormatEnum(dateTimeFormat);
+    }
+    return success;
+}
 
 QString toStringValue(const QString &value) {
     return value;
 }
 
 QString toStringValue(const QDateTime &value) {
+    if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isStringSet) {
+        return value.toString(OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatString);
+    }
+
+    if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isEnumSet) {
+        return value.toString(OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatEnum);
+    }
+
     // ISO 8601
-    return OAISerializerSettings::getInstance()->getDateTimeFormat().isEmpty()? value.toString(Qt::ISODate):value.toString(OAISerializerSettings::getInstance()->getDateTimeFormat());
+    return value.toString(Qt::ISODate);
 }
 
 QString toStringValue(const QByteArray &value) {
@@ -106,7 +142,16 @@ QJsonValue toJsonValue(const QString &value) {
 }
 
 QJsonValue toJsonValue(const QDateTime &value) {
-    return QJsonValue(value.toString(OAISerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?value.toString(Qt::ISODate):value.toString(OAISerializerSettings::getInstance()->getDateTimeFormat())));
+    if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isStringSet) {
+        return QJsonValue(value.toString(OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatString));
+    }
+
+    if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isEnumSet) {
+        return QJsonValue(value.toString(OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatEnum));
+    }
+
+    // ISO 8601
+    return QJsonValue(value.toString(Qt::ISODate));
 }
 
 QJsonValue toJsonValue(const QByteArray &value) {
@@ -159,7 +204,15 @@ bool fromStringValue(const QString &inStr, QDateTime &value) {
     if (inStr.isEmpty()) {
         return false;
     } else {
-        auto dateTime = OAISerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?QDateTime::fromString(inStr, Qt::ISODate) :QDateTime::fromString(inStr, OAISerializerSettings::getInstance()->getDateTimeFormat());
+       QDateTime dateTime;
+        if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isStringSet) {
+            dateTime = QDateTime::fromString(inStr, OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatString);
+        } else if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isEnumSet) {
+            dateTime = QDateTime::fromString(inStr, OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatEnum);
+        } else {
+            dateTime = QDateTime::fromString(inStr, Qt::ISODate);
+        }
+
         if (dateTime.isValid()) {
             value.setDate(dateTime.date());
             value.setTime(dateTime.time());
@@ -264,7 +317,13 @@ bool fromJsonValue(QString &value, const QJsonValue &jval) {
 bool fromJsonValue(QDateTime &value, const QJsonValue &jval) {
     bool ok = true;
     if (!jval.isUndefined() && !jval.isNull() && jval.isString()) {
-        value = OAISerializerSettings::getInstance()->getDateTimeFormat().isEmpty()?QDateTime::fromString(jval.toString(), Qt::ISODate): QDateTime::fromString(jval.toString(), OAISerializerSettings::getInstance()->getDateTimeFormat());
+        if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isStringSet) {
+            value = QDateTime::fromString(jval.toString(), OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatString);
+        } else if (OAISerializerSettings::getInstance()->getCustomDateTimeFormat().isEnumSet) {
+            value = QDateTime::fromString(jval.toString(), OAISerializerSettings::getInstance()->getCustomDateTimeFormat().formatEnum);
+        } else {
+            value = QDateTime::fromString(jval.toString(), Qt::ISODate);
+        }
         ok = value.isValid();
     } else {
         ok = false;

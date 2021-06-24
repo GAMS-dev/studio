@@ -45,7 +45,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
-    connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
+    connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::authorized);
+    connect(mManager, &EngineManager::reAuthorizeFailed, this, &EngineProcess::notAuthorized);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
@@ -255,7 +256,7 @@ void EngineProcess::reVersionIntern(const QString &engineVersion, const QString 
 
 void EngineProcess::interrupt()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(false);
     else
@@ -264,7 +265,7 @@ void EngineProcess::interrupt()
 
 void EngineProcess::terminate()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(true);
     else
@@ -335,16 +336,15 @@ QUrl EngineProcess::url()
     return mManager->url();
 }
 
-void EngineProcess::authenticate(const QString &username, const QString &password)
+void EngineProcess::authorize(const QString &username, const QString &password)
 {
-    mManager->authenticate(username, password);
-    setProcState(ProcIdle);
-    // TODO(JM): generate bearerToken and wait for answer before changing to idle
+    mManager->authorize(username, password);
+    setProcState(ProcCheck);
 }
 
-void EngineProcess::authenticate(const QString &bearerToken)
+void EngineProcess::authorize(const QString &bearerToken)
 {
-    mManager->authenticate(bearerToken);
+    mManager->authorize(bearerToken);
     setProcState(ProcIdle);
     // TODO(JM): check for namespace permissions and wait for answer before changing to idle
 }
@@ -469,6 +469,11 @@ void EngineProcess::reError(const QString &errorText)
     mPullTimer.stop();
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
+}
+
+void EngineProcess::reAuthorize(const QString &token)
+{
+    emit authorized(token);
 }
 
 void EngineProcess::pullStatus()
