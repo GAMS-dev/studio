@@ -39,7 +39,9 @@ class EngineStartDialog;
 enum ServerConnectionState {
     scsNone,
     scsWaiting,
-    scsValidOtherProtocol,
+    scsHttpFound,
+    scsHttpsFound,
+    scsHttpsSelfSignedFound,
     scsValid,
     scsInvalid
 };
@@ -87,6 +89,7 @@ protected:
     bool fetchNextUrl();
     UrlCheck protocol(QString url);
     QString cleanUrl(const QString url);
+    void updateUrlEdit();
 
 private slots:
     void urlEdited(const QString &text);

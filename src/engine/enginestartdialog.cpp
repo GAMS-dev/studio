@@ -63,7 +63,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
     connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
-
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -154,13 +153,17 @@ void EngineStartDialog::setEngineVersion(QString version)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
-        QString url = cleanUrl(mValidUrl.isEmpty() ? mValidSelfCertUrl : mValidUrl);
-        UrlCheck prot = protocol(ui->edUrl->text().trimmed());
-        if (!url.isEmpty() && (prot == ucNone || prot == protocol(url)))
-            ui->edUrl->setText(url);
-    }
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
+        updateUrlEdit();
     return QDialog::eventFilter(watched, event);
+}
+
+void EngineStartDialog::updateUrlEdit()
+{
+    QString url = cleanUrl(mValidUrl.isEmpty() ? mValidSelfCertUrl : mValidUrl);
+    UrlCheck prot = protocol(ui->edUrl->text().trimmed());
+    if (!url.isEmpty() && (prot == ucNone || prot == protocol(url)))
+        ui->edUrl->setText(url);
 }
 
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
@@ -219,6 +222,7 @@ void EngineStartDialog::setCanStart(bool canStart)
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
 {
+//    DEB() << "ConnectionState: " << state << "     isIgnoreSsl:" << (mProc ? mProc->isIgnoreSslErrors() : -1);
     mConnectState = state;
     mConnectStateUpdater.start();
 }
@@ -226,15 +230,14 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 void EngineStartDialog::certAcceptChanged()
 {
     mProc->abortRequests();
-    mProc->setIgnoreSslErrors(ui->cbAcceptCert->isChecked());
-    if (ui->cbAcceptCert->isChecked())
-        getVersion();
-    else
-        urlEdited(ui->edUrl->text());
+    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked());
+    urlEdited(ui->edUrl->text());
 }
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
+    DEB() << "----------------------- " << text;
+    mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
 }
@@ -262,11 +265,14 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
     UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
-    if (protUser != ucNone && protUser != protocol(mProc->url().toString()))
-        setConnectionState(scsValidOtherProtocol);
-    else {
+    UrlCheck protServer = protocol(mProc->url().toString());
+    if (protUser != ucNone && protUser != protServer) {
+        setConnectionState(protServer == ucApiHttp ? scsHttpFound : scsHttpsFound);
+    } else {
         mValidUrl = mProc->url().toString();
         setConnectionState(scsValid);
+        if (focusWidget() != ui->edUrl)
+            updateUrlEdit();
     }
 }
 
@@ -281,6 +287,7 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
     // if the raw input failed, try next protocol/api combination
     if (!mLastSslError && fetchNextUrl()) {
+//        DEB() << "          ------next: " << mUrl;
         getVersion();
         return;
     }
@@ -298,6 +305,7 @@ void EngineStartDialog::reVersionError(const QString &errorText)
 void EngineStartDialog::selfSignedCertFound(int sslError)
 {
     mValidSelfCertUrl = mProc->url().toString();
+    setConnectionState(scsHttpsSelfSignedFound);
     mLastSslError = sslError;
     if (mInitialProtocol != ucHttp)
         ui->cbAcceptCert->setVisible(true);
@@ -327,8 +335,16 @@ void EngineStartDialog::updateConnectStateAppearance()
         mForcePreviousWork = false;
         setCanStart(false);
     } break;
-    case scsValidOtherProtocol: {
-        ui->laWarn->setText(protocol(mProc->url().toString()) == ucApiHttps ? "HTTPS found." : "HTTP found.");
+    case scsHttpFound: {
+        ui->laWarn->setText("HTTP found.");
+        ui->laWarn->setToolTip("");
+    } break;
+    case scsHttpsFound: {
+        ui->laWarn->setText("HTTPS found.");
+        ui->laWarn->setToolTip("");
+    } break;
+    case scsHttpsSelfSignedFound: {
+        ui->laWarn->setText("Self-signed HTTPS found.");
         ui->laWarn->setToolTip("");
     } break;
     case scsValid: {
@@ -351,7 +367,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 ui->laWarn->setToolTip("");
                 mForcePreviousWork = false;
             }
-            if (!isVisible()) {
+            if (!isVisible() && mHiddenCheck) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 emit ready(true, true);
@@ -364,7 +380,7 @@ void EngineStartDialog::updateConnectStateAppearance()
         setCanStart(true);
     } break;
     case scsInvalid: {
-        if (ui->cbAcceptCert->isVisible()) {
+        if (!mValidSelfCertUrl.isEmpty()) {
             ui->laEngGamsVersion->setText("");
             ui->laEngineVersion->setText(CUnavailable);
             if (mLastSslError==int(QSslError::CertificateStatusUnknown))
@@ -392,7 +408,6 @@ void EngineStartDialog::updateConnectStateAppearance()
 void EngineStartDialog::initUrlAndChecks(QString url)
 {
     mValidSelfCertUrl = "";
-    ui->cbAcceptCert->setVisible(false);
     mLastSslError = 0;
     mUrlChanged = true;
     mValidUrl = QString();
@@ -415,6 +430,7 @@ void EngineStartDialog::initUrlAndChecks(QString url)
     }
     mUrl = cleanUrl(mUrl);
     mRawUrl = mUrl;
+    ui->cbAcceptCert->setVisible(mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp);
 }
 
 bool EngineStartDialog::fetchNextUrl()

@@ -55,7 +55,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
-    setIgnoreSslErrors(false);
+    setIgnoreSslErrorsCurrentUrl(false);
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
@@ -354,12 +354,17 @@ void EngineProcess::setNamespace(const QString &nSpace)
     mNamespace = nSpace;
 }
 
-void EngineProcess::setIgnoreSslErrors(bool ignore)
+void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 {
-    mManager->setIgnoreSslErrors(ignore);
+    mManager->setIgnoreSslErrorsCurrentUrl(ignore);
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }
+}
+
+bool EngineProcess::isIgnoreSslErrors() const
+{
+    return mManager->isIgnoreSslErrors();
 }
 
 void EngineProcess::getVersions()
