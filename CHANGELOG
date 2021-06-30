@@ -13,6 +13,7 @@ Version 1.7.0
 - added support of quoted elements in syntax highlighter
 - disabled code completer for certain code blocks like $onEmbeddedCode or $onPut
 - added a warning message before printing large files
+- in the Settings dialog fixed ESC key to behave like the close button
 
 Version 1.6.2
 ==================

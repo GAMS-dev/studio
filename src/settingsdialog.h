@@ -51,6 +51,7 @@ public:
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void keyPressEvent(QKeyEvent *event) override;
 
 signals:
     void editorFontChanged(const QString &fontFamily, int fontSize);
@@ -110,7 +111,6 @@ private:
     void initColorPage();
     void setThemeEditable(bool editable);
     void prependUserLib();
-
 };
 
 }
