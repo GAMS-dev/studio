@@ -40,7 +40,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
-    ui->cbAcceptCert->setVisible(false);
+    ui->cbAcceptCert->setVisible(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -176,6 +176,9 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
 void EngineStartDialog::closeEvent(QCloseEvent *event)
 {
     if (mProc) mProc->abortRequests();
+    disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    ui->cbAcceptCert->setChecked(false);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     QDialog::closeEvent(event);
 }
 
@@ -190,6 +193,11 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     bool always = button == ui->bAlways;
     bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+    if (!start) {
+        disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+        ui->cbAcceptCert->setChecked(false);
+        connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    }
     emit ready(start, always);
 }
 
