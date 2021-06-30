@@ -121,6 +121,7 @@ void SettingsDialog::loadSettings()
 {
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
+    Theme::instance()->setActiveTheme(mSettings->toInt(skEdAppearance));
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
