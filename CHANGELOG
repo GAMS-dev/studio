@@ -1,8 +1,3 @@
-Version 1.7.1  *
-==================
-- support GAMS Engine server with self-signed certificate
-- support GAMS Engine server with http protocol
-
 Version 1.7.0
 ==================
 - allow specifying location of User Model Libraries in settings dialog
@@ -18,6 +13,8 @@ Version 1.7.0
 - added support of quoted elements in syntax highlighter
 - disabled code completer for certain code blocks like $onEmbeddedCode or $onPut
 - added a warning message before printing large files
+- support GAMS Engine server with self-signed certificate (https)
+- support GAMS Engine server with http protocol
 
 Version 1.6.2
 ==================
