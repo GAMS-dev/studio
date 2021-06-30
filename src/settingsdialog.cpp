@@ -484,7 +484,6 @@ void SettingsDialog::keyPressEvent(QKeyEvent *event)
 {
     if (event->key() == Qt::Key_Escape)
         close();
-        //on_buttonBox_clicked(ui->buttonBox->button(QDialogButtonBox::Cancel));
     else
         QDialog::keyPressEvent(event);
 }
