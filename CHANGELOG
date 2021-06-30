@@ -1,8 +1,3 @@
-Version 1.7.1  *
-==================
-- support GAMS Engine server with self-signed certificate
-- support GAMS Engine server with http protocol
-
 Version 1.7.0
 ==================
 - allow specifying location of User Model Libraries in settings dialog
@@ -12,11 +7,14 @@ Version 1.7.0
 - fixed Studio title bar appearing outside of screen
 - fixed wrong content of "File" tab in Reference File Viewer
 - fixed missing check of some data locations for GAMS license file
+- fixed default gamslice.txt location if no GAMS license is configures, which will be the users home directory
 - added a list of solvers for each model type to be selected in Extended Parameter Editor and Configuration Editor
 - added system attributes and compile-time constants to syntax highlighter and code completer
 - added support of quoted elements in syntax highlighter
 - disabled code completer for certain code blocks like $onEmbeddedCode or $onPut
 - added a warning message before printing large files
+- support GAMS Engine server with self-signed certificate (https)
+- support GAMS Engine server with http protocol
 
 Version 1.6.2
 ==================

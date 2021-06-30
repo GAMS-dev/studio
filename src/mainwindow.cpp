@@ -3363,7 +3363,10 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 void MainWindow::showEngineStartDialog()
 {
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
-//    dialog->setLastPassword(mEngineAuthToken);
+    dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
+                     Settings::settings()->toString(SettingsKey::skEngineNamespace),
+                     Settings::settings()->toString(SettingsKey::skEngineUser),
+                     Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
     dialog->setProcess(createEngineProcess());
     dialog->setLastAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
     connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);

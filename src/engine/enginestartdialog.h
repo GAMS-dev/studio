@@ -39,9 +39,10 @@ class EngineStartDialog;
 enum ServerConnectionState {
     scsNone,
     scsWaiting,
-    scsValidOtherProtocol,
+    scsHttpFound,
+    scsHttpsFound,
+    scsHttpsSelfSignedFound,
     scsValid,
-    scsInvalidOtherProtocol,
     scsInvalid
 };
 
@@ -62,6 +63,7 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
+    void initData(const QString &_url, const QString &_nSpace, const QString &_user, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
@@ -69,7 +71,6 @@ public:
     QString password() const;
     QString authorizeToken() const;
     bool forceGdx() const;
-    void setLastPassword(QString lastPassword);
     void setLastAuthToken(QString lastAuthToken);
     void focusEmptyField();
     void setEngineVersion(QString version);
@@ -91,6 +92,8 @@ protected:
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
     UrlCheck protocol(QString url);
+    QString cleanUrl(const QString url);
+    void updateUrlEdit();
 
 private slots:
     void authorized(const QString &token);
@@ -113,6 +116,7 @@ private:
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
+    QString mValidSelfCertUrl;
     UrlChecks mUrlChecks;
     UrlCheck mInitialProtocol = ucNone;
     int mLastSslError = 0;

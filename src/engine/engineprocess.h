@@ -58,7 +58,8 @@ public:
     void authorize(const QString &username, const QString &password);
     void authorize(const QString &bearerToken);
     void setNamespace(const QString &nSpace);
-    void setIgnoreSslErrors(bool ignore);
+    void setIgnoreSslErrorsCurrentUrl(bool ignore);
+    bool isIgnoreSslErrors() const;
     void getVersions();
     void addLastCert();
 

@@ -9,7 +9,7 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>393</width>
+    <width>446</width>
     <height>281</height>
    </rect>
   </property>
@@ -158,7 +158,7 @@
       <item row="4" column="2">
        <widget class="QCheckBox" name="cbAcceptCert">
         <property name="text">
-         <string>Accept self-signed certificate</string>
+         <string>Accept self-signed certificate (HTTPS)</string>
         </property>
        </widget>
       </item>

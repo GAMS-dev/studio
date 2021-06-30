@@ -70,16 +70,12 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
-#ifdef __APPLE__
-        if (e == QNetworkReply::SslHandshakeFailedError) {
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString ) {
+        if (!QSslSocket::sslLibraryVersionString().startsWith("OpenSSL", Qt::CaseInsensitive)
+                && e == QNetworkReply::SslHandshakeFailedError)
             emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
-        }
-#else
-     Q_UNUSED(e)
-     Q_UNUSED(s)
-#endif
-        emit reVersionError(worker->error_str);
+        else
+            emit reVersionError(worker->error_str);
     });
 
     connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
@@ -169,21 +165,30 @@ void EngineManager::setUrl(const QString &url)
     mAuthApi->setNewServerForAllOperations(mUrl);
     mDefaultApi->setNewServerForAllOperations(mUrl);
     mJobsApi->setNewServerForAllOperations(mUrl);
+//    DEB() << "ManagerHost: " << mUrl.host() << ":" << mUrl.port() << "  scheme:" << mUrl.scheme();
+    if (mUrl.scheme() == "https")
+        setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
 }
 
-void EngineManager::setIgnoreSslErrors(bool ignore)
+void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
 {
     if (ignore) {
+        mIgnoreSslUrl = mUrl;
+        mNetworkManager = NetworkManager::managerSelfCert();
         OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOn;
-        mAuthApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
-        mDefaultApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
-        mJobsApi->setNetworkAccessManager(NetworkManager::managerSelfCert());
     } else {
+        mIgnoreSslUrl = QUrl();
+        mNetworkManager = NetworkManager::manager();
         OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
-        mAuthApi->setNetworkAccessManager(NetworkManager::manager());
-        mDefaultApi->setNetworkAccessManager(NetworkManager::manager());
-        mJobsApi->setNetworkAccessManager(NetworkManager::manager());
     }
+    mAuthApi->setNetworkAccessManager(mNetworkManager);
+    mDefaultApi->setNetworkAccessManager(mNetworkManager);
+    mJobsApi->setNetworkAccessManager(mNetworkManager);
+}
+
+bool EngineManager::isIgnoreSslErrors() const
+{
+    return mNetworkManager == NetworkManager::managerSelfCert();
 }
 
 bool EngineManager::ignoreSslErrors()
