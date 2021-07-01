@@ -186,7 +186,9 @@ void EngineStartDialog::showEvent(QShowEvent *event)
     bool isHidden = !ui->cbAcceptCert->isVisible();
     if (isHidden) ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
+#ifndef __APPLE__
     setFixedSize(size());
+#endif
     if (isHidden) QTimer::singleShot(10, this, &EngineStartDialog::hideCert);
 }
 
