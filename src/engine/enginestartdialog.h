@@ -72,6 +72,7 @@ public:
     void focusEmptyField();
     void setEngineVersion(QString version);
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void prepareOpen();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 

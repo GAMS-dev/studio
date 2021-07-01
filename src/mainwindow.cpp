@@ -3376,6 +3376,7 @@ void MainWindow::showEngineStartDialog()
     if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
         dialog->hiddenCheck();
     } else {
+        dialog->prepareOpen();
         dialog->open();
         dialog->focusEmptyField();
     }

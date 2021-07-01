@@ -157,6 +157,11 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
     return QDialog::eventFilter(watched, event);
 }
 
+void EngineStartDialog::prepareOpen()
+{
+    if (!ui->cbAcceptCert->isVisible()) ui->cbAcceptCert->setVisible(true);
+}
+
 void EngineStartDialog::updateUrlEdit()
 {
     QString url = cleanUrl(mValidUrl.isEmpty() ? mValidSelfCertUrl : mValidUrl);
@@ -183,13 +188,9 @@ void EngineStartDialog::closeEvent(QCloseEvent *event)
 
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
-    bool isHidden = !ui->cbAcceptCert->isVisible();
-    if (isHidden) ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
-#ifndef __APPLE__
     setFixedSize(size());
-#endif
-    if (isHidden) QTimer::singleShot(10, this, &EngineStartDialog::hideCert);
+    ui->cbAcceptCert->setVisible(!mProc || (mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp));
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
