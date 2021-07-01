@@ -196,8 +196,11 @@ void EngineStartDialog::closeEvent(QCloseEvent *event)
 
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
+    bool preShow = !ui->cbAcceptCert->isVisible();
+    if (preShow) ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
     setFixedSize(size());
+    if (preShow) ui->cbAcceptCert->setVisible(false);
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
@@ -252,7 +255,7 @@ void EngineStartDialog::certAcceptChanged()
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
-    DEB() << "----------------------- " << text;
+//    DEB() << "----------------------- " << text;
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
