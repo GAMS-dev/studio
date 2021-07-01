@@ -40,7 +40,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
-    ui->cbAcceptCert->setVisible(true);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
@@ -184,8 +183,11 @@ void EngineStartDialog::closeEvent(QCloseEvent *event)
 
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
+    bool isHidden = !ui->cbAcceptCert->isVisible();
+    if (isHidden) ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
     setFixedSize(size());
+    if (isHidden) ui->cbAcceptCert->setVisible(false);
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
