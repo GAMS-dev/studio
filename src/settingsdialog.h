@@ -64,17 +64,19 @@ public slots:
     void delayBaseThemeChange(bool valid);
 
 private slots:
+    void setModified();
+    void prepareModifyTheme();
+    void themeModified();
+    bool setAndCheckUserLib(const QString &path);
+    void appearanceIndexChanged(int index);
+    void editorBaseColorChanged();
+    void afterLoad();
+
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);
     void on_fontComboBox_currentIndexChanged(const QString &value);
     void on_sb_fontsize_valueChanged(int size);
     void on_sb_tabsize_valueChanged(int size);
-    void prepareModifyTheme();
-    void themeModified();
-    void setModified();
-    bool setAndCheckUserLib(const QString &path);
-    void appearanceIndexChanged(int index);
-    void editorBaseColorChanged();
 
     void on_btn_browse_clicked();
     void on_btn_export_clicked();
