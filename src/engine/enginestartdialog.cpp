@@ -187,7 +187,7 @@ void EngineStartDialog::showEvent(QShowEvent *event)
     if (isHidden) ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
     setFixedSize(size());
-    if (isHidden) ui->cbAcceptCert->setVisible(false);
+    if (isHidden) QTimer::singleShot(10, this, &EngineStartDialog::hideCert);
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
@@ -242,6 +242,11 @@ void EngineStartDialog::certAcceptChanged()
     mProc->abortRequests();
     mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked());
     urlEdited(ui->edUrl->text());
+}
+
+void EngineStartDialog::hideCert()
+{
+    ui->cbAcceptCert->setVisible(false);
 }
 
 void EngineStartDialog::urlEdited(const QString &text)
