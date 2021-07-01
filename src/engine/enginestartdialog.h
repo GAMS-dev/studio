@@ -101,6 +101,7 @@ private slots:
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);
     void certAcceptChanged();
+    void hideCert();
 
 private:
     Ui::EngineStartDialog *ui;
