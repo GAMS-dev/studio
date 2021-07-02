@@ -41,11 +41,11 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     f.setBold(true);
     ui->laWarn->setFont(f);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
-    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
+    connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
     connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
@@ -57,11 +57,14 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    textChanged("");
+    updateStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
     connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
+    mUrlChangedTimer.setSingleShot(true);
+    mUrlChangedTimer.setInterval(200);
+    connect(&mUrlChangedTimer, &QTimer::timeout, this, [this]() { urlEdited(ui->edUrl->text()); });
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -254,13 +257,13 @@ void EngineStartDialog::hideCert()
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
-    DEB() << "----------------------- " << text;
+//    DEB() << "----------------------- " << text;
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
 }
 
-void EngineStartDialog::textChanged(const QString &/*text*/)
+void EngineStartDialog::updateStates()
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;

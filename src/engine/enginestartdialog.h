@@ -71,7 +71,6 @@ public:
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);
-    bool eventFilter(QObject *watched, QEvent *event) override;
     void prepareOpen();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
@@ -80,6 +79,7 @@ signals:
     void ready(bool start, bool always);
 
 protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
@@ -94,7 +94,7 @@ protected:
 
 private slots:
     void urlEdited(const QString &text);
-    void textChanged(const QString &);
+    void updateStates();
     void btAlwaysClicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
@@ -121,6 +121,7 @@ private:
     bool mForcePreviousWork = true;
     bool mHiddenCheck = false;
     QTimer mConnectStateUpdater;
+    QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
 
