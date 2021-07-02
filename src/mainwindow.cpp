@@ -72,7 +72,7 @@
 namespace gams {
 namespace studio {
 
-const QStringList OPEN_ALT_TEXT {"&Open in new group...", "&Open in current group..."};
+static const QStringList OPEN_ALT_TEXT {"&Open in new group...", "&Open in current group..."};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -126,7 +126,7 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
     ui->actionDistraction_Free_Mode->setShortcuts({QKeySequence("Ctrl+Alt+Enter"), QKeySequence("Ctrl+Alt+Return")});
 
-    new QShortcut(QKeySequence(Qt::CTRL + Qt::Key_Equal), this, SLOT(on_actionZoom_In_triggered()));
+    new QShortcut(QKeySequence("Ctrl+="), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
     ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
     ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
@@ -522,7 +522,7 @@ void MainWindow::getParameterValue(QString param, QString &value)
     if (joker) param.resize(param.size()-1);
     QString params = mGamsParameterEditor->getCurrentCommandLineData();
     params = mGamsParameterEditor->getOptionTokenizer()->normalize(params);
-    QList<option::OptionItem> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
+    const QList<option::OptionItem> parList = mGamsParameterEditor->getOptionTokenizer()->tokenize(params);
     for (const option::OptionItem &item : parList) {
         if (joker) {
             if (item.key.startsWith(param, Qt::CaseInsensitive)) {
@@ -683,7 +683,7 @@ void MainWindow::receiveAction(const QString &action)
 
 void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryItem* model)
 {
-    QFileInfo file(model->files().first());
+    QFileInfo file(model->files().constFirst());
     QString inputFile = file.completeBaseName() + ".gms";
 
     openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
@@ -807,8 +807,8 @@ QList<int> MainWindow::encodingMIBs()
 void MainWindow::setEncodingMIBs(QString mibList, int active)
 {
     QList<int> mibs;
-    QStringList strMibs = mibList.split(",");
-    for (QString mib: strMibs) {
+    const QStringList strMibs = mibList.split(",");
+    for (const QString &mib: strMibs) {
         if (mib.length()) mibs << mib.toInt();
     }
     setEncodingMIBs(mibs, active);
@@ -817,13 +817,13 @@ void MainWindow::setEncodingMIBs(QString mibList, int active)
 void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 {
     while (mCodecGroupSwitch->actions().size()) {
-        QAction *act = mCodecGroupSwitch->actions().last();
+        QAction *act = mCodecGroupSwitch->actions().constLast();
         if (ui->menuconvert_to->actions().contains(act))
             ui->menuconvert_to->removeAction(act);
         mCodecGroupSwitch->removeAction(act);
     }
     while (mCodecGroupReload->actions().size()) {
-        QAction *act = mCodecGroupReload->actions().last();
+        QAction *act = mCodecGroupReload->actions().constLast();
         if (ui->menureload_with->actions().contains(act))
             ui->menureload_with->removeAction(act);
         mCodecGroupReload->removeAction(act);
@@ -978,7 +978,7 @@ void MainWindow::pushDockSizes()
 
     QList<QDockWidget*> dwList;
     dwList << mGamsParameterEditor->extendedEditor() << ui->dockProjectView << ui->dockProcessLog << ui->dockHelpView;
-    for (QDockWidget* dw : dwList) {
+    for (QDockWidget* dw : qAsConst(dwList)) {
         if (!dw->isVisible() || dw->isFloating()) continue;
         Qt::DockWidgetArea area = dockWidgetArea(dw);
         switch (area) {
@@ -1005,7 +1005,7 @@ void MainWindow::popDockSizes()
     QList<int> dwSizesH;
     QList<QDockWidget*> dwResizeV;
     QList<int> dwSizesV;
-    for (QDockWidget* dw : dwList) {
+    for (QDockWidget* dw : qAsConst(dwList)) {
         if (!dw->isVisible() || dw->isFloating()) continue;
         Qt::DockWidgetArea area = dockWidgetArea(dw);
         switch (area) {
@@ -1144,7 +1144,7 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
 {
     QString path;
     if (!groups.isEmpty()) {
-        path = groups.first()->location();
+        path = groups.constFirst()->location();
 
     } else if (mRecent.editFileId() >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
@@ -1161,13 +1161,13 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     } else {
         int nr = 1;
         QString suffix = "opt";
-        QString filename = QString("%1.%2").arg(solverName).arg(suffix);
+        QString filename = QString("%1.%2").arg(solverName, suffix);
         while (QFileInfo(path, filename).exists()) {
             ++nr;  // note: "op1" is invalid
             if (nr<10) suffix = "op";
             else if (nr<100) suffix = "o";
             else suffix = "";
-            filename = QString("%1.%2%3").arg(solverName).arg(suffix).arg(nr);
+            filename = QString("%1.%2%3").arg(solverName, suffix).arg(nr);
         }
         path += QString("/%1").arg(filename);
     }
@@ -1295,7 +1295,7 @@ void MainWindow::on_actionSave_As_triggered()
             filters = ViewHelper::dialogFileFilterAll();
 
             QString selFilter = filters.first();
-            for (QString f: filters) {
+            for (const QString &f: qAsConst(filters)) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
                     break;
@@ -1314,7 +1314,7 @@ void MainWindow::on_actionSave_As_triggered()
              QString::compare(fi.baseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
             choice = QMessageBox::question(this, "Different solver name"
                                                , QString("The option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
-                                                      .arg(QFileInfo(filePath).completeBaseName()).arg(QFileInfo(fileMeta->location()).completeBaseName()).arg(QFileInfo(filePath).fileName())
+                                                      .arg(QFileInfo(filePath).completeBaseName(), QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).fileName())
                                                , "Select other", "Continue", "Abort", 0, 2);
         if (choice == 0)
             continue;
@@ -1326,12 +1326,12 @@ void MainWindow::on_actionSave_As_triggered()
             if (fileMeta->kind() == FileKind::Opt)
                 choice = QMessageBox::question(this, "Invalid Option File Suffix"
                                                    , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(filePath).fileName())
+                                                          .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
             else
                 choice = QMessageBox::question(this, "Different File Type"
                                                    , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix()).arg(QFileInfo(fileMeta->location()).suffix()).arg(QFileInfo(filePath).fileName())
+                                                          .arg(QFileInfo(filePath).suffix(), QFileInfo(fileMeta->location()).suffix(), QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
         }
         if (choice == 0)
@@ -1648,7 +1648,7 @@ FileProcessKind MainWindow::fileDeletedExtern(FileId fileId)
     if (file->exists(true)) return FileProcessKind::ignore;
     mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
-        QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
+        const QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (ProjectFileNode* node: nodes) {
             ProjectGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
@@ -1718,7 +1718,7 @@ void MainWindow::processFileEvents()
         int elapsed = fileEvent.time.msecsTo(QTime().currentTime());
         if (elapsed < 100) {
             // always add latest event
-            QSet<FileEventData>::const_iterator it = scheduledEvents.find(fileEvent);
+            QSet<FileEventData>::const_iterator it = scheduledEvents.constFind(fileEvent);
             if (it != scheduledEvents.constEnd() && it->time < fileEvent.time)
                 scheduledEvents -= fileEvent;
             scheduledEvents += fileEvent;
@@ -1767,7 +1767,7 @@ void MainWindow::processFileEvents()
     // add events that have been skipped due too early processing
     if (!scheduledEvents.isEmpty()) {
         QMutexLocker locker(&mFileMutex);
-        for (FileEventData data : scheduledEvents) {
+        for (const FileEventData &data : qAsConst(scheduledEvents)) {
             int i = mFileEvents.indexOf(data);
             if (i >= 0) {
                 if (mFileEvents.at(i).time > data.time) continue;
@@ -2099,7 +2099,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
     {
         args->flags |= CREATE_NEW_CONSOLE;
-        args->startupInfo->dwFlags &= ~STARTF_USESTDHANDLES;
+        args->startupInfo->dwFlags &= ulong(~STARTF_USESTDHANDLES);
     });
 #endif
     if (!process.startDetached())
@@ -2235,7 +2235,7 @@ void MainWindow::resetHistory()
 
 void MainWindow::addToOpenedFiles(QString filePath)
 {
-    if (!QFileInfo(filePath).exists()) return;
+    if (!QFileInfo::exists(filePath)) return;
 
     if (filePath.startsWith("[")) return; // invalid
 
@@ -2295,7 +2295,7 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
                           "Do you want to stop the "+message,
                           "Stop", "Cancel");
     if (choice == 1) return false;
-    for (ProjectRunGroupNode* runGroup: runningGroups) {
+    for (ProjectRunGroupNode* runGroup: qAsConst(runningGroups)) {
         runGroup->process()->terminate();
     }
     return true;
@@ -2890,7 +2890,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
-void MainWindow::openFiles(QStringList files, bool forceNew)
+void MainWindow::openFiles(const QStringList &files, bool forceNew)
 {
     if (files.size() == 0) return;
 
@@ -2908,8 +2908,8 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
 
     // create base group
     ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
-    for (QString item: files) {
-        if (QFileInfo(item).exists()) {
+    for (const QString &item: files) {
+        if (QFileInfo::exists(item)) {
             ProjectFileNode *node = addNode("", item, group);
             openFileNode(node);
             if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
@@ -2919,7 +2919,6 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
         }
     }
     // find runnable gms, for now take first one found
-    QString mainGms;
     if (gmsFiles.size() > 0) {
         ProjectRunGroupNode *prgn = group->toRunGroup();
         if (prgn) prgn->setParameter("gms", gmsFiles.first()->location());
@@ -2927,7 +2926,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
 
     if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
-        for(QString s : filesNotFound)
+        for(const QString &s : qAsConst(filesNotFound))
             msgText.append("\n" + s);
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
@@ -3029,7 +3028,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
         if (ret == QMessageBox::Cancel) {
             return false;
         } else if (msgBox.clickedButton() == discardButton) {
-            for (FileMeta *file: modifiedFiles)
+            for (FileMeta *file: qAsConst(modifiedFiles))
                 if (file->kind() != FileKind::Log) {
                     try {
                         file->load(file->codecMib());
@@ -3041,7 +3040,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
         }
     }
     if (doSave) {
-        for (FileMeta *file: modifiedFiles) file->save();
+        for (FileMeta *file: qAsConst(modifiedFiles)) file->save();
     }
 
     // clear the TextMarks for this group
@@ -3069,8 +3068,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
         MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
     }
     // cleanup bookmarks
-    QVector<QString> cleanupKinds;
-    cleanupKinds << "gdx" << "gsp" << "log" << "lst" << "ls2" << "lxi" << "ref";
+    const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
     for (const QString &kind: cleanupKinds) {
         if (runGroup->hasParameter(kind)) {
@@ -3123,7 +3121,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     // disable MIRO menus
     if (dynamic_cast<miro::AbstractMiroProcess*>(groupProc) ) {
         setMiroRunning(true);
-        connect(groupProc, &AbstractProcess::finished, [this](){setMiroRunning(false);});
+        connect(groupProc, &AbstractProcess::finished, this, [this](){setMiroRunning(false);});
     }
     connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
     connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
@@ -3179,8 +3177,8 @@ void MainWindow::openInitialFiles()
         if (!readTabs(joTabs)) return;
     }
     mHistory.files().clear();
-    QVariantList joHistory = settings->toList(skHistory);
-    for (QVariant jRef: joHistory) {
+    const QVariantList joHistory = settings->toList(skHistory);
+    for (const QVariant &jRef: joHistory) {
         if (!jRef.canConvert(QVariant::Map)) continue;
         QVariantMap map = jRef.toMap();
         if (map.contains("file"))
@@ -3417,7 +3415,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
     engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
-    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : itemList) {
         if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
             engineProcess->setHasPreviousWorkOption(true);
@@ -3597,7 +3595,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
     QWidget* edit = nullptr;
     QTabWidget* tabWidget = fileMeta->kind() == FileKind::Log ? ui->logTabs : ui->mainTabs;
     if (!fileMeta->editors().empty()) {
-        edit = fileMeta->editors().first();
+        edit = fileMeta->editors().constFirst();
     }
 
     // open edit if existing or create one
@@ -3605,6 +3603,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
         if (runGroup) ViewHelper::setGroupId(edit, runGroup->id());
         else {
             NodeId groupId = ViewHelper::groupId(edit);
+            // TODO(JM) Review this: runGroup isn't used, this "if" may do nothing at all
             if (groupId.isValid()) runGroup = mProjectRepo.findRunGroup(groupId);
         }
         if (focus) {
@@ -3732,7 +3731,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
     }
 
     if (requestCloseChanged(changedFiles)) {
-        for (FileMeta *file: openFiles) {
+        for (FileMeta *file: qAsConst(openFiles)) {
             closeFileEditors(file->id());
         }
         ProjectLogNode* log = (runGroup && runGroup->hasLogNode()) ? runGroup->logNode() : nullptr;
@@ -3771,8 +3770,7 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
     ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
     if (!runGroup || !runGroup->runnableGms()) return;
-    QString gmsFilePath = runGroup->runnableGms()->location();
-    QList<ProjectFileNode*> gdxNodes = runGroup->findFiles(FileKind::Gdx, true);
+    const QList<ProjectFileNode*> gdxNodes = runGroup->findFiles(FileKind::Gdx, true);
     for (ProjectFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
@@ -3822,7 +3820,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
     while (!fm->editors().isEmpty()) {
-        QWidget *edit = fm->editors().first();
+        QWidget *edit = fm->editors().constFirst();
         if (mRecent.editor() == edit) {
             if (mRecent.group()) {
                ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
@@ -3843,7 +3841,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
-    if (!QFileInfo(filePath).exists()) {
+    if (!QFileInfo::exists(filePath)) {
         EXCEPT() << "File not found: " << filePath;
     }
     ProjectFileNode *fileNode = mProjectRepo.findFile(filePath);
@@ -4056,12 +4054,12 @@ void MainWindow::updateEditorLineWrapping()
     QWidgetList editList = mFileMetaRepo.editors();
     for (int i = 0; i < editList.size(); i++) {
         if (AbstractEdit* ed = ViewHelper::toAbstractEdit(editList.at(i))) {
-            ed->blockCountChanged(0); // force redraw for line number area
+            emit ed->blockCountChanged(0); // force redraw for line number area
             ed->setLineWrapMode(ViewHelper::editorType(ed) == EditorType::syslog ? wrapModeProcess
                                                                                  : wrapModeEditor);
         }
         if (TextView* tv = ViewHelper::toTextView(editList.at(i))) {
-            tv->blockCountChanged(); // force redraw for line number area
+            emit tv->blockCountChanged(); // force redraw for line number area
             tv->setLineWrapMode(ViewHelper::editorType(tv) == EditorType::log ? wrapModeProcess
                                                                               : wrapModeEditor);
         }
@@ -4090,7 +4088,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
     QString curTab;
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
-        if (QFileInfo(location).exists()) {
+        if (QFileInfo::exists(location)) {
             openFilePath(location, true);
             mOpenTabsList << location;
             curTab = location;
@@ -4110,7 +4108,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     tabStrategy = tabAtEnd;
                     continue;
                 }
-                if (QFileInfo(location).exists()) {
+                if (QFileInfo::exists(location)) {
                     openFilePath(location, false, -1, false, tabStrategy);
                     mOpenTabsList << location;
                 }
@@ -4211,7 +4209,7 @@ void MainWindow::on_actionCopy_triggered()
     QWidget *wid = focusWidget();
     while (wid && wid != mHelpWidget)
         wid = wid->parentWidget();
-    if (wid == mHelpWidget) {
+    if (mHelpWidget && wid == mHelpWidget) {
         mHelpWidget->copySelection();
         return;
     }
@@ -4516,7 +4514,7 @@ void MainWindow::resetViews()
     setWindowState(Qt::WindowNoState);
     ui->actionFull_Screen->setChecked(false);
 
-    QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
+    const QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
         dock->setVisible(true);
@@ -4747,7 +4745,7 @@ void MainWindow::openGdxDiffFile()
     if (FileMeta* fMeta = mFileMetaRepo.fileMeta(diffFile)) {
         if (fMeta->isOpen()) {
             bool changed = fMeta->refreshMetaData();
-            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().first())) {
+            if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().constFirst())) {
                 gdx->setHasChanged(true);
                 gdx->reload(fMeta->codec(), changed);
             }
@@ -4886,7 +4884,7 @@ void MainWindow::on_actionPrint_triggered()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
     if (!fm || !focusWidget()) return;
     int numberLines = 0;
-    if (TextView *tv = ViewHelper::toTextView(fm->editors().first())) {
+    if (TextView *tv = ViewHelper::toTextView(fm->editors().constFirst())) {
         if (tv->lineCount() == tv->knownLines()) numberLines = tv->lineCount();
     } else {
         numberLines = fm->document()->lineCount();
