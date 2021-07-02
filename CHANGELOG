@@ -13,6 +13,8 @@ Version 1.7.0
 - added support of quoted elements in syntax highlighter
 - disabled code completer for certain code blocks like $onEmbeddedCode or $onPut
 - added a warning message before printing large files
+- fixed delayed name actualization in LOG tab when using filestem
+- in the Settings dialog fixed ESC key to behave like the close button
 - support GAMS Engine server with self-signed certificate (https)
 - support GAMS Engine server with http protocol
 

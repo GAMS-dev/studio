@@ -121,6 +121,7 @@ void SettingsDialog::loadSettings()
 {
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
+    Theme::instance()->setActiveTheme(mSettings->toInt(skEdAppearance));
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -130,9 +131,7 @@ void SettingsDialog::loadSettings()
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
-    ui->rb_openInCurrentGroup->setChecked(mSettings->toBool(skOpenInCurrent));
-    if (!ui->rb_openInCurrentGroup->isChecked() && !ui->rb_openInAnyGroup->isChecked())
-        ui->rb_openInAnyGroup->setChecked(true);
+    (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentGroup : ui->rb_openInAnyGroup)->setChecked(true);
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
@@ -185,6 +184,7 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
+    QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -364,6 +364,11 @@ void SettingsDialog::editorBaseColorChanged()
     Theme::setColor(Theme::Syntax_neutral, color);
 }
 
+void SettingsDialog::afterLoad()
+{
+    setModifiedStatus(false);
+}
+
 void SettingsDialog::themeModified()
 {
     setModified();
@@ -477,6 +482,14 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
+}
+
+void SettingsDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+        close();
+    else
+        QDialog::keyPressEvent(event);
 }
 
 void SettingsDialog::delayBaseThemeChange(bool valid)
