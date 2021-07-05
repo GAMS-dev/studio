@@ -3367,9 +3367,14 @@ void MainWindow::showEngineStartDialog()
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
-    dialog->setProcess(createEngineProcess());
+    engine::EngineProcess *proc = createEngineProcess();
+    connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
+        mEngineAuthToken = token;
+    });
+    dialog->setProcess(proc);
     dialog->setLastAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
     connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
+
     dialog->setModal(true);
     if (mEngineAcceptSelfCert) dialog->setAcceptCert();
 

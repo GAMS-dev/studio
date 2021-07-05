@@ -69,6 +69,7 @@ public:
     void authorize(const QString &user, const QString &password);
     void authorize(const QString &bearerToken);
     void getVersion();
+    void listJobs();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
     void getLog();
@@ -80,10 +81,11 @@ signals:
     void syncKillJob(bool hard);
 
     void reAuthorize(const QString &token);
-    void reAuthorizeFailed();
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);

@@ -53,7 +53,7 @@ EngineManager::EngineManager(QObject* parent)
             [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
         Q_UNUSED(worker)
         DEB() << "Authentification error [" << int(e) << "] "  << s;
-        emit reAuthorizeFailed();
+        emit reAuthorize(QString());
     });
 
 
@@ -100,6 +100,15 @@ EngineManager::EngineManager(QObject* parent)
             [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
         emit reError("Network error "+QString::number(error_type).toLatin1()+" from getJob: "+worker->error_str);
     });
+
+    connect(mJobsApi, &OAIJobsApi::listJobsSignal, this, [this](OAIJob_no_text_entry_page summary) {
+        emit reListJobs(summary.getCount());
+    });
+    connect(mJobsApi, &OAIJobsApi::listJobsSignalEFull, this,
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+        emit reListJobsError("Network error "+QString::number(error_type)+" from listJobs: "+worker->error_str);
+    });
+
 
     connect(mJobsApi, &OAIJobsApi::getJobZipSignal, this, [this](OAIHttpFileElement summary) {
         emit reGetOutputFile(summary.asByteArray());
@@ -214,6 +223,11 @@ void EngineManager::authorize(const QString &bearerToken)
 void EngineManager::getVersion()
 {
     mDefaultApi->getVersion();
+}
+
+void EngineManager::listJobs()
+{
+    mJobsApi->listJobs(false, QString("status process_status"), 0, 1);
 }
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)

@@ -45,11 +45,12 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
-    connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::authorized);
-    connect(mManager, &EngineManager::reAuthorizeFailed, this, &EngineProcess::notAuthorized);
+    connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::reAuthorize);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
+    connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
+    connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
@@ -390,6 +391,16 @@ void EngineProcess::rePing(const QString &value)
     }
 }
 
+void EngineProcess::reListJobs(qint32 count)
+{
+    DEB() << "Authentication valid. " << count << " Jobs found";
+}
+
+void EngineProcess::reListJobsError(const QString &error)
+{
+    DEB() << "Can't get job list: " << error;
+}
+
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
     Q_UNUSED(message)
@@ -478,6 +489,7 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::reAuthorize(const QString &token)
 {
+    mAuthToken = token;
     emit authorized(token);
 }
 

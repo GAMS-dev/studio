@@ -69,7 +69,6 @@ public:
 
 signals:
     void authorized(const QString &token);
-    void notAuthorized();
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
@@ -81,6 +80,8 @@ signals:
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
@@ -111,9 +112,10 @@ private:
     EngineManager *mManager;
     QString mHost;
     QString mBasePath;
+    QString mNamespace;
     QString mUser;
     QString mPassword;
-    QString mNamespace;
+    QString mAuthToken;
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;
