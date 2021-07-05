@@ -238,7 +238,6 @@ void EngineStartDialog::setCanStart(bool canStart)
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
 {
-//    DEB() << "ConnectionState: " << state << "     isIgnoreSsl:" << (mProc ? mProc->isIgnoreSslErrors() : -1);
     mConnectState = state;
     mConnectStateUpdater.start();
 }
@@ -257,7 +256,6 @@ void EngineStartDialog::hideCert()
 
 void EngineStartDialog::urlEdited(const QString &text)
 {
-//    DEB() << "----------------------- " << text;
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
@@ -288,7 +286,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
     UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
     UrlCheck protServer = protocol(mProc->url().toString());
     if (protUser != ucNone && protUser != protServer) {
-        setConnectionState(protServer == ucApiHttp ? scsHttpFound : scsHttpsFound);
+        setConnectionState((protServer == ucHttp || protServer == ucApiHttp) ? scsHttpFound : scsHttpsFound);
     } else {
         mValidUrl = mProc->url().toString();
         setConnectionState(scsValid);
@@ -308,7 +306,6 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
     // if the raw input failed, try next protocol/api combination
     if (!mLastSslError && fetchNextUrl()) {
-//        DEB() << "          ------next: " << mUrl;
         getVersion();
         return;
     }
