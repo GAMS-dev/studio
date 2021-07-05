@@ -172,9 +172,9 @@ void EngineManager::setUrl(const QString &url)
 {
     mUrl = QUrl(url.endsWith('/') ? url.left(url.length()-1) : url);
     mAuthApi->setNewServerForAllOperations(mUrl);
-    mDefaultApi->setNewServerForAllOperations(mUrl);
-    mJobsApi->setNewServerForAllOperations(mUrl);
-//    DEB() << "ManagerHost: " << mUrl.host() << ":" << mUrl.port() << "  scheme:" << mUrl.scheme();
+    QUrl cleanUrl = url.endsWith('/') ? QUrl(url.left(url.length()-1)) : mUrl;
+    mDefaultApi->setNewServerForAllOperations(cleanUrl);
+    mJobsApi->setNewServerForAllOperations(cleanUrl);
     if (mUrl.scheme() == "https")
         setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
 }

@@ -40,13 +40,12 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
-    ui->cbAcceptCert->setVisible(false);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
-    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
+    connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
     connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
@@ -58,11 +57,14 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    textChanged("");
+    updateStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
     connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
+    mUrlChangedTimer.setSingleShot(true);
+    mUrlChangedTimer.setInterval(200);
+    connect(&mUrlChangedTimer, &QTimer::timeout, this, [this]() { urlEdited(ui->edUrl->text()); });
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -173,6 +175,11 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
     return QDialog::eventFilter(watched, event);
 }
 
+void EngineStartDialog::prepareOpen()
+{
+    if (!ui->cbAcceptCert->isVisible()) ui->cbAcceptCert->setVisible(true);
+}
+
 void EngineStartDialog::updateUrlEdit()
 {
     QString url = cleanUrl(mValidUrl.isEmpty() ? mValidSelfCertUrl : mValidUrl);
@@ -191,6 +198,9 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
 void EngineStartDialog::closeEvent(QCloseEvent *event)
 {
     if (mProc) mProc->abortRequests();
+    disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    ui->cbAcceptCert->setChecked(false);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     QDialog::closeEvent(event);
 }
 
@@ -208,6 +218,11 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     mAlways = button == ui->bAlways;
     bool start = mAlways || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+    if (!start) {
+        disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+        ui->cbAcceptCert->setChecked(false);
+        connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    }
     emit ready(start);
 }
 
@@ -241,7 +256,6 @@ void EngineStartDialog::setCanStart(bool canStart)
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
 {
-//    DEB() << "ConnectionState: " << state << "     isIgnoreSsl:" << (mProc ? mProc->isIgnoreSslErrors() : -1);
     mConnectState = state;
     mConnectStateUpdater.start();
 }
@@ -253,15 +267,19 @@ void EngineStartDialog::certAcceptChanged()
     urlEdited(ui->edUrl->text());
 }
 
+void EngineStartDialog::hideCert()
+{
+    ui->cbAcceptCert->setVisible(false);
+}
+
 void EngineStartDialog::urlEdited(const QString &text)
 {
-//    DEB() << "----------------------- " << text;
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
 }
 
-void EngineStartDialog::textChanged(const QString &/*text*/)
+void EngineStartDialog::updateStates()
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
@@ -286,7 +304,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
     UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
     UrlCheck protServer = protocol(mProc->url().toString());
     if (protUser != ucNone && protUser != protServer) {
-        setConnectionState(protServer == ucApiHttp ? scsHttpFound : scsHttpsFound);
+        setConnectionState((protServer == ucHttp || protServer == ucApiHttp) ? scsHttpFound : scsHttpsFound);
     } else {
         mValidUrl = mProc->url().toString();
         setConnectionState(scsValid);
@@ -306,7 +324,6 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
     // if the raw input failed, try next protocol/api combination
     if (!mLastSslError && fetchNextUrl()) {
-//        DEB() << "          ------next: " << mUrl;
         getVersion();
         return;
     }

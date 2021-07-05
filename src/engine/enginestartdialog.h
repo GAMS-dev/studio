@@ -74,7 +74,7 @@ public:
     void setLastAuthToken(QString lastAuthToken);
     void focusEmptyField();
     void setEngineVersion(QString version);
-    bool eventFilter(QObject *watched, QEvent *event) override;
+    void prepareOpen();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
@@ -83,6 +83,7 @@ signals:
     void ready(bool start);
 
 protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void buttonClicked(QAbstractButton *button);
@@ -98,7 +99,7 @@ protected:
 private slots:
     void authorized(const QString &token);
     void urlEdited(const QString &text);
-    void textChanged(const QString &);
+    void updateStates();
     void btAlwaysClicked();
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
@@ -106,6 +107,7 @@ private slots:
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);
     void certAcceptChanged();
+    void hideCert();
 
 private:
     Ui::EngineStartDialog *ui;
@@ -126,6 +128,7 @@ private:
     bool mHiddenCheck = false;
     bool mAlways = false;
     QTimer mConnectStateUpdater;
+    QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
 
