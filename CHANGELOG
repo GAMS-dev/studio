@@ -8,6 +8,7 @@ Version 1.7.0
 - fixed wrong content of "File" tab in Reference File Viewer
 - fixed missing check of some data locations for GAMS license file
 - fixed default gamslice.txt location if no GAMS license is configures, which will be the users home directory
+- fixed delayed name actualization in LOG tab when using filestem
 - added a list of solvers for each model type to be selected in Extended Parameter Editor and Configuration Editor
 - added system attributes and compile-time constants to syntax highlighter and code completer
 - added support of quoted elements in syntax highlighter
@@ -17,6 +18,7 @@ Version 1.7.0
 - in the Settings dialog fixed ESC key to behave like the close button
 - support GAMS Engine server with self-signed certificate (https)
 - support GAMS Engine server with http protocol
+- changed shortcut for show extended paramter editor from `Ctrl-Alt-3/Shift-Command-3` to `Shift+Ctrl+3/Control-Option-3`
 
 Version 1.6.2
 ==================

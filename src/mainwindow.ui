@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>24</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -1246,7 +1246,7 @@
     <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
-    <string>Ctrl+Alt+3</string>
+    <string>Shift+Ctrl+3</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
