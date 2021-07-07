@@ -56,10 +56,12 @@ public:
     bool setUrl(const QString &url);
     QUrl url();
     void authorize(const QString &username, const QString &password);
-    void authorize(const QString &bearerToken);
+    void setAuthToken(const QString &bearerToken);
+    QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
+    void listJobs();
     void getVersions();
     void addLastCert();
 
@@ -72,6 +74,8 @@ signals:
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
     void sslSelfSigned(int sslError);
@@ -80,8 +84,6 @@ signals:
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
-    void reListJobs(qint32 count);
-    void reListJobsError(const QString &error);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);

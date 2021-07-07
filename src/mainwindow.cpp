@@ -3363,32 +3363,30 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
 
 void MainWindow::showEngineStartDialog()
 {
+    // prepare process
+    engine::EngineProcess *proc = createEngineProcess();
+    proc->setAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
+    connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
+        mEngineAuthToken = token;
+        DEB() << "mainWindow.mEngineAuthToken = " << mEngineAuthToken;
+    });
+
+    // prepare dialog
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
     dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
-    engine::EngineProcess *proc = createEngineProcess();
-    connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
-        mEngineAuthToken = token;
-    });
-    dialog->setProcess(proc);
-    dialog->setLastAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
-    connect(dialog, &engine::EngineStartDialog::ready, this, &MainWindow::engineDialogDecision);
-
     dialog->setModal(true);
-    if (mEngineAcceptSelfCert) dialog->setAcceptCert();
-
-    if (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)) {
-        dialog->hiddenCheck();
-    } else {
-        dialog->prepareOpen();
-        dialog->open();
-        dialog->focusEmptyField();
-    }
+    dialog->setProcess(proc);
+    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+    if (mEngineAcceptSelfCert)
+        dialog->setAcceptCert();
+    connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
+    dialog->start();
 }
 
-void MainWindow::engineDialogDecision(bool start)
+void MainWindow::engineSubmit(bool start)
 {
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
     if (!dialog) return;
@@ -3397,9 +3395,8 @@ void MainWindow::engineDialogDecision(bool start)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
-        mEngineAuthToken = dialog->authorizeToken();
         mEngineNoDialog = dialog->isAlways();
-        prepareEngineProcess(dialog->url(), dialog->nSpace(), dialog->user(), dialog->password(), dialog->authorizeToken());
+        prepareEngineProcess();
     } else {
         dialog->close();
     }
@@ -3429,7 +3426,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     return qobject_cast<engine::EngineProcess*>(runGroup->process());
 }
 
-void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user, QString password, QString authorizeToken)
+void MainWindow::prepareEngineProcess()
 {
     ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
     ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
@@ -3438,18 +3435,7 @@ void MainWindow::prepareEngineProcess(QString url, QString nSpace, QString user,
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
     if (!engineProcess) return;
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
-    engineProcess->setUrl(url);
-    engineProcess->setNamespace(nSpace);
-    if (password.isEmpty())
-        engineProcess->authorize(authorizeToken);
-    else
-        engineProcess->authorize(user, password);
-    // TODO(JM) create token for the user and store it (if the user allowed it)
-//    if (!mIgnoreSslErrors) {
-//        engine::EngineProcess *enginePtr = static_cast<engine::EngineProcess*>(runGroup->process());
-//        connect(enginePtr, &engine::EngineProcess::sslValidation, this, &MainWindow::sslValidation);
-//    } else {
-//    }
+
     updateAndSaveSettings();
     executePrepare(node, group, mGamsParameterEditor->getCurrentCommandLineData());
     execution(group);

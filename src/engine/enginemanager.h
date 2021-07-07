@@ -67,7 +67,7 @@ public:
     void cleanup();
 
     void authorize(const QString &user, const QString &password);
-    void authorize(const QString &bearerToken);
+    void setAuthToken(const QString &bearerToken);
     void getVersion();
     void listJobs();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);

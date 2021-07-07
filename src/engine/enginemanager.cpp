@@ -212,9 +212,8 @@ void EngineManager::authorize(const QString &user, const QString &password)
 //    mJobsApi->setPassword(password);
 }
 
-void EngineManager::authorize(const QString &bearerToken)
+void EngineManager::setAuthToken(const QString &bearerToken)
 {
-    DEB() << "BEARER-TOKEN: " << bearerToken;
     // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
     mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mJobsApi->setPassword("");
@@ -227,7 +226,7 @@ void EngineManager::getVersion()
 
 void EngineManager::listJobs()
 {
-    mJobsApi->listJobs(false, QString("status process_status"), 0, 1);
+    mJobsApi->listJobs(false, QString("status process_status"), 1, 1);
 }
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)

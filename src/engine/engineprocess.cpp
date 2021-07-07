@@ -343,10 +343,10 @@ void EngineProcess::authorize(const QString &username, const QString &password)
     setProcState(ProcCheck);
 }
 
-void EngineProcess::authorize(const QString &bearerToken)
+void EngineProcess::setAuthToken(const QString &bearerToken)
 {
-    mManager->authorize(bearerToken);
-    setProcState(ProcIdle);
+    mAuthToken = bearerToken;
+    mManager->setAuthToken(bearerToken);
     // TODO(JM): check for namespace permissions and wait for answer before changing to idle
 }
 
@@ -366,6 +366,11 @@ void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 bool EngineProcess::isIgnoreSslErrors() const
 {
     return mManager->isIgnoreSslErrors();
+}
+
+void EngineProcess::listJobs()
+{
+    mManager->listJobs();
 }
 
 void EngineProcess::getVersions()
@@ -389,16 +394,6 @@ void EngineProcess::rePing(const QString &value)
         setProcState(ProcIdle);
         emit sslValidation(QString());
     }
-}
-
-void EngineProcess::reListJobs(qint32 count)
-{
-    DEB() << "Authentication valid. " << count << " Jobs found";
-}
-
-void EngineProcess::reListJobsError(const QString &error)
-{
-    DEB() << "Can't get job list: " << error;
 }
 
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
@@ -489,7 +484,11 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::reAuthorize(const QString &token)
 {
-    mAuthToken = token;
+    mManager->setAuthToken(token);
+    if (!token.isEmpty()) {
+        mManager->listJobs();
+        setProcState(ProcCheck);
+    }
     emit authorized(token);
 }
 

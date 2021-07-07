@@ -43,7 +43,8 @@ enum ServerConnectionState {
     scsHttpsFound,
     scsHttpsSelfSignedFound,
     scsValid,
-    scsInvalid
+    scsInvalid,
+    scsLoggedIn,
 };
 
 class EngineStartDialog : public QDialog
@@ -57,7 +58,8 @@ public:
 public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog() override;
-    void hiddenCheck();
+    void setHiddenMode(bool preferHidden);
+    void start();
 
     void setProcess(EngineProcess *process);
     EngineProcess *process() const;
@@ -68,27 +70,29 @@ public:
     QString url() const;
     QString nSpace() const;
     QString user() const;
-    QString password() const;
-    QString authorizeToken() const;
     bool forceGdx() const;
-    void setLastAuthToken(QString lastAuthToken);
     void focusEmptyField();
     void setEngineVersion(QString version);
-    void prepareOpen();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
-    void authorizeTokenReceived(const QString &token);
-    void ready(bool start);
+    void submit(bool start);
+
+public slots:
+    void authorizeChanged(QString authToken);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
+
+    void showLogin();
+    void showSubmit();
+    void ensureOpened();
     void buttonClicked(QAbstractButton *button);
     void getVersion();
-    void setCanStart(bool valid);
+    void setCanLogin(bool valid);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
@@ -97,10 +101,12 @@ protected:
     void updateUrlEdit();
 
 private slots:
-    void authorized(const QString &token);
     void urlEdited(const QString &text);
     void updateStates();
-    void btAlwaysClicked();
+    void bLoginClicked();
+    void bLogoutClicked();
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
     void forceGdxStateChanged(int state);
@@ -114,7 +120,6 @@ private:
     EngineProcess *mProc;
     QStringList mLocalGamsVersion;
     ServerConnectionState mConnectState = scsNone;
-    QString mAuthToken;
     QString mRawUrl;
     QString mUrl;
     QString mValidUrl;
@@ -125,7 +130,7 @@ private:
 //    bool mPendingRequest = false;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
-    bool mHiddenCheck = false;
+    bool mHiddenMode = false;
     bool mAlways = false;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
