@@ -60,7 +60,6 @@ public:
     QUrl url() { return mUrl; }
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
-    bool ignoreSslErrors();
     QString getJobToken() const;
     void setToken(const QString &token);
     void abortRequests();

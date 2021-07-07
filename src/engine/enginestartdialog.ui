@@ -114,24 +114,38 @@
    <item row="2" column="0">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="pageLogin">
       <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
        <property name="topMargin">
         <number>0</number>
        </property>
-       <item row="2" column="1">
+       <item row="1" column="1">
         <widget class="QLineEdit" name="edUser">
          <property name="placeholderText">
           <string>user</string>
          </property>
         </widget>
        </item>
-       <item row="0" column="0">
-        <widget class="QLabel" name="laUrl">
+       <item row="1" column="0">
+        <widget class="QLabel" name="laUser">
          <property name="text">
-          <string>Engine URL</string>
+          <string>Username</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="0">
+        <widget class="QLabel" name="laPassword">
+         <property name="text">
+          <string>Password</string>
+         </property>
+        </widget>
+       </item>
+       <item row="2" column="1">
+        <widget class="QLineEdit" name="edPassword">
+         <property name="echoMode">
+          <enum>QLineEdit::Password</enum>
          </property>
         </widget>
        </item>
@@ -145,49 +159,21 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="0">
-        <widget class="QLabel" name="laPassword">
-         <property name="text">
-          <string>Password</string>
-         </property>
-        </widget>
-       </item>
        <item row="3" column="1">
-        <widget class="QLineEdit" name="edPassword">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
-         </property>
-        </widget>
-       </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="laUser">
-         <property name="text">
-          <string>Username</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="edNamespace">
-         <property name="placeholderText">
-          <string>namespace</string>
-         </property>
-        </widget>
-       </item>
-       <item row="1" column="0">
-        <widget class="QLabel" name="laNamespace">
-         <property name="text">
-          <string>Namespace</string>
-         </property>
-        </widget>
-       </item>
-       <item row="4" column="1">
         <widget class="QCheckBox" name="cbAcceptCert">
          <property name="text">
           <string>Accept self-signed certificate (HTTPS)</string>
          </property>
         </widget>
        </item>
-       <item row="5" column="1">
+       <item row="0" column="0">
+        <widget class="QLabel" name="laUrl">
+         <property name="text">
+          <string>Engine URL</string>
+         </property>
+        </widget>
+       </item>
+       <item row="4" column="1">
         <spacer name="verticalSpacer">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -241,7 +227,7 @@
        </item>
        <item row="0" column="0" colspan="2">
         <widget class="QWidget" name="widget_5" native="true">
-         <layout class="QGridLayout" name="gridLayout_4">
+         <layout class="QGridLayout" name="gridLayout_4" rowstretch="0">
           <property name="leftMargin">
            <number>0</number>
           </property>
@@ -257,47 +243,14 @@
           <property name="verticalSpacing">
            <number>0</number>
           </property>
-          <item row="0" column="2">
-           <widget class="QLabel" name="nNamespace">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
+          <item row="0" column="4">
+           <widget class="QPushButton" name="bLogout">
             <property name="text">
-             <string>Namespace</string>
+             <string>Logout</string>
             </property>
            </widget>
           </item>
           <item row="0" column="3">
-           <widget class="QLabel" name="nText2">
-            <property name="text">
-             <string>on</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QLabel" name="nText1">
-            <property name="text">
-             <string>logged in at</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="nUser">
-            <property name="font">
-             <font>
-              <weight>75</weight>
-              <bold>true</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>User</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="4">
            <spacer name="horizontalSpacer">
             <property name="orientation">
              <enum>Qt::Horizontal</enum>
@@ -310,14 +263,14 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="5" rowspan="2">
-           <widget class="QPushButton" name="bLogout">
+          <item row="0" column="1">
+           <widget class="QLabel" name="nText2">
             <property name="text">
-             <string>Logout</string>
+             <string>on</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="0" colspan="5">
+          <item row="0" column="2">
            <widget class="QLabel" name="nUrl">
             <property name="sizePolicy">
              <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
@@ -336,20 +289,45 @@
             </property>
            </widget>
           </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="nUser">
+            <property name="font">
+             <font>
+              <weight>75</weight>
+              <bold>true</bold>
+             </font>
+            </property>
+            <property name="text">
+             <string>User</string>
+            </property>
+           </widget>
+          </item>
          </layout>
         </widget>
        </item>
        <item row="1" column="0" colspan="2">
         <widget class="QWidget" name="widget" native="true">
          <layout class="QFormLayout" name="formLayout">
-          <item row="0" column="0">
+          <property name="leftMargin">
+           <number>0</number>
+          </property>
+          <property name="topMargin">
+           <number>0</number>
+          </property>
+          <property name="rightMargin">
+           <number>0</number>
+          </property>
+          <property name="bottomMargin">
+           <number>0</number>
+          </property>
+          <item row="1" column="0">
            <widget class="QLabel" name="nText3">
             <property name="text">
-             <string>Active jobs:</string>
+             <string>Total jobs</string>
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="1" column="1">
            <widget class="QLabel" name="nJobCount">
             <property name="font">
              <font>
@@ -359,6 +337,20 @@
             </property>
             <property name="text">
              <string>0</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="laNamespace">
+            <property name="text">
+             <string>Namespace</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QLineEdit" name="edNamespace">
+            <property name="placeholderText">
+             <string>namespace</string>
             </property>
            </widget>
           </item>
@@ -443,9 +435,6 @@
  </widget>
  <tabstops>
   <tabstop>edUrl</tabstop>
-  <tabstop>edNamespace</tabstop>
-  <tabstop>edUser</tabstop>
-  <tabstop>edPassword</tabstop>
   <tabstop>bAlways</tabstop>
  </tabstops>
  <resources>

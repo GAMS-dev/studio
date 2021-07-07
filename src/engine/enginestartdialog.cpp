@@ -42,19 +42,21 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->laWarn->setFont(f);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateSubmitStates);
+    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->bLogin, &QPushButton::clicked, this, &EngineStartDialog::bLoginClicked);
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     connect(ui->bAlways, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bAlways); });
 
-//    ui->stackedWidget->setCurrentIndex(0);
-//    ui->buttonBox->setVisible(false);
-//    ui->bLogin->setVisible(true);
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->bAlways->setVisible(false);
+    ui->buttonBox->setVisible(false);
+    ui->bLogin->setVisible(true);
+
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
     GamsProcess gp;
@@ -62,7 +64,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    updateStates();
+    updateLoginStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
@@ -98,8 +100,7 @@ void EngineStartDialog::start()
     if (ui->edUrl->text().isEmpty())
         showLogin();
     else
-        getVersion();
-
+        urlEdited(ui->edUrl->text());
 }
 
 void EngineStartDialog::setProcess(EngineProcess *process)
@@ -112,7 +113,6 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
-    urlEdited(ui->edUrl->text());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -125,6 +125,7 @@ void EngineStartDialog::setAcceptCert()
     if (!ui->cbAcceptCert->isVisible())
         ui->cbAcceptCert->setVisible(true);
     ui->cbAcceptCert->setChecked(true);
+    mProc->setIgnoreSslErrorsCurrentUrl(true);
 }
 
 bool EngineStartDialog::isCertAccepted()
@@ -134,12 +135,12 @@ bool EngineStartDialog::isCertAccepted()
 
 void EngineStartDialog::initData(const QString &_url, const QString &_nSpace, const QString &_user, bool _forceGdx)
 {
-    ui->edUrl->setText(cleanUrl(_url));
-    ui->nUrl->setText(ui->edUrl->text());
-    ui->edNamespace->setText(_nSpace.trimmed());
-    ui->nNamespace->setText(_nSpace.trimmed());
+    mUrl = cleanUrl(_url);
+    ui->edUrl->setText(mUrl);
+    ui->nUrl->setText(mUrl);
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
+    ui->edNamespace->setText(_nSpace.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
 }
 
@@ -170,13 +171,12 @@ bool EngineStartDialog::forceGdx() const
 
 void EngineStartDialog::focusEmptyField()
 {
-    if (ui->stackedWidget->currentIndex() == 1) {
+    if (ui->stackedWidget->currentIndex() == 0) {
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
-        else if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
         else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
     } else {
-        // TODO(JM) focus decision
+        if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
     }
 }
 
@@ -219,10 +219,12 @@ void EngineStartDialog::closeEvent(QCloseEvent *event)
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
     bool isHidden = !ui->cbAcceptCert->isVisible();
-    if (isHidden) ui->cbAcceptCert->setVisible(true);
+    if (isHidden)
+        ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
     setFixedSize(size());
-    if (isHidden) ui->cbAcceptCert->setVisible(false);
+    if (isHidden)
+        ui->cbAcceptCert->setVisible(false);
 }
 
 void EngineStartDialog::showLogin()
@@ -241,7 +243,6 @@ void EngineStartDialog::showSubmit()
     ui->buttonBox->setVisible(true);
     ui->bLogin->setVisible(false);
     ui->nUser->setText(ui->edUser->text().trimmed());
-    ui->nNamespace->setText(ui->edNamespace->text().trimmed());
     ui->nUrl->setText(mProc->url().toString());
     if (!mHiddenMode)
         ensureOpened();
@@ -251,7 +252,8 @@ void EngineStartDialog::ensureOpened()
 {
     if (!isVisible()) {
         mHiddenMode = false;
-        if (!ui->cbAcceptCert->isVisible()) ui->cbAcceptCert->setVisible(true);
+//        if (!ui->cbAcceptCert->isVisible())
+//            ui->cbAcceptCert->setVisible(true);
         open();
         focusEmptyField();
     }
@@ -279,6 +281,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         ui->cbAcceptCert->setChecked(false);
         connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     }
+    mProc->setNamespace(ui->edNamespace->text().trimmed());
     emit submit(start);
 }
 
@@ -296,14 +299,22 @@ void EngineStartDialog::getVersion()
     updateConnectStateAppearance();
 }
 
-void EngineStartDialog::setCanLogin(bool canLogin)
+void EngineStartDialog::setCanLogin(bool value)
 {
-    canLogin = canLogin && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
+    value = value && !ui->edUrl->text().isEmpty()
             && !ui->edUser->text().isEmpty()
             && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
-    if (canLogin != ui->bLogin->isEnabled())
-        ui->bLogin->setEnabled(canLogin);
+    if (value != ui->bLogin->isEnabled())
+        ui->bLogin->setEnabled(value);
+}
+
+void EngineStartDialog::setCanSubmit(bool value)
+{
+    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
+    value = value && ui->edNamespace->text().isEmpty();
+    if (value != bOk->isEnabled())
+        bOk->setEnabled(value);
 }
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
@@ -315,7 +326,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 void EngineStartDialog::certAcceptChanged()
 {
     mProc->abortRequests();
-    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked());
+    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked() && ui->cbAcceptCert->isVisible());
     urlEdited(ui->edUrl->text());
 }
 
@@ -331,12 +342,21 @@ void EngineStartDialog::urlEdited(const QString &text)
     getVersion();
 }
 
-void EngineStartDialog::updateStates()
+void EngineStartDialog::updateLoginStates()
+{
+    bool enabled = !ui->edUrl->text().isEmpty()
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+    if (enabled && ui->laEngineVersion->text() == CUnavailable) {
+        getVersion();
+    }
+    setConnectionState(mConnectState);
+}
+
+void EngineStartDialog::updateSubmitStates()
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
-    bool enabled = !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+    bool enabled = !ui->edNamespace->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
         getVersion();
     }
@@ -469,6 +489,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;
+                mProc->setNamespace(ui->edNamespace->text().trimmed());
                 emit submit(true);
             }
         } else {

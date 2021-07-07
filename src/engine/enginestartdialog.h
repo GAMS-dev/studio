@@ -92,7 +92,8 @@ protected:
     void ensureOpened();
     void buttonClicked(QAbstractButton *button);
     void getVersion();
-    void setCanLogin(bool valid);
+    void setCanLogin(bool value);
+    void setCanSubmit(bool value);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
@@ -102,7 +103,8 @@ protected:
 
 private slots:
     void urlEdited(const QString &text);
-    void updateStates();
+    void updateLoginStates();
+    void updateSubmitStates();
     void bLoginClicked();
     void bLogoutClicked();
     void reListJobs(qint32 count);
