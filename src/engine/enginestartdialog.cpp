@@ -214,6 +214,8 @@ void EngineStartDialog::getVersion()
     setConnectionState(scsWaiting);
     if (mProc) {
         if (mProc->setUrl(mUrl)) {
+            if (protocol(mUrl) == ucHttps && ui->cbAcceptCert->isVisible() && ui->cbAcceptCert->isChecked())
+                mProc->setIgnoreSslErrorsCurrentUrl(true);
             mUrlChanged = false;
             mProc->getVersions();
             return;
