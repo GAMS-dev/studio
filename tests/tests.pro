@@ -36,6 +36,7 @@ SUBDIRS +=                              \
            testoptionapi                \
            testoptionfile               \
            testsettings                 \
+           testcompleter                \
            testservicelocators
 #           testsolverconfiginfo
 #           testfilemapper               \

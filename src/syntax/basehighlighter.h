@@ -35,7 +35,7 @@ class BaseHighlighter : public QObject
 public:
     explicit BaseHighlighter(QObject *parent = nullptr);
     explicit BaseHighlighter(QTextDocument *parent = nullptr);
-    virtual ~BaseHighlighter();
+    ~BaseHighlighter() override;
     void abortHighlighting();
 
     void setDocument(QTextDocument *doc, bool wipe = false);

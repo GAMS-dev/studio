@@ -36,8 +36,12 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     : BaseHighlighter(doc)
 {
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
-    mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::CommentEndline
-                     << SyntaxKind::SubDCO << SyntaxKind::CommentLine << SyntaxKind::Title;
+    mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::SubDCO << SyntaxKind::Title
+                     << SyntaxKind::CommentEndline << SyntaxKind::CommentLine << SyntaxKind::String
+                     << SyntaxKind::SystemRunAttrib << SyntaxKind::SystemCompileAttrib << SyntaxKind::UserCompileAttrib;
+
+    mPostKindBlocker << SyntaxKind::CommentLine << SyntaxKind::CommentBlock << SyntaxKind::CommentEndline
+                     << SyntaxKind::CommentInline;
 
     SharedSyntaxData *d = new SharedSyntaxData();
 
@@ -52,12 +56,17 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxSubDCO(d), Theme::Syntax_dco);
 
     initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
+    initKind(new SyntaxFormula(SyntaxKind::PutFormula, d), Theme::Syntax_formula);
     initKind(new SyntaxFormula(SyntaxKind::SolveBody, d));
     initKind(new SyntaxFormula(SyntaxKind::OptionBody, d));
     initKind(new SyntaxFormula(SyntaxKind::ExecuteBody, d));
 
+    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemRunAttrib, d), Theme::Syntax_embedded);
+    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemCompileAttrib, d), Theme::Syntax_embedded);
+    initKind(new SyntaxSimpleWord(d), Theme::Syntax_embedded);
+
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
-    initKind(new SyntaxString(d), Theme::Syntax_neutral);
+    initKind(new SyntaxQuoted(SyntaxKind::String, d), Theme::Syntax_assignLabel);
     initKind(new SyntaxCommentLine(d), Theme::Syntax_comment);
     initKind(new SyntaxUniformBlock(SyntaxKind::CommentBlock, d), Theme::Syntax_comment);
     initKind(new SyntaxCommentEndline(d), Theme::Syntax_comment);
@@ -73,6 +82,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxReserved(SyntaxKind::Solve, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Option, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Execute, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::Put, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::Embedded, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbeddedBody(d), Theme::Syntax_embedded);
@@ -88,10 +98,13 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new AssignmentLabel(d), Theme::Syntax_assignLabel);
     initKind(new AssignmentValue(d), Theme::Syntax_assignValue);
     initKind(new SyntaxIdentAssign(SyntaxKind::IdentifierAssignmentEnd, d), Theme::Syntax_assignLabel);
+    initKind(new AssignmentSystemData(d), Theme::Syntax_assignLabel);
 
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentColHead, d), Theme::Syntax_tableHeader);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead, d), Theme::Syntax_tableHeader);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow, d), Theme::Syntax_assignValue);
+
+    mPostSyntax << mKinds.value(SyntaxKind::SystemCompileAttrib) << mKinds.value(SyntaxKind::UserCompileAttrib);
 
     if (!d->isValid()) {
         EXCEPT() << "ERROR: Incomplete SharedSyntaxData";
@@ -115,6 +128,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     CodeRelationIndex cri = previousBlockState();
     if (cri < 0) cri = 0;
     int index = 0;
+    QVector<QPoint> postHighlights;
+    postHighlights << QPoint(0, text.length()-1);
     QTextBlock textBlock = currentBlock();
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
@@ -142,16 +157,17 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, codeRel.blockCode.flavor(), stack);
         if (stack) emptyLineKinds = false;
+        int prevFlavor = tailBlock.isValid() ? tailBlock.flavor : codeRel.blockCode.flavor();
 
         // HOWTO(JM) For kinds redefined with a DCO:
         //   - add new Syntax to mKinds
         //   - create a new full set of Syntax in mCodes with just the new one replaced
         // -> result: the top code will change from 0 to the new Standard top
         SyntaxBlock nextBlock;
-        for (SyntaxKind nextKind: syntax->nextKinds(emptyLineKinds)) {
+        for (const SyntaxKind &nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = mKinds.value(nextKind);
             if (testSyntax) {
-                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), tailBlock.flavor, text, index);
+                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), prevFlavor, text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
@@ -176,7 +192,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
 //                        if (tailBlock.syntax)
 //                            DEB() << QString(tailBlock.start, ' ') << QString(tailBlock.length(), '.') << " "
-//                                  << tailBlock.syntax->kind() << " flav_" << tailBlock.flavor << "  (tail from " << syntax->kind() << ")";
+//                                  << tailBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntax->name() << ")";
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
@@ -187,10 +203,17 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (nextBlock.error && nextBlock.length() > 0) {
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormatError());
         } else if (nextBlock.syntax->kind() != SyntaxKind::Standard) {
+            if (mPostKindBlocker.contains(nextBlock.syntax->kind()) && postHighlights.last().y() > nextBlock.start) {
+                // CommentLine, CommentBlock, CommentEndline, CommentInline
+                postHighlights[postHighlights.size()-1].setY(nextBlock.start);
+                if (nextBlock.syntax->kind() == SyntaxKind::CommentInline)
+                    postHighlights << QPoint(nextBlock.end, text.length()-1);
+            }
+
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
 //            if (nextBlock.syntax)
 //                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
-//                      << " " << nextBlock.syntax->kind() << " flav_" << nextBlock.flavor << "  (next from " << syntax->kind() << ")";
+//                      << " " << nextBlock.syntax->name() << " flav_" << nextBlock.flavor << "  (next from " << syntax->name() << ")";
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
@@ -198,8 +221,19 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
 
-        if (scanBlock)
-            mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+        if (scanBlock) {
+            QMap<int, QPair<int, int> >::Iterator it = mScannedBlockSyntax.insert(nextBlock.end,
+                                         QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+            if (it.key() > 0) {
+                // adjust previous tailBlock
+                --it;
+                if (it.key() < nextBlock.start) {
+                    mScannedBlockSyntax.insert(nextBlock.start, it.value());
+                    if (it.key() > 0)
+                        mScannedBlockSyntax.remove(it.key());
+                }
+            }
+        }
 
         if (posForSyntaxKind <= index) {
             mLastSyntaxKind = nextBlock.syntax->intSyntaxType();
@@ -208,6 +242,35 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             posForSyntaxKind = text.length()+1;
         }
     }
+    // check post highlights
+    for (const QPoint &p : qAsConst(postHighlights)) {
+        for (int i = p.x(); i <= p.y(); ++i) {
+            if (text.at(i) == '%') {
+                for (SyntaxAbstract* testSyntax : qAsConst(mPostSyntax)) {
+                    if (testSyntax) {
+                        SyntaxBlock nextBlock = testSyntax->find(SyntaxKind::Standard, 0, text, i);
+                        if (nextBlock.isValid()) {
+//                            if (nextBlock.syntax)
+//                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
+//                                      << " " << nextBlock.syntax->name();
+                            setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
+                            i = nextBlock.end;
+                            if (scanBlock) {
+                                QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
+                                if (it == mScannedBlockSyntax.constEnd()) {
+                                    --it;
+                                }
+//                                QPair<int,int> currentVal = it.value();
+//                                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
+                            }
+                            break;
+                        }
+                    }
+                }
+            }
+        }
+    }
+
     if (blockData->foldCount()) {
         QVector<ParenthesesPos> blockPars = blockData->parentheses();
         bool same = (parPosList.size() == blockPars.size());
@@ -246,7 +309,7 @@ void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> >
     mScanBlockNr = -1;
 }
 
-const QVector<SyntaxKind> invalidParenthesesSyntax = {
+const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
     SyntaxKind::Dco,
     SyntaxKind::DcoBody,
     SyntaxKind::DcoComment,
@@ -266,9 +329,9 @@ const QVector<SyntaxKind> invalidParenthesesSyntax = {
     SyntaxKind::EmbeddedEnd,
 };
 
-const QString validParentheses("{[(}])/");
-const QString specialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
-const QString flavorChars("TtCcPpIiOoFfUu");
+const QString SyntaxHighlighter::cValidParentheses("{[(}])/");
+const QString SyntaxHighlighter::cSpecialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
+const QString SyntaxHighlighter::cFlavorChars("TtCcPpIiOoFfUu");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind,
                                         QVector<ParenthesesPos> &parentheses, NestingImpact &nestingImpact)
@@ -297,8 +360,8 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         nestingImpact.addCloser();
         return;
     } else if (kind == SyntaxKind::Dco) {
-        if (flavor > 0 && flavor <= flavorChars.size()) {
-            parentheses << ParenthesesPos(flavorChars.at(flavor-1), start);
+        if (flavor > 0 && flavor <= cFlavorChars.size()) {
+            parentheses << ParenthesesPos(cFlavorChars.at(flavor-1), start);
             if (flavor%2)
                 nestingImpact.addOpener();
             else
@@ -306,10 +369,10 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
             return;
         }
     }
-    if (invalidParenthesesSyntax.contains(kind)) return;
+    if (cInvalidParenthesesSyntax.contains(kind)) return;
     for (int i = start; i < start+len; ++i) {
         if (i >= text.length()) break;
-        int iPara = validParentheses.indexOf(text.at(i));
+        int iPara = cValidParentheses.indexOf(text.at(i));
         if (iPara == 6) {
             if (kind == SyntaxKind::IdentifierAssignmentEnd) {
                 parentheses << ParenthesesPos('\\', i);
@@ -326,9 +389,9 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
                 nestingImpact.addCloser();
 
         }
-        int blockKind = specialBlocks.indexOf(text.at(i));
-        if (!inBlock && blockKind >= 0 && blockKind < specialBlocks.length()/2) {
-            int iEnd = text.indexOf(specialBlocks.at(blockKind + specialBlocks.length()/2), i+1);
+        int blockKind = cSpecialBlocks.indexOf(text.at(i));
+        if (!inBlock && blockKind >= 0 && blockKind < cSpecialBlocks.length()/2) {
+            int iEnd = text.indexOf(cSpecialBlocks.at(blockKind + cSpecialBlocks.length()/2), i+1);
             i = (iEnd > 0) ? iEnd-1 : text.length()-1;
             inBlock = true;
         } else {
@@ -363,7 +426,7 @@ void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Theme::ColorSlot slot)
 
 void SyntaxHighlighter::reloadColors()
 {
-    for (SyntaxAbstract* syntax: mKinds) {
+    for (SyntaxAbstract* syntax: qAsConst(mKinds)) {
         syntax->assignColorSlot(syntax->colorSlot());
     }
 }

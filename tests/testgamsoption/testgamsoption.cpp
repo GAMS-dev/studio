@@ -61,6 +61,40 @@ void TestGamsOption::testOptionStringType()
 
 }
 
+void TestGamsOption::testOptionModelTypeString_data()
+{
+    QTest::addColumn<QString>("optionName");
+
+    QTest::newRow("LP")      << "LP";
+    QTest::newRow("MIP")     << "MIP";
+    QTest::newRow("RMIP")    << "RMIP";
+    QTest::newRow("NLP")     << "NLP";
+    QTest::newRow("MCP")     << "MCP";
+    QTest::newRow("MPEC")    << "MPEC";
+    QTest::newRow("RMPEC")   << "RMPEC";
+    QTest::newRow("CNS")     << "CNS";
+    QTest::newRow("DNLP")    << "DNLP";
+    QTest::newRow("RMINLP")  << "RMINLP";
+    QTest::newRow("MINLP")   << "MINLP";
+    QTest::newRow("QCP")     << "QCP";
+    QTest::newRow("MIQCP")   << "MIQCP";
+    QTest::newRow("RMIQCP")  << "RMIQCP";
+    QTest::newRow("EMP")     << "EMP";
+}
+
+void TestGamsOption::testOptionModelTypeString()
+{
+    QFETCH(QString, optionName);
+
+    QCOMPARE( gamsOption->getOptionType(optionName), optTypeString );
+    QVERIFY( gamsOption->getValueList(optionName).size() > 0 );
+    QVERIFY( gamsOption->getDefaultValue(optionName).toString().isEmpty() );
+    for(OptionValue &value : gamsOption->getValueList(optionName)) {
+        QVERIFY( !value.hidden );
+        QVERIFY( !value.enumFlag );
+    }
+}
+
 void TestGamsOption::testOptionEnumStrType_data()
 {
     QTest::addColumn<QString>("optionName");
