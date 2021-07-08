@@ -17,6 +17,8 @@ Version 1.7.0
 - in the Settings dialog fixed ESC key to behave like the close button
 - support GAMS Engine server with self-signed certificate (https)
 - support GAMS Engine server with http protocol
+- in the Engine dialog users can select to stay logged in
+- joined settings for remote sessions in the "Remote" page of the Settings dialog
 
 Version 1.6.2
 ==================
