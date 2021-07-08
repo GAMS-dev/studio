@@ -167,10 +167,10 @@ void SettingsDialog::loadSettings()
     ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
     ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
     int engineExpire = mSettings->toInt(skEngineAuthExpire);
-    if (engineExpire % 60*24 == 0) ui->cbEngineExpireType->setCurrentIndex(2);
+    if (engineExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
     else if (engineExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
-    ui->cbEngineExpireType->setCurrentIndex(engineExpire % 60*24 ? engineExpire % 60 ? 0 : 1 : 2);
-    ui->sbEngineExpireValue->setValue(engineExpire / (engineExpire % 60*24 ? engineExpire % 60 ? 1 : 60 : 60*24));
+    ui->cbEngineExpireType->setCurrentIndex(engineExpire % (60*24) ? engineExpire % 60 ? 0 : 1 : 2);
+    ui->sbEngineExpireValue->setValue(engineExpire / (engineExpire % (60*24) ? engineExpire % 60 ? 1 : 60 : (60*24)));
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
@@ -290,7 +290,7 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
     mSettings->setBool(skEngineStoreUserToken, ui->cbEngineStoreToken->isChecked());
-    int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? 60*24 : 60 : 1;
+    int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? (60*24) : 60 : 1;
     mSettings->setInt(skEngineAuthExpire, ui->sbEngineExpireValue->value() * factor);
 
     // colors page
