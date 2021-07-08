@@ -90,13 +90,8 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::createJobSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        if (text.endsWith('}') || text.endsWith("}\n")) {
-            int i = text.lastIndexOf("{\"message\": ");
-            int j = text.lastIndexOf("\"}");
-            if (i > 0)
-                text = text.mid(i+13, j-i-13);
-        }
-        emit reError("Network error " + QString::number(error_type).toLatin1() + " from createJob:\n " + text);
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from createJob:\n " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobSignal, this, [this](OAIJob summary) {
@@ -104,7 +99,8 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::getJobSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        emit reError("Network error " + QString::number(error_type).toLatin1() + " from getJob:\n  " + text);
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from getJob:\n  " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::listJobsSignal, this, [this](OAIJob_no_text_entry_page summary) {
@@ -112,7 +108,8 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::listJobsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        emit reListJobsError("Network error " + QString::number(error_type)+" from listJobs:\n  " + text);
+        emit reListJobsError("Network error " + QString::number(error_type) +
+                             " from listJobs:\n  " + getJsonMessageIfFound(text));
     });
 
 
@@ -121,7 +118,8 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        emit reError("Network error " + QString::number(error_type).toLatin1() + " from getJobZip:\n  " + text);
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from getJobZip:\n  " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, this, [this](OAIMessage summary) {
@@ -129,7 +127,8 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        emit reError("Network error " + QString::number(error_type).toLatin1() + " from killJob:\n  " + text);
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from killJob:\n  " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](OAILog_piece summary) {
@@ -141,7 +140,8 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
         if (!mQueueFinished && error_type != QNetworkReply::ServiceUnavailableError)
-            emit reGetLog("Network error " + QString::number(error_type).toLatin1()+" from popLog:\n  " + text.toUtf8());
+            emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
+                          " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
 
     });
 
@@ -167,6 +167,17 @@ void EngineManager::startupInit()
         OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
         mStartupDone = true;
     }
+}
+
+QString EngineManager::getJsonMessageIfFound(const QString &text)
+{
+    if (text.endsWith('}') || text.endsWith("}\n")) {
+        int i = text.lastIndexOf("{\"message\": ");
+        int j = text.lastIndexOf("\"}");
+        if (i > 0)
+            return text.mid(i+13, j-i-13) + "\n";
+    }
+    return text;
 }
 
 void EngineManager::setWorkingDirectory(const QString &dir)

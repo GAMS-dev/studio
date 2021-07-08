@@ -100,6 +100,7 @@ private slots:
 
 private:
     bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
+    QString getJsonMessageIfFound(const QString &text);
 
 private:
     OpenAPI::OAIAuthApi *mAuthApi;
