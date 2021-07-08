@@ -382,6 +382,7 @@ void EngineStartDialog::reListJobs(qint32 count)
 
 void EngineStartDialog::reListJobsError(const QString &error)
 {
+    Q_UNUSED(error)
     ui->bLogin->setEnabled(true);
 }
 
