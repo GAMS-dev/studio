@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>446</width>
-    <height>281</height>
+    <height>295</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -407,27 +407,11 @@
       </item>
       <item>
        <widget class="QDialogButtonBox" name="buttonBox">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
-          <horstretch>0</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
         <property name="orientation">
          <enum>Qt::Horizontal</enum>
         </property>
         <property name="standardButtons">
          <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QPushButton" name="bLogin">
-        <property name="text">
-         <string>Login</string>
-        </property>
-        <property name="default">
-         <bool>true</bool>
         </property>
        </widget>
       </item>

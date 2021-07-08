@@ -46,7 +46,6 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateSubmitStates);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->bLogin, &QPushButton::clicked, this, &EngineStartDialog::bLoginClicked);
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
@@ -54,8 +53,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
-    ui->buttonBox->setVisible(false);
-    ui->bLogin->setVisible(true);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
     ui->cbAcceptCert->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
@@ -238,8 +236,7 @@ void EngineStartDialog::showLogin()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
-    ui->buttonBox->setVisible(false);
-    ui->bLogin->setVisible(true);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
     ensureOpened();
 }
 
@@ -247,8 +244,7 @@ void EngineStartDialog::showSubmit()
 {
     ui->stackedWidget->setCurrentIndex(1);
     ui->bAlways->setVisible(true);
-    ui->buttonBox->setVisible(true);
-    ui->bLogin->setVisible(false);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("OK");
     ui->nUser->setText(ui->edUser->text().trimmed());
     ui->nUrl->setText(mProc->url().toString());
     if (!mHiddenMode)
@@ -259,27 +255,27 @@ void EngineStartDialog::ensureOpened()
 {
     if (!isVisible()) {
         mHiddenMode = false;
-//        if (!ui->cbAcceptCert->isVisible())
-//            ui->cbAcceptCert->setVisible(true);
         open();
         focusEmptyField();
     }
-}
-
-void EngineStartDialog::bLoginClicked()
-{
-    mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
 }
 
 void EngineStartDialog::bLogoutClicked()
 {
     ui->edPassword->setText("");
     mProc->setAuthToken("");
+    emit mProc->authorized("");
     showLogin();
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
+    if (!mProc) return;
+
+    if (ui->stackedWidget->currentIndex() == 0 && ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok) {
+        mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
+        return;
+    }
     mAlways = button == ui->bAlways;
     bool start = mAlways || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
@@ -314,8 +310,8 @@ void EngineStartDialog::setCanLogin(bool value)
             && !ui->edUser->text().isEmpty()
             && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
-    if (value != ui->bLogin->isEnabled())
-        ui->bLogin->setEnabled(value);
+    if (value != ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled())
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(value);
 }
 
 void EngineStartDialog::setCanSubmit(bool value)
@@ -383,7 +379,7 @@ void EngineStartDialog::reListJobs(qint32 count)
 void EngineStartDialog::reListJobsError(const QString &error)
 {
     Q_UNUSED(error)
-    ui->bLogin->setEnabled(true);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
