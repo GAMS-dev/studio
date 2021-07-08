@@ -56,6 +56,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->bAlways->setVisible(false);
     ui->buttonBox->setVisible(false);
     ui->bLogin->setVisible(true);
+    ui->cbAcceptCert->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -342,6 +343,8 @@ void EngineStartDialog::urlEdited(const QString &text)
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
+    if (!isVisible() && !mHiddenMode)
+        showLogin();
 }
 
 void EngineStartDialog::updateLoginStates()
