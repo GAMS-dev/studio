@@ -65,7 +65,7 @@ public:
     void abortRequests();
     void cleanup();
 
-    void authorize(const QString &user, const QString &password);
+    void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
     void getVersion();
     void listJobs();

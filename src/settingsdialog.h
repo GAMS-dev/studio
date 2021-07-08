@@ -65,6 +65,7 @@ public slots:
 
 private slots:
     void setModified();
+    void storeEngineTokenChanged();
     void prepareModifyTheme();
     void themeModified();
     bool setAndCheckUserLib(const QString &path);

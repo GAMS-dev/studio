@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>4</number>
+      <number>3</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -751,31 +751,118 @@
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="tabMiro">
+     <widget class="QWidget" name="tabRemote">
       <attribute name="title">
-       <string>MIRO</string>
+       <string>Remote</string>
       </attribute>
       <layout class="QVBoxLayout" name="verticalLayout_miro">
        <item>
-        <widget class="QLabel" name="label_mirolocation">
-         <property name="text">
-          <string>MIRO installation location</string>
+        <widget class="QGroupBox" name="groupBox_2">
+         <property name="title">
+          <string>MIRO</string>
          </property>
+         <layout class="QVBoxLayout" name="verticalLayout">
+          <item>
+           <widget class="QLabel" name="label_mirolocation">
+            <property name="text">
+             <string>MIRO installation location</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <layout class="QHBoxLayout" name="horizontalLayout_miro">
+            <item>
+             <widget class="QLineEdit" name="miroEdit"/>
+            </item>
+            <item>
+             <widget class="QPushButton" name="miroBrowseButton">
+              <property name="text">
+               <string>Browse</string>
+              </property>
+             </widget>
+            </item>
+           </layout>
+          </item>
+         </layout>
         </widget>
        </item>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout_miro">
-         <item>
-          <widget class="QLineEdit" name="miroEdit"/>
-         </item>
-         <item>
-          <widget class="QPushButton" name="miroBrowseButton">
-           <property name="text">
-            <string>Browse</string>
-           </property>
-          </widget>
-         </item>
-        </layout>
+        <widget class="QGroupBox" name="groupBox_3">
+         <property name="title">
+          <string>NEOS</string>
+         </property>
+         <layout class="QVBoxLayout" name="verticalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="confirmNeosCheckBox">
+            <property name="text">
+             <string>Always agree to NEOS &quot;Terms Of Use&quot;</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item>
+        <widget class="QGroupBox" name="groupBox_4">
+         <property name="title">
+          <string>GAMS Engine</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_13">
+          <item row="1" column="3">
+           <widget class="QComboBox" name="cbEngineExpireType">
+            <item>
+             <property name="text">
+              <string>Minutes</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Hours</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>Days</string>
+             </property>
+            </item>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="laEngineStayLoggedIn">
+            <property name="text">
+             <string>      stay logged in for </string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="4">
+           <spacer name="horizontalSpacer_3">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="0" column="0" colspan="3">
+           <widget class="QCheckBox" name="cbEngineStoreToken">
+            <property name="text">
+             <string>store login state</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
+           <widget class="QSpinBox" name="sbEngineExpireValue">
+            <property name="maximum">
+             <number>999</number>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
        </item>
        <item>
         <spacer name="verticalSpacer_miro">
@@ -888,6 +975,17 @@
           <property name="verticalSpacing">
            <number>4</number>
           </property>
+          <item row="3" column="4">
+           <widget class="QToolButton" name="tb_userLibSelect">
+            <property name="toolTip">
+             <string>Select directory</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/folder-open-bw</normaloff>:/solid/folder-open-bw</iconset>
+            </property>
+           </widget>
+          </item>
           <item row="4" column="0">
            <widget class="QLabel" name="lbl_wpHistory">
             <property name="text">
@@ -899,6 +997,31 @@
            <widget class="QLabel" name="lbl_AutoReloadTypes">
             <property name="text">
              <string>Auto-reload extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
+           <widget class="QToolButton" name="tb_userLibRemove">
+            <property name="toolTip">
+             <string>Remove entry</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
+            <property name="text">
+             <string>Reset History</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="4">
+           <widget class="QComboBox" name="cb_userLib">
+            <property name="editable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -916,27 +1039,6 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="0">
-           <widget class="QLabel" name="lbl_userGamsTypes">
-            <property name="text">
-             <string>GAMS source file extensions:</string>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="1">
-           <widget class="QPushButton" name="btn_resetHistory">
-            <property name="text">
-             <string>Reset History</string>
-            </property>
-           </widget>
-          </item>
-          <item row="5" column="0">
-           <widget class="QLabel" name="lbl_resetView">
-            <property name="text">
-             <string>Reset window size, position and states </string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1" colspan="6">
            <widget class="QLineEdit" name="edAutoReloadTypes"/>
           </item>
@@ -944,53 +1046,6 @@
            <widget class="QLineEdit" name="edUserGamsTypes">
             <property name="toolTip">
              <string/>
-            </property>
-           </widget>
-          </item>
-          <item row="6" column="0" colspan="3">
-           <widget class="QCheckBox" name="confirmNeosCheckBox">
-            <property name="text">
-             <string>Always agree to NEOS &quot;Terms Of Use&quot;</string>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="6">
-           <widget class="QToolButton" name="tb_userLibOpen">
-            <property name="toolTip">
-             <string>Open location</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../icons/icons.qrc">
-              <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="5">
-           <widget class="QToolButton" name="tb_userLibRemove">
-            <property name="toolTip">
-             <string>Remove entry</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../icons/icons.qrc">
-              <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="4">
-           <widget class="QToolButton" name="tb_userLibSelect">
-            <property name="toolTip">
-             <string>Select directory</string>
-            </property>
-            <property name="icon">
-             <iconset resource="../icons/icons.qrc">
-              <normaloff>:/solid/folder-open-bw</normaloff>:/solid/folder-open-bw</iconset>
-            </property>
-           </widget>
-          </item>
-          <item row="3" column="0" colspan="4">
-           <widget class="QComboBox" name="cb_userLib">
-            <property name="editable">
-             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -1006,6 +1061,31 @@
              </size>
             </property>
            </spacer>
+          </item>
+          <item row="3" column="6">
+           <widget class="QToolButton" name="tb_userLibOpen">
+            <property name="toolTip">
+             <string>Open location</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lbl_userGamsTypes">
+            <property name="text">
+             <string>GAMS source file extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states </string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

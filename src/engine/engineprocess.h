@@ -55,7 +55,7 @@ public:
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
     QUrl url();
-    void authorize(const QString &username, const QString &password);
+    void authorize(const QString &username, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
     QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);

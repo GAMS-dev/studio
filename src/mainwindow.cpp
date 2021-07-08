@@ -228,6 +228,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->menuEncoding->setEnabled(false);
 
     engine::EngineProcess::startupInit();
+    mEngineAuthToken = Settings::settings()->toString(SettingsKey::skEngineUserToken);
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
@@ -3365,7 +3366,7 @@ void MainWindow::showEngineStartDialog()
 {
     // prepare process
     engine::EngineProcess *proc = createEngineProcess();
-    proc->setAuthToken(mEngineAuthToken); // TODO(JM) get this from Settings
+    proc->setAuthToken(mEngineAuthToken);
     connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
         mEngineAuthToken = token;
         DEB() << "mainWindow.mEngineAuthToken = " << mEngineAuthToken;
@@ -3374,8 +3375,9 @@ void MainWindow::showEngineStartDialog()
     // prepare dialog
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
     dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
-                     Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
+                     Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
+                     Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
     dialog->setModal(true);
     dialog->setProcess(proc);
@@ -3395,6 +3397,11 @@ void MainWindow::engineSubmit(bool start)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
+//        mEngineAuthToken = dialog->authToken();
+        if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
+        else
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
     } else {

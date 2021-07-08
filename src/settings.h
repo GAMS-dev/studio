@@ -120,10 +120,11 @@ enum SettingsKey {
 
     // GAMS Engine settings
     skEngineUrl,
-    skEngineNamespace,
     skEngineUser,
     skEngineUserToken,
     skEngineStoreUserToken,
+    skEngineAuthExpire,
+    skEngineNamespace,
     skEngineForceGdx,
 
     // user model library directory

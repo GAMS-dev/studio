@@ -353,10 +353,11 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // GAMS Engine settings
     safelyAdd(res, skEngineUrl, scSys, {"engine","page"}, "");
-    safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
     safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
+    safelyAdd(res, skEngineAuthExpire, scUser, {"engine","authExpire"}, 60*24*7);
+    safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 
     // syntax color settings

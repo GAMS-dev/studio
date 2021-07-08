@@ -65,11 +65,12 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_nSpace, const QString &_user, bool _forceGdx);
+    void initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
     QString user() const;
+    QString authToken() const;
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);
@@ -129,7 +130,6 @@ private:
     UrlChecks mUrlChecks;
     UrlCheck mInitialProtocol = ucNone;
     int mLastSslError = 0;
-//    bool mPendingRequest = false;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
     bool mHiddenMode = false;
@@ -138,6 +138,7 @@ private:
     QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
+    int mAuthExpireMinutes = 60*2;
 
     static const QString CUnavailable;
 

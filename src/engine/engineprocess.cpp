@@ -337,9 +337,9 @@ QUrl EngineProcess::url()
     return mManager->url();
 }
 
-void EngineProcess::authorize(const QString &username, const QString &password)
+void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
 {
-    mManager->authorize(username, password);
+    mManager->authorize(username, password, expireMinutes);
     setProcState(ProcCheck);
 }
 

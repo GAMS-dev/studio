@@ -50,9 +50,9 @@ EngineManager::EngineManager(QObject* parent)
         emit reAuthorize(summary.getToken());
     });
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString s) {
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString text) {
         Q_UNUSED(worker)
-        DEB() << "Authentification error [" << int(e) << "] "  << s;
+        DEB() << "Authentification error [" << int(e) << "] "  << getJsonMessageIfFound(text);
         emit reAuthorize(QString());
     });
 
@@ -70,12 +70,12 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString ) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
         if (!QSslSocket::sslLibraryVersionString().startsWith("OpenSSL", Qt::CaseInsensitive)
                 && e == QNetworkReply::SslHandshakeFailedError)
             emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
         else
-            emit reVersionError(worker->error_str);
+            emit reVersionError(getJsonMessageIfFound(text));
     });
 
     connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
@@ -217,9 +217,9 @@ bool EngineManager::isIgnoreSslErrors() const
     return mNetworkManager == NetworkManager::managerSelfCert();
 }
 
-void EngineManager::authorize(const QString &user, const QString &password)
+void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)
 {
-    mAuthApi->createJWTTokenJSON(user, password);
+    mAuthApi->createJWTTokenJSON(user, password, expireMinutes * 60);
 }
 
 void EngineManager::setAuthToken(const QString &bearerToken)

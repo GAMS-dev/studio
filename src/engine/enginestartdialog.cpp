@@ -134,13 +134,14 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const QString &_nSpace, const QString &_user, bool _forceGdx)
+void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
+    mAuthExpireMinutes = authExpireMinutes;
     ui->edNamespace->setText(_nSpace.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
 }
@@ -163,6 +164,11 @@ QString EngineStartDialog::nSpace() const
 QString EngineStartDialog::user() const
 {
     return ui->edUser->text();
+}
+
+QString EngineStartDialog::authToken() const
+{
+    return mProc ? mProc->authToken() : QString();
 }
 
 bool EngineStartDialog::forceGdx() const
@@ -262,7 +268,7 @@ void EngineStartDialog::ensureOpened()
 
 void EngineStartDialog::bLoginClicked()
 {
-    mProc->authorize(ui->edUser->text(), ui->edPassword->text());
+    mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
 }
 
 void EngineStartDialog::bLogoutClicked()
