@@ -21,6 +21,9 @@
 #include "process.h"
 #include <QTimer>
 
+class QNetworkReply;
+class QSslError;
+
 namespace gams {
 namespace studio {
 namespace engine {
@@ -40,6 +43,8 @@ public:
     EngineProcess(QObject *parent = nullptr);
     ~EngineProcess() override;
 
+    static void startupInit();
+
     void execute() override;
     void interrupt() override;
     void terminate() override;
@@ -49,11 +54,14 @@ public:
     bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
+    QUrl url();
     void authenticate(const QString &username, const QString &password);
     void authenticate(const QString &bearerToken);
     void setNamespace(const QString &nSpace);
-    void setIgnoreSslErrors();
+    void setIgnoreSslErrorsCurrentUrl(bool ignore);
+    bool isIgnoreSslErrors() const;
     void getVersions();
+    void addLastCert();
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
@@ -66,6 +74,8 @@ signals:
     void sslValidation(const QString &errorMessage);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
+    void sslSelfSigned(int sslError);
+    void allPendingRequestsCompleted();
 
 protected slots:
     void completed(int exitCode) override;
@@ -82,7 +92,7 @@ private slots:
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void packCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
-    void sslErrors(const QStringList &errors);
+    void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
     void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
@@ -110,6 +120,7 @@ private:
     bool mForceGdx = true;
     QByteArray mRemoteWorkDir;
     bool mInParameterBlock = false;
+    bool mStoredIgnoreSslState = false;
 
     QString mJobNumber;
     QString mJobPassword;

@@ -23,6 +23,7 @@ namespace gams {
 namespace studio {
 
 QNetworkAccessManager *NetworkManager::mNetworkManager = nullptr;
+QNetworkAccessManager *NetworkManager::mOpenNetworkManager = nullptr;
 bool NetworkManager::mLock = false;
 
 NetworkManager::NetworkManager()

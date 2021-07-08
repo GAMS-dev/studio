@@ -17,11 +17,13 @@
  */
 #include "enginestartdialog.h"
 #include "ui_enginestartdialog.h"
-#include "settings.h"
 #include "logger.h"
 #include "engineprocess.h"
+#include "theme.h"
 #include <QPushButton>
 #include <QEvent>
+#include <QUrl>
+#include <QSslError>
 
 namespace gams {
 namespace studio {
@@ -39,28 +41,30 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     f.setBold(true);
     ui->laWarn->setFont(f);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
-    ui->edUrl->setText(Settings::settings()->toString(SettingsKey::skEngineUrl));
-    ui->edNamespace->setText(Settings::settings()->toString(SettingsKey::skEngineNamespace));
-    ui->edUser->setText(Settings::settings()->toString(SettingsKey::skEngineUser));
-    ui->cbForceGdx->setChecked(Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
-    connect(ui->edUrl, &QLineEdit::textEdited, this, &EngineStartDialog::urlEdited);
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
-    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::textChanged);
+    connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
+    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
     connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+
+    if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
+        ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
     GamsProcess gp;
     QString about = gp.aboutGAMS();
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    textChanged("");
+    updateStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
     connect(&mConnectStateUpdater, &QTimer::timeout, this, &EngineStartDialog::updateConnectStateAppearance);
-
+    mUrlChangedTimer.setSingleShot(true);
+    mUrlChangedTimer.setInterval(200);
+    connect(&mUrlChangedTimer, &QTimer::timeout, this, [this]() { urlEdited(ui->edUrl->text()); });
 }
 
 EngineStartDialog::~EngineStartDialog()
@@ -80,6 +84,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     mProc = process;
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
     urlEdited(ui->edUrl->text());
 }
@@ -87,6 +92,27 @@ void EngineStartDialog::setProcess(EngineProcess *process)
 EngineProcess *EngineStartDialog::process() const
 {
     return mProc;
+}
+
+void EngineStartDialog::setAcceptCert()
+{
+    if (!ui->cbAcceptCert->isVisible())
+        ui->cbAcceptCert->setVisible(true);
+    ui->cbAcceptCert->setChecked(true);
+}
+
+bool EngineStartDialog::isCertAccepted()
+{
+    return ui->cbAcceptCert->isChecked();
+}
+
+void EngineStartDialog::initData(const QString &_url, const QString &_nSpace, const QString &_user, const QString &_pw, bool _forceGdx)
+{
+    ui->edUrl->setText(cleanUrl(_url));
+    ui->edNamespace->setText(_nSpace);
+    ui->edUser->setText(_user);
+    ui->edPassword->setText(_pw);
+    ui->cbForceGdx->setChecked(_forceGdx);
 }
 
 QString EngineStartDialog::url() const
@@ -114,11 +140,6 @@ bool EngineStartDialog::forceGdx() const
     return ui->cbForceGdx->isChecked();
 }
 
-void EngineStartDialog::setLastPassword(QString lastPassword)
-{
-    ui->edPassword->setText(lastPassword);
-}
-
 void EngineStartDialog::focusEmptyField()
 {
     if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
@@ -134,10 +155,22 @@ void EngineStartDialog::setEngineVersion(QString version)
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
-    if (watched == ui->edUrl && event->type() == QEvent::FocusOut) {
-        ui->edUrl->setText(mUrl.trimmed());
-    }
+    if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
+        updateUrlEdit();
     return QDialog::eventFilter(watched, event);
+}
+
+void EngineStartDialog::prepareOpen()
+{
+    if (!ui->cbAcceptCert->isVisible()) ui->cbAcceptCert->setVisible(true);
+}
+
+void EngineStartDialog::updateUrlEdit()
+{
+    QString url = cleanUrl(mValidUrl.isEmpty() ? mValidSelfCertUrl : mValidUrl);
+    UrlCheck prot = protocol(ui->edUrl->text().trimmed());
+    if (!url.isEmpty() && (prot == ucNone || prot == protocol(url)))
+        ui->edUrl->setText(url);
 }
 
 QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButton *button) const
@@ -150,6 +183,9 @@ QDialogButtonBox::StandardButton EngineStartDialog::standardButton(QAbstractButt
 void EngineStartDialog::closeEvent(QCloseEvent *event)
 {
     if (mProc) mProc->abortRequests();
+    disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    ui->cbAcceptCert->setChecked(false);
+    connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     QDialog::closeEvent(event);
 }
 
@@ -157,6 +193,7 @@ void EngineStartDialog::showEvent(QShowEvent *event)
 {
     QDialog::showEvent(event);
     setFixedSize(size());
+    ui->cbAcceptCert->setVisible(!mProc || (mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp));
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
@@ -164,6 +201,11 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     bool always = button == ui->bAlways;
     bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
+    if (!start) {
+        disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+        ui->cbAcceptCert->setChecked(false);
+        connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    }
     emit ready(start, always);
 }
 
@@ -171,20 +213,16 @@ void EngineStartDialog::getVersion()
 {
     setConnectionState(scsWaiting);
     if (mProc) {
-        if (mProc->setUrl(mUrl.trimmed())) {
+        if (mProc->setUrl(mUrl)) {
+            if (protocol(mUrl) == ucHttps && ui->cbAcceptCert->isVisible() && ui->cbAcceptCert->isChecked())
+                mProc->setIgnoreSslErrorsCurrentUrl(true);
             mUrlChanged = false;
             mProc->getVersions();
-        } else {
-            mConnectState = scsNone;
-            updateConnectStateAppearance();
+            return;
         }
     }
-}
-
-QString EngineStartDialog::ensureApi(const QString &url) const
-{
-    if (url.endsWith("/")) return url + "api";
-    return url + "/api";
+    mConnectState = scsNone;
+    updateConnectStateAppearance();
 }
 
 void EngineStartDialog::setCanStart(bool canStart)
@@ -192,7 +230,8 @@ void EngineStartDialog::setCanStart(bool canStart)
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
     canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
+            && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (canStart != bOk->isEnabled())
         bOk->setEnabled(canStart);
     if (canStart != ui->bAlways->isEnabled())
@@ -205,15 +244,26 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
     mConnectStateUpdater.start();
 }
 
+void EngineStartDialog::certAcceptChanged()
+{
+    mProc->abortRequests();
+    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked());
+    urlEdited(ui->edUrl->text());
+}
+
+void EngineStartDialog::hideCert()
+{
+    ui->cbAcceptCert->setVisible(false);
+}
+
 void EngineStartDialog::urlEdited(const QString &text)
 {
-    mUrlChanged = true;
-    mValidUrl = QString();
-    mUrl = text;
+    mProc->abortRequests();
+    initUrlAndChecks(text);
     getVersion();
 }
 
-void EngineStartDialog::textChanged(const QString &/*text*/)
+void EngineStartDialog::updateStates()
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     if (!bOk) return;
@@ -232,29 +282,36 @@ void EngineStartDialog::btAlwaysClicked()
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
 {
-//    mPendingRequest = false;
+    mUrlChecks = ucNone;
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
-    mValidUrl = mUrl;
-    setConnectionState(scsValid);
+    UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
+    UrlCheck protServer = protocol(mProc->url().toString());
+    if (protUser != ucNone && protUser != protServer) {
+        setConnectionState((protServer == ucHttp || protServer == ucApiHttp) ? scsHttpFound : scsHttpsFound);
+    } else {
+        mValidUrl = mProc->url().toString();
+        setConnectionState(scsValid);
+        if (focusWidget() != ui->edUrl)
+            updateUrlEdit();
+    }
 }
 
 void EngineStartDialog::reVersionError(const QString &errorText)
 {
     if (!mValidUrl.isEmpty()) return;
     Q_UNUSED(errorText)
-//    mPendingRequest = false;
+
     if (mUrlChanged) {
         getVersion();
         return;
     }
-    // if the raw input failed, try with "/api"
-    if (mUrl == ui->edUrl->text()) {
-        mUrl = ensureApi(mUrl.trimmed());
+    // if the raw input failed, try next protocol/api combination
+    if (!mLastSslError && fetchNextUrl()) {
         getVersion();
         return;
     }
-    // neither user-input nor user-input with "/api" is valid, so reset mUrl to user-input
+    // neither user-input nor user-input with modifications is valid, so reset mUrl to user-input
     setConnectionState(scsInvalid);
     if (mUrl != mValidUrl)
         mUrl = ui->edUrl->text();
@@ -263,6 +320,15 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     if (!isVisible() && mHiddenCheck) {
         open();
     }
+}
+
+void EngineStartDialog::selfSignedCertFound(int sslError)
+{
+    mValidSelfCertUrl = mProc->url().toString();
+    setConnectionState(scsHttpsSelfSignedFound);
+    mLastSslError = sslError;
+    if (mInitialProtocol != ucHttp)
+        ui->cbAcceptCert->setVisible(true);
 }
 
 void EngineStartDialog::forceGdxStateChanged(int state)
@@ -289,6 +355,18 @@ void EngineStartDialog::updateConnectStateAppearance()
         mForcePreviousWork = false;
         setCanStart(false);
     } break;
+    case scsHttpFound: {
+        ui->laWarn->setText("HTTP found.");
+        ui->laWarn->setToolTip("");
+    } break;
+    case scsHttpsFound: {
+        ui->laWarn->setText("HTTPS found.");
+        ui->laWarn->setToolTip("");
+    } break;
+    case scsHttpsSelfSignedFound: {
+        ui->laWarn->setText("Self-signed HTTPS found.");
+        ui->laWarn->setToolTip("");
+    } break;
     case scsValid: {
         ui->laEngineVersion->setText("Engine "+mEngineVersion);
         ui->laEngGamsVersion->setText("GAMS "+mGamsVersion);
@@ -302,14 +380,14 @@ void EngineStartDialog::updateConnectStateAppearance()
                 newerGamsVersion = true;
             if (newerGamsVersion) {
                 ui->laWarn->setText("Newer local GAMS: Added \"previousWork=1\"");
-                ui->laWarn->setToolTip("set \"previousWork=0\" to suppress this");
+                ui->laWarn->setToolTip("Set \"previousWork=0\" to suppress this");
                 mForcePreviousWork = true;
             } else {
                 ui->laWarn->setText("");
                 ui->laWarn->setToolTip("");
                 mForcePreviousWork = false;
             }
-            if (!isVisible()) {
+            if (!isVisible() && mHiddenCheck) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 emit ready(true, true);
@@ -322,14 +400,109 @@ void EngineStartDialog::updateConnectStateAppearance()
         setCanStart(true);
     } break;
     case scsInvalid: {
-        ui->laEngGamsVersion->setText("");
-        ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("No GAMS Engine server");
-        ui->laWarn->setToolTip("");
+        if (!mValidSelfCertUrl.isEmpty()) {
+            ui->laEngGamsVersion->setText("");
+            ui->laEngineVersion->setText(CUnavailable);
+            if (mLastSslError==int(QSslError::CertificateStatusUnknown))
+                ui->laWarn->setText(mInitialProtocol == ucHttp ? "HTTPS found with certification error"
+                                                               : "Certification error encountered");
+            else
+                ui->laWarn->setText(mInitialProtocol == ucHttp ? "HTTPS found with self-signed certificate"
+                                                               : "Self-signed certificate found");
+            if (mInitialProtocol == ucHttp)
+                ui->laWarn->setToolTip("Change the URL to " + QString(mInitialProtocol == ucHttp ? "HTTPS" : "HTTP"));
+            else
+                ui->laWarn->setToolTip("Use checkbox below to connect anyway");
+        } else {
+            ui->laEngGamsVersion->setText("");
+            ui->laEngineVersion->setText(CUnavailable);
+            ui->laWarn->setText("No GAMS Engine server");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanStart(false);
     } break;
     }
+}
+
+void EngineStartDialog::initUrlAndChecks(QString url)
+{
+    mValidSelfCertUrl = "";
+    mLastSslError = 0;
+    mUrlChanged = true;
+    mValidUrl = QString();
+    mUrl = url.trimmed();
+    mUrlChecks = ucAll;
+    mInitialProtocol = protocol(mUrl);
+    if (!mUrl.endsWith('/'))
+            mUrl += '/';
+    if (mUrl.endsWith("/api/", Qt::CaseInsensitive)) {
+        mUrlChecks.setFlag(ucApiHttps, false);
+        mUrlChecks.setFlag(ucApiHttp, false);
+    }
+    if (mInitialProtocol == ucHttp) {
+        mUrlChecks.setFlag(ucHttp, false);
+    } else {
+        if (mInitialProtocol == ucNone)
+            mUrl = "https://" + mUrl;
+        mUrlChecks.setFlag(ucHttps, false);
+        mInitialProtocol = ucHttps;
+    }
+    mUrl = cleanUrl(mUrl);
+    mRawUrl = mUrl;
+    ui->cbAcceptCert->setVisible(mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp);
+}
+
+bool EngineStartDialog::fetchNextUrl()
+{
+    mLastSslError = 0;
+    // first check for a missing "api/"
+    if (!mUrlChecks.testFlag(ucHttps) && mUrlChecks.testFlag(ucApiHttps)) {
+        mUrl = "https" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()) + "api/";
+        if (mUrl.contains(":443/"))
+            mUrl.replace(":443/", "/");
+        mUrlChecks.setFlag(ucApiHttps, false);
+        return true;
+    }
+    if (!mUrlChecks.testFlag(ucHttp) && mUrlChecks.testFlag(ucApiHttp)) {
+        mUrl = "http" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()) + "api/";
+        mUrlChecks.setFlag(ucApiHttp, false);
+        return true;
+    }
+    // then check for the protocol
+    if (mUrlChecks.testFlag(ucHttps)) {
+        mUrl = cleanUrl("https" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()));
+        mUrlChecks.setFlag(ucHttps, false);
+        return true;
+    }
+    if (mUrlChecks.testFlag(ucHttp)) {
+        mUrl = cleanUrl("http" + mRawUrl.mid(mRawUrl.indexOf("://"), mRawUrl.length()));
+        mUrlChecks.setFlag(ucHttp, false);
+        return true;
+    }
+    return false;
+}
+
+EngineStartDialog::UrlCheck EngineStartDialog::protocol(QString url)
+{
+    if (url.startsWith("http://", Qt::CaseInsensitive))
+        return ucHttp;
+    if (url.startsWith("https://", Qt::CaseInsensitive))
+        return ucHttps;
+    return ucNone;
+}
+
+QString EngineStartDialog::cleanUrl(const QString url)
+{
+    QString res = url.trimmed();
+    if (res.startsWith("http://", Qt::CaseInsensitive)) {
+        if (res.contains(":80/"))
+            res.replace(":80/", "/");
+    } else if (res.startsWith("https://", Qt::CaseInsensitive)) {
+        if (res.contains(":443/"))
+            res.replace(":443/", "/");
+    }
+    return res;
 }
 
 } // namespace engine

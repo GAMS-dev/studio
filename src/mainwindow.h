@@ -100,7 +100,7 @@ public:
     ~MainWindow() override;
     void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, bool forceNew);
+    void openFiles(const QStringList &files, bool forceNew);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -488,7 +488,9 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
     QString mEngineTempPassword;
+    bool mEngineAcceptSelfCert = false;
     bool mEngineNoDialog = false;
+
 };
 
 }
