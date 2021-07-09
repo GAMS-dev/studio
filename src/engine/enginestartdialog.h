@@ -106,7 +106,6 @@ private slots:
     void urlEdited(const QString &text);
     void updateLoginStates();
     void updateSubmitStates();
-//    void bLoginClicked();
     void bLogoutClicked();
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);

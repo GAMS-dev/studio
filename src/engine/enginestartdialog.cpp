@@ -247,6 +247,7 @@ void EngineStartDialog::showSubmit()
     ui->buttonBox->button(QDialogButtonBox::Ok)->setText("OK");
     ui->nUser->setText(ui->edUser->text().trimmed());
     ui->nUrl->setText(mProc->url().toString());
+    setCanSubmit(true);
     if (!mHiddenMode)
         ensureOpened();
 }
@@ -271,6 +272,7 @@ void EngineStartDialog::bLogoutClicked()
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
     if (!mProc) return;
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
     if (ui->stackedWidget->currentIndex() == 0 && ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok) {
         mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
@@ -306,18 +308,19 @@ void EngineStartDialog::getVersion()
 
 void EngineStartDialog::setCanLogin(bool value)
 {
+    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
     value = value && !ui->edUrl->text().isEmpty()
             && !ui->edUser->text().isEmpty()
             && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
-    if (value != ui->buttonBox->button(QDialogButtonBox::Ok)->isEnabled())
-        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(value);
+    if (value != bOk->isEnabled())
+        bOk->setEnabled(value);
 }
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    value = value && ui->edNamespace->text().isEmpty();
+    value = value && !ui->edNamespace->text().isEmpty();
     if (value != bOk->isEnabled())
         bOk->setEnabled(value);
 }
@@ -361,12 +364,8 @@ void EngineStartDialog::updateLoginStates()
 
 void EngineStartDialog::updateSubmitStates()
 {
-    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    if (!bOk) return;
     bool enabled = !ui->edNamespace->text().isEmpty();
-    if (enabled && ui->laEngineVersion->text() == CUnavailable) {
-        getVersion();
-    }
+    setCanSubmit(enabled);
     setConnectionState(mConnectState);
 }
 
@@ -379,7 +378,8 @@ void EngineStartDialog::reListJobs(qint32 count)
 void EngineStartDialog::reListJobsError(const QString &error)
 {
     Q_UNUSED(error)
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+    if (ui->stackedWidget->currentIndex() == 0)
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
@@ -505,7 +505,7 @@ void EngineStartDialog::updateConnectStateAppearance()
             ui->laWarn->setToolTip("");
             mForcePreviousWork = false;
         }
-        setCanLogin(true);
+        if (ui->stackedWidget->currentIndex() == 0) setCanLogin(true);
     } break;
     case scsInvalid: {
         if (!mValidSelfCertUrl.isEmpty()) {
