@@ -20,6 +20,7 @@
 
 #include <QJsonObject>
 
+#include "OAIModel_job_labels.h"
 #include "OAIResult_user.h"
 #include "OAIText_entry.h"
 #include <QDateTime>
@@ -66,6 +67,11 @@ public:
     void setIsTemporaryModel(const bool &is_temporary_model);
     bool is_is_temporary_model_Set() const;
     bool is_is_temporary_model_Valid() const;
+
+    OAIModel_job_labels getLabels() const;
+    void setLabels(const OAIModel_job_labels &labels);
+    bool is_labels_Set() const;
+    bool is_labels_Valid() const;
 
     QString getModel() const;
     void setModel(const QString &model);
@@ -147,6 +153,10 @@ private:
     bool is_temporary_model;
     bool m_is_temporary_model_isSet;
     bool m_is_temporary_model_isValid;
+
+    OAIModel_job_labels labels;
+    bool m_labels_isSet;
+    bool m_labels_isValid;
 
     QString model;
     bool m_model_isSet;

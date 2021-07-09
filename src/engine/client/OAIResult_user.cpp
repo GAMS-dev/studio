@@ -36,6 +36,9 @@ void OAIResult_user::initializeModel() {
     m_deleted_isSet = false;
     m_deleted_isValid = false;
 
+    m_old_username_isSet = false;
+    m_old_username_isValid = false;
+
     m_username_isSet = false;
     m_username_isValid = false;
 }
@@ -52,6 +55,9 @@ void OAIResult_user::fromJsonObject(QJsonObject json) {
     m_deleted_isValid = ::OpenAPI::fromJsonValue(deleted, json[QString("deleted")]);
     m_deleted_isSet = !json[QString("deleted")].isNull() && m_deleted_isValid;
 
+    m_old_username_isValid = ::OpenAPI::fromJsonValue(old_username, json[QString("old_username")]);
+    m_old_username_isSet = !json[QString("old_username")].isNull() && m_old_username_isValid;
+
     m_username_isValid = ::OpenAPI::fromJsonValue(username, json[QString("username")]);
     m_username_isSet = !json[QString("username")].isNull() && m_username_isValid;
 }
@@ -67,6 +73,9 @@ QJsonObject OAIResult_user::asJsonObject() const {
     QJsonObject obj;
     if (m_deleted_isSet) {
         obj.insert(QString("deleted"), ::OpenAPI::toJsonValue(deleted));
+    }
+    if (m_old_username_isSet) {
+        obj.insert(QString("old_username"), ::OpenAPI::toJsonValue(old_username));
     }
     if (m_username_isSet) {
         obj.insert(QString("username"), ::OpenAPI::toJsonValue(username));
@@ -90,6 +99,22 @@ bool OAIResult_user::is_deleted_Valid() const{
     return m_deleted_isValid;
 }
 
+QString OAIResult_user::getOldUsername() const {
+    return old_username;
+}
+void OAIResult_user::setOldUsername(const QString &old_username) {
+    this->old_username = old_username;
+    this->m_old_username_isSet = true;
+}
+
+bool OAIResult_user::is_old_username_Set() const{
+    return m_old_username_isSet;
+}
+
+bool OAIResult_user::is_old_username_Valid() const{
+    return m_old_username_isValid;
+}
+
 QString OAIResult_user::getUsername() const {
     return username;
 }
@@ -110,6 +135,11 @@ bool OAIResult_user::isSet() const {
     bool isObjectUpdated = false;
     do {
         if (m_deleted_isSet) {
+            isObjectUpdated = true;
+            break;
+        }
+
+        if (m_old_username_isSet) {
             isObjectUpdated = true;
             break;
         }

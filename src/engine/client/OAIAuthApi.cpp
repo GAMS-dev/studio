@@ -38,8 +38,8 @@ void OAIAuthApi::initializeServerConfigs(){
     QMap<QString, OAIServerVariable>()));
     _serverConfigs.insert("createJWTToken", defaultConf);
     _serverIndices.insert("createJWTToken", 0);
-    _serverConfigs.insert("postW", defaultConf);
-    _serverIndices.insert("postW", 0);
+    _serverConfigs.insert("createJWTTokenJSON", defaultConf);
+    _serverIndices.insert("createJWTTokenJSON", 0);
 }
 
 /**
@@ -274,64 +274,30 @@ void OAIAuthApi::createJWTTokenCallback(OAIHttpRequestWorker *worker) {
     }
 }
 
-void OAIAuthApi::postW(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in) {
-    QString fullPath = QString(_serverConfigs["postW"][_serverIndices.value("postW")].URL()+"/auth/login");
+void OAIAuthApi::createJWTTokenJSON(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in) {
+    QString fullPath = QString(_serverConfigs["createJWTTokenJSON"][_serverIndices.value("createJWTTokenJSON")].URL()+"/auth/login");
     
-    QString queryPrefix, querySuffix, queryDelimiter, queryStyle;
-    
-    {
-        queryStyle = "";
-        if(queryStyle == "")
-            queryStyle = "form";
-        queryPrefix = getParamStylePrefix(queryStyle);
-        querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "username", false);
-        if (fullPath.indexOf("?") > 0)
-            fullPath.append(queryPrefix);
-        else
-            fullPath.append("?");
-
-        fullPath.append(QUrl::toPercentEncoding("username")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(username)));
-    }
-    
-    {
-        queryStyle = "";
-        if(queryStyle == "")
-            queryStyle = "form";
-        queryPrefix = getParamStylePrefix(queryStyle);
-        querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "password", false);
-        if (fullPath.indexOf("?") > 0)
-            fullPath.append(queryPrefix);
-        else
-            fullPath.append("?");
-
-        fullPath.append(QUrl::toPercentEncoding("password")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(password)));
-    }
-    if(expires_in.hasValue())
-    {
-        queryStyle = "";
-        if(queryStyle == "")
-            queryStyle = "form";
-        queryPrefix = getParamStylePrefix(queryStyle);
-        querySuffix = getParamStyleSuffix(queryStyle);
-        queryDelimiter = getParamStyleDelimiter(queryStyle, "expires_in", false);
-        if (fullPath.indexOf("?") > 0)
-            fullPath.append(queryPrefix);
-        else
-            fullPath.append("?");
-
-        fullPath.append(QUrl::toPercentEncoding("expires_in")).append(querySuffix).append(QUrl::toPercentEncoding(::OpenAPI::toStringValue(expires_in.value())));
-    }
     OAIHttpRequestWorker *worker = new OAIHttpRequestWorker(this, _manager);
     worker->setTimeOut(_timeOut);
     worker->setWorkingDirectory(_workingDirectory);
     OAIHttpRequestInput input(fullPath, "POST");
 
+    
+    {
+        input.add_var("username", ::OpenAPI::toStringValue(username));
+    }
+    
+    {
+        input.add_var("password", ::OpenAPI::toStringValue(password));
+    }
+    if(expires_in.hasValue())
+    {
+        input.add_var("expires_in", ::OpenAPI::toStringValue(expires_in.value()));
+    }
 
     foreach (QString key, this->defaultHeaders.keys()) { input.headers.insert(key, this->defaultHeaders.value(key)); }
 
-    connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::postWCallback);
+    connect(worker, &OAIHttpRequestWorker::on_execution_finished, this, &OAIAuthApi::createJWTTokenJSONCallback);
     connect(this, &OAIAuthApi::abortRequestsSignal, worker, &QObject::deleteLater);
     connect(worker, &QObject::destroyed, [this](){
         if(findChildren<OAIHttpRequestWorker*>().count() == 0){
@@ -342,7 +308,7 @@ void OAIAuthApi::postW(const QString &username, const QString &password, const :
     worker->execute(&input);
 }
 
-void OAIAuthApi::postWCallback(OAIHttpRequestWorker *worker) {
+void OAIAuthApi::createJWTTokenJSONCallback(OAIHttpRequestWorker *worker) {
     QString msg;
     QString error_str = worker->error_str;
     QNetworkReply::NetworkError error_type = worker->error_type;
@@ -357,11 +323,11 @@ void OAIAuthApi::postWCallback(OAIHttpRequestWorker *worker) {
     worker->deleteLater();
 
     if (worker->error_type == QNetworkReply::NoError) {
-        emit postWSignal(output);
-        emit postWSignalFull(worker, output);
+        emit createJWTTokenJSONSignal(output);
+        emit createJWTTokenJSONSignalFull(worker, output);
     } else {
-        emit postWSignalE(output, error_type, error_str);
-        emit postWSignalEFull(worker, error_type, error_str);
+        emit createJWTTokenJSONSignalE(output, error_type, error_str);
+        emit createJWTTokenJSONSignalEFull(worker, error_type, error_str);
     }
 }
 

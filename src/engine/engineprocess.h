@@ -55,11 +55,13 @@ public:
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
     QUrl url();
-    void authenticate(const QString &username, const QString &password);
-    void authenticate(const QString &bearerToken);
+    void authorize(const QString &username, const QString &password, int expireMinutes);
+    void setAuthToken(const QString &bearerToken);
+    QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
+    void listJobs();
     void getVersions();
     void addLastCert();
 
@@ -68,10 +70,13 @@ public:
     void abortRequests();
 
 signals:
-    void authenticated(const QString &token);
+    void authorized(const QString &token);
+    void authorizeError(const QString &error);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
     void sslSelfSigned(int sslError);
@@ -86,6 +91,7 @@ protected slots:
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
+    void reAuthorize(const QString &token);
 
 private slots:
     void pullStatus();
@@ -109,9 +115,10 @@ private:
     EngineManager *mManager;
     QString mHost;
     QString mBasePath;
+    QString mNamespace;
     QString mUser;
     QString mPassword;
-    QString mNamespace;
+    QString mAuthToken;
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;

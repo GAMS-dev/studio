@@ -22,6 +22,8 @@
 #include <QObject>
 #include <QMetaEnum>
 #include <QNetworkReply>
+#include "client/OAIModel_auth_token.h"
+
 
 namespace OpenAPI {
 class OAIAuthApi;
@@ -58,15 +60,15 @@ public:
     QUrl url() { return mUrl; }
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
-    bool ignoreSslErrors();
-    QString getToken() const;
+    QString getJobToken() const;
     void setToken(const QString &token);
     void abortRequests();
     void cleanup();
 
-    void authenticate(const QString &user, const QString &password);
-    void authenticate(const QString &bearerToken);
+    void authorize(const QString &user, const QString &password, int expireMinutes);
+    void setAuthToken(const QString &bearerToken);
     void getVersion();
+    void listJobs();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
     void getJobStatus();
     void getLog();
@@ -77,10 +79,13 @@ public:
 signals:
     void syncKillJob(bool hard);
 
-    void reAuth(const QString &token);
+    void reAuthorize(const QString &token);
+    void reAuthorizeError(const QString &error);
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reCreateJob(const QString &message, const QString &token);
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);
@@ -94,12 +99,12 @@ private slots:
     void killJob(bool hard);
     void debugReceived(QString name, QVariant data);
 
-
 private:
     bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
+    QString getJsonMessageIfFound(const QString &text);
 
 private:
-//    OpenAPI::OAIAuthApi *mAuthApi;
+    OpenAPI::OAIAuthApi *mAuthApi;
     QUrl mUrl;
     QUrl mIgnoreSslUrl;
     OpenAPI::OAIDefaultApi *mDefaultApi;
@@ -108,7 +113,7 @@ private:
     static QSslConfiguration mSslConfigurationIgnoreErrOn;
     static QSslConfiguration mSslConfigurationIgnoreErrOff;
     int mJobNumber = 0;
-    QString mToken;
+    QString mJobToken;
     bool mQueueFinished = false;
     static bool mStartupDone;
 };

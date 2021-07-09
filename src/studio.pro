@@ -105,10 +105,13 @@ SOURCES += \
     engine/client/OAIJob_no_text_entry.cpp \
     engine/client/OAIJob_no_text_entry_page.cpp \
     engine/client/OAILog_piece.cpp \
+    engine/client/OAIModel_job_labels.cpp \
     engine/client/OAIMessage.cpp \
     engine/client/OAIMessage_and_token.cpp \
     engine/client/OAIModel_auth_token.cpp \
     engine/client/OAIModel_version.cpp \
+    engine/client/OAIQuota.cpp \
+    engine/client/OAIQuota_exceeded.cpp \
     engine/client/OAIResult_user.cpp \
     engine/client/OAIStatus_code_meaning.cpp \
     engine/client/OAIStream_entry.cpp \
@@ -298,8 +301,11 @@ HEADERS += \
     engine/client/OAIMessage.h \
     engine/client/OAIMessage_and_token.h \
     engine/client/OAIModel_auth_token.h \
+    engine/client/OAIModel_job_labels.h \
     engine/client/OAIModel_version.h \
     engine/client/OAIObject.h \
+    engine/client/OAIQuota.h \
+    engine/client/OAIQuota_exceeded.h \
     engine/client/OAIResult_user.h \
     engine/client/OAIStatus_code_meaning.h \
     engine/client/OAIStream_entry.h \

@@ -20,6 +20,8 @@ Version 1.7.0
 - changed shortcut for show Extended Parameter Editor
     - from: `Ctrl-Alt-3`(Windows/Linux) and `Shift-Command-3`(macOS)
     - to: `Shift+Ctrl+3`(Windows/Linux) and `Control-Option-3`(macOS)
+- in the Engine dialog users can select to stay logged in
+- joined settings for remote sessions in the "Remote" page of the Settings dialog
 
 Version 1.6.2
 ==================

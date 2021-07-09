@@ -43,6 +43,11 @@ public:
     bool is_deleted_Set() const;
     bool is_deleted_Valid() const;
 
+    QString getOldUsername() const;
+    void setOldUsername(const QString &old_username);
+    bool is_old_username_Set() const;
+    bool is_old_username_Valid() const;
+
     QString getUsername() const;
     void setUsername(const QString &username);
     bool is_username_Set() const;
@@ -57,6 +62,10 @@ private:
     bool deleted;
     bool m_deleted_isSet;
     bool m_deleted_isValid;
+
+    QString old_username;
+    bool m_old_username_isSet;
+    bool m_old_username_isValid;
 
     QString username;
     bool m_username_isSet;

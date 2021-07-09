@@ -45,10 +45,13 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
-    connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
+    connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::reAuthorize);
+    connect(mManager, &EngineManager::reAuthorizeError, this, &EngineProcess::authorizeError);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
+    connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
+    connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
@@ -255,7 +258,7 @@ void EngineProcess::reVersionIntern(const QString &engineVersion, const QString 
 
 void EngineProcess::interrupt()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(false);
     else
@@ -264,7 +267,7 @@ void EngineProcess::interrupt()
 
 void EngineProcess::terminate()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(true);
     else
@@ -335,17 +338,16 @@ QUrl EngineProcess::url()
     return mManager->url();
 }
 
-void EngineProcess::authenticate(const QString &username, const QString &password)
+void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
 {
-    mManager->authenticate(username, password);
-    setProcState(ProcIdle);
-    // TODO(JM): generate bearerToken and wait for answer before changing to idle
+    mManager->authorize(username, password, expireMinutes);
+    setProcState(ProcCheck);
 }
 
-void EngineProcess::authenticate(const QString &bearerToken)
+void EngineProcess::setAuthToken(const QString &bearerToken)
 {
-    mManager->authenticate(bearerToken);
-    setProcState(ProcIdle);
+    mAuthToken = bearerToken;
+    mManager->setAuthToken(bearerToken);
     // TODO(JM): check for namespace permissions and wait for answer before changing to idle
 }
 
@@ -365,6 +367,11 @@ void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 bool EngineProcess::isIgnoreSslErrors() const
 {
     return mManager->isIgnoreSslErrors();
+}
+
+void EngineProcess::listJobs()
+{
+    mManager->listJobs();
 }
 
 void EngineProcess::getVersions()
@@ -474,6 +481,16 @@ void EngineProcess::reError(const QString &errorText)
     mPullTimer.stop();
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
+}
+
+void EngineProcess::reAuthorize(const QString &token)
+{
+    mManager->setAuthToken(token);
+    if (!token.isEmpty()) {
+        mManager->listJobs();
+        setProcState(ProcCheck);
+    }
+    emit authorized(token);
 }
 
 void EngineProcess::pullStatus()

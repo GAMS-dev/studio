@@ -43,7 +43,8 @@ enum ServerConnectionState {
     scsHttpsFound,
     scsHttpsSelfSignedFound,
     scsValid,
-    scsInvalid
+    scsInvalid,
+    scsLoggedIn,
 };
 
 class EngineStartDialog : public QDialog
@@ -57,34 +58,44 @@ public:
 public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog() override;
-    void hiddenCheck();
+    void setHiddenMode(bool preferHidden);
+    void start();
 
     void setProcess(EngineProcess *process);
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_nSpace, const QString &_user, const QString &_pw, bool _forceGdx);
+    void initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx);
+    bool isAlways();
     QString url() const;
     QString nSpace() const;
     QString user() const;
-    QString password() const;
+    QString authToken() const;
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);
-    void prepareOpen();
 
     QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
-    void ready(bool start, bool always);
+    void submit(bool start);
+
+public slots:
+    void authorizeChanged(QString authToken);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void closeEvent(QCloseEvent *event) override;
     void showEvent(QShowEvent *event) override;
+
+    void showLogin();
+    void showSubmit();
+    bool inLogin();
+    void ensureOpened();
     void buttonClicked(QAbstractButton *button);
     void getVersion();
-    void setCanStart(bool valid);
+    void setCanLogin(bool value);
+    void setCanSubmit(bool value);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
@@ -94,8 +105,12 @@ protected:
 
 private slots:
     void urlEdited(const QString &text);
-    void updateStates();
-    void btAlwaysClicked();
+    void updateLoginStates();
+    void updateSubmitStates();
+    void bLogoutClicked();
+    void authorizeError(const QString &error);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
     void forceGdxStateChanged(int state);
@@ -116,14 +131,15 @@ private:
     UrlChecks mUrlChecks;
     UrlCheck mInitialProtocol = ucNone;
     int mLastSslError = 0;
-//    bool mPendingRequest = false;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
-    bool mHiddenCheck = false;
+    bool mHiddenMode = false;
+    bool mAlways = false;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
+    int mAuthExpireMinutes = 60*2;
 
     static const QString CUnavailable;
 

@@ -36,19 +36,25 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
-    setCanStart(false);
+    setCanLogin(false);
     QFont f = ui->laWarn->font();
     f.setBold(true);
     ui->laWarn->setFont(f);
     connect(ui->buttonBox, &QDialogButtonBox::clicked, this, &EngineStartDialog::buttonClicked);
     connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
-    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateStates);
-    connect(ui->bAlways, &QPushButton::clicked, this, &EngineStartDialog::btAlwaysClicked);
+    connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateSubmitStates);
+    connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    connect(ui->bAlways, &QPushButton::clicked, this, [this]() { buttonClicked(ui->bAlways); });
+
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->bAlways->setVisible(false);
+    ui->cbAcceptCert->setVisible(false);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -57,7 +63,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
     if (regex.exactMatch(about))
         mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
-    updateStates();
+    updateLoginStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);
     mConnectStateUpdater.setInterval(100);
@@ -73,20 +79,40 @@ EngineStartDialog::~EngineStartDialog()
     delete ui;
 }
 
-void EngineStartDialog::hiddenCheck()
+void EngineStartDialog::authorizeChanged(QString authToken)
 {
-    mHiddenCheck = true;
-    getVersion();
+    Q_UNUSED(authToken)
+    if (mProc->authToken().isEmpty())
+        showLogin();
+    else
+        mProc->listJobs();
+}
+
+void EngineStartDialog::setHiddenMode(bool preferHidden)
+{
+    mHiddenMode = preferHidden;
+}
+
+void EngineStartDialog::start()
+{
+    if (!mProc) return;
+    if (ui->edUrl->text().isEmpty())
+        showLogin();
+    else
+        urlEdited(ui->edUrl->text());
 }
 
 void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
+    connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorizeChanged);
+    connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
+    connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
+    connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
-    urlEdited(ui->edUrl->text());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -99,6 +125,7 @@ void EngineStartDialog::setAcceptCert()
     if (!ui->cbAcceptCert->isVisible())
         ui->cbAcceptCert->setVisible(true);
     ui->cbAcceptCert->setChecked(true);
+    mProc->setIgnoreSslErrorsCurrentUrl(true);
 }
 
 bool EngineStartDialog::isCertAccepted()
@@ -106,13 +133,21 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const QString &_nSpace, const QString &_user, const QString &_pw, bool _forceGdx)
+void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx)
 {
-    ui->edUrl->setText(cleanUrl(_url));
-    ui->edNamespace->setText(_nSpace);
-    ui->edUser->setText(_user);
-    ui->edPassword->setText(_pw);
+    mUrl = cleanUrl(_url);
+    ui->edUrl->setText(mUrl);
+    ui->nUrl->setText(mUrl);
+    ui->edUser->setText(_user.trimmed());
+    ui->nUser->setText(_user.trimmed());
+    mAuthExpireMinutes = authExpireMinutes;
+    ui->edNamespace->setText(_nSpace.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
+}
+
+bool EngineStartDialog::isAlways()
+{
+    return mAlways;
 }
 
 QString EngineStartDialog::url() const
@@ -130,9 +165,9 @@ QString EngineStartDialog::user() const
     return ui->edUser->text();
 }
 
-QString EngineStartDialog::password() const
+QString EngineStartDialog::authToken() const
 {
-    return ui->edPassword->text();
+    return mProc ? mProc->authToken() : QString();
 }
 
 bool EngineStartDialog::forceGdx() const
@@ -142,10 +177,13 @@ bool EngineStartDialog::forceGdx() const
 
 void EngineStartDialog::focusEmptyField()
 {
-    if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
-    else if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
-    else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
-    else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+    if (inLogin()) {
+        if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
+        else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
+        else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+    } else {
+        if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
+    }
 }
 
 void EngineStartDialog::setEngineVersion(QString version)
@@ -158,11 +196,6 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
     if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
         updateUrlEdit();
     return QDialog::eventFilter(watched, event);
-}
-
-void EngineStartDialog::prepareOpen()
-{
-    if (!ui->cbAcceptCert->isVisible()) ui->cbAcceptCert->setVisible(true);
 }
 
 void EngineStartDialog::updateUrlEdit()
@@ -191,22 +224,82 @@ void EngineStartDialog::closeEvent(QCloseEvent *event)
 
 void EngineStartDialog::showEvent(QShowEvent *event)
 {
+    bool isHidden = !ui->cbAcceptCert->isVisible();
+    if (isHidden)
+        ui->cbAcceptCert->setVisible(true);
     QDialog::showEvent(event);
     setFixedSize(size());
-    ui->cbAcceptCert->setVisible(!mProc || (mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp));
+    if (isHidden)
+        ui->cbAcceptCert->setVisible(false);
+}
+
+void EngineStartDialog::showLogin()
+{
+    ui->stackedWidget->setCurrentIndex(0);
+    ui->bAlways->setVisible(false);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
+    ensureOpened();
+}
+
+void EngineStartDialog::showSubmit()
+{
+    ui->stackedWidget->setCurrentIndex(1);
+    ui->bAlways->setVisible(true);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("OK");
+    ui->nUser->setText(ui->edUser->text().trimmed());
+    ui->nUrl->setText(mProc->url().toString());
+    setCanSubmit(true);
+    if (!mHiddenMode)
+        ensureOpened();
+}
+
+bool EngineStartDialog::inLogin()
+{
+    return ui->stackedWidget->currentIndex() == 0;
+}
+
+void EngineStartDialog::ensureOpened()
+{
+    if (!isVisible()) {
+        mHiddenMode = false;
+        open();
+        focusEmptyField();
+    }
+}
+
+void EngineStartDialog::bLogoutClicked()
+{
+    ui->edPassword->setText("");
+    mProc->setAuthToken("");
+    emit mProc->authorized("");
+    showLogin();
+}
+
+void EngineStartDialog::authorizeError(const QString &error)
+{
+    ui->laWarn->setText("Could not log in: " + error.trimmed());
+    ui->laWarn->setToolTip("Please check your username and password");
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
-    bool always = button == ui->bAlways;
-    bool start = always || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
+    if (!mProc) return;
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+
+    if (inLogin() && ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok) {
+        mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
+        return;
+    }
+    mAlways = button == ui->bAlways;
+    bool start = mAlways || ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok;
     if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
     if (!start) {
         disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
         ui->cbAcceptCert->setChecked(false);
         connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
     }
-    emit ready(start, always);
+    mProc->setNamespace(ui->edNamespace->text().trimmed());
+    emit submit(start);
 }
 
 void EngineStartDialog::getVersion()
@@ -225,17 +318,23 @@ void EngineStartDialog::getVersion()
     updateConnectStateAppearance();
 }
 
-void EngineStartDialog::setCanStart(bool canStart)
+void EngineStartDialog::setCanLogin(bool value)
 {
     QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    if (!bOk) return;
-    canStart = canStart && !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty()
+    value = value && !ui->edUrl->text().isEmpty()
+            && !ui->edUser->text().isEmpty()
+            && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
-    if (canStart != bOk->isEnabled())
-        bOk->setEnabled(canStart);
-    if (canStart != ui->bAlways->isEnabled())
-        ui->bAlways->setEnabled(canStart);
+    if (value != bOk->isEnabled())
+        bOk->setEnabled(value);
+}
+
+void EngineStartDialog::setCanSubmit(bool value)
+{
+    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
+    value = value && !ui->edNamespace->text().isEmpty();
+    if (value != bOk->isEnabled())
+        bOk->setEnabled(value);
 }
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
@@ -247,7 +346,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 void EngineStartDialog::certAcceptChanged()
 {
     mProc->abortRequests();
-    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked());
+    mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked() && ui->cbAcceptCert->isVisible());
     urlEdited(ui->edUrl->text());
 }
 
@@ -261,13 +360,13 @@ void EngineStartDialog::urlEdited(const QString &text)
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
+    if (!isVisible() && !mHiddenMode)
+        showLogin();
 }
 
-void EngineStartDialog::updateStates()
+void EngineStartDialog::updateLoginStates()
 {
-    QPushButton *bOk = ui->buttonBox->button(QDialogButtonBox::Ok);
-    if (!bOk) return;
-    bool enabled = !ui->edUrl->text().isEmpty() && !ui->edNamespace->text().isEmpty()
+    bool enabled = !ui->edUrl->text().isEmpty()
             && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
         getVersion();
@@ -275,9 +374,25 @@ void EngineStartDialog::updateStates()
     setConnectionState(mConnectState);
 }
 
-void EngineStartDialog::btAlwaysClicked()
+void EngineStartDialog::updateSubmitStates()
 {
-    buttonClicked(ui->bAlways);
+    bool enabled = !ui->edNamespace->text().isEmpty();
+    setCanSubmit(enabled);
+    setConnectionState(mConnectState);
+}
+
+void EngineStartDialog::reListJobs(qint32 count)
+{
+    ui->nJobCount->setText(QString::number(count));
+    showSubmit();
+}
+
+void EngineStartDialog::reListJobsError(const QString &error)
+{
+    Q_UNUSED(error)
+    DEB() << "ERROR: " << error;
+    if (inLogin())
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
@@ -291,9 +406,13 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         setConnectionState((protServer == ucHttp || protServer == ucApiHttp) ? scsHttpFound : scsHttpsFound);
     } else {
         mValidUrl = mProc->url().toString();
-        setConnectionState(scsValid);
         if (focusWidget() != ui->edUrl)
             updateUrlEdit();
+        setConnectionState(scsValid);
+        if (mProc->authToken().isEmpty())
+            showLogin();
+        else
+            mProc->listJobs();
     }
 }
 
@@ -317,8 +436,8 @@ void EngineStartDialog::reVersionError(const QString &errorText)
         mUrl = ui->edUrl->text();
 
     // if server not found on hidden dialog - open dialog anyway
-    if (!isVisible() && mHiddenCheck) {
-        open();
+    if (!isVisible()) {
+        ensureOpened();
     }
 }
 
@@ -345,7 +464,7 @@ void EngineStartDialog::updateConnectStateAppearance()
         ui->laWarn->setText("No GAMS Engine server");
         ui->laWarn->setToolTip("");
         mForcePreviousWork = false;
-        setCanStart(false);
+        setCanLogin(false);
     } break;
     case scsWaiting: {
         ui->laEngGamsVersion->setText("");
@@ -353,7 +472,7 @@ void EngineStartDialog::updateConnectStateAppearance()
         ui->laWarn->setText("Waiting for server ...");
         ui->laWarn->setToolTip("");
         mForcePreviousWork = false;
-        setCanStart(false);
+        setCanLogin(false);
     } break;
     case scsHttpFound: {
         ui->laWarn->setText("HTTP found.");
@@ -387,17 +506,19 @@ void EngineStartDialog::updateConnectStateAppearance()
                 ui->laWarn->setToolTip("");
                 mForcePreviousWork = false;
             }
-            if (!isVisible() && mHiddenCheck) {
+            if (!isVisible() && mHiddenMode) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
-                emit ready(true, true);
+                mAlways = true;
+                mProc->setNamespace(ui->edNamespace->text().trimmed());
+                emit submit(true);
             }
         } else {
             ui->laWarn->setText("");
             ui->laWarn->setToolTip("");
             mForcePreviousWork = false;
         }
-        setCanStart(true);
+        if (inLogin()) setCanLogin(true);
     } break;
     case scsInvalid: {
         if (!mValidSelfCertUrl.isEmpty()) {
@@ -420,7 +541,10 @@ void EngineStartDialog::updateConnectStateAppearance()
             ui->laWarn->setToolTip("");
         }
         mForcePreviousWork = false;
-        setCanStart(false);
+        setCanLogin(false);
+    } break;
+    case scsLoggedIn: {
+        showSubmit();
     } break;
     }
 }
