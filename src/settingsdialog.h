@@ -59,6 +59,7 @@ signals:
     void themeChanged();
     void userGamsTypeChanged();
     void editorTabSizeChanged(int size);
+    void reactivateEngineDialog();
 
 public slots:
     void delayBaseThemeChange(bool valid);
@@ -92,10 +93,12 @@ private slots:
     void on_btRemoveTheme_clicked();
     void on_btImportTheme_clicked();
     void on_btExportTheme_clicked();
+    void on_btEngineDialog_clicked();
 
     void on_tb_userLibSelect_clicked();
     void on_tb_userLibRemove_clicked();
     void on_tb_userLibOpen_clicked();
+
 
 private:
     Ui::SettingsDialog *ui;

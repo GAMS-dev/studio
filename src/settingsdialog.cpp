@@ -820,5 +820,11 @@ void SettingsDialog::on_btExportTheme_clicked()
     fd->open();
 }
 
+
+void SettingsDialog::on_btEngineDialog_clicked()
+{
+    emit reactivateEngineDialog();
+}
+
 }
 }

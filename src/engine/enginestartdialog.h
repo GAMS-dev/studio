@@ -90,6 +90,7 @@ protected:
 
     void showLogin();
     void showSubmit();
+    bool inLogin();
     void ensureOpened();
     void buttonClicked(QAbstractButton *button);
     void getVersion();

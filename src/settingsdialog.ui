@@ -808,6 +808,13 @@
           <string>GAMS Engine</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_13">
+          <item row="1" column="0">
+           <widget class="QLabel" name="laEngineStayLoggedIn">
+            <property name="text">
+             <string>      Stay logged in for </string>
+            </property>
+           </widget>
+          </item>
           <item row="1" column="3">
            <widget class="QComboBox" name="cbEngineExpireType">
             <item>
@@ -827,10 +834,10 @@
             </item>
            </widget>
           </item>
-          <item row="1" column="0">
-           <widget class="QLabel" name="laEngineStayLoggedIn">
+          <item row="0" column="0" colspan="3">
+           <widget class="QCheckBox" name="cbEngineStoreToken">
             <property name="text">
-             <string>      stay logged in for </string>
+             <string>Store login state</string>
             </property>
            </widget>
           </item>
@@ -847,17 +854,17 @@
             </property>
            </spacer>
           </item>
-          <item row="0" column="0" colspan="3">
-           <widget class="QCheckBox" name="cbEngineStoreToken">
-            <property name="text">
-             <string>store login state</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
            <widget class="QSpinBox" name="sbEngineExpireValue">
             <property name="maximum">
              <number>999</number>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QPushButton" name="btEngineDialog">
+            <property name="text">
+             <string>Reactivate dialog</string>
             </property>
            </widget>
           </item>

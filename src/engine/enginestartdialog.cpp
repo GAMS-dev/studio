@@ -53,8 +53,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
-    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
     ui->cbAcceptCert->setVisible(false);
+    ui->buttonBox->button(QDialogButtonBox::Ok)->setText("Login");
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -176,7 +176,7 @@ bool EngineStartDialog::forceGdx() const
 
 void EngineStartDialog::focusEmptyField()
 {
-    if (ui->stackedWidget->currentIndex() == 0) {
+    if (inLogin()) {
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
         else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
@@ -252,6 +252,11 @@ void EngineStartDialog::showSubmit()
         ensureOpened();
 }
 
+bool EngineStartDialog::inLogin()
+{
+    return ui->stackedWidget->currentIndex() == 0;
+}
+
 void EngineStartDialog::ensureOpened()
 {
     if (!isVisible()) {
@@ -274,7 +279,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     if (!mProc) return;
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
 
-    if (ui->stackedWidget->currentIndex() == 0 && ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok) {
+    if (inLogin() && ui->buttonBox->standardButton(button) == QDialogButtonBox::Ok) {
         mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
         return;
     }
@@ -378,7 +383,8 @@ void EngineStartDialog::reListJobs(qint32 count)
 void EngineStartDialog::reListJobsError(const QString &error)
 {
     Q_UNUSED(error)
-    if (ui->stackedWidget->currentIndex() == 0)
+    DEB() << "ERROR: " << error;
+    if (inLogin())
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
 }
 
@@ -505,7 +511,7 @@ void EngineStartDialog::updateConnectStateAppearance()
             ui->laWarn->setToolTip("");
             mForcePreviousWork = false;
         }
-        if (ui->stackedWidget->currentIndex() == 0) setCanLogin(true);
+        if (inLogin()) setCanLogin(true);
     } break;
     case scsInvalid: {
         if (!mValidSelfCertUrl.isEmpty()) {

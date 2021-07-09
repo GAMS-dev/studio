@@ -3369,7 +3369,11 @@ void MainWindow::showEngineStartDialog()
     proc->setAuthToken(mEngineAuthToken);
     connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
         mEngineAuthToken = token;
-        DEB() << "mainWindow.mEngineAuthToken = " << mEngineAuthToken;
+        if (token.isEmpty()) DEB() << "Logged out";
+        if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
+        else
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
     });
 
     // prepare dialog
@@ -3397,11 +3401,6 @@ void MainWindow::engineSubmit(bool start)
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
-//        mEngineAuthToken = dialog->authToken();
-        if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
-            Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
-        else
-            Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
     } else {
@@ -3904,6 +3903,9 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
+        connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
+            mEngineNoDialog = false;
+        });
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
             if (mSettingsDialog->hasDelayedBaseThemeChange()) {
