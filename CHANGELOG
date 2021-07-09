@@ -17,11 +17,11 @@ Version 1.7.0
 - fixed ESC key not behaving like close button in Settings dialog
 - added support for GAMS Engine server with self-signed certificate (https)
 - added support for GAMS Engine server with http protocol
-- changed shortcut for show Extended Parameter Editor
-    - from: `Ctrl-Alt-3`(Windows/Linux) and `Shift-Command-3`(macOS)
-    - to: `Shift+Ctrl+3`(Windows/Linux) and `Control-Option-3`(macOS)
-- in the Engine dialog users can select to stay logged in
-- joined settings for remote sessions in the "Remote" page of the Settings dialog
+- changed shortcuts to show/hide Extended Parameter Editor
+    - Windows/Linux: from `Ctrl-Alt-3` to `Shift+Ctrl+3`
+    - macOS: from `Shift-Command-3` to `Control-Option-3`
+- renamed "MIRO" Settings page to "Remote" to better reflect new content
+- added option to remember login credentials for GAMS Engine in Settings
 
 Version 1.6.2
 ==================
