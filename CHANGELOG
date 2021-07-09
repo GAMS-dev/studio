@@ -1,22 +1,25 @@
 Version 1.7.0
 ==================
-- allow specifying location of User Model Libraries in settings dialog
+- allow specifying location of User Model Libraries in Settings dialog
 - improved distinction between current and other groups
 - dropped support for Ubuntu 16.04 LTS and openSUSE Leap 15.2 because of updated AppImage now requiring glibc 2.27
 - fixed duplicate file entries in the Project Explorer when having two references with different case to a single file
 - fixed Studio title bar appearing outside of screen
 - fixed wrong content of "File" tab in Reference File Viewer
 - fixed missing check of some data locations for GAMS license file
-- fixed default gamslice.txt location if no GAMS license is configures, which will be the users home directory
+- fixed default gamslice.txt location to be be the users home directory when no other GAMS license was found
+- fixed missing name update for Log tabs when using filestem parameter
 - added a list of solvers for each model type to be selected in Extended Parameter Editor and Configuration Editor
 - added system attributes and compile-time constants to syntax highlighter and code completer
 - added support of quoted elements in syntax highlighter
 - disabled code completer for certain code blocks like $onEmbeddedCode or $onPut
 - added a warning message before printing large files
-- fixed delayed name actualization in LOG tab when using filestem
-- in the Settings dialog fixed ESC key to behave like the close button
-- support GAMS Engine server with self-signed certificate (https)
-- support GAMS Engine server with http protocol
+- fixed ESC key not behaving like close button in Settings dialog
+- added support for GAMS Engine server with self-signed certificate (https)
+- added support for GAMS Engine server with http protocol
+- changed shortcut for show Extended Parameter Editor
+    - from: `Ctrl-Alt-3`(Windows/Linux) and `Shift-Command-3`(macOS)
+    - to: `Shift+Ctrl+3`(Windows/Linux) and `Control-Option-3`(macOS)
 - in the Engine dialog users can select to stay logged in
 - joined settings for remote sessions in the "Remote" page of the Settings dialog
 

@@ -121,10 +121,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionToggleBookmark->setShortcut(QKeySequence("Meta+M"));
     ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
     ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
+    ui->actionToggle_Extended_Parameter_Editor->setShortcut(QKeySequence("Meta+Alt+3"));
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
     ui->actionDistraction_Free_Mode->setShortcuts({QKeySequence("Ctrl+Alt+Enter"), QKeySequence("Ctrl+Alt+Return")});
+    ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">"+ui->actionToggle_Extended_Parameter_Editor->shortcut().toString()+"</span>)</p></body></html>");
 
     new QShortcut(QKeySequence("Ctrl+="), this, SLOT(on_actionZoom_In_triggered()));
     ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
@@ -4498,10 +4500,10 @@ void MainWindow::on_actionToggle_Extended_Parameter_Editor_toggled(bool checked)
 {
     if (checked) {
         ui->actionToggle_Extended_Parameter_Editor->setIcon(Theme::icon(":/%1/hide"));
-        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Hide Extended Parameter Editor (<span style=\"font-weight:600;\">"+ui->actionToggle_Extended_Parameter_Editor->shortcut().toString()+"</span>)</p></body></html>");
     } else {
         ui->actionToggle_Extended_Parameter_Editor->setIcon(Theme::icon(":/%1/show") );
-        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">Ctrl+ALt+L</span>)</p></body></html>");
+        ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">"+ui->actionToggle_Extended_Parameter_Editor->shortcut().toString()+"</span>)</p></body></html>");
     }
 
     mGamsParameterEditor->setEditorExtended(checked);
