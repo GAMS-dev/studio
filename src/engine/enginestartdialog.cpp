@@ -106,6 +106,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
     connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorizeChanged);
+    connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
     connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
@@ -272,6 +273,12 @@ void EngineStartDialog::bLogoutClicked()
     mProc->setAuthToken("");
     emit mProc->authorized("");
     showLogin();
+}
+
+void EngineStartDialog::authorizeError(const QString &error)
+{
+    ui->laWarn->setText("Could not log in: " + error.trimmed());
+    ui->laWarn->setToolTip("Please check your username and password");
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)

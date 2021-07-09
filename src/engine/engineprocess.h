@@ -71,6 +71,7 @@ public:
 
 signals:
     void authorized(const QString &token);
+    void authorizeError(const QString &error);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);

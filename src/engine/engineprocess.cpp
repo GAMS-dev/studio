@@ -46,6 +46,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
     connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::reAuthorize);
+    connect(mManager, &EngineManager::reAuthorizeError, this, &EngineProcess::authorizeError);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);

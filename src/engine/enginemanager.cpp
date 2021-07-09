@@ -50,10 +50,8 @@ EngineManager::EngineManager(QObject* parent)
         emit reAuthorize(summary.getToken());
     });
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError e, QString text) {
-        Q_UNUSED(worker)
-        DEB() << "Authentification error [" << int(e) << "] "  << getJsonMessageIfFound(text);
-        emit reAuthorize(QString());
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
+        emit reAuthorizeError(getJsonMessageIfFound(text));
     });
 
 

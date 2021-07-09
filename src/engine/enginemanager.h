@@ -80,6 +80,7 @@ signals:
     void syncKillJob(bool hard);
 
     void reAuthorize(const QString &token);
+    void reAuthorizeError(const QString &error);
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
