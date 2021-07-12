@@ -449,7 +449,7 @@ void EngineProcess::reKillJob(const QString &text)
 void EngineProcess::reGetLog(const QByteArray &data)
 {
     if (mQueuedTimer.isValid()) {
-        emit newStdChannelData("\n");
+        emit newStdChannelData("\n\n");
         mQueuedTimer.invalidate();
     }
     QByteArray res = convertReferences(data);
@@ -462,7 +462,7 @@ void EngineProcess::jobIsQueued()
     if (mQueuedTimer.isValid()) {
         int elapsed = int(mQueuedTimer.elapsed() / 1000L);
         if (elapsed > 1)
-            emit newStdChannelData(("\rJob queued (" + QString::number(elapsed) + " sec)").toUtf8());
+            emit newStdChannelData(("\r--- Job queued (" + QString::number(elapsed) + " sec)").toUtf8());
     }
 }
 
