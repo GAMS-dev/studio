@@ -102,6 +102,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::storeEngineTokenChanged);
+    connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
@@ -121,6 +125,7 @@ void SettingsDialog::loadSettings()
 {
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
+    Theme::instance()->setActiveTheme(mSettings->toInt(skEdAppearance));
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -130,9 +135,7 @@ void SettingsDialog::loadSettings()
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
-    ui->rb_openInCurrentGroup->setChecked(mSettings->toBool(skOpenInCurrent));
-    if (!ui->rb_openInCurrentGroup->isChecked() && !ui->rb_openInAnyGroup->isChecked())
-        ui->rb_openInAnyGroup->setChecked(true);
+    (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentGroup : ui->rb_openInAnyGroup)->setChecked(true);
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
@@ -151,13 +154,23 @@ void SettingsDialog::loadSettings()
     ui->cb_completerAutoOpen->setChecked(mSettings->toBool(skEdCompleterAutoOpen));
     ui->cb_completerCasing->setCurrentIndex(mSettings->toInt(skEdCompleterCasing));
 
-    // MIRO page
+    // Remote page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
     if (ui->miroEdit->text().isEmpty()) {
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
         ui->miroEdit->setText(path);
         mSettings->setString(skMiroInstallPath, path);
     }
+    ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
+    ui->cbEngineStoreToken->setChecked(mSettings->toBool(skEngineStoreUserToken));
+    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
+    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
+    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
+    int engineExpire = mSettings->toInt(skEngineAuthExpire);
+    if (engineExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
+    else if (engineExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
+    ui->cbEngineExpireType->setCurrentIndex(engineExpire % (60*24) ? engineExpire % 60 ? 0 : 1 : 2);
+    ui->sbEngineExpireValue->setValue(engineExpire / (engineExpire % (60*24) ? engineExpire % 60 ? 1 : 60 : (60*24)));
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
@@ -173,7 +186,6 @@ void SettingsDialog::loadSettings()
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
     // misc page
-    ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
     ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
     ui->cb_userLib->clear();
@@ -185,6 +197,7 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
+    QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -200,6 +213,14 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
+}
+
+void SettingsDialog::storeEngineTokenChanged()
+{
+    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
+    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
+    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
+    setModified();
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
@@ -265,15 +286,18 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdCompleterAutoOpen, ui->cb_completerAutoOpen->isChecked());
     mSettings->setInt(skEdCompleterCasing, ui->cb_completerCasing->currentIndex());
 
-    // MIRO page
+    // Remote page
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
+    mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
+    mSettings->setBool(skEngineStoreUserToken, ui->cbEngineStoreToken->isChecked());
+    int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? (60*24) : 60 : 1;
+    mSettings->setInt(skEngineAuthExpire, ui->sbEngineExpireValue->value() * factor);
 
     // colors page
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
     // misc page
-    mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
     ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
     mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
     mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
@@ -362,6 +386,11 @@ void SettingsDialog::editorBaseColorChanged()
     QColor color = Theme::color(Theme::Edit_text);
     Theme::setColor(Theme::Syntax_formula, color);
     Theme::setColor(Theme::Syntax_neutral, color);
+}
+
+void SettingsDialog::afterLoad()
+{
+    setModifiedStatus(false);
 }
 
 void SettingsDialog::themeModified()
@@ -477,6 +506,14 @@ bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
     }
 
     return false;
+}
+
+void SettingsDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->key() == Qt::Key_Escape)
+        close();
+    else
+        QDialog::keyPressEvent(event);
 }
 
 void SettingsDialog::delayBaseThemeChange(bool valid)
@@ -781,6 +818,12 @@ void SettingsDialog::on_btExportTheme_clicked()
         fd->deleteLater();
     });
     fd->open();
+}
+
+
+void SettingsDialog::on_btEngineDialog_clicked()
+{
+    emit reactivateEngineDialog();
 }
 
 }

@@ -100,7 +100,7 @@ public:
     ~MainWindow() override;
     void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, bool forceNew);
+    void openFiles(const QStringList &files, bool forceNew);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -359,9 +359,9 @@ private slots:
     void showNeosStartDialog();
     void prepareNeosProcess();
     void showEngineStartDialog();
-    void engineDialogDecision(bool start, bool always);
+    void engineSubmit(bool start);
     engine::EngineProcess *createEngineProcess();
-    void prepareEngineProcess(QString url, QString nSpace, QString user, QString password);
+    void prepareEngineProcess();
     void sslValidation(QString errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
@@ -487,8 +487,10 @@ private:
 
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
-    QString mEngineTempPassword;
+    QString mEngineAuthToken;
+    bool mEngineAcceptSelfCert = false;
     bool mEngineNoDialog = false;
+
 };
 
 }

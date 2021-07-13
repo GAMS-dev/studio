@@ -21,6 +21,9 @@
 #include "process.h"
 #include <QTimer>
 
+class QNetworkReply;
+class QSslError;
+
 namespace gams {
 namespace studio {
 namespace engine {
@@ -40,6 +43,8 @@ public:
     EngineProcess(QObject *parent = nullptr);
     ~EngineProcess() override;
 
+    static void startupInit();
+
     void execute() override;
     void interrupt() override;
     void terminate() override;
@@ -49,23 +54,33 @@ public:
     bool hasPreviousWorkOption() const { return mHasPreviousWorkOption; }
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
-    void authenticate(const QString &username, const QString &password);
-    void authenticate(const QString &bearerToken);
+    QUrl url();
+    void authorize(const QString &username, const QString &password, int expireMinutes);
+    void setAuthToken(const QString &bearerToken);
+    QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
-    void setIgnoreSslErrors();
+    void setIgnoreSslErrorsCurrentUrl(bool ignore);
+    bool isIgnoreSslErrors() const;
+    void listJobs();
     void getVersions();
+    void addLastCert();
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
     void abortRequests();
 
 signals:
-    void authenticated(const QString &token);
+    void authorized(const QString &token);
+    void authorizeError(const QString &error);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);
+    void reListJobs(qint32 count);
+    void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion);
     void reVersionError(const QString &errorText);
+    void sslSelfSigned(int sslError);
+    void allPendingRequestsCompleted();
 
 protected slots:
     void completed(int exitCode) override;
@@ -76,13 +91,14 @@ protected slots:
     void reGetLog(const QByteArray &data);
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
+    void reAuthorize(const QString &token);
 
 private slots:
     void pullStatus();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void packCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
-    void sslErrors(const QStringList &errors);
+    void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
     void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
@@ -99,9 +115,10 @@ private:
     EngineManager *mManager;
     QString mHost;
     QString mBasePath;
+    QString mNamespace;
     QString mUser;
     QString mPassword;
-    QString mNamespace;
+    QString mAuthToken;
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;
@@ -110,6 +127,7 @@ private:
     bool mForceGdx = true;
     QByteArray mRemoteWorkDir;
     bool mInParameterBlock = false;
+    bool mStoredIgnoreSslState = false;
 
     QString mJobNumber;
     QString mJobPassword;

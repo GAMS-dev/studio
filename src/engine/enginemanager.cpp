@@ -24,6 +24,7 @@
 #include <QString>
 #include <iostream>
 #include <QFile>
+#include <QSslConfiguration>
 
 #include "networkmanager.h"
 
@@ -33,25 +34,28 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+bool EngineManager::mStartupDone = false;
+QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOn;
+QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOff;
+
 EngineManager::EngineManager(QObject* parent)
-    : QObject(parent), /*mAuthApi(new OAIAuthApi()),*/ mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
+    : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
       mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
 {
-//    mAuthApi->setScheme("https");
-//    mAuthApi->setPort(443);
-//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignal, this,
-//            [this](OAIModel_auth_token summary) {
-//        emit reAuth(summary.getToken());
-//    });
-//    connect(mAuthApi, &OAIAuthApi::postLoginInterfaceSignalEFull, this,
-//            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString) {
-//        emit reError("From postW: "+worker->error_str);
-//    });
+    mAuthApi->initializeServerConfigs();
+    mAuthApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignal, this,
+            [this](OAIModel_auth_token summary) {
+        emit reAuthorize(summary.getToken());
+    });
+    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
+        emit reAuthorizeError(getJsonMessageIfFound(text));
+    });
 
 
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
-//    mDefaultApi->setScheme("https");
-//    mDefaultApi->setPort(443);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
             [this](OAIHttpRequestWorker *worker) {
@@ -64,10 +68,15 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString ) {
-        emit reVersionError(worker->error_str);
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
+        if (!QSslSocket::sslLibraryVersionString().startsWith("OpenSSL", Qt::CaseInsensitive)
+                && e == QNetworkReply::SslHandshakeFailedError)
+            emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
+        else
+            emit reVersionError(getJsonMessageIfFound(text));
     });
 
+    connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
 
     mJobsApi->setNetworkAccessManager(mNetworkManager);
 //    mJobsApi->setScheme("https");
@@ -78,32 +87,46 @@ EngineManager::EngineManager(QObject* parent)
         emit reCreateJob(summary.getMessage(), summary.getToken());
     });
     connect(mJobsApi, &OAIJobsApi::createJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
-        emit reError("Network error "+QString::number(error_type).toLatin1()+" from createJob: "+worker->error_str);
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from createJob:\n " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::getJobSignal, this, [this](OAIJob summary) {
         emit reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
     });
     connect(mJobsApi, &OAIJobsApi::getJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
-        emit reError("Network error "+QString::number(error_type).toLatin1()+" from getJob: "+worker->error_str);
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from getJob:\n  " + getJsonMessageIfFound(text));
     });
+
+    connect(mJobsApi, &OAIJobsApi::listJobsSignal, this, [this](OAIJob_no_text_entry_page summary) {
+        emit reListJobs(summary.getCount());
+    });
+    connect(mJobsApi, &OAIJobsApi::listJobsSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+        emit reListJobsError("Network error " + QString::number(error_type) +
+                             " from listJobs:\n  " + getJsonMessageIfFound(text));
+    });
+
 
     connect(mJobsApi, &OAIJobsApi::getJobZipSignal, this, [this](OAIHttpFileElement summary) {
         emit reGetOutputFile(summary.asByteArray());
     });
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
-        emit reError("Network error "+QString::number(error_type).toLatin1()+" from getJobZip: "+worker->error_str);
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from getJobZip:\n  " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::killJobSignal, this, [this](OAIMessage summary) {
         emit reKillJob(summary.getMessage());
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
-        emit reError("Network error "+QString::number(error_type).toLatin1()+" from killJob: "+worker->error_str);
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+        emit reError("Network error " + QString::number(error_type).toLatin1() +
+                     " from killJob:\n  " + getJsonMessageIfFound(text));
     });
 
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](OAILog_piece summary) {
@@ -113,21 +136,46 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString ) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
         if (!mQueueFinished && error_type != QNetworkReply::ServiceUnavailableError)
-            emit reGetLog("Network error "+QString::number(error_type).toLatin1()+" from popLog: "+worker->error_str.toUtf8());
+            emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
+                          " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
 
     });
 
-    connect(mJobsApi, &OAIJobsApi::abortRequestsSignal, this, &EngineManager::abortRequestsSignal);
+    connect(mJobsApi, &OAIJobsApi::allPendingRequestsCompleted, this, [this]() {
+        emit allPendingRequestsCompleted();
+    });
     connect(this, &EngineManager::syncKillJob, this, &EngineManager::killJob, Qt::QueuedConnection);
 
 }
 
 EngineManager::~EngineManager()
 {
-    mJobsApi->abortRequests();
+    abortRequests();
+    mAuthApi->deleteLater();
+    mDefaultApi->deleteLater();
     mJobsApi->deleteLater();
+}
+
+void EngineManager::startupInit()
+{
+    if (!mStartupDone) {
+        mSslConfigurationIgnoreErrOn.setPeerVerifyMode(QSslSocket::VerifyNone);
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+        mStartupDone = true;
+    }
+}
+
+QString EngineManager::getJsonMessageIfFound(const QString &text)
+{
+    if (text.endsWith('}') || text.endsWith("}\n")) {
+        int i = text.lastIndexOf("{\"message\": ");
+        int j = text.lastIndexOf("\"}");
+        if (i > 0)
+            return text.mid(i+13, j-i-13) + "\n";
+    }
+    return text;
 }
 
 void EngineManager::setWorkingDirectory(const QString &dir)
@@ -137,26 +185,42 @@ void EngineManager::setWorkingDirectory(const QString &dir)
 
 void EngineManager::setUrl(const QString &url)
 {
-    mJobsApi->setNewServerForAllOperations(url);
-    mDefaultApi->setNewServerForAllOperations(url);
+    mUrl = QUrl(url.endsWith('/') ? url.left(url.length()-1) : url);
+    mAuthApi->setNewServerForAllOperations(mUrl);
+    QUrl cleanUrl = url.endsWith('/') ? QUrl(url.left(url.length()-1)) : mUrl;
+    mDefaultApi->setNewServerForAllOperations(cleanUrl);
+    mJobsApi->setNewServerForAllOperations(cleanUrl);
+    if (mUrl.scheme() == "https")
+        setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
 }
 
-void EngineManager::setIgnoreSslErrors()
+void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
 {
+    if (ignore) {
+        mIgnoreSslUrl = mUrl;
+        mNetworkManager = NetworkManager::managerSelfCert();
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOn;
+    } else {
+        mIgnoreSslUrl = QUrl();
+        mNetworkManager = NetworkManager::manager();
+        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+    }
+    mAuthApi->setNetworkAccessManager(mNetworkManager);
+    mDefaultApi->setNetworkAccessManager(mNetworkManager);
+    mJobsApi->setNetworkAccessManager(mNetworkManager);
 }
 
-bool EngineManager::ignoreSslErrors()
+bool EngineManager::isIgnoreSslErrors() const
 {
-    return false;
+    return mNetworkManager == NetworkManager::managerSelfCert();
 }
 
-void EngineManager::authenticate(const QString &user, const QString &password)
+void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)
 {
-    mJobsApi->setUsername(user);
-    mJobsApi->setPassword(password);
+    mAuthApi->createJWTTokenJSON(user, password, expireMinutes * 60);
 }
 
-void EngineManager::authenticate(const QString &bearerToken)
+void EngineManager::setAuthToken(const QString &bearerToken)
 {
     // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
     mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
@@ -166,6 +230,11 @@ void EngineManager::authenticate(const QString &bearerToken)
 void EngineManager::getVersion()
 {
     mDefaultApi->getVersion();
+}
+
+void EngineManager::listJobs()
+{
+    mJobsApi->listJobs(false, QString("status process_status"), 1, 1);
 }
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)
@@ -181,29 +250,29 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
 
 void EngineManager::getJobStatus()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->getJob(mToken, QString("status process_status"));
+    if (!mJobToken.isEmpty())
+        mJobsApi->getJob(mJobToken, QString("status process_status"));
 }
 
 void EngineManager::killJob(bool hard)
 {
-    bool ok = !mToken.isEmpty();
+    bool ok = !mJobToken.isEmpty();
     if (ok) {
-        mJobsApi->killJob(mToken, hard);
+        mJobsApi->killJob(mJobToken, hard);
     }
 }
 
 void EngineManager::getLog()
 {
-    if (!mToken.isEmpty()) {
-        mJobsApi->popJobLogs(mToken);
+    if (!mJobToken.isEmpty()) {
+        mJobsApi->popJobLogs(mJobToken);
     }
 }
 
 void EngineManager::getOutputFile()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->getJobZip(mToken);
+    if (!mJobToken.isEmpty())
+        mJobsApi->getJobZip(mJobToken);
 }
 
 void EngineManager::setDebug(bool debug)
@@ -221,11 +290,6 @@ void EngineManager::debugReceived(QString name, QVariant data)
     qDebug() << "\nResult from " << name << ":\n" << data;
 }
 
-void EngineManager::abortRequestsSignal()
-{
-
-}
-
 bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams) const
 {
     QJsonDocument jDoc = QJsonDocument::fromJson(json);
@@ -237,25 +301,27 @@ bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vG
     return true;
 }
 
-QString EngineManager::getToken() const
+QString EngineManager::getJobToken() const
 {
-    return mToken;
+    return mJobToken;
 }
 
 void EngineManager::setToken(const QString &token)
 {
-    mToken = token;
+    mJobToken = token;
 }
 
 void EngineManager::abortRequests()
 {
+    mAuthApi->abortRequests();
+    mDefaultApi->abortRequests();
     mJobsApi->abortRequests();
 }
 
 void EngineManager::cleanup()
 {
-    if (!mToken.isEmpty())
-        mJobsApi->deleteJobZip(mToken);
+    if (!mJobToken.isEmpty())
+        mJobsApi->deleteJobZip(mJobToken);
 }
 
 } // namespace engine

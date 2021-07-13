@@ -43,6 +43,11 @@ public:
     bool is_gams_version_Set() const;
     bool is_gams_version_Valid() const;
 
+    bool isInKubernetes() const;
+    void setInKubernetes(const bool &in_kubernetes);
+    bool is_in_kubernetes_Set() const;
+    bool is_in_kubernetes_Valid() const;
+
     QString getVersion() const;
     void setVersion(const QString &version);
     bool is_version_Set() const;
@@ -57,6 +62,10 @@ private:
     QString gams_version;
     bool m_gams_version_isSet;
     bool m_gams_version_isValid;
+
+    bool in_kubernetes;
+    bool m_in_kubernetes_isSet;
+    bool m_in_kubernetes_isValid;
 
     QString version;
     bool m_version_isSet;

@@ -25,6 +25,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
+#include <QNetworkConfiguration>
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -44,15 +45,20 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
-    connect(mManager, &EngineManager::reAuth, this, &EngineProcess::authenticated);
+    connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::reAuthorize);
+    connect(mManager, &EngineManager::reAuthorizeError, this, &EngineProcess::authorizeError);
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
+    connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
+    connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
+    connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
+    setIgnoreSslErrorsCurrentUrl(false);
     mPullTimer.setInterval(1000);
     mPullTimer.setSingleShot(true);
     connect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
@@ -61,6 +67,11 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
 EngineProcess::~EngineProcess()
 {
     delete mManager;
+}
+
+void EngineProcess::startupInit()
+{
+    EngineManager::startupInit();
 }
 
 void EngineProcess::execute()
@@ -195,13 +206,21 @@ void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatu
     completed(exitCode);
 }
 
-void EngineProcess::sslErrors(const QStringList &errors)
+void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
-    QString data("\n*** SSL errors:\n%1\n");
-    emit newStdChannelData(data.arg(errors.join("\n")).toUtf8());
-    if (mProcState == ProcCheck) {
-        emit sslValidation(errors.join("\n").toUtf8());
+    Q_UNUSED(reply)
+    QString data("\n*** SSL errors:\n");
+    int sslError = 0;
+    for (const QSslError &err : errors) {
+        data.append(QString(" [%1] %2\n").arg(err.error()).arg(err.errorString()));
+        if (err.error() == QSslError::SelfSignedCertificate ||
+                err.error() == QSslError::SelfSignedCertificateInChain ||
+                err.error() == QSslError::CertificateStatusUnknown)
+            sslError = err.error();
     }
+    emit newStdChannelData(data.toUtf8());
+    if (sslError)
+        emit sslSelfSigned(sslError);
 }
 
 void EngineProcess::parseUnZipStdOut(const QByteArray &data)
@@ -239,7 +258,7 @@ void EngineProcess::reVersionIntern(const QString &engineVersion, const QString 
 
 void EngineProcess::interrupt()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(false);
     else
@@ -248,7 +267,7 @@ void EngineProcess::interrupt()
 
 void EngineProcess::terminate()
 {
-    bool ok = !mManager->getToken().isEmpty();
+    bool ok = !mManager->getJobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(true);
     else
@@ -301,9 +320,9 @@ bool EngineProcess::setUrl(const QString &url)
     QString host = url.mid(sp1, sp2-sp1);
     int sp3 = host.indexOf(':');
 
-    QString port = "443";
+    QString port = scheme.compare("https", Qt::CaseInsensitive)==0 ? "443" : "80";
     if (sp3 > 0) {
-        port = host.right(host.length()-sp3);
+        port = host.right(host.length()-sp3-1);
         host = host.left(sp3);
     }
 
@@ -311,20 +330,24 @@ bool EngineProcess::setUrl(const QString &url)
 
     QString completeUrl = scheme+"://"+host+":"+port+basePath;
     mManager->setUrl(completeUrl);
-    return true;
+    return mManager->url().isValid();
 }
 
-void EngineProcess::authenticate(const QString &username, const QString &password)
+QUrl EngineProcess::url()
 {
-    mManager->authenticate(username, password);
-    setProcState(ProcIdle);
-    // TODO(JM): generate bearerToken and wait for answer before changing to idle
+    return mManager->url();
 }
 
-void EngineProcess::authenticate(const QString &bearerToken)
+void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
 {
-    mManager->authenticate(bearerToken);
-    setProcState(ProcIdle);
+    mManager->authorize(username, password, expireMinutes);
+    setProcState(ProcCheck);
+}
+
+void EngineProcess::setAuthToken(const QString &bearerToken)
+{
+    mAuthToken = bearerToken;
+    mManager->setAuthToken(bearerToken);
     // TODO(JM): check for namespace permissions and wait for answer before changing to idle
 }
 
@@ -333,12 +356,22 @@ void EngineProcess::setNamespace(const QString &nSpace)
     mNamespace = nSpace;
 }
 
-void EngineProcess::setIgnoreSslErrors()
+void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 {
-    mManager->setIgnoreSslErrors();
+    mManager->setIgnoreSslErrorsCurrentUrl(ignore);
     if (mProcState == ProcCheck) {
         setProcState(ProcIdle);
     }
+}
+
+bool EngineProcess::isIgnoreSslErrors() const
+{
+    return mManager->isIgnoreSslErrors();
+}
+
+void EngineProcess::listJobs()
+{
+    mManager->listJobs();
 }
 
 void EngineProcess::getVersions()
@@ -448,6 +481,16 @@ void EngineProcess::reError(const QString &errorText)
     mPullTimer.stop();
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
+}
+
+void EngineProcess::reAuthorize(const QString &token)
+{
+    mManager->setAuthToken(token);
+    if (!token.isEmpty()) {
+        mManager->listJobs();
+        setProcState(ProcCheck);
+    }
+    emit authorized(token);
 }
 
 void EngineProcess::pullStatus()

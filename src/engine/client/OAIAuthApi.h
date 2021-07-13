@@ -59,14 +59,14 @@ public:
     /**
     * @param[in]  expires_in qint32 [optional]
     */
-    void createJWTToken(const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
+    Q_DECL_DEPRECATED void createJWTToken(const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
 
     /**
     * @param[in]  username QString [required]
     * @param[in]  password QString [required]
     * @param[in]  expires_in qint32 [optional]
     */
-    void postW(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
+    void createJWTTokenJSON(const QString &username, const QString &password, const ::OpenAPI::OptionalParam<qint32> &expires_in = ::OpenAPI::OptionalParam<qint32>());
 
 
 private:
@@ -84,21 +84,21 @@ private:
     bool isRequestCompressionEnabled;
 
     void createJWTTokenCallback(OAIHttpRequestWorker *worker);
-    void postWCallback(OAIHttpRequestWorker *worker);
+    void createJWTTokenJSONCallback(OAIHttpRequestWorker *worker);
 
 signals:
 
     void createJWTTokenSignal(OAIModel_auth_token summary);
-    void postWSignal(OAIModel_auth_token summary);
+    void createJWTTokenJSONSignal(OAIModel_auth_token summary);
 
     void createJWTTokenSignalFull(OAIHttpRequestWorker *worker, OAIModel_auth_token summary);
-    void postWSignalFull(OAIHttpRequestWorker *worker, OAIModel_auth_token summary);
+    void createJWTTokenJSONSignalFull(OAIHttpRequestWorker *worker, OAIModel_auth_token summary);
 
     void createJWTTokenSignalE(OAIModel_auth_token summary, QNetworkReply::NetworkError error_type, QString error_str);
-    void postWSignalE(OAIModel_auth_token summary, QNetworkReply::NetworkError error_type, QString error_str);
+    void createJWTTokenJSONSignalE(OAIModel_auth_token summary, QNetworkReply::NetworkError error_type, QString error_str);
 
     void createJWTTokenSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
-    void postWSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
+    void createJWTTokenJSONSignalEFull(OAIHttpRequestWorker *worker, QNetworkReply::NetworkError error_type, QString error_str);
 
     void abortRequestsSignal();
     void allPendingRequestsCompleted();
