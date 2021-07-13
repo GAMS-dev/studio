@@ -386,7 +386,7 @@ SyntaxBlock SyntaxUniformBlock::validTail(const QString &line, int index, int fl
 SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::CommentEndline;
+    mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentLine;
     if (kind == SyntaxKind::Semicolon) {
         mDelimiter = ';';
     } else if (kind == SyntaxKind::CommaIdent) {
