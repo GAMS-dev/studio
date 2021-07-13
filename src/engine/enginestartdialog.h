@@ -75,8 +75,6 @@ public:
     void focusEmptyField();
     void setEngineVersion(QString version);
 
-    QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
-
 signals:
     void submit(bool start);
 

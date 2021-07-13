@@ -406,12 +406,19 @@
        </spacer>
       </item>
       <item>
-       <widget class="QDialogButtonBox" name="buttonBox">
-        <property name="orientation">
-         <enum>Qt::Horizontal</enum>
+       <widget class="QPushButton" name="bOk">
+        <property name="text">
+         <string>OK</string>
         </property>
-        <property name="standardButtons">
-         <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
+        <property name="default">
+         <bool>true</bool>
+        </property>
+       </widget>
+      </item>
+      <item>
+       <widget class="QPushButton" name="bCancel">
+        <property name="text">
+         <string>Cancel</string>
         </property>
        </widget>
       </item>
@@ -422,7 +429,15 @@
  </widget>
  <tabstops>
   <tabstop>edUrl</tabstop>
+  <tabstop>edUser</tabstop>
+  <tabstop>edPassword</tabstop>
+  <tabstop>cbAcceptCert</tabstop>
+  <tabstop>edNamespace</tabstop>
+  <tabstop>cbForceGdx</tabstop>
+  <tabstop>bOk</tabstop>
+  <tabstop>bCancel</tabstop>
   <tabstop>bAlways</tabstop>
+  <tabstop>bLogout</tabstop>
  </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>
