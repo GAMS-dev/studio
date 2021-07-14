@@ -166,11 +166,11 @@ void SettingsDialog::loadSettings()
     ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
     ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
     ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
-    int engineExpire = mSettings->toInt(skEngineAuthExpire);
-    if (engineExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
-    else if (engineExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
-    ui->cbEngineExpireType->setCurrentIndex(engineExpire % (60*24) ? engineExpire % 60 ? 0 : 1 : 2);
-    ui->sbEngineExpireValue->setValue(engineExpire / (engineExpire % (60*24) ? engineExpire % 60 ? 1 : 60 : (60*24)));
+    mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
+    if (mEngineInitialExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
+    else if (mEngineInitialExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
+    ui->cbEngineExpireType->setCurrentIndex(mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 0 : 1 : 2);
+    ui->sbEngineExpireValue->setValue(mEngineInitialExpire / (mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 1 : 60 : (60*24)));
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
@@ -342,6 +342,10 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
         saveSettings();
+        if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
+            emit engineTokenInvalidated();
+            mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
+        }
         emit userGamsTypeChanged();
     } else { // reject
         loadSettings(); // reset instantly applied changes (such as colors, font and -size)
@@ -438,6 +442,11 @@ void SettingsDialog::on_tb_userLibRemove_clicked()
 void SettingsDialog::on_tb_userLibOpen_clicked()
 {
     QDesktopServices::openUrl(QUrl::fromLocalFile(ui->cb_userLib->currentText().trimmed()));
+}
+
+int SettingsDialog::engineInitialExpire() const
+{
+    return mEngineInitialExpire;
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {

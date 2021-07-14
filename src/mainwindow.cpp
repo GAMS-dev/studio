@@ -3908,14 +3908,16 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
             mEngineNoDialog = false;
         });
-        int engineValidSeconds = Settings::settings()->toInt(skEngineAuthExpire);
-        connect(mSettingsDialog, &SettingsDialog::finished, this, [this, engineValidSeconds]() {
-            if (!Settings::settings()->toBool(skEngineStoreUserToken) ||
-                    Settings::settings()->toInt(skEngineAuthExpire) != engineValidSeconds) {
-                Settings::settings()->setString(skEngineUserToken, QString());
-                DEB() << "Engine user token removed";
-            }
+        connect(mSettingsDialog, &SettingsDialog::engineTokenInvalidated, this, [this]() {
+            mEngineAuthToken = QString();
+            Settings::settings()->setString(skEngineUserToken, QString());
+        });
+
+        connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
+            if (!Settings::settings()->toBool(skEngineStoreUserToken) ||
+                    Settings::settings()->toInt(skEngineAuthExpire) != mSettingsDialog->engineInitialExpire()) {
+            }
             if (mSettingsDialog->hasDelayedBaseThemeChange()) {
                 mSettingsDialog->delayBaseThemeChange(false);
                 ViewHelper::updateBaseTheme();
