@@ -132,6 +132,7 @@ private:
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
     bool mHiddenMode = false;
+    bool mAuthorized = false;
     bool mAlways = false;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;

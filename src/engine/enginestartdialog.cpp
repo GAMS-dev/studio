@@ -327,7 +327,7 @@ void EngineStartDialog::setCanLogin(bool value)
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
-    value = value && !ui->edNamespace->text().isEmpty();
+    value = value && !ui->edNamespace->text().isEmpty() && mAuthorized;
     if (value != ui->bOk->isEnabled())
         ui->bOk->setEnabled(value);
 }
@@ -379,6 +379,7 @@ void EngineStartDialog::updateSubmitStates()
 void EngineStartDialog::reListJobs(qint32 count)
 {
     ui->nJobCount->setText(QString::number(count));
+    mAuthorized = true;
     showSubmit();
 }
 
