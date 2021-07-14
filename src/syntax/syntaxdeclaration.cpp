@@ -229,7 +229,11 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
         break;
     case SyntaxKind::Execute:
         list = SyntaxData::keyExecute();
-        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        mSubKinds << SyntaxKind::Execute << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
+        break;
+    case SyntaxKind::ExecuteKey:
+        list = SyntaxData::execute();
+        mSubKinds << SyntaxKind::ExecuteBody;
         break;
     case SyntaxKind::Put:
         list = SyntaxData::keyPut();
@@ -248,6 +252,19 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
     int end = -1;
     while (isWhitechar(line, start))
         ++start;
+    if (kind() == SyntaxKind::Execute && entryKind == kind() && flavor % 2 == 0) {
+        if (start < line.length() && line.at(start) == '.') {
+            end = start + 1;
+            while (isWhitechar(line, end))
+                ++end;
+            return SyntaxBlock(this, flavor+1, start, end, false, SyntaxShift::shift);
+        }
+        return SyntaxBlock(this);
+    }
+    if (kind() != SyntaxKind::ExecuteKey && flavor % 2) {
+        return SyntaxBlock(this);
+    }
+
     int iKey;
     end = findEnd(kind(), line, start, iKey, kind() == SyntaxKind::Execute);
     if (end > start) {
@@ -261,9 +278,13 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
         case SyntaxKind::Put:
             return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
         case SyntaxKind::Execute: {
-            // TODO(JM) open this. Don't force SyntaxKind::ExecuteKey or SyntaxKind::ExecuteBody here!
-            if (end==line.length() || line.at(end) != '_')
-                return SyntaxBlock(this, flavor, start, end, false, SyntaxShift::in, SyntaxKind::ExecuteKey);
+            while (isWhitechar(line, end))
+                ++end;
+            return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+        }
+        case SyntaxKind::ExecuteKey: {
+            if (entryKind == SyntaxKind::Execute && flavor % 2)
+                return SyntaxBlock(this, flavor - 1, index, end, SyntaxShift::shift);
         } break;
         default:
             break;
