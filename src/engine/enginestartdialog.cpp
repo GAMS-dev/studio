@@ -386,8 +386,8 @@ void EngineStartDialog::reListJobsError(const QString &error)
 {
     Q_UNUSED(error)
     DEB() << "ERROR: " << error;
-    if (inLogin())
-        ui->bOk->setEnabled(true);
+    if (!inLogin())
+        showLogin();
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
