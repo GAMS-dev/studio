@@ -3915,9 +3915,6 @@ void MainWindow::on_actionSettings_triggered()
 
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
-            if (!Settings::settings()->toBool(skEngineStoreUserToken) ||
-                    Settings::settings()->toInt(skEngineAuthExpire) != mSettingsDialog->engineInitialExpire()) {
-            }
             if (mSettingsDialog->hasDelayedBaseThemeChange()) {
                 mSettingsDialog->delayBaseThemeChange(false);
                 ViewHelper::updateBaseTheme();
