@@ -22,6 +22,9 @@
 # which deactivates the studio help view.
 QWEBENGINE=true
 
+unix {
+    QMAKE_CFLAGS += -Wimplicit-fallthrough=0
+}
 win32 {
     # Switch off warings caused by GAMS headers
     DEFINES += _CRT_SECURE_NO_WARNINGS
