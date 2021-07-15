@@ -488,7 +488,6 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
     QString mEngineAuthToken;
-    bool mEngineAcceptSelfCert = false;
     bool mEngineNoDialog = false;
 
 };

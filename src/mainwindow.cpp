@@ -3393,7 +3393,7 @@ void MainWindow::showEngineStartDialog()
     dialog->setModal(true);
     dialog->setProcess(proc);
     dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
-    if (mEngineAcceptSelfCert)
+    if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
     dialog->start();
@@ -3411,7 +3411,6 @@ void MainWindow::engineSubmit(bool start)
     } else {
         dialog->close();
     }
-    mEngineAcceptSelfCert = dialog->isCertAccepted();
     dialog->deleteLater();
 }
 

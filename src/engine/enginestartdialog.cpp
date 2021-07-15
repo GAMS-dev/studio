@@ -309,7 +309,8 @@ void EngineStartDialog::getVersion()
     setConnectionState(scsWaiting);
     if (mProc) {
         if (mProc->setUrl(mUrl)) {
-            if (protocol(mUrl) == ucHttps && ui->cbAcceptCert->isVisible() && ui->cbAcceptCert->isChecked())
+            bool visibleCheck = ui->cbAcceptCert->isVisible() || !inLogin();
+            if (protocol(mUrl) == ucHttps && visibleCheck && ui->cbAcceptCert->isChecked())
                 mProc->setIgnoreSslErrorsCurrentUrl(true);
             mUrlChanged = false;
             mProc->getVersions();
@@ -349,6 +350,7 @@ void EngineStartDialog::setConnectionState(ServerConnectionState state)
 
 void EngineStartDialog::certAcceptChanged()
 {
+    if (!mProc) return;
     mProc->abortRequests();
     mProc->setIgnoreSslErrorsCurrentUrl(ui->cbAcceptCert->isChecked() && ui->cbAcceptCert->isVisible());
     urlEdited(ui->edUrl->text());
