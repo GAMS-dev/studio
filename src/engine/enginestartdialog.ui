@@ -221,7 +221,7 @@
           <string>Creates the GDX file even if the command line parameter is missing</string>
          </property>
          <property name="text">
-          <string>Create GDX file </string>
+          <string>Create GDX file  </string>
          </property>
         </widget>
        </item>
