@@ -124,6 +124,7 @@ enum SettingsKey {
     skEngineUserToken,
     skEngineStoreUserToken,
     skEngineAuthExpire,
+    skEngineIsSelfCert,
     skEngineNamespace,
     skEngineForceGdx,
 

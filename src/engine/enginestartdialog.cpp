@@ -137,13 +137,17 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx)
+void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
+    if (selfCert) {
+        ui->cbAcceptCert->setVisible(true);
+        ui->cbAcceptCert->setChecked(true);
+    }
     mAuthExpireMinutes = authExpireMinutes;
     ui->edNamespace->setText(_nSpace.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
@@ -282,6 +286,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
     if (!mProc) return;
     ui->bOk->setEnabled(false);
+    ui->bAlways->setEnabled(false);
 
     if (inLogin() && button == ui->bOk) {
         mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
@@ -321,15 +326,19 @@ void EngineStartDialog::setCanLogin(bool value)
             && !ui->edUser->text().isEmpty()
             && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
-    if (value != ui->bOk->isEnabled())
+    if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
+        ui->bAlways->setEnabled(value);
+    }
 }
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
     value = value && !ui->edNamespace->text().isEmpty() && mAuthorized;
-    if (value != ui->bOk->isEnabled())
+    if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
+        ui->bAlways->setEnabled(value);
+    }
 }
 
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
