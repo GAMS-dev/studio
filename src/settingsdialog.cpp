@@ -290,6 +290,10 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
     mSettings->setBool(skEngineStoreUserToken, ui->cbEngineStoreToken->isChecked());
+    if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
+        mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
+        mSettings->setString(skEngineUserToken, QString());
+    }
     int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? (60*24) : 60 : 1;
     mSettings->setInt(skEngineAuthExpire, ui->sbEngineExpireValue->value() * factor);
 
@@ -342,10 +346,6 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 {
     if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
         saveSettings();
-        if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
-            emit engineTokenInvalidated();
-            mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
-        }
         emit userGamsTypeChanged();
     } else { // reject
         loadSettings(); // reset instantly applied changes (such as colors, font and -size)

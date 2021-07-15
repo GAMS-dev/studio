@@ -3911,10 +3911,6 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
             mEngineNoDialog = false;
         });
-        connect(mSettingsDialog, &SettingsDialog::engineTokenInvalidated, this, [this]() {
-            mEngineAuthToken = QString();
-            Settings::settings()->setString(skEngineUserToken, QString());
-        });
 
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
