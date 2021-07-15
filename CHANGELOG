@@ -1,3 +1,7 @@
+Version 1.7.1  *
+==================
+- fixed crash on reopening a log tab
+
 Version 1.7.0
 ==================
 - allow specifying location of User Model Libraries in Settings dialog
