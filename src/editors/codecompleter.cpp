@@ -280,6 +280,27 @@ void CodeCompleterModel::initData()
         mType.insert(mData.size()-1, ccCtConst);
     }
 
+    // execute additions
+    src = syntax::SyntaxData::execute();
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << it->first + ' ';
+        mDescription << it->second;
+        mData << '.' + it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccExec);
+    it = src.constBegin();
+    while (it != src.constEnd()) {
+        mData << "execute." + it->first + ' ';
+        mDescription << it->second;
+        ++it;
+    }
+    mType.insert(mData.size()-1, ccRes);
+
+
+    // add description index
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
@@ -365,7 +386,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
-    if (type & cc_SubDco) {
+    if (type & cc_SubDco || type & ccExec) {
         if (text.startsWith('.') != mNeedDot)
             return false;
     }
@@ -420,6 +441,7 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     mTypeFilter = completerTypeFilter;
     mSubType = subType;
     mNeedDot = needDot;
+    DEB() << "NeedDot: " << needDot;
     invalidateFilter();
 }
 
@@ -559,7 +581,10 @@ CharGroup group(const QChar &c) {
     return clBreak;
 }
 
-const QSet<int> CodeCompleter::cEnteringSyntax {int(syntax::SyntaxKind::IdentifierDescription), int(syntax::SyntaxKind::String)};
+const QSet<int> CodeCompleter::cEnteringSyntax {
+    int(syntax::SyntaxKind::IdentifierDescription),
+    int(syntax::SyntaxKind::String)
+};
 
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor)
 {
@@ -569,6 +594,9 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         if (it.key() > pos) {
+//            if (it.value().first == int(syntax::SyntaxKind::Execute) && it.value().second % 2) {
+//                res = it.value();
+//            }
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
@@ -647,6 +675,9 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
             validStart = peekStart;
             break;
         }
+    }
+    if (syntax.first == int (syntax::SyntaxKind::Execute) && syntax.second % 2) {
+        syntax = getSyntax(block, posInBlock, dcoFlavor);
     }
     int len = posInBlock - validStart;
     if (!len) {
@@ -893,6 +924,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
 {
     int filter = cc_All;
     int start = pos - mFilterText.length();
+    bool needDot = false;
 
     switch (syntax::SyntaxKind(syntax.first)) {
     case syntax::SyntaxKind::Standard:
@@ -954,15 +986,20 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Solve:
     case syntax::SyntaxKind::SolveBody:
     case syntax::SyntaxKind::SolveKey:
-    case syntax::SyntaxKind::Execute:
     case syntax::SyntaxKind::Put:
-        filter = cc_Start; break;
     case syntax::SyntaxKind::PutFormula:
         filter = cc_Start; break;
+    case syntax::SyntaxKind::Execute: {
+        needDot = (syntax.second % 2 == 0);
+        if (needDot)
+            filter = cc_Start | ccExec;
+        else
+            filter = ccDcoStrt | ccSysSufC | ccCtConst | ccExec;
+    }   break;
 
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::ExecuteKey:
-        filter = ccExec | ccSysSufC | ccCtConst; break;
+        filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Option:
@@ -979,7 +1016,6 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             break;
         }
     }
-    bool needDot = false;
     int subType = 0;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
@@ -997,7 +1033,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
             filter = filter & ccDcoStrt;
-    } else if (dcoFlavor > 15) {
+    } else if (dcoFlavor > 15 ) {
         needDot = true;
         for (int i = start; i > 0; --i) {
             if (needDot && line.at(i) == '.') {
