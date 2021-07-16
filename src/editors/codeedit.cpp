@@ -599,7 +599,9 @@ bool CodeEdit::toggleFolding(QTextBlock block)
     return true;
 }
 
-void CodeEdit::foldAll()
+static const QString CDcoChars("EMTCPIOFUemtcpiofu");
+
+void CodeEdit::foldAll(bool onlyDCO)
 {
     if (mBlockEdit) endBlockEdit();
     // TODO(JM) the current implementation could be improved for nested blocks
@@ -610,7 +612,7 @@ void CodeEdit::foldAll()
     while (block.isValid()) {
         if (foldRemain-- > 0) block.setVisible(false);
         bool folded;
-        int foldPos = foldStart(block.blockNumber(), folded);
+        int foldPos = foldStart(block.blockNumber(), folded, nullptr, onlyDCO ? &CDcoChars : nullptr);
         if (foldPos >= 0) {
 //            stack << static_cast<BlockData*>(block.userData());
             QTextCursor cursor(block);
@@ -1594,7 +1596,7 @@ void CodeEdit::getPositionAndAnchor(QPoint &pos, QPoint &anchor)
     }
 }
 
-int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
+int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol, const QString *usedParenheses) const
 {
     int res = -1;
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
@@ -1612,6 +1614,8 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol) const
 //    if (parList.count())
 //        DEB() << "parenthesis " << parList.at(0).character << " at " << parList.at(0).relPos;
     for (int i = 0; i < parList.count(); ++i) {
+        if (usedParenheses && !usedParenheses->contains(parList.at(i).character.toLower()))
+            continue;
         if (parentheses.indexOf(parList.at(i).character) >= pSplit) {
             if (depth) --depth;
             if (!depth) res = -1;

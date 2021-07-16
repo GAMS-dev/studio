@@ -228,6 +228,7 @@
     <addaction name="separator"/>
     <addaction name="actionFoldAllTextBlocks"/>
     <addaction name="actionUnfoldAllTextBlocks"/>
+    <addaction name="actionFoldDcoTextBlocks"/>
     <addaction name="separator"/>
     <addaction name="menuBookmarks"/>
     <addaction name="actionReset_Views"/>
@@ -1475,6 +1476,14 @@
    </property>
    <property name="shortcut">
     <string>Alt+Shift+O</string>
+   </property>
+  </action>
+  <action name="actionFoldDcoTextBlocks">
+   <property name="text">
+    <string>Fold all text blocks</string>
+   </property>
+   <property name="shortcut">
+    <string>Alt+L</string>
    </property>
   </action>
   <action name="actionStudioHelp">
