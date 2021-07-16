@@ -1480,10 +1480,10 @@
   </action>
   <action name="actionFoldDcoTextBlocks">
    <property name="text">
-    <string>Fold all text blocks</string>
+    <string>Fold DCO text blocks</string>
    </property>
    <property name="shortcut">
-    <string>Alt+L</string>
+    <string>Alt+I</string>
    </property>
   </action>
   <action name="actionStudioHelp">

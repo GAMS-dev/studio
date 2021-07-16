@@ -1,6 +1,6 @@
 Version 1.7.1  *
 ==================
-- added shortcut Alt+L to fold only DCO blocks and a settings option to trigger this on opening a gms file
+- added shortcut Alt+I (Option+I on macOS) to fold only DCO blocks and a settings option to trigger this on opening a gms file
 
 Version 1.7.0
 ==================
