@@ -834,13 +834,6 @@
             </item>
            </widget>
           </item>
-          <item row="0" column="0" colspan="3">
-           <widget class="QCheckBox" name="cbEngineStoreToken">
-            <property name="text">
-             <string>Store login state</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="4">
            <spacer name="horizontalSpacer_3">
             <property name="orientation">
@@ -865,6 +858,13 @@
            <widget class="QPushButton" name="btEngineDialog">
             <property name="text">
              <string>Reactivate dialog</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0" colspan="4">
+           <widget class="QCheckBox" name="cbEngineStoreToken">
+            <property name="text">
+             <string>Stay logged in after restart</string>
             </property>
            </widget>
           </item>

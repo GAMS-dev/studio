@@ -102,7 +102,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::storeEngineTokenChanged);
+    connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
 
@@ -163,9 +163,6 @@ void SettingsDialog::loadSettings()
     }
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->cbEngineStoreToken->setChecked(mSettings->toBool(skEngineStoreUserToken));
-    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
     mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
     if (mEngineInitialExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
     else if (mEngineInitialExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
@@ -213,14 +210,6 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
-}
-
-void SettingsDialog::storeEngineTokenChanged()
-{
-    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
-    setModified();
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
