@@ -62,6 +62,7 @@ signals:
     void userGamsTypeChanged();
     void editorTabSizeChanged(int size);
     void reactivateEngineDialog();
+    void persistToken();
 
 public slots:
     void delayBaseThemeChange(bool valid);

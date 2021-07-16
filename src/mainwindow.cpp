@@ -3910,7 +3910,9 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
             mEngineNoDialog = false;
         });
-
+        connect(mSettingsDialog, &SettingsDialog::persistToken, this, [this]() {
+            Settings::settings()->setString(skEngineUserToken, mEngineAuthToken);
+        });
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();
             if (mSettingsDialog->hasDelayedBaseThemeChange()) {
