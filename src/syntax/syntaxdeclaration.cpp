@@ -257,7 +257,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
             end = start + 1;
             while (isWhitechar(line, end))
                 ++end;
-            return SyntaxBlock(this, flavor+1, start, end, false, SyntaxShift::shift);
+            return SyntaxBlock(this, flavor+1, index, end, false, SyntaxShift::shift);
         }
         return SyntaxBlock(this);
     }
