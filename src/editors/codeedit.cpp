@@ -599,7 +599,7 @@ bool CodeEdit::toggleFolding(QTextBlock block)
     return true;
 }
 
-static const QString CDcoChars("EMTCPIOFUemtcpiofu");
+static const QString CDcoChars("TCPUtcpu");
 
 void CodeEdit::foldAll(bool onlyDCO)
 {
