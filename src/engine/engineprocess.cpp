@@ -230,13 +230,15 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        if (fName.endsWith("gms") || fName.endsWith("g00") || fName.endsWith("lxi")) {
+        if (fName.endsWith("gms") || fName.endsWith("g00")) {
             emit newStdChannelData("--- skipping: ."+ folder + fName);
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else if (fName.endsWith("lxi")) {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()
+                                   +fName.left(fName.length()-3)+"lst\",0,0]");
          } else {
             emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
         }
+        if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
 }
