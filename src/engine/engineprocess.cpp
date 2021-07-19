@@ -56,6 +56,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
+    connect(mManager, &EngineManager::jobIsQueued, this, &EngineProcess::jobIsQueued);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
     setIgnoreSslErrorsCurrentUrl(false);
@@ -385,6 +386,7 @@ void EngineProcess::completed(int exitCode)
     mPullTimer.stop();
     mManager->cleanup();
     setProcState(ProcIdle);
+    mQueuedTimer.invalidate();
     AbstractGamsProcess::completed(exitCode);
 }
 
@@ -400,8 +402,10 @@ void EngineProcess::rePing(const QString &value)
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
     Q_UNUSED(message)
+    mQueuedTimer.start();
     mManager->setToken(token);
-    QString newLstEntry("\n--- switch to Engine .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
+    emit newStdChannelData(QString("\n--- GAMS Engine at %1\n").arg(mManager->url().toString()).toUtf8());
+    QString newLstEntry("--- switch LOG to .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
     QString lstPath = mOutPath+"/"+modelName()+".lst";
     emit newStdChannelData(newLstEntry.arg(QDir::separator(), modelName(), lstPath, token).toUtf8());
     // TODO(JM) store token for later resuming
@@ -416,15 +420,12 @@ const QHash<QString, EngineProcess::JobStatusEnum> EngineProcess::CJobStatus {
 
 void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 {
-    // TODO(JM) convert status to EngineManager::Status
-    EngineManager::StatusCode code = EngineManager::StatusCode(status);
+    EngineManager::StatusCode engineStatus = EngineManager::StatusCode(status);
 
-    if (code > EngineManager::Queued && mProcState == Proc3Queued) {
+    if (engineStatus > EngineManager::Queued && mProcState == Proc3Queued) {
         setProcState(Proc4Monitor);
-        mManager->getLog();
     }
-
-    if (code == EngineManager::Finished && mProcState == Proc4Monitor) {
+    if (engineStatus == EngineManager::Finished && mProcState == Proc4Monitor) {
         mManager->getLog();
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
@@ -434,6 +435,8 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
+    } else if (mProcState >= Proc3Queued) {
+        jobIsQueued();
     }
 }
 
@@ -445,9 +448,22 @@ void EngineProcess::reKillJob(const QString &text)
 
 void EngineProcess::reGetLog(const QByteArray &data)
 {
+    if (mQueuedTimer.isValid()) {
+        emit newStdChannelData("\n\n");
+        mQueuedTimer.invalidate();
+    }
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
+}
+
+void EngineProcess::jobIsQueued()
+{
+    if (mQueuedTimer.isValid()) {
+        int elapsed = int(mQueuedTimer.elapsed() / 1000L);
+        if (elapsed > 1)
+            emit newStdChannelData(("\r--- Job queued (" + QString::number(elapsed) + " sec)").toUtf8());
+    }
 }
 
 void EngineProcess::reGetOutputFile(const QByteArray &data)

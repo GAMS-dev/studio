@@ -100,6 +100,7 @@ enum SettingsKey {
     skEdEditableMaxSizeMB,
     skEdCompleterAutoOpen,
     skEdCompleterCasing,
+    skEdFoldedDcoOnOpen,
 
     // MIRO settings page
     skMiroInstallPath,
@@ -124,6 +125,7 @@ enum SettingsKey {
     skEngineUserToken,
     skEngineStoreUserToken,
     skEngineAuthExpire,
+    skEngineIsSelfCert,
     skEngineNamespace,
     skEngineForceGdx,
 

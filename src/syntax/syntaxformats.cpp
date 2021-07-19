@@ -478,7 +478,6 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
     while (++end < line.length()) {
         chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
         if (flavor % 2 && (line.at(end) == ' ' || line.at(end) == '\t')) {
-//            --end;
             break;
         }
         if (chKind == ccSpecial) break;
