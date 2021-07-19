@@ -586,17 +586,19 @@ const QSet<int> CodeCompleter::cEnteringSyntax {
     int(syntax::SyntaxKind::String)
 };
 
-QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor)
+QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
 {
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
     emit scanSyntax(block, blockSyntax);
     int lastEnd = 0;
+    dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
         if (it.key() > pos) {
-//            if (it.value().first == int(syntax::SyntaxKind::Execute) && it.value().second % 2) {
-//                res = it.value();
-//            }
+            if (it.value().first == int(syntax::SyntaxKind::Execute) && it.value().second % 2) {
+                if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
+                    dotPos = lastEnd;
+            }
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
@@ -646,7 +648,8 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     int peekStart = posInBlock;
 
     int dcoFlavor = 0;
-    QPair<int,int> syntax = getSyntax(block, posInBlock, dcoFlavor);
+    int dotPos;
+    QPair<int,int> syntax = getSyntax(block, posInBlock, dcoFlavor, dotPos);
 
     int validStart = peekStart;
     while (peekStart > 0) {
@@ -655,7 +658,10 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         if (cg >= clBreak) break;
         if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clNumSym) {
-            if (syntax.first == int(syntax::SyntaxKind::IdentifierAssignment)
+            if (syntax.first == int(syntax::SyntaxKind::Execute) && dotPos >= 0) {
+                validStart = peekStart+1;
+                break;
+            } else if (syntax.first == int(syntax::SyntaxKind::IdentifierAssignment)
                     || syntax.first == int(syntax::SyntaxKind::AssignmentLabel)
                     || syntax.first == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
@@ -675,9 +681,6 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
             validStart = peekStart;
             break;
         }
-    }
-    if (syntax.first == int (syntax::SyntaxKind::Execute) && syntax.second % 2) {
-        syntax = getSyntax(block, posInBlock, dcoFlavor);
     }
     int len = posInBlock - validStart;
     if (!len) {
@@ -989,17 +992,20 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Put:
     case syntax::SyntaxKind::PutFormula:
         filter = cc_Start; break;
+    case syntax::SyntaxKind::ExecuteKey:
+    case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::Execute: {
-        needDot = (syntax.second % 2 == 0);
-        if (needDot)
+        if (start < line.length() && line.at(start) == '.')
+            needDot = true;
+        else
+            needDot = (syntax.second % 2 == 0);
+        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::ExecuteBody && !needDot)
+            filter = ccDcoStrt | ccSysSufC | ccCtConst;
+        else if (needDot)
             filter = cc_Start | ccExec;
         else
             filter = ccDcoStrt | ccSysSufC | ccCtConst | ccExec;
     }   break;
-
-    case syntax::SyntaxKind::ExecuteBody:
-    case syntax::SyntaxKind::ExecuteKey:
-        filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
     case syntax::SyntaxKind::OptionKey:
     case syntax::SyntaxKind::Option:

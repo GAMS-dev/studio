@@ -252,6 +252,9 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
     int end = -1;
     while (isWhitechar(line, start))
         ++start;
+    if (entryKind == kind() && start > index) {
+        return SyntaxBlock(this, flavor, index, start, false, SyntaxShift::shift);
+    }
     if (kind() == SyntaxKind::Execute && entryKind == kind() && flavor % 2 == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
