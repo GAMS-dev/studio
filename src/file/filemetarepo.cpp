@@ -50,9 +50,6 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    QFileInfo fi(location);
-    if (!fi.exists())
-        return nullptr;
     if (mFsCaseSensitive)
         return mFileNames.value(location);
     return mFileNames.value(location.toLower());
