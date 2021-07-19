@@ -44,7 +44,6 @@ enum ServerConnectionState {
     scsHttpsSelfSignedFound,
     scsValid,
     scsInvalid,
-    scsLoggedIn,
 };
 
 class EngineStartDialog : public QDialog
@@ -65,7 +64,7 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_user, int authExpireMinutes, const QString &_nSpace, bool _forceGdx);
+    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
@@ -74,8 +73,6 @@ public:
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);
-
-    QDialogButtonBox::StandardButton standardButton(QAbstractButton *button) const;
 
 signals:
     void submit(bool start);
@@ -134,6 +131,7 @@ private:
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;
     bool mHiddenMode = false;
+    bool mAuthorized = false;
     bool mAlways = false;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;

@@ -3369,26 +3369,32 @@ void MainWindow::showEngineStartDialog()
     // prepare process
     engine::EngineProcess *proc = createEngineProcess();
     proc->setAuthToken(mEngineAuthToken);
-    connect(proc, &engine::EngineProcess::authorized, this, [this](const QString &token) {
-        mEngineAuthToken = token;
-        if (token.isEmpty()) DEB() << "Logged out";
-        if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
-            Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
-        else
-            Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
-    });
 
     // prepare dialog
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
     dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
+                     Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
+
+    connect(proc, &engine::EngineProcess::authorized, this, [this, dialog](const QString &token) {
+        mEngineAuthToken = token;
+        Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
+        Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+        Settings::settings()->setBool(SettingsKey::skEngineIsSelfCert, dialog->isCertAccepted());
+        if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
+        else
+            Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
+        updateAndSaveSettings();
+    });
+
     dialog->setModal(true);
     dialog->setProcess(proc);
     dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
-    if (mEngineAcceptSelfCert)
+    if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
     dialog->start();
@@ -3399,16 +3405,13 @@ void MainWindow::engineSubmit(bool start)
     engine::EngineStartDialog *dialog = qobject_cast<engine::EngineStartDialog*>(sender());
     if (!dialog) return;
     if (start) {
-        Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
-        Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
     } else {
         dialog->close();
     }
-    mEngineAcceptSelfCert = dialog->isCertAccepted();
     dialog->deleteLater();
 }
 
@@ -3907,6 +3910,9 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
             mEngineNoDialog = false;
+        });
+        connect(mSettingsDialog, &SettingsDialog::persistToken, this, [this]() {
+            Settings::settings()->setString(skEngineUserToken, mEngineAuthToken);
         });
         connect(mSettingsDialog, &SettingsDialog::finished, this, [this]() {
             updateAndSaveSettings();

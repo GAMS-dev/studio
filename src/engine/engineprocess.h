@@ -20,6 +20,7 @@
 
 #include "process.h"
 #include <QTimer>
+#include <QElapsedTimer>
 
 class QNetworkReply;
 class QSslError;
@@ -89,6 +90,7 @@ protected slots:
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
+    void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
     void reAuthorize(const QString &token);
@@ -128,6 +130,7 @@ private:
     QByteArray mRemoteWorkDir;
     bool mInParameterBlock = false;
     bool mStoredIgnoreSslState = false;
+    QElapsedTimer mQueuedTimer;
 
     QString mJobNumber;
     QString mJobPassword;
