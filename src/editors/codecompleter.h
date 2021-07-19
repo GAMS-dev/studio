@@ -155,6 +155,7 @@ private:
     bool mDebug = false;
 
     static const QSet<int> cEnteringSyntax;
+    static const QSet<int> cExecuteSyntax;
 };
 
 } // namespace studio

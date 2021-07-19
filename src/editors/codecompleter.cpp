@@ -586,6 +586,12 @@ const QSet<int> CodeCompleter::cEnteringSyntax {
     int(syntax::SyntaxKind::String)
 };
 
+const QSet<int> CodeCompleter::cExecuteSyntax {
+    int(syntax::SyntaxKind::Execute),
+    int(syntax::SyntaxKind::ExecuteKey),
+    int(syntax::SyntaxKind::ExecuteBody)
+};
+
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
 {
     QPair<int, int> res(0, 0);
@@ -594,11 +600,11 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (cExecuteSyntax.contains(it.value().first) && it.value().second % 2) {
+            if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
+                dotPos = lastEnd;
+        }
         if (it.key() > pos) {
-            if (it.value().first == int(syntax::SyntaxKind::Execute) && it.value().second % 2) {
-                if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
-                    dotPos = lastEnd;
-            }
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
@@ -658,7 +664,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         if (cg >= clBreak) break;
         if (cg == clAlpha || cg == clNum) validStart = peekStart;
         if (cg == clNumSym) {
-            if (syntax.first == int(syntax::SyntaxKind::Execute) && dotPos >= 0) {
+            if (cExecuteSyntax.contains(syntax.first) && dotPos >= 0) {
                 validStart = peekStart+1;
                 break;
             } else if (syntax.first == int(syntax::SyntaxKind::IdentifierAssignment)
@@ -999,7 +1005,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             needDot = true;
         else
             needDot = (syntax.second % 2 == 0);
-        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::ExecuteBody && !needDot)
+        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::ExecuteBody && !needDot && !(syntax.second % 2))
             filter = ccDcoStrt | ccSysSufC | ccCtConst;
         else if (needDot)
             filter = cc_Start | ccExec;
