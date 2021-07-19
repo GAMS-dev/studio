@@ -45,6 +45,7 @@ public:
 
 signals:
     void needUnfold(QTextBlock block);
+    void completed();
 
 public slots:
     void rehighlight();
@@ -121,6 +122,7 @@ private:
 
     QTime mTime;
     bool mAborted = false;
+    bool mCompleted = false;
     QTextDocument *mDoc = nullptr;
     int mBlockCount = 1;
     QTextBlock mCurrentBlock;
