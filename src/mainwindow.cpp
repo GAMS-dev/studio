@@ -3388,6 +3388,7 @@ void MainWindow::showEngineStartDialog()
             Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
         else
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
+        updateAndSaveSettings();
     });
 
     dialog->setModal(true);

@@ -44,7 +44,6 @@ enum ServerConnectionState {
     scsHttpsSelfSignedFound,
     scsValid,
     scsInvalid,
-    scsLoggedIn,
 };
 
 class EngineStartDialog : public QDialog

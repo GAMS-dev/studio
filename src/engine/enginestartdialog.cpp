@@ -189,8 +189,10 @@ void EngineStartDialog::focusEmptyField()
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
         else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+        else ui->bOk->setFocus();
     } else {
         if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
+        else ui->bOk->setFocus();
     }
 }
 
@@ -264,8 +266,8 @@ void EngineStartDialog::ensureOpened()
     if (!isVisible()) {
         mHiddenMode = false;
         open();
-        focusEmptyField();
     }
+    focusEmptyField();
 }
 
 void EngineStartDialog::bLogoutClicked()
@@ -366,7 +368,7 @@ void EngineStartDialog::urlEdited(const QString &text)
     mProc->abortRequests();
     initUrlAndChecks(text);
     getVersion();
-    if (!isVisible() && !mHiddenMode)
+    if (!isVisible() && !mHiddenMode && !inLogin())
         showLogin();
 }
 
@@ -551,9 +553,6 @@ void EngineStartDialog::updateConnectStateAppearance()
         }
         mForcePreviousWork = false;
         setCanLogin(false);
-    } break;
-    case scsLoggedIn: {
-        showSubmit();
     } break;
     }
 }
