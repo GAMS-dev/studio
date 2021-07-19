@@ -180,6 +180,13 @@ void FileMeta::linkDocument(QTextDocument *doc)
         mHighlighter = new syntax::SyntaxHighlighter(mDocument);
         connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
         connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+        if (Settings::settings()->toBool(skEdFoldedDcoOnOpen))
+            connect(mHighlighter, &syntax::BaseHighlighter::completed, this, [this]() {
+                for (QWidget *wid : editors()) {
+                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid))
+                        ce->foldAll(true);
+                }
+            });
         updateEditsCompleter();
     }
 }

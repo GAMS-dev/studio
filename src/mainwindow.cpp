@@ -4871,6 +4871,13 @@ void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
     }
 }
 
+void MainWindow::on_actionFoldDcoTextBlocks_triggered()
+{
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+        ce->foldAll(true);
+    }
+}
+
 void MainWindow::printDocument()
 {
     if (focusWidget() == mRecent.editor()) {

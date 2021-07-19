@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>3</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -258,22 +258,6 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="2">
-           <widget class="QSpinBox" name="sb_tabsize">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="minimum">
-             <number>1</number>
-            </property>
-            <property name="maximum">
-             <number>50</number>
-            </property>
-            <property name="value">
-             <number>4</number>
-            </property>
-           </widget>
-          </item>
           <item row="4" column="2">
            <widget class="QCheckBox" name="cb_autoclose">
             <property name="text">
@@ -452,6 +436,29 @@
               <string>dynamic</string>
              </property>
             </item>
+           </widget>
+          </item>
+          <item row="9" column="1">
+           <widget class="QSpinBox" name="sb_tabsize">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="minimum">
+             <number>1</number>
+            </property>
+            <property name="maximum">
+             <number>50</number>
+            </property>
+            <property name="value">
+             <number>4</number>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QCheckBox" name="cb_autoFoldDco">
+            <property name="text">
+             <string>Fold DCO blocks on open</string>
+            </property>
            </widget>
           </item>
          </layout>
@@ -704,8 +711,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">

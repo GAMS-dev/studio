@@ -100,6 +100,7 @@ enum SettingsKey {
     skEdEditableMaxSizeMB,
     skEdCompleterAutoOpen,
     skEdCompleterCasing,
+    skEdFoldedDcoOnOpen,
 
     // MIRO settings page
     skMiroInstallPath,

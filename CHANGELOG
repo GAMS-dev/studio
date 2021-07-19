@@ -1,5 +1,6 @@
 Version 1.7.1  *
 ==================
+- added shortcut Alt+I (Option+I on macOS) to fold only DCO blocks and a settings option to trigger this on opening a gms file
 - added dynamic LOG entry while a GAMS Engine job is queued
 - improved GUI of GAMS Engine dialog
 
