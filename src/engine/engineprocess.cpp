@@ -77,6 +77,12 @@ void EngineProcess::startupInit()
 
 void EngineProcess::execute()
 {
+    QDir dir(mOutPath);
+    if (dir.exists() && !modelName().isEmpty() && mOutPath.endsWith(modelName())) {
+        if (!dir.removeRecursively()) {
+            emit newStdChannelData("\nCan't clean directory " + mOutPath.toUtf8() + '\n');
+        }
+    }
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
     mManager->setWorkingDirectory(workingDirectory());
@@ -697,11 +703,11 @@ void EngineProcess::addFilenames(QString efiFile, QStringList &list)
         if (line.isEmpty())
             continue;
         if (QFile::exists(line)) {
-            emit newStdChannelData("*** Adding file: "+line.toUtf8()+'\n');
             list << line;
         } else if (QFile::exists(path+"/"+line)) {
+            if (QFile::exists(path+'/'+modelName()+'/'+line))
+                QFile::remove(path+'/'+modelName()+'/'+line);
             QFile::copy(path+"/"+line, path+'/'+modelName()+'/'+line);
-            emit newStdChannelData("*** Adding copy of file: "+line.toUtf8()+'\n');
             list << line;
         } else {
             emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
