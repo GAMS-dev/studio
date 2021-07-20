@@ -103,7 +103,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoFoldDco, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::storeEngineTokenChanged);
+    connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
 
@@ -165,14 +165,11 @@ void SettingsDialog::loadSettings()
     }
     ui->confirmNeosCheckBox->setChecked(mSettings->toBool(skNeosAutoConfirm));
     ui->cbEngineStoreToken->setChecked(mSettings->toBool(skEngineStoreUserToken));
-    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
-    int engineExpire = mSettings->toInt(skEngineAuthExpire);
-    if (engineExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
-    else if (engineExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
-    ui->cbEngineExpireType->setCurrentIndex(engineExpire % (60*24) ? engineExpire % 60 ? 0 : 1 : 2);
-    ui->sbEngineExpireValue->setValue(engineExpire / (engineExpire % (60*24) ? engineExpire % 60 ? 1 : 60 : (60*24)));
+    mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
+    if (mEngineInitialExpire % (60*24) == 0) ui->cbEngineExpireType->setCurrentIndex(2);
+    else if (mEngineInitialExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
+    ui->cbEngineExpireType->setCurrentIndex(mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 0 : 1 : 2);
+    ui->sbEngineExpireValue->setValue(mEngineInitialExpire / (mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 1 : 60 : (60*24)));
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
@@ -215,14 +212,6 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 void SettingsDialog::setModified()
 {
     setModifiedStatus(true);
-}
-
-void SettingsDialog::storeEngineTokenChanged()
-{
-    ui->cbEngineExpireType->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->sbEngineExpireValue->setEnabled(ui->cbEngineStoreToken->isChecked());
-    ui->laEngineStayLoggedIn->setEnabled(ui->cbEngineStoreToken->isChecked());
-    setModified();
 }
 
 void SettingsDialog::setModifiedStatus(bool status)
@@ -293,6 +282,11 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
     mSettings->setBool(skEngineStoreUserToken, ui->cbEngineStoreToken->isChecked());
+    if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
+        mEngineInitialExpire = mSettings->toInt(skEngineAuthExpire);
+        mSettings->setString(skEngineUserToken, QString());
+    } else
+        emit persistToken();
     int factor = ui->cbEngineExpireType->currentIndex() ? ui->cbEngineExpireType->currentIndex()>1 ? (60*24) : 60 : 1;
     mSettings->setInt(skEngineAuthExpire, ui->sbEngineExpireValue->value() * factor);
 
@@ -441,6 +435,11 @@ void SettingsDialog::on_tb_userLibRemove_clicked()
 void SettingsDialog::on_tb_userLibOpen_clicked()
 {
     QDesktopServices::openUrl(QUrl::fromLocalFile(ui->cb_userLib->currentText().trimmed()));
+}
+
+int SettingsDialog::engineInitialExpire() const
+{
+    return mEngineInitialExpire;
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {

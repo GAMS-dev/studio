@@ -386,7 +386,7 @@ SyntaxBlock SyntaxUniformBlock::validTail(const QString &line, int index, int fl
 SyntaxDelimiter::SyntaxDelimiter(SyntaxKind kind, SharedSyntaxData *sharedData)
     : SyntaxAbstract(kind, sharedData)
 {
-    mSubKinds << SyntaxKind::CommentEndline;
+    mSubKinds << SyntaxKind::CommentEndline << SyntaxKind::CommentLine;
     if (kind == SyntaxKind::Semicolon) {
         mDelimiter = ';';
     } else if (kind == SyntaxKind::CommaIdent) {
@@ -454,12 +454,19 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
 SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(flavor)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
     if (start >= line.length()) return SyntaxBlock(this);
     int prev = 0;
+
+    if (kind() == SyntaxKind::ExecuteBody) {
+        if (entryKind == SyntaxKind::Execute) {
+            if (!(flavor % 2) && start < line.length() && line.at(start) == '.')
+                flavor += 1;
+        } else if (flavor % 2)
+            flavor -= 1;
+    }
 
     int end = start;
     int chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
@@ -470,6 +477,9 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, int flavor, const QS
 
     while (++end < line.length()) {
         chKind = charClass(line.at(end), prev, mSpecialDynamicChars);
+        if (flavor % 2 && (line.at(end) == ' ' || line.at(end) == '\t')) {
+            break;
+        }
         if (chKind == ccSpecial) break;
         if (chKind != ccAlpha) skipWord = false;
         else if (!skipWord) break;
