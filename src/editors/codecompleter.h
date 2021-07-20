@@ -144,7 +144,7 @@ private:
     int findBound(int pos, const QString &nextTwo, int good, int look);
     int findFilterRow(const QString &text, int top, int bot);
     void updateFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos);
-    QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor);
+    QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos);
 
 private:
     QPlainTextEdit *mEdit;
@@ -155,6 +155,7 @@ private:
     bool mDebug = false;
 
     static const QSet<int> cEnteringSyntax;
+    static const QSet<int> cExecuteSyntax;
 };
 
 } // namespace studio
