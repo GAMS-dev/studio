@@ -6,7 +6,7 @@ Version 1.7.1  *
 - fixed crash on reopening a log tab
 - fixed comment breaking syntax coloring in comma separated list of symbols
 - fixed wrong syntax highlighting after comment line in identifier list
-- fixed unpacking log of GAMS Engine
+- fixed output of the GAMS Engine unzip marking GMS and LXI as skipped
 - added file type EFI to send additional files to a GAMS Engine server
 
 Version 1.7.0
