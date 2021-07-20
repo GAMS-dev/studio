@@ -133,6 +133,7 @@ public:
         << "Option files (*.opt *.op* *.o*)"
         << "GAMS Configuration files (*.yaml)"
         << "Text files (*.txt)"
+        << "External files (*.efi)"
         << "All files (*.*)";
         return res;
     }
@@ -140,7 +141,7 @@ public:
     static QStringList dialogFileFilterAll() {
         QStringList res("GAMS source (*.gms)");
         QStringList userTypes = FileType::userGamsTypes();
-        QString allGams("All GAMS files (*.gms *.gdx *.inc *.log *.lst *.opt *.op* *.o *.ref *.dmp%1)");
+        QString allGams("All GAMS files (*.gms *.gdx *.inc *.log *.lst *efi *.opt *.op* *.o *.ref *.dmp%1)");
         if (!userTypes.isEmpty()) {
             res << allGams.arg(" *." + userTypes.join(" *."));
             res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");
@@ -152,6 +153,7 @@ public:
         << "GAMS Data eXchange (*.gdx)"
         << "Reference files (*.ref)"
         << "Text files (*.txt)"
+        << "External files (*.efi)"
         << "All files (*.*)";
         return res;
     }
