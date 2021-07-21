@@ -702,7 +702,8 @@ void EngineProcess::addFilenames(QString efiFile, QStringList &list)
         QString line = in.readLine().trimmed();
         if (line.isEmpty())
             continue;
-        if (QFile::exists(line)) {
+        QFileInfo fi(line);
+        if (fi.isAbsolute() && fi.exists()) {
             list << line;
         } else if (QFile::exists(path+"/"+line)) {
             if (QFile::exists(path+'/'+modelName()+'/'+line))
