@@ -27,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-const QStringList FileType::CInvalidUserTypes {"ref", "gdx", "log", "lst", "lxi", "opt", "yaml", "exe"};
+const QStringList FileType::CInvalidUserTypes {"ref", "gdx", "log", "lst", "lxi", "opt", "yaml", "exe", "efi"};
 
 QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
@@ -40,7 +40,8 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
     new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
     new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false),
-    new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false)
+    new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false),
+    new FileType(FileKind::Efi, {"efi"}, "External Files", false),
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);

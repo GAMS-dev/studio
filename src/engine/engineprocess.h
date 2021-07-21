@@ -113,6 +113,7 @@ private:
     void startPacking();
     void startUnpacking();
     QString modelName() const;
+    void addFilenames(QString efiFile, QStringList &list);
 
     EngineManager *mManager;
     QString mHost;

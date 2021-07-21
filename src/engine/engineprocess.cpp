@@ -77,6 +77,12 @@ void EngineProcess::startupInit()
 
 void EngineProcess::execute()
 {
+    QDir dir(mOutPath);
+    if (dir.exists() && !modelName().isEmpty() && mOutPath.endsWith(modelName())) {
+        if (!dir.removeRecursively()) {
+            emit newStdChannelData("\nCan't clean directory " + mOutPath.toUtf8() + '\n');
+        }
+    }
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
     mManager->setWorkingDirectory(workingDirectory());
@@ -231,13 +237,15 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        if (fName.endsWith("gms") || fName.endsWith("g00") || fName.endsWith("lxi")) {
+        if (fName.startsWith(folder) && (fName.endsWith("gms") || fName.endsWith("g00"))) {
             emit newStdChannelData("--- skipping: ."+ folder + fName);
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else if (fName.endsWith("lxi")) {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()
+                                   +fName.left(fName.length()-3)+"lst\",0,0]");
          } else {
             emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
         }
+        if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
 }
@@ -654,7 +662,10 @@ void EngineProcess::startPacking()
 
     mSubProc = subProc;
     subProc->setWorkingDirectory(mOutPath);
-    subProc->setParameters(QStringList() << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00");
+    QStringList params;
+    params << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00";
+    addFilenames(mOutPath+".efi", params);
+    subProc->setParameters(params);
     subProc->execute();
 }
 
@@ -675,6 +686,35 @@ void EngineProcess::startUnpacking()
 QString EngineProcess::modelName() const
 {
     return QFileInfo(mOutPath).fileName();
+}
+
+void EngineProcess::addFilenames(QString efiFile, QStringList &list)
+{
+    QFile file(efiFile);
+    if (!file.exists()) return;
+    if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
+        emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
+        return;
+    }
+    QTextStream in(&file);
+    QString path = QFileInfo(efiFile).path();
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty())
+            continue;
+        QFileInfo fi(line);
+        if (fi.isAbsolute() && fi.exists()) {
+            list << line;
+        } else if (QFile::exists(path+"/"+line)) {
+            if (QFile::exists(path+'/'+modelName()+'/'+line))
+                QFile::remove(path+'/'+modelName()+'/'+line);
+            QFile::copy(path+"/"+line, path+'/'+modelName()+'/'+line);
+            list << line;
+        } else {
+            emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
+        }
+    }
+    file.close();
 }
 
 bool EngineProcess::forceGdx() const
