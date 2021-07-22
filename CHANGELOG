@@ -1,12 +1,13 @@
-Version 1.7.1  *
+Version 1.7.1
 ==================
-- added shortcut Alt+I (Option+I on macOS) to fold only DCO blocks and a settings option to trigger this on opening a gms file
-- added dynamic LOG entry while a GAMS Engine job is queued
-- improved GUI of GAMS Engine dialog
-- fixed crash on reopening a log tab
+- added shortcut Alt+I (macOS: Option+I) to fold DCO blocks
+- added setting to automatically collapse DCO blocks when opening a file (default: off)
+- fixed error in log when GAMS Engine job is queued
+- improved GAMS Engine dialog
+- fixed crash when reopening a closed log tab
 - fixed comment breaking syntax coloring in comma separated list of symbols
-- fixed wrong syntax highlighting after comment line in identifier list
-- fixed output of the GAMS Engine unzip marking GMS and LXI as skipped
+- fixed syntax highlighting after comment line in identifier list
+- fixed output of GAMS Engine unzip marking GMS and LXI as skipped
 - added file type EFI to send additional files to a GAMS Engine server
 
 Version 1.7.0
