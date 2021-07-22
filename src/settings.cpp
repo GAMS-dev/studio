@@ -332,6 +332,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdEditableMaxSizeMB, scUser, {"editor","editableMaxSizeMB"}, 50);
     safelyAdd(res, skEdCompleterAutoOpen, scUser, {"editor","completerAutoShow"}, true);
     safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
+    safelyAdd(res, skEdFoldedDcoOnOpen, scUser, {"editor","foldedDcoOnOpen"}, false);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
@@ -357,6 +358,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
     safelyAdd(res, skEngineAuthExpire, scUser, {"engine","authExpire"}, 60*24*7);
+    safelyAdd(res, skEngineIsSelfCert, scSys, {"engine","isSelfCert"}, false);
     safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 

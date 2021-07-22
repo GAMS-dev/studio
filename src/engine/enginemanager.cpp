@@ -50,7 +50,7 @@ EngineManager::EngineManager(QObject* parent)
         emit reAuthorize(summary.getToken());
     });
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
         emit reAuthorizeError(getJsonMessageIfFound(text));
     });
 
@@ -137,10 +137,12 @@ EngineManager::EngineManager(QObject* parent)
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
-        if (!mQueueFinished && error_type != QNetworkReply::ServiceUnavailableError)
+        if (!mQueueFinished && error_type != QNetworkReply::ContentAccessDenied) {
             emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
                           " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
-
+        } else {
+            emit jobIsQueued();
+        }
     });
 
     connect(mJobsApi, &OAIJobsApi::allPendingRequestsCompleted, this, [this]() {
@@ -251,7 +253,7 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
 void EngineManager::getJobStatus()
 {
     if (!mJobToken.isEmpty())
-        mJobsApi->getJob(mJobToken, QString("status process_status"));
+        mJobsApi->getJob(mJobToken, QString("status, process_status"));
 }
 
 void EngineManager::killJob(bool hard)

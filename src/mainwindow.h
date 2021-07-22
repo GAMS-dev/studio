@@ -353,6 +353,7 @@ private slots:
     void on_actionRunEngine_triggered();
     void on_actionFoldAllTextBlocks_triggered();
     void on_actionUnfoldAllTextBlocks_triggered();
+    void on_actionFoldDcoTextBlocks_triggered();
     void on_actionMove_Line_Up_triggered();
     void on_actionMove_Line_Down_triggered();
 
@@ -488,7 +489,6 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
     QString mEngineAuthToken;
-    bool mEngineAcceptSelfCert = false;
     bool mEngineNoDialog = false;
 
 };

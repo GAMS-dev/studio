@@ -48,6 +48,8 @@ public:
     bool preventThemeChaning();
     bool hasDelayedBaseThemeChange();
 
+    int engineInitialExpire() const;
+
 protected:
     void closeEvent(QCloseEvent *event) override;
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -60,13 +62,13 @@ signals:
     void userGamsTypeChanged();
     void editorTabSizeChanged(int size);
     void reactivateEngineDialog();
+    void persistToken();
 
 public slots:
     void delayBaseThemeChange(bool valid);
 
 private slots:
     void setModified();
-    void storeEngineTokenChanged();
     void prepareModifyTheme();
     void themeModified();
     bool setAndCheckUserLib(const QString &path);
@@ -110,6 +112,7 @@ private:
     int mFixedThemeCount = 0;
     bool mDelayedBaseThemeChange = false;
     bool mMiroSettingsEnabled = true;
+    int mEngineInitialExpire = 0;
 
     void saveSettings();
     void loadSettings();
