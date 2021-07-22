@@ -56,6 +56,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
+    connect(mManager, &EngineManager::jobIsQueued, this, &EngineProcess::jobIsQueued);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
     setIgnoreSslErrorsCurrentUrl(false);
@@ -76,6 +77,12 @@ void EngineProcess::startupInit()
 
 void EngineProcess::execute()
 {
+    QDir dir(mOutPath);
+    if (dir.exists() && !modelName().isEmpty() && mOutPath.endsWith(modelName())) {
+        if (!dir.removeRecursively()) {
+            emit newStdChannelData("\nCan't clean directory " + mOutPath.toUtf8() + '\n');
+        }
+    }
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
     mManager->setWorkingDirectory(workingDirectory());
@@ -230,13 +237,15 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();
         folder.prepend(QDir::separator().toLatin1());
-        if (fName.endsWith("gms") || fName.endsWith("g00") || fName.endsWith("lxi")) {
+        if (fName.startsWith(folder) && (fName.endsWith("gms") || fName.endsWith("g00"))) {
             emit newStdChannelData("--- skipping: ."+ folder + fName);
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
+         } else if (fName.endsWith("lxi")) {
+            emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()
+                                   +fName.left(fName.length()-3)+"lst\",0,0]");
          } else {
             emit newStdChannelData("--- extracting: ."+ folder + fName +"[FIL:\""+mOutPath.toUtf8()+fName+"\",0,0]");
-            if (data.endsWith("\n")) emit newStdChannelData("\n");
         }
+        if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
 }
@@ -385,6 +394,7 @@ void EngineProcess::completed(int exitCode)
     mPullTimer.stop();
     mManager->cleanup();
     setProcState(ProcIdle);
+    mQueuedTimer.invalidate();
     AbstractGamsProcess::completed(exitCode);
 }
 
@@ -400,8 +410,10 @@ void EngineProcess::rePing(const QString &value)
 void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
     Q_UNUSED(message)
+    mQueuedTimer.start();
     mManager->setToken(token);
-    QString newLstEntry("\n--- switch to Engine .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
+    emit newStdChannelData(QString("\n--- GAMS Engine at %1\n").arg(mManager->url().toString()).toUtf8());
+    QString newLstEntry("--- switch LOG to .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
     QString lstPath = mOutPath+"/"+modelName()+".lst";
     emit newStdChannelData(newLstEntry.arg(QDir::separator(), modelName(), lstPath, token).toUtf8());
     // TODO(JM) store token for later resuming
@@ -416,15 +428,12 @@ const QHash<QString, EngineProcess::JobStatusEnum> EngineProcess::CJobStatus {
 
 void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 {
-    // TODO(JM) convert status to EngineManager::Status
-    EngineManager::StatusCode code = EngineManager::StatusCode(status);
+    EngineManager::StatusCode engineStatus = EngineManager::StatusCode(status);
 
-    if (code > EngineManager::Queued && mProcState == Proc3Queued) {
+    if (engineStatus > EngineManager::Queued && mProcState == Proc3Queued) {
         setProcState(Proc4Monitor);
-        mManager->getLog();
     }
-
-    if (code == EngineManager::Finished && mProcState == Proc4Monitor) {
+    if (engineStatus == EngineManager::Finished && mProcState == Proc4Monitor) {
         mManager->getLog();
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
@@ -434,6 +443,8 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
+    } else if (mProcState >= Proc3Queued) {
+        jobIsQueued();
     }
 }
 
@@ -445,9 +456,22 @@ void EngineProcess::reKillJob(const QString &text)
 
 void EngineProcess::reGetLog(const QByteArray &data)
 {
+    if (mQueuedTimer.isValid()) {
+        emit newStdChannelData("\n\n");
+        mQueuedTimer.invalidate();
+    }
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData(res);
+}
+
+void EngineProcess::jobIsQueued()
+{
+    if (mQueuedTimer.isValid()) {
+        int elapsed = int(mQueuedTimer.elapsed() / 1000L);
+        if (elapsed > 1)
+            emit newStdChannelData(("\r--- Job queued (" + QString::number(elapsed) + " sec)").toUtf8());
+    }
 }
 
 void EngineProcess::reGetOutputFile(const QByteArray &data)
@@ -638,7 +662,10 @@ void EngineProcess::startPacking()
 
     mSubProc = subProc;
     subProc->setWorkingDirectory(mOutPath);
-    subProc->setParameters(QStringList() << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00");
+    QStringList params;
+    params << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00";
+    addFilenames(mOutPath+".efi", params);
+    subProc->setParameters(params);
     subProc->execute();
 }
 
@@ -659,6 +686,35 @@ void EngineProcess::startUnpacking()
 QString EngineProcess::modelName() const
 {
     return QFileInfo(mOutPath).fileName();
+}
+
+void EngineProcess::addFilenames(QString efiFile, QStringList &list)
+{
+    QFile file(efiFile);
+    if (!file.exists()) return;
+    if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
+        emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
+        return;
+    }
+    QTextStream in(&file);
+    QString path = QFileInfo(efiFile).path();
+    while (!in.atEnd()) {
+        QString line = in.readLine().trimmed();
+        if (line.isEmpty())
+            continue;
+        QFileInfo fi(line);
+        if (fi.isAbsolute() && fi.exists()) {
+            list << line;
+        } else if (QFile::exists(path+"/"+line)) {
+            if (QFile::exists(path+'/'+modelName()+'/'+line))
+                QFile::remove(path+'/'+modelName()+'/'+line);
+            QFile::copy(path+"/"+line, path+'/'+modelName()+'/'+line);
+            list << line;
+        } else {
+            emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
+        }
+    }
+    file.close();
 }
 
 bool EngineProcess::forceGdx() const

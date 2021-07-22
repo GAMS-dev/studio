@@ -90,6 +90,7 @@ signals:
     void reGetJobStatus(qint32 status, qint32 processStatus);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
+    void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);

@@ -103,8 +103,8 @@ public:
     QString wordUnderCursor() const;
     virtual bool hasSelection() const;
     void disconnectTimers() override;
-    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr) const;
-    void foldAll();
+    int foldStart(int line, bool &folded, QString *closingSymbol = nullptr, const QString *usedParenheses = nullptr) const;
+    void foldAll(bool onlyDCO = false);
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);

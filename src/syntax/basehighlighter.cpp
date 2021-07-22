@@ -128,7 +128,10 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
     mFormatChanges.clear();
     if (mAborted) mDirtyBlocks.clear();
     if (!mDirtyBlocks.isEmpty()) QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
-//    else DEB() << "Highlight done.  (Intervals: " << mDirtyBlocks.length() << ")";
+    else if (!mCompleted) {
+        mCompleted = true;
+        emit completed();
+    }
 }
 
 void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
