@@ -1,5 +1,6 @@
 Version 1.7.1
 ==================
+- **dropped support for Debian 9**
 - added shortcut Alt+I (macOS: Option+I) to fold DCO blocks
 - added setting to automatically collapse DCO blocks when opening a file (default: off)
 - fixed error in log when GAMS Engine job is queued
