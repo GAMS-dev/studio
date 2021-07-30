@@ -1,3 +1,7 @@
+Version 1.7.2
+==================
+- fixed enable MIRO menu entries when MIRO was automatically discovered
+
 Version 1.7.1
 ==================
 - **dropped support for Debian 9**

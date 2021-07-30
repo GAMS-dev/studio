@@ -276,6 +276,10 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
+    if (Settings::settings()->toString(skMiroInstallPath).isEmpty()) {
+        auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
+        Settings::settings()->setString(skMiroInstallPath, path);
+    }
     ui->menuMIRO->setEnabled(isMiroAvailable());
 
     // Themes
