@@ -1,6 +1,7 @@
-Version 1.7.3 *
+Version 1.7.3*
 ==================
 - added duplicate multiple lines feature
+- fixed searching backwards in modified document not working
 
 Version 1.7.2
 ==================

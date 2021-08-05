@@ -109,10 +109,15 @@ void Search::reset()
 
 void Search::findInDoc(FileMeta* fm)
 {
-    QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
+    QTextCursor lastItem = QTextCursor(fm->document());
+
+    // ignore search direction for cache generation. otherwise results would be in wrong order
+    QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
+    cacheOptions.setFlag(QTextDocument::FindBackward, false);
+
     do {
-        item = fm->document()->find(mRegex, lastItem, mOptions);
+        item = fm->document()->find(mRegex, lastItem, cacheOptions);
         if (item != lastItem) lastItem = item;
         else break;
 
