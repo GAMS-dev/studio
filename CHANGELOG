@@ -2,6 +2,7 @@ Version 1.7.3*
 ==================
 - added duplicate multiple lines feature
 - fixed searching backwards in modified document not working
+- fixed "Replace" ignoring case sensitivity option
 
 Version 1.7.2
 ==================

@@ -98,7 +98,6 @@ void Search::reset()
     mResults.clear();
     mResultHash.clear();
 
-    mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
     mOutsideOfList = false;
     mJumpQueued = false;
