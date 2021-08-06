@@ -3,6 +3,7 @@ Version 1.7.3*
 - added duplicate multiple lines feature
 - fixed searching backwards in modified document not working
 - fixed "Replace" ignoring case sensitivity option
+- fixed RAM usage for search results that occur in long lines
 
 Version 1.7.2
 ==================
