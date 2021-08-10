@@ -1202,11 +1202,50 @@ void CodeEdit::dragEnterEvent(QDragEnterEvent* e)
 
 void CodeEdit::duplicateLine()
 {
-    QTextCursor cursor = textCursor();
+    QTextCursor cursor(textCursor());
+    QTextCursor anchor = cursor;
+    anchor.setPosition(cursor.anchor());
+    QTextBlock firstBlock;
+    QTextBlock lastBlock;
+    QTextBlock lastBlockCopy;
+    if (cursor.anchor() >= cursor.position()) {
+        firstBlock = cursor.block();
+        lastBlock = anchor.block();
+        lastBlockCopy = lastBlock;
+    } else {
+        firstBlock = anchor.block();
+        lastBlock = cursor.block();
+        lastBlockCopy = lastBlock;
+    }
+    if (mBlockEdit) {
+        firstBlock = cursor.document()->findBlockByNumber(qMin(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        lastBlock = cursor.document()->findBlockByNumber(qMax(mBlockEdit->startLine(),mBlockEdit->currentLine()));
+        lastBlockCopy = lastBlock;
+    }
+    QString temp = firstBlock.text();
+    int lastPos = lastBlockCopy.position();
+    while (firstBlock.position()<lastPos){
+        firstBlock = firstBlock.next();
+        temp = temp + '\n' + firstBlock.text();
+    }
+    int cursorPos = cursor.position();
+    int anchorPos = anchor.position();
     cursor.beginEditBlock();
-    cursor.movePosition(QTextCursor::StartOfBlock);
-    cursor.insertText(cursor.block().text()+'\n');
+    if (lastBlock == cursor.document()->lastBlock()){
+        QTextCursor cur(lastBlock);
+        cur.movePosition(QTextCursor::EndOfLine, QTextCursor::MoveAnchor);
+        cur.insertText('\n'+temp);
+        cursor.setPosition(cursorPos,QTextCursor::MoveAnchor);
+        cursor.setPosition(anchorPos, QTextCursor::KeepAnchor);
+        cursor.endEditBlock();
+        setTextCursor(cursor);
+        return;
+    }
+    QTextCursor cur(lastBlock.next());
+    cur.setPosition(lastBlock.next().position(), QTextCursor::KeepAnchor);
+    cur.insertText(temp+'\n');
     cursor.endEditBlock();
+    setTextCursor(cursor);
 }
 
 void CodeEdit::removeLine()
