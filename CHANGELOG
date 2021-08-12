@@ -4,6 +4,7 @@ Version 1.7.3*
 - fixed searching backwards in modified document not working
 - fixed "Replace" ignoring case sensitivity option
 - fixed RAM usage for search results that occur in long lines
+- fixed search results not always being centered on screen
 
 Version 1.7.2
 ==================

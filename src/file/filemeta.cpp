@@ -746,9 +746,9 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
         qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
+
         int mv = int(line - lines/2);
-        if (qAbs(mv) > lines/3)
-            edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
+        edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
         return;
     }
     if (TextView *tv = ViewHelper::toTextView(mEditors.first())) {

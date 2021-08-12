@@ -294,7 +294,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                                                  ? tc.position()-tc.selectedText().length()
                                                  : tc.position(), mOptions);
             found = !ntc.isNull();
-            if (found) e->setTextCursor(ntc);
+            if (found) {
+                e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
+                e->setTextCursor(ntc);
+            }
 
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = !firstLevel;
