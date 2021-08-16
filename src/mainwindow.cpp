@@ -89,7 +89,6 @@ MainWindow::MainWindow(QWidget *parent)
       mMiroDeployDialog(new miro::MiroDeployDialog(this))
 {
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
-    Settings *settings = Settings::settings();
     initEnvironment();
 
     mPrintDialog = new QPrintDialog(&mPrinter, this);
@@ -247,7 +246,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+    mSyslog->setFont(createEditorFont(Settings::settings()->toString(skEdFontFamily),
+                                      Settings::settings()->toInt(skEdFontSize)));
     on_actionShow_System_Log_triggered();
 
     mNavigationHistory = new NavigationHistory(this);
@@ -276,6 +276,10 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
 
+    if (Settings::settings()->toString(skMiroInstallPath).isEmpty()) {
+        auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
+        Settings::settings()->setString(skMiroInstallPath, path);
+    }
     ui->menuMIRO->setEnabled(isMiroAvailable());
 
     // Themes
