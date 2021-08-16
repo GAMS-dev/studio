@@ -126,7 +126,12 @@ void SettingsDialog::loadSettings()
 {
     mSettings->loadFile(Settings::scUser);
     mSettings->loadFile(Settings::scTheme);
-    Theme::instance()->setActiveTheme(mSettings->toInt(skEdAppearance));
+    int pickedTheme = mSettings->toInt(skEdAppearance);
+#ifdef _WIN32
+    Theme::instance()->setActiveTheme(--pickedTheme);
+#else
+    Theme::instance()->setActiveTheme(pickedTheme);
+#endif
 
     // general tab page
     ui->txt_workspace->setText(mSettings->toString(skDefaultWorkspace));
@@ -170,6 +175,7 @@ void SettingsDialog::loadSettings()
     else if (mEngineInitialExpire % 60 == 0) ui->cbEngineExpireType->setCurrentIndex(1);
     ui->cbEngineExpireType->setCurrentIndex(mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 0 : 1 : 2);
     ui->sbEngineExpireValue->setValue(mEngineInitialExpire / (mEngineInitialExpire % (60*24) ? mEngineInitialExpire % 60 ? 1 : 60 : (60*24)));
+
 
     // color page
     Theme::instance()->readUserThemes(mSettings->toList(SettingsKey::skUserThemes));
@@ -371,10 +377,6 @@ void SettingsDialog::prepareModifyTheme()
 void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);
-//#ifndef __APPLE__
-//#else
-//    Q_UNUSED(index)
-//#endif
     setThemeEditable(index >= mFixedThemeCount);
 }
 

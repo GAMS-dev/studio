@@ -1,3 +1,12 @@
+Version 1.7.3 *
+==================
+- added duplicate multiple lines feature
+
+Version 1.7.2
+==================
+- fixed enable MIRO menu entries when MIRO was automatically discovered
+- fixed theme selection for open settings dialog and cancel button
+
 Version 1.7.1
 ==================
 - **dropped support for Debian 9**
