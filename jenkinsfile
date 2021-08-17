@@ -485,30 +485,31 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher.
                         ## S3 content listing
                         s3cmd ls --no-check-certificate -r $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
 
+                        # TODO activate when cert issues is fixed
                         ## Update gams.com for final releases
-                        if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
-                            ## go to WORKSPACE for svn gams.com/studio.txt update
-                            cd ${WORKSPACE}
-
-                            ## prepare GAMS Studio version line
-                            DATE=$(date +"%y%m%d")
-                            LINE="[$STUDIO_MAJOR_VERSION$STUDIO_MINOR_VERSION$STUDIO_PATCH_LEVEL.$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL,$DATE]"
-
-                            ## get Studio svn release list folder
-                            svn checkout --username ${SVN_USER} --password ${SVN_PASSWD} ${SVN_URL} release
-
-                            ## update studio.txt without duplicates
-                            if grep -Fxq $LINE release/studio.txt
-                            then
-                              echo "This version $LINE is already available in studio.txt"
-                            else
-                              printf "$LINE\\n$(cat release/studio.txt)" > release/studio.txt
-                            fi
-
-                            ## upload changed Studio release list
-                            cd release
-                            svn commit --username ${SVN_USER} --password ${SVN_PASSWD} -m "Jenkins GAMS Studio version update."
-                        fi
+                        #if [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]]; then
+                        #    ## go to WORKSPACE for svn gams.com/studio.txt update
+                        #    cd ${WORKSPACE}
+                        #
+                        #    ## prepare GAMS Studio version line
+                        #    DATE=$(date +"%y%m%d")
+                        #    LINE="[$STUDIO_MAJOR_VERSION$STUDIO_MINOR_VERSION$STUDIO_PATCH_LEVEL.$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL,$DATE]"
+                        #
+                        #    ## get Studio svn release list folder
+                        #    svn checkout --username ${SVN_USER} --password ${SVN_PASSWD} ${SVN_URL} release
+                        #
+                        #    ## update studio.txt without duplicates
+                        #    if grep -Fxq $LINE release/studio.txt
+                        #    then
+                        #      echo "This version $LINE is already available in studio.txt"
+                        #    else
+                        #      printf "$LINE\\n$(cat release/studio.txt)" > release/studio.txt
+                        #    fi
+                        #
+                        #    ## upload changed Studio release list
+                        #    cd release
+                        #    svn commit --username ${SVN_USER} --password ${SVN_PASSWD} -m "Jenkins GAMS Studio version update."
+                        #fi
                     '''
                 }
             }
