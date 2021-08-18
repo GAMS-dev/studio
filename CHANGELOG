@@ -2,6 +2,7 @@ Version 1.7.3 *
 ==================
 - added duplicate multiple lines feature
 - enable double-click in LOG beyond the end of lines containing links
+- fixed highlighting issue when a symbol declaration ends with a space
 
 Version 1.7.2
 ==================
