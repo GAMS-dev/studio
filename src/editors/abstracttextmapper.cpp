@@ -322,7 +322,6 @@ void AbstractTextMapper::scrollToPosition()
     if (mPosition.chunkNr < 0) return;
     double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
     setVisibleTopLine(region);
-    moveVisibleTopLine(0);
 }
 
 int AbstractTextMapper::visibleTopLine() const
@@ -471,6 +470,8 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
 
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
+            setVisibleTopLine(line+startLine - (visibleLineCount()/2));
+
             continueFind = false;
             return true;
         }

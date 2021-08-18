@@ -260,7 +260,6 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 {
     bool found = mMapper->findText(searchRegex, flags, continueFind);
     if (found) {
-        mMapper->scrollToPosition();
         updateView();
         emit selectionChanged();
     }
