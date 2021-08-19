@@ -1,6 +1,7 @@
 Version 1.7.3 *
 ==================
 - added duplicate multiple lines feature
+- fixed horizontal scroll in LST viewer when cursor is out of view
 
 Version 1.7.2
 ==================
