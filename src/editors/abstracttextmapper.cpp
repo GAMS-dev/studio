@@ -559,6 +559,19 @@ QString AbstractTextMapper::selectedText() const
     return mCodec ? mCodec->toUnicode(all) : all;
 }
 
+QString AbstractTextMapper::positionLine() const
+{
+    Chunk *chunk = getChunk(mPosition.chunkNr);
+    if (chunk && mPosition.localLine >= 0) {
+        int from = chunk->lineBytes.at(mPosition.localLine);
+        int to = chunk->lineBytes.at(mPosition.localLine + 1);
+        QByteArray raw;
+        raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
+        return mCodec ? mCodec->toUnicode(raw) : raw;
+    }
+    return QString();
+}
+
 void AbstractTextMapper::copyToClipboard()
 {
     QString text = selectedText();

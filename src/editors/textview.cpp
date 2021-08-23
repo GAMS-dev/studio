@@ -24,6 +24,7 @@
 #include "textviewedit.h"
 #include "keys.h"
 #include "settings.h"
+#include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
 
@@ -444,6 +445,24 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         mMapper->moveVisibleTopLine(-1);
     } else if (event == Hotkey::MoveViewLineDown) {
         mMapper->moveVisibleTopLine(1);
+    } else if (event == Hotkey::MoveCharGroupRight) {
+        int offset = p.x();
+        QString line = mMapper->positionLine();
+        EditorHelper::nextWord(0, offset, line);
+        if (offset >= line.length()) {
+            mMapper->setPosRelative(p.y()+1, 0, mode);
+        } else {
+            mMapper->setPosRelative(p.y(), offset, mode);
+        }
+    } else if (event == Hotkey::MoveCharGroupLeft) {
+        int offset = p.x();
+        if (offset == 0) {
+            mMapper->setPosRelative(p.y(), -1, mode);
+        } else {
+            QString line = mMapper->positionLine();
+            EditorHelper::prevWord(0, offset, line);
+            mMapper->setPosRelative(p.y(), offset, mode);
+        }
     } else if (!event->modifiers().testFlag(Qt::AltModifier)) {
         switch (event->key()) {
         case Qt::Key_Up:
