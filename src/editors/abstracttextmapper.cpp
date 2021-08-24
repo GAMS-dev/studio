@@ -564,7 +564,7 @@ QString AbstractTextMapper::positionLine() const
     Chunk *chunk = getChunk(mPosition.chunkNr);
     if (chunk && mPosition.localLine >= 0) {
         int from = chunk->lineBytes.at(mPosition.localLine);
-        int to = chunk->lineBytes.at(mPosition.localLine + 1);
+        int to = chunk->lineBytes.at(mPosition.localLine + 1) - mDelimiter.length();
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
         return mCodec ? mCodec->toUnicode(raw) : raw;
