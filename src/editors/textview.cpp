@@ -665,6 +665,7 @@ void TextView::updatePosAndAnchor()
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     mEdit->setTextCursor(cursor);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
+    horizontalScrollAction(0);
 }
 
 QString findLstHRef(const QTextBlock &block)
