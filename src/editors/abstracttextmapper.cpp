@@ -293,7 +293,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             // delta runs behind mMaxTopPos
             lineDelta -= mMaxTopLine.localLine - mTopLine.localLine;
             mTopLine = mMaxTopLine;
-            return 0;
+            return lineDelta;
         }
         ChunkMetrics *cm = chunkMetrics(mTopLine.chunkNr);
         if (!cm) {
@@ -305,16 +305,16 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         if (lineDelta < 0) { // delta is in this chunk
             mTopLine.localLine = cm->lineCount + lineDelta;
             mTopLine.absLineStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
-            return 0;
+            return lineDelta;
         } else if (chunk->nr < chunkCount()-1) { // switch to next chunk
             chunk = getChunk(chunk->nr + 1);
-            if (!chunk) return 0;
+            if (!chunk) return lineDelta;
             mTopLine.chunkNr = chunk->nr;
             mTopLine.localLine = 0;
             mTopLine.absLineStart = chunk->bStart;
         }
     }
-    return 0;
+    return lineDelta;
 }
 
 void AbstractTextMapper::scrollToPosition()
