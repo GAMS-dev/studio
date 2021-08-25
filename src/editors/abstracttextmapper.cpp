@@ -320,8 +320,14 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
 void AbstractTextMapper::scrollToPosition()
 {
     if (mPosition.chunkNr < 0) return;
-    double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
-    setVisibleTopLine(region);
+    ChunkMetrics *cm = chunkMetrics(mPosition.chunkNr);
+    if (!cm) return;
+    if (cm->hasLineNrs()) {
+        setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
+    } else {
+        double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
+        setVisibleTopLine(region);
+    }
 }
 
 int AbstractTextMapper::visibleTopLine() const
@@ -470,7 +476,7 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
 
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
-            setVisibleTopLine(line+startLine - (visibleLineCount()/2));
+            scrollToPosition();
 
             continueFind = false;
             return true;
@@ -736,7 +742,7 @@ void AbstractTextMapper::removeChunk(int chunkNr)
     if (mPosition.isValid()) cps << &mPosition;
     if (mAnchor.isValid()) cps << &mAnchor;
     if (topLine.isValid()) cps << &topLine;
-    for (CursorPosition *cp: cps) {
+    for (CursorPosition *cp: qAsConst(cps)) {
         if (cp->chunkNr > chunkNr) {
             --cp->chunkNr;
         } else if (cp->chunkNr == 0) {
