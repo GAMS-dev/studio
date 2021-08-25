@@ -462,10 +462,10 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
         int p = pos.x();
         if (p == 0) {
             if (pos.y() == 0) {
-                mMapper->moveVisibleTopLine(-1);
-                mMapper->setPosRelative(1, -1, mode);
+                if (mMapper->moveVisibleTopLine(-1) == 0)
+                    mMapper->setPosRelative(1, -1, mode);
             } else {
-                mMapper->setPosRelative(pos.y()-1, -1, mode);
+                mMapper->setPosRelative(pos.y(), -1, mode);
             }
         } else {
             QString line = mMapper->positionLine();
