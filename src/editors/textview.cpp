@@ -262,6 +262,7 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
     if (found) {
         updateView();
         emit selectionChanged();
+        mEdit->ensureCursorVisible();
     }
     return found;
 }
