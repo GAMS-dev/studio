@@ -323,7 +323,9 @@ void AbstractTextMapper::scrollToPosition()
     ChunkMetrics *cm = chunkMetrics(mPosition.chunkNr);
     if (!cm) return;
     if (cm->hasLineNrs()) {
-        setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
+        QPoint pos = position(true);
+        if (pos.y() < visibleLineCount() / 5 || pos.y() == cursorBeyondEnd || pos.y() > (visibleLineCount() * 4) / 5)
+            setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
     } else {
         double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
         setVisibleTopLine(region);

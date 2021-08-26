@@ -186,10 +186,12 @@ void TextView::zoomOut(int range)
 bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
 {
     if (lineNr > mMapper->knownLineNrs()) return false;
-
+    int vTop = mMapper->visibleTopLine();
     int vAll = mMapper->visibleLineCount();
-    mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/2)));
-    updateView();
+    if (lineNr < vTop+(vAll/6) || lineNr > vTop+(vAll*5/6)) {
+        mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/2)));
+        updateView();
+    }
 
     int relLine = lineNr - mMapper->visibleTopLine();
     if (length > 0) mMapper->setPosRelative(relLine, charNr, QTextCursor::MoveAnchor);
