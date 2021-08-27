@@ -746,8 +746,9 @@ void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int leng
         // center line vertically
         qreal lines = qreal(edit->rect().height()) / edit->cursorRect().height();
         qreal line = qreal(edit->cursorRect().bottom()) / edit->cursorRect().height();
+
         int mv = int(line - lines/2);
-        if (qAbs(mv) > lines/3)
+        if (qAbs(mv)+1 > lines / 3) // centeres if the cursor is in upper or lower visible-lines/6
             edit->verticalScrollBar()->setValue(edit->verticalScrollBar()->value()+mv);
         return;
     }
