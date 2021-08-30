@@ -125,7 +125,7 @@ public:
     void setDebugMode(bool debug);
 
 signals:
-    void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax);
+    void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = 0);
 
 public slots:
     void setVisible(bool visible) override;

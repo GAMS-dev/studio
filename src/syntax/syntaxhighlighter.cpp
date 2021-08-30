@@ -171,6 +171,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
+                        if (scanBlock && testBlock.start <= mScanPosInBlock && testBlock.end >= mScanPosInBlock) {
+                            mScannedPosDoc = testBlock.syntax->docForLastRequest();
+                        }
                     }
                 }
             }
@@ -299,14 +302,32 @@ void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
     mLastSyntaxKind = 0;
 }
 
-void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> > &blockSyntax)
+void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> > &blockSyntax, int pos)
 {
     mScanBlockNr = block.blockNumber();
+    mScanPosInBlock = pos;
     mScannedBlockSyntax.clear();
     rehighlightBlock(block);
     blockSyntax = mScannedBlockSyntax;
     mScannedBlockSyntax.clear();
     mScanBlockNr = -1;
+    mScanPosInBlock = -1;
+}
+
+void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc)
+{
+    QMap<int, QPair<int, int>> blockSyntax;
+    mScannedPosDoc = QStringList();
+    scanSyntax(block, blockSyntax, pos);
+    syntaxDoc = mScannedPosDoc;
+    mScannedPosDoc = QStringList();
+    SyntaxAbstract *syntax = nullptr;
+    for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (it.key() > pos) {
+            syntax = mKinds.value(SyntaxKind(it->first), nullptr);
+            break;
+        }
+    }
 }
 
 const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {

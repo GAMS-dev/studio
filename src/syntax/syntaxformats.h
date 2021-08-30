@@ -200,6 +200,7 @@ public:
     virtual QTextCharFormat charFormatError();
     virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
+    virtual QStringList docForLastRequest() const { return QStringList(); }
     int intSyntaxType() { return static_cast<int>(kind()); }
 
     static int stateToInt(SyntaxKind _state);

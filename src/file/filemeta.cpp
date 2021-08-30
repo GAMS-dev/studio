@@ -454,6 +454,7 @@ void FileMeta::addEditor(QWidget *edit)
             scEdit->setCompleter(mFileRepo->completer());
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
             connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
+            connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
             connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
         }
 
@@ -529,6 +530,7 @@ void FileMeta::removeEditor(QWidget *edit)
         scEdit->setCompleter(nullptr);
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
         connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
+        connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
         disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
     }
 }

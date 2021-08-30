@@ -29,7 +29,7 @@ namespace syntax {
 class DictEntry
 {
 public:
-    DictEntry(QString entry): mEntry(entry)
+    DictEntry(const QString &entry): mEntry(entry)
     {
         for (int i = 0; i < entry.length(); ++i) {
             mInvertCase += entry.at(i).isLower() ? entry.at(i).toUpper() : entry.at(i).toLower();
@@ -40,6 +40,7 @@ public:
         return mEntry.at(i) == c || mInvertCase.at(i) == c;
     }
     inline int length() const { return mEntry.length(); }
+    inline const QString &entry() const { return mEntry; }
 private:
     QString mEntry;
     QString mInvertCase;
@@ -52,6 +53,7 @@ public:
     virtual ~DictList() { while (!mEntries.isEmpty()) delete mEntries.takeFirst(); }
     inline int equalToPrevious(int i) const { return mEqualStart.at(i); }
     inline const DictEntry &at(int i) const { return *mEntries.at(i); }
+    inline const QString docAt(int i) const { return mDescript.at(i); }
     inline int count() const { return mEntries.length(); }
 private:
     inline int equalStart(const QString &pre, const QString &post) const {
@@ -60,6 +62,7 @@ private:
         return res;
     }
     QVector<DictEntry*> mEntries;
+    QVector<QString> mDescript;
     QVector<int> mEqualStart;
 };
 
@@ -72,6 +75,7 @@ public:
     SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData)
         : SyntaxAbstract(kind, sharedData), mExtraKeywordChars("._") {}
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+    QStringList docForLastRequest() const override;
 
 protected:
     int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
@@ -80,6 +84,8 @@ protected:
     QHash<int, DictList*> mKeywords;
     QHash<int, int> mFlavors;
     QString mExtraKeywordChars;
+    int mLastKind = -1;
+    int mLastIKey = -1;
 
 private:
     inline QStringList swapStringCase(const QStringList &list);
