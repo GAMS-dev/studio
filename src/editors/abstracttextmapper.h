@@ -49,6 +49,7 @@ struct LineFormat {
     QTextCharFormat format;
     const QTextCharFormat *extraLstFormat = nullptr;
     QString extraLstHRef;
+    bool lineMarked = false;
 };
 
 ///
@@ -120,6 +121,7 @@ protected:
         qint64 bStart = -1;
         QByteArray bArray;
         QVector<int> lineBytes;
+        QPoint markedRegion;
         int size() {
             return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0;
         }
@@ -132,7 +134,7 @@ public:
     enum SpecialCursorPosition { cursorInvalid = -1, cursorBeforeStart = -2, cursorBeyondEnd = -3 };
 
 public:
-    ~AbstractTextMapper();
+    ~AbstractTextMapper() override;
     virtual AbstractTextMapper::Kind kind() const = 0;
 
     QTextCodec *codec() const;
@@ -210,6 +212,7 @@ protected:
     void removeChunk(int chunkNr);
     virtual void internalRemoveChunk(int chunkNr);
     LinePosition topLine() const { return mTopLine; }
+    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
@@ -218,7 +221,6 @@ private:
     void updateBytesPerLine(const ChunkMetrics &chunkMetrics) const;
     int maxChunksInCache() const;
     int findChunk(int lineNr);
-    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     QPoint convertPos(const CursorPosition &pos) const;
     QPoint convertPosLocal(const CursorPosition &pos) const;
 

@@ -102,6 +102,38 @@ void MemoryMapper::invalidateSize()
     mSize = -1;
 }
 
+void MemoryMapper::markLastLine()
+{
+    if (!mChunks.size()) return;
+    Chunk *chunk = mChunks.last();
+    if (chunk->markedRegion.x() < 0)
+        chunk->markedRegion.rx() = chunk->lineCount()-1;
+    if (chunk->markedRegion.y() < chunk->lineCount()-1)
+        chunk->markedRegion.ry() = chunk->lineCount()-1;
+}
+
+QVector<bool> MemoryMapper::markedLines(int localLineNrFrom, int lineCount) const
+{
+    QVector<bool> res;
+    if (!size()) return res;
+    res.reserve(lineCount);
+    QPair<int,int> interval = QPair<int,int>(localLineNrFrom, lineCount); // <start, size>
+    while (interval.second) {
+        QPair<int,int> chunkInterval;
+        Chunk *chunk = chunkForRelativeLine(interval.first, &chunkInterval.first);
+        if (!chunk) break;
+        chunkInterval.second = qMin(interval.second, chunk->lineCount() - chunkInterval.first);
+        for (int i = chunkInterval.first; i < chunkInterval.first + chunkInterval.second; ++i) {
+            res << (chunk->markedRegion.x() >= 0 && chunk->markedRegion.x() <= i && chunk->markedRegion.y() > i);
+        }
+        interval.first += chunkInterval.second;
+        interval.second -= chunkInterval.second;
+        if (chunk->nr == chunkCount()-1) break;
+    }
+    return res;
+
+}
+
 AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
     // IF we already have an empty chunk at the end, take it
@@ -120,6 +152,7 @@ AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
     chunk->bStart = mChunks.size() ? mChunks.last()->bStart + mChunks.last()->size() : 0;
     chunk->lineBytes << 0;
     chunk->nr = chunkCount();
+    chunk->markedRegion = QPoint(-1, -1);
     mChunks << chunk;
     invalidateLineOffsets(chunk);
 
@@ -146,9 +179,15 @@ void MemoryMapper::shrinkLog(qint64 minBytes)
         // the first chunk in the unit starts at bArray[0]
         while (chunk->size()+ellipsis.size() > chunkSize() && chunk->lineBytes.size() > 1) {
             chunk->lineBytes.removeLast();
+            if (chunk->lineCount() < chunk->markedRegion.x())
+                chunk->markedRegion = QPoint(-1, -1);
+            else if (chunk->lineCount() < chunk->markedRegion.y())
+                chunk->markedRegion.ry() = chunk->lineCount();
         }
         // replace last line of first chunk by an ellipsis
         invalidateSize();
+        if (chunk->lineCount() == chunk->markedRegion.y())
+            chunk->markedRegion.ry() += 3;
         chunk->bArray.replace(chunk->lineBytes.last(), ellipsis.length(), ellipsis);
         chunk->lineBytes << (chunk->lineBytes.last()+1) << (chunk->lineBytes.last() + ellipsis.length()-1)
                              << (chunk->lineBytes.last() + ellipsis.length());
@@ -165,6 +204,10 @@ void MemoryMapper::shrinkLog(qint64 minBytes)
     invalidateSize();
     chunk->lineBytes.remove(0, linesToRemove);
     mShrinkLineCount += linesToRemove;
+    if (chunk->lineCount() < chunk->markedRegion.x())
+        chunk->markedRegion = QPoint(-1, -1);
+    else if (chunk->lineCount() < chunk->markedRegion.y())
+        chunk->markedRegion.ry() = chunk->lineCount();
 
     // remove chunk if it is empty
     if (!chunk->size()) {
@@ -195,7 +238,7 @@ bool MemoryMapper::ensureSpace(qint64 bytes)
 void MemoryMapper::recalcLineCount()
 {
     int lineCount = 0;
-    for (const Unit &u: mUnits) {
+    for (const Unit &u: qAsConst(mUnits)) {
         if (u.folded) ++lineCount;
         else {
             for (int i = 0; i < u.chunkCount; ++i) {
@@ -364,10 +407,10 @@ void MemoryMapper::createErrorMarks(MemoryMapper::LineRef ref, bool readErrorTex
     emit createMarks(mbState.marks);
 }
 
-void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk)
+void MemoryMapper::appendLineData(const QByteArray &data, Chunk *&chunk, bool mark)
 {
     if (!chunk->lineCount())
-        appendEmptyLine();
+        appendEmptyLine(mark);
     int lastLineStart = chunk->lineBytes.at(chunk->lineCount()-1);
     int lastLineEnd = chunk->lineBytes.last()-1;
     Chunk* changedChunk = chunk;
@@ -481,7 +524,7 @@ void MemoryMapper::parseNewLine()
 
     if (mLastLineIsOpen && mLastLineLen > line.length()) {
         ensureSpace(1);
-        appendEmptyLine();
+        appendEmptyLine(chunk->lineCount() == chunk->markedRegion.y());
         mLastLineLen = 0;
         mLastLineIsOpen = false;
     }
@@ -494,7 +537,7 @@ void MemoryMapper::parseNewLine()
     ++mNewLines;
 }
 
-void MemoryMapper::appendEmptyLine()
+void MemoryMapper::appendEmptyLine(bool mark)
 {
     mLogStack.commitLine();
     if (mLogStack.count() >= CParseLinesMax)
@@ -508,6 +551,7 @@ void MemoryMapper::appendEmptyLine()
     chunk->lineBytes << chunk->lineBytes.last()+1;
     chunk->bArray[chunk->lineBytes.last()-1] = '\n';
     updateChunkMetrics(chunk);
+    if (mark) markLastLine();
 
     mInstantRefresh = false;
     mLastLineIsOpen = false;
@@ -583,8 +627,9 @@ void MemoryMapper::addProcessData(const QByteArray &data)
     int start = 0;
     QByteArray midData;
     bool cleaned = false;
+    bool remote = data.startsWith("[]");
 
-    for (int i = 0 ; i < data.length() ; ++i) {
+    for (int i = (remote ? 2 : 0) ; i < data.length() ; ++i) {
         // check for line breaks
         if (data.at(i) == '\r') {
             len = i-start;
@@ -595,12 +640,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                     midData.setRawData(data.data()+start, uint(len));
                     cleaned = ensureSpace(midData.size()+1);
                     chunk = mChunks.last();
-                    appendLineData(midData, chunk);
+                    appendLineData(midData, chunk, remote);
                 }
                 start = i + 1;
                 cleaned = ensureSpace(1);
                 chunk = mChunks.last();
-                appendEmptyLine();
+                appendEmptyLine(remote);
             } else {
                 // concealing standalone CR - "\r"
                 start = i + 1;
@@ -617,12 +662,12 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 midData.setRawData(data.data()+start, uint(len));
                 cleaned = ensureSpace(midData.size()+1);
                 chunk = mChunks.last();
-                appendLineData(midData, chunk);
+                appendLineData(midData, chunk, remote);
             }
             start = i + 1;
             cleaned = ensureSpace(1);
             chunk = mChunks.last();
-            appendEmptyLine();
+            appendEmptyLine(remote);
         }
     }
     if (start < data.length()) {
@@ -631,7 +676,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
             midData.setRawData(data.data()+start, uint(len));
             cleaned = ensureSpace(midData.size()+1);
             chunk = mChunks.last();
-            appendLineData(midData, chunk);
+            appendLineData(midData, chunk, remote);
             mLastLineIsOpen = true;
         }
     }
@@ -667,6 +712,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
     }
     int activationLine;
     QByteArray data = rawLines(localLineNrFrom, lineCount, mUnits.last().firstChunk->nr, activationLine);
+    QVector<bool> markLines = markedLines(localLineNrFrom, lineCount);
     if (debugMode()) activationLine *= 2;
 
     QStringList res;
@@ -677,6 +723,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
     int from = 0;
     int to = 0;
     int next = -1;
+    int i = 0;
     while (to < data.length()) {
         if (data.at(to) == '\n') next = to+1;
         else if (data.at(to) == '\r') {
@@ -737,10 +784,13 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                 formats << LineFormat();
             }
         }
+        if (markLines.at(i))
+            formats.last().lineMarked = true;
 
         from = next;
         to = next;
         next = -1;
+        ++i;
     }
 //    res << "";
     return res.join("\n");

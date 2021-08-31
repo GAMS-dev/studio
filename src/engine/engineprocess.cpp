@@ -457,12 +457,12 @@ void EngineProcess::reKillJob(const QString &text)
 void EngineProcess::reGetLog(const QByteArray &data)
 {
     if (mQueuedTimer.isValid()) {
-        emit newStdChannelData("\n\n");
+        emit newStdChannelData("[]\n\n");
         mQueuedTimer.invalidate();
     }
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
-        emit newStdChannelData(res);
+        emit newStdChannelData("[]"+res);
 }
 
 void EngineProcess::jobIsQueued()
