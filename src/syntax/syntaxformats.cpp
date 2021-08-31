@@ -160,6 +160,8 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
         if (blockEndingDCOs.contains(list.first)) {
             // block-ending DCOs are checked separately -> ignore here
             blockEndingDCOs.removeAll(list.first);
+            mEndDCOs << list.first;
+            mEndDescription << list.second;
         } else {
             mDCOs << list.first;
             mDescription << list.second;
@@ -235,23 +237,24 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
 
 SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QString& line, int index)
 {
+    mLastIKey = -1;
+    mLastEndIKey = -1;
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
     int outFlavor = mFlavors.value(match.captured(2).toLower(), 0);
+    mLastEndIKey = mEndDCOs.indexOf(match.captured(2), Qt::CaseInsensitive);
     if (entryKind == SyntaxKind::CommentBlock) {
-        if (match.captured(2).compare("offtext", Qt::CaseInsensitive) == 0)
+        if (mLastEndIKey == 0)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::IgnoredBlock || entryKind == SyntaxKind::IgnoredHead) {
         if (flavor == 3 && match.captured(2).compare("offecho", Qt::CaseInsensitive) == 0)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
-        if (flavor == 5 && match.captured(2).compare("offput", Qt::CaseInsensitive) == 0)
+        if (flavor == 5 && mLastEndIKey == 1)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
-        if (match.captured(2).compare("pauseembeddedcode", Qt::CaseInsensitive) == 0
-                || match.captured(2).compare("endembeddedcode", Qt::CaseInsensitive) == 0
-                || match.captured(2).compare("offembeddedcode", Qt::CaseInsensitive) == 0)
+        if (mLastEndIKey > 1)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSharedData->commentEndLine()) {
@@ -277,7 +280,8 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QStrin
         }
     }
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DcoBody);
-    if (mDCOs.contains(match.captured(2), Qt::CaseInsensitive)) {
+    mLastIKey = mDCOs.indexOf(match.captured(2), Qt::CaseInsensitive);
+    if (mLastIKey >= 0) {
         bool atEnd = match.capturedEnd(0) >= line.length();
         if (next == SyntaxKind::IgnoredHead && atEnd)
             next = SyntaxKind::IgnoredBlock;
@@ -298,6 +302,16 @@ SyntaxBlock SyntaxDco::validTail(const QString &line, int index, int flavor, boo
     hasContent = false;
     SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
     return SyntaxBlock(this, flavor, index, end, shift);
+}
+
+QStringList SyntaxDco::docForLastRequest() const
+{
+    QStringList res;
+    if (mLastIKey >= 0)
+        res << mDCOs.at(mLastIKey) << mDescription.at(mLastIKey);
+    else if (mLastEndIKey >= 0)
+        res << mEndDCOs.at(mLastEndIKey) << mEndDescription.at(mLastEndIKey);
+    return res;
 }
 
 

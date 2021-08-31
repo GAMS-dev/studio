@@ -270,10 +270,16 @@ public:
     SyntaxDco(SharedSyntaxData* sharedData, QChar dcoChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+protected:
+    QStringList docForLastRequest() const override;
 private:
     QRegularExpression mRex;
     QStringList mDCOs;
     QStringList mDescription;
+    int mLastIKey = -1;
+    QStringList mEndDCOs;
+    QStringList mEndDescription;
+    int mLastEndIKey = -1;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
 
