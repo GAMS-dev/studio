@@ -188,10 +188,11 @@ bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
     if (lineNr > mMapper->knownLineNrs()) return false;
     int vTop = mMapper->visibleTopLine();
     int vAll = mMapper->visibleLineCount();
-    if (lineNr < vTop+(vAll/3) || lineNr > vTop+(vAll*2/3)) {
-        mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/3)));
+    if (lineNr < vTop+(vAll/6) || lineNr > vTop+(vAll*5/6)) {
+        mMapper->setVisibleTopLine(qMax(0, lineNr-(vAll/2)));
         updateView();
     }
+
     int relLine = lineNr - mMapper->visibleTopLine();
     if (length > 0) mMapper->setPosRelative(relLine, charNr, QTextCursor::MoveAnchor);
     mMapper->setPosRelative(relLine, charNr + length, (length > 0 ? QTextCursor::KeepAnchor : QTextCursor::MoveAnchor));
@@ -262,9 +263,9 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 {
     bool found = mMapper->findText(searchRegex, flags, continueFind);
     if (found) {
-        mMapper->scrollToPosition();
         updateView();
         emit selectionChanged();
+        mEdit->ensureCursorVisible();
     }
     return found;
 }

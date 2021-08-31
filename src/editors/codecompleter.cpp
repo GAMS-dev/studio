@@ -1070,14 +1070,14 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         filter = filter & ~cc_Dco;
     }
 
-    // for analysis
-#ifdef QT_DEBUG
-    DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-          << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
-    DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
-#endif
 
     if (mDebug) {
+        // for analysis
+#ifdef QT_DEBUG
+        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
+        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+#endif
         QString debugText = "Completer at " + QString::number(start) + ": "
                 + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
                 + "], filters " + QString::number(filter, 16);
