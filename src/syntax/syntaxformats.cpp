@@ -161,11 +161,26 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
             // block-ending DCOs are checked separately -> ignore here
             blockEndingDCOs.removeAll(list.first);
             mEndDCOs << list.first;
+            mEndDCOlow << list.first.toLower();
             mEndDescription << list.second;
         } else {
             mDCOs << list.first;
+            mDCOlow << list.first.toLower();
             mDescription << list.second;
         }
+    }
+    // ensure offtext to be first and offput second
+    int i = mEndDCOlow.indexOf("offput");
+    if (i > 0) {
+        mEndDCOs.move(i, 0);
+        mEndDCOlow.move(i, 0);
+        mEndDescription.move(i, 0);
+    }
+    i = mEndDCOlow.indexOf("offtext");
+    if (i > 0) {
+        mEndDCOs.move(i, 0);
+        mEndDCOlow.move(i, 0);
+        mEndDescription.move(i, 0);
     }
 
     if (!blockEndingDCOs.isEmpty()) {
@@ -242,7 +257,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QStrin
     QRegularExpressionMatch match = mRex.match(line, index);
     if (!match.hasMatch()) return SyntaxBlock(this);
     int outFlavor = mFlavors.value(match.captured(2).toLower(), 0);
-    mLastEndIKey = mEndDCOs.indexOf(match.captured(2), Qt::CaseInsensitive);
+    mLastEndIKey = mEndDCOlow.indexOf(match.captured(2).toLower());
     if (entryKind == SyntaxKind::CommentBlock) {
         if (mLastEndIKey == 0)
             return SyntaxBlock(this, outFlavor, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
@@ -280,7 +295,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QStrin
         }
     }
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DcoBody);
-    mLastIKey = mDCOs.indexOf(match.captured(2), Qt::CaseInsensitive);
+    mLastIKey = mDCOlow.indexOf(match.captured(2).toLower());
     if (mLastIKey >= 0) {
         bool atEnd = match.capturedEnd(0) >= line.length();
         if (next == SyntaxKind::IgnoredHead && atEnd)

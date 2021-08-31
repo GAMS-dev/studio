@@ -275,9 +275,11 @@ protected:
 private:
     QRegularExpression mRex;
     QStringList mDCOs;
+    QStringList mDCOlow;
     QStringList mDescription;
     int mLastIKey = -1;
     QStringList mEndDCOs;
+    QStringList mEndDCOlow;
     QStringList mEndDescription;
     int mLastEndIKey = -1;
     QMap<QString,int> mFlavors;
