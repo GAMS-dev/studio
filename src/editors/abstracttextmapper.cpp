@@ -273,10 +273,10 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             if (chunk->nr == 0) { // top chunk reached: move mVisibleTopLine
                 mTopLine.absLineStart = chunk->bStart;
                 mTopLine.localLine = 0;
-                return 0;
+                return lineDelta;
             } else { // continue with previous chunk
                 chunk = getChunk(chunk->nr - 1);
-                if (!chunk) return 0;
+                if (!chunk) return lineDelta;
                 mTopLine.chunkNr = chunk->nr;
                 mTopLine.localLine = chunk->lineCount();
                 mTopLine.absLineStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
@@ -284,7 +284,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         } else {
             mTopLine.localLine = lineDelta;
             mTopLine.absLineStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
-            return 0;
+            return lineDelta;
         }
     }
 
@@ -293,7 +293,7 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
             // delta runs behind mMaxTopPos
             lineDelta -= mMaxTopLine.localLine - mTopLine.localLine;
             mTopLine = mMaxTopLine;
-            return 0;
+            return lineDelta;
         }
         ChunkMetrics *cm = chunkMetrics(mTopLine.chunkNr);
         if (!cm) {
@@ -305,24 +305,31 @@ int AbstractTextMapper::moveVisibleTopLine(int lineDelta)
         if (lineDelta < 0) { // delta is in this chunk
             mTopLine.localLine = cm->lineCount + lineDelta;
             mTopLine.absLineStart = chunk->bStart + chunk->lineBytes.at(mTopLine.localLine);
-            return 0;
+            return lineDelta;
         } else if (chunk->nr < chunkCount()-1) { // switch to next chunk
             chunk = getChunk(chunk->nr + 1);
-            if (!chunk) return 0;
+            if (!chunk) return lineDelta;
             mTopLine.chunkNr = chunk->nr;
             mTopLine.localLine = 0;
             mTopLine.absLineStart = chunk->bStart;
         }
     }
-    return 0;
+    return lineDelta;
 }
 
 void AbstractTextMapper::scrollToPosition()
 {
     if (mPosition.chunkNr < 0) return;
-    double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
-    setVisibleTopLine(region);
-    moveVisibleTopLine(0);
+    ChunkMetrics *cm = chunkMetrics(mPosition.chunkNr);
+    if (!cm) return;
+    if (cm->hasLineNrs()) {
+        QPoint pos = position(true);
+        if (pos.y() < visibleLineCount() / 5 || pos.y() == cursorBeyondEnd || pos.y() > (visibleLineCount() * 4) / 5)
+            setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
+    } else {
+        double region = double(mPosition.absLineStart + mPosition.effectiveCharNr()) / size();
+        setVisibleTopLine(region);
+    }
 }
 
 int AbstractTextMapper::visibleTopLine() const
@@ -471,6 +478,8 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
 
             setPosAbsolute(chunk, line+startLine, charNr);
             setPosAbsolute(chunk, line+startLine, charNr + match.capturedLength(), QTextCursor::KeepAnchor);
+            scrollToPosition();
+
             continueFind = false;
             return true;
         }
@@ -557,6 +566,19 @@ QString AbstractTextMapper::selectedText() const
         chunk = getChunk(chunk->nr + 1);
     }
     return mCodec ? mCodec->toUnicode(all) : all;
+}
+
+QString AbstractTextMapper::positionLine() const
+{
+    Chunk *chunk = getChunk(mPosition.chunkNr);
+    if (chunk && mPosition.localLine >= 0) {
+        int from = chunk->lineBytes.at(mPosition.localLine);
+        int to = chunk->lineBytes.at(mPosition.localLine + 1) - mDelimiter.length();
+        QByteArray raw;
+        raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
+        return mCodec ? mCodec->toUnicode(raw) : raw;
+    }
+    return QString();
 }
 
 void AbstractTextMapper::copyToClipboard()
@@ -735,7 +757,7 @@ void AbstractTextMapper::removeChunk(int chunkNr)
     if (mPosition.isValid()) cps << &mPosition;
     if (mAnchor.isValid()) cps << &mAnchor;
     if (topLine.isValid()) cps << &topLine;
-    for (CursorPosition *cp: cps) {
+    for (CursorPosition *cp: qAsConst(cps)) {
         if (cp->chunkNr > chunkNr) {
             --cp->chunkNr;
         } else if (cp->chunkNr == 0) {

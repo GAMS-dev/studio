@@ -464,7 +464,7 @@ void AbstractEdit::jumpTo(int line, int column)
     qreal visLines = qreal(rect().height()) / cursorRect().height();
     qreal visLine = qreal(cursorRect().bottom()) / cursorRect().height();
     int mv = qRound(visLine - visLines/2);
-    if (qAbs(mv) > visLines/3)
+    if (qAbs(mv)+1 > visLines / 3) // centeres if the cursor is in upper or lower visible-lines/6
         verticalScrollBar()->setValue(verticalScrollBar()->value()+mv);
 }
 

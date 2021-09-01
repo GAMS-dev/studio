@@ -41,6 +41,7 @@ DictList::DictList(QList<QPair<QString, QString> > list, const QString &prefix)
     for (int i = 0; i < list.size(); ++i) {
         const QString &s( prefix.isNull() ? list.at(i).first : prefix + list.at(i).first);
         mEntries[i] = new DictEntry(s);
+        mDescript << list.at(i).second;
         mEqualStart[i] = equalStart(s, prevS);
         prevS = s;
     }
@@ -58,6 +59,14 @@ SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, int fla
     int end = index;
     while (isWhitechar(line, end)) end++;
     return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
+}
+
+QStringList SyntaxKeywordBase::docForLastRequest() const
+{
+    QStringList res;
+    if (mLastIKey >= 0 && mLastIKey < mKeywords.value(mLastKind)->count())
+        res << mKeywords.value(mLastKind)->at(mLastIKey).entry() << mKeywords.value(mLastKind)->docAt(mLastIKey);
+    return res;
 }
 
 QStringList SyntaxKeywordBase::swapStringCase(const QStringList &list)
@@ -81,11 +90,15 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
         const DictEntry *dEntry = &mKeywords.value(int(kind))->at(iKey);
         if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index), mExtraKeywordChars)) {
             if (dEntry->length() > iChar) return -1;
+            mLastKind = int(kind);
+            mLastIKey = iKey;
             return iChar+index; // reached an valid end
         } else if (iChar < dEntry->length() &&  dEntry->is(line.at(iChar+index), iChar) ) {
             // character equals
             iChar++;
         } else if (openEnd && iChar == dEntry->length()) {
+            mLastKind = int(kind);
+            mLastIKey = iKey;
             return iChar+index; // reached an valid end of keyword-start
         } else {
             // different character  at iChar: switch to next keyword
@@ -95,6 +108,7 @@ int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, 
             if (mKeywords.value(int(kind))->equalToPrevious(iKey) < iChar) break;
         }
     }
+    mLastIKey = -1;
     return -1;
 }
 
