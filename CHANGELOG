@@ -1,3 +1,7 @@
+Version 1.8.0 *
+==================
+- added tooltips to source code for keywords and DCOs
+
 Version 1.7.3*
 ==================
 - added duplicate multiple lines feature
@@ -9,7 +13,6 @@ Version 1.7.3*
 - fixed "Replace" ignoring case sensitivity option
 - fixed RAM usage for search results that occur in long lines
 - fixed search results not always being centered on screen
-- added tooltips to source code for keywords and DCOs
 
 Version 1.7.2
 ==================
