@@ -323,9 +323,9 @@ QStringList SyntaxDco::docForLastRequest() const
 {
     QStringList res;
     if (mLastIKey >= 0)
-        res << mDCOs.at(mLastIKey) << mDescription.at(mLastIKey);
+        res << '$'+mDCOs.at(mLastIKey) << mDescription.at(mLastIKey);
     else if (mLastEndIKey >= 0)
-        res << mEndDCOs.at(mLastEndIKey) << mEndDescription.at(mLastEndIKey);
+        res << '$'+mEndDCOs.at(mLastEndIKey) << mEndDescription.at(mLastEndIKey);
     return res;
 }
 
