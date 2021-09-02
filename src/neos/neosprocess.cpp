@@ -395,14 +395,14 @@ void NeosProcess::reGetIntermediateResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
-        emit newStdChannelData(res);
+        emit newStdChannelData("[]"+res);
 }
 
 void NeosProcess::reGetFinalResultsNonBlocking(const QByteArray &data)
 {
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
-        emit newStdChannelData(res);
+        emit newStdChannelData("[]"+res);
 }
 
 void NeosProcess::reGetOutputFile(const QByteArray &data)
