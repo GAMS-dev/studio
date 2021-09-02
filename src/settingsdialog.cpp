@@ -102,6 +102,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_completerAutoOpen, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_completerCasing, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cb_autoFoldDco, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_smartTooltip, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->confirmNeosCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cbEngineStoreToken, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
@@ -160,6 +161,7 @@ void SettingsDialog::loadSettings()
     ui->cb_completerAutoOpen->setChecked(mSettings->toBool(skEdCompleterAutoOpen));
     ui->cb_completerCasing->setCurrentIndex(mSettings->toInt(skEdCompleterCasing));
     ui->cb_autoFoldDco->setChecked(mSettings->toBool(skEdFoldedDcoOnOpen));
+    ui->cb_smartTooltip->setChecked(mSettings->toBool(skEdSmartTooltipHelp));
 
     // Remote page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
@@ -283,6 +285,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdCompleterAutoOpen, ui->cb_completerAutoOpen->isChecked());
     mSettings->setInt(skEdCompleterCasing, ui->cb_completerCasing->currentIndex());
     mSettings->setBool(skEdFoldedDcoOnOpen, ui->cb_autoFoldDco->isChecked());
+    mSettings->setBool(skEdSmartTooltipHelp, ui->cb_smartTooltip->isChecked());
 
     // Remote page
     mSettings->setString(skMiroInstallPath, ui->miroEdit->text());

@@ -101,6 +101,7 @@ enum SettingsKey {
     skEdCompleterAutoOpen,
     skEdCompleterCasing,
     skEdFoldedDcoOnOpen,
+    skEdSmartTooltipHelp,
 
     // MIRO settings page
     skMiroInstallPath,

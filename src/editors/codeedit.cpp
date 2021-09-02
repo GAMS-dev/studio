@@ -1999,7 +1999,7 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
         fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
-    } else {
+    } else if (Settings::settings()->toBool(skEdSmartTooltipHelp)) {
         QTextCursor cursor = cursorForPosition(pos);
         if (cursorRect(cursor).right()+1 >= pos.x()) {
             QStringList syntaxDoc;
