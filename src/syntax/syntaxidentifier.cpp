@@ -232,11 +232,14 @@ SyntaxBlock SyntaxIdentAssign::find(const SyntaxKind entryKind, int flavor, cons
 
 SyntaxBlock SyntaxIdentAssign::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
-    Q_UNUSED(line)
-    Q_UNUSED(index)
-    Q_UNUSED(flavor)
-    Q_UNUSED(hasContent)
-    return SyntaxBlock(this);
+    int start = index;
+    QString delims = (flavor & flavorModel) ? ",+-" : ",";
+    while (isWhitechar(line, start))
+        ++start;
+    int end = (line.length() > start) ? start+1 : start;
+    while (isWhitechar(line, end) || (line.length() > end && delims.contains(line.at(end)))) end++;
+    hasContent = (end > start);
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
 }
 
 AssignmentLabel::AssignmentLabel(SharedSyntaxData *sharedData)

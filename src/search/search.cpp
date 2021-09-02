@@ -98,7 +98,6 @@ void Search::reset()
     mResults.clear();
     mResultHash.clear();
 
-    mOptions = QFlags<QTextDocument::FindFlag>();
     mCacheAvailable = false;
     mOutsideOfList = false;
     mJumpQueued = false;
@@ -109,10 +108,15 @@ void Search::reset()
 
 void Search::findInDoc(FileMeta* fm)
 {
-    QTextCursor lastItem = QTextCursor(fm->document());
     QTextCursor item;
+    QTextCursor lastItem = QTextCursor(fm->document());
+
+    // ignore search direction for cache generation. otherwise results would be in wrong order
+    QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
+    cacheOptions.setFlag(QTextDocument::FindBackward, false);
+
     do {
-        item = fm->document()->find(mRegex, lastItem, mOptions);
+        item = fm->document()->find(mRegex, lastItem, cacheOptions);
         if (item != lastItem) lastItem = item;
         else break;
 
@@ -290,7 +294,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
                                                  ? tc.position()-tc.selectedText().length()
                                                  : tc.position(), mOptions);
             found = !ntc.isNull();
-            if (found) e->setTextCursor(ntc);
+            if (found) {
+                e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
+                e->setTextCursor(ntc);
+            }
 
         } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
             mSplitSearchContinue = !firstLevel;

@@ -200,6 +200,7 @@ public:
     virtual QTextCharFormat charFormatError();
     virtual int maxNesting() { return 0; }
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
+    virtual QStringList docForLastRequest() const { return QStringList(); }
     int intSyntaxType() { return static_cast<int>(kind()); }
 
     static int stateToInt(SyntaxKind _state);
@@ -269,10 +270,18 @@ public:
     SyntaxDco(SharedSyntaxData* sharedData, QChar dcoChar = '$');
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+protected:
+    QStringList docForLastRequest() const override;
 private:
     QRegularExpression mRex;
     QStringList mDCOs;
+    QStringList mDCOlow;
     QStringList mDescription;
+    int mLastIKey = -1;
+    QStringList mEndDCOs;
+    QStringList mEndDCOlow;
+    QStringList mEndDescription;
+    int mLastEndIKey = -1;
     QMap<QString,int> mFlavors;
     QHash<QString, SyntaxKind> mSpecialKinds;
 
