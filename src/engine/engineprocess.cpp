@@ -457,7 +457,7 @@ void EngineProcess::reKillJob(const QString &text)
 void EngineProcess::reGetLog(const QByteArray &data)
 {
     if (mQueuedTimer.isValid()) {
-        emit newStdChannelData("[]\n\n");
+        emit newStdChannelData("\n");
         mQueuedTimer.invalidate();
     }
     QByteArray res = convertReferences(data);

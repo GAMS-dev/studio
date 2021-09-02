@@ -244,7 +244,7 @@ void TextViewEdit::extraSelLineMarks(QList<QTextEdit::ExtraSelection> &selection
     while (block.isValid()) {
         if (mLineMarked.size() > i && mLineMarked.at(i)) {
             QTextEdit::ExtraSelection selection;
-            selection.format.setBackground(toColor(Theme::Edit_linenrAreaBg));
+            selection.format.setBackground(QColor(245,255,235));
             selection.format.setProperty(QTextFormat::FullWidthSelection, true);
             selection.cursor = QTextCursor(block);
             selections.append(selection);

@@ -554,7 +554,8 @@ void TextView::topLineMoved()
         cur.setCharFormat(QTextCharFormat());
         QVector<bool> lineMarked;
         for (int row = 0; row < mEdit->blockCount() && row < formats.size(); ++row) {
-            if (formats.at(row).start < 0 && !formats.at(row).lineMarked) continue;
+            lineMarked << formats.at(row).lineMarked;
+            if (formats.at(row).start < 0) continue;
             const LineFormat &format = formats.at(row);
             QTextBlock block = mEdit->document()->findBlockByNumber(row);
             QTextCursor cursor(block);
@@ -568,7 +569,6 @@ void TextView::topLineMoved()
             cursor.setPosition(block.position()+format.start);
             cursor.setPosition(block.position()+format.end, QTextCursor::KeepAnchor);
             cursor.setCharFormat(format.format);
-            lineMarked << formats.at(row).lineMarked;
         }
         updatePosAndAnchor();
         mEdit->setLineMarked(lineMarked);
