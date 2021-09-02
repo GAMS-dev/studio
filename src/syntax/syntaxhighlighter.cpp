@@ -321,12 +321,9 @@ void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &synt
     scanSyntax(block, blockSyntax, pos);
     syntaxDoc = mScannedPosDoc;
     mScannedPosDoc = QStringList();
-    SyntaxAbstract *syntax = nullptr;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        if (it.key() > pos) {
-            syntax = mKinds.value(SyntaxKind(it->first), nullptr);
+        if (it.key() > pos)
             break;
-        }
     }
 }
 
