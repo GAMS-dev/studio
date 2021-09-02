@@ -1997,6 +1997,14 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
         fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
+    } else {
+        QTextCursor cursor = cursorForPosition(pos);
+        if (cursorRect(cursor).right()+1 >= pos.x()) {
+            QStringList syntaxDoc;
+            emit syntaxDocAt(cursor.block(), cursor.positionInBlock(), syntaxDoc);
+            if (syntaxDoc.length() > 1 && !syntaxDoc.at(1).isEmpty())
+                fileName = "<p style='white-space:pre'><b>"+syntaxDoc.at(0)+"</b><br>"+syntaxDoc.at(1)+"</p>";
+        }
     }
     return fileName;
 }

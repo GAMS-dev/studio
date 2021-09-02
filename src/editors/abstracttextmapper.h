@@ -162,6 +162,7 @@ public:
     virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
 
     virtual QString selectedText() const;
+    virtual QString positionLine() const;
     virtual void copyToClipboard();
 
     virtual void setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor);

@@ -25,7 +25,9 @@ namespace search {
 
 Result::Result(int lineNr, int colNr, int length, QString fileLoc, QString context) :
     mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context)
-{ }
+{
+    mContext.truncate(40);
+}
 
 int Result::lineNr() const
 {
