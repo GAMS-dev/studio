@@ -1,6 +1,7 @@
 Version 1.7.3 *
 ==================
 - added duplicate multiple lines feature
+- highlight remotely executed LOG (NEOS or GAMS Engine)
 
 Version 1.7.2
 ==================
