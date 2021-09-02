@@ -657,7 +657,7 @@ void SettingsDialog::initColorPage()
     box = ui->editorColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
-        {Theme::Edit_text,                  Theme::Edit_background,             Theme::invalid},
+        {Theme::Edit_text,                  Theme::Edit_background,             Theme::Edit_logRemoteBk},
         {Theme::invalid,                    Theme::Edit_currentLineBg,          Theme::invalid},
         {Theme::invalid,                    Theme::Edit_currentWordBg,          Theme::invalid},
         {Theme::invalid,                    Theme::Edit_errorBg,                Theme::invalid},
