@@ -581,7 +581,9 @@ void TextView::topLineMoved()
         QTextCursor cur(mEdit->document());
         cur.select(QTextCursor::Document);
         cur.setCharFormat(QTextCharFormat());
+        QVector<bool> lineMarked;
         for (int row = 0; row < mEdit->blockCount() && row < formats.size(); ++row) {
+            lineMarked << formats.at(row).lineMarked;
             if (formats.at(row).start < 0) continue;
             const LineFormat &format = formats.at(row);
             QTextBlock block = mEdit->document()->findBlockByNumber(row);
@@ -598,6 +600,7 @@ void TextView::topLineMoved()
             cursor.setCharFormat(format.format);
         }
         updatePosAndAnchor();
+        mEdit->setLineMarked(lineMarked);
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
         if (mEdit->verticalScrollBar()->sliderPosition())

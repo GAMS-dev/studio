@@ -1791,6 +1791,7 @@ void CodeEdit::recalcExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = PositionPair();
     if (!mBlockEdit) {
+        extraSelLineMarks(selections);
         extraSelCurrentLine(selections);
         recalcWordUnderCursor();
         mParenthesesDelay.start(100);
@@ -1822,6 +1823,7 @@ void CodeEdit::checkAndStartCompleterTimer()
 void CodeEdit::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
+    extraSelLineMarks(selections);
     extraSelCurrentLine(selections);
     extraSelMarks(selections);
     if (!mBlockEdit) {

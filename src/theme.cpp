@@ -127,6 +127,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_linenrAreaFoldBg,          QColor(135,195,255));
     mColorThemes[sNr].insert(Edit_linenrAreaFg,              QColor(Qt::gray));
     mColorThemes[sNr].insert(Edit_linenrAreaMarkFg,          QColor(Qt::black));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(245,255,235));
 
     mColorThemes[sNr].insert(Mark_errorFg,                   QColor(Qt::darkRed));
     mColorThemes[sNr].insert(Mark_listingFg,                 QColor(Qt::blue));
@@ -192,6 +193,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBg,      QColor(Qt::red).darker(170));
     mColorThemes[sNr].insert(Edit_parenthesesValidBgBlink,   QColor(60,90,50));
     mColorThemes[sNr].insert(Edit_parenthesesInvalidBgBlink, QColor(Qt::red).darker(115));
+    mColorThemes[sNr].insert(Edit_logRemoteBk,               QColor(32,48,16));
 
     mColorThemes[sNr].insert(Mark_errorFg,                   QColor(180,60,60));
     mColorThemes[sNr].insert(Mark_listingFg,                 QColor(60,90,250));
