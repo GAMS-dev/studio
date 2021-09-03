@@ -333,6 +333,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdCompleterAutoOpen, scUser, {"editor","completerAutoShow"}, true);
     safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
     safelyAdd(res, skEdFoldedDcoOnOpen, scUser, {"editor","foldedDcoOnOpen"}, false);
+    safelyAdd(res, skEdSmartTooltipHelp, scUser, {"editor","smartTooltipHelp"}, true);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
