@@ -2001,7 +2001,7 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
         fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
     } else if (Settings::settings()->toBool(skEdSmartTooltipHelp)) {
         QTextCursor cursor = cursorForPosition(pos);
-        if (cursorRect(cursor).right()+1 >= pos.x()) {
+        if (cursorRect(cursor).right()+1 >= pos.x() && pos.x() >= 0) {
             QStringList syntaxDoc;
             emit syntaxDocAt(cursor.block(), cursor.positionInBlock(), syntaxDoc);
             if (syntaxDoc.length() > 1 && !syntaxDoc.at(1).isEmpty())
