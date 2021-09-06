@@ -79,7 +79,7 @@ Q_ENUM_NS(NameModifier)
 enum class NodeType {
     root,
     group,
-    runGroup,
+    project,
     file,
     log
 };

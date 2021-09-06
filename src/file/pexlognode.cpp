@@ -30,27 +30,27 @@
 #include "exception.h"
 #include "file.h"
 #include "logger.h"
-#include "projectgroupnode.h"
-#include "projectlognode.h"
+#include "pexgroupnode.h"
+#include "pexlognode.h"
 #include "settings.h"
 #include "syntax/textmarkrepo.h"
 
 namespace gams {
 namespace studio {
 
-ProjectLogNode::ProjectLogNode(FileMeta* fileMeta, ProjectRunGroupNode *runGroup)
-    : ProjectFileNode(fileMeta, NodeType::log)
+PExLogNode::PExLogNode(FileMeta* fileMeta, PExProjectNode *project)
+    : PExFileNode(fileMeta, NodeType::log)
 {
-    if (!runGroup) EXCEPT() << "The runGroup must not be null.";
-    mRunGroup = runGroup;
-    runGroup->setLogNode(this);
+    if (!project) EXCEPT() << "The project must not be null.";
+    mProject = project;
+    project->setLogNode(this);
     mbState = nullptr;
     mLogCloser.setSingleShot(true);
     mLogCloser.setInterval(100);
-    connect(&mLogCloser, &QTimer::timeout, this, &ProjectLogNode::closeLog);
+    connect(&mLogCloser, &QTimer::timeout, this, &PExLogNode::closeLog);
 }
 
-void ProjectLogNode::closeLog()
+void PExLogNode::closeLog()
 {
     if (mLogFile) {
         delete mLogFile;
@@ -58,21 +58,21 @@ void ProjectLogNode::closeLog()
     }
 }
 
-ProjectLogNode::~ProjectLogNode()
+PExLogNode::~PExLogNode()
 {}
 
-void ProjectLogNode::resetLst()
+void PExLogNode::resetLst()
 {
     mLstNode = nullptr;
 }
 
-void ProjectLogNode::clearLog()
+void PExLogNode::clearLog()
 {
     if (TextView *tv = ViewHelper::toTextView(file()->editors().first()))
         tv->reset();
 }
 
-void ProjectLogNode::prepareRun()
+void PExLogNode::prepareRun()
 {
     Settings *settings = Settings::settings();
     if (!mLogFile && settings->toBool(skEdWriteLog)) {
@@ -86,13 +86,13 @@ void ProjectLogNode::prepareRun()
             tv->prepareRun();
             tv->jumpToEnd();
             if (first)
-                connect(tv, &TextView::appendLines, this, &ProjectLogNode::saveLines, Qt::UniqueConnection);
+                connect(tv, &TextView::appendLines, this, &PExLogNode::saveLines, Qt::UniqueConnection);
             first = false;
         }
     }
 }
 
-void ProjectLogNode::logDone()
+void PExLogNode::logDone()
 {
     mLogFinished = true;
     mLogCloser.start();
@@ -101,23 +101,23 @@ void ProjectLogNode::logDone()
     for (QWidget *edit: file()->editors())
         if (TextView* tv = ViewHelper::toTextView(edit)) {
             tv->endRun();
-            disconnect(tv, &TextView::appendLines, this, &ProjectLogNode::saveLines);
+            disconnect(tv, &TextView::appendLines, this, &PExLogNode::saveLines);
         }
 }
 
-void ProjectLogNode::setJumpToLogEnd(bool state)
+void PExLogNode::setJumpToLogEnd(bool state)
 {
     mJumpToLogEnd = state;
 }
 
-void ProjectLogNode::repaint()
+void PExLogNode::repaint()
 {
     if (TextView *ed = ViewHelper::toTextView(mFileMeta->topEditor())) {
         ed->viewport()->repaint();
     }
 }
 
-void ProjectLogNode::saveLines(const QStringList &lines, bool overwritePreviousLine)
+void PExLogNode::saveLines(const QStringList &lines, bool overwritePreviousLine)
 {
     if (!mLogFile) return;
     if (!overwritePreviousLine)
@@ -128,29 +128,29 @@ void ProjectLogNode::saveLines(const QStringList &lines, bool overwritePreviousL
     if (mLogFinished) mLogCloser.start();
 }
 
-ProjectFileNode *ProjectLogNode::lstNode() const
+PExFileNode *PExLogNode::lstNode() const
 {
     return mLstNode;
 }
 
-const ProjectRootNode *ProjectLogNode::root() const
+const ProjectRootNode *PExLogNode::root() const
 {
-    if (mRunGroup) return mRunGroup->root();
+    if (mProject) return mProject->root();
     return nullptr;
 }
 
-NodeId ProjectLogNode::runGroupId() const
+NodeId PExLogNode::projectId() const
 {
-    if (mRunGroup) return mRunGroup->id();
+    if (mProject) return mProject->id();
     return NodeId();
 }
 
-ProjectRunGroupNode *ProjectLogNode::assignedRunGroup()
+PExProjectNode *PExLogNode::assignedProject()
 {
-    return mRunGroup;
+    return mProject;
 }
 
-void ProjectLogNode::linkToProcess(AbstractProcess *process)
+void PExLogNode::linkToProcess(AbstractProcess *process)
 {
     QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
     TextView *tv = ViewHelper::toTextView(wid);

@@ -83,7 +83,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
-    connect(ui->rb_openInCurrentGroup, &QRadioButton::toggled, this, &SettingsDialog::setModified);
+    connect(ui->rb_openInCurrentProject, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -142,7 +142,7 @@ void SettingsDialog::loadSettings()
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
-    (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentGroup : ui->rb_openInAnyGroup)->setChecked(true);
+    (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentProject : ui->rb_openInAnyProject)->setChecked(true);
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
@@ -266,7 +266,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
-    mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentGroup->isChecked());
+    mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentProject->isChecked());
 
     // editor page
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());

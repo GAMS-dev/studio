@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "projectfilenode.h"
-#include "projectgroupnode.h"
+#include "pexfilenode.h"
+#include "pexgroupnode.h"
 #include "projectrepo.h"
 #include "exception.h"
 #include "syntax/textmarkrepo.h"
@@ -34,30 +34,30 @@
 namespace gams {
 namespace studio {
 
-ProjectFileNode::ProjectFileNode(FileMeta *fileMeta, NodeType type)
-    : ProjectAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
+PExFileNode::PExFileNode(FileMeta *fileMeta, NodeType type)
+    : PExAbstractNode(fileMeta?fileMeta->name():"[NULL]", type), mFileMeta(fileMeta)
 {
     if (!mFileMeta) EXCEPT() << "The assigned FileMeta must not be null.";
 }
 
-ProjectFileNode::~ProjectFileNode()
+PExFileNode::~PExFileNode()
 {}
 
-void ProjectFileNode::setParentNode(ProjectGroupNode *parent)
+void PExFileNode::setParentNode(PExGroupNode *parent)
 {
-    ProjectAbstractNode::setParentNode(parent);
+    PExAbstractNode::setParentNode(parent);
 }
 
-QIcon ProjectFileNode::icon(QIcon::Mode mode, int alpha)
+QIcon PExFileNode::icon(QIcon::Mode mode, int alpha)
 {
-    ProjectGroupNode* par = parentNode();
-    while (par && !par->toRunGroup()) par = par->parentNode();
+    PExGroupNode* par = parentNode();
+    while (par && !par->toProject()) par = par->parentNode();
     if (!par) return QIcon();
     return FileIcon::iconForFileKind(file()->kind(), !file()->isReadOnly(),
-                                     par->toRunGroup()->parameter("gms") == location(), mode, alpha);
+                                     par->toProject()->parameter("gms") == location(), mode, alpha);
 }
 
-QString ProjectFileNode::name(NameModifier mod) const
+QString PExFileNode::name(NameModifier mod) const
 {
     QString res = mFileMeta->name();
     switch (mod) {
@@ -70,22 +70,22 @@ QString ProjectFileNode::name(NameModifier mod) const
     return res;
 }
 
-bool ProjectFileNode::isModified() const
+bool PExFileNode::isModified() const
 {
     return mFileMeta->isModified();
 }
 
-QTextDocument *ProjectFileNode::document() const
+QTextDocument *PExFileNode::document() const
 {
     return mFileMeta->document();
 }
 
-FileMeta *ProjectFileNode::file() const
+FileMeta *PExFileNode::file() const
 {
     return mFileMeta;
 }
 
-void ProjectFileNode::replaceFile(FileMeta *fileMeta)
+void PExFileNode::replaceFile(FileMeta *fileMeta)
 {
     if (mFileMeta != fileMeta) {
         mFileMeta = fileMeta;
@@ -93,12 +93,12 @@ void ProjectFileNode::replaceFile(FileMeta *fileMeta)
     }
 }
 
-QString ProjectFileNode::location() const
+QString PExFileNode::location() const
 {
     return mFileMeta->location();
 }
 
-QString ProjectFileNode::tooltip()
+QString PExFileNode::tooltip()
 {
     QString tip = QDir::toNativeSeparators(location());
     if (!file()->exists(true)) tip += "\n--missing--";
@@ -117,13 +117,13 @@ QString ProjectFileNode::tooltip()
     return tip;
 }
 
-NodeId ProjectFileNode::runGroupId() const
+NodeId PExFileNode::projectId() const
 {
-    ProjectGroupNode* group = parentNode();
-    while (group && group->type() != NodeType::runGroup)
+    PExGroupNode* group = parentNode();
+    while (group && group->type() != NodeType::project)
         group = group->parentNode();
     if (group)
-        return group->toRunGroup()->id();
+        return group->toProject()->id();
     return NodeId();
 }
 

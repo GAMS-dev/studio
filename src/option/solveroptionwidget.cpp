@@ -667,10 +667,10 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     emit main->projectRepo()->closeFileEditors(fileId());
 
     FileMeta* fileMeta = main->fileRepo()->fileMeta(fileId());
-    ProjectFileNode* fileNode = main->projectRepo()->findFileNode(this);
-    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
+    PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, runGroup, -1, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
 }
 
 void SolverOptionWidget::copyAction()
