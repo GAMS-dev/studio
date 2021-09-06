@@ -27,7 +27,7 @@
 #include "editors/textview.h"
 #include "exception.h"
 #include "ui_lxiviewer.h"
-#include "file/projectgroupnode.h"
+#include "file/pexgroupnode.h"
 
 namespace gams {
 namespace studio {

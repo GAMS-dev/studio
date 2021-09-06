@@ -43,7 +43,7 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
 
     mEditor = edit;
     mGroup = window->projectRepo()->asGroup(ViewHelper::groupId(edit));
-    if (ProjectFileNode* node = window->projectRepo()->findFileNode(edit)) {
+    if (PExFileNode* node = window->projectRepo()->findFileNode(edit)) {
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
     } else {
@@ -77,11 +77,11 @@ void RecentData::reset()
     mEditor = nullptr;
 }
 
-bool RecentData::hasValidRunGroup()
+bool RecentData::hasValidProject()
 {
     if (!group())
         return false;
-    return group()->toRunGroup() != nullptr;
+    return group()->toProject() != nullptr;
 }
 
 

@@ -65,11 +65,11 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
     if (QFileInfo(r.filepath()).exists())
         mMain->openFilePath(r.filepath());
 
-    ProjectFileNode *node = mMain->projectRepo()->findFile(r.filepath());
+    PExFileNode *node = mMain->projectRepo()->findFile(r.filepath());
     if (!node) EXCEPT() << "File not found: " << r.filepath();
 
     // jump to line
-    node->file()->jumpTo(node->runGroupId(), focus, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+    node->file()->jumpTo(node->projectId(), focus, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     emit updateMatchLabel(selectedRow+1, mResultList->size());
     selectItem(selectedRow);
     if (!focus) setFocus(); // focus stays in results view

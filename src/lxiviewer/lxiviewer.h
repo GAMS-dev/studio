@@ -29,7 +29,7 @@ namespace gams {
 namespace studio {
 
 class TextView;
-class ProjectRunGroupNode;
+class PExProjectNode;
 
 namespace lxiviewer {
 

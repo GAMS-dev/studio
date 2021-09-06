@@ -72,7 +72,10 @@
 namespace gams {
 namespace studio {
 
-static const QStringList OPEN_ALT_TEXT {"&Open in new group...", "&Open in current group..."};
+static const QStringList COpenAltText {"&Open in new project...",
+                                       "&Open in current project...",
+                                       "Open the file(s) in a new project",
+                                       "Open the file(s) in the current project"};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
@@ -301,8 +304,8 @@ void MainWindow::watchProjectTree()
         mRecent.setEditor(mRecent.editor(), this);
         updateRunState();
     });
-    connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const ProjectAbstractNode *node) {
-        if (ProjectFileNode *fn = mProjectRepo.asFileNode(node->id())) {
+    connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
+        if (PExFileNode *fn = mProjectRepo.asFileNode(node->id())) {
             if (fn->file()->editors().contains(ui->mainTabs->currentWidget()))
                 loadCommandLines(fn, fn);
         }
@@ -447,8 +450,8 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
 
     QFileInfo fi(filePath);
 
-    ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
-    ProjectFileNode *node = addNode("", filePath, group);
+    PExGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+    PExFileNode *node = addNode("", filePath, group);
     openFileNode(node);
 }
 
@@ -547,7 +550,7 @@ void MainWindow::getParameterValue(QString param, QString &value)
     }
 }
 
-void MainWindow::addToGroup(ProjectGroupNode* group, const QString& filepath)
+void MainWindow::addToGroup(PExGroupNode* group, const QString& filepath)
 {
     openFileNode(mProjectRepo.findOrCreateFileNode(filepath, group), true);
 }
@@ -717,7 +720,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
             switch(answer) {
             case 0: {// open
-                ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+                PExGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
                                                                                                              : nullptr;
                 openFileNode(addNode("", gmsFilePath, group));
                 return;
@@ -865,20 +868,20 @@ void MainWindow::setActiveMIB(int active)
         }
 }
 
-void MainWindow::gamsProcessStateChanged(ProjectGroupNode* group)
+void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
 {
     if (mRecent.group() == group) updateRunState();
 
-    ProjectRunGroupNode* runGroup = group->toRunGroup();
-    ProjectLogNode* log = runGroup->logNode();
+    PExProjectNode* project = group->toProject();
+    PExLogNode* log = project->logNode();
 
     QTabBar::ButtonPosition closeSide = QTabBar::ButtonPosition(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
     for (int i = 0; i < ui->logTabs->children().size(); i++) {
         if (mFileMetaRepo.fileMeta(ui->logTabs->widget(i)) == log->file()) {
 
-            if (runGroup->gamsProcessState() == QProcess::Running)
+            if (project->gamsProcessState() == QProcess::Running)
                 ui->logTabs->tabBar()->tabButton(i, closeSide)->hide();
-            else if (runGroup->gamsProcessState() == QProcess::NotRunning)
+            else if (project->gamsProcessState() == QProcess::NotRunning)
                 ui->logTabs->tabBar()->tabButton(i, closeSide)->show();
         }
     }
@@ -889,7 +892,7 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     QModelIndex index = ui->projectView->indexAt(pos);
     QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
     if (!index.isValid() && list.isEmpty()) return;
-    QVector<ProjectAbstractNode*> nodes;
+    QVector<PExAbstractNode*> nodes;
     for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
         nodes << mProjectRepo.node(id);
     }
@@ -1147,7 +1150,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString& solverName)
+void MainWindow::newFileDialog(QVector<PExGroupNode*> groups, const QString& solverName)
 {
     QString path;
     if (!groups.isEmpty()) {
@@ -1224,11 +1227,11 @@ void MainWindow::newFileDialog(QVector<ProjectGroupNode*> groups, const QString&
     }
 
     if (!groups.isEmpty()) { // add file to each selected group
-        for (ProjectGroupNode *group: groups)
+        for (PExGroupNode *group: groups)
             openFileNode(addNode("", filePath, group));
     } else { // create new group
-        ProjectGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
-        ProjectFileNode* node = addNode("", filePath, group);
+        PExGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+        PExFileNode* node = addNode("", filePath, group);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
     }
@@ -1241,7 +1244,7 @@ void MainWindow::on_menuFile_aboutToShow()
 
 void MainWindow::on_actionNew_triggered()
 {
-    QVector<ProjectGroupNode*> groups;
+    QVector<PExGroupNode*> groups;
     if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group())
         groups << mRecent.group();
     newFileDialog(groups);
@@ -1283,7 +1286,7 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSave_As_triggered()
 {
-    ProjectFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
+    PExFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return;
     FileMeta *fileMeta = node->file();
     int choice = 0;
@@ -1373,7 +1376,7 @@ void MainWindow::on_actionSave_As_triggered()
                 FileKind oldKind = node->file()->kind();
 
                 // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
-                if (ProjectFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedRunGroup()))
+                if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject()))
                     mProjectRepo.closeNode(pfn);
 
                 mProjectRepo.saveNodeAs(node, filePath);
@@ -1393,8 +1396,8 @@ void MainWindow::on_actionSave_As_triggered()
         }
         if (choice == 1) {
 //            mRecent.path = QFileInfo(filePath).path();
-            ProjectFileNode* newNode =
-                    mProjectRepo.findOrCreateFileNode(filePath, node->assignedRunGroup());
+            PExFileNode* newNode =
+                    mProjectRepo.findOrCreateFileNode(filePath, node->assignedProject());
             openFileNode(newNode, true);
         }
     }
@@ -1474,17 +1477,17 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
+void MainWindow::loadCommandLines(PExFileNode* oldfn, PExFileNode* fn)
 {
     if (oldfn && oldfn != fn) {
         // node changed from valid: store current command-line
-        if (ProjectRunGroupNode* oldgroup = oldfn->assignedRunGroup())
+        if (PExProjectNode* oldgroup = oldfn->assignedProject())
             oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
     }
 
     if (fn) {
         // switched to valid node
-        if (ProjectRunGroupNode* group = fn->assignedRunGroup())
+        if (PExProjectNode* group = fn->assignedProject())
             mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
     } else {
         // switched to welcome page
@@ -1494,9 +1497,9 @@ void MainWindow::loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn)
 
 void MainWindow::activeTabChanged(int index)
 {
-    ProjectFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
+    PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
-    ProjectFileNode* node = mProjectRepo.findFileNode(editWidget);
+    PExFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (mStartedUp)
         mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
@@ -1532,7 +1535,7 @@ void MainWindow::activeTabChanged(int index)
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ui->menuconvert_to->setEnabled(false);
-            if (ProjectFileNode* fc = mProjectRepo.findFileNode(refViewer)) {
+            if (PExFileNode* fc = mProjectRepo.findFileNode(refViewer)) {
                 ui->menuconvert_to->setEnabled(false);
                 mStatusWidgets->setFileName(QDir::toNativeSeparators(fc->location()));
                 mStatusWidgets->setEncoding(fc->file()->codecMib());
@@ -1541,7 +1544,7 @@ void MainWindow::activeTabChanged(int index)
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
             ui->menuEncoding->setEnabled(false);
-            if (ProjectFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor)) {
+            if (PExFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor)) {
                 ui->menuEncoding->setEnabled(true);
                 ui->menuconvert_to->setEnabled(true);
                 mStatusWidgets->setFileName(fc->location());
@@ -1552,7 +1555,7 @@ void MainWindow::activeTabChanged(int index)
             }
         } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
             ui->menuEncoding->setEnabled(false);
-            if (ProjectFileNode* fc = mProjectRepo.findFileNode(gucEditor)) {
+            if (PExFileNode* fc = mProjectRepo.findFileNode(gucEditor)) {
                 ui->menuEncoding->setEnabled(false);
                 ui->menureload_with->setEnabled(false);
                 ui->menuconvert_to->setEnabled(false);
@@ -1655,9 +1658,9 @@ FileProcessKind MainWindow::fileDeletedExtern(FileId fileId)
     if (file->exists(true)) return FileProcessKind::ignore;
     mTextMarkRepo.removeMarks(fileId, QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
-        const QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(file->id());
-        for (ProjectFileNode* node: nodes) {
-            ProjectGroupNode *group = node->parentNode();
+        const QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(file->id());
+        for (PExFileNode* node: nodes) {
+            PExGroupNode *group = node->parentNode();
             mProjectRepo.closeNode(node);
             if (group->childCount() == 0)
                 closeGroup(group);
@@ -1809,14 +1812,14 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         appendSystemLogError("No fileId set to process");
         return;
     }
-    ProjectRunGroupNode* groupNode = mProjectRepo.findRunGroup(origin);
+    PExProjectNode* groupNode = mProjectRepo.findProject(origin);
     if (!groupNode) {
         appendSystemLogError("No group attached to process");
         return;
     }
 
     if (exitCode == ecTooManyScratchDirs) {
-        ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+        PExProjectNode* node = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
         QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
         // TODO fix QDialog::exec() issue
@@ -1842,7 +1845,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         return;
     }
     if (groupNode && groupNode->hasLogNode()) {
-        ProjectLogNode *logNode = groupNode->logNode();
+        PExLogNode *logNode = groupNode->logNode();
         logNode->logDone();
         if (logNode->file()->editors().size()) {
             if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
@@ -1861,7 +1864,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
         lstFile = groupNode->parameter("lst");
         bool doFocus = (groupNode == mRecent.group());
-        ProjectFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
+        PExFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, groupNode);
 
         if (lstNode)
             for (QWidget *edit: lstNode->file()->editors())
@@ -1887,9 +1890,9 @@ void MainWindow::postGamsLibRun()
         }
         return;
     }
-    ProjectGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
+    PExGroupNode* group = (Settings::settings()->toBool(skOpenInCurrent) && mRecent.group()) ? mRecent.group()
                                                                                                  : nullptr;
-    ProjectFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile(), group);
+    PExFileNode *node = mProjectRepo.findFile(mLibProcess->workingDirectory() + "/" + mLibProcess->inputFile(), group);
     if (!node)
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), group);
     if (node) mFileMetaRepo.watch(node->file());
@@ -2191,8 +2194,8 @@ bool MainWindow::isActiveTabRunnable()
            return false;
        } else {
            if (!mRecent.group()) return false;
-           ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
-           return runGroup && runGroup->runnableGms();
+           PExProjectNode *project = mRecent.group()->assignedProject();
+           return project && project->runnableGms();
        }
     }
     return false;
@@ -2201,9 +2204,9 @@ bool MainWindow::isActiveTabRunnable()
 bool MainWindow::isRecentGroupRunning()
 {
     if (!mRecent.group()) return false;
-    ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
-    if (!runGroup) return false;
-    return (runGroup->gamsProcessState() != QProcess::NotRunning);
+    PExProjectNode *project = mRecent.group()->assignedProject();
+    if (!project) return false;
+    return (project->gamsProcessState() != QProcess::NotRunning);
 }
 
 void MainWindow::on_actionShow_System_Log_triggered()
@@ -2280,15 +2283,15 @@ void MainWindow::historyChanged()
     Settings::settings()->setList(skHistory, joHistory);
 }
 
-bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups)
+bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> projects)
 {
-    if (runGroups.isEmpty()) return true;
-    QVector<ProjectRunGroupNode *> runningGroups;
+    if (projects.isEmpty()) return true;
+    QVector<PExProjectNode *> runningGroups;
     QStringList runningNames;
-    for (ProjectRunGroupNode* runGroup: runGroups) {
-        if (runGroup->process() && runGroup->process()->state() != QProcess::NotRunning) {
-            runningGroups << runGroup;
-            runningNames << runGroup->name();
+    for (PExProjectNode* project: projects) {
+        if (project->process() && project->process()->state() != QProcess::NotRunning) {
+            runningGroups << project;
+            runningNames << project->name();
         }
     }
     if (runningGroups.isEmpty()) return true;
@@ -2302,8 +2305,8 @@ bool MainWindow::terminateProcessesConditionally(QVector<ProjectRunGroupNode *> 
                           "Do you want to stop the "+message,
                           "Stop", "Cancel");
     if (choice == 1) return false;
-    for (ProjectRunGroupNode* runGroup: qAsConst(runningGroups)) {
-        runGroup->process()->terminate();
+    for (PExProjectNode* project: qAsConst(runningGroups)) {
+        project->process()->terminate();
     }
     return true;
 }
@@ -2383,7 +2386,8 @@ void MainWindow::restoreFromSettings()
     }
     ui->actionFull_Screen->setChecked(settings->toBool(skWinFullScreen));
     restoreState(settings->toByteArray(skWinState));
-    ui->actionOpenAlternative->setText(OPEN_ALT_TEXT.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+    ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+    ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
     setOutputViewVisibility(settings->toBool(skViewOutput));
@@ -2476,8 +2480,8 @@ void MainWindow::on_actionBase_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
+    miroProcess->setModelName(mRecent.group()->toProject()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -2491,8 +2495,8 @@ void MainWindow::on_actionHypercube_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
+    miroProcess->setModelName(mRecent.group()->toProject()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Hypercube);
 
@@ -2506,8 +2510,8 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    miroProcess->setModelName(mRecent.group()->toRunGroup()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
+    miroProcess->setModelName(mRecent.group()->toProject()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -2516,9 +2520,9 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
 void MainWindow::on_actionStop_MIRO_triggered()
 {
-    if (!mRecent.hasValidRunGroup())
+    if (!mRecent.hasValidProject())
         return;
-    mRecent.group()->toRunGroup()->process()->terminate();
+    mRecent.group()->toProject()->process()->terminate();
 }
 
 void MainWindow::on_actionDeploy_triggered()
@@ -2526,19 +2530,19 @@ void MainWindow::on_actionDeploy_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    QString assemblyFile = mRecent.group()->toRunGroup()->location() + "/" +
-                           miro::MiroCommon::assemblyFileName(mRecent.group()->toRunGroup()->mainModelName());
+    QString assemblyFile = mRecent.group()->toProject()->location() + "/" +
+                           miro::MiroCommon::assemblyFileName(mRecent.group()->toProject()->mainModelName());
 
     QStringList checkedFiles;
-    if (mRecent.hasValidRunGroup()) {
+    if (mRecent.hasValidProject()) {
         checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                mRecent.group()->toRunGroup()->mainModelName(false));
+                                                                mRecent.group()->toProject()->mainModelName(false));
     }
 
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
-    mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    mMiroDeployDialog->setModelName(mRecent.group()->toRunGroup()->mainModelName());
+    mMiroDeployDialog->setWorkingDirectory(mRecent.group()->toProject()->location());
+    mMiroDeployDialog->setModelName(mRecent.group()->toProject()->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -2563,13 +2567,13 @@ void MainWindow::on_menuMIRO_aboutToShow()
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 {
-    if (!mRecent.hasValidRunGroup())
+    if (!mRecent.hasValidProject())
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
-    process->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
-    process->setModelName(mRecent.group()->toRunGroup()->mainModelName());
+    process->setWorkingDirectory(mRecent.group()->toProject()->location());
+    process->setModelName(mRecent.group()->toProject()->mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -2614,20 +2618,20 @@ void MainWindow::updateMiroEnabled(bool printError)
 
 void MainWindow::on_projectView_activated(const QModelIndex &index)
 {
-    ProjectAbstractNode* node = mProjectRepo.node(index);
+    PExAbstractNode* node = mProjectRepo.node(index);
     if (!node) return;
-    if ((node->type() == NodeType::group) || (node->type() == NodeType::runGroup)) {
-        ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-        if (runGroup && runGroup->runnableGms()) {
-            ProjectLogNode* logNode = runGroup->logNode();
+    if ((node->type() == NodeType::group) || (node->type() == NodeType::project)) {
+        PExProjectNode *project = node->assignedProject();
+        if (project && project->runnableGms()) {
+            PExLogNode* logNode = project->logNode();
             openFileNode(logNode, true, logNode->file()->codecMib());
-            ProjectAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
-            if (!latestNode || latestNode->assignedRunGroup() != runGroup) {
-                openFile(runGroup->runnableGms(), true, runGroup, runGroup->runnableGms()->codecMib());
+            PExAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
+            if (!latestNode || latestNode->assignedProject() != project) {
+                openFile(project->runnableGms(), true, project, project->runnableGms()->codecMib());
             }
         }
     } else {
-        ProjectFileNode *file = mProjectRepo.asFileNode(index);
+        PExFileNode *file = mProjectRepo.asFileNode(index);
         if (file) openFileNode(file);
     }
 }
@@ -2674,13 +2678,13 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (ui->actionDistraction_Free_Mode->isChecked())
         ui->actionDistraction_Free_Mode->setChecked(false);
 
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (runGroup) runGroup->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
+    PExFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *project = (fc ? fc->assignedProject() : nullptr);
+    if (project) project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     updateAndSaveSettings();
     QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
-    if (!terminateProcessesConditionally(mProjectRepo.runGroups())) {
+    if (!terminateProcessesConditionally(mProjectRepo.projects())) {
         event->setAccepted(false);
     } else if (requestCloseChanged(oFiles)) {
         on_actionClose_All_triggered();
@@ -2838,13 +2842,13 @@ void MainWindow::openFiles(OpenGroupOption opt)
                                                             ViewHelper::dialogFileFilterAll().join(";;"),
                                                             nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (files.isEmpty()) return;
-    ProjectGroupNode *curGroup = mRecent.group();
-    ProjectGroupNode *group = nullptr;
-    ProjectFileNode *firstNode = nullptr;
+    PExGroupNode *curGroup = mRecent.group();
+    PExGroupNode *group = nullptr;
+    PExFileNode *firstNode = nullptr;
 
     for (const QString &fileName : files) {
         // detect if the file is already present at the scope
-        ProjectFileNode *fileNode = nullptr;
+        PExFileNode *fileNode = nullptr;
         FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(fileName);
         if (opt == ogFindGroup) {
             if (fileMeta) {
@@ -2872,9 +2876,9 @@ void MainWindow::openFiles(OpenGroupOption opt)
         if (!fileNode) {
             if (group) {
                 if (fileMeta) {
-                    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(group->id());
-                    if (runGroup)
-                        fileNode = mProjectRepo.findOrCreateFileNode(fileMeta, runGroup);
+                    PExProjectNode *project = mProjectRepo.asProject(group->id());
+                    if (project)
+                        fileNode = mProjectRepo.findOrCreateFileNode(fileMeta, project);
                 } else {
                     fileNode = mProjectRepo.findOrCreateFileNode(fileName, group);
                 }
@@ -2910,14 +2914,14 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     }
 
     QStringList filesNotFound;
-    QList<ProjectFileNode*> gmsFiles;
+    QList<PExFileNode*> gmsFiles;
     QFileInfo firstFile(files.first());
 
     // create base group
-    ProjectGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+    PExGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
-            ProjectFileNode *node = addNode("", item, group);
+            PExFileNode *node = addNode("", item, group);
             openFileNode(node);
             if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -2927,8 +2931,8 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     }
     // find runnable gms, for now take first one found
     if (gmsFiles.size() > 0) {
-        ProjectRunGroupNode *prgn = group->toRunGroup();
-        if (prgn) prgn->setParameter("gms", gmsFiles.first()->location());
+        PExProjectNode *project = group->toProject();
+        if (project) project->setParameter("gms", gmsFiles.first()->location());
     }
 
     if (!filesNotFound.empty()) {
@@ -2986,25 +2990,25 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
     return mGamsParameterEditor;
 }
 
-void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
 {
-    ProjectFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-    if (!runGroup) {
+    PExFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    if (!project) {
         DEB() << "Nothing to be executed.";
         return;
     }
-    bool ready = executePrepare(fileNode, runGroup, commandLineStr, std::move(process), gmsFileNode);
-    if (ready) execution(runGroup);
+    bool ready = executePrepare(fileNode, project, commandLineStr, std::move(process), gmsFileNode);
+    if (ready) execution(project);
 }
 
 
-bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* runGroup, QString commandLineStr,
-                                std::unique_ptr<AbstractProcess> process, ProjectFileNode* gmsFileNode)
+bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, QString commandLineStr,
+                                std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
-    runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
-    runGroup->clearErrorTexts();
+    project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+    project->clearErrorTexts();
     if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
 
     // gather modified files and autosave or request to save
@@ -3012,7 +3016,7 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     if (settings->toBool(skAutosaveOnRun)) {
         modifiedFiles = mFileMetaRepo.modifiedFiles();
     } else {
-        for (ProjectFileNode *node: runGroup->listFiles(true)) {
+        for (PExFileNode *node: project->listFiles(true)) {
             if (node->file()->isOpen() && !modifiedFiles.contains(node->file()) && node->file()->isModified())
                 modifiedFiles << node->file();
         }
@@ -3053,17 +3057,17 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     // clear the TextMarks for this group
     QSet<TextMark::Type> markTypes;
     markTypes << TextMark::error << TextMark::link << TextMark::target;
-    for (ProjectFileNode *node: runGroup->listFiles(true))
-        mTextMarkRepo.removeMarks(node->file()->id(), node->assignedRunGroup()->id(), markTypes);
+    for (PExFileNode *node: project->listFiles(true))
+        mTextMarkRepo.removeMarks(node->file()->id(), node->assignedProject()->id(), markTypes);
 
     // prepare the log
-    ProjectLogNode* logNode = mProjectRepo.logNode(runGroup);
+    PExLogNode* logNode = mProjectRepo.logNode(project);
     markTypes << TextMark::bookmark;
-    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedRunGroup()->id(), markTypes);
+    mTextMarkRepo.removeMarks(logNode->file()->id(), logNode->assignedProject()->id(), markTypes);
 
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
-        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
@@ -3078,8 +3082,8 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
     markTypes = QSet<TextMark::Type>() << TextMark::bookmark;
     for (const QString &kind: cleanupKinds) {
-        if (runGroup->hasParameter(kind)) {
-            FileMeta *file = mFileMetaRepo.fileMeta(runGroup->parameter(kind));
+        if (project->hasParameter(kind)) {
+            FileMeta *file = mFileMetaRepo.fileMeta(project->parameter(kind));
             if (file) mTextMarkRepo.removeMarks(file->id(), markTypes);
         }
     }
@@ -3095,9 +3099,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : runGroup->parameter("gms"));
+    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : project->parameter("gms"));
     if (gmsFilePath == "") {
-        appendSystemLogWarning("No runnable GMS file found in group ["+runGroup->name()+"].");
+        appendSystemLogWarning("No runnable GMS file found in group ["+project->name()+"].");
         ui->actionShow_System_Log->trigger();
         return false;
     }
@@ -3105,24 +3109,24 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
         logNode->file()->setCodecMib(fileNode->file()->codecMib());
     else {
         FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
-        ProjectFileNode *runNode = runGroup->findFile(runMeta);
+        PExFileNode *runNode = project->findFile(runMeta);
         logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
-    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : runGroup->location();
+    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->location();
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (process)
-        runGroup->setProcess(std::move(process));
-    AbstractProcess* groupProc = runGroup->process();
-    groupProc->setParameters(runGroup->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
+        project->setProcess(std::move(process));
+    AbstractProcess* groupProc = project->process();
+    groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
     logNode->prepareRun();
     logNode->setJumpToLogEnd(true);
     int logIndex = ui->logTabs->indexOf(logNode->file()->editors().first());
     if (logIndex >= 0)
         ui->logTabs->setTabText(logIndex, logNode->name());
 
-    groupProc->setGroupId(runGroup->id());
+    groupProc->setGroupId(project->id());
     groupProc->setWorkingDirectory(workDir);
 
     // disable MIRO menus
@@ -3137,9 +3141,9 @@ bool MainWindow::executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode* 
     return true;
 }
 
-void MainWindow::execution(ProjectRunGroupNode *runGroup)
+void MainWindow::execution(PExProjectNode *project)
 {
-    AbstractProcess* groupProc = runGroup->process();
+    AbstractProcess* groupProc = project->process();
     groupProc->execute();
     ui->toolBar->repaint();
 
@@ -3159,11 +3163,11 @@ help::HelpWidget *MainWindow::helpWidget() const
 }
 #endif
 
-void MainWindow::setMainGms(ProjectFileNode *node)
+void MainWindow::setMainGms(PExFileNode *node)
 {
-    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-    if (runGroup) {
-        runGroup->setRunnableGms(node->file());
+    PExProjectNode *project = node->assignedProject();
+    if (project) {
+        project->setRunnableGms(node->file());
         updateRunState();
     }
 }
@@ -3195,7 +3199,7 @@ void MainWindow::openInitialFiles()
     openFiles(mInitialFiles, false);
     mInitialFiles.clear();
     watchProjectTree();
-    ProjectFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
+    PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
     historyChanged();
 }
@@ -3298,34 +3302,34 @@ void MainWindow::showNeosStartDialog()
 
 neos::NeosProcess *MainWindow::createNeosProcess()
 {
-    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-    if (!runGroup) return nullptr;
+    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    if (!project) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    neosProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
-    runGroup->setProcess(std::move(neosProcess));
-    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+    project->setProcess(std::move(neosProcess));
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
     return neosPtr;
 }
 
 void MainWindow::prepareNeosProcess()
 {
-    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode* runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    if (!project) return;
     updateAndSaveSettings();
-    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(runGroup->process());
+    neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     neosPtr->setStarting();
-    if (!executePrepare(fileNode, runGroup, mGamsParameterEditor->getCurrentCommandLineData()))
+    if (!executePrepare(fileNode, project, mGamsParameterEditor->getCurrentCommandLineData()))
         return;
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
         neosPtr->validate();
     } else {
         updateAndSaveSettings();
-        execution(runGroup);
+        execution(project);
     }
 }
 
@@ -3333,10 +3337,10 @@ void MainWindow::sslValidation(QString errorMessage)
 {
     if (mIgnoreSslErrors || errorMessage.isEmpty()) {
         updateAndSaveSettings();
-        ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-        ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-        if (!runGroup) return;
-        execution(runGroup);
+        PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+        PExProjectNode *project = (fileNode ? fileNode->assignedProject() : nullptr);
+        if (!project) return;
+        execution(project);
     } else {
         QMessageBox *msgBox = new QMessageBox(this);
         msgBox->setWindowTitle("SSL Error");
@@ -3352,19 +3356,19 @@ void MainWindow::sslValidation(QString errorMessage)
 
 void MainWindow::sslUserDecision(QAbstractButton *button)
 {
-    ProjectFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fileNode ? fileNode->assignedRunGroup() : nullptr);
-    if (!runGroup) return;
+    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *project = (fileNode ? fileNode->assignedProject() : nullptr);
+    if (!project) return;
     QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
     if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
-        if (neos::NeosProcess *neosProc = static_cast<neos::NeosProcess*>(runGroup->process())) {
+        if (neos::NeosProcess *neosProc = static_cast<neos::NeosProcess*>(project->process())) {
             neosProc->setIgnoreSslErrors();
             mIgnoreSslErrors = true;
             updateAndSaveSettings();
-            execution(runGroup);
+            execution(project);
         }
     } else {
-        runGroup->setProcess(nullptr);
+        project->setProcess(nullptr);
     }
 }
 
@@ -3422,29 +3426,29 @@ void MainWindow::engineSubmit(bool start)
 engine::EngineProcess *MainWindow::createEngineProcess()
 {
     updateAndSaveSettings();
-    ProjectFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *runGroup = (fc ? fc->assignedRunGroup() : nullptr);
-    if (!runGroup) {
+    PExFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *project = (fc ? fc->assignedProject() : nullptr);
+    if (!project) {
         DEB() << "Could not create GAMS Engine process";
         return nullptr;
     }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
-    engineProcess->setWorkingDirectory(mRecent.group()->toRunGroup()->location());
+    engineProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : itemList) {
         if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
             engineProcess->setHasPreviousWorkOption(true);
     }
-    runGroup->setProcess(std::move(engineProcess));
-    return qobject_cast<engine::EngineProcess*>(runGroup->process());
+    project->setProcess(std::move(engineProcess));
+    return qobject_cast<engine::EngineProcess*>(project->process());
 }
 
 void MainWindow::prepareEngineProcess()
 {
-    ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
+    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
     if (!group) return;
     AbstractProcess* process = group->process();
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
@@ -3458,8 +3462,8 @@ void MainWindow::prepareEngineProcess()
 
 void MainWindow::on_actionInterrupt_triggered()
 {
-    ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
+    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
     if (!group) return;
     mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = group->process();
@@ -3468,25 +3472,25 @@ void MainWindow::on_actionInterrupt_triggered()
 
 void MainWindow::on_actionStop_triggered()
 {
-    ProjectFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    ProjectRunGroupNode *group = (node ? node->assignedRunGroup() : nullptr);
+    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
     if (!group) return;
     mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = group->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
 }
 
-void MainWindow::changeToLog(ProjectAbstractNode *node, bool openOutput, bool createMissing)
+void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool createMissing)
 {
     Settings *settings = Settings::settings();
     bool moveToEnd = false;
-    ProjectLogNode* logNode = mProjectRepo.logNode(node);
+    PExLogNode* logNode = mProjectRepo.logNode(node);
     if (!logNode) return;
 
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
-            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedRunGroup(), logNode->file()->codecMib());
+            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
             wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
@@ -3596,7 +3600,7 @@ void MainWindow::raiseEdit(QWidget *widget)
     }
 }
 
-void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *runGroup, int codecMib,
+void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *project, int codecMib,
                           bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     Settings *settings = Settings::settings();
@@ -3609,11 +3613,11 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
 
     // open edit if existing or create one
     if (edit) {
-        if (runGroup) ViewHelper::setGroupId(edit, runGroup->id());
+        if (project) ViewHelper::setGroupId(edit, project->id());
         else {
             NodeId groupId = ViewHelper::groupId(edit);
-            // TODO(JM) Review this: runGroup isn't used, this "if" may do nothing at all
-            if (groupId.isValid()) runGroup = mProjectRepo.findRunGroup(groupId);
+            // TODO(JM) Review this: project isn't used, this "if" may do nothing at all
+            if (groupId.isValid()) project = mProjectRepo.findProject(groupId);
         }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
@@ -3623,20 +3627,20 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
             }
         }
     } else {
-        if (!runGroup) {
-            QVector<ProjectFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
+        if (!project) {
+            QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
             if (nodes.size()) {
-                if (nodes.first()->assignedRunGroup())
-                    runGroup = nodes.first()->assignedRunGroup();
+                if (nodes.first()->assignedProject())
+                    project = nodes.first()->assignedProject();
             } else {
                 QFileInfo file(fileMeta->location());
-                runGroup = mProjectRepo.createGroup(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toRunGroup();
-                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), runGroup));
+                project = mProjectRepo.createGroup(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toProject();
+                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
-            edit = fileMeta->createEdit(tabWidget, runGroup, codecMib, forcedAsTextEditor, tabStrategy);
+            edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor, tabStrategy);
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3686,20 +3690,20 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, ProjectRunGroupNode *r
 
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
-        ProjectFileNode* fileNode = mProjectRepo.findFileNode(edit);
+        PExFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
     }
     addToOpenedFiles(fileMeta->location());
 }
 
-void MainWindow::openFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
+void MainWindow::openFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->assignedRunGroup(), codecMib, forcedAsTextEditor, tabStrategy);
+    openFile(node->file(), focus, node->assignedProject(), codecMib, forcedAsTextEditor, tabStrategy);
 }
 
-void MainWindow::reOpenFileNode(ProjectFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
+void MainWindow::reOpenFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
 {
     FileMeta* fc = node->file();
     if (!fc) return;
@@ -3724,17 +3728,17 @@ void MainWindow::reOpenFileNode(ProjectFileNode *node, bool focus, int codecMib,
     openFileNode(node, focus, codecMib, forcedAsTextEditor);
 }
 
-void MainWindow::closeGroup(ProjectGroupNode* group)
+void MainWindow::closeGroup(PExGroupNode* group)
 {
     if (!group) return;
-    ProjectGroupNode *parentGroup = group->parentNode();
+    PExGroupNode *parentGroup = group->parentNode();
     if (parentGroup && parentGroup->type() == NodeType::root) parentGroup = nullptr;
-    ProjectRunGroupNode *runGroup = group->assignedRunGroup();
-    if (!terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+    PExProjectNode *project = group->assignedProject();
+    if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
-    for (ProjectFileNode *node: group->listFiles(true)) {
+    for (PExFileNode *node: group->listFiles(true)) {
         if (node->isModified()) changedFiles << node->file();
         if (node->file()->isOpen()) openFiles << node->file();
     }
@@ -3743,7 +3747,7 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
         for (FileMeta *file: qAsConst(openFiles)) {
             closeFileEditors(file->id());
         }
-        ProjectLogNode* log = (runGroup && runGroup->hasLogNode()) ? runGroup->logNode() : nullptr;
+        PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
             if (edit) {
@@ -3759,10 +3763,10 @@ void MainWindow::closeGroup(ProjectGroupNode* group)
 
 void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 {
-    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
-    if (!runGroup || !runGroup->runnableGms()) return;
-    QString gmsFilePath = runGroup->runnableGms()->location();
-    ProjectFileNode *gdxNode = runGroup->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
+    PExProjectNode *project = mProjectRepo.asProject(proc->groupId());
+    if (!project || !project->runnableGms()) return;
+    QString gmsFilePath = project->runnableGms()->location();
+    PExFileNode *gdxNode = project->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
     if (gdxNode && gdxNode->file()->isOpen()) {
         if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
             if (progress == ProcState::Proc5GetResult) {
@@ -3777,10 +3781,10 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 
 void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
-    ProjectRunGroupNode *runGroup = mProjectRepo.asRunGroup(proc->groupId());
-    if (!runGroup || !runGroup->runnableGms()) return;
-    const QList<ProjectFileNode*> gdxNodes = runGroup->findFiles(FileKind::Gdx, true);
-    for (ProjectFileNode *gdxNode : gdxNodes) {
+    PExProjectNode *project = mProjectRepo.asProject(proc->groupId());
+    if (!project || !project->runnableGms()) return;
+    const QList<PExFileNode*> gdxNodes = project->findFiles(FileKind::Gdx, true);
+    for (PExFileNode *gdxNode : gdxNodes) {
         if (gdxNode->file()->isOpen()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(gdxNode->file()->editors().first())) {
                 if (progress == ProcState::Proc5GetResult) {
@@ -3797,13 +3801,13 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 /// Asks user for confirmation if a file is modified before calling closeFile
 /// \param file
 ///
-void MainWindow::closeNodeConditionally(ProjectFileNode* node)
+void MainWindow::closeNodeConditionally(PExFileNode* node)
 {
     // count nodes to the same file
     int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
-    ProjectGroupNode *group = node->parentNode();
-    ProjectRunGroupNode *runGroup = node->assignedRunGroup();
-    if (runGroup && !terminateProcessesConditionally(QVector<ProjectRunGroupNode*>() << runGroup))
+    PExGroupNode *group = node->parentNode();
+    PExProjectNode *project = node->assignedProject();
+    if (project && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     // not the last OR not modified OR permitted
     if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
@@ -3832,8 +3836,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
         QWidget *edit = fm->editors().constFirst();
         if (mRecent.editor() == edit) {
             if (mRecent.group()) {
-               ProjectRunGroupNode *runGroup = mRecent.group()->assignedRunGroup();
-               runGroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+               PExProjectNode *project = mRecent.group()->assignedProject();
+               project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
             }
             mRecent.reset();
         }
@@ -3853,7 +3857,7 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib,
     if (!QFileInfo::exists(filePath)) {
         EXCEPT() << "File not found: " << filePath;
     }
-    ProjectFileNode *fileNode = mProjectRepo.findFile(filePath);
+    PExFileNode *fileNode = mProjectRepo.findFile(filePath);
 
     if (!fileNode) {
         fileNode = mProjectRepo.findOrCreateFileNode(filePath);
@@ -3864,9 +3868,9 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib,
     openFileNode(fileNode, focus, codecMib, forcedAsTextEditor, tabStrategy);
 }
 
-ProjectFileNode* MainWindow::addNode(const QString &path, const QString &fileName, ProjectGroupNode* group)
+PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, PExGroupNode* group)
 {
-    ProjectFileNode *node = nullptr;
+    PExFileNode *node = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
         FileType fType = FileType::from(fInfo.suffix());
@@ -3884,10 +3888,10 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
 {
     QFileInfo fi(item.location);
     if (fi.isFile()) {
-        ProjectFileNode* fn = mProjectRepo.findFileNode(mRecent.editor());
+        PExFileNode* fn = mProjectRepo.findFileNode(mRecent.editor());
         if (fn) {
-           ProjectRunGroupNode* runGroup =  fn->assignedRunGroup();
-           mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), runGroup);
+           PExProjectNode* project =  fn->assignedProject();
+           mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         }
         openFilePath(fi.absoluteFilePath(), true);
         CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
@@ -3924,7 +3928,8 @@ void MainWindow::on_actionSettings_triggered()
                 mSettingsDialog->delayBaseThemeChange(false);
                 ViewHelper::updateBaseTheme();
             }
-            ui->actionOpenAlternative->setText(OPEN_ALT_TEXT.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+            ui->actionOpenAlternative->setText(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 0 : 1));
+            ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
             mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
@@ -3951,7 +3956,7 @@ void MainWindow::openSearchDialog()
                mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
                 mGamsParameterEditor->selectSearchField();
     } else {
-       ProjectFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
+       PExFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
        if (fc) {
            if (fc->file()->kind() == FileKind::Gdx) {
                gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
@@ -4664,7 +4669,7 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
-    ProjectRunGroupNode* node = mProjectRepo.findRunGroup(ViewHelper::groupId(mRecent.editor()));
+    PExProjectNode* node = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
     QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
 
     QMessageBox msgBox;
@@ -4722,7 +4727,7 @@ bool MainWindow::validMiroPrerequisites()
         return false;
     }
 
-    return mRecent.hasValidRunGroup();
+    return mRecent.hasValidProject();
 }
 
 void MainWindow::openGdxDiffFile()
@@ -4736,12 +4741,12 @@ void MainWindow::openGdxDiffFile()
 
     FileMeta *fmInput1 = mFileMetaRepo.fileMeta(input1);
     FileMeta *fmInput2 = mFileMetaRepo.fileMeta(input2);
-    ProjectGroupNode* pgDiff   = nullptr;
+    PExGroupNode* pgDiff   = nullptr;
 
     // if possible get the group to which both input files belong
     if (fmInput1 && fmInput2) {
-        QVector<ProjectFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
-        QVector<ProjectFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
+        QVector<PExFileNode*> nodesInput1 = mProjectRepo.fileNodes(fmInput1->id());
+        QVector<PExFileNode*> nodesInput2 = mProjectRepo.fileNodes(fmInput2->id());
 
         if (nodesInput1.size() == 1 && nodesInput2.size() == 1) {
             if (nodesInput1.first()->parentNode() == nodesInput2.first()->parentNode())
@@ -4752,7 +4757,7 @@ void MainWindow::openGdxDiffFile()
     if (pgDiff == nullptr) {
         FileMeta *fm = mFileMetaRepo.fileMeta(diffFile);
         if (fm) {
-            QVector<ProjectFileNode*> v = mProjectRepo.fileNodes(fm->id());
+            QVector<PExFileNode*> v = mProjectRepo.fileNodes(fm->id());
             if(v.size() == 1)
                 pgDiff = v.first()->parentNode();
         }
@@ -4766,7 +4771,7 @@ void MainWindow::openGdxDiffFile()
             }
         }
     }
-    ProjectFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
+    PExFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, pgDiff);
     openFile(node->file());
 }
 

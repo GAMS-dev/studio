@@ -21,21 +21,21 @@
 
 #include "exception.h"
 #include "projectrepo.h"
-#include "projectfilenode.h"
-#include "projectabstractnode.h"
-#include "projectgroupnode.h"
+#include "pexfilenode.h"
+#include "pexabstractnode.h"
+#include "pexgroupnode.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
 
-ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectGroupNode* root)
+ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, PExGroupNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
     Q_ASSERT_X(mProjectRepo, "ProjectTreeModel constructor", "The FileTreeModel needs a valid FileRepository");
 }
 
-QModelIndex ProjectTreeModel::index(const ProjectAbstractNode *entry) const
+QModelIndex ProjectTreeModel::index(const PExAbstractNode *entry) const
 {
     if (!entry)
         return QModelIndex();
@@ -53,12 +53,12 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex& pare
 {
     if (!hasIndex(row, column, parent))
         return QModelIndex();
-    ProjectGroupNode *group = (mProjectRepo->node(parent) ? mProjectRepo->node(parent)->toGroup() : nullptr);
+    PExGroupNode *group = (mProjectRepo->node(parent) ? mProjectRepo->node(parent)->toGroup() : nullptr);
     if (!group) {
         DEB() << "error: retrieved invalid parent from this QModelIndex";
         return QModelIndex();
     }
-    ProjectAbstractNode *node = group->childNode(row);
+    PExAbstractNode *node = group->childNode(row);
     if (!node) {
         DEB() << "invalid child for row " << row;
         return QModelIndex();
@@ -69,15 +69,15 @@ QModelIndex ProjectTreeModel::index(int row, int column, const QModelIndex& pare
 QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 {
     if (!child.isValid()) return QModelIndex();
-    ProjectAbstractNode* eChild = mProjectRepo->node(child);
+    PExAbstractNode* eChild = mProjectRepo->node(child);
     if (!eChild || eChild == mRoot)
         return QModelIndex();
-    ProjectGroupNode* group = eChild->parentNode();
+    PExGroupNode* group = eChild->parentNode();
     if (!group)
         return QModelIndex();
     if (group == mRoot)
         return createIndex(0, child.column(), quintptr(group->id()));
-    ProjectGroupNode* parParent = group->parentNode();
+    PExGroupNode* parParent = group->parentNode();
     int row = parParent ? parParent->indexOf(group) : -1;
     if (row < 0)
         FATAL() << "could not find child in parent";
@@ -86,9 +86,9 @@ QModelIndex ProjectTreeModel::parent(const QModelIndex& child) const
 
 int ProjectTreeModel::rowCount(const QModelIndex& parent) const
 {
-    ProjectAbstractNode* node = mProjectRepo->node(parent);
+    PExAbstractNode* node = mProjectRepo->node(parent);
     if (!node) return 0;
-    ProjectGroupNode* group = node->toGroup();
+    PExGroupNode* group = node->toGroup();
     if (!group) return 0;
     return group->childCount();
 }
@@ -122,7 +122,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }   break;
 
     case Qt::ForegroundRole: {
-        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        PExFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node && !node->file()->exists(true)) {
             return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
@@ -145,12 +145,12 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return mProjectRepo->node(ind)->tooltip();
 
     case Qt::UserRole: {
-        ProjectFileNode *node = mProjectRepo->node(ind)->toFile();
+        PExFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node) return node->location();
     }   break;
 
     case Qt::UserRole+1: {
-        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        PExAbstractNode *node = mProjectRepo->node(ind);
         if (node) return int(node->id());
         break;
     }
@@ -165,7 +165,7 @@ QModelIndex ProjectTreeModel::rootModelIndex() const
     return createIndex(0, 0, quintptr(mRoot->id()));
 }
 
-ProjectGroupNode* ProjectTreeModel::rootNode() const
+PExGroupNode* ProjectTreeModel::rootNode() const
 {
     return mRoot;
 }
@@ -198,11 +198,11 @@ void ProjectTreeModel::setDebugMode(bool debug)
         }
         QStringList proj;
         proj << "------ PROJ ------";
-        ProjectGroupNode *rn = rootNode();
+        PExGroupNode *rn = rootNode();
         for (int i = 0; i < rn->childCount(); ++i) {
-            ProjectAbstractNode *n = rn->childNode(i);
+            PExAbstractNode *n = rn->childNode(i);
             proj << n->name();
-            ProjectGroupNode *gn = n->toGroup();
+            PExGroupNode *gn = n->toGroup();
             for (int j = 0; j < (gn ? gn->childCount() : 0); ++j) {
                 proj << "   "+gn->childNode(j)->name();
             }
@@ -221,10 +221,10 @@ void ProjectTreeModel::setDebugMode(bool debug)
 bool ProjectTreeModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (!index.isValid()) return false;
-    ProjectAbstractNode *node = mProjectRepo->node(index);
+    PExAbstractNode *node = mProjectRepo->node(index);
     if (!node) return false;
     if (role == Qt::EditRole) {
-        ProjectGroupNode *group = node->toGroup();
+        PExGroupNode *group = node->toGroup();
         if (!group) return false;
         group->setName(value.toString());
         emit dataChanged(index, index);
@@ -237,9 +237,9 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
 {
     Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     if (!index.isValid()) return flags;
-    ProjectAbstractNode *node = mProjectRepo->node(index);
+    PExAbstractNode *node = mProjectRepo->node(index);
     if (!node) return flags;
-    ProjectGroupNode *group = node->toGroup();
+    PExGroupNode *group = node->toGroup();
     if (group) {
         flags.setFlag(Qt::ItemIsEditable);
         flags.setFlag(Qt::ItemIsDropEnabled);
@@ -247,7 +247,7 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     return flags;
 }
 
-bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child)
+bool ProjectTreeModel::insertChild(int row, PExGroupNode* parent, PExAbstractNode* child)
 {
     QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
@@ -260,7 +260,7 @@ bool ProjectTreeModel::insertChild(int row, ProjectGroupNode* parent, ProjectAbs
     return true;
 }
 
-bool ProjectTreeModel::removeChild(ProjectAbstractNode* child)
+bool ProjectTreeModel::removeChild(PExAbstractNode* child)
 {
     QModelIndex mi = index(child);
     if (!mi.isValid()) {
@@ -289,7 +289,7 @@ QModelIndex ProjectTreeModel::index(const NodeId id) const
         return QModelIndex();
     if (mRoot->id() == id)
         return createIndex(0, 0, quintptr(id));
-    ProjectAbstractNode *node = mRoot->projectRepo()->node(id);
+    PExAbstractNode *node = mRoot->projectRepo()->node(id);
     if (!node) return QModelIndex();
     for (int i = 0; i < node->parentNode()->childCount(); ++i) {
         if (node->parentNode()->childNode(i) == node) {
@@ -299,7 +299,7 @@ QModelIndex ProjectTreeModel::index(const NodeId id) const
     return QModelIndex();
 }
 
-bool lessThan(ProjectAbstractNode*n1, ProjectAbstractNode*n2)
+bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
 {
     bool isGroup1 = n1->toGroup();
     if (isGroup1 != bool(n2->toGroup())) return isGroup1;
@@ -310,9 +310,9 @@ bool lessThan(ProjectAbstractNode*n1, ProjectAbstractNode*n2)
     return cmp < 0;
 }
 
-void ProjectTreeModel::sortChildNodes(ProjectGroupNode *group)
+void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
 {
-    QList<ProjectAbstractNode*> order = group->childNodes();
+    QList<PExAbstractNode*> order = group->childNodes();
     std::sort(order.begin(), order.end(), lessThan);
     for (int i = 0; i < order.size(); ++i) {
         QModelIndex parMi = index(group);
@@ -356,7 +356,7 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
 bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
-        ProjectAbstractNode* node = mProjectRepo->node(mCurrent);
+        PExAbstractNode* node = mProjectRepo->node(mCurrent);
         if (!node || !node->parentNode()) return false;
         if (node->parentNode()->id() == nodeId(ind)) {
             return true;
@@ -368,9 +368,9 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 QModelIndex ProjectTreeModel::findGroup(QModelIndex ind)
 {
     if (ind.isValid()) {
-        ProjectAbstractNode *node = mProjectRepo->node(ind);
+        PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
-        ProjectGroupNode *group = node->toGroup();
+        PExGroupNode *group = node->toGroup();
         if (!group) group = node->parentNode();
         ind = index(group);
     }
@@ -394,12 +394,12 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
     NodeId firstId = mSelected.isEmpty() ? selected.isEmpty() ? NodeId()
                                                               : nodeId(selected.indexes().first())
                                          : mSelected.first();
-    ProjectAbstractNode *first = mProjectRepo->node(firstId);
+    PExAbstractNode *first = mProjectRepo->node(firstId);
     mAddGroups.clear();
     int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
     for (const QModelIndex &ind: selected.indexes()) {
         NodeId id = nodeId(ind);
-        ProjectAbstractNode *node = mProjectRepo->node(id);
+        PExAbstractNode *node = mProjectRepo->node(id);
         int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
         if (nodeKind == 1 && selKind == 2) {
             mAddGroups << ind;

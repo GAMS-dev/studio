@@ -127,11 +127,11 @@ SOURCES += \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
     file/filetype.cpp \
-    file/projectabstractnode.cpp \
+    file/pexabstractnode.cpp \
+    file/pexfilenode.cpp \
+    file/pexgroupnode.cpp \
+    file/pexlognode.cpp \
     file/projectcontextmenu.cpp \
-    file/projectfilenode.cpp \
-    file/projectgroupnode.cpp \
-    file/projectlognode.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
@@ -322,11 +322,11 @@ HEADERS += \
     file/filemeta.h \
     file/filemetarepo.h \
     file/filetype.h \
-    file/projectabstractnode.h \
+    file/pexabstractnode.h \
+    file/pexfilenode.h \
+    file/pexgroupnode.h \
+    file/pexlognode.h \
     file/projectcontextmenu.h \
-    file/projectfilenode.h \
-    file/projectgroupnode.h \
-    file/projectlognode.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
     file/projecttreeview.h \
