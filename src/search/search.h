@@ -35,7 +35,7 @@ class Search : public QObject
 public:
     enum Scope {
         ThisFile = 0,
-        ThisGroup= 1,
+        ThisProject= 1,
         OpenTabs = 2,
         AllFiles = 3
     };

@@ -159,11 +159,11 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         if (mMain->recent()->editor())
             return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         break;
-    case Search::ThisGroup:
+    case Search::ThisProject:
     {
         PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
         if (!p) return files;
-        for (PExFileNode *c :p->parentNode()->listFiles(true)) {
+        for (PExFileNode *c :p->parentNode()->listFiles(true)) { // TODO(JM) needs to be enanced on introducing sub-folders
             if (!files.contains(c->file()))
                 files.append(c->file());
         }
