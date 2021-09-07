@@ -412,7 +412,7 @@ void FileMeta::updateEditorColors()
         if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
-            ce->lineNumberArea()->repaint();
+            ce->lineNumberArea()->update();
         if (TextView *tv = ViewHelper::toTextView(w))
             tv->updateTheme();
     }

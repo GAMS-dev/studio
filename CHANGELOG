@@ -1,3 +1,7 @@
+Version 1.7.4 *
+==================
+- Fixed crash on editing long lines ending an error mark
+
 Version 1.7.3
 ==================
 - added duplicate multiple lines feature
