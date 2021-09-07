@@ -474,7 +474,7 @@ QString PExProjectNode::mainModelName(bool stripped) const
     FileMeta *fileMeta = toProject()->runnableGms();
 
     if (!fileMeta) {
-        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for project: %1")
+        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
                 .arg(toProject()->name()), LogMsgType::Error);
         return QString();
     }

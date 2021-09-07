@@ -641,10 +641,10 @@
   </action>
   <action name="actionOpenAlternative">
    <property name="text">
-    <string>&amp;Open in current project...</string>
+    <string>&amp;Open in current group...</string>
    </property>
    <property name="toolTip">
-    <string>Open the file(s) in the current project</string>
+    <string>Open the file(s) in the current group</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
