@@ -90,7 +90,7 @@ private:
     QWidget *mParent = nullptr;
 
     // Strings
-    QString mTxtCloseGroup = "Close &project";
+    QString mTxtCloseGroup = "Close &group";
     QString mTxtCloseFile = "Close &file";
 };
 

@@ -72,10 +72,10 @@
 namespace gams {
 namespace studio {
 
-static const QStringList COpenAltText {"&Open in new project...",
-                                       "&Open in current project...",
-                                       "Open the file(s) in a new project",
-                                       "Open the file(s) in the current project"};
+static const QStringList COpenAltText {"&Open in new group...",
+                                       "&Open in current group...",
+                                       "Open the file(s) in a new group",
+                                       "Open the file(s) in the current group"};
 
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),

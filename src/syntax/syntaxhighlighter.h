@@ -36,8 +36,6 @@ typedef int CodeRelationIndex;
 
 namespace syntax {
 
-class ProjectFileNode;
-
 class SyntaxHighlighter : public BaseHighlighter
 {
     Q_OBJECT

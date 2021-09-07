@@ -209,14 +209,14 @@
           <item row="0" column="1">
            <widget class="QRadioButton" name="rb_openInCurrentProject">
             <property name="text">
-             <string>Open file in current project by default</string>
+             <string>Open file in current group by default</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QRadioButton" name="rb_openInAnyProject">
             <property name="text">
-             <string>Open file finds or creates new project</string>
+             <string>Open file finds or creates new group</string>
             </property>
            </widget>
           </item>
