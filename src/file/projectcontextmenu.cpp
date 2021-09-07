@@ -142,7 +142,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.first()->toProject();
-    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
+//    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
 
     PExFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
