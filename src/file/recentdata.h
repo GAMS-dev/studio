@@ -19,7 +19,7 @@
 #define GAMS_STUDIO_RECENTDATA_H
 
 #include <QWidget>
-#include "projectgroupnode.h"
+#include "pexgroupnode.h"
 
 namespace gams {
 namespace studio {
@@ -36,19 +36,19 @@ public:
 
     /**
      * @brief Name of the main model.
-     * @remark Call <c>hasValidRunGroup()</c> before.
+     * @remark Call <c>hasValidProject()</c> before.
      */
-    bool hasValidRunGroup();
+    bool hasValidProject();
 
     QWidget* editor() const { return mEditor; }
-    ProjectGroupNode* group() const {return mGroup; }
+    PExGroupNode* group() const {return mGroup; }
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
 
 private:
     QWidget* mEditor;
     FileId mEditFileId;
-    ProjectGroupNode* mGroup;
+    PExGroupNode* mGroup;
     QString mPath;
 };
 

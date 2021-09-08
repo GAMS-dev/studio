@@ -22,9 +22,9 @@
 #include "file/projecttreeview.h"
 #include "file/treeitemdelegate.h"
 #include "file/projectrepo.h"
-#include "file/projectabstractnode.h"
-#include "file/projectlognode.h"
-#include "file/projectgroupnode.h"
+#include "file/pexabstractnode.h"
+#include "file/pexlognode.h"
+#include "file/pexgroupnode.h"
 #include "file/filemetarepo.h"
 #include "file/filemeta.h"
 

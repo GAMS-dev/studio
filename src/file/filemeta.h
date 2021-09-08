@@ -37,7 +37,7 @@ class QTabWidget;
 namespace gams {
 namespace studio {
 
-class ProjectRunGroupNode;
+class PExProjectNode;
 
 
 class FileMeta: public QObject
@@ -78,7 +78,7 @@ public:
     void resetTempReloadState();
     void setModified(bool modified=true);
 
-    QWidget *createEdit(QTabWidget* tabWidget, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+    QWidget *createEdit(QTabWidget* tabWidget, PExProjectNode *project = nullptr, int codecMib = -1,
                         bool forcedAsTextEdit = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     QWidgetList editors() const;
     QWidget* topEditor() const;

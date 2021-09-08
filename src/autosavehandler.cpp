@@ -87,7 +87,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();
-                    ProjectFileNode* fc = mMainWindow->projectRepo()->findFileNode(editor);
+                    PExFileNode* fc = mMainWindow->projectRepo()->findFileNode(editor);
                     QTextCursor curs(fc->document());
                     curs.select(QTextCursor::Document);
                     curs.insertText(line);
@@ -108,7 +108,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 void AutosaveHandler::saveChangedFiles()
 {
     for (auto editor : mMainWindow->openEditors()) {
-        ProjectFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
+        PExFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
         if (!node) continue; // skips unassigned widgets like the welcome-page
         QString filepath = QFileInfo(node->location()).path();
         QString filename = filepath+node->name();

@@ -17,22 +17,22 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PROJECTGROUPNODE_H
-#define PROJECTGROUPNODE_H
+#ifndef PEXGROUPNODE_H
+#define PEXGROUPNODE_H
 
 #include <QProcess>
 #include <QFileInfoList>
 #include <memory>
 #include "process/abstractprocess.h"
 #include "editors/logparser.h"
-#include "projectabstractnode.h"
+#include "pexabstractnode.h"
 #include "syntax/textmark.h"
 
 namespace gams {
 namespace studio {
 
-class ProjectLogNode;
-class ProjectFileNode;
+class PExLogNode;
+class PExFileNode;
 class TextMarkRepo;
 class FileMeta;
 class FileMetaRepo;
@@ -41,55 +41,55 @@ struct OptionItem;
 class Option;
 }
 
-class ProjectGroupNode : public ProjectAbstractNode
+class PExGroupNode : public PExAbstractNode
 {
     Q_OBJECT
 public:
-    virtual ~ProjectGroupNode() override;
+    virtual ~PExGroupNode() override;
 
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     int childCount() const;
     bool isEmpty();
-    ProjectAbstractNode* childNode(int index) const;
-    int indexOf(ProjectAbstractNode *child);
+    PExAbstractNode* childNode(int index) const;
+    int indexOf(PExAbstractNode *child);
     virtual QString location() const;
     QString tooltip() override;
     virtual QString errorText(int lstLine);
-    ProjectFileNode *findFile(QString location, bool recurse = true) const;
-    ProjectFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
-    QList<ProjectFileNode*> findFiles(FileKind kind, bool recurse) const;
-    ProjectRunGroupNode *findRunGroup(const AbstractProcess *process) const;
-    ProjectRunGroupNode *findRunGroup(FileId runId) const;
-    QVector<ProjectFileNode*> listFiles(bool recurse = false) const;
+    PExFileNode *findFile(QString location, bool recurse = true) const;
+    PExFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
+    QList<PExFileNode*> findFiles(FileKind kind, bool recurse) const;
+    PExProjectNode *findProject(const AbstractProcess *process) const;
+    PExProjectNode *findProject(FileId runId) const;
+    QVector<PExFileNode*> listFiles(bool recurse = false) const;
     void moveChildNode(int from, int to);
-    const QList<ProjectAbstractNode*> &childNodes() const { return mChildNodes; }
+    const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
 
 public slots:
     void hasFile(QString fName, bool &exists);
 
 protected:
     friend class ProjectRepo;
-    friend class ProjectAbstractNode;
-    friend class ProjectLogNode;
-    friend class ProjectFileNode;
+    friend class PExAbstractNode;
+    friend class PExLogNode;
+    friend class PExFileNode;
 
-    ProjectGroupNode(QString name, QString location, NodeType type = NodeType::group);
-    virtual void appendChild(ProjectAbstractNode *child);
-    virtual void removeChild(ProjectAbstractNode *child);
+    PExGroupNode(QString name, QString location, NodeType type = NodeType::group);
+    virtual void appendChild(PExAbstractNode *child);
+    virtual void removeChild(PExAbstractNode *child);
     void setLocation(const QString &location);
 
 private:
-    QList<ProjectAbstractNode*> mChildNodes;
+    QList<PExAbstractNode*> mChildNodes;
     QString mLocation;
 };
 
-class ProjectRunGroupNode : public ProjectGroupNode
+class PExProjectNode : public PExGroupNode
 {
     Q_OBJECT
 public:
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     bool hasLogNode() const;
-    ProjectLogNode* logNode();
+    PExLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
     QString mainModelName(bool stripped = true) const;
@@ -111,10 +111,10 @@ public:
     QProcess::ProcessState gamsProcessState() const;
     void setProcess(std::unique_ptr<AbstractProcess> process);
     AbstractProcess *process() const;
-    bool jumpToFirstError(bool focus, ProjectFileNode *lstNode);
+    bool jumpToFirstError(bool focus, PExFileNode *lstNode);
 
 signals:
-    void gamsProcessStateChanged(ProjectGroupNode* group);
+    void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
 
 public slots:
@@ -130,20 +130,20 @@ protected slots:
 
 protected:
     friend class ProjectRepo;
-    friend class ProjectAbstractNode;
-    friend class ProjectLogNode;
-    friend class ProjectFileNode;
+    friend class PExAbstractNode;
+    friend class PExLogNode;
+    friend class PExFileNode;
 
-    ProjectRunGroupNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
+    PExProjectNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
-    void setLogNode(ProjectLogNode* logNode);
-    void appendChild(ProjectAbstractNode *child) override;
-    void removeChild(ProjectAbstractNode *child) override;
-    QString resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create = false);
+    void setLogNode(PExLogNode* logNode);
+    void appendChild(PExAbstractNode *child) override;
+    void removeChild(PExAbstractNode *child) override;
+    QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
     std::unique_ptr<AbstractProcess> mGamsProcess;
-    ProjectLogNode* mLogNode = nullptr;
+    PExLogNode* mLogNode = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;
@@ -154,7 +154,7 @@ private:
 };
 
 
-class ProjectRootNode : public ProjectGroupNode
+class ProjectRootNode : public PExGroupNode
 {
     Q_OBJECT
 public:
@@ -166,7 +166,7 @@ public:
 
 private:
     friend class ProjectRepo;
-    void setParentNode(ProjectGroupNode *parent) override;
+    void setParentNode(PExGroupNode *parent) override;
     void init(ProjectRepo* projectRepo);
 
 private:
@@ -176,4 +176,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // PROJECTGROUPNODE_H
+#endif // PEXGROUPNODE_H

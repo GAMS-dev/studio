@@ -27,9 +27,9 @@
 namespace gams {
 namespace studio {
 
-class ProjectAbstractNode;
-class ProjectGroupNode;
-class ProjectFileNode;
+class PExAbstractNode;
+class PExGroupNode;
+class PExFileNode;
 
 class ProjectContextMenu : public QMenu
 {
@@ -37,26 +37,26 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNodes(QVector<ProjectAbstractNode*> selected);
+    void setNodes(QVector<PExAbstractNode*> selected);
     void setParent(QWidget *parent);
 
 signals:
-    void closeGroup(ProjectGroupNode* group);
-    void runGroup(ProjectGroupNode* group);
-    void runFile(ProjectFileNode *fc);
-    void setMainFile(ProjectFileNode *fc);
-    void closeFile(ProjectFileNode* fc);
-    void addExistingFile(ProjectGroupNode* group, const QString& file);
+    void closeGroup(PExGroupNode* group);
+    void project(PExGroupNode* group);
+    void runFile(PExFileNode *fc);
+    void setMainFile(PExFileNode *fc);
+    void closeFile(PExFileNode* fc);
+    void addExistingFile(PExGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
-    void openLogFor(ProjectAbstractNode* node, bool openOutput, bool createMissing);
-    void renameGroup(ProjectGroupNode* group);
-    void openFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
+    void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
+    void renameGroup(PExGroupNode* group);
+    void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFile(ProjectFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<ProjectGroupNode *> groups, const QString& solverName="");
+    void newFileDialog(QVector<PExGroupNode *> groups, const QString& solverName="");
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
 
@@ -83,7 +83,7 @@ private:
     void onOpenLog();
 
 private:
-    QVector<ProjectAbstractNode*> mNodes;
+    QVector<PExAbstractNode*> mNodes;
     QHash<int, QAction*> mActions;
     QStringList mAvailableSolvers;
     QHash<int, QAction*> mSolverOptionActions;

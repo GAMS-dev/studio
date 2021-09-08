@@ -269,9 +269,9 @@ void FileEventHandler::removeFile(FileMeta *file)
     if (file->exists(true)) return;
     mMainWindow->textMarkRepo()->removeMarks(file->id(), QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
-        QVector<ProjectFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
-        for (ProjectFileNode* node: qAsConst(nodes)) {
-            ProjectGroupNode *group = node->parentNode();
+        QVector<PExFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
+        for (PExFileNode* node: qAsConst(nodes)) {
+            PExGroupNode *group = node->parentNode();
             mMainWindow->projectRepo()->closeNode(node);
             if (group->childCount() == 0)
                 mMainWindow->closeGroup(group);

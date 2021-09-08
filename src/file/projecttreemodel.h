@@ -22,7 +22,7 @@
 
 #include <QAbstractItemModel>
 #include <QSortFilterProxyModel>
-#include "projectgroupnode.h"
+#include "pexgroupnode.h"
 
 namespace gams {
 namespace studio {
@@ -33,7 +33,7 @@ class ProjectTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit ProjectTreeModel(ProjectRepo *parent, ProjectGroupNode* root);
+    explicit ProjectTreeModel(ProjectRepo *parent, PExGroupNode* root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
@@ -41,9 +41,9 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &ind, int role = Qt::DisplayRole) const override;
 
-    QModelIndex index(const ProjectAbstractNode *entry) const;
+    QModelIndex index(const PExAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
-    ProjectGroupNode* rootNode() const;
+    PExGroupNode* rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent) override;
     void setDebugMode(bool debug);
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
@@ -51,18 +51,18 @@ public:
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
-    void sortChildNodes(ProjectGroupNode *group);
+    void sortChildNodes(PExGroupNode *group);
 
 signals:
     void childrenChanged();
-    void parentAssigned(const gams::studio::ProjectAbstractNode *node);
+    void parentAssigned(const gams::studio::PExAbstractNode *node);
 
 protected:
     friend class ProjectRepo;
     friend class ProjectTreeView;
 
-    bool insertChild(int row, ProjectGroupNode* parent, ProjectAbstractNode* child);
-    bool removeChild(ProjectAbstractNode* child);
+    bool insertChild(int row, PExGroupNode* parent, PExAbstractNode* child);
+    bool removeChild(PExAbstractNode* child);
     NodeId nodeId(const QModelIndex &ind) const;
     QModelIndex index(const NodeId id) const;
 
@@ -87,7 +87,7 @@ private:
 
 private:
     ProjectRepo *mProjectRepo;
-    ProjectGroupNode* mRoot = nullptr;
+    PExGroupNode* mRoot = nullptr;
     bool mDebug = false;
     NodeId mCurrent;
     QVector<NodeId> mSelected;

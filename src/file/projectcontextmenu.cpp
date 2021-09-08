@@ -132,7 +132,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 }
 
-void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
+void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 {
     // synchronize current and selected
     mNodes.clear();
@@ -141,9 +141,10 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     if (mNodes.isEmpty()) return;
 
     bool single = mNodes.count() == 1;
-    bool isGroup = mNodes.first()->toGroup();
+    bool isProject = mNodes.first()->toProject();
+//    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
 
-    ProjectFileNode *fileNode = mNodes.first()->toFile();
+    PExFileNode *fileNode = mNodes.first()->toFile();
     bool isGmsFile = fileNode && fileNode->file()->kind() == FileKind::Gms;
     bool isRunnable = false;
     bool isOpen = fileNode && fileNode->file()->isOpen();
@@ -170,7 +171,7 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     // opening GDX diff is only possible for one or two selected GDX files
     bool isOpenableWithGdxDiff = false;
     if (mNodes.count() == 1 || mNodes.count() == 2) {
-        ProjectFileNode *fn = mNodes.first()->toFile();
+        PExFileNode *fn = mNodes.first()->toFile();
         isOpenableWithGdxDiff = fn && fn->file()->kind() == FileKind::Gdx;
         if (mNodes.count() == 2) {
             fn = mNodes.last()->toFile();
@@ -179,8 +180,8 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     }
 
     QString file;
-    if (fileNode && fileNode->assignedRunGroup()) {
-        file = fileNode->assignedRunGroup()->parameter("gms");
+    if (fileNode && fileNode->assignedProject()) {
+        file = fileNode->assignedProject()->parameter("gms");
         isRunnable = fileNode->location() == file;
     }
 
@@ -203,22 +204,22 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
     mActions[actReOpenAsText]->setVisible(isReOpenableAsText);
 
-    mActions[actLogTab]->setVisible(isGroup);
+    mActions[actLogTab]->setVisible(isProject);
     mActions[actLogTab]->setEnabled(single);
 
-    mActions[actRename]->setVisible(isGroup);
+    mActions[actRename]->setVisible(isProject);
     mActions[actRename]->setEnabled(single);
 
-    mActions[actSep1]->setVisible(isGroup);
+    mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 //    mActions[actSetMain]->setEnabled(single);
 
-    mActions[actAddNewGms]->setVisible(isGroup);
-    mActions[actAddExisting]->setVisible(isGroup);
-    mActions[actCloseGroup]->setVisible(isGroup);
+    mActions[actAddNewGms]->setVisible(isProject);
+    mActions[actAddExisting]->setVisible(isProject);
+    mActions[actCloseGroup]->setVisible(isProject);
 
     mActions[actCloseFile]->setVisible(fileNode);
-    mActions[actCloseGroup]->setVisible(isGroup);
+    mActions[actCloseGroup]->setVisible(isProject);
 
     if (!single) {
         mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
@@ -229,25 +230,25 @@ void ProjectContextMenu::setNodes(QVector<ProjectAbstractNode *> selected)
     }
 
     // create solver option files
-    mActions[actSep3]->setVisible(isGroup);
-    mActions[actAddNewOpt]->setVisible(isGroup);
+    mActions[actSep3]->setVisible(isProject);
+    mActions[actAddNewOpt]->setVisible(isProject);
     for (QAction* action : mSolverOptionActions)
-        action->setVisible(isGroup);
+        action->setVisible(isProject);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectFileNode *file = node->toFile();
+    for (PExAbstractNode *node: mNodes) {
+        PExFileNode *file = node->toFile();
         if (file) emit closeFile(file);
     }
 }
 
 void ProjectContextMenu::onAddExisitingFile()
 {
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
+    QVector<PExGroupNode*> groups;
+    for (PExAbstractNode *node: mNodes) {
+        PExGroupNode *group = node->toGroup();
         if (!group) group = node->parentNode();
         if (!groups.contains(group))
             groups << group;
@@ -263,7 +264,7 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (ProjectGroupNode *group: groups) {
+    for (PExGroupNode *group: groups) {
         for (QString filePath: filePaths) {
             emit addExistingFile(group, filePath);
         }
@@ -272,9 +273,9 @@ void ProjectContextMenu::onAddExisitingFile()
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
+    QVector<PExGroupNode*> groups;
+    for (PExAbstractNode *node: mNodes) {
+        PExGroupNode *group = node->toGroup();
         if (!group) group = node->parentNode();
         if (!groups.contains(group))
             groups << group;
@@ -289,8 +290,8 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
+    for (PExAbstractNode *node: mNodes) {
+        PExGroupNode *group = node->toGroup();
         if (!group) group = node->parentNode();
         if (group) emit closeGroup(group);
     }
@@ -298,21 +299,21 @@ void ProjectContextMenu::onCloseGroup()
 
 void ProjectContextMenu::onSetMainFile()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) emit setMainFile(file);
 }
 
 void ProjectContextMenu::onRenameGroup()
 {
-    ProjectGroupNode *group = mNodes.first()->toGroup();
+    PExGroupNode *group = mNodes.first()->toGroup();
     if (group) emit renameGroup(group);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
-    QVector<ProjectGroupNode*> groups;
-    for (ProjectAbstractNode *node: mNodes) {
-        ProjectGroupNode *group = node->toGroup();
+    QVector<PExGroupNode*> groups;
+    for (PExAbstractNode *node: mNodes) {
+        PExGroupNode *group = node->toGroup();
         if (!group) group = node->parentNode();
         if (!groups.contains(group))
             groups << group;
@@ -324,11 +325,11 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 void ProjectContextMenu::onOpenTerminal()
 {
     QString workingDir;
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) {
         workingDir = QFileInfo(file->location()).path();
-    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::runGroup)){
-        ProjectGroupNode *group = mNodes.first()->toGroup();
+    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)) {
+        PExGroupNode *group = mNodes.first()->toGroup();
         if (group) workingDir = group->location();
     }
     emit openTerminal(workingDir);
@@ -336,7 +337,7 @@ void ProjectContextMenu::onOpenTerminal()
 
 void ProjectContextMenu::onGdxDiff()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     QString workingDir = QFileInfo(file->location()).path();
 
     if (mNodes.size() == 1)
@@ -348,7 +349,7 @@ void ProjectContextMenu::onGdxDiff()
 void ProjectContextMenu::onOpenFileLoc()
 {
     QString openLoc;
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) {
 // select file on windows by calling explorer.exe with parameter /select
 #ifdef _WIN32
@@ -369,8 +370,8 @@ void ProjectContextMenu::onOpenFileLoc()
 #else
         QDesktopServices::openUrl(QUrl::fromLocalFile(QFileInfo(file->location()).path()));
 #endif
-    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::runGroup)){
-        ProjectGroupNode *group = mNodes.first()->toGroup();
+    } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)){
+        PExGroupNode *group = mNodes.first()->toGroup();
         if (group) openLoc = group->location();
         QDesktopServices::openUrl(QUrl::fromLocalFile(openLoc));
     }
@@ -378,25 +379,25 @@ void ProjectContextMenu::onOpenFileLoc()
 
 void ProjectContextMenu::onOpenFile()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) emit openFile(file, true, -1, false);
 }
 
 void ProjectContextMenu::onOpenFileAsText()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) emit openFile(file, true, -1, true);
 }
 
 void ProjectContextMenu::onReOpenFile()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) emit reOpenFile(file, true, -1, false);
 }
 
 void ProjectContextMenu::onReOpenSolverOptionFileAsText()
 {
-    ProjectFileNode *file = mNodes.first()->toFile();
+    PExFileNode *file = mNodes.first()->toFile();
     if (file) emit reOpenFile(file, true, -1, true);
 }
 
