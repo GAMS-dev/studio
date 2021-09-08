@@ -237,7 +237,7 @@ void ProjectRepo::readGroup(PExGroupNode* group, const QVariantList& children)
             // group
             QVariantList subChildren = child.value("nodes").toList();
             if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
-                PExGroupNode* subGroup = createGroup(name, path, file, group);
+                PExGroupNode* subGroup = createProject(name, path, file, group);
                 if (subGroup) {
                     readGroup(subGroup, subChildren);
                     if (subGroup->isEmpty()) {
@@ -322,7 +322,7 @@ void ProjectRepo::renameGroup(PExGroupNode* group)
     mTreeView->edit(mTreeModel->index(group));
 }
 
-PExGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, PExGroupNode *_parent)
+PExGroupNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, PExGroupNode *_parent)
 {
     if (!_parent) _parent = mTreeModel->rootNode();
     if (!_parent) FATAL() << "Can't get tree-model root-node";
@@ -447,7 +447,7 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExGroupNode*
         if (pfn)
             fileGroup = pfn->parentNode();
         else
-            fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+            fileGroup = createProject(groupName, fi.absolutePath(), fi.filePath());
 
         if (!fileGroup) {
             DEB() << "The group must not be null";
@@ -611,7 +611,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         if (!group) group = aNode->parentNode();
     } else {
         QFileInfo firstFile(files.first());
-        group = createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+        group = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     }
     if (!group) return;
 

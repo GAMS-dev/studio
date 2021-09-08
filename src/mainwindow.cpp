@@ -451,7 +451,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
 
     QFileInfo fi(filePath);
 
-    PExGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+    PExGroupNode *group = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
     PExFileNode *node = addNode("", filePath, group);
     openFileNode(node);
 }
@@ -1231,7 +1231,7 @@ void MainWindow::newFileDialog(QVector<PExGroupNode*> groups, const QString& sol
         for (PExGroupNode *group: groups)
             openFileNode(addNode("", filePath, group));
     } else { // create new group
-        PExGroupNode *group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+        PExGroupNode *group = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
         PExFileNode* node = addNode("", filePath, group);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
@@ -2850,7 +2850,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
         // create the destination group if necessary
         if (!group && !fileNode) {
             QFileInfo fi(fileName);
-            group = mProjectRepo.createGroup(fi.completeBaseName(), fi.absolutePath(), "");
+            group = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
         }
 
         // create node if missing
@@ -2899,7 +2899,7 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create base group
-    PExGroupNode *group = mProjectRepo.createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+    PExGroupNode *group = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
             PExFileNode *node = addNode("", item, group);
@@ -3615,7 +3615,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
                     project = nodes.first()->assignedProject();
             } else {
                 QFileInfo file(fileMeta->location());
-                project = mProjectRepo.createGroup(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toProject();
+                project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toProject();
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }
