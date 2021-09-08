@@ -124,8 +124,8 @@ void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, int refLineNr
         bookmark = mTextMarkRepo->findBookmark(refFileId, refLineNr, back);
     }
     FileMeta *fm = fileMeta(refFileId);
-    ProjectAbstractNode * startNode = fm ? mProjectRepo->findFile(fm) : nullptr;
-    ProjectAbstractNode * node = startNode;
+    PExAbstractNode * startNode = fm ? mProjectRepo->findFile(fm) : nullptr;
+    PExAbstractNode * node = startNode;
     while (!bookmark && startNode) {
         node = back ? mProjectRepo->previous(node) : mProjectRepo->next(node);
         FileId fileId = node->toFile() ? node->toFile()->file()->id() : FileId();
@@ -267,20 +267,20 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
         if (!suffix.contains(suf)) changed << suf;
     }
     FileType::setUserGamsTypes(suffix);
-    QVector<ProjectRunGroupNode*> runGroups;
+    QVector<PExProjectNode*> projects;
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();
         QFileInfo fi(i.value()->location());
         if (changed.contains(fi.suffix())) {
             i.value()->refreshType();
-            for (ProjectAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
-                if (!runGroups.contains(node->assignedRunGroup())) runGroups << node->assignedRunGroup();
+            for (PExAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
+                if (!projects.contains(node->assignedProject())) projects << node->assignedProject();
         }
     }
-    for (ProjectRunGroupNode * group : runGroups) {
-        if (!group->runnableGms() || group->runnableGms()->kind() != FileKind::Gms) {
-            group->setRunnableGms();
+    for (PExProjectNode * project : projects) {
+        if (!project->runnableGms() || project->runnableGms()->kind() != FileKind::Gms) {
+            project->setRunnableGms();
         }
     }
 }
@@ -288,8 +288,8 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
 void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
-    ProjectRunGroupNode* runGroup = mProjectRepo->findRunGroup(groupId);
-    emit mProjectRepo->openFile(fm, focus, runGroup, codecMib);
+    PExProjectNode* project = mProjectRepo->findProject(groupId);
+    emit mProjectRepo->openFile(fm, focus, project, codecMib);
 }
 
 void FileMetaRepo::fileChanged(const QString &path)

@@ -17,9 +17,9 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "projectgroupnode.h"
-#include "projectfilenode.h"
-#include "projectlognode.h"
+#include "pexgroupnode.h"
+#include "pexfilenode.h"
+#include "pexlognode.h"
 #include "projectrepo.h"
 #include "filemeta.h"
 #include "filemetarepo.h"
@@ -38,66 +38,66 @@
 namespace gams {
 namespace studio {
 
-ProjectGroupNode::ProjectGroupNode(QString name, QString location, NodeType type)
-    : ProjectAbstractNode(name, type)
+PExGroupNode::PExGroupNode(QString name, QString location, NodeType type)
+    : PExAbstractNode(name, type)
 {
     setLocation(location);
 }
 
-ProjectGroupNode::~ProjectGroupNode()
+PExGroupNode::~PExGroupNode()
 {
     if (mChildNodes.size())
         DEB() << "Group must be empty before deletion";
 }
 
-QIcon ProjectGroupNode::icon(QIcon::Mode mode, int alpha)
+QIcon PExGroupNode::icon(QIcon::Mode mode, int alpha)
 {
     return Theme::icon(":/img/folder-open", mode, alpha);
 }
 
-int ProjectGroupNode::childCount() const
+int PExGroupNode::childCount() const
 {
     return mChildNodes.count();
 }
 
-bool ProjectGroupNode::isEmpty()
+bool PExGroupNode::isEmpty()
 {
     return (mChildNodes.count() == 0);
 }
 
-ProjectAbstractNode*ProjectGroupNode::childNode(int index) const
+PExAbstractNode*PExGroupNode::childNode(int index) const
 {
     return mChildNodes.at(index);
 }
 
-int ProjectGroupNode::indexOf(ProjectAbstractNode* child)
+int PExGroupNode::indexOf(PExAbstractNode* child)
 {
     return mChildNodes.indexOf(child);
 }
 
-void ProjectGroupNode::appendChild(ProjectAbstractNode* child)
+void PExGroupNode::appendChild(PExAbstractNode* child)
 {
     if (!child || mChildNodes.contains(child)) return;
     mChildNodes.append(child);
 }
 
-void ProjectGroupNode::removeChild(ProjectAbstractNode* child)
+void PExGroupNode::removeChild(PExAbstractNode* child)
 {
     mChildNodes.removeOne(child);
 }
 
-QString ProjectGroupNode::location() const
+QString PExGroupNode::location() const
 {
     return mLocation;
 }
 
-void ProjectGroupNode::setLocation(const QString& location)
+void PExGroupNode::setLocation(const QString& location)
 {
     mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(location) : location;
     emit changed(id());
 }
 
-QString ProjectGroupNode::tooltip()
+QString PExGroupNode::tooltip()
 {
     QString res = QDir::toNativeSeparators(location());
     if (debugMode()) {
@@ -107,168 +107,168 @@ QString ProjectGroupNode::tooltip()
     return QString(res);
 }
 
-QString ProjectGroupNode::errorText(int lstLine)
+QString PExGroupNode::errorText(int lstLine)
 {
     return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
-ProjectFileNode *ProjectGroupNode::findFile(QString location, bool recurse) const
+PExFileNode *PExGroupNode::findFile(QString location, bool recurse) const
 {
     if (location.contains('\\')) location = QDir::fromNativeSeparators(location);
     QFileInfo fi(location);
-    for (ProjectAbstractNode* node: mChildNodes) {
-        ProjectFileNode* file = node->toFile();
+    for (PExAbstractNode* node: mChildNodes) {
+        PExFileNode* file = node->toFile();
         if (file && FileMetaRepo::equals(QFileInfo(file->location()), fi)) return file;
         if (recurse) {
-            const ProjectGroupNode* group = node->toGroup();
-            ProjectFileNode* sub = group ? group->findFile(location, true) : nullptr;
+            const PExGroupNode* group = node->toGroup();
+            PExFileNode* sub = group ? group->findFile(location, true) : nullptr;
             if (sub) return sub;
         }
     }
     return nullptr;
 }
 
-ProjectFileNode *ProjectGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
+PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
 {
     if (!fileMeta) return nullptr;
     if (fileMeta->kind() == FileKind::Log) return nullptr;
-    for (ProjectAbstractNode* node: mChildNodes) {
-        ProjectFileNode* fileNode = node->toFile();
+    for (PExAbstractNode* node: mChildNodes) {
+        PExFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
         if (recurse) {
-            const ProjectGroupNode* group = node->toGroup();
-            ProjectFileNode* sub = group ? group->findFile(fileMeta, true) : nullptr;
+            const PExGroupNode* group = node->toGroup();
+            PExFileNode* sub = group ? group->findFile(fileMeta, true) : nullptr;
             if (sub) return sub;
         }
     }
     return nullptr;
 }
 
-QList<ProjectFileNode*> ProjectGroupNode::findFiles(FileKind kind, bool recurse) const
+QList<PExFileNode*> PExGroupNode::findFiles(FileKind kind, bool recurse) const
 {
-    QList<ProjectFileNode*> res;
-    for (ProjectAbstractNode* node: mChildNodes) {
-        ProjectFileNode* fileNode = node->toFile();
+    QList<PExFileNode*> res;
+    for (PExAbstractNode* node: mChildNodes) {
+        PExFileNode* fileNode = node->toFile();
         if (fileNode && fileNode->file()->kind() == kind) res << fileNode;
         if (recurse) {
-            const ProjectGroupNode* group = node->toGroup();
-            res << (group ? group->findFiles(kind, true) : QList<ProjectFileNode*>());
+            const PExGroupNode* group = node->toGroup();
+            res << (group ? group->findFiles(kind, true) : QList<PExFileNode*>());
         }
     }
     return res;
 }
 
-ProjectRunGroupNode *ProjectGroupNode::findRunGroup(const AbstractProcess *process) const
+PExProjectNode *PExGroupNode::findProject(const AbstractProcess *process) const
 {
-    for (ProjectAbstractNode* node: childNodes()) {
-        ProjectRunGroupNode* runGroup = node->toRunGroup();
-        if (runGroup && runGroup->isProcess(process))
-            return runGroup;
-        const ProjectGroupNode* group = node->toGroup();
+    for (PExAbstractNode* node: childNodes()) {
+        PExProjectNode* project = node->toProject();
+        if (project && project->isProcess(process))
+            return project;
+        const PExGroupNode* group = node->toGroup();
         if (group) {
-            runGroup = findRunGroup(process);
-            if (runGroup) return runGroup;
+            project = findProject(process);
+            if (project) return project;
         }
     }
     return nullptr;
 }
 
-ProjectRunGroupNode *ProjectGroupNode::findRunGroup(FileId runId) const
+PExProjectNode *PExGroupNode::findProject(FileId runId) const
 {
-    for (ProjectAbstractNode* node: childNodes()) {
-        ProjectRunGroupNode* runGroup = node->toRunGroup();
-        if (runGroup && runGroup->runnableGms()->id() == runId)
-            return runGroup;
-        const ProjectGroupNode* group = node->toGroup();
+    for (PExAbstractNode* node: childNodes()) {
+        PExProjectNode* project = node->toProject();
+        if (project && project->runnableGms()->id() == runId)
+            return project;
+        const PExGroupNode* group = node->toGroup();
         if (group) {
-            runGroup = findRunGroup(runId);
-            if (runGroup) return runGroup;
+            project = findProject(runId);
+            if (project) return project;
         }
     }
     return nullptr;
 }
 
-QVector<ProjectFileNode *> ProjectGroupNode::listFiles(bool recurse) const
+QVector<PExFileNode *> PExGroupNode::listFiles(bool recurse) const
 {
-    QVector<ProjectFileNode *> res;
-    for (ProjectAbstractNode *node: mChildNodes) {
-        ProjectFileNode *fileNode = node->toFile();
+    QVector<PExFileNode *> res;
+    for (PExAbstractNode *node: mChildNodes) {
+        PExFileNode *fileNode = node->toFile();
         if (fileNode)
             res << fileNode;
         else if (recurse) {
-            ProjectGroupNode *sub = node->toGroup();
+            PExGroupNode *sub = node->toGroup();
             if (sub) res << sub->listFiles(true);
         }
     }
     return res;
 }
 
-void ProjectGroupNode::moveChildNode(int from, int to)
+void PExGroupNode::moveChildNode(int from, int to)
 {
     mChildNodes.move(from, to);
 }
 
-void ProjectGroupNode::hasFile(QString fName, bool &exists)
+void PExGroupNode::hasFile(QString fName, bool &exists)
 {
     exists = findFile(fName);
 }
 
-ProjectRunGroupNode::ProjectRunGroupNode(QString name, QString path, FileMeta* runFileMeta)
-    : ProjectGroupNode(name, path, NodeType::runGroup)
+PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta)
+    : PExGroupNode(name, path, NodeType::project)
     , mGamsProcess(new GamsProcess())
 {
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
     }
 }
 
-void ProjectRunGroupNode::setProcess(std::unique_ptr<AbstractProcess> process)
+void PExProjectNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
     if (mGamsProcess == process) return;
     mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &ProjectRunGroupNode::onGamsProcessStateChanged);
+    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
 }
 
-AbstractProcess *ProjectRunGroupNode::process() const
+AbstractProcess *PExProjectNode::process() const
 {
     return mGamsProcess.get();
 }
 
-QIcon ProjectRunGroupNode::icon(QIcon::Mode mode, int alpha)
+QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
-        return ProjectGroupNode::icon(mode, alpha);
+        return PExGroupNode::icon(mode, alpha);
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
-bool ProjectRunGroupNode::hasLogNode() const
+bool PExProjectNode::hasLogNode() const
 {
     return mLogNode;
 }
 
-void ProjectRunGroupNode::setLogNode(ProjectLogNode* logNode)
+void PExProjectNode::setLogNode(PExLogNode* logNode)
 {
     if (mLogNode)
         EXCEPT() << "Reset the logNode is not allowed";
     mLogNode = logNode;
 }
 
-void ProjectRunGroupNode::appendChild(ProjectAbstractNode *child)
+void PExProjectNode::appendChild(PExAbstractNode *child)
 {
-    ProjectGroupNode::appendChild(child);
-    ProjectFileNode *file = child->toFile();
+    PExGroupNode::appendChild(child);
+    PExFileNode *file = child->toFile();
     if (!mParameterHash.contains("gms") && file && file->file() && file->file()->kind() == FileKind::Gms) {
         setRunnableGms(file->file());
     }
 }
 
-void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
+void PExProjectNode::removeChild(PExAbstractNode *child)
 {
-    ProjectGroupNode::removeChild(child);
+    PExGroupNode::removeChild(child);
     bool gmsLost = false;
-    ProjectFileNode *file = child->toFile();
+    PExFileNode *file = child->toFile();
     if (file) {
         QList<QString> files = mParameterHash.keys(file->location());
         for (const QString &file: files) {
@@ -281,7 +281,7 @@ void ProjectRunGroupNode::removeChild(ProjectAbstractNode *child)
     }
 }
 
-QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, int &line, int &col, bool create)
+QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create)
 {
     const QStringList tags {"LST","LS2","INC","LIB","SYS"};
     QString res;
@@ -396,7 +396,7 @@ QString ProjectRunGroupNode::resolveHRef(QString href, ProjectFileNode *&node, i
     return res;
 }
 
-ProjectLogNode *ProjectRunGroupNode::logNode()
+PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
@@ -404,16 +404,16 @@ ProjectLogNode *ProjectRunGroupNode::logNode()
                        ? parameter("gms") : QFileInfo(location()+"/"+name()+"."+suffix);
         QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
-        mLogNode = new ProjectLogNode(fm, this);
+        mLogNode = new PExLogNode(fm, this);
     }
     return mLogNode;
 }
 
 ///
-/// \brief ProjectGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
+/// \brief PExGroupNode::setLogLocation sets the location of the log. Filename can be determined automatically from path.
 /// \param path
 ///
-void ProjectRunGroupNode::setLogLocation(QString path)
+void PExProjectNode::setLogLocation(QString path)
 {
     if (path.contains('\\'))
         path = QDir::fromNativeSeparators(path);
@@ -431,19 +431,19 @@ void ProjectRunGroupNode::setLogLocation(QString path)
     mLogNode->file()->setLocation(fullPath);
 }
 
-FileMeta* ProjectRunGroupNode::runnableGms() const
+FileMeta* PExProjectNode::runnableGms() const
 {
     FileMetaRepo *repo = fileRepo();
     if (!repo) return nullptr;
     return repo->fileMeta(parameter("gms"));
 }
 
-void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
+void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
-    ProjectFileNode *gmsFileNode;
+    PExFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
-        for (ProjectAbstractNode *node: childNodes()) {
+        for (PExAbstractNode *node: childNodes()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
                 gmsFile = gmsFileNode->file();
@@ -469,13 +469,13 @@ void ProjectRunGroupNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
 }
 
-QString ProjectRunGroupNode::mainModelName(bool stripped) const
+QString PExProjectNode::mainModelName(bool stripped) const
 {
-    FileMeta *fileMeta = toRunGroup()->runnableGms();
+    FileMeta *fileMeta = toProject()->runnableGms();
 
     if (!fileMeta) {
-        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for group: %1")
-                .arg(toRunGroup()->name()), LogMsgType::Error);
+        SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for project: %1")
+                .arg(toProject()->name()), LogMsgType::Error);
         return QString();
     }
 
@@ -486,12 +486,12 @@ QString ProjectRunGroupNode::mainModelName(bool stripped) const
 
 }
 
-QString ProjectRunGroupNode::errorText(int lstLine)
+QString PExProjectNode::errorText(int lstLine)
 {
     return mErrorTexts.value(lstLine);
 }
 
-void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
+void PExProjectNode::setErrorText(int lstLine, QString text)
 {
     if (text.isEmpty()) {
         DEB() << "Empty LST-text ignored for line " << lstLine;
@@ -504,30 +504,30 @@ void ProjectRunGroupNode::setErrorText(int lstLine, QString text)
     }
 }
 
-void ProjectRunGroupNode::hasHRef(const QString &href, QString &fileName)
+void PExProjectNode::hasHRef(const QString &href, QString &fileName)
 {
-    ProjectFileNode *node;
+    PExFileNode *node;
     int line;
     int column;
     fileName = resolveHRef(href, node, line, column);
 }
 
-void ProjectRunGroupNode::jumpToHRef(const QString &href)
+void PExProjectNode::jumpToHRef(const QString &href)
 {
-    ProjectFileNode *node;
+    PExFileNode *node;
     int line;
     int column;
     resolveHRef(href, node, line, column, true);
-    if (node) node->file()->jumpTo(node->runGroupId(), true, line-1, column);
+    if (node) node->file()->jumpTo(node->projectId(), true, line-1, column);
 }
 
-void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
+void PExProjectNode::createMarks(const LogParser::MarkData &marks)
 {
     if (marks.hasErr() && !marks.hRef.isEmpty()) {
         int col;
-        ProjectFileNode *errNode;
+        PExFileNode *errNode;
         int errLine;
-        ProjectFileNode *lstNode;
+        PExFileNode *lstNode;
         int lstLine;
         resolveHRef(marks.hRef, lstNode, lstLine, col, true);
         resolveHRef(marks.errRef, errNode, errLine, col, true);
@@ -546,29 +546,29 @@ void ProjectRunGroupNode::createMarks(const LogParser::MarkData &marks)
     }
 }
 
-void ProjectRunGroupNode::switchLst(const QString &lstFile)
+void PExProjectNode::switchLst(const QString &lstFile)
 {
     if (mParameterHash.contains("lst")) {
         setParameter("ls2", lstFile);
     }
 }
 
-void ProjectRunGroupNode::registerGeneratedFile(const QString &fileName)
+void PExProjectNode::registerGeneratedFile(const QString &fileName)
 {
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
-void ProjectRunGroupNode::clearErrorTexts()
+void PExProjectNode::clearErrorTexts()
 {
     mErrorTexts.clear();
 }
 
-bool ProjectRunGroupNode::hasErrorText(int lstLine)
+bool PExProjectNode::hasErrorText(int lstLine)
 {
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
-void ProjectRunGroupNode::addRunParametersHistory(QString runParameters)
+void PExProjectNode::addRunParametersHistory(QString runParameters)
 {
     if (!runParameters.simplified().isEmpty()) {
        QStringList list = mRunParametersHistory.filter(runParameters.simplified());
@@ -587,18 +587,18 @@ void ProjectRunGroupNode::addRunParametersHistory(QString runParameters)
     mRunParametersHistory.append(runParameters.simplified());
 }
 
-QStringList ProjectRunGroupNode::getRunParametersHistory() const
+QStringList PExProjectNode::getRunParametersHistory() const
 {
     return mRunParametersHistory;
 }
 
 ///
-/// \brief ProjectRunGroupNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this group
+/// \brief PExProjectNode::analyzeParameters translates the gms file and an OptionItem list into a single QStringList, while also setting all extracted parameters for this project
 /// \param gmsLocation gms file to be run
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt)
+QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt)
 {
     // set studio default parameters
     QMultiMap<int, QString> gamsArguments;
@@ -735,12 +735,12 @@ QStringList ProjectRunGroupNode::analyzeParameters(const QString &gmsLocation, Q
 }
 
 ///
-/// \brief ProjectRunGroupNode::normalizePath removes quotes and trims whitespaces for use within studio. do not pass to gams!
+/// \brief PexProjectNode::normalizePath removes quotes and trims whitespaces for use within studio. do not pass to gams!
 /// \param path workign dir
 /// \param file file name, can be absolute or relative
 /// \return cleaned path
 ///
-QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
+QString PExProjectNode::cleanPath(QString path, QString file) {
 
     QString ret = "";
 
@@ -762,12 +762,12 @@ QString ProjectRunGroupNode::cleanPath(QString path, QString file) {
     return QFileInfo(ret).absoluteFilePath();
 }
 
-bool ProjectRunGroupNode::isProcess(const AbstractProcess *process) const
+bool PExProjectNode::isProcess(const AbstractProcess *process) const
 {
     return process && mGamsProcess.get() == process;
 }
 
-bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
+bool PExProjectNode::jumpToFirstError(bool focus, PExFileNode* lstNode)
 {
     if (!runnableGms()) return false;
 //    QList<TextMark*> marks = textMarkRepo()->marks(runnableGms()->id(), -1, id(), TextMark::error, 1);
@@ -790,7 +790,7 @@ bool ProjectRunGroupNode::jumpToFirstError(bool focus, ProjectFileNode* lstNode)
     return false;
 }
 
-void ProjectRunGroupNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
+void PExProjectNode::errorTexts(const QVector<int> &lstLines, QStringList &result)
 {
     for (int lstLine: lstLines) {
         QString newTip = errorText(lstLine);
@@ -799,23 +799,23 @@ void ProjectRunGroupNode::errorTexts(const QVector<int> &lstLines, QStringList &
     }
 }
 
-QString ProjectRunGroupNode::parameter(const QString &kind) const
+QString PExProjectNode::parameter(const QString &kind) const
 {
     return mParameterHash.value(kind);
 }
 
-bool ProjectRunGroupNode::hasParameter(const QString &kind) const
+bool PExProjectNode::hasParameter(const QString &kind) const
 {
     return mParameterHash.contains(kind);
 }
 
-void ProjectRunGroupNode::addNodesForSpecialFiles()
+void PExProjectNode::addNodesForSpecialFiles()
 {
     FileMeta* runFile = runnableGms();
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
-            ProjectFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
+            PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
             if (runFile)
                 node->file()->setCodec(runFile->codec());
             else {
@@ -829,7 +829,7 @@ void ProjectRunGroupNode::addNodesForSpecialFiles()
     }
 }
 
-void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
+void PExProjectNode::setParameter(const QString &kind, const QString &path)
 {
     if (path.isEmpty()) {
         mParameterHash.remove(kind);
@@ -855,19 +855,19 @@ void ProjectRunGroupNode::setParameter(const QString &kind, const QString &path)
     mParameterHash.insert(kind, fullPath);
 }
 
-void ProjectRunGroupNode::clearParameters()
+void PExProjectNode::clearParameters()
 {
     QString gms = mParameterHash.value("gms");
     mParameterHash.clear();
     mParameterHash.insert("gms", gms);
 }
 
-QProcess::ProcessState ProjectRunGroupNode::gamsProcessState() const
+QProcess::ProcessState PExProjectNode::gamsProcessState() const
 {
     return mGamsProcess ? mGamsProcess->state() : QProcess::NotRunning;
 }
 
-QString ProjectRunGroupNode::tooltip()
+QString PExProjectNode::tooltip()
 {
     QString res(QDir::toNativeSeparators(location()));
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
@@ -882,19 +882,19 @@ QString ProjectRunGroupNode::tooltip()
     return res;
 }
 
-void ProjectRunGroupNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
+void PExProjectNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState)
     emit gamsProcessStateChanged(this);
 }
 
 ProjectRootNode::ProjectRootNode(ProjectRepo* repo)
-    : ProjectGroupNode("Root", "", NodeType::root), mRepo(repo)
+    : PExGroupNode("Root", "", NodeType::root), mRepo(repo)
 {
     if (!mRepo) EXCEPT() << "The ProjectRepo must not be null";
 }
 
-void ProjectRootNode::setParentNode(ProjectGroupNode *parent)
+void ProjectRootNode::setParentNode(PExGroupNode *parent)
 {
     Q_UNUSED(parent)
     EXCEPT() << "The root node has no parent";
