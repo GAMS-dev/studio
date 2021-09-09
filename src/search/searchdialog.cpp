@@ -156,6 +156,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     QList<FileMeta*> files;
     switch (ui->combo_scope->currentIndex()) {
     case Search::ThisFile:
+    case Search::Selection:
         if (mMain->recent()->editor())
             return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         break;
@@ -192,7 +193,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     for (FileMeta* fm : qAsConst(files)) {
         bool matchesWildcard = false;
 
-        for (const QRegExp &wildcard : filterList) {
+        for (const QRegExp &wildcard : qAsConst(filterList)) {
             matchesWildcard = wildcard.indexIn(fm->location()) != -1;
             if (matchesWildcard) break; // one match is enough, dont overwrite result
         }

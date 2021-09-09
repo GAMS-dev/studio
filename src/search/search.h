@@ -36,8 +36,9 @@ public:
     enum Scope {
         ThisFile = 0,
         ThisProject= 1,
-        OpenTabs = 2,
-        AllFiles = 3
+        Selection= 2,
+        OpenTabs = 3,
+        AllFiles = 4
     };
 
     enum Status {
@@ -73,6 +74,7 @@ signals:
 
 private:
     void findInDoc(FileMeta* fm);
+    void findInSelection();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
