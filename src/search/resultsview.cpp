@@ -139,6 +139,7 @@ int ResultsView::selectedItem()
 void ResultsView::setOutdated()
 {
     mOutdated = true;
+    ui->tableView->clearSelection();
 }
 
 bool ResultsView::isOutdated()

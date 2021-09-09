@@ -81,7 +81,7 @@ private:
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
     void jumpToResult(int matchNr);
-
+    bool hasResultsForFile(QString filePath);
 
 private slots:
     void finished();

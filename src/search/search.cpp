@@ -132,11 +132,12 @@ void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
     QString location = mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location();
-    bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
+    bool requestNewCache = !mCacheAvailable || !hasResultsForFile(location);
 
     if (requestNewCache) {
         mCacheAvailable = false;
         mMain->searchDialog()->updateUi(true);
+        if (mMain->resultsView()) mMain->resultsView()->setOutdated();
         start();
     }
     selectNextMatch(direction);
@@ -182,8 +183,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
     // allow jumping when we have results but not in the current file
     allowJumping = (mResults.size() > 0)
-            && (mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location())
-            == mResultHash.end());
+            && hasResultsForFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location());
 
     if (mMain->recent()->editor()) {
         QString file = ViewHelper::location(mMain->recent()->editor());
@@ -322,6 +322,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     mMain->searchDialog()->updateNrMatches(matchNr+1);
     if (mMain->resultsView() && !mMain->resultsView()->isOutdated() && (!mOutsideOfList || matchNr == -1))
         mMain->resultsView()->selectItem(matchNr);
+}
+
+bool Search::hasResultsForFile(QString filePath) {
+    return mResultHash.find(filePath)->count() > 0;
 }
 
 ///
