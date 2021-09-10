@@ -155,29 +155,34 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
     QList<FileMeta*> files;
     switch (ui->combo_scope->currentIndex()) {
-    case Search::ThisFile:
-    case Search::Selection:
-        if (mMain->recent()->editor())
-            return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-        break;
-    case Search::ThisProject:
-    {
-        PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-        if (!p) return files;
-        for (PExFileNode *c :p->parentNode()->listFiles(true)) { // TODO(JM) needs to be enanced on introducing sub-folders
-            if (!files.contains(c->file()))
-                files.append(c->file());
+        case Search::ThisFile: {
+            if (mMain->recent()->editor())
+                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            break;
         }
-    }
-        break;
-    case Search::OpenTabs:
-        files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
-        break;
-    case Search::AllFiles:
-        files = mMain->fileRepo()->fileMetas();
-        break;
-    default:
-        break;
+        case Search::ThisProject: {
+            PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+            if (!p) return files;
+            for (PExFileNode *c :p->parentNode()->listFiles(true)) { // TODO(JM) needs to be enanced on introducing sub-folders
+                if (!files.contains(c->file()))
+                    files.append(c->file());
+            }
+            break;
+        }
+        case Search::Selection: {
+            if (mMain->recent()->editor())
+                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            break;
+        }
+        case Search::OpenTabs: {
+            files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+            break;
+        }
+        case Search::AllFiles: {
+            files = mMain->fileRepo()->fileMetas();
+            break;
+        }
+        default: break;
     }
 
     // apply filter

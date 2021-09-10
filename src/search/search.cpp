@@ -57,6 +57,13 @@ void Search::start()
     mResultHash.clear();
 
     mSearching = true;
+
+    if (mMain->searchDialog()->selectedScope()) {
+        findInSelection();
+        mMain->searchDialog()->finalUpdate();
+        return; // thats it
+    }
+
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
@@ -102,8 +109,49 @@ void Search::reset()
     mOutsideOfList = false;
     mJumpQueued = false;
     mLastMatchInOpt = -1;
+    mSelection.clearSelection();
 
     mThread.isInterruptionRequested();
+}
+
+void Search::findInSelection() {
+
+    qDebug() << QTime::currentTime() << "finding in selection"; // rogo: delete
+
+    QTextCursor item;
+    QTextCursor lastItem;
+    int startPos;
+    int endPos;
+
+    if (!mSelection.hasSelection()) { // dont override selection when jumping to results
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
+            mSelection = ce->textCursor();
+        } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+            // todo;
+        }
+    }
+
+    startPos = mSelection.selectionStart();
+    endPos = mSelection.selectionEnd();
+
+    qDebug() << "search from" << startPos << "to" << endPos; // rogo: delete
+
+    // ignore search direction for cache generation. otherwise results would be in wrong order
+    QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
+    cacheOptions.setFlag(QTextDocument::FindBackward, false);
+    FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+
+    do {
+        item = fm->document()->find(mRegex, qMax(startPos, item.position()), cacheOptions);
+        if (item != lastItem) lastItem = item;
+        else break; // mitigate endless loop
+
+        if (!item.isNull() && item.position() < endPos) {
+            mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
+                                  item.selectedText().length(), fm->location(), item.block().text().trimmed()));
+        } else break;
+        if (mResults.size() > MAX_SEARCH_RESULTS) break;
+    } while (!item.isNull());
 }
 
 void Search::findInDoc(FileMeta* fm)
@@ -259,7 +307,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     int matchNr = -1;
 
     // navigation on cache
-    if (mCacheAvailable && !mOutsideOfList) {
+    if ((mCacheAvailable && !mOutsideOfList)) {
 
         matchNr = findNextEntryInCache(direction);
 
