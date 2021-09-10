@@ -55,14 +55,14 @@ void Search::start()
 
     mResults.clear();
     mResultHash.clear();
+    mSearchSelection.clearSelection();
 
     mSearching = true;
 
     if (mMain->searchDialog()->selectedScope()) {
         findInSelection();
-        mMain->searchDialog()->finalUpdate();
-        return; // thats it
-    }
+        return;
+    } // else:
 
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
@@ -109,32 +109,28 @@ void Search::reset()
     mOutsideOfList = false;
     mJumpQueued = false;
     mLastMatchInOpt = -1;
-    mSelection.clearSelection();
+    mSearchSelection.clearSelection();
 
     mThread.isInterruptionRequested();
 }
 
-void Search::findInSelection() {
-
-    qDebug() << QTime::currentTime() << "finding in selection"; // rogo: delete
-
+void Search::findInSelection()
+{
     QTextCursor item;
     QTextCursor lastItem;
     int startPos;
     int endPos;
 
-    if (!mSelection.hasSelection()) { // dont override selection when jumping to results
+    if (!mSearchSelection.hasSelection()) { // dont override selection when jumping to results
         if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
-            mSelection = ce->textCursor();
+            mSearchSelection = ce->textCursor();
         } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
             // todo;
         }
     }
 
-    startPos = mSelection.selectionStart();
-    endPos = mSelection.selectionEnd();
-
-    qDebug() << "search from" << startPos << "to" << endPos; // rogo: delete
+    startPos = mSearchSelection.selectionStart();
+    endPos = mSearchSelection.selectionEnd();
 
     // ignore search direction for cache generation. otherwise results would be in wrong order
     QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
@@ -152,6 +148,10 @@ void Search::findInSelection() {
         } else break;
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
+
+    // nothing more to do, update UI and return
+    finished();
+    mMain->searchDialog()->finalUpdate();
 }
 
 void Search::findInDoc(FileMeta* fm)
@@ -305,14 +305,13 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 {
     int matchNr = -1;
 
-    if (mCacheAvailable && !mOutsideOfList) {
+    if (mCacheAvailable && !mOutsideOfList)
         matchNr = NavigateInsideCache(direction);
-    }
 
     // condition needs to be checked again as it could have changed in NavigateInsideCache call
-    if (mOutsideOfList || !mCacheAvailable) {
+    // also, dont jump outside of cache when searchscope is set to selection
+    if ((mOutsideOfList || !mCacheAvailable) && mMain->searchDialog()->selectedScope() != Scope::Selection)
         matchNr = NavigateOutsideCache(direction, firstLevel);
-    }
 
     // update ui
     mMain->searchDialog()->updateNrMatches(matchNr+1);

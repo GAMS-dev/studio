@@ -98,7 +98,7 @@ private:
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
-    QTextCursor mSelection;
+    QTextCursor mSearchSelection;
 
     QThread mThread;
     bool mSearching = false;
