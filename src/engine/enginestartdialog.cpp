@@ -473,15 +473,20 @@ void EngineStartDialog::updateConnectStateAppearance()
     case scsNone: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("No GAMS Engine server");
-        ui->laWarn->setToolTip("");
+        if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
+            ui->laWarn->setText("SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("No GAMS Engine server");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanLogin(false);
     } break;
     case scsWaiting: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        if (!QSslSocket::supportsSsl()) {
+        if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
             ui->laWarn->setText("SSL not supported on this machine.");
             ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
         } else {
@@ -496,22 +501,12 @@ void EngineStartDialog::updateConnectStateAppearance()
         ui->laWarn->setToolTip("");
     } break;
     case scsHttpsFound: {
-        if (!QSslSocket::supportsSsl()) {
-            ui->laWarn->setText("HTTPS found but SSL not supported on this machine.");
-            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
-        } else {
-            ui->laWarn->setText("HTTPS found.");
-            ui->laWarn->setToolTip("");
-        }
+        ui->laWarn->setText("HTTPS found.");
+        ui->laWarn->setToolTip("");
     } break;
     case scsHttpsSelfSignedFound: {
-        if (!QSslSocket::supportsSsl()) {
-            ui->laWarn->setText("Self-signed HTTPS found but SSL not supported on this machine.");
-            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
-        } else {
-            ui->laWarn->setText("Self-signed HTTPS found.");
-            ui->laWarn->setToolTip("");
-        }
+        ui->laWarn->setText("Self-signed HTTPS found.");
+        ui->laWarn->setToolTip("");
     } break;
     case scsValid: {
         ui->laEngineVersion->setText("Engine "+mEngineVersion);
@@ -564,8 +559,13 @@ void EngineStartDialog::updateConnectStateAppearance()
         } else {
             ui->laEngGamsVersion->setText("");
             ui->laEngineVersion->setText(CUnavailable);
-            ui->laWarn->setText("No GAMS Engine server");
-            ui->laWarn->setToolTip("");
+            if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
+                ui->laWarn->setText("SSL not supported on this machine.");
+                ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+            } else {
+                ui->laWarn->setText("No GAMS Engine server");
+                ui->laWarn->setToolTip("");
+            }
         }
         mForcePreviousWork = false;
         setCanLogin(false);
