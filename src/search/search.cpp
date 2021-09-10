@@ -303,67 +303,15 @@ void Search::jumpToResult(int matchNr)
 ///
 void Search::selectNextMatch(Direction direction, bool firstLevel)
 {
-    bool backwards = direction == Direction::Backward;
     int matchNr = -1;
 
-    // navigation on cache
-    if ((mCacheAvailable && !mOutsideOfList)) {
-
-        matchNr = findNextEntryInCache(direction);
-
-         // nothing found
-        if (matchNr == -1) {
-            // check if we should leave cache navigation
-            mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS; // now leaving cache
-            // if not, jump to start/end
-            if (!mOutsideOfList && mResults.size() > 0) {
-                matchNr = backwards ? mResults.size()-1 : 0;
-                mLastMatchInOpt = matchNr;
-            }
-        }
-
-        // navigate to match
-        jumpToResult(matchNr);
+    if (mCacheAvailable && !mOutsideOfList) {
+        matchNr = NavigateInsideCache(direction);
     }
 
-    // navigation outside of cache
+    // condition needs to be checked again as it could have changed in NavigateInsideCache call
     if (mOutsideOfList || !mCacheAvailable) {
-        bool found = false;
-
-        if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-
-            QTextCursor tc = e->textCursor();
-            if (!firstLevel) {
-                if (backwards) tc.movePosition(QTextCursor::End);
-                else tc.movePosition(QTextCursor::Start);
-            }
-
-            QTextCursor ntc = e->document()->find(mRegex, backwards
-                                                 ? tc.position()-tc.selectedText().length()
-                                                 : tc.position(), mOptions);
-            found = !ntc.isNull();
-            if (found) {
-                e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
-                e->setTextCursor(ntc);
-            }
-
-        } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
-            mSplitSearchContinue = !firstLevel;
-            found = t->findText(mRegex, mOptions, mSplitSearchContinue);
-        }
-
-        // try again
-        if (!found) {
-            matchNr = findNextEntryInCache(direction);
-            found = matchNr != -1;
-            jumpToResult(matchNr);
-        }
-
-        if (!found && firstLevel) selectNextMatch(direction, false);
-
-        // check if cache was re-entered
-        matchNr = mMain->searchDialog()->updateLabelByCursorPos();
-        mOutsideOfList = matchNr == -1;
+        matchNr = NavigateOutsideCache(direction, firstLevel);
     }
 
     // update ui
@@ -372,13 +320,77 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         mMain->resultsView()->selectItem(matchNr);
 }
 
+
+int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
+{
+    int matchNr = -1;
+    bool found = false;
+
+    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+
+        QTextCursor tc = e->textCursor();
+        if (!firstLevel) {
+            if (direction == Direction::Backward) tc.movePosition(QTextCursor::End);
+            else tc.movePosition(QTextCursor::Start);
+        }
+
+        QTextCursor ntc = e->document()->find(mRegex, direction == Direction::Backward
+                                             ? tc.position()-tc.selectedText().length()
+                                             : tc.position(), mOptions);
+        found = !ntc.isNull();
+        if (found) {
+            e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
+            e->setTextCursor(ntc);
+        }
+
+    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+        mSplitSearchContinue = !firstLevel;
+        found = t->findText(mRegex, mOptions, mSplitSearchContinue);
+    }
+
+    // try again
+    if (!found) {
+        matchNr = findNextEntryInCache(direction);
+        found = matchNr != -1;
+        jumpToResult(matchNr);
+    }
+
+    if (!found && firstLevel) selectNextMatch(direction, false);
+
+    // check if cache was re-entered
+    matchNr = mMain->searchDialog()->updateLabelByCursorPos();
+    mOutsideOfList = matchNr == -1;
+
+    return matchNr;
+}
+
+int Search::NavigateInsideCache(Direction direction)
+{
+    int matchNr = findNextEntryInCache(direction);
+
+     // nothing found
+    if (matchNr == -1) {
+        // check if we should leave cache navigation
+        mOutsideOfList = mResults.size() >= MAX_SEARCH_RESULTS; // now leaving cache
+        // if not, jump to start/end
+        if (!mOutsideOfList && mResults.size() > 0) {
+            matchNr = (direction == Direction::Backward) ? mResults.size()-1 : 0;
+            mLastMatchInOpt = matchNr;
+        }
+    }
+
+    // navigate to match
+    jumpToResult(matchNr);
+
+    return matchNr;
+}
+
 ///
 /// \brief SearchDialog::replaceUnopened replaces in files where there is currently no editor open
 /// \param fm file
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-// TODO(RG): check the performance of this for large files
 int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
