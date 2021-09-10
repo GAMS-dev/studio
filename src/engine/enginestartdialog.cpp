@@ -24,6 +24,7 @@
 #include <QEvent>
 #include <QUrl>
 #include <QSslError>
+#include <QSslSocket>
 
 namespace gams {
 namespace studio {
@@ -480,8 +481,13 @@ void EngineStartDialog::updateConnectStateAppearance()
     case scsWaiting: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("Waiting for server ...");
-        ui->laWarn->setToolTip("");
+        if (!QSslSocket::supportsSsl()) {
+            ui->laWarn->setText("SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("Waiting for server ...");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanLogin(false);
     } break;
@@ -490,12 +496,22 @@ void EngineStartDialog::updateConnectStateAppearance()
         ui->laWarn->setToolTip("");
     } break;
     case scsHttpsFound: {
-        ui->laWarn->setText("HTTPS found.");
-        ui->laWarn->setToolTip("");
+        if (!QSslSocket::supportsSsl()) {
+            ui->laWarn->setText("HTTPS found but SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("HTTPS found.");
+            ui->laWarn->setToolTip("");
+        }
     } break;
     case scsHttpsSelfSignedFound: {
-        ui->laWarn->setText("Self-signed HTTPS found.");
-        ui->laWarn->setToolTip("");
+        if (!QSslSocket::supportsSsl()) {
+            ui->laWarn->setText("Self-signed HTTPS found but SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("Self-signed HTTPS found.");
+            ui->laWarn->setToolTip("");
+        }
     } break;
     case scsValid: {
         ui->laEngineVersion->setText("Engine "+mEngineVersion);
@@ -583,6 +599,10 @@ void EngineStartDialog::initUrlAndChecks(QString url)
     mUrl = cleanUrl(mUrl);
     mRawUrl = mUrl;
     ui->cbAcceptCert->setVisible(mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp);
+    if (!QSslSocket::supportsSsl()) {
+        mUrlChecks.setFlag(ucApiHttps, false);
+        mUrlChecks.setFlag(ucHttps, false);
+    }
 }
 
 bool EngineStartDialog::fetchNextUrl()
