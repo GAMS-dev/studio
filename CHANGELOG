@@ -4,6 +4,7 @@ Version 1.7.4 *
 - fixed highlighting of wrong results in Search Result View
 - removed selection in Result View when search data is outdated
 - fixed broken syntax highlighting of execute_*
+- allow to use GAMS Engine on a HTTP server when the local SSL isn't present
 
 Version 1.7.3
 ==================
