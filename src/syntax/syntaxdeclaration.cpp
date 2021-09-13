@@ -255,16 +255,16 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
     if (entryKind == kind() && start > index) {
         return SyntaxBlock(this, flavor, index, start, false, SyntaxShift::shift);
     }
-    if (kind() == SyntaxKind::Execute && entryKind == kind() && flavor % 2 == 0) {
+    if (kind() == SyntaxKind::Execute && entryKind == kind() && (flavor & flavorExecDot) == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
             while (isWhitechar(line, end))
                 ++end;
-            return SyntaxBlock(this, flavor+1, index, end, false, SyntaxShift::shift);
+            return SyntaxBlock(this, flavor+flavorExecDot, index, end, false, SyntaxShift::shift);
         }
         return SyntaxBlock(this);
     }
-    if (kind() != SyntaxKind::ExecuteKey && flavor % 2) {
+    if (kind() != SyntaxKind::ExecuteKey && flavor & flavorExecDot) {
         return SyntaxBlock(this);
     }
 
@@ -287,8 +287,8 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
                 return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
         }   break;
         case SyntaxKind::ExecuteKey: {
-            if (entryKind == SyntaxKind::Execute && flavor % 2)
-                return SyntaxBlock(this, flavor - 1, index, end, SyntaxShift::shift);
+            if (entryKind == SyntaxKind::Execute && flavor & flavorExecDot)
+                return SyntaxBlock(this, flavor - flavorExecDot, index, end, SyntaxShift::shift);
         }   break;
         default:
             break;
