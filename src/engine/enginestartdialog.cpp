@@ -473,7 +473,7 @@ void EngineStartDialog::updateConnectStateAppearance()
     case scsNone: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
+        if (mNoSSL) {
             ui->laWarn->setText("SSL not supported on this machine.");
             ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
         } else {
@@ -486,7 +486,7 @@ void EngineStartDialog::updateConnectStateAppearance()
     case scsWaiting: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
+        if (mNoSSL) {
             ui->laWarn->setText("SSL not supported on this machine.");
             ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
         } else {
@@ -559,7 +559,7 @@ void EngineStartDialog::updateConnectStateAppearance()
         } else {
             ui->laEngGamsVersion->setText("");
             ui->laEngineVersion->setText(CUnavailable);
-            if (!QSslSocket::supportsSsl() && mInitialProtocol == ucHttps) {
+            if (mNoSSL) {
                 ui->laWarn->setText("SSL not supported on this machine.");
                 ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
             } else {
@@ -582,6 +582,7 @@ void EngineStartDialog::initUrlAndChecks(QString url)
     mUrl = url.trimmed();
     mUrlChecks = ucAll;
     mInitialProtocol = protocol(mUrl);
+    mNoSSL = !QSslSocket::supportsSsl() && mInitialProtocol == ucHttps;
     if (!mUrl.endsWith('/'))
             mUrl += '/';
     if (mUrl.endsWith("/api/", Qt::CaseInsensitive)) {
