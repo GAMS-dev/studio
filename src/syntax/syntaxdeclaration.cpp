@@ -283,12 +283,13 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, int flavor, const Q
         case SyntaxKind::Execute: {
             while (isWhitechar(line, end))
                 ++end;
-            return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
-        }
+            if (end == line.length() || line.at(end) != '_')
+                return SyntaxBlock(this, flavor, start, end, SyntaxShift::shift);
+        }   break;
         case SyntaxKind::ExecuteKey: {
             if (entryKind == SyntaxKind::Execute && flavor % 2)
                 return SyntaxBlock(this, flavor - 1, index, end, SyntaxShift::shift);
-        } break;
+        }   break;
         default:
             break;
         }

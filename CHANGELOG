@@ -3,6 +3,7 @@ Version 1.7.4 *
 - fixed crash when editing long lines ending in an error mark
 - fixed highlighting of wrong results in Search Result View
 - removed selection in Result View when search data is outdated
+- fixed broken syntax highlighting of execute_*
 
 Version 1.7.3
 ==================
