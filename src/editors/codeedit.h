@@ -189,7 +189,7 @@ private:
     void checkCompleterAutoOpen();
     bool prepareCompleter();
     void showCompleter();
-
+    QStringList tabsToSpaces(const QStringList &source, int indent, int tabSize);
 
     static int findAlphaNum(const QString &text, int start, bool back);
     void rawKeyPressEvent(QKeyEvent *e);
