@@ -206,6 +206,16 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections) {
+    if (mSearchSelection == nullptr || !mSearchSelection->hasSelection()) return;
+
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
+    selection.format.setProperty(QTextFormat::FullWidthSelection, false);
+    selection.cursor = *mSearchSelection;
+    selections.append(selection);
+}
+
 void AbstractEdit::updateCursorShape(bool greedy)
 {
     QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
@@ -303,6 +313,11 @@ QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
         if (cursorRect(cur).right() < pos.x()) cur = QTextCursor();
     }
     return cur;
+}
+
+void AbstractEdit::setSearchSelection(QTextCursor *newSearchSelection)
+{
+    mSearchSelection = newSearchSelection;
 }
 
 void AbstractEdit::internalExtraSelUpdate()

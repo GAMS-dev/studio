@@ -62,6 +62,13 @@ public:
     void updateGroupId();
     virtual void disconnectTimers();
 
+    void setSearchSelection(QTextCursor *newSearchSelection);
+    inline FileId fileId() {
+        bool ok;
+        FileId file = property("fileId").toInt(&ok);
+        return ok ? file : FileId();
+    }
+
 signals:
     void requestLstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(FileId fileId, int lineNr, int posInLine);
@@ -92,11 +99,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     const QList<TextMark *> marksAtMouse() const;
-    inline FileId fileId() {
-        bool ok;
-        FileId file = property("fileId").toInt(&ok);
-        return ok ? file : FileId();
-    }
+
     inline NodeId groupId() const {
         bool ok;
         NodeId group = property("groupId").toInt(&ok);
@@ -110,6 +113,7 @@ protected:
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
     virtual void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) { Q_UNUSED(selections) }
+    virtual void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections);
     virtual void updateCursorShape(bool greedy);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
@@ -127,6 +131,7 @@ private:
     QPoint mTipPos;
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
+    QTextCursor *mSearchSelection = nullptr;
 
 private slots:
     void internalExtraSelUpdate();

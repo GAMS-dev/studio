@@ -45,7 +45,8 @@ public:
         Searching = 0,
         NoResults = 1,
         Clear = 2,
-        Replacing = 4
+        Replacing = 4,
+        NoSelection = 8
     };
 
     enum Direction {
@@ -99,6 +100,7 @@ private:
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
     QTextCursor mSearchSelection;
+    FileId mSearchSelectionFile;;
 
     QThread mThread;
     bool mSearching = false;

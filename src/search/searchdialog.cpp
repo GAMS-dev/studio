@@ -483,6 +483,11 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         ui->lbl_nrResults->setText("Replacing...");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
+    case Search::NoSelection:
+        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
+        ui->lbl_nrResults->setText("Selection missing.");
+        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        break;
     }
 }
 

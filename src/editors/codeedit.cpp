@@ -1823,6 +1823,7 @@ void CodeEdit::checkAndStartCompleterTimer()
 void CodeEdit::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
+    extraSelSearchSelection(selections);
     extraSelLineMarks(selections);
     extraSelCurrentLine(selections);
     extraSelMarks(selections);
@@ -1856,6 +1857,7 @@ void CodeEdit::updateExtraSelections()
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
     extraSelIncludeLink(selections);
+
     setExtraSelections(selections);
 }
 

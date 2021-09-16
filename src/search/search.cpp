@@ -34,9 +34,7 @@ namespace studio {
 namespace search {
 
 Search::Search(MainWindow *main) : mMain(main)
-{
-
-}
+{ }
 
 void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
@@ -59,7 +57,7 @@ void Search::start()
 
     mSearching = true;
 
-    if (mMain->searchDialog()->selectedScope()) {
+    if (mMain->searchDialog()->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
     } // else:
@@ -121,33 +119,42 @@ void Search::findInSelection()
     int startPos;
     int endPos;
 
-    if (!mSearchSelection.hasSelection()) { // dont override selection when jumping to results
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
-            mSearchSelection = ce->textCursor();
+    AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+
+    if (!mSearchSelection.hasSelection() && ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
+        qDebug() << QTime::currentTime() << "A"; // rogo: delete
+        if (ae) {
+            mSearchSelection = ae->textCursor();
+            mSearchSelectionFile = ae->fileId();
+            ae->setSearchSelection(&mSearchSelection);
+
         } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
             // todo;
         }
     }
+    if (!mSearchSelection.hasSelection() || ae->fileId() != mSearchSelectionFile) {
+        mMain->searchDialog()->setSearchStatus(Status::NoSelection);
+    } else {
+        startPos = mSearchSelection.selectionStart();
+        endPos = mSearchSelection.selectionEnd();
 
-    startPos = mSearchSelection.selectionStart();
-    endPos = mSearchSelection.selectionEnd();
+        // ignore search direction for cache generation. otherwise results would be in wrong order
+        QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
+        cacheOptions.setFlag(QTextDocument::FindBackward, false);
+        FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
 
-    // ignore search direction for cache generation. otherwise results would be in wrong order
-    QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
-    cacheOptions.setFlag(QTextDocument::FindBackward, false);
-    FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+        do {
+            item = fm->document()->find(mRegex, qMax(startPos, item.position()), cacheOptions);
+            if (item != lastItem) lastItem = item;
+            else break; // mitigate endless loop
 
-    do {
-        item = fm->document()->find(mRegex, qMax(startPos, item.position()), cacheOptions);
-        if (item != lastItem) lastItem = item;
-        else break; // mitigate endless loop
-
-        if (!item.isNull() && item.position() < endPos) {
-            mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                  item.selectedText().length(), fm->location(), item.block().text().trimmed()));
-        } else break;
-        if (mResults.size() > MAX_SEARCH_RESULTS) break;
-    } while (!item.isNull());
+            if (!item.isNull() && item.position() < endPos) {
+                mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
+                                       item.selectedText().length(), fm->location(), item.block().text().trimmed()));
+            } else break;
+            if (mResults.size() > MAX_SEARCH_RESULTS) break;
+        } while (!item.isNull());
+    }
 
     // nothing more to do, update UI and return
     finished();
@@ -183,6 +190,7 @@ void Search::findNext(Direction direction)
     bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
 
     if (requestNewCache) {
+        qDebug() << QTime::currentTime() << "requesting new cache"; // rogo: delete
         mCacheAvailable = false;
         mMain->searchDialog()->updateUi(true);
         start();
@@ -308,8 +316,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     if (mCacheAvailable && !mOutsideOfList)
         matchNr = NavigateInsideCache(direction);
 
-    // condition needs to be checked again as it could have changed in NavigateInsideCache call
-    // also, dont jump outside of cache when searchscope is set to selection
+    // dont jump outside of cache when searchscope is set to selection
     if ((mOutsideOfList || !mCacheAvailable) && mMain->searchDialog()->selectedScope() != Scope::Selection)
         matchNr = NavigateOutsideCache(direction, firstLevel);
 
@@ -322,6 +329,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
 int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 {
+    qDebug() << QTime::currentTime() << "NavigateOutsideCache"; // rogo: delete
     int matchNr = -1;
     bool found = false;
 
@@ -365,6 +373,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 
 int Search::NavigateInsideCache(Direction direction)
 {
+    qDebug() << QTime::currentTime() << "NavigateInsideCache"; // rogo: delete
     int matchNr = findNextEntryInCache(direction);
 
      // nothing found
