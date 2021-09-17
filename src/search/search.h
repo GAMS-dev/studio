@@ -45,8 +45,7 @@ public:
         Searching = 0,
         NoResults = 1,
         Clear = 2,
-        Replacing = 4,
-        NoSelection = 8
+        Replacing = 4
     };
 
     enum Direction {
@@ -69,6 +68,8 @@ public:
     QList<Result> results() const;
     bool isRunning() const;
     QRegularExpression regex() const;
+
+    const QTextCursor &searchSelection() const;
 
 signals:
     void updateLabelByCursorPos(int line, int col);

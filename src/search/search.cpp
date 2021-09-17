@@ -120,8 +120,7 @@ void Search::findInSelection()
 
     AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor());
 
-    if (!mSearchSelection.hasSelection() && ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
-        qDebug() << QTime::currentTime() << "A"; // rogo: delete
+    if (!mSearchSelection.hasSelection() || ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
         if (ae) {
             mSearchSelection = ae->textCursor();
             mSearchSelectionFile = ae->fileId();
@@ -131,9 +130,7 @@ void Search::findInSelection()
             // todo;
         }
     }
-    if (!mSearchSelection.hasSelection() || ae->fileId() != mSearchSelectionFile) {
-        mMain->searchDialog()->setSearchStatus(Status::NoSelection);
-    } else {
+    if (mSearchSelection.hasSelection() && ae->fileId() == mSearchSelectionFile) {
         startPos = mSearchSelection.selectionStart();
         endPos = mSearchSelection.selectionEnd();
 
@@ -415,8 +412,7 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     file.close();
     return hits;
 }
-
-///
+ ///
 /// \brief SearchDialog::replaceOpened uses QTextDocument for replacing strings. this allows the user
 /// to undo changes made by replacing.
 /// \param fm filemeta
@@ -436,7 +432,6 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     tc.beginEditBlock();
     do {
-
         item = fm->document()->find(regex, lastItem, flags);
         lastItem = item;
 
@@ -468,6 +463,11 @@ void Search::finished()
         selectNextMatch(mQueuedJumpForward ? Direction::Forward : Direction::Backward);
         mJumpQueued = false;
     }
+}
+
+const QTextCursor &Search::searchSelection() const
+{
+    return mSearchSelection;
 }
 
 QRegularExpression Search::regex() const

@@ -119,9 +119,9 @@ void SearchDialog::finalUpdate()
 
     updateEditHighlighting();
 
-    if (mSearch.results().size() == 0)
+    if (mSearch.results().size() == 0) {
         setSearchStatus(Search::NoResults);
-    else updateLabelByCursorPos();
+    } else { updateLabelByCursorPos(); }
 
     mShowResults = true; // reset default
 }
@@ -470,7 +470,11 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::NoResults:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setText("No results.");
+        if (selectedScope() == Search::Scope::Selection && mSearch.searchSelection().selectedText().length() == 0)
+            ui->lbl_nrResults->setText("Selection missing.");
+        else
+            ui->lbl_nrResults->setText("No results.");
+
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case Search::Clear:
@@ -481,11 +485,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
     case Search::Replacing:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("Replacing...");
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
-        break;
-    case Search::NoSelection:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setText("Selection missing.");
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     }
