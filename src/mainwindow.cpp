@@ -295,6 +295,7 @@ MainWindow::MainWindow(QWidget *parent)
     initCompleterActions();
 
     checkGamsLicense();
+    checkSslLibrary();
 }
 
 void MainWindow::watchProjectTree()
@@ -4970,6 +4971,17 @@ void MainWindow::checkGamsLicense()
         }
     }  catch (Exception *e) {
         appendSystemLogError(e->what());
+    }
+}
+
+void MainWindow::checkSslLibrary()
+{
+    if (!QSslSocket::supportsSsl()) {
+        QString sslVersion = QSslSocket::sslLibraryVersionString();
+        if (sslVersion.isEmpty())
+            appendSystemLogWarning("SSL library not found");
+        else
+            appendSystemLogWarning("Incompatible SSL library found: " + sslVersion);
     }
 }
 

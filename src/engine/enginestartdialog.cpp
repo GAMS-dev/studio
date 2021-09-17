@@ -24,6 +24,7 @@
 #include <QEvent>
 #include <QUrl>
 #include <QSslError>
+#include <QSslSocket>
 
 namespace gams {
 namespace studio {
@@ -472,16 +473,26 @@ void EngineStartDialog::updateConnectStateAppearance()
     case scsNone: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("No GAMS Engine server");
-        ui->laWarn->setToolTip("");
+        if (mNoSSL) {
+            ui->laWarn->setText("SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("No GAMS Engine server");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanLogin(false);
     } break;
     case scsWaiting: {
         ui->laEngGamsVersion->setText("");
         ui->laEngineVersion->setText(CUnavailable);
-        ui->laWarn->setText("Waiting for server ...");
-        ui->laWarn->setToolTip("");
+        if (mNoSSL) {
+            ui->laWarn->setText("SSL not supported on this machine.");
+            ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+        } else {
+            ui->laWarn->setText("Waiting for server ...");
+            ui->laWarn->setToolTip("");
+        }
         mForcePreviousWork = false;
         setCanLogin(false);
     } break;
@@ -548,8 +559,13 @@ void EngineStartDialog::updateConnectStateAppearance()
         } else {
             ui->laEngGamsVersion->setText("");
             ui->laEngineVersion->setText(CUnavailable);
-            ui->laWarn->setText("No GAMS Engine server");
-            ui->laWarn->setToolTip("");
+            if (mNoSSL) {
+                ui->laWarn->setText("SSL not supported on this machine.");
+                ui->laWarn->setToolTip("Maybe the GAMSDIR variable doesn't point to the GAMS installation path.");
+            } else {
+                ui->laWarn->setText("No GAMS Engine server");
+                ui->laWarn->setToolTip("");
+            }
         }
         mForcePreviousWork = false;
         setCanLogin(false);
@@ -566,6 +582,7 @@ void EngineStartDialog::initUrlAndChecks(QString url)
     mUrl = url.trimmed();
     mUrlChecks = ucAll;
     mInitialProtocol = protocol(mUrl);
+    mNoSSL = !QSslSocket::supportsSsl() && mInitialProtocol == ucHttps;
     if (!mUrl.endsWith('/'))
             mUrl += '/';
     if (mUrl.endsWith("/api/", Qt::CaseInsensitive)) {
@@ -583,6 +600,10 @@ void EngineStartDialog::initUrlAndChecks(QString url)
     mUrl = cleanUrl(mUrl);
     mRawUrl = mUrl;
     ui->cbAcceptCert->setVisible(mProc->isIgnoreSslErrors() && protocol(mRawUrl) != ucHttp);
+    if (!QSslSocket::supportsSsl()) {
+        mUrlChecks.setFlag(ucApiHttps, false);
+        mUrlChecks.setFlag(ucHttps, false);
+    }
 }
 
 bool EngineStartDialog::fetchNextUrl()

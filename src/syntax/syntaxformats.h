@@ -114,6 +114,8 @@ enum FlavorFlag {
     flavorModel = 8,
     flavorPreTable = 16,
     flavorBindLabel = 32,
+
+    flavorExecDot = 4,
 };
 
 enum class SyntaxShift {
