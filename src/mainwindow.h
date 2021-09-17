@@ -143,7 +143,7 @@ public:
     void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr,
-                 std::unique_ptr<AbstractProcess> process = nullptr, ProjectFileNode *gmsFileNode = nullptr);
+                 std::unique_ptr<AbstractProcess> process = nullptr, PExFileNode *gmsFileNode = nullptr);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -173,26 +173,26 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
-    void setMainGms(ProjectFileNode *node);
+    void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLogInfo(const QString &text) const;
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<ProjectGroupNode *> groups = QVector<ProjectGroupNode *>(), const QString& solverName="");
+    void newFileDialog(QVector<PExGroupNode *> groups = QVector<PExGroupNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event) override;
-    void closeGroup(ProjectGroupNode* group);
+    void closeGroup(PExGroupNode* group);
     void closeFileEditors(const FileId fileId);
 
 private slots:
     void openInitialFiles();
-    void openFile(FileMeta *fileMeta, bool focus = true, ProjectRunGroupNode *runGroup = nullptr, int codecMib = -1,
+    void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
-    void openFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+    void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFileNode(ProjectFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
+    void reOpenFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -205,10 +205,10 @@ private slots:
     void postGamsLibRun();
     void neosProgress(AbstractProcess *proc, ProcState progress);
     void remoteProgress(AbstractProcess *proc, ProcState progress);
-    void closeNodeConditionally(ProjectFileNode *node);
-    void addToGroup(ProjectGroupNode *group, const QString &filepath);
+    void closeNodeConditionally(PExFileNode *node);
+    void addToGroup(PExGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
-    void changeToLog(ProjectAbstractNode* node, bool openOutput, bool createMissing);
+    void changeToLog(PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
@@ -217,7 +217,7 @@ private slots:
 
     // View
     void invalidateTheme();
-    void gamsProcessStateChanged(ProjectGroupNode* group);
+    void gamsProcessStateChanged(PExGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
     void logTabContextMenuRequested(const QPoint& pos);
@@ -392,19 +392,19 @@ private:
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
-    ProjectFileNode* addNode(const QString &path, const QString &fileName, ProjectGroupNode *group = nullptr);
+    PExFileNode* addNode(const QString &path, const QString &fileName, PExGroupNode *group = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
-    bool terminateProcessesConditionally(QVector<ProjectRunGroupNode *> runGroups);
+    bool terminateProcessesConditionally(QVector<PExProjectNode *> projects);
     void updateAndSaveSettings();
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(ProjectFileNode* fileNode, ProjectRunGroupNode *runGroup, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
-                 ProjectFileNode *gmsFileNode = nullptr);
-    void execution(ProjectRunGroupNode *runGroup);
+    bool executePrepare(PExFileNode* fileNode, PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+                 PExFileNode *gmsFileNode = nullptr);
+    void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
@@ -412,8 +412,7 @@ private:
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveTabRunnable();
     bool isRecentGroupRunning();
-    void loadCommandLines(ProjectFileNode* oldfn, ProjectFileNode* fn);
-    void analyzeCommandLine(GamsProcess *process, const QString &commandLineStr, ProjectGroupNode *fgc);
+    void loadCommandLines(PExFileNode* oldfn, PExFileNode* fn);
     void dockWidgetShow(QDockWidget* dw, bool show);
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);
@@ -427,6 +426,7 @@ private:
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
     void checkGamsLicense();
+    void checkSslLibrary();
     void goToLine(int result);
     QString readGucValue(QString key);
     void initCompleterActions();

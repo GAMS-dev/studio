@@ -118,7 +118,7 @@ void CodeEdit::updateLineNumberAreaWidth()
 {
     setViewportMargins(lineNumberAreaWidth(), 0, 0, 0);
     if (viewportMargins().left() != mLnAreaWidth) {
-        mLineNumberArea->repaint();
+        mLineNumberArea->update();
         mLnAreaWidth = viewportMargins().left();
     }
 }
@@ -594,8 +594,8 @@ bool CodeEdit::toggleFolding(QTextBlock block)
     }
     checkCursorAfterFolding();
     document()->adjustSize();
-    viewport()->repaint();
-    mLineNumberArea->repaint();
+    viewport()->update();
+    mLineNumberArea->update();
     return true;
 }
 
@@ -630,8 +630,8 @@ void CodeEdit::foldAll(bool onlyDCO)
     checkCursorAfterFolding();
     mFoldMark = LinePair();
     document()->adjustSize();
-    viewport()->repaint();
-    mLineNumberArea->repaint();
+    viewport()->update();
+    mLineNumberArea->update();
 }
 
 void CodeEdit::unfoldAll()
@@ -645,8 +645,8 @@ void CodeEdit::unfoldAll()
     }
     mFoldMark = LinePair();
     document()->adjustSize();
-    viewport()->repaint();
-    mLineNumberArea->repaint();
+    viewport()->update();
+    mLineNumberArea->update();
 }
 
 LinePair CodeEdit::findFoldBlock(int line, bool onlyThisLine) const

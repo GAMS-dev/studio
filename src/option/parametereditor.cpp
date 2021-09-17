@@ -1046,7 +1046,7 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
     actionRunNeos->setEnabled(enable && mHasSSL);
-    actionRunEngine->setEnabled(enable && mHasSSL);
+    actionRunEngine->setEnabled(enable);
     ui->gamsRunToolButton->menu()->setEnabled(enable);
 }
 

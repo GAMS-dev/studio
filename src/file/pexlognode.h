@@ -17,10 +17,10 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PROJECTLOGNODE_H
-#define PROJECTLOGNODE_H
+#ifndef PEXLOGNODE_H
+#define PEXLOGNODE_H
 
-#include "projectfilenode.h"
+#include "pexfilenode.h"
 #include "dynamicfile.h"
 
 #include "editors/logparser.h"
@@ -30,19 +30,19 @@ namespace studio {
 
 class AbstractProcess;
 
-class ProjectLogNode final: public ProjectFileNode
+class PExLogNode final: public PExFileNode
 {
 public:
-    ~ProjectLogNode() override;
+    ~PExLogNode() override;
     void resetLst();
     void clearLog();
     void prepareRun();
     void logDone();
 
-    ProjectFileNode *lstNode() const;
+    PExFileNode *lstNode() const;
     const ProjectRootNode *root() const override;
-    NodeId runGroupId() const override;
-    ProjectRunGroupNode *assignedRunGroup() override;
+    NodeId projectId() const override;
+    PExProjectNode *assignedProject() override;
     void linkToProcess(AbstractProcess *process);
 
 public slots:
@@ -56,9 +56,9 @@ private slots:
 
 protected:
     friend class ProjectRepo;
-    friend class ProjectRunGroupNode;
+    friend class PExProjectNode;
 
-    ProjectLogNode(FileMeta *fileMeta, ProjectRunGroupNode *assignedRunGroup);
+    PExLogNode(FileMeta *fileMeta, PExProjectNode *project);
 
     struct LinkData {
         TextMark* textMark = nullptr;
@@ -76,8 +76,8 @@ private:
     Q_FLAG(LogFinish)
     Q_DECLARE_FLAGS(LogFinishes, LogFinish)
     Q_FLAG(LogFinishes)
-    ProjectRunGroupNode *mRunGroup = nullptr;
-    ProjectFileNode *mLstNode = nullptr;
+    PExProjectNode *mProject = nullptr;
+    PExFileNode *mLstNode = nullptr;
     struct ErrorData {
         int lstLine = 0;
         int errNr = 0;
@@ -103,4 +103,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // PROJECTLOGNODE_H
+#endif // PEXLOGNODE_H

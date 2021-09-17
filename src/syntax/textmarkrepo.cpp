@@ -193,7 +193,7 @@ void TextMarkRepo::clear()
 void TextMarkRepo::jumpTo(TextMark *mark, bool focus, bool ignoreColumn)
 {
     FileMeta* fm = mFileRepo->fileMeta(mark->fileId());
-    mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findRunGroup(mark->groupId()));
+    mProjectRepo->findOrCreateFileNode(fm, mProjectRepo->findProject(mark->groupId()));
 
     if (fm) {
         if (mark->blockEnd() < 0) ignoreColumn = true;

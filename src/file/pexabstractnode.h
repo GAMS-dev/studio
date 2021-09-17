@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef PROJECTABSTRACTNODE_H
-#define PROJECTABSTRACTNODE_H
+#ifndef PEXABSTRACTNODE_H
+#define PEXABSTRACTNODE_H
 
 #include <QObject>
 
@@ -32,20 +32,20 @@ namespace gams {
 namespace studio {
 
 class ProjectRootNode;
-class ProjectGroupNode;
-class ProjectRunGroupNode;
-class ProjectFileNode;
-class ProjectLogNode;
+class PExGroupNode;
+class PExProjectNode;
+class PExFileNode;
+class PExLogNode;
 class ProjectRepo;
 class FileMetaRepo;
 class TextMarkRepo;
 
-class ProjectAbstractNode : public QObject
+class PExAbstractNode : public QObject
 {
     Q_OBJECT
 
 public:
-    virtual ~ProjectAbstractNode();
+    virtual ~PExAbstractNode();
 
     NodeId id() const;
 
@@ -67,9 +67,9 @@ public:
     /// \return The icon for this file type.
     virtual QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) = 0;
 
-    virtual void setParentNode(ProjectGroupNode *parent);
-    ProjectGroupNode* parentNode() const;
-    virtual ProjectRunGroupNode *assignedRunGroup();
+    virtual void setParentNode(PExGroupNode *parent);
+    PExGroupNode* parentNode() const;
+    virtual PExProjectNode *assignedProject();
 
     /// \brief File node type.
     /// \return Returns the file node type as <c>int</c>.
@@ -77,13 +77,13 @@ public:
     virtual QString tooltip()=0;
 
     const ProjectRootNode *toRoot() const;
-    const ProjectGroupNode* toGroup() const;
-    ProjectGroupNode* toGroup();
-    const ProjectRunGroupNode *toRunGroup() const;
-    ProjectRunGroupNode *toRunGroup();
-    const ProjectFileNode* toFile() const;
-    ProjectFileNode* toFile();
-    const ProjectLogNode* toLog() const;
+    const PExGroupNode* toGroup() const;
+    PExGroupNode* toGroup();
+    const PExProjectNode *toProject() const;
+    PExProjectNode *toProject();
+    const PExFileNode* toFile() const;
+    PExFileNode* toFile();
+    const PExLogNode* toLog() const;
 
     bool debugMode() const;
 
@@ -91,12 +91,12 @@ signals:
     void changed(NodeId nodeId);
 
 protected:
-    ProjectAbstractNode(QString name, NodeType type);
+    PExAbstractNode(QString name, NodeType type);
 
 private:
     static NodeId mNextNodeId;
     NodeId mId;
-    ProjectGroupNode* mParent;
+    PExGroupNode* mParent;
     QString mName;
     NodeType mType;
     bool mDebugMode = false;
@@ -105,4 +105,4 @@ private:
 } // namespace studio
 } // namespace gams
 
-#endif // PROJECTABSTRACTNODE_H
+#endif // PEXABSTRACTNODE_H

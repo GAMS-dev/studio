@@ -412,7 +412,7 @@ void FileMeta::updateEditorColors()
         if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
-            ce->lineNumberArea()->repaint();
+            ce->lineNumberArea()->update();
         if (TextView *tv = ViewHelper::toTextView(w))
             tv->updateTheme();
     }
@@ -922,7 +922,7 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGroup, int codecMib, bool forcedAsTextEdit, NewTabStrategy tabStrategy)
+QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, int codecMib, bool forcedAsTextEdit, NewTabStrategy tabStrategy)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
@@ -934,15 +934,15 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
-        connect(parser, &LogParser::hasFile, runGroup, &ProjectRunGroupNode::hasFile);
-        connect(parser, &LogParser::setErrorText, runGroup, &ProjectRunGroupNode::setErrorText);
+        connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);
+        connect(parser, &LogParser::setErrorText, project, &PExProjectNode::setErrorText);
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
         tView->setDebugMode(mFileRepo->debugMode());
-        connect(tView, &TextView::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
-        connect(tView, &TextView::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
-        connect(tView, &TextView::createMarks, runGroup, &ProjectRunGroupNode::createMarks);
-        connect(tView, &TextView::switchLst, runGroup, &ProjectRunGroupNode::switchLst);
-        connect(tView, &TextView::registerGeneratedFile, runGroup, &ProjectRunGroupNode::registerGeneratedFile);
+        connect(tView, &TextView::hasHRef, project, &PExProjectNode::hasHRef);
+        connect(tView, &TextView::jumpToHRef, project, &PExProjectNode::jumpToHRef);
+        connect(tView, &TextView::createMarks, project, &PExProjectNode::createMarks);
+        connect(tView, &TextView::switchLst, project, &PExProjectNode::switchLst);
+        connect(tView, &TextView::registerGeneratedFile, project, &PExProjectNode::registerGeneratedFile);
 
         tView->setLogParser(parser);
         res = tView;
@@ -992,12 +992,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, ProjectRunGroupNode *runGro
             edit->setReadOnly(true);
             edit->setTextInteractionFlags(Qt::TextSelectableByMouse | Qt::TextSelectableByKeyboard);
         } else {
-            connect(codeEdit, &CodeEdit::hasHRef, runGroup, &ProjectRunGroupNode::hasHRef);
-            connect(codeEdit, &CodeEdit::jumpToHRef, runGroup, &ProjectRunGroupNode::jumpToHRef);
+            connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
+            connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);
         }
     }
     ViewHelper::setFileId(res, id());
-    ViewHelper::setGroupId(res, runGroup->id());
+    ViewHelper::setGroupId(res, project->id());
     ViewHelper::setLocation(res, location());
 
     int atIndex = tabWidget->count();
