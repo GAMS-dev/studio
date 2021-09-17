@@ -86,7 +86,6 @@ void Search::start()
     connect(&mThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
     connect(&mThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
     connect(sw, &SearchWorker::update, mMain->searchDialog(), &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::resultReady, mMain->searchDialog(), &SearchDialog::finalUpdate, Qt::UniqueConnection);
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
@@ -158,7 +157,6 @@ void Search::findInSelection()
 
     // nothing more to do, update UI and return
     finished();
-    mMain->searchDialog()->finalUpdate();
 }
 
 void Search::findInDoc(FileMeta* fm)
@@ -459,6 +457,7 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
 void Search::finished()
 {
+    mMain->searchDialog()->finalUpdate();
     mSearching = false;
 
     for (const Result &r : qAsConst(mResults))
