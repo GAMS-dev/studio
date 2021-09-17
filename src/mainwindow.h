@@ -426,6 +426,7 @@ private:
     void restoreCursorPosition(CursorHistoryItem item);
     bool enabledPrintAction();
     void checkGamsLicense();
+    void checkSslLibrary();
     void goToLine(int result);
     QString readGucValue(QString key);
     void initCompleterActions();
