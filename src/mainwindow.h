@@ -261,7 +261,6 @@ private slots:
 
     // MIRO
     void on_actionBase_mode_triggered();
-    void on_actionHypercube_mode_triggered();
     void on_actionConfiguration_mode_triggered();
     void on_actionStop_MIRO_triggered();
     void on_actionDeploy_triggered();

@@ -44,24 +44,6 @@ MiroDeployDialog::MiroDeployDialog(QWidget *parent)
     delete oldModel;
 
     updateTestDeployButtons();
-    connect(ui->baseBox, &QCheckBox::stateChanged,
-            this, &MiroDeployDialog::updateTestDeployButtons);
-    connect(ui->hypercubeBox, &QCheckBox::stateChanged,
-            this, &MiroDeployDialog::updateTestDeployButtons);
-    connect(ui->baseBox, &QCheckBox::stateChanged,
-            this, &MiroDeployDialog::checkMiroPaths);
-    connect(ui->hypercubeBox, &QCheckBox::stateChanged,
-            this, &MiroDeployDialog::checkMiroPaths);
-}
-
-bool MiroDeployDialog::baseMode() const
-{
-    return ui->baseBox->isChecked();
-}
-
-bool MiroDeployDialog::hypercubeMode() const
-{
-    return ui->hypercubeBox->isChecked();
 }
 
 MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
@@ -76,8 +58,6 @@ MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
 void MiroDeployDialog::setDefaults()
 {
     mFileSystemModel->clearSelection();
-    ui->baseBox->setCheckState(Qt::Unchecked);
-    ui->hypercubeBox->setCheckState(Qt::Unchecked);
     ui->targetEnvBox->setCurrentIndex(0);
 }
 
@@ -124,6 +104,12 @@ void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
     setupViewModel();
 }
 
+void MiroDeployDialog::showEvent(QShowEvent *event)
+{
+    updateTestDeployButtons();
+    QDialog::showEvent(event);
+}
+
 void MiroDeployDialog::on_createButton_clicked()
 {
     if (selectedFiles().isEmpty())
@@ -131,6 +117,7 @@ void MiroDeployDialog::on_createButton_clicked()
                               "Please select the files for your MIRO deployment.");
     else
         emit newAssemblyFileData();
+    updateTestDeployButtons();
 }
 
 void MiroDeployDialog::on_selectAllButton_clicked()
@@ -150,11 +137,6 @@ void MiroDeployDialog::on_testBaseButton_clicked()
     emit deploy(true, MiroDeployMode::Base);
 }
 
-void MiroDeployDialog::on_testHcubeButton_clicked()
-{
-    emit deploy(true, MiroDeployMode::Hypercube);
-}
-
 void MiroDeployDialog::on_deployButton_clicked()
 {
     accept();
@@ -162,16 +144,8 @@ void MiroDeployDialog::on_deployButton_clicked()
 
 void MiroDeployDialog::updateTestDeployButtons()
 {
-    ui->testBaseButton->setEnabled(ui->baseBox->isChecked() &&
-                                   mValidAssemblyFile &&
-                                   checkMiroPaths());
-    ui->testHcubeButton->setEnabled(ui->hypercubeBox->isChecked() &&
-                                    mValidAssemblyFile &&
-                                    checkMiroPaths());
-    ui->deployButton->setEnabled((ui->baseBox->isChecked() ||
-                                 ui->hypercubeBox->isChecked()) &&
-                                 mValidAssemblyFile &&
-                                 checkMiroPaths());
+    ui->testBaseButton->setEnabled(mValidAssemblyFile && checkMiroPaths());
+    ui->deployButton->setEnabled(mValidAssemblyFile && checkMiroPaths());
 }
 
 bool MiroDeployDialog::checkMiroPaths()

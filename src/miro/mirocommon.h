@@ -29,8 +29,7 @@ namespace miro {
 enum class MiroDeployMode
 {
     None      = 0,
-    Base      = 1,
-    Hypercube = 2
+    Base      = 1
 };
 
 class MiroCommon

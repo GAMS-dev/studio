@@ -299,7 +299,6 @@
      <bool>true</bool>
     </property>
     <addaction name="actionBase_mode"/>
-    <addaction name="actionHypercube_mode"/>
     <addaction name="actionConfiguration_mode"/>
     <addaction name="separator"/>
     <addaction name="actionSkip_model_execution"/>
@@ -1247,7 +1246,7 @@
     <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
-    <string>Shift+Ctrl+3</string>
+    <string>Ctrl+Shift+3</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>

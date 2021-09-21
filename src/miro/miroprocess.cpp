@@ -70,12 +70,6 @@ QProcessEnvironment MiroProcess::miroProcessEnvironment()
         environment.insert("MIRO_USE_TMP", "false");
         environment.insert("MIRO_MODE", "base");
         break;
-    case MiroMode::Hypercube:
-        environment.insert("MIRO_DEV_MODE", "true");
-        environment.insert("MIRO_MODEL_PATH", modelPath());
-        environment.insert("MIRO_USE_TMP", "true");
-        environment.insert("MIRO_MODE", "hcube");
-        break;
     case MiroMode::Configuration:
         environment.insert("MIRO_DEV_MODE", "true");
         environment.insert("MIRO_MODEL_PATH", modelPath());

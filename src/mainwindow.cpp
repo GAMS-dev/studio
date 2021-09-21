@@ -2489,21 +2489,6 @@ void MainWindow::on_actionBase_mode_triggered()
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
 }
 
-void MainWindow::on_actionHypercube_mode_triggered()
-{
-    if (!validMiroPrerequisites())
-        return;
-
-    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
-    miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.group()->toProject()->location());
-    miroProcess->setModelName(mRecent.group()->toProject()->mainModelName());
-    miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
-    miroProcess->setMiroMode(miro::MiroMode::Hypercube);
-
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
-}
-
 void MainWindow::on_actionConfiguration_mode_triggered()
 {
     if (!validMiroPrerequisites())
@@ -2581,18 +2566,13 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     if (testDeploy) {
         switch(mode){
         case miro::MiroDeployMode::Base:
-            process->setBaseMode(mMiroDeployDialog->baseMode());
-            break;
-        case miro::MiroDeployMode::Hypercube:
-            process->setTargetEnvironment(miro::MiroTargetEnvironment::MultiUser);
-            process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+            process->setBaseMode(true);
             break;
         default:
             break;
         }
     } else {
-        process->setBaseMode(mMiroDeployDialog->baseMode());
-        process->setHypercubeMode(mMiroDeployDialog->hypercubeMode());
+        process->setBaseMode(true);
     }
 
     execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
