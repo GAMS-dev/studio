@@ -1,6 +1,7 @@
 Version 1.7.5  *
 ==================
 - replace tab characters by the propper amount of spaces on pasting text
+- fix issue when zooming a text containing tab characters
 
 Version 1.7.4
 ==================
