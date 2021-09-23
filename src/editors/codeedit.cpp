@@ -1366,7 +1366,7 @@ QStringList CodeEdit::tabsToSpaces(const QStringList &source, int indent, int ta
         for (int c = 0; c < text.length(); ++c) {
             if (text.at(c) == '\n' || text.at(c) == '\r') lf = c;
             else if (text.at(c) == '\t') {
-                count = c - lf + 7 + (lf < 0 ? indent : 0);
+                count = c - lf + (tabSize - 1) + (lf < 0 ? indent : 0);
                 QString spaces(tabSize - (count % tabSize), ' ');
                 text.replace(c, 1, spaces);
                 c += spaces.size() - 1;
