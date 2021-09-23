@@ -296,7 +296,7 @@ void CodeEdit::pasteClipboard()
     bool isBlock;
     QStringList texts = clipboard(&isBlock);
     QTextCursor c = textCursor();
-    texts = tabsToSpaces(texts, c.positionInBlock(), 8);
+    texts = tabsToSpaces(texts, c.positionInBlock(), Settings::settings()->toInt(skEdTabSize));
     if (!mBlockEdit) {
         if (isBlock && mAllowBlockEdit) {
             if (c.hasSelection()) c.removeSelectedText();
