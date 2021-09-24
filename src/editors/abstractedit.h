@@ -73,9 +73,9 @@ public:
     }
 
 signals:
-    void requestLstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
-    void toggleBookmark(FileId fileId, int lineNr, int posInLine);
-    void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
+    void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
 
 public slots:

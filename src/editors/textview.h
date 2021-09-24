@@ -86,7 +86,7 @@ signals:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
-    void switchLst(const QString &lstName) const;
+    void switchLst(const QString &lstName);
     void registerGeneratedFile(const QString &fileName);
 
 public slots:
