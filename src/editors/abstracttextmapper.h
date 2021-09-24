@@ -179,9 +179,9 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
+    void setSearchSelection(QPoint cursor, QPoint anchor);
 
     void dumpPos() const;
-
 
 public slots:
     virtual void reset();
@@ -244,6 +244,9 @@ private:
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
+
+    QPoint mSearchSelectionStart;
+    QPoint mSearchSelectionEnd;
 };
 
 } // namespace studio

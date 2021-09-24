@@ -322,7 +322,7 @@ bool AbstractEdit::hasSearchSelection()
     return mSearchSelection.hasSelection();
 }
 
-void AbstractEdit::clearSelection()
+void AbstractEdit::clearSearchSelection()
 {
     mSearchSelection.clearSelection();
 }

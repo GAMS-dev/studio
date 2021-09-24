@@ -261,6 +261,7 @@ void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
 
 bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
+    qDebug() << QTime::currentTime() << "findText() continue?" << continueFind; // rogo: delete
     bool found = mMapper->findText(searchRegex, flags, continueFind);
     if (found) {
         updateView();
@@ -268,6 +269,17 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
         mEdit->ensureCursorVisible();
     }
     return found;
+}
+
+void TextView::findInSelection(QRegularExpression searchRegex, QTextDocument::FindFlags flags, QList<search::Result> &mResults)
+{
+    bool wtf;
+    mMapper->setSearchSelection(cursor().pos(), anchor());
+    mMapper->findText(searchRegex, flags, wtf);
+}
+
+void TextView::clearSearchSelection() {
+    mMapper->setSearchSelection(QPoint(-1,-1), QPoint(-1,-1));
 }
 
 void TextView::outerScrollAction(int action)

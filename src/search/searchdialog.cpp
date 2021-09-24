@@ -428,12 +428,12 @@ void SearchDialog::clearSearch()
         QTextCursor tc = ae->textCursor();
         tc.clearSelection();
         ae->setTextCursor(tc);
-        ae->clearSelection();
+        ae->clearSearchSelection();
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         QTextCursor tc = tv->edit()->textCursor();
         tc.clearSelection();
         tv->edit()->setTextCursor(tc);
-        // tv->clearSelection(); // TODO(rogo): implement
+        tv->clearSearchSelection();
     }
 
     clearResultsView();

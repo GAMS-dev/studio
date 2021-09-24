@@ -525,6 +525,20 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     return getChunk(chunkNr);
 }
 
+void AbstractTextMapper::setSearchSelection(QPoint cursor, QPoint anchor)
+{
+    // sort positions
+    if (cursor.y() < anchor.y() || ( cursor.y() == anchor.y() && cursor.x() <= anchor.x() )) {
+        mSearchSelectionStart = cursor;
+        mSearchSelectionEnd = anchor;
+    } else {
+        mSearchSelectionStart = anchor;
+        mSearchSelectionEnd = cursor;
+    }
+    qDebug() << QTime::currentTime() << "setSearchSelection from:to"
+             << mSearchSelectionEnd << mSearchSelectionEnd; // rogo: delete
+}
+
 void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) const
 {
     int absKnownLines = chunkLines.lineCount;

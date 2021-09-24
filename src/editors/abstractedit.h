@@ -64,7 +64,7 @@ public:
     virtual void disconnectTimers();
 
     bool hasSearchSelection();
-    void clearSelection();
+    void clearSearchSelection();
     void findInSelection(QList<search::Result> &results);
     inline FileId fileId() {
         bool ok;

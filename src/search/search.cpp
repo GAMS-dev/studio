@@ -115,18 +115,13 @@ void Search::reset()
 
 void Search::findInSelection()
 {
-    QTextCursor item;
-    QTextCursor lastItem;
-
-    AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-
-    if (ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
-        if (ae) { // TODO: move to AE?
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        if (ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
             mSearchSelectionFile = ae->fileId();
             ae->findInSelection(mResults);
         } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-//            mSearchSelectionStart = tv->position();
-//            mSearchSelectionEnd = tv->anchor();
+            mSearchSelectionFile = tv->fileId();
+            tv->findInSelection(mRegex, mOptions, mResults);
         }
     }
     // nothing more to do, update UI and return
@@ -149,7 +144,7 @@ void Search::findInDoc(FileMeta* fm)
 
         if (!item.isNull()) {
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                  item.selectedText().length(), fm->location(), item.block().text().trimmed()));
+                                   item.selectedText().length(), fm->location(), item.block().text().trimmed()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
