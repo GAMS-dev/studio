@@ -29,7 +29,6 @@ namespace miro {
 enum class MiroMode
 {
     Base,
-    Hypercube,
     Configuration
 };
 
