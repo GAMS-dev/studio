@@ -424,14 +424,16 @@ void SearchDialog::clearSearch()
     mSearch.reset();
     mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
-        QTextCursor tc = ce->textCursor();
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        QTextCursor tc = ae->textCursor();
         tc.clearSelection();
-        ce->setTextCursor(tc);
+        ae->setTextCursor(tc);
+        ae->clearSelection();
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         QTextCursor tc = tv->edit()->textCursor();
         tc.clearSelection();
         tv->edit()->setTextCursor(tc);
+        // tv->clearSelection(); // TODO(rogo): implement
     }
 
     clearResultsView();
@@ -470,7 +472,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::NoResults:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        if (selectedScope() == Search::Scope::Selection && mSearch.searchSelection().selectedText().length() == 0)
+        if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
         else
             ui->lbl_nrResults->setText("No results.");
@@ -565,7 +567,6 @@ void SearchDialog::updateNrMatches(int current)
         } else {
             ui->lbl_nrResults->setToolTip("");
         }
-
     } else {
         ui->lbl_nrResults->setText(QString::number(current) + " / "
                                      + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : ""));

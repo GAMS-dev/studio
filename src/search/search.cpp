@@ -53,7 +53,8 @@ void Search::start()
 
     mResults.clear();
     mResultHash.clear();
-    mSearchSelection.clearSelection();
+//    mSearchSelectionStart = QPoint(0,0);
+//    mSearchSelectionEnd = QPoint(-1,-1);
 
     mSearching = true;
 
@@ -106,7 +107,8 @@ void Search::reset()
     mOutsideOfList = false;
     mJumpQueued = false;
     mLastMatchInOpt = -1;
-    mSearchSelection.clearSelection();
+
+    mSearchSelectionFile = -1;
 
     mThread.isInterruptionRequested();
 }
@@ -115,43 +117,18 @@ void Search::findInSelection()
 {
     QTextCursor item;
     QTextCursor lastItem;
-    int startPos;
-    int endPos;
 
     AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor());
 
-    if (!mSearchSelection.hasSelection() || ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
-        if (ae) {
-            mSearchSelection = ae->textCursor();
+    if (ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
+        if (ae) { // TODO: move to AE?
             mSearchSelectionFile = ae->fileId();
-            ae->setSearchSelection(&mSearchSelection);
-
+            ae->findInSelection(mResults);
         } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-            // todo;
+//            mSearchSelectionStart = tv->position();
+//            mSearchSelectionEnd = tv->anchor();
         }
     }
-    if (mSearchSelection.hasSelection() && ae->fileId() == mSearchSelectionFile) {
-        startPos = mSearchSelection.selectionStart();
-        endPos = mSearchSelection.selectionEnd();
-
-        // ignore search direction for cache generation. otherwise results would be in wrong order
-        QFlags<QTextDocument::FindFlag> cacheOptions = mOptions;
-        cacheOptions.setFlag(QTextDocument::FindBackward, false);
-        FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-
-        do {
-            item = fm->document()->find(mRegex, qMax(startPos, item.position()), cacheOptions);
-            if (item != lastItem) lastItem = item;
-            else break; // mitigate endless loop
-
-            if (!item.isNull() && item.position() < endPos) {
-                mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                       item.selectedText().length(), fm->location(), item.block().text().trimmed()));
-            } else break;
-            if (mResults.size() > MAX_SEARCH_RESULTS) break;
-        } while (!item.isNull());
-    }
-
     // nothing more to do, update UI and return
     finished();
 }
@@ -236,6 +213,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
             && (mResultHash.find(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location())
             == mResultHash.end());
 
+    // TODO(RG): refactoring candidate:
     if (mMain->recent()->editor()) {
         QString file = ViewHelper::location(mMain->recent()->editor());
         for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
@@ -324,7 +302,6 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
 int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 {
-    qDebug() << QTime::currentTime() << "NavigateOutsideCache"; // rogo: delete
     int matchNr = -1;
     bool found = false;
 
@@ -368,7 +345,6 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
 
 int Search::NavigateInsideCache(Direction direction)
 {
-    qDebug() << QTime::currentTime() << "NavigateInsideCache"; // rogo: delete
     int matchNr = findNextEntryInCache(direction);
 
      // nothing found
@@ -465,9 +441,17 @@ void Search::finished()
     }
 }
 
-const QTextCursor &Search::searchSelection() const
+const QFlags<QTextDocument::FindFlag> &Search::options() const
 {
-    return mSearchSelection;
+    return mOptions;
+}
+
+bool Search::hasSearchSelection()
+{
+    // TODO(rogo): implement!
+//    qDebug() << QTime::currentTime() << "hasSelection?"
+//             << mSearchSelectionStart << "!=" << mSearchSelectionEnd; // rogo: delete
+    return false;
 }
 
 QRegularExpression Search::regex() const

@@ -23,6 +23,7 @@
 #include <QPlainTextEdit>
 #include "common.h"
 #include "syntax/textmarkrepo.h"
+#include "search/result.h"
 #include <QTimer>
 
 namespace gams {
@@ -62,7 +63,9 @@ public:
     void updateGroupId();
     virtual void disconnectTimers();
 
-    void setSearchSelection(QTextCursor *newSearchSelection);
+    bool hasSearchSelection();
+    void clearSelection();
+    void findInSelection(QList<search::Result> &results);
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
@@ -131,7 +134,7 @@ private:
     QPoint mTipPos;
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
-    QTextCursor *mSearchSelection = nullptr;
+    QTextCursor mSearchSelection;
 
 private slots:
     void internalExtraSelUpdate();

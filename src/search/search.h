@@ -23,7 +23,7 @@
 #include <QObject>
 #include <mainwindow.h>
 
-#include <file/filemeta.h>
+#include "file/filemeta.h"
 
 namespace gams {
 namespace studio {
@@ -57,19 +57,19 @@ public:
     void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
     void stop();
-    void reset();
-    QList<Result> filteredResultList(QString fileLocation);
 
     void findNext(Direction direction);
     void replaceNext(QString replacementText);
     void replaceAll(QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
-    QList<Result> results() const;
     bool isRunning() const;
+    QList<Result> results() const;
+    QList<Result> filteredResultList(QString fileLocation);
+    const QFlags<QTextDocument::FindFlag> &options() const;
     QRegularExpression regex() const;
-
-    const QTextCursor &searchSelection() const;
+    bool hasSearchSelection();
+    void reset();
 
 signals:
     void updateLabelByCursorPos(int line, int col);
@@ -100,8 +100,8 @@ private:
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
-    QTextCursor mSearchSelection;
-    FileId mSearchSelectionFile;;
+
+    FileId mSearchSelectionFile;
 
     QThread mThread;
     bool mSearching = false;
@@ -112,6 +112,7 @@ private:
     int mLastMatchInOpt = -1;
 
     bool mSplitSearchContinue = false;
+    void updateSearchSelection();
 };
 
 }
