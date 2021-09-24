@@ -174,7 +174,6 @@ void CommonPaths::setGamsStandardPaths(QStringList gamsPaths, StandardPathType p
     case StandardDataPath: GamsStandardDataPaths = gamsPaths; break;
     default:
         EXCEPT() << "Error in setGamsStandardPaths: pathType must be GamsStandardConfigPaths or GamsStandardDataPaths";
-        break;
     }
 }
 
@@ -237,7 +236,7 @@ QString CommonPaths::changelog()
 {
 #ifdef __APPLE__
     return QDir::cleanPath(MacOSCocoaBridge::bundlePath().append("/Contents/Resources/Changelog"));
-#elif __unix__
+#elif defined(__unix__)
     return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/../resources/Changelog"));
 #else
     return QDir::cleanPath(QCoreApplication::applicationDirPath().append("/resources/Changelog"));

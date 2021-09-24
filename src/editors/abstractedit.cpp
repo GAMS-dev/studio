@@ -120,7 +120,7 @@ void AbstractEdit::unfold(QTextBlock block)
 void AbstractEdit::updateTabSize(int size)
 {
     if (!size) size = Settings::settings()->toInt(skEdTabSize);
-    QFontMetrics metric(font());
+    QFontMetricsF metric(font());
     setTabStopDistance(size * metric.horizontalAdvance(' '));
 }
 

@@ -295,14 +295,19 @@ void CodeEdit::pasteClipboard()
 {
     bool isBlock;
     QStringList texts = clipboard(&isBlock);
+    QTextCursor c = textCursor();
+    texts = tabsToSpaces(texts, c.positionInBlock(), Settings::settings()->toInt(skEdTabSize));
     if (!mBlockEdit) {
         if (isBlock && mAllowBlockEdit) {
-            QTextCursor c = textCursor();
             if (c.hasSelection()) c.removeSelectedText();
             startBlockEdit(c.blockNumber(), c.columnNumber());
             mBlockEdit->replaceBlockText(texts);
         } else {
-            paste();
+            QTextCursor c = textCursor();
+            c.beginEditBlock();
+            if (c.hasSelection()) c.removeSelectedText();
+            c.insertText(texts.first());
+            c.endEditBlock();
         }
     } else {
         mBlockEdit->replaceBlockText(texts);
@@ -1348,6 +1353,30 @@ void CodeEdit::showCompleter()
         connect(mCompleter, &CodeCompleter::scanSyntax, this, &CodeEdit::scanSyntax);
         mCompleter->ShowIfData();
     }
+}
+
+QStringList CodeEdit::tabsToSpaces(const QStringList &source, int indent, int tabSize)
+{
+    QStringList res = source;
+    for (int i = 0; i < source.size(); ++i) {
+        QString text = source.at(i);
+
+        int count = -1;
+        int lf = - 1;
+        for (int c = 0; c < text.length(); ++c) {
+            if (text.at(c) == '\n' || text.at(c) == '\r') lf = c;
+            else if (text.at(c) == '\t') {
+                count = c - lf + (tabSize - 1) + (lf < 0 ? indent : 0);
+                QString spaces(tabSize - (count % tabSize), ' ');
+                text.replace(c, 1, spaces);
+                c += spaces.size() - 1;
+            }
+        }
+        if (count >= 0) {
+            res.replace(i, text);
+        }
+    }
+    return res;
 }
 
 
