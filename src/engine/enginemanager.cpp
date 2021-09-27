@@ -35,8 +35,8 @@ namespace studio {
 namespace engine {
 
 bool EngineManager::mStartupDone = false;
-QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOn;
-QSslConfiguration EngineManager::mSslConfigurationIgnoreErrOff;
+QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOn = nullptr;
+QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
@@ -163,8 +163,10 @@ EngineManager::~EngineManager()
 void EngineManager::startupInit()
 {
     if (!mStartupDone) {
-        mSslConfigurationIgnoreErrOn.setPeerVerifyMode(QSslSocket::VerifyNone);
-        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+        mSslConfigurationIgnoreErrOff = new QSslConfiguration();
+        mSslConfigurationIgnoreErrOn = new QSslConfiguration();
+        mSslConfigurationIgnoreErrOn->setPeerVerifyMode(QSslSocket::VerifyNone);
+        OAIHttpRequestWorker::sslDefaultConfiguration = mSslConfigurationIgnoreErrOff;
         mStartupDone = true;
     }
 }
@@ -201,11 +203,11 @@ void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
     if (ignore) {
         mIgnoreSslUrl = mUrl;
         mNetworkManager = NetworkManager::managerSelfCert();
-        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOn;
+        OAIHttpRequestWorker::sslDefaultConfiguration = mSslConfigurationIgnoreErrOn;
     } else {
         mIgnoreSslUrl = QUrl();
         mNetworkManager = NetworkManager::manager();
-        OAIHttpRequestWorker::sslDefaultConfiguration = &mSslConfigurationIgnoreErrOff;
+        OAIHttpRequestWorker::sslDefaultConfiguration = mSslConfigurationIgnoreErrOff;
     }
     mAuthApi->setNetworkAccessManager(mNetworkManager);
     mDefaultApi->setNetworkAccessManager(mNetworkManager);

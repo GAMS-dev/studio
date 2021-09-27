@@ -3,6 +3,7 @@ Version 1.7.5  *
 - replace TAB characters by the proper amount of spaces on pasting text
 - fix issue when zooming a text containing TAB characters
 - set default TAB size to 8
+- fixed NEOS and GAMS Engine inactive due to an SSL discovery issue
 
 Version 1.7.4
 ==================
