@@ -63,6 +63,7 @@ public:
 
     bool askBigFileEdit() const;
     void setAskBigFileEdit(bool askBigFileEdit);
+    static Qt::CaseSensitivity fsCaseSensitive();
 
 signals:
     void fileEvent(FileEvent &e);
@@ -96,7 +97,6 @@ private:
     QTimer mMissCheckTimer;
     CodeCompleter mCompleter;
     bool mAskBigFileEdit = true;
-    bool mFsCaseSensitive = false;
     bool mDebug = false;
 
 };

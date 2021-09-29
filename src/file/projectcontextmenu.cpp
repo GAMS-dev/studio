@@ -246,16 +246,16 @@ void ProjectContextMenu::onCloseFile()
 
 void ProjectContextMenu::onAddExisitingFile()
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> projects;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!projects.contains(project))
+            projects << project;
     }
 
     QString sourcePath = "";
-    if (!groups.isEmpty()) sourcePath = groups.first()->location();
+    if (!projects.isEmpty()) sourcePath = projects.first()->location();
     else emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
@@ -264,23 +264,23 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (PExGroupNode *group: groups) {
+    for (PExProjectNode *project: projects) {
         for (QString filePath: filePaths) {
-            emit addExistingFile(group, filePath);
+            emit addExistingFile(project, filePath);
         }
     }
 }
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> projects;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!projects.contains(project))
+            projects << project;
     }
-    emit newFileDialog(groups);
+    emit newFileDialog(projects);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -291,9 +291,9 @@ void ProjectContextMenu::setParent(QWidget *parent)
 void ProjectContextMenu::onCloseGroup()
 {
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (group) emit closeGroup(group);
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (project) emit closeProject(project);
     }
 }
 
@@ -305,18 +305,18 @@ void ProjectContextMenu::onSetMainFile()
 
 void ProjectContextMenu::onRenameGroup()
 {
-    PExGroupNode *group = mNodes.first()->toGroup();
-    if (group) emit renameGroup(group);
+    PExProjectNode *project = mNodes.first()->toProject();
+    if (project) emit renameProject(project);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> groups;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!groups.contains(project))
+            groups << project;
     }
 
     emit newFileDialog(groups, solverName);

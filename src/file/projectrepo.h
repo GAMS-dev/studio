@@ -44,13 +44,13 @@ class ProjectRepo : public QObject
     Q_OBJECT
 public:
     explicit ProjectRepo(QObject *parent = nullptr);
-    ~ProjectRepo();
+    ~ProjectRepo() override;
     void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
     PExProjectNode *findProject(NodeId nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
     PExFileNode *findFile(QString filePath, PExGroupNode *fileGroup = nullptr) const;
-    PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr, bool recurse = true) const;
+    PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>PExAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExAbstractNode</c>.
@@ -110,10 +110,11 @@ public:
     void read(const QVariantList &data);
     void write(QVariantList &projects) const;
 
-    PExGroupNode *createProject(QString name, QString path, QString runFileName, PExGroupNode *_parent = nullptr);
-    PExFileNode *findOrCreateFileNode(QString location, PExGroupNode *fileGroup = nullptr, FileType *knownType = nullptr
+    PExProjectNode *createProject(QString name, QString path, QString runFileName);
+    PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode);
+    PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
-    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExGroupNode *fileGroup = nullptr, QString explicitName = QString());
+    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, QString explicitName = QString());
     QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
     QVector<AbstractProcess*> listProcesses();
@@ -159,8 +160,10 @@ public slots:
 private:
     friend class PExProjectNode;
 
-    void writeGroup(const PExGroupNode* group, QVariantList &childList) const;
-    void readGroup(PExGroupNode* group, const QVariantList &children);
+    void readProjectFiles(PExProjectNode *project, const QVariantList &children);
+    void writeProjectFiles(const PExProjectNode *project, QVariantList &childList) const;
+    void addWithFolders(PExProjectNode *project, PExFileNode *file);
+
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);
     }

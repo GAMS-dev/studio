@@ -55,12 +55,12 @@ public:
     virtual QString location() const;
     QString tooltip() override;
     virtual QString errorText(int lstLine);
-    PExFileNode *findFile(QString location, bool recurse = true) const;
-    PExFileNode *findFile(const FileMeta *fileMeta, bool recurse = true) const;
-    QList<PExFileNode*> findFiles(FileKind kind, bool recurse) const;
+    PExFileNode *findFile(QString location) const;
+    PExFileNode *findFile(const FileMeta *fileMeta) const;
+    QList<PExFileNode*> findFiles(FileKind kind) const;
     PExProjectNode *findProject(const AbstractProcess *process) const;
     PExProjectNode *findProject(FileId runId) const;
-    QVector<PExFileNode*> listFiles(bool recurse = false) const;
+    const QVector<PExFileNode *> listFiles() const;
     void moveChildNode(int from, int to);
     const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
 
@@ -76,7 +76,7 @@ protected:
     PExGroupNode(QString name, QString location, NodeType type = NodeType::group);
     virtual void appendChild(PExAbstractNode *child);
     virtual void removeChild(PExAbstractNode *child);
-    void setLocation(const QString &location);
+    virtual void setLocation(const QString &newLocation);
 
 private:
     QList<PExAbstractNode*> mChildNodes;
@@ -100,6 +100,8 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt = nullptr);
+    void setWorkDir(const QString &workingDir);
+    QString workDir() const;
 
     QString parameter(const QString& kind) const;
     bool hasParameter(const QString& kind) const;
@@ -116,6 +118,7 @@ public:
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
+    void requestChangeWorkDir(PExProjectNode *project, const QString &newWorkDir);
 
 public slots:
     void setErrorText(int lstLine, QString text);
@@ -140,6 +143,7 @@ protected:
     void appendChild(PExAbstractNode *child) override;
     void removeChild(PExAbstractNode *child) override;
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
+    void setLocation(const QString &newLocation) override;
 
 private:
     std::unique_ptr<AbstractProcess> mGamsProcess;

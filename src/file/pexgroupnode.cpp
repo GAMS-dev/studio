@@ -91,9 +91,9 @@ QString PExGroupNode::location() const
     return mLocation;
 }
 
-void PExGroupNode::setLocation(const QString& location)
+void PExGroupNode::setLocation(const QString& newLocation)
 {
-    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(location) : location;
+    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(newLocation) : newLocation;
     emit changed(id());
 }
 
@@ -112,49 +112,29 @@ QString PExGroupNode::errorText(int lstLine)
     return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
-PExFileNode *PExGroupNode::findFile(QString location, bool recurse) const
+PExFileNode *PExGroupNode::findFile(QString location) const
 {
     if (location.contains('\\')) location = QDir::fromNativeSeparators(location);
     QFileInfo fi(location);
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* file = node->toFile();
+    for (PExFileNode* file: listFiles())
         if (file && FileMetaRepo::equals(QFileInfo(file->location()), fi)) return file;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            PExFileNode* sub = group ? group->findFile(location, true) : nullptr;
-            if (sub) return sub;
-        }
-    }
     return nullptr;
 }
 
-PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
+PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta) const
 {
     if (!fileMeta) return nullptr;
     if (fileMeta->kind() == FileKind::Log) return nullptr;
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* fileNode = node->toFile();
+    for (PExFileNode* fileNode: listFiles())
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            PExFileNode* sub = group ? group->findFile(fileMeta, true) : nullptr;
-            if (sub) return sub;
-        }
-    }
     return nullptr;
 }
 
-QList<PExFileNode*> PExGroupNode::findFiles(FileKind kind, bool recurse) const
+QList<PExFileNode*> PExGroupNode::findFiles(FileKind kind) const
 {
     QList<PExFileNode*> res;
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* fileNode = node->toFile();
+    for (PExFileNode* fileNode: listFiles())
         if (fileNode && fileNode->file()->kind() == kind) res << fileNode;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            res << (group ? group->findFiles(kind, true) : QList<PExFileNode*>());
-        }
-    }
     return res;
 }
 
@@ -188,16 +168,16 @@ PExProjectNode *PExGroupNode::findProject(FileId runId) const
     return nullptr;
 }
 
-QVector<PExFileNode *> PExGroupNode::listFiles(bool recurse) const
+const QVector<PExFileNode *> PExGroupNode::listFiles() const
 {
     QVector<PExFileNode *> res;
     for (PExAbstractNode *node: mChildNodes) {
         PExFileNode *fileNode = node->toFile();
         if (fileNode)
             res << fileNode;
-        else if (recurse) {
+        else {
             PExGroupNode *sub = node->toGroup();
-            if (sub) res << sub->listFiles(true);
+            if (sub) res << sub->listFiles();
         }
     }
     return res;
@@ -396,6 +376,14 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     return res;
 }
 
+void PExProjectNode::setLocation(const QString &newLocation)
+{
+    if (workDir().isEmpty())
+        setWorkDir(newLocation);
+    else if (workDir().compare(newLocation, FileMetaRepo::fsCaseSensitive()) != 0)
+        emit requestChangeWorkDir(this, newLocation);
+}
+
 PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
@@ -463,7 +451,9 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         setParameter("lst", "");
         return;
     }
-    setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
+
+    setLocation(QFileInfo(gmsFile->location()).absoluteDir().path()); // TODO(JM) move this logic outside for user request
+
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
@@ -732,6 +722,16 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
         position++;
     }
     return output;
+}
+
+void PExProjectNode::setWorkDir(const QString &workingDir)
+{
+    PExGroupNode::setLocation(workingDir);
+}
+
+QString PExProjectNode::workDir() const
+{
+    return location();
 }
 
 ///

@@ -357,8 +357,8 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         PExAbstractNode* node = mProjectRepo->node(mCurrent);
-        if (!node || !node->parentNode()) return false;
-        if (node->parentNode()->id() == nodeId(ind)) {
+        if (!node || !node->assignedProject()) return false;
+        if (node->assignedProject()->id() == nodeId(ind)) {
             return true;
         }
     }

@@ -75,7 +75,6 @@ protected:
     friend class FileMeta;
 
     PExFileNode(FileMeta* fileMeta, NodeType type = NodeType::file);
-    void setParentNode(PExGroupNode *parent) override;
     void replaceFile(FileMeta* fileMeta);
 
 private:
