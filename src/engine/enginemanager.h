@@ -111,8 +111,8 @@ private:
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
     QNetworkAccessManager *mNetworkManager;
-    static QSslConfiguration mSslConfigurationIgnoreErrOn;
-    static QSslConfiguration mSslConfigurationIgnoreErrOff;
+    static QSslConfiguration *mSslConfigurationIgnoreErrOn;
+    static QSslConfiguration *mSslConfigurationIgnoreErrOff;
     int mJobNumber = 0;
     QString mJobToken;
     bool mQueueFinished = false;
