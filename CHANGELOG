@@ -1,4 +1,4 @@
-Version 1.7.5  *
+Version 1.7.5
 ==================
 - replace TAB characters by the proper amount of spaces on pasting text
 - fix issue when zooming a text containing TAB characters
