@@ -219,7 +219,7 @@ AbstractProcess *PExProjectNode::process() const
 QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
-        return PExGroupNode::icon(mode, alpha);
+        return Theme::icon(":/img/project", mode, alpha);
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
@@ -431,7 +431,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     PExFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
-        for (PExAbstractNode *node: childNodes()) {
+        for (PExAbstractNode *node: listFiles()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
                 gmsFile = gmsFileNode->file();

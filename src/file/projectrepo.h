@@ -155,14 +155,14 @@ public slots:
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
-    void renameGroup(PExGroupNode *group);
+    void renameProject(PExProjectNode *group);
 
 private:
     friend class PExProjectNode;
 
     void readProjectFiles(PExProjectNode *project, const QVariantList &children);
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList) const;
-    void addWithFolders(PExProjectNode *project, PExFileNode *file);
+    void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);

@@ -312,7 +312,7 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
     }
 }
 
-void ProjectRepo::addWithFolders(PExProjectNode *project, PExFileNode *file)
+void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders)
 {
     QStringList folders;
     if (file->location().startsWith(project->location(), FileMetaRepo::fsCaseSensitive())) {
@@ -326,15 +326,16 @@ void ProjectRepo::addWithFolders(PExProjectNode *project, PExFileNode *file)
         addToIndex(file);
     // create missing group node for folders
     PExGroupNode *newParent = project;
-    for (const QString &folderName : folders)
-        newParent = findOrCreateFolder(folderName, newParent);
+    if (withFolders)
+        for (const QString &folderName : folders)
+            newParent = findOrCreateFolder(folderName, newParent);
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
     mTreeModel->sortChildNodes(project);
     purgeGroup(oldParent);
 }
 
-void ProjectRepo::renameGroup(PExGroupNode* group)
+void ProjectRepo::renameProject(PExProjectNode* group)
 {
     mTreeView->edit(mTreeModel->index(group));
 }
@@ -485,7 +486,7 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         file = new PExFileNode(fileMeta);
         if (!explicitName.isNull())
             file->setName(explicitName);
-        addWithFolders(project, file);
+        addToProject(project, file, true);
         for (QWidget *w: fileMeta->editors())
             ViewHelper::setGroupId(w, project->id());
     }

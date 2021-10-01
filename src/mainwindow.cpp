@@ -186,7 +186,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
-    connect(&mProjectContextMenu, &ProjectContextMenu::renameProject, &mProjectRepo, &ProjectRepo::renameGroup);
+    connect(&mProjectContextMenu, &ProjectContextMenu::renameProject, &mProjectRepo, &ProjectRepo::renameProject);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
