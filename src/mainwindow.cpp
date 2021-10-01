@@ -3718,6 +3718,9 @@ void MainWindow::closeProject(PExProjectNode* project)
         for (FileMeta *file: qAsConst(openFiles)) {
             closeFileEditors(file->id());
         }
+        for (PExFileNode *node: project->listFiles()) {
+            mProjectRepo.closeNode(node);
+        }
         PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
