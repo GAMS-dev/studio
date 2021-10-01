@@ -17,17 +17,18 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "search.h"
-#include "searchdialog.h"
-#include "searchworker.h"
-#include "exception.h"
-
 #include <QApplication>
 #include <QFlags>
 #include <QTextDocument>
 #include <QMessageBox>
 #include <QPushButton>
-#include <viewhelper.h>
+#include "search.h"
+#include "searchdialog.h"
+#include "searchworker.h"
+#include "exception.h"
+#include "editors/abstractedit.h"
+#include "editors/textview.h"
+#include "viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -53,8 +54,6 @@ void Search::start()
 
     mResults.clear();
     mResultHash.clear();
-//    mSearchSelectionStart = QPoint(0,0);
-//    mSearchSelectionEnd = QPoint(-1,-1);
 
     mSearching = true;
 
@@ -119,9 +118,11 @@ void Search::findInSelection()
         if (ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
             mSearchSelectionFile = ae->fileId();
             ae->findInSelection(mResults);
-        } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-            mSearchSelectionFile = tv->fileId();
-            tv->findInSelection(mRegex, mOptions, mResults);
+        }
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        if (tv->edit()->fileId() != mSearchSelectionFile) {
+            mSearchSelectionFile = tv->edit()->fileId();
+            tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
         }
     }
     // nothing more to do, update UI and return
@@ -157,7 +158,6 @@ void Search::findNext(Direction direction)
     bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
 
     if (requestNewCache) {
-        qDebug() << QTime::currentTime() << "requesting new cache"; // rogo: delete
         mCacheAvailable = false;
         mMain->searchDialog()->updateUi(true);
         start();
@@ -443,9 +443,11 @@ const QFlags<QTextDocument::FindFlag> &Search::options() const
 
 bool Search::hasSearchSelection()
 {
-    // TODO(rogo): implement!
-//    qDebug() << QTime::currentTime() << "hasSelection?"
-//             << mSearchSelectionStart << "!=" << mSearchSelectionEnd; // rogo: delete
+    if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        return ce->hasSearchSelection();
+    } else if (TextView *tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        return tv->edit()->hasSearchSelection();
+    }
     return false;
 }
 

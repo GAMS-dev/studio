@@ -333,12 +333,10 @@ void AbstractEdit::findInSelection(QList<search::Result> &results) {
     QTextCursor item;
     QTextCursor lastItem;
 
-    if (textCursor() != mSearchSelection) {
-        qDebug() << QTime::currentTime() << "cursor is different"; // rogo: delete
+    if (textCursor() != mSearchSelection)
         search::SearchLocator::search()->reset();
-    }
-    mSearchSelection = textCursor();
 
+    mSearchSelection = textCursor();
     if (!mSearchSelection.hasSelection()) return;
 
     startPos = mSearchSelection.selectionStart();

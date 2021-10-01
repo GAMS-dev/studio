@@ -17,17 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "abstracttextmapper.h"
-#include "exception.h"
-#include "logger.h"
-#include <QFile>
 #include <QTextStream>
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QtMath>
+#include "abstracttextmapper.h"
+#include "exception.h"
+#include "logger.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
+#include "search/searchworker.h"
 
 namespace gams {
 namespace studio {
+using namespace search;
 
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
@@ -498,6 +501,15 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
     return false;
 }
 
+void AbstractTextMapper::findTextInSelection(QRegularExpression searchRegex, FileMeta* file, QList<Result> *results)
+{
+    setSearchSelection(mPosition, mAnchor);
+    QPoint start = convertPos(mSearchSelectionStart);
+    QPoint end = convertPos(mSearchSelectionEnd);
+    SearchWorker sw(file, searchRegex, start, end, results);
+    sw.findInFiles();
+}
+
 AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelta, int *lineInChunk) const
 {
     if (lineInChunk) *lineInChunk = -1;
@@ -525,18 +537,26 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     return getChunk(chunkNr);
 }
 
-void AbstractTextMapper::setSearchSelection(QPoint cursor, QPoint anchor)
+void AbstractTextMapper::setSearchSelection(CursorPosition cursor, CursorPosition anchor)
 {
     // sort positions
-    if (cursor.y() < anchor.y() || ( cursor.y() == anchor.y() && cursor.x() <= anchor.x() )) {
+    if (cursor < anchor) {
         mSearchSelectionStart = cursor;
         mSearchSelectionEnd = anchor;
     } else {
         mSearchSelectionStart = anchor;
         mSearchSelectionEnd = cursor;
     }
-    qDebug() << QTime::currentTime() << "setSearchSelection from:to"
-             << mSearchSelectionEnd << mSearchSelectionEnd; // rogo: delete
+}
+
+void AbstractTextMapper::clearSearchSelection() {
+    mSearchSelectionStart = CursorPosition();
+    mSearchSelectionEnd = CursorPosition();
+}
+
+bool AbstractTextMapper::hasSearchSelection()
+{
+    return !(mSearchSelectionStart == CursorPosition());
 }
 
 void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) const

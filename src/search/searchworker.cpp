@@ -17,21 +17,27 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "searchresultmodel.h"
-#include "searchworker.h"
-
 #include <QFile>
 #include <QRegularExpression>
-
+#include "searchresultmodel.h"
+#include "searchworker.h"
 #include "file/filemeta.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
-    : mFiles(fml), mMatches(list), mRegex(regex)
+SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list)
+    : mFiles(QList<FileMeta*>() << file), mMatches(list), mRegex(regex), mFrom(from), mTo(to)
 {
+    // for now, searching with bounds works without extra thread
+    hasOwnThread = false;
+}
+
+SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
+    : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0))
+{
+    hasOwnThread = true;
 }
 
 SearchWorker::~SearchWorker()
@@ -40,14 +46,14 @@ SearchWorker::~SearchWorker()
 
 void SearchWorker::findInFiles()
 {
-    QList<Result> res;
     bool cacheFull = false;
-    for (FileMeta* fm : mFiles) {
+    for (FileMeta* fm : qAsConst(mFiles)) {
         if (cacheFull) break;
 
         int lineCounter = 0;
         QFile file(fm->location());
         if (file.open(QIODevice::ReadOnly)) {
+
             QTextStream in(&file);
             in.setCodec(fm->codec());
 
@@ -67,10 +73,11 @@ void SearchWorker::findInFiles()
                         cacheFull = true;
                         break;
                     }
-
-                    mMatches->append(Result(lineCounter, match.capturedStart(),
-                                           match.capturedLength(), file.fileName(),
-                                           line.trimmed()));
+                    if (allowInsert(lineCounter, match.capturedStart())) {
+                        mMatches->append(Result(lineCounter, match.capturedStart(),
+                                                match.capturedLength(), file.fileName(),
+                                                line.trimmed()));
+                    }
                 }
 
                 // update periodically
@@ -82,7 +89,22 @@ void SearchWorker::findInFiles()
         emit update(mMatches->size());
     }
     emit resultReady();
-    thread()->quit();
+    if (hasOwnThread) thread()->quit();
+}
+
+bool SearchWorker::allowInsert(int line, int col) {
+    // no limit set
+    if (mTo == QPoint(0,0)) return true;
+
+    // check lower bound
+    if (line < mFrom.y()) return false;
+    if (line == mFrom.y() && col < mFrom.x()) return false;
+
+    // check upper bound
+    if (line > mTo.y()) return false;
+    if (line == mTo.y() && col > mTo.x()) return false;
+
+    return true;
 }
 
 }

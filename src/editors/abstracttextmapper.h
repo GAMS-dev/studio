@@ -26,9 +26,12 @@
 #include <QSet>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QPoint>
+#include "search/result.h"
 
 namespace gams {
 namespace studio {
+
 
 struct LineFormat {
     LineFormat() {}
@@ -52,6 +55,7 @@ struct LineFormat {
     bool lineMarked = false;
 };
 
+class FileMeta;
 ///
 /// class AbstractTextMapper
 /// Maps text data into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
@@ -83,8 +87,12 @@ private:
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLineStart == other.absLineStart && charNr == other.charNr; }
+        bool operator !=(const CursorPosition &other) const {
+            return chunkNr != other.chunkNr || absLineStart != other.absLineStart || charNr != other.charNr; }
         bool operator <(const CursorPosition &other) const {
             return absLineStart + charNr < other.absLineStart + other.charNr; }
+        bool operator >(const CursorPosition &other) const {
+            return absLineStart + charNr > other.absLineStart + other.charNr; }
         int effectiveCharNr() const { return qMin(charNr, lineLen); }
         bool isValid() const { return chunkNr >= 0; }
         int chunkNr = -1;
@@ -162,6 +170,7 @@ public:
     virtual QString lines(int localLineNrFrom, int lineCount) const;
     virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const;
     virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    void findTextInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results);
 
     virtual QString selectedText() const;
     virtual QString positionLine() const;
@@ -179,7 +188,9 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
-    void setSearchSelection(QPoint cursor, QPoint anchor);
+    void setSearchSelection(CursorPosition cursor, CursorPosition anchor);
+    void clearSearchSelection();
+    bool hasSearchSelection();
 
     void dumpPos() const;
 
@@ -235,6 +246,8 @@ private:
     LinePosition mMaxTopLine;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    CursorPosition mSearchSelectionStart;
+    CursorPosition mSearchSelectionEnd;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;
@@ -245,8 +258,6 @@ private:
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
 
-    QPoint mSearchSelectionStart;
-    QPoint mSearchSelectionEnd;
 };
 
 } // namespace studio
