@@ -40,10 +40,13 @@ ProjectRepo::ProjectRepo(QObject* parent)
     addToIndex(mTreeModel->rootNode());
     mRunAnimateTimer.setInterval(150);
     QVector<QIcon> runIcons;
-    runIcons << Theme::icon(":/img/folder-run1", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run2", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run3", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run4", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project-run1", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project-run2", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project-run3", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project-run4", QIcon::Normal, 100);
+    runIcons << Theme::icon(":/img/project-run5", QIcon::Normal, 100);
+    mRunIconCount = runIcons.count();
     mRunIcons.insert(QPair<QIcon::Mode, int>(QIcon::Normal, 100), runIcons);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
@@ -609,7 +612,7 @@ void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStri
 
 void ProjectRepo::stepRunAnimation()
 {
-    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIcons.size());
+    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIconCount);
     for (PExProjectNode* project: mRunnigGroups) {
         QModelIndex ind = mTreeModel->index(project);
         if (ind.isValid())
@@ -714,10 +717,12 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
     QPair<QIcon::Mode, int> key(mode, alpha);
     if (!mRunIcons.contains(key)) {
         QVector<QIcon> runIcons;
-        runIcons << Theme::icon(":/img/folder-run1", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run2", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run3", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run4", mode, alpha);
+        runIcons << Theme::icon(":/img/project", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run1", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run2", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run3", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run4", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run5", mode, alpha);
         mRunIcons.insert(key, runIcons);
     }
     return mRunIcons.value(key).at(mRunAnimateIndex);

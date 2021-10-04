@@ -1,9 +1,10 @@
 <svg width="128" height="128" version="1.0" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
  <style type="text/css">.st0{fill:#FFFFFF;fill-opacity:1.0;}.st1{fill:#F39619;fill-opacity:1.0;}.st2{fill:#000;fill-opacity:1.0;}</style>
- <path class="st0" d="m2.6937 2.6937 79.282 0.71833 46.025 28.588v96h-96l-29.306-37.665z" style="fill:#fff;stroke-width:.78674"/>
- <path class="st2" d="m51.588 73c-9.5969 0.12562-17.028 4.5107-19.588 6.1812v40.925h39.794v-40.404c-7.1473-5.1399-14.113-6.7818-20.207-6.702z" style="stroke-width:.78674"/>
- <path class="st2" d="m120.12 70.002c-2.1844 2.3217-20.068 17.994-40.222 13.328v36.777h40.222z" style="stroke-width:.78674"/>
- <path class="st1" d="m76.285 72.277c21.103 7.8482 43.839-18.658 43.839-18.658v-21.619h-88.124v41.462c15.752-9.9214 23.628-8.8846 44.285-1.1846z" style="stroke-width:.78674"/>
- <path d="m32 32-24-24v80l24 32z" style="fill:#56380d"/>
- <path d="m120 32-40-24h-72l24 24z" style="fill:#e4dbd0"/>
+ <circle cx="59.937" cy="59.937" r="40.027" style="fill:none;stroke-width:1.8194;stroke:#737373"/>
+ <circle cx="60.136" cy="31.896" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle cx="60.199" cy="31.959" r="20.041" style="fill:#f39619"/>
+ <circle cx="88.136" cy="79.896" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle cx="32.136" cy="79.896" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle cx="32.233" cy="79.989" r="20.041"/>
+ <circle cx="88.233" cy="79.989" r="20.041"/>
 </svg>

@@ -183,6 +183,7 @@ private:
     QVector<PExProjectNode*> mRunnigGroups;
     QTimer mRunAnimateTimer;
     QHash<QPair<QIcon::Mode, int>, QVector<QIcon>> mRunIcons;
+    int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
 };
