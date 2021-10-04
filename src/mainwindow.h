@@ -185,6 +185,7 @@ public slots:
     bool eventFilter(QObject*sender, QEvent* event) override;
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
+    void showProjectOptions(PExProjectNode *project);
 
 private slots:
     void openInitialFiles();

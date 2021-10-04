@@ -58,6 +58,7 @@
 #include "miro/mirodeployprocess.h"
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
+#include "file/projectoptions.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
@@ -186,7 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
-    connect(&mProjectContextMenu, &ProjectContextMenu::renameProject, &mProjectRepo, &ProjectRepo::renameProject);
+    connect(&mProjectContextMenu, &ProjectContextMenu::showProjectOptions, this, &MainWindow::showProjectOptions);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
@@ -3823,6 +3824,14 @@ void MainWindow::closeFileEditors(const FileId fileId)
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
     NavigationHistoryLocator::navigationHistory()->startRecord();
+}
+
+void MainWindow::showProjectOptions(PExProjectNode *project)
+{
+    if (!project) return;
+    project::ProjectOptions *pOpt = new project::ProjectOptions(this);
+    connect(pOpt, &project::ProjectOptions::finished, this, [pOpt](){ pOpt->deleteLater(); });
+    pOpt->showProject(project);
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)

@@ -335,11 +335,6 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     purgeGroup(oldParent);
 }
 
-void ProjectRepo::renameProject(PExProjectNode* group)
-{
-    mTreeView->edit(mTreeModel->index(group));
-}
-
 PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName)
 {
     PExGroupNode *root = mTreeModel->rootNode();
@@ -351,6 +346,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
+    connect(project, &PExProjectNode::workDirChanged, this, &ProjectRepo::reassignFiles);
     addToIndex(project);
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
@@ -664,6 +660,14 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             if (file->parentNode() != project)
                 closeNode(file);
         }
+    }
+}
+
+void ProjectRepo::reassignFiles(PExProjectNode *project)
+{
+    QVector<PExFileNode *> files = project->listFiles();
+    for (PExFileNode *file: files) {
+        addToProject(project, file, true);
     }
 }
 

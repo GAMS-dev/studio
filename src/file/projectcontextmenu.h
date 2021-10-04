@@ -49,7 +49,7 @@ signals:
     void addExistingFile(PExProjectNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
-    void renameProject(PExProjectNode* group);
+    void showProjectOptions(PExProjectNode* project);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
@@ -66,7 +66,7 @@ private slots:
     void onAddExisitingFile();
     void onAddNewFile();
     void onSetMainFile();
-    void onRenameGroup();
+    void onShowProjectOptions();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();

@@ -376,14 +376,6 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     return res;
 }
 
-void PExProjectNode::setLocation(const QString &newLocation)
-{
-    if (workDir().isEmpty())
-        setWorkDir(newLocation);
-    else if (workDir().compare(newLocation, FileMetaRepo::fsCaseSensitive()) != 0)
-        emit requestChangeWorkDir(this, newLocation);
-}
-
 PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
@@ -726,7 +718,13 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 
 void PExProjectNode::setWorkDir(const QString &workingDir)
 {
-    PExGroupNode::setLocation(workingDir);
+    if (workDir().isEmpty() || workDir().compare(workingDir, FileMetaRepo::fsCaseSensitive()) == 0)
+        setLocation(workingDir);
+    else {
+        // changed more than letter case
+        setLocation(workingDir);
+        emit workDirChanged(this);
+    }
 }
 
 QString PExProjectNode::workDir() const

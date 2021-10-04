@@ -155,7 +155,7 @@ public slots:
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
-    void renameProject(PExProjectNode *group);
+    void reassignFiles(PExProjectNode *project);
 
 private:
     friend class PExProjectNode;

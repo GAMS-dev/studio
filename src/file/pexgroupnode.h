@@ -118,7 +118,7 @@ public:
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
-    void requestChangeWorkDir(PExProjectNode *project, const QString &newWorkDir);
+    void workDirChanged(PExProjectNode *project);
 
 public slots:
     void setErrorText(int lstLine, QString text);
@@ -143,7 +143,6 @@ protected:
     void appendChild(PExAbstractNode *child) override;
     void removeChild(PExAbstractNode *child) override;
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
-    void setLocation(const QString &newLocation) override;
 
 private:
     std::unique_ptr<AbstractProcess> mGamsProcess;

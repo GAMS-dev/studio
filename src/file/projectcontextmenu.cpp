@@ -40,7 +40,7 @@ enum ContextAction {
     actSep1,
     actExplorer,
     actLogTab,
-    actRename,
+    actProjOpt,
     actSep2,
     actSetMain,
     actSep3,
@@ -72,7 +72,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
-    mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
+    mActions.insert(actProjOpt, addAction("&Project options",  this, &ProjectContextMenu::onShowProjectOptions));
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -207,8 +207,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actLogTab]->setVisible(isProject);
     mActions[actLogTab]->setEnabled(single);
 
-    mActions[actRename]->setVisible(isProject);
-    mActions[actRename]->setEnabled(single);
+    mActions[actProjOpt]->setVisible(isProject);
+    mActions[actProjOpt]->setEnabled(single);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
@@ -303,10 +303,10 @@ void ProjectContextMenu::onSetMainFile()
     if (file) emit setMainFile(file);
 }
 
-void ProjectContextMenu::onRenameGroup()
+void ProjectContextMenu::onShowProjectOptions()
 {
     PExProjectNode *project = mNodes.first()->toProject();
-    if (project) emit renameProject(project);
+    if (project) emit showProjectOptions(project);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
