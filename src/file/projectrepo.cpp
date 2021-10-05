@@ -38,16 +38,8 @@ ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this)))
 {
     addToIndex(mTreeModel->rootNode());
-    mRunAnimateTimer.setInterval(150);
-    QVector<QIcon> runIcons;
-    runIcons << Theme::icon(":/img/project", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/project-run1", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/project-run2", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/project-run3", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/project-run4", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/project-run5", QIcon::Normal, 100);
-    mRunIconCount = runIcons.count();
-    mRunIcons.insert(QPair<QIcon::Mode, int>(QIcon::Normal, 100), runIcons);
+    mRunAnimateTimer.setInterval(250);
+    runAnimateIcon(QIcon::Normal, 100);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
@@ -717,13 +709,16 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
     QPair<QIcon::Mode, int> key(mode, alpha);
     if (!mRunIcons.contains(key)) {
         QVector<QIcon> runIcons;
-        runIcons << Theme::icon(":/img/project", mode, alpha);
         runIcons << Theme::icon(":/img/project-run1", mode, alpha);
         runIcons << Theme::icon(":/img/project-run2", mode, alpha);
         runIcons << Theme::icon(":/img/project-run3", mode, alpha);
         runIcons << Theme::icon(":/img/project-run4", mode, alpha);
         runIcons << Theme::icon(":/img/project-run5", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run6", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run7", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run8", mode, alpha);
         mRunIcons.insert(key, runIcons);
+        mRunIconCount = runIcons.count();
     }
     return mRunIcons.value(key).at(mRunAnimateIndex);
 }

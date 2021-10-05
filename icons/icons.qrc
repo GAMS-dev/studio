@@ -36,6 +36,9 @@
         <file alias="project-run3">gams-prj3.svg</file>
         <file alias="project-run4">gams-prj4.svg</file>
         <file alias="project-run5">gams-prj5.svg</file>
+        <file alias="project-run6">gams-prj6.svg</file>
+        <file alias="project-run7">gams-prj7.svg</file>
+        <file alias="project-run8">gams-prj8.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>
         <file alias="square-green">square-green.svg</file>
