@@ -321,11 +321,9 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
         QString relPath = prjPath.relativeFilePath(file->location());
         QStringList folders;
         folders = relPath.split('/');
-        if (folders.size() && !folders.first().isEmpty() && !folders.first().endsWith(':')) {
-            folders.removeLast();
-            for (const QString &folderName : folders)
-                newParent = findOrCreateFolder(folderName, newParent);
-        }
+        folders.removeLast();
+        for (const QString &folderName : folders)
+            newParent = findOrCreateFolder(folderName, newParent);
     }
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
