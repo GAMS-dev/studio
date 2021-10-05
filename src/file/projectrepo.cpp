@@ -309,11 +309,6 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
 
 void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders)
 {
-    QStringList folders;
-    if (file->location().startsWith(project->location(), FileMetaRepo::fsCaseSensitive())) {
-        folders = file->location().mid(project->location().length()).split('/', Qt::SkipEmptyParts);
-        folders.removeLast();
-    }
     PExGroupNode *oldParent = nullptr;
     if (mNodes.contains(file->id()))
         oldParent = file->parentNode()->toGroup();
@@ -321,9 +316,17 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
         addToIndex(file);
     // create missing group node for folders
     PExGroupNode *newParent = project;
-    if (withFolders)
-        for (const QString &folderName : folders)
-            newParent = findOrCreateFolder(folderName, newParent);
+    if (withFolders) {
+        QDir prjPath(project->location());
+        QString relPath = prjPath.relativeFilePath(file->location());
+        QStringList folders;
+        folders = relPath.split('/');
+        if (folders.size() && !folders.first().isEmpty() && !folders.first().endsWith(':')) {
+            folders.removeLast();
+            for (const QString &folderName : folders)
+                newParent = findOrCreateFolder(folderName, newParent);
+        }
+    }
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
     mTreeModel->sortChildNodes(project);
