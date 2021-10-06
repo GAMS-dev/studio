@@ -4,6 +4,7 @@ Version 1.8.0 *
 - highlight remotely executed LOG (NEOS or GAMS Engine)
 - change naming from "group" to "project"
 - removed obsolete MIRO Hypercube mode
+- files now appear in folders relative to the working directory of the assigned project
 
 Version 1.7.5
 ==================
