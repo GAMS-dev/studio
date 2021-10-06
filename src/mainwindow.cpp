@@ -2432,7 +2432,7 @@ void MainWindow::loadProjects(const QString &gspFile)
         file.close();
         QVariantMap map = json.object().toVariantMap();
         QVariantList data = map.value("projects").toList();
-        mProjectRepo.read(data);
+        mProjectRepo.read(data, QFileInfo(gspFile).path());
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
     }
@@ -5033,7 +5033,7 @@ void MainWindow::on_actionExport_Project_triggered()
         if (file.open(QFile::WriteOnly)) {
             QVariantMap map;
             QVariantList data;
-            mProjectRepo.write(project, data);
+            mProjectRepo.write(project, data, true);
             map.insert("projects", data);
             file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
             file.close();

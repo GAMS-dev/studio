@@ -215,19 +215,21 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-void ProjectRepo::read(const QVariantList &data)
+void ProjectRepo::read(const QVariantList &data, const QString &workDir)
 {
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
         QString name = child.value("name").toString();
-        QString file = child.value("file").toString();
         QString path = child.value("path").toString();
+        QDir localWorkDir(path == "." ? workDir.isEmpty() ? CommonPaths::defaultWorkingDir() : workDir : path);
+
+        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
         QVariantList subChildren = child.value("nodes").toList();
         if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
             PExProjectNode* project = createProject(name, path, file);
             if (project) {
-                readProjectFiles(project, subChildren);
+                readProjectFiles(project, subChildren, localWorkDir.path());
                 if (project->isEmpty()) {
                     closeGroup(project);
                 } else {
@@ -247,16 +249,15 @@ void ProjectRepo::read(const QVariantList &data)
     }
 }
 
-void ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children)
+void ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir)
 {
     if (!project)
         EXCEPT() << "Missing project node, can't add file nodes";
+    QDir localWorkDir(workDir);
     for (int i = 0; i < children.size(); ++i) {
         QVariantMap child = children.at(i).toMap();
         QString name = child.value("name").toString();
-        QString file = child.value("file").toString();
-        QString path = child.value("path").toString();
-        if (path.isEmpty()) path = QFileInfo(file).absolutePath();
+        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
         if (!name.isEmpty() || !file.isEmpty()) {
             QString suf = child["type"].toString();
             if (suf == "gms") suf = QFileInfo(name).suffix();
@@ -281,29 +282,33 @@ void ProjectRepo::write(QVariantList &projects) const
     }
 }
 
-void ProjectRepo::write(PExProjectNode *project, QVariantList &projects) const
+void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool relativePaths) const
 {
     if (!project) return;
     QVariantMap nodeObject;
     bool expand = true;
-    if (project->runnableGms())
-        nodeObject.insert("file", project->toProject()->runnableGms()->location());
-    nodeObject.insert("path", project->location());
+    QDir dir(project->location());
+    if (project->runnableGms()) {
+        QString filePath = project->toProject()->runnableGms()->location();
+        nodeObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
+    }
+    nodeObject.insert("path", relativePaths ? project->location() : ".");
     nodeObject.insert("name", project->name());
     nodeObject.insert("options", project->toProject()->getRunParametersHistory());
     emit isNodeExpanded(mTreeModel->index(project), expand);
     if (!expand) nodeObject.insert("expand", false);
     QVariantList subArray;
-    writeProjectFiles(project, subArray);
+    writeProjectFiles(project, subArray, relativePaths);
     nodeObject.insert("nodes", subArray);
     projects.append(nodeObject);
 }
 
-void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList) const
+void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
 {
+    QDir dir(project->location());
     for (PExFileNode *file : project->listFiles()) {
         QVariantMap nodeObject;
-        nodeObject.insert("file", file->location());
+        nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
         nodeObject.insert("name", file->name());
         nodeObject.insert("type", file->file()->kindAsStr());
         int mib = file->file()->codecMib();
@@ -324,11 +329,14 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     if (withFolders) {
         QDir prjPath(project->location());
         QString relPath = prjPath.relativeFilePath(file->location());
+        bool isAbs = QDir(relPath).isAbsolute();
         QStringList folders;
         folders = relPath.split('/');
         folders.removeLast();
-        for (const QString &folderName : folders)
-            newParent = findOrCreateFolder(folderName, newParent);
+        for (const QString &folderName : folders) {
+            newParent = findOrCreateFolder(folderName, newParent, isAbs);
+            isAbs = false;
+        }
     }
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
@@ -357,7 +365,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
     return project;
 }
 
-PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *parentNode)
+PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs)
 {
     if (!parentNode) FATAL() << "Parent-node missing";
     if (parentNode == mTreeModel->rootNode()) FATAL() << "Folder-node must not exist on top level";
@@ -371,7 +379,8 @@ PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *
             return node->toGroup();
         }
     }
-    PExGroupNode* folder = new PExGroupNode(folderName, parentNode->location()+'/'+folderName);
+    PExGroupNode* folder = new PExGroupNode(folderName, isAbs ? folderName
+                                                              : QDir::cleanPath(parentNode->location()+'/'+folderName));
     addToIndex(folder);
     mTreeModel->insertChild(parentNode->childCount(), parentNode, folder);
     connect(folder, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);

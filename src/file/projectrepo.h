@@ -107,12 +107,12 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QVariantList &data);
+    void read(const QVariantList &data, const QString &workDir = QString());
     void write(QVariantList &projects) const;
-    void write(PExProjectNode *project, QVariantList &projects) const;
+    void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
 
     PExProjectNode *createProject(QString name, QString path, QString runFileName);
-    PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode);
+    PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
     PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, QString explicitName = QString());
@@ -162,8 +162,8 @@ public slots:
 private:
     friend class PExProjectNode;
 
-    void readProjectFiles(PExProjectNode *project, const QVariantList &children);
-    void writeProjectFiles(const PExProjectNode *project, QVariantList &childList) const;
+    void readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
+    void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
 
     inline void addToIndex(PExAbstractNode* node) {
