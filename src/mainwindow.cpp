@@ -2599,16 +2599,8 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     PExAbstractNode* node = mProjectRepo.node(index);
     if (!node) return;
     if ((node->type() == NodeType::group) || (node->type() == NodeType::project)) {
-        PExProjectNode *project = node->assignedProject();
-        if (project && project->runnableGms()) {
-            PExLogNode* logNode = project->logNode();
-            openFileNode(logNode, true, logNode->file()->codecMib());
-            PExAbstractNode *latestNode = mProjectRepo.node(mProjectRepo.treeModel()->current());
-            if (!latestNode || latestNode->assignedProject() != project) {
-                openFile(project->runnableGms(), true, project, project->runnableGms()->codecMib());
-            }
-        }
-    } else {
+        ui->projectView->isExpanded(index) ? ui->projectView->collapse(index) : ui->projectView->expand(index);
+    } else if (node->type() == NodeType::file) {
         PExFileNode *file = mProjectRepo.asFileNode(index);
         if (file) openFileNode(file);
     }
