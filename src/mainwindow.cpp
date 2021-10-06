@@ -179,6 +179,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
+    connect(&mProjectRepo, &ProjectRepo::loadProjects, this, &MainWindow::loadProjects);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -2418,6 +2419,25 @@ void MainWindow::restoreFromSettings()
 
 }
 
+void MainWindow::loadProjects(const QString &gspFile)
+{
+    QFile file(gspFile);
+    if (file.open(QFile::ReadOnly)) {
+        QJsonParseError parseResult;
+        QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &parseResult);
+        if (parseResult.error) {
+            appendSystemLogError("Couldn't parse project from " + gspFile);
+            return;
+        }
+        file.close();
+        QVariantMap map = json.object().toVariantMap();
+        QVariantList data = map.value("projects").toList();
+        mProjectRepo.read(data);
+    } else {
+        appendSystemLogError("Couldn't open project " + gspFile);
+    }
+}
+
 QString MainWindow::currentPath()
 {
     if (ui->mainTabs->currentWidget() && ui->mainTabs->currentWidget() != mWp) {
@@ -2874,6 +2894,10 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     if (files.size() == 0) return;
 
     if (!forceNew && files.size() == 1) {
+        if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+            loadProjects(files.first());
+            return;
+        }
         FileMeta *file = mFileMetaRepo.fileMeta(files.first());
         if (file) {
             openFile(file);
@@ -2889,9 +2913,13 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     PExProjectNode *project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
-            PExFileNode *node = addNode("", item, project);
-            openFileNode(node);
-            if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
+            if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+                loadProjects(item);
+            } else {
+                PExFileNode *node = addNode("", item, project);
+                openFileNode(node);
+                if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
+            }
             QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else {
             filesNotFound.append(item);
@@ -3834,7 +3862,6 @@ void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib,
         EXCEPT() << "File not found: " << filePath;
     }
     PExFileNode *fileNode = mProjectRepo.findFile(filePath);
-
     if (!fileNode) {
         fileNode = mProjectRepo.findOrCreateFileNode(filePath);
         if (!fileNode)
@@ -4985,24 +5012,7 @@ void MainWindow::on_actionImport_Project_triggered()
     QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
     dialog->setAcceptMode(QFileDialog::AcceptOpen);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) {
-        QFile file(fileName);
-        if (file.open(QFile::ReadOnly)) {
-            QJsonParseError parseResult;
-            QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &parseResult);
-            if (parseResult.error) {
-                appendSystemLogError("Couldn't parse project from " + fileName);
-                return;
-            }
-            file.close();
-            QVariantMap map = json.object().toVariantMap();
-            QVariantList data = map.value("projects").toList();
-            mProjectRepo.read(data);
-        } else {
-            appendSystemLogError("Couldn't open project " + fileName);
-        }
-
-    });
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->show();

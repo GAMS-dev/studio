@@ -389,6 +389,7 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
+    void loadProjects(const QString &gspFile);
 
 private:
     void initWelcomePage();

@@ -635,7 +635,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QList<PExFileNode*> gmsFiles;
     QList<NodeId> newIds;
     for (QString item: files) {
-        if (QFileInfo(item).exists()) {
+        if (QFileInfo::exists(item)) {
+            if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+                emit loadProjects(item);
+                continue;
+            }
             PExFileNode* file = findOrCreateFileNode(item, project);
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
