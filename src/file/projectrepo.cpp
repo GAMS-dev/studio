@@ -294,7 +294,7 @@ void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool re
         QString filePath = project->toProject()->runnableGms()->location();
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
-    nodeObject.insert("path", relativePaths ? project->location() : ".");
+    nodeObject.insert("path", relativePaths ? "." : project->location() );
     nodeObject.insert("name", project->name());
     nodeObject.insert("options", project->toProject()->getRunParametersHistory());
     emit isNodeExpanded(mTreeModel->index(project), expand);
