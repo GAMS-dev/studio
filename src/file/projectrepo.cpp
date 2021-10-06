@@ -662,9 +662,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
 void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
+    FileMeta *runGms = project->runnableGms();
     for (PExFileNode *file: files) {
         addToProject(project, file, true);
     }
+    project->setRunnableGms(runGms);
 }
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)
