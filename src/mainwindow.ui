@@ -643,7 +643,7 @@
   </action>
   <action name="actionOpenAlternative">
    <property name="text">
-    <string>&amp;Open in current project...</string>
+    <string>&amp;Open in Current Project...</string>
    </property>
    <property name="toolTip">
     <string>Open the file(s) in the current project</string>
@@ -1269,7 +1269,7 @@
   </action>
   <action name="actionDeleteScratchDirs">
    <property name="text">
-    <string>Delete scratch directories</string>
+    <string>Delete Scratch Directories</string>
    </property>
    <property name="toolTip">
     <string>Delete leftover scratch directories in current working directory</string>
