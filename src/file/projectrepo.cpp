@@ -269,6 +269,8 @@ void ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                     node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
                                                                          : codecMib);
                 }
+            } else {
+                emit addWarning("Fime not found: " + file);
             }
         }
     }

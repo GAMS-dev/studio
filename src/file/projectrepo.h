@@ -145,6 +145,7 @@ signals:
     void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
     void getParameterValue(QString param, QString &value);
+    void addWarning(const QString &warning);
 
 public slots:
     void gamsProcessStateChange(PExGroupNode* group);
