@@ -124,6 +124,11 @@ public:
         return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
     }
 
+    static QStringList dialogProjectFilter() {
+        QStringList res("GAMS Studio Project (*.gsp)");
+        return res;
+    }
+
     static QStringList dialogFileFilterUserCreated() {
         QStringList res("GAMS source (*.gms)");
         QStringList userTypes = FileType::userGamsTypes();

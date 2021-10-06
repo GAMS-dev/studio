@@ -243,6 +243,8 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
+    void on_actionImport_Project_triggered();
+    void on_actionExport_Project_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -387,10 +389,6 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
-
-    void on_actionImport_Project_triggered();
-
-    void on_actionExport_Project_triggered();
 
 private:
     void initWelcomePage();

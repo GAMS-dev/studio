@@ -3121,7 +3121,6 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
-    ui->actionImport_Project->setEnabled(mRecent.project());
     ui->actionExport_Project->setEnabled(mRecent.project());
 }
 
@@ -4982,7 +4981,31 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionImport_Project_triggered()
 {
-    //
+    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
+    dialog->setAcceptMode(QFileDialog::AcceptOpen);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) {
+        QFile file(fileName);
+        if (file.open(QFile::ReadOnly)) {
+            QJsonParseError parseResult;
+            QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &parseResult);
+            if (parseResult.error) {
+                appendSystemLogError("Couldn't parse project from " + fileName);
+                return;
+            }
+            file.close();
+            QVariantMap map = json.object().toVariantMap();
+            QVariantList data = map.value("projects").toList();
+            mProjectRepo.read(data);
+        } else {
+            appendSystemLogError("Couldn't open project " + fileName);
+        }
+
+    });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->show();
 }
 
 
@@ -4993,6 +5016,7 @@ void MainWindow::on_actionExport_Project_triggered()
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->location()),
                                           project->location()+'/'+project->name()+".gsp");
     dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
     connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
         QFile file(fileName);
