@@ -30,6 +30,7 @@ ProjectOptions::ProjectOptions(QWidget *parent) :
     connect(ui->buttonBox, &QDialogButtonBox::accepted, this, &QDialog::accept);
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     setModal(true);
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
 }
 
 ProjectOptions::~ProjectOptions()

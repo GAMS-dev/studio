@@ -5,6 +5,7 @@ Version 1.8.0 *
 - change naming from "group" to "project"
 - removed obsolete MIRO Hypercube mode
 - files now appear in folders relative to the working directory of the assigned project
+- the projects context menu "Project options" allows to change the name and working directory of the project
 
 Version 1.7.5
 ==================
