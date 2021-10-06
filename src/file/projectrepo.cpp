@@ -716,8 +716,6 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
         runIcons << Theme::icon(":/img/project-run4", mode, alpha);
         runIcons << Theme::icon(":/img/project-run5", mode, alpha);
         runIcons << Theme::icon(":/img/project-run6", mode, alpha);
-        runIcons << Theme::icon(":/img/project-run7", mode, alpha);
-        runIcons << Theme::icon(":/img/project-run8", mode, alpha);
         mRunIcons.insert(key, runIcons);
         mRunIconCount = runIcons.count();
     }

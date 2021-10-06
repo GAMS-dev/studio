@@ -1,10 +1,12 @@
 <svg width="128" height="128" version="1.0" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
  <style type="text/css">.st0{fill:#FFFFFF;fill-opacity:1.0;}.st1{fill:#F39619;fill-opacity:1.0;}.st2{fill:#000;fill-opacity:1.0;}</style>
- <circle transform="rotate(-44.945)" cx=".0253" cy="84.617" r="40.027" style="fill:none;stroke-width:1.8194;stroke:#737373"/>
- <circle transform="rotate(-44.945)" cx=".2243" cy="56.576" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
- <circle transform="rotate(-44.945)" cx=".2878" cy="56.64" r="20.041" style="fill:#f39619"/>
- <circle transform="rotate(-44.945)" cx="28.224" cy="104.58" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
- <circle transform="rotate(-44.945)" cx="-27.776" cy="104.58" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
- <circle transform="rotate(-44.945)" cx="-27.678" cy="104.67" r="20.041" style="fill:#f39619"/>
- <circle transform="rotate(-44.945)" cx="28.322" cy="104.67" r="20.041" style="fill:#f39619"/>
+ <circle transform="rotate(75.055)" cx="73.69" cy="-42.46" r="40.027" style="fill:none;stroke-width:1.8194;stroke:#737373"/>
+ <circle transform="rotate(75.055)" cx="37.69" cy="-42.425" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle transform="rotate(75.055)" cx="37.787" cy="-42.331" r="20.041" style="fill:#f39619"/>
+ <circle transform="rotate(75.055)" cx="73.655" cy="-78.459" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle transform="rotate(75.055)" cx="73.719" cy="-78.396" r="20.041" style="fill:#f39619"/>
+ <circle transform="rotate(75.055)" cx="109.69" cy="-42.494" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle transform="rotate(75.055)" cx="109.79" cy="-42.401" r="20.041" style="fill:#f39619"/>
+ <circle transform="rotate(75.055)" cx="73.725" cy="-6.4595" r="23.978" style="fill:#fff;stroke-width:1.1964"/>
+ <circle transform="rotate(75.055)" cx="73.822" cy="-6.366" r="20.041" style="fill:#f39619"/>
 </svg>
