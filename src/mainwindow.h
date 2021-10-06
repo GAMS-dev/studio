@@ -388,6 +388,10 @@ private slots:
     void updateEditorLineWrapping();
     void updateTabSize(int size);
 
+    void on_actionImport_Project_triggered();
+
+    void on_actionExport_Project_triggered();
+
 private:
     void initWelcomePage();
     void initIcons();

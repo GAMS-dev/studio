@@ -109,6 +109,7 @@ public:
 
     void read(const QVariantList &data);
     void write(QVariantList &projects) const;
+    void write(PExProjectNode *project, QVariantList &projects) const;
 
     PExProjectNode *createProject(QString name, QString path, QString runFileName);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode);

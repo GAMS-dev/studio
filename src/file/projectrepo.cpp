@@ -277,21 +277,26 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project) continue;
-        QVariantMap nodeObject;
-        bool expand = true;
-        if (project->runnableGms())
-            nodeObject.insert("file", project->toProject()->runnableGms()->location());
-        nodeObject.insert("path", project->location());
-        nodeObject.insert("name", project->name());
-        nodeObject.insert("options", project->toProject()->getRunParametersHistory());
-        emit isNodeExpanded(mTreeModel->index(project), expand);
-        if (!expand) nodeObject.insert("expand", false);
-        QVariantList subArray;
-        writeProjectFiles(project, subArray);
-        nodeObject.insert("nodes", subArray);
-        projects.append(nodeObject);
+        write(project, projects);
     }
+}
+
+void ProjectRepo::write(PExProjectNode *project, QVariantList &projects) const
+{
+    if (!project) return;
+    QVariantMap nodeObject;
+    bool expand = true;
+    if (project->runnableGms())
+        nodeObject.insert("file", project->toProject()->runnableGms()->location());
+    nodeObject.insert("path", project->location());
+    nodeObject.insert("name", project->name());
+    nodeObject.insert("options", project->toProject()->getRunParametersHistory());
+    emit isNodeExpanded(mTreeModel->index(project), expand);
+    if (!expand) nodeObject.insert("expand", false);
+    QVariantList subArray;
+    writeProjectFiles(project, subArray);
+    nodeObject.insert("nodes", subArray);
+    projects.append(nodeObject);
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList) const

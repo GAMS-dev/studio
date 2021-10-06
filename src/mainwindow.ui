@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -123,6 +123,9 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionSave_All"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_Project"/>
+    <addaction name="actionExport_Project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
@@ -1504,6 +1507,16 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+Down</string>
+   </property>
+  </action>
+  <action name="actionExport_Project">
+   <property name="text">
+    <string>Export Project</string>
+   </property>
+  </action>
+  <action name="actionImport_Project">
+   <property name="text">
+    <string>Import Project</string>
    </property>
   </action>
  </widget>

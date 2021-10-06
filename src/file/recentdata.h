@@ -34,12 +34,6 @@ public:
     void reset();
     void setEditor(QWidget* edit, MainWindow* window);
 
-    /**
-     * @brief Name of the main model.
-     * @remark Call <c>hasValidProject()</c> before.
-     */
-    bool hasValidProject();
-
     QWidget* editor() const { return mEditor; }
     PExProjectNode* project() const {return mProject; }
     FileId editFileId() const { return mEditFileId; }

@@ -2503,7 +2503,7 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
 void MainWindow::on_actionStop_MIRO_triggered()
 {
-    if (!mRecent.hasValidProject())
+    if (!mRecent.project())
         return;
     mRecent.project()->toProject()->process()->terminate();
 }
@@ -2517,7 +2517,7 @@ void MainWindow::on_actionDeploy_triggered()
                            miro::MiroCommon::assemblyFileName(mRecent.project()->toProject()->mainModelName());
 
     QStringList checkedFiles;
-    if (mRecent.hasValidProject()) {
+    if (mRecent.project()) {
         checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
                                                                 mRecent.project()->toProject()->mainModelName(false));
     }
@@ -2550,7 +2550,7 @@ void MainWindow::on_menuMIRO_aboutToShow()
 
 void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 {
-    if (!mRecent.hasValidProject())
+    if (!mRecent.project())
         return;
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
@@ -3121,6 +3121,8 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
+    ui->actionImport_Project->setEnabled(mRecent.project());
+    ui->actionExport_Project->setEnabled(mRecent.project());
 }
 
 #ifdef QWEBENGINE
@@ -3660,6 +3662,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         PExFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
         mRecent.setEditor(tabWidget->currentWidget(), this);
+        updateRunState();
     }
     addToOpenedFiles(fileMeta->location());
 }
@@ -4701,7 +4704,7 @@ bool MainWindow::validMiroPrerequisites()
         return false;
     }
 
-    return mRecent.hasValidProject();
+    return mRecent.project();
 }
 
 void MainWindow::openGdxDiffFile()
@@ -4974,6 +4977,40 @@ void MainWindow::on_actionMove_Line_Down_triggered()
     else {
         ce->moveLines(false);
     }
+}
+
+
+void MainWindow::on_actionImport_Project_triggered()
+{
+    //
+}
+
+
+void MainWindow::on_actionExport_Project_triggered()
+{
+    PExProjectNode *project = mRecent.project();
+    if (!project) return;
+    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->location()),
+                                          project->location()+'/'+project->name()+".gsp");
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setDefaultSuffix("gsp");
+    connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly)) {
+            QVariantMap map;
+            QVariantList data;
+            mProjectRepo.write(project, data);
+            map.insert("projects", data);
+            file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
+            file.close();
+        } else {
+            appendSystemLogError("Couldn't write project to " + fileName);
+        }
+
+    });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->show();
 }
 
 }

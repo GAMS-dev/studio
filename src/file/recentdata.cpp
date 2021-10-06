@@ -77,13 +77,6 @@ void RecentData::reset()
     mEditor = nullptr;
 }
 
-bool RecentData::hasValidProject()
-{
-    if (!project())
-        return false;
-    return project()->toProject() != nullptr;
-}
-
 
 } // namespace studio
 } // namespace gams
