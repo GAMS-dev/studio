@@ -1321,7 +1321,7 @@
      <normaloff>:/img/miro-b</normaloff>:/img/miro-b</iconset>
    </property>
    <property name="text">
-    <string>Run base mode</string>
+    <string>Run Base Mode</string>
    </property>
    <property name="shortcut">
     <string>F8</string>
@@ -1345,7 +1345,7 @@
      <normaloff>:/img/miro-c</normaloff>:/img/miro-c</iconset>
    </property>
    <property name="text">
-    <string>Run configuration mode</string>
+    <string>Run Configuration Mode</string>
    </property>
    <property name="shortcut">
     <string>Shift+F7</string>
@@ -1382,7 +1382,7 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Skip model execution</string>
+    <string>Skip Model Execution</string>
    </property>
   </action>
   <action name="actionDeploy">
