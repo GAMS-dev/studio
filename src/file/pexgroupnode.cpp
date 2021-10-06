@@ -443,8 +443,8 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         setParameter("lst", "");
         return;
     }
-
-    setLocation(QFileInfo(gmsFile->location()).absoluteDir().path()); // TODO(JM) move this logic outside for user request
+    if (location().isEmpty())
+        setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
 
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
