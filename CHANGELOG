@@ -3,7 +3,7 @@ Version 1.8.0 *
 - added tooltips to source code for keywords and DCOs (can be deactivated in the settings dialog)
 - highlight remotely executed LOG (NEOS or GAMS Engine)
 - change naming from "group" to "project"
-- remnoved obsolete MIRO Hypercube mode
+- removed obsolete MIRO Hypercube mode
 
 Version 1.7.5
 ==================
