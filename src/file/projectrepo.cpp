@@ -633,15 +633,8 @@ void ProjectRepo::stepRunAnimation()
 void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
                             , QList<QModelIndex> &newSelection)
 {
-    PExProjectNode *project = nullptr;
-    if (idx.isValid()) {
-        PExAbstractNode *aNode = node(idx);
-        project = aNode->assignedProject();
-    } else {
-        QFileInfo firstFile(files.first());
-        project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
-    }
-    if (!project) return;
+    while (files.count() && files.first().isEmpty())
+        files.removeFirst();
 
     QList<NodeId> addIds;
     for (NodeId id : knownIds) {
@@ -655,6 +648,16 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         }
     }
     knownIds.append(addIds);
+
+    PExProjectNode *project = nullptr;
+    if (idx.isValid()) {
+        PExAbstractNode *aNode = node(idx);
+        project = aNode->assignedProject();
+    } else {
+        QFileInfo firstFile(files.first());
+        project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+    }
+    if (!project) return;
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
