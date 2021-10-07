@@ -587,7 +587,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
 {
     mTreeModel->selectionChanged(selected, deselected);
     QVector<QModelIndex> groups;
-    for (QModelIndex ind: mTreeModel->popAddGroups()) {
+    for (QModelIndex ind: mTreeModel->popAddProjects()) {
         if (!mTreeView->isExpanded(ind))
             groups << ind;
     }
@@ -642,6 +642,19 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     }
     if (!project) return;
+
+    QList<NodeId> addIds;
+    for (NodeId id : knownIds) {
+        PExGroupNode *group = asGroup(id);
+        if (group && group->type() == NodeType::group) {
+            QVector<PExFileNode*> groupFiles = group->listFiles();
+            for (PExFileNode* file: groupFiles) {
+                files << file->location();
+                addIds << file->id();
+            }
+        }
+    }
+    knownIds.append(addIds);
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
