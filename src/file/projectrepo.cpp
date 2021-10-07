@@ -221,7 +221,8 @@ void ProjectRepo::read(const QVariantList &data, const QString &workDir)
         QVariantMap child = data.at(i).toMap();
         QString name = child.value("name").toString();
         QString path = child.value("path").toString();
-        QDir localWorkDir(path == "." ? workDir.isEmpty() ? CommonPaths::defaultWorkingDir() : workDir : path);
+        path = path == "." ? workDir.isEmpty() ? CommonPaths::defaultWorkingDir() : workDir : path;
+        QDir localWorkDir(path);
 
         QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
