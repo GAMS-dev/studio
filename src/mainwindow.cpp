@@ -210,6 +210,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this, &MainWindow::reOpenFileNode);
+    connect(&mProjectContextMenu, &ProjectContextMenu::exportProject, this, &MainWindow::exportProjectDialog);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -2437,6 +2438,32 @@ void MainWindow::loadProjects(const QString &gspFile)
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
     }
+}
+
+void MainWindow::exportProjectDialog(PExProjectNode *project)
+{
+    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
+                                          project->location()+'/'+project->name()+".gsp");
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
+    dialog->setDefaultSuffix("gsp");
+    connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
+        QFile file(fileName);
+        if (file.open(QFile::WriteOnly)) {
+            QVariantMap map;
+            QVariantList data;
+            mProjectRepo.write(project, data, true);
+            map.insert("projects", data);
+            file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
+            file.close();
+        } else {
+            appendSystemLogError("Couldn't write project to " + fileName);
+        }
+
+    });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->show();
 }
 
 QString MainWindow::currentPath()
@@ -5024,28 +5051,7 @@ void MainWindow::on_actionExport_Project_triggered()
 {
     PExProjectNode *project = mRecent.project();
     if (!project) return;
-    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->location()),
-                                          project->location()+'/'+project->name()+".gsp");
-    dialog->setAcceptMode(QFileDialog::AcceptSave);
-    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    dialog->setDefaultSuffix("gsp");
-    connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
-        QFile file(fileName);
-        if (file.open(QFile::WriteOnly)) {
-            QVariantMap map;
-            QVariantList data;
-            mProjectRepo.write(project, data, true);
-            map.insert("projects", data);
-            file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
-            file.close();
-        } else {
-            appendSystemLogError("Couldn't write project to " + fileName);
-        }
-
-    });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->show();
+    exportProjectDialog(project);
 }
 
 }

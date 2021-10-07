@@ -390,6 +390,7 @@ private slots:
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void loadProjects(const QString &gspFile);
+    void exportProjectDialog(PExProjectNode *project);
 
 private:
     void initWelcomePage();

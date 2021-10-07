@@ -53,6 +53,7 @@ signals:
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void exportProject(PExProjectNode* group);
     void selectAll();
     void expandAll();
     void collapseAll();
@@ -67,6 +68,7 @@ private slots:
     void onAddNewFile();
     void onSetMainFile();
     void onShowProjectOptions();
+    void onExportProject();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();

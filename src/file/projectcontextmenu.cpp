@@ -41,6 +41,7 @@ enum ContextAction {
     actExplorer,
     actLogTab,
     actProjOpt,
+    actProjExport,
     actSep2,
     actSetMain,
     actSep3,
@@ -73,6 +74,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actProjOpt, addAction("&Project options",  this, &ProjectContextMenu::onShowProjectOptions));
+    mActions.insert(actProjExport, addAction("Export &project",  this, &ProjectContextMenu::onExportProject));
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -210,6 +212,9 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actProjOpt]->setVisible(isProject);
     mActions[actProjOpt]->setEnabled(single);
 
+    mActions[actProjExport]->setVisible(isProject);
+    mActions[actProjExport]->setEnabled(single);
+
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 //    mActions[actSetMain]->setEnabled(single);
@@ -307,6 +312,12 @@ void ProjectContextMenu::onShowProjectOptions()
 {
     PExProjectNode *project = mNodes.first()->toProject();
     if (project) emit showProjectOptions(project);
+}
+
+void ProjectContextMenu::onExportProject()
+{
+    PExProjectNode *project = mNodes.first()->toProject();
+    emit exportProject(project);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
