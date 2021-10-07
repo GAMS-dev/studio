@@ -653,6 +653,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
                 continue;
             }
             PExFileNode* file = findOrCreateFileNode(item, project);
+            if (knownIds.contains(file->id())) knownIds.removeAll(file->id());
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
         } else {
