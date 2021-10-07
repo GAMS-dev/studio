@@ -73,8 +73,8 @@
 namespace gams {
 namespace studio {
 
-static const QStringList COpenAltText {"&Open in new project...",
-                                       "&Open in current project...",
+static const QStringList COpenAltText {"&Open in New Project...",
+                                       "&Open in Current Project...",
                                        "Open the file(s) in a new project",
                                        "Open the file(s) in the current project"};
 
