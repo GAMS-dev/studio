@@ -215,8 +215,9 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-void ProjectRepo::read(const QVariantList &data, const QString &workDir)
+bool ProjectRepo::read(const QVariantList &data, const QString &workDir)
 {
+    bool res = true;
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
         QString name = child.value("name").toString();
@@ -230,7 +231,8 @@ void ProjectRepo::read(const QVariantList &data, const QString &workDir)
         if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
             PExProjectNode* project = createProject(name, path, file);
             if (project) {
-                readProjectFiles(project, subChildren, localWorkDir.path());
+                if (!readProjectFiles(project, subChildren, localWorkDir.path()))
+                    res = false;
                 if (project->isEmpty()) {
                     closeGroup(project);
                 } else {
@@ -248,10 +250,12 @@ void ProjectRepo::read(const QVariantList &data, const QString &workDir)
             }
         }
     }
+    return res;
 }
 
-void ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir)
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir)
 {
+    bool res = true;
     if (!project)
         EXCEPT() << "Missing project node, can't add file nodes";
     QDir localWorkDir(workDir);
@@ -271,10 +275,12 @@ void ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                                                                          : codecMib);
                 }
             } else {
-                emit addWarning("Fime not found: " + file);
+                emit addWarning("File not found: " + file);
+                res = false;
             }
         }
     }
+    return res;
 }
 
 void ProjectRepo::write(QVariantList &projects) const

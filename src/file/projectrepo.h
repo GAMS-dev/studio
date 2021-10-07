@@ -107,7 +107,7 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QVariantList &data, const QString &workDir = QString());
+    bool read(const QVariantList &data, const QString &workDir = QString());
     void write(QVariantList &projects) const;
     void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
 
@@ -163,7 +163,7 @@ public slots:
 private:
     friend class PExProjectNode;
 
-    void readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
+    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
 

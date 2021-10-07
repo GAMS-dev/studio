@@ -2434,7 +2434,10 @@ void MainWindow::loadProjects(const QString &gspFile)
         file.close();
         QVariantMap map = json.object().toVariantMap();
         QVariantList data = map.value("projects").toList();
-        mProjectRepo.read(data, QFileInfo(gspFile).path());
+        if (!mProjectRepo.read(data, QFileInfo(gspFile).path())) {
+            QMessageBox::warning(this, "Lost file locations", "Maybe the project file has been moved without the contained files.\n"
+                                                              "For details open the System Log");
+        }
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
     }
@@ -2444,9 +2447,19 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
 {
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
                                           project->location()+'/'+project->name()+".gsp");
+    dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
+    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project]() {
+        if (dialog->directory() != QDir(project->location())) {
+            if (!dialog->property("warned").toBool()) {
+                dialog->setProperty("warned", true);
+                QMessageBox::warning(dialog, "Loosing file locations",
+                                     "If the project is stored outside it's root, file locations are lost.");
+            }
+        }
+    });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
         QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
