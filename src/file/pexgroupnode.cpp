@@ -94,6 +94,7 @@ QString PExGroupNode::location() const
 void PExGroupNode::setLocation(const QString& newLocation)
 {
     mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(newLocation) : newLocation;
+    if (mLocation.endsWith('/')) mLocation.remove(mLocation.length()-1, 1);
     emit changed(id());
 }
 
