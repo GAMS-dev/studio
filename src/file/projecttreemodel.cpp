@@ -365,14 +365,13 @@ bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
     return false;
 }
 
-QModelIndex ProjectTreeModel::findGroup(QModelIndex ind)
+QModelIndex ProjectTreeModel::findProject(QModelIndex ind)
 {
     if (ind.isValid()) {
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        ind = index(group);
+        PExProjectNode *project = node->assignedProject();
+        ind = index(project);
     }
     return ind;
 }

@@ -50,6 +50,7 @@ enum ContextAction {
     actAddNewGms,
     actAddNewOpt,
     actSep5,
+    actCloseProject,
     actCloseGroup,
     actCloseFile,
     actSep6,
@@ -130,7 +131,8 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep6, addSeparator());
 
-    mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
+    mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 }
 
@@ -144,6 +146,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.first()->toProject();
+    bool isGroup = mNodes.first()->toGroup() && !isProject;
 //    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
 
     PExFileNode *fileNode = mNodes.first()->toFile();
@@ -221,15 +224,17 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     mActions[actAddNewGms]->setVisible(isProject);
     mActions[actAddExisting]->setVisible(isProject);
-    mActions[actCloseGroup]->setVisible(isProject);
 
+    mActions[actCloseProject]->setVisible(isProject);
+    mActions[actCloseGroup]->setVisible(isGroup);
     mActions[actCloseFile]->setVisible(fileNode);
-    mActions[actCloseGroup]->setVisible(isProject);
 
     if (!single) {
+        mActions[actCloseProject]->setText(mTxtCloseProject + "s");
         mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
         mActions[actCloseFile]->setText(mTxtCloseFile + "s");
     } else {
+        mActions[actCloseProject]->setText(mTxtCloseProject);
         mActions[actCloseGroup]->setText(mTxtCloseGroup);
         mActions[actCloseFile]->setText(mTxtCloseFile);
     }
@@ -294,6 +299,18 @@ void ProjectContextMenu::setParent(QWidget *parent)
 }
 
 void ProjectContextMenu::onCloseGroup()
+{
+    for (PExAbstractNode *node: mNodes) {
+        PExGroupNode *group = node->toGroup();
+        if (!group) continue;
+        QVector<PExFileNode*> files = group->listFiles();
+        for (PExFileNode* file : files) {
+            emit closeFile(file);
+        }
+    }
+}
+
+void ProjectContextMenu::onCloseProject()
 {
     for (PExAbstractNode *node: mNodes) {
         PExProjectNode *project = node->toProject();

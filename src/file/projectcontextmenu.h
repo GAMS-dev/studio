@@ -63,6 +63,7 @@ signals:
 
 private slots:
     void onCloseGroup();
+    void onCloseProject();
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();
@@ -92,7 +93,8 @@ private:
     QWidget *mParent = nullptr;
 
     // Strings
-    QString mTxtCloseGroup = "Close &project";
+    QString mTxtCloseGroup = "Close files of this &group";
+    QString mTxtCloseProject = "Close &project";
     QString mTxtCloseFile = "Close &file";
 };
 

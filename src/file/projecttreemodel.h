@@ -72,7 +72,7 @@ protected:
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
     bool isCurrentGroup(const QModelIndex& ind) const;
-    QModelIndex findGroup(QModelIndex ind);
+    QModelIndex findProject(QModelIndex ind);
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
