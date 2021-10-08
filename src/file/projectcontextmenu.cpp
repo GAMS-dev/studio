@@ -344,7 +344,7 @@ void ProjectContextMenu::onShowProjectOptions()
 
 void ProjectContextMenu::onExportProject()
 {
-    PExProjectNode *project = mNodes.first()->toProject();
+    PExProjectNode *project = mNodes.first()->assignedProject();
     emit exportProject(project);
 }
 

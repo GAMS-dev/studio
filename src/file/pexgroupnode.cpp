@@ -52,6 +52,21 @@ PExGroupNode::~PExGroupNode()
 
 QIcon PExGroupNode::icon(QIcon::Mode mode, int alpha)
 {
+    PExProjectNode *project = assignedProject();
+    if (project) {
+        FileMeta *fmGms = project->runnableGms();
+        if (fmGms) {
+            PExFileNode *gms = projectRepo()->findFile(fmGms, project);
+            if (gms) {
+                PExGroupNode *group = gms->parentNode();
+                while (group != project) {
+                    if (group == this)
+                        return Theme::icon(":/img/folder-open-run", mode, alpha);
+                    group = group->parentNode();
+                }
+            }
+        }
+    }
     return Theme::icon(":/img/folder-open", mode, alpha);
 }
 
