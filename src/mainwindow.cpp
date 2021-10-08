@@ -2473,6 +2473,8 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
             if (!dialog->property("warned").toBool()) {
                 dialog->setProperty("warned", true);
                 box->show();
+                box->raise();
+                box->activateWindow();
             }
         }
     });
