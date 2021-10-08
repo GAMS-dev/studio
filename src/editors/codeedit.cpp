@@ -1939,6 +1939,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         return;
 
     QRegularExpression regEx = search->regex();
+    bool limitHighlighting = search->hasSearchSelection();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1952,6 +1953,11 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextCursor tc(document());
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
+            if (limitHighlighting) {
+                if (tc.selectionStart() < mSearchSelection.selectionStart()) continue;
+                else if (tc.selectionEnd() > mSearchSelection.selectionEnd()) continue;
+            }
+
             selection.cursor = tc;
             selection.format.setForeground(Qt::white);
             selection.format.setBackground(toColor(Theme::Edit_matchesBg));

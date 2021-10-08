@@ -128,13 +128,14 @@ protected:
     void setLinkClickPos(const QPoint &linkClickPos);
     QTextCursor cursorForPositionCut(const QPoint &pos) const;
 
+    QTextCursor mSearchSelection;
+
 private:
     const LineMarks* mMarks = nullptr;
     QPoint mClickPos;
     QPoint mTipPos;
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
-    QTextCursor mSearchSelection;
 
 private slots:
     void internalExtraSelUpdate();
