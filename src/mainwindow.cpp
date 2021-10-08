@@ -2458,19 +2458,21 @@ void MainWindow::importProjectDialog()
 
 void MainWindow::exportProjectDialog(PExProjectNode *project)
 {
+    QMessageBox *box = new QMessageBox(QMessageBox::Warning, "Loosing file locations",
+                                       "If the project is stored outside it's root, file locations are lost.",
+                                       QMessageBox::Ok, this);
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
                                           project->location()+'/'+project->name()+".gsp");
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
-    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project]() {
+    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project, box]() {
         if (dialog->directory() != QDir(project->location())) {
 
             if (!dialog->property("warned").toBool()) {
                 dialog->setProperty("warned", true);
-                QMessageBox::warning(dialog, "Loosing file locations",
-                                     "If the project is stored outside it's root, file locations are lost.");
+                box->show();
             }
         }
     });
@@ -2488,7 +2490,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
         }
 
     });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    connect(dialog, &QFileDialog::finished, this, [dialog, box]() { dialog->deleteLater(); box->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
 }
