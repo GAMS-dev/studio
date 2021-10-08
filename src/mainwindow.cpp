@@ -2453,7 +2453,7 @@ void MainWindow::importProjectDialog()
     connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
-    dialog->show();
+    dialog->open();
 }
 
 void MainWindow::exportProjectDialog(PExProjectNode *project)
@@ -2490,7 +2490,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
-    dialog->show();
+    dialog->open();
 }
 
 QString MainWindow::currentPath()
