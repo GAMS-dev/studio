@@ -1954,8 +1954,8 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             if (limitHighlighting) {
-                if (tc.selectionStart() < mSearchSelection.selectionStart()) continue;
-                else if (tc.selectionEnd() > mSearchSelection.selectionEnd()) continue;
+                if (tc.selectionStart() < searchSelection.selectionStart()) continue;
+                else if (tc.selectionEnd() > searchSelection.selectionEnd()) continue;
             }
 
             selection.cursor = tc;

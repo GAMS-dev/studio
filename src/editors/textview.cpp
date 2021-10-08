@@ -272,10 +272,12 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 
 void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results)
 {
+    mEdit->searchSelection = mEdit->textCursor();
     mMapper->findTextInSelection(searchRegex, file, results);
 }
 
 void TextView::clearSearchSelection() {
+    mEdit->clearSearchSelection();
     mMapper->clearSearchSelection();
 }
 
@@ -732,8 +734,8 @@ void TextView::findClosestLstRef(const QTextCursor &cursor)
     if (mMapper->kind() != AbstractTextMapper::memoryMapper) return;
     int line = cursor.blockNumber();
     QString href = static_cast<MemoryMapper*>(mMapper)->findClosestLst(line);
-    if (!href.isEmpty()) jumpToHRef(href);
-    else jumpToHRef("LST:0");
+    if (!href.isEmpty()) emit jumpToHRef(href);
+    else emit jumpToHRef("LST:0");
 }
 
 void TextView::updateExtraSelections()

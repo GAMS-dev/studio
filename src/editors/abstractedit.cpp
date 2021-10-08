@@ -32,6 +32,7 @@
 
 namespace gams {
 namespace studio {
+using namespace search;
 
 AbstractEdit::AbstractEdit(QWidget *parent)
     : QPlainTextEdit(parent)
@@ -209,12 +210,12 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
 }
 
 void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections) {
-    if (!mSearchSelection.hasSelection()) return;
+    if (!searchSelection.hasSelection()) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
     selection.format.setProperty(QTextFormat::FullWidthSelection, false);
-    selection.cursor = mSearchSelection;
+    selection.cursor = searchSelection;
     selections.append(selection);
 }
 
@@ -319,40 +320,40 @@ QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
 
 bool AbstractEdit::hasSearchSelection()
 {
-    return mSearchSelection.hasSelection();
+    return searchSelection.hasSelection();
 }
 
 void AbstractEdit::clearSearchSelection()
 {
-    mSearchSelection.clearSelection();
+    searchSelection.clearSelection();
 }
 
-void AbstractEdit::findInSelection(QList<search::Result> &results) {
+void AbstractEdit::findInSelection(QList<Result> &results) {
     int startPos;
     int endPos;
     QTextCursor item;
     QTextCursor lastItem;
 
-    if (textCursor() != mSearchSelection)
-        search::SearchLocator::search()->reset();
+    if (textCursor() != searchSelection)
+        SearchLocator::search()->reset();
 
-    mSearchSelection = textCursor();
-    if (!mSearchSelection.hasSelection()) return;
+    searchSelection = textCursor();
+    if (!searchSelection.hasSelection()) return;
 
-    startPos = mSearchSelection.selectionStart();
-    endPos = mSearchSelection.selectionEnd();
+    startPos = searchSelection.selectionStart();
+    endPos = searchSelection.selectionEnd();
 
     // ignore search direction for cache generation. otherwise results would be in wrong order
-    QFlags<QTextDocument::FindFlag> cacheOptions = search::SearchLocator::search()->options();
+    QFlags<QTextDocument::FindFlag> cacheOptions = SearchLocator::search()->options();
     cacheOptions.setFlag(QTextDocument::FindBackward, false);
 
     do {
-        item = document()->find(search::SearchLocator::search()->regex(), qMax(startPos, item.position()), cacheOptions);
+        item = document()->find(SearchLocator::search()->regex(), qMax(startPos, item.position()), cacheOptions);
         if (item != lastItem) lastItem = item;
         else break; // mitigate endless loop
 
-        if (!item.isNull() && item.position() < endPos) {
-            results.append(search::Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
+        if (!item.isNull() && item.position() <= endPos) {
+            results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                           item.selectedText().length(), property("location").toString(),
                                           item.block().text().trimmed()));
         } else break;
