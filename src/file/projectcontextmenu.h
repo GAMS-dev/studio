@@ -54,6 +54,7 @@ signals:
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void exportProject(PExProjectNode* group);
+    void importProject();
     void selectAll();
     void expandAll();
     void collapseAll();
@@ -93,7 +94,7 @@ private:
     QWidget *mParent = nullptr;
 
     // Strings
-    QString mTxtCloseGroup = "Close files of this &group";
+    QString mTxtCloseGroup = "Close files in this &folder";
     QString mTxtCloseProject = "Close &project";
     QString mTxtCloseFile = "Close &file";
 };

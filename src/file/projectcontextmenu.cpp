@@ -42,6 +42,7 @@ enum ContextAction {
     actLogTab,
     actProjOpt,
     actProjExport,
+    actProjImport,
     actSep2,
     actSetMain,
     actSep3,
@@ -75,7 +76,6 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actProjOpt, addAction("&Project options",  this, &ProjectContextMenu::onShowProjectOptions));
-    mActions.insert(actProjExport, addAction("Export &project",  this, &ProjectContextMenu::onExportProject));
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -131,6 +131,8 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep6, addSeparator());
 
+    mActions.insert(actProjExport, addAction("&Export project",  this, &ProjectContextMenu::onExportProject));
+    mActions.insert(actProjImport, addAction("&Import project",  this, &ProjectContextMenu::importProject));
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
     mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
@@ -147,6 +149,15 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.first()->toProject();
     bool isGroup = mNodes.first()->toGroup() && !isProject;
+    PExProjectNode *project = mNodes.first()->assignedProject();
+    bool isOneProject = true;
+    for (PExAbstractNode *node: mNodes) {
+        if (node->assignedProject() != project) {
+            isOneProject = false;
+            break;
+        }
+    }
+
 //    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
 
     PExFileNode *fileNode = mNodes.first()->toFile();
@@ -215,8 +226,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actProjOpt]->setVisible(isProject);
     mActions[actProjOpt]->setEnabled(single);
 
-    mActions[actProjExport]->setVisible(isProject);
-    mActions[actProjExport]->setEnabled(single);
+//    mActions[actProjExport]->setVisible(isProject);
+    mActions[actProjExport]->setEnabled(isOneProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);

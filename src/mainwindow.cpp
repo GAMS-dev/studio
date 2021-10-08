@@ -211,6 +211,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this, &MainWindow::reOpenFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::exportProject, this, &MainWindow::exportProjectDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::importProject, this, &MainWindow::importProjectDialog);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -2443,6 +2444,18 @@ void MainWindow::loadProjects(const QString &gspFile)
     }
 }
 
+void MainWindow::importProjectDialog()
+{
+    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
+    dialog->setAcceptMode(QFileDialog::AcceptOpen);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->show();
+}
+
 void MainWindow::exportProjectDialog(PExProjectNode *project)
 {
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
@@ -2453,6 +2466,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
     dialog->setDefaultSuffix("gsp");
     connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project]() {
         if (dialog->directory() != QDir(project->location())) {
+
             if (!dialog->property("warned").toBool()) {
                 dialog->setProperty("warned", true);
                 QMessageBox::warning(dialog, "Loosing file locations",
@@ -5049,14 +5063,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionImport_Project_triggered()
 {
-    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptOpen);
-    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->show();
+    importProjectDialog();
 }
 
 
