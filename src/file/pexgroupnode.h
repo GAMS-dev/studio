@@ -137,7 +137,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
+    PExProjectNode(QString name, QString path, FileMeta *runFileMeta, QString workDir);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
     void appendChild(PExAbstractNode *child) override;
@@ -145,6 +145,7 @@ protected:
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
+    QString mWorkDir;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     QHash<int, QString> mErrorTexts;

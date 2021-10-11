@@ -107,11 +107,11 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    bool read(const QVariantList &data, const QString &workDir = QString());
+    bool read(const QVariantList &data, const QString &sysWorkDir = QString());
     void write(QVariantList &projects) const;
     void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString name, QString path, QString runFileName);
+    PExProjectNode *createProject(QString name, QString path, QString runFileName, QString workDir = QString());
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());

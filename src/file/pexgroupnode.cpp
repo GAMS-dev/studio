@@ -209,8 +209,9 @@ void PExGroupNode::hasFile(QString fName, bool &exists)
     exists = findFile(fName);
 }
 
-PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta)
+PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta, QString workDir)
     : PExGroupNode(name, path, NodeType::project)
+    , mWorkDir(workDir)
     , mGamsProcess(new GamsProcess())
 {
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
@@ -305,7 +306,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
                 fName = fName.mid(1, fName.length()-2);
             QStringList locations;
             if (iCode == 2) { // INC
-                locations << location();
+                locations << workDir();
                 QString inDir;
                 emit getParameterValue("InputDir", inDir);
                 if (inDir.isNull()) emit getParameterValue("IDir", inDir);
@@ -362,7 +363,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
             QString rawName = fName;
             for (QString loc : locations) {
                 if (!QDir::isAbsolutePath(loc))
-                    loc = location() + '/' + loc;
+                    loc = workDir() + '/' + loc;
                 fName = loc + '/' + rawName;
                 QFileInfo file(fName);
                 exist = file.exists() && file.isFile();
@@ -380,7 +381,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     } else if (parts.first().startsWith('"')) {
         QString fName = parts.first().mid(1, parts.first().length()-2).toString();
         if (!QDir::isAbsolutePath(fName))
-            fName = location() + '/' + fName;
+            fName = workDir() + '/' + fName;
 
         exist = QFile(fName).exists();
         if (exist) res = fName;
@@ -397,7 +398,7 @@ PExLogNode *PExProjectNode::logNode()
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
         QFileInfo fi = !parameter("gms").isEmpty()
-                       ? parameter("gms") : QFileInfo(location()+"/"+name()+"."+suffix);
+                       ? parameter("gms") : QFileInfo(workDir()+"/"+name()+"."+suffix);
         QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new PExLogNode(fm, this);
@@ -459,7 +460,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         setParameter("lst", "");
         return;
     }
-    if (location().isEmpty())
+    if (workDir().isEmpty())
         setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
 
     QString gmsPath = gmsFile->location();
@@ -722,7 +723,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
                 output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
         } else {
             if (item.optionId == -1) { // double-dashed option or unknown option
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( item.value ) );
+                output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
             } else {
                 output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
             }
@@ -734,23 +735,21 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 
 void PExProjectNode::setWorkDir(const QString &workingDir)
 {
-    if (workDir().isEmpty() || workDir().compare(workingDir, FileMetaRepo::fsCaseSensitive()) == 0)
-        setLocation(workingDir);
-    else {
-        // changed more than letter case
-        setLocation(workingDir);
+    bool changed = workDir().isEmpty() || workDir().compare(workingDir, FileMetaRepo::fsCaseSensitive()) == 0;
+    // changed more than letter case
+    mWorkDir = workingDir;
+    if (changed)
         emit workDirChanged(this);
-    }
 }
 
 QString PExProjectNode::workDir() const
 {
-    return location();
+    return mWorkDir;
 }
 
 ///
 /// \brief PexProjectNode::normalizePath removes quotes and trims whitespaces for use within studio. do not pass to gams!
-/// \param path workign dir
+/// \param path working dir
 /// \param file file name, can be absolute or relative
 /// \return cleaned path
 ///
@@ -761,7 +760,7 @@ QString PExProjectNode::cleanPath(QString path, QString file) {
     path.remove("\""); // remove quotes from path
     QDir dir(path);
     if (dir.isRelative()) {
-        path = location() + '/' + path;
+        path = workDir() + '/' + path;
     }
 
     file.remove("\""); // remove quotes from filename
@@ -851,7 +850,7 @@ void PExProjectNode::setParameter(const QString &kind, const QString &path)
     }
     QString fullPath = path.contains('\\') ? QDir::fromNativeSeparators(path) : path;
     if (QFileInfo(fullPath).isRelative())
-        fullPath = QFileInfo(location()).canonicalFilePath() + "/" + fullPath;
+        fullPath = QFileInfo(workDir()).canonicalFilePath() + "/" + fullPath;
 
     fullPath.remove("\"");
 
@@ -883,7 +882,7 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 
 QString PExProjectNode::tooltip()
 {
-    QString res(QDir::toNativeSeparators(location()));
+    QString res(QDir::toNativeSeparators(location()) + "\n" + QDir::toNativeSeparators(workDir()));
     if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());

@@ -1821,8 +1821,8 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
     }
 
     if (exitCode == ecTooManyScratchDirs) {
-        PExProjectNode* prj = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
-        QString path = prj ? QDir::toNativeSeparators(prj->location()) : currentPath();
+        PExProjectNode* project = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
+        QString path = project ? QDir::toNativeSeparators(project->workDir()) : currentPath();
 
         // TODO fix QDialog::exec() issue
         QMessageBox msgBox;
@@ -2557,8 +2557,8 @@ void MainWindow::on_actionBase_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
-    miroProcess->setModelName(mRecent.project()->toProject()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.project()->workDir());
+    miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -2572,8 +2572,8 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
-    miroProcess->setModelName(mRecent.project()->toProject()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.project()->workDir());
+    miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -2584,7 +2584,7 @@ void MainWindow::on_actionStop_MIRO_triggered()
 {
     if (!mRecent.project())
         return;
-    mRecent.project()->toProject()->process()->terminate();
+    mRecent.project()->process()->terminate();
 }
 
 void MainWindow::on_actionDeploy_triggered()
@@ -2592,19 +2592,19 @@ void MainWindow::on_actionDeploy_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    QString assemblyFile = mRecent.project()->toProject()->location() + "/" +
-                           miro::MiroCommon::assemblyFileName(mRecent.project()->toProject()->mainModelName());
+    QString assemblyFile = mRecent.project()->workDir() + "/" +
+                           miro::MiroCommon::assemblyFileName(mRecent.project()->mainModelName());
 
     QStringList checkedFiles;
     if (mRecent.project()) {
         checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                mRecent.project()->toProject()->mainModelName(false));
+                                                                mRecent.project()->mainModelName(false));
     }
 
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
-    mMiroDeployDialog->setWorkingDirectory(mRecent.project()->toProject()->location());
-    mMiroDeployDialog->setModelName(mRecent.project()->toProject()->mainModelName());
+    mMiroDeployDialog->setWorkingDirectory(mRecent.project()->workDir());
+    mMiroDeployDialog->setModelName(mRecent.project()->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -2634,8 +2634,8 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
-    process->setWorkingDirectory(mRecent.project()->toProject()->location());
-    process->setModelName(mRecent.project()->toProject()->mainModelName());
+    process->setWorkingDirectory(mRecent.project()->workDir());
+    process->setModelName(mRecent.project()->mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -3166,7 +3166,7 @@ bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, 
         PExFileNode *runNode = project->findFile(runMeta);
         logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
-    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->location();
+    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->workDir();
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
@@ -3361,7 +3361,7 @@ neos::NeosProcess *MainWindow::createNeosProcess()
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
     if (!project) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
+    neosProcess->setWorkingDirectory(mRecent.project()->workDir());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     project->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
@@ -3489,7 +3489,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
-    engineProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
+    engineProcess->setWorkingDirectory(mRecent.project()->workDir());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : itemList) {
@@ -3689,7 +3689,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
                     project = nodes.first()->assignedProject();
             } else {
                 QFileInfo file(fileMeta->location());
-                project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toProject();
+                project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
+                                                     file.absoluteFilePath())->toProject();
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }
@@ -4732,7 +4733,7 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
     PExProjectNode* node = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
-    QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
+    QString path = node ? QDir::toNativeSeparators(node->workDir()) : currentPath();
 
     QMessageBox msgBox;
     msgBox.setWindowTitle("Delete scratch directories");

@@ -74,14 +74,24 @@ void ProjectOptions::on_edWorkDir_textEdited(const QString &text)
     }
 }
 
-void ProjectOptions::on_toolButton_clicked()
+void ProjectOptions::on_bWorkDir_clicked()
 {
-    QFileDialog *dialog = new QFileDialog(this, "Change Work Directory", mProject->location());
+    showDirDialog("Select Working Directory", ui->edWorkDir);
+}
+
+void ProjectOptions::on_bBaseDir_clicked()
+{
+    showDirDialog("Select Base Directory", ui->edBaseDir);
+}
+
+void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit)
+{
+    QFileDialog *dialog = new QFileDialog(this, title, mProject->location());
     dialog->setFileMode(QFileDialog::Directory);
-    connect(dialog, &QFileDialog::accepted, this, [this, dialog]() {
+    connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
         if (dialog->selectedFiles().count() == 1) {
             QDir dir(dialog->selectedFiles().first().trimmed());
-            if (dir.exists()) this->ui->edWorkDir->setText(dir.path());
+            if (dir.exists()) lineEdit->setText(dir.path());
         }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });

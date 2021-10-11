@@ -215,23 +215,25 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-bool ProjectRepo::read(const QVariantList &data, const QString &workDir)
+bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
 {
     bool res = true;
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
         QString name = child.value("name").toString();
         QString path = child.value("path").toString();
-        path = path == "." ? workDir.isEmpty() ? CommonPaths::defaultWorkingDir() : workDir : path;
-        QDir localWorkDir(path);
+        if (path == "." || path.isEmpty())
+            path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+        QDir localBaseDir(path);
+        QString workDir = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("workDir").toString()));
 
-        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
+        QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
         QVariantList subChildren = child.value("nodes").toList();
         if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
-            PExProjectNode* project = createProject(name, path, file);
+            PExProjectNode* project = createProject(name, path, file, workDir);
             if (project) {
-                if (!readProjectFiles(project, subChildren, localWorkDir.path()))
+                if (!readProjectFiles(project, subChildren, localBaseDir.path()))
                     res = false;
                 if (project->isEmpty()) {
                     closeGroup(project);
@@ -258,11 +260,11 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
     bool res = true;
     if (!project)
         EXCEPT() << "Missing project node, can't add file nodes";
-    QDir localWorkDir(workDir);
+    QDir localBaseDir(workDir);
     for (int i = 0; i < children.size(); ++i) {
         QVariantMap child = children.at(i).toMap();
         QString name = child.value("name").toString();
-        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
+        QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
         if (!name.isEmpty() || !file.isEmpty()) {
             QString suf = child["type"].toString();
             if (suf == "gms") suf = QFileInfo(name).suffix();
@@ -302,6 +304,7 @@ void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool re
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     nodeObject.insert("path", relativePaths ? "." : project->location() );
+    nodeObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
     nodeObject.insert("name", project->name());
     nodeObject.insert("options", project->toProject()->getRunParametersHistory());
     emit isNodeExpanded(mTreeModel->index(project), expand);
@@ -353,14 +356,14 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     purgeGroup(oldParent);
 }
 
-PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName)
+PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, QString workDir)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
 
     PExProjectNode* project = nullptr;
     FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
-    project = new PExProjectNode(name, path, runFile);
+    project = new PExProjectNode(name, path, runFile, workDir);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
