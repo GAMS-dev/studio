@@ -180,11 +180,12 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<PExGroupNode *> groups = QVector<PExGroupNode *>(), const QString& solverName="");
+    void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event) override;
-    void closeGroup(PExGroupNode* group);
+    void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
+    void showProjectOptions(PExProjectNode *project);
 
 private slots:
     void openInitialFiles();
@@ -206,7 +207,7 @@ private slots:
     void neosProgress(AbstractProcess *proc, ProcState progress);
     void remoteProgress(AbstractProcess *proc, ProcState progress);
     void closeNodeConditionally(PExFileNode *node);
-    void addToGroup(PExGroupNode *group, const QString &filepath);
+    void addToGroup(PExProjectNode *project, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
@@ -242,6 +243,8 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
+    void on_actionImport_Project_triggered();
+    void on_actionExport_Project_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -386,12 +389,15 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
+    void loadProjects(const QString &gspFile);
+    void importProjectDialog();
+    void exportProjectDialog(PExProjectNode *project);
 
 private:
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
-    PExFileNode* addNode(const QString &path, const QString &fileName, PExGroupNode *group = nullptr);
+    PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
@@ -469,6 +475,7 @@ private:
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
+    QString mExportProjectFilePath;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

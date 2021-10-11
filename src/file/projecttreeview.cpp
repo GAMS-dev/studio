@@ -133,7 +133,7 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
             event->ignore();
             return;
         }
-        QModelIndex groupInd = treeModel->findGroup(ind);
+        QModelIndex groupInd = treeModel->findProject(ind);
         selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
         event->accept();
     } else {

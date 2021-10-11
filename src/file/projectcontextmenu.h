@@ -28,7 +28,7 @@ namespace gams {
 namespace studio {
 
 class PExAbstractNode;
-class PExGroupNode;
+class PExProjectNode;
 class PExFileNode;
 
 class ProjectContextMenu : public QMenu
@@ -41,32 +41,36 @@ public:
     void setParent(QWidget *parent);
 
 signals:
-    void closeGroup(PExGroupNode* group);
-    void project(PExGroupNode* group);
+    void closeProject(PExProjectNode* project);
+    void project(PExProjectNode* group);
     void runFile(PExFileNode *fc);
     void setMainFile(PExFileNode *fc);
     void closeFile(PExFileNode* fc);
-    void addExistingFile(PExGroupNode* group, const QString& file);
+    void addExistingFile(PExProjectNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
-    void renameGroup(PExGroupNode* group);
+    void showProjectOptions(PExProjectNode* project);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void exportProject(PExProjectNode* group);
+    void importProject();
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<PExGroupNode *> groups, const QString& solverName="");
+    void newFileDialog(QVector<PExProjectNode *> groups, const QString& solverName="");
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
 
 private slots:
     void onCloseGroup();
+    void onCloseProject();
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();
     void onSetMainFile();
-    void onRenameGroup();
+    void onShowProjectOptions();
+    void onExportProject();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();
@@ -90,7 +94,8 @@ private:
     QWidget *mParent = nullptr;
 
     // Strings
-    QString mTxtCloseGroup = "Close &project";
+    QString mTxtCloseGroup = "Close files in this &folder";
+    QString mTxtCloseProject = "Close &project";
     QString mTxtCloseFile = "Close &file";
 };
 

@@ -38,9 +38,6 @@ FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
     mSettings = Settings::settings();
-#ifdef __unix__
-    mFsCaseSensitive = true;
-#endif
 }
 
 FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
@@ -50,7 +47,7 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    if (mFsCaseSensitive)
+    if (fsCaseSensitive())
         return mFileNames.value(location);
     return mFileNames.value(location.toLower());
 }
@@ -75,11 +72,20 @@ const QList<FileMeta *> FileMetaRepo::fileMetas() const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
-    if (mFsCaseSensitive)
+    if (fsCaseSensitive())
         mFileNames.insert(fileMeta->location(), fileMeta);
     else
         mFileNames.insert(fileMeta->location().toLower(), fileMeta);
     watch(fileMeta);
+}
+
+Qt::CaseSensitivity FileMetaRepo::fsCaseSensitive()
+{
+#ifdef __unix__
+    return Qt::CaseSensitive;
+#else
+    return Qt::CaseInsensitive;
+#endif
 }
 
 bool FileMetaRepo::askBigFileEdit() const
@@ -96,7 +102,7 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());
-        if (mFsCaseSensitive)
+        if (fsCaseSensitive())
             mFileNames.remove(fileMeta->location());
         else
             mFileNames.remove(fileMeta->location().toLower());
@@ -248,7 +254,7 @@ bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
 
 void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
 {
-    if (mFsCaseSensitive) {
+    if (fsCaseSensitive()) {
         mFileNames.remove(oldLocation);
         mFileNames.insert(file->location(), file);
     } else {

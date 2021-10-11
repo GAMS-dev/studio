@@ -44,13 +44,13 @@ class ProjectRepo : public QObject
     Q_OBJECT
 public:
     explicit ProjectRepo(QObject *parent = nullptr);
-    ~ProjectRepo();
+    ~ProjectRepo() override;
     void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
     PExProjectNode *findProject(NodeId nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
     PExFileNode *findFile(QString filePath, PExGroupNode *fileGroup = nullptr) const;
-    PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr, bool recurse = true) const;
+    PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>PExAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExAbstractNode</c>.
@@ -107,13 +107,15 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    void read(const QVariantList &data);
+    bool read(const QVariantList &data, const QString &workDir = QString());
     void write(QVariantList &projects) const;
+    void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
 
-    PExGroupNode *createGroup(QString name, QString path, QString runFileName, PExGroupNode *_parent = nullptr);
-    PExFileNode *findOrCreateFileNode(QString location, PExGroupNode *fileGroup = nullptr, FileType *knownType = nullptr
+    PExProjectNode *createProject(QString name, QString path, QString runFileName);
+    PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
+    PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
-    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExGroupNode *fileGroup = nullptr, QString explicitName = QString());
+    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, QString explicitName = QString());
     QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
     QVector<AbstractProcess*> listProcesses();
@@ -133,6 +135,7 @@ signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
+    void loadProjects(const QString &gspFile);
     void openFile(FileMeta* fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
@@ -142,6 +145,7 @@ signals:
     void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
     void getParameterValue(QString param, QString &value);
+    void addWarning(const QString &warning);
 
 public slots:
     void gamsProcessStateChange(PExGroupNode* group);
@@ -154,13 +158,15 @@ public slots:
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
-    void renameGroup(PExGroupNode *group);
+    void reassignFiles(PExProjectNode *project);
 
 private:
     friend class PExProjectNode;
 
-    void writeGroup(const PExGroupNode* group, QVariantList &childList) const;
-    void readGroup(PExGroupNode* group, const QVariantList &children);
+    bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
+    void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
+    void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
+
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);
     }
@@ -180,6 +186,7 @@ private:
     QVector<PExProjectNode*> mRunnigGroups;
     QTimer mRunAnimateTimer;
     QHash<QPair<QIcon::Mode, int>, QVector<QIcon>> mRunIcons;
+    int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
 };

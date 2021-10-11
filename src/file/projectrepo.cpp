@@ -38,13 +38,8 @@ ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this)))
 {
     addToIndex(mTreeModel->rootNode());
-    mRunAnimateTimer.setInterval(150);
-    QVector<QIcon> runIcons;
-    runIcons << Theme::icon(":/img/folder-run1", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run2", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run3", QIcon::Normal, 100);
-    runIcons << Theme::icon(":/img/folder-run4", QIcon::Normal, 100);
-    mRunIcons.insert(QPair<QIcon::Mode, int>(QIcon::Normal, 100), runIcons);
+    mRunAnimateTimer.setInterval(250);
+    runAnimateIcon(QIcon::Normal, 100);
     connect(&mRunAnimateTimer, &QTimer::timeout, this, &ProjectRepo::stepRunAnimation);
 }
 
@@ -88,10 +83,10 @@ PExFileNode *ProjectRepo::findFile(QString filePath, PExGroupNode *fileGroup) co
     return findFile(fm, fileGroup);
 }
 
-PExFileNode *ProjectRepo::findFile(FileMeta *fileMeta, PExGroupNode *fileGroup, bool recurse) const
+PExFileNode *ProjectRepo::findFile(FileMeta *fileMeta, PExGroupNode *fileGroup) const
 {
     PExGroupNode *group = fileGroup ? fileGroup : mTreeModel->rootNode();
-    return group->findFile(fileMeta, recurse);
+    return group->findFile(fileMeta);
 }
 
 PExAbstractNode *ProjectRepo::node(NodeId id) const
@@ -146,7 +141,7 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     PExGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
 
-    return group->findFile(fileMeta, true);
+    return group->findFile(fileMeta);
 }
 
 PExAbstractNode *ProjectRepo::next(PExAbstractNode *node)
@@ -220,147 +215,192 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-void ProjectRepo::read(const QVariantList &data)
+bool ProjectRepo::read(const QVariantList &data, const QString &workDir)
 {
-    readGroup(mTreeModel->rootNode(), data);
-}
-
-void ProjectRepo::readGroup(PExGroupNode* group, const QVariantList& children)
-{
-    for (int i = 0; i < children.size(); ++i) {
-        QVariantMap child = children.at(i).toMap();
+    bool res = true;
+    for (int i = 0; i < data.size(); ++i) {
+        QVariantMap child = data.at(i).toMap();
         QString name = child.value("name").toString();
-        QString file = child.value("file").toString();
         QString path = child.value("path").toString();
+        path = path == "." ? workDir.isEmpty() ? CommonPaths::defaultWorkingDir() : workDir : path;
+        QDir localWorkDir(path);
+
+        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
-        if (child.contains("nodes")) {
-            // group
-            QVariantList subChildren = child.value("nodes").toList();
-            if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
-                PExGroupNode* subGroup = createGroup(name, path, file, group);
-                if (subGroup) {
-                    readGroup(subGroup, subChildren);
-                    if (subGroup->isEmpty()) {
-                        closeGroup(subGroup);
-                    } else {
-                        bool expand = child.contains("expand") ? child.value("expand").toBool() : true;
-                        emit setNodeExpanded(mTreeModel->index(subGroup), expand);
-                    }
-                }
-                QVariantList optList = child.value("options").toList();
-                if (!optList.isEmpty() && subGroup->toProject()) {
-                    for (QVariant opt : optList) {
-                        PExProjectNode *prgn = subGroup->toProject();
-                        QString par = opt.toString();
-                        prgn->addRunParametersHistory(par);
-                    }
+        QVariantList subChildren = child.value("nodes").toList();
+        if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
+            PExProjectNode* project = createProject(name, path, file);
+            if (project) {
+                if (!readProjectFiles(project, subChildren, localWorkDir.path()))
+                    res = false;
+                if (project->isEmpty()) {
+                    closeGroup(project);
+                } else {
+                    bool expand = child.contains("expand") ? child.value("expand").toBool() : true;
+                    emit setNodeExpanded(mTreeModel->index(project), expand);
                 }
             }
-        } else {
-            // file
-            if (!name.isEmpty() || !file.isEmpty()) {
-                QString suf = child["type"].toString();
-                if (suf == "gms") suf = QFileInfo(name).suffix();
-                FileType *ft = &FileType::from(suf);
-                if (QFileInfo(file).exists()) {
-                    PExFileNode * node = findOrCreateFileNode(file, group, ft, name);
-                    if (child.contains("codecMib")) {
-                        int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-                        node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
-                                                                             : codecMib);
-                    }
+            QVariantList optList = child.value("options").toList();
+            if (!optList.isEmpty() && project->toProject()) {
+                for (QVariant opt : optList) {
+                    PExProjectNode *prgn = project->toProject();
+                    QString par = opt.toString();
+                    prgn->addRunParametersHistory(par);
                 }
             }
         }
     }
+    return res;
+}
+
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir)
+{
+    bool res = true;
+    if (!project)
+        EXCEPT() << "Missing project node, can't add file nodes";
+    QDir localWorkDir(workDir);
+    for (int i = 0; i < children.size(); ++i) {
+        QVariantMap child = children.at(i).toMap();
+        QString name = child.value("name").toString();
+        QString file = QDir::cleanPath(localWorkDir.absoluteFilePath(child.value("file").toString()));
+        if (!name.isEmpty() || !file.isEmpty()) {
+            QString suf = child["type"].toString();
+            if (suf == "gms") suf = QFileInfo(name).suffix();
+            FileType *ft = &FileType::from(suf);
+            if (QFileInfo(file).exists()) {
+                PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
+                if (child.contains("codecMib")) {
+                    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+                    node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
+                                                                         : codecMib);
+                }
+            } else {
+                emit addWarning("File not found: " + file);
+                res = false;
+            }
+        }
+    }
+    return res;
 }
 
 void ProjectRepo::write(QVariantList &projects) const
 {
-    writeGroup(mTreeModel->rootNode(), projects);
+    for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
+        PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
+        write(project, projects);
+    }
 }
 
-void ProjectRepo::writeGroup(const PExGroupNode* group, QVariantList& childList) const
+void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool relativePaths) const
 {
-    for (int i = 0; i < group->childCount(); ++i) {
-        PExAbstractNode *node = group->childNode(i);
-        QVariantMap nodeObject;
-        bool expand = true;
-        if (node->toGroup()) {
-            if (PExProjectNode *project = node->toProject()) {
-                if (project->runnableGms())
-                    nodeObject.insert("file", node->toProject()->runnableGms()->location());
-            }
-            const PExGroupNode *subGroup = node->toGroup();
-            nodeObject.insert("path", subGroup->location());
-            nodeObject.insert("name", node->name());
-            if (subGroup->toProject())
-                nodeObject.insert("options", subGroup->toProject()->getRunParametersHistory());
-            emit isNodeExpanded(mTreeModel->index(subGroup), expand);
-            if (!expand) nodeObject.insert("expand", false);
-            QVariantList subArray;
-            writeGroup(subGroup, subArray);
-            nodeObject.insert("nodes", subArray);
+    if (!project) return;
+    QVariantMap nodeObject;
+    bool expand = true;
+    QDir dir(project->location());
+    if (project->runnableGms()) {
+        QString filePath = project->toProject()->runnableGms()->location();
+        nodeObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
+    }
+    nodeObject.insert("path", relativePaths ? "." : project->location() );
+    nodeObject.insert("name", project->name());
+    nodeObject.insert("options", project->toProject()->getRunParametersHistory());
+    emit isNodeExpanded(mTreeModel->index(project), expand);
+    if (!expand) nodeObject.insert("expand", false);
+    QVariantList subArray;
+    writeProjectFiles(project, subArray, relativePaths);
+    nodeObject.insert("nodes", subArray);
+    projects.append(nodeObject);
+}
 
-        } else {
-            const PExFileNode *file = node->toFile();
-            nodeObject.insert("file", file->location());
-            nodeObject.insert("name", file->name());
-            if (node->toFile()) {
-                PExFileNode *fileNode = node->toFile();
-                nodeObject.insert("type", fileNode->file()->kindAsStr());
-                int mib = fileNode->file()->codecMib();
-                nodeObject.insert("codecMib", mib);
-            }
-        }
+void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
+{
+    QDir dir(project->location());
+    for (PExFileNode *file : project->listFiles()) {
+        QVariantMap nodeObject;
+        nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
+        nodeObject.insert("name", file->name());
+        nodeObject.insert("type", file->file()->kindAsStr());
+        int mib = file->file()->codecMib();
+        nodeObject.insert("codecMib", mib);
         childList.append(nodeObject);
     }
 }
 
-void ProjectRepo::renameGroup(PExGroupNode* group)
+void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders)
 {
-    mTreeView->edit(mTreeModel->index(group));
+    PExGroupNode *oldParent = nullptr;
+    if (mNodes.contains(file->id()))
+        oldParent = file->parentNode()->toGroup();
+    else
+        addToIndex(file);
+    // create missing group node for folders
+    PExGroupNode *newParent = project;
+    if (withFolders) {
+        QDir prjPath(project->location());
+        QString relPath = prjPath.relativeFilePath(file->location());
+        bool isAbs = QDir(relPath).isAbsolute();
+        QStringList folders;
+        folders = relPath.split('/');
+        folders.removeLast();
+        for (const QString &folderName : folders) {
+            newParent = findOrCreateFolder(folderName, newParent, isAbs);
+            isAbs = false;
+        }
+    }
+    // add to (new) destination
+    mTreeModel->insertChild(newParent->childCount(), newParent, file);
+    mTreeModel->sortChildNodes(project);
+    purgeGroup(oldParent);
 }
 
-PExGroupNode* ProjectRepo::createGroup(QString name, QString path, QString runFileName, PExGroupNode *_parent)
+PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName)
 {
-    if (!_parent) _parent = mTreeModel->rootNode();
-    if (!_parent) FATAL() << "Can't get tree-model root-node";
+    PExGroupNode *root = mTreeModel->rootNode();
+    if (!root) FATAL() << "Can't get tree-model root-node";
 
-    PExGroupNode* group;
     PExProjectNode* project = nullptr;
-    if (_parent == mTreeModel->rootNode()) {
-        FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
-        project = new PExProjectNode(name, path, runFile);
-        group = project;
-        connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
-        connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
-        connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
-    } else
-        group = new PExGroupNode(name, path);
-    addToIndex(group);
-    mTreeModel->insertChild(_parent->childCount(), _parent, group);
-    connect(group, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
+    FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
+    project = new PExProjectNode(name, path, runFile);
+    connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
+    connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
+    connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
+    connect(project, &PExProjectNode::workDirChanged, this, &ProjectRepo::reassignFiles);
+    addToIndex(project);
+    mTreeModel->insertChild(root->childCount(), root, project);
+    connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
-    mTreeView->setExpanded(mTreeModel->index(group), true);
-    mTreeModel->sortChildNodes(_parent);
-    return group;
+    mTreeView->setExpanded(mTreeModel->index(project), true);
+    mTreeModel->sortChildNodes(root);
+    return project;
+}
+
+PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs)
+{
+    if (!parentNode) FATAL() << "Parent-node missing";
+    if (parentNode == mTreeModel->rootNode()) FATAL() << "Folder-node must not exist on top level";
+
+    for (int i = 0; i < parentNode->childCount(); ++i) {
+        PExAbstractNode *node = parentNode->childNode(i);
+        if (node->name().compare(folderName, FileMetaRepo::fsCaseSensitive()) == 0) {
+            PExGroupNode* folder = node->toGroup();
+            if (!folder)
+                EXCEPT() << "Folder node '" << folderName << "' already exists as file node";
+            return node->toGroup();
+        }
+    }
+    PExGroupNode* folder = new PExGroupNode(folderName, isAbs ? folderName
+                                                              : QDir::cleanPath(parentNode->location()+'/'+folderName));
+    addToIndex(folder);
+    mTreeModel->insertChild(parentNode->childCount(), parentNode, folder);
+    connect(folder, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
+    emit changed();
+    mTreeModel->sortChildNodes(parentNode);
+    return folder;
 }
 
 void ProjectRepo::closeGroup(PExGroupNode* group)
 {
-    // remove normal children
-    for (int i = group->childCount()-1; i >= 0; --i) {
-        PExAbstractNode *node = group->childNode(i);
-        PExGroupNode* subGroup = node->toGroup();
-        if (subGroup) closeGroup(subGroup);
-        else {
-            if (!node->toFile())
-                EXCEPT() << "unhandled node of type " << int(node->type());
-            closeNode(node->toFile());
-        }
-    }
-
+    if (group->childCount()) EXCEPT() << "Can't close project that isn't empty";
     if (mNodes.contains(group->id())) {
         mTreeModel->removeChild(group);
         removeFromIndex(group);
@@ -418,7 +458,7 @@ void ProjectRepo::purgeGroup(PExGroupNode *group)
     }
 }
 
-PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExGroupNode *fileGroup, FileType *knownType,
+PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,
                                                    QString explicitName)
 {
     if (location.isEmpty())
@@ -430,47 +470,42 @@ PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExGroupNode *f
         knownType = parseGdxHeader(location) ? &FileType::from(FileKind::Gdx) : nullptr;
 
     FileMeta* fileMeta = mFileRepo->findOrCreateFileMeta(location, knownType);
-    return findOrCreateFileNode(fileMeta, fileGroup, explicitName);
+    return findOrCreateFileNode(fileMeta, project, explicitName);
 }
 
-PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExGroupNode* fileGroup, QString explicitName)
+PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode* project, QString explicitName)
 {
     if (!fileMeta) {
         DEB() << "The file meta must not be null";
         return nullptr;
     }
-    if (!fileGroup) {
+    if (!project) {
         QFileInfo fi(fileMeta->location());
         QString groupName = explicitName.isNull() ? fi.completeBaseName() : explicitName;
 
-        PExFileNode *pfn = findFile(fileMeta);
-        if (pfn)
-            fileGroup = pfn->parentNode();
+        if (PExFileNode *pfn = findFile(fileMeta))
+            project = pfn->assignedProject();
         else
-            fileGroup = createGroup(groupName, fi.absolutePath(), fi.filePath());
+            project = createProject(groupName, fi.absolutePath(), fi.filePath());
 
-        if (!fileGroup) {
-            DEB() << "The group must not be null";
+        if (!project) {
+            DEB() << "The project must not be null";
             return nullptr;
         }
     }
-    PExFileNode* file = findFile(fileMeta, fileGroup, false);
+    PExFileNode* file = findFile(fileMeta, project);
     if (!file) {
         mTreeModel->deselectAll();
-        if (fileMeta->kind() == FileKind::Log) {
-            PExProjectNode *project = fileGroup->assignedProject();
+        if (fileMeta->kind() == FileKind::Log)
             return project->logNode();
-        }
         file = new PExFileNode(fileMeta);
         if (!explicitName.isNull())
             file->setName(explicitName);
-        addToIndex(file);
-        mTreeModel->insertChild(fileGroup->childCount(), fileGroup, file);
-        mTreeModel->sortChildNodes(fileGroup);
+        addToProject(project, file, true);
         for (QWidget *w: fileMeta->editors())
-            ViewHelper::setGroupId(w, fileGroup->id());
+            ViewHelper::setGroupId(w, project->id());
     }
-    connect(fileGroup, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
+    connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
 }
 
@@ -558,7 +593,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
 {
     mTreeModel->selectionChanged(selected, deselected);
     QVector<QModelIndex> groups;
-    for (QModelIndex ind: mTreeModel->popAddGroups()) {
+    for (QModelIndex ind: mTreeModel->popAddProjects()) {
         if (!mTreeView->isExpanded(ind))
             groups << ind;
     }
@@ -593,7 +628,7 @@ void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStri
 
 void ProjectRepo::stepRunAnimation()
 {
-    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIcons.size());
+    mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIconCount);
     for (PExProjectNode* project: mRunnigGroups) {
         QModelIndex ind = mTreeModel->index(project);
         if (ind.isValid())
@@ -604,23 +639,43 @@ void ProjectRepo::stepRunAnimation()
 void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act
                             , QList<QModelIndex> &newSelection)
 {
-    PExGroupNode *group = nullptr;
+    while (files.count() && files.first().isEmpty())
+        files.removeFirst();
+
+    QList<NodeId> addIds;
+    for (NodeId id : knownIds) {
+        PExGroupNode *group = asGroup(id);
+        if (group && group->type() == NodeType::group) {
+            QVector<PExFileNode*> groupFiles = group->listFiles();
+            for (PExFileNode* file: groupFiles) {
+                files << file->location();
+                addIds << file->id();
+            }
+        }
+    }
+    knownIds.append(addIds);
+
+    PExProjectNode *project = nullptr;
     if (idx.isValid()) {
         PExAbstractNode *aNode = node(idx);
-        group = aNode->toGroup();
-        if (!group) group = aNode->parentNode();
+        project = aNode->assignedProject();
     } else {
         QFileInfo firstFile(files.first());
-        group = createGroup(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+        project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
     }
-    if (!group) return;
+    if (!project) return;
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
     QList<NodeId> newIds;
     for (QString item: files) {
-        if (QFileInfo(item).exists()) {
-            PExFileNode* file = findOrCreateFileNode(item, group);
+        if (QFileInfo::exists(item)) {
+            if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+                emit loadProjects(item);
+                continue;
+            }
+            PExFileNode* file = findOrCreateFileNode(item, project);
+            if (knownIds.contains(file->id())) knownIds.removeAll(file->id());
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
         } else {
@@ -634,7 +689,6 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     if (!filesNotFound.isEmpty()) {
         DEB() << "Files not found:\n" << filesNotFound.join("\n");
     }
-    PExProjectNode *project = group->toProject();
     if (project && !project->runnableGms() && !gmsFiles.isEmpty()) {
         project->setParameter("gms", gmsFiles.first()->location());
     }
@@ -643,10 +697,20 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             PExAbstractNode* aNode = node(nodeId);
             PExFileNode* file = aNode->toFile();
             if (!file) continue;
-            if (file->parentNode() != group)
+            if (file->parentNode() != project)
                 closeNode(file);
         }
     }
+}
+
+void ProjectRepo::reassignFiles(PExProjectNode *project)
+{
+    QVector<PExFileNode *> files = project->listFiles();
+    FileMeta *runGms = project->runnableGms();
+    for (PExFileNode *file: files) {
+        addToProject(project, file, true);
+    }
+    project->setRunnableGms(runGms);
 }
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)
@@ -692,11 +756,14 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
     QPair<QIcon::Mode, int> key(mode, alpha);
     if (!mRunIcons.contains(key)) {
         QVector<QIcon> runIcons;
-        runIcons << Theme::icon(":/img/folder-run1", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run2", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run3", mode, alpha);
-        runIcons << Theme::icon(":/img/folder-run4", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run1", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run2", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run3", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run4", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run5", mode, alpha);
+        runIcons << Theme::icon(":/img/project-run6", mode, alpha);
         mRunIcons.insert(key, runIcons);
+        mRunIconCount = runIcons.count();
     }
     return mRunIcons.value(key).at(mRunAnimateIndex);
 }

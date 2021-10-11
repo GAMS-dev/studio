@@ -71,14 +71,14 @@ protected:
     /// \return
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
-    bool isCurrentGroup(const QModelIndex& ind) const;
-    QModelIndex findGroup(QModelIndex ind);
+    bool isCurrentProject(const QModelIndex& ind) const;
+    QModelIndex findProject(QModelIndex ind);
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void deselectAll();
     const QVector<QModelIndex> popDeclined();
-    const QVector<QModelIndex> popAddGroups();
+    const QVector<QModelIndex> popAddProjects();
 
     void update(const QModelIndex& ind = QModelIndex());
 
@@ -92,7 +92,7 @@ private:
     NodeId mCurrent;
     QVector<NodeId> mSelected;
     QVector<QModelIndex> mDeclined;
-    QVector<QModelIndex> mAddGroups;
+    QVector<QModelIndex> mAddProjects;
 };
 
 } // namespace studio

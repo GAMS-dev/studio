@@ -42,7 +42,7 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
     }
 
     mEditor = edit;
-    mGroup = window->projectRepo()->asGroup(ViewHelper::groupId(edit));
+    mProject = window->projectRepo()->asProject(ViewHelper::groupId(edit));
     if (PExFileNode* node = window->projectRepo()->findFileNode(edit)) {
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
@@ -73,15 +73,8 @@ void RecentData::reset()
 {
     mEditFileId = -1;
     mPath = Settings::settings()->toString(skDefaultWorkspace);
-    mGroup = nullptr;
+    mProject = nullptr;
     mEditor = nullptr;
-}
-
-bool RecentData::hasValidProject()
-{
-    if (!group())
-        return false;
-    return group()->toProject() != nullptr;
 }
 
 

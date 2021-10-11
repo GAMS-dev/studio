@@ -15,10 +15,7 @@
         <file alias="filter-off">filter-off.svg</file>
         <file alias="folder">folder.svg</file>
         <file alias="folder-open">folder-open.svg</file>
-        <file alias="folder-run1">folder-run1.svg</file>
-        <file alias="folder-run2">folder-run2.svg</file>
-        <file alias="folder-run3">folder-run3.svg</file>
-        <file alias="folder-run4">folder-run3.svg</file>
+        <file alias="folder-open-run">folder-open-run.svg</file>
         <file alias="gams">gamslogo.svg</file>
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w-run">gams-w-run.svg</file>
@@ -34,6 +31,13 @@
         <file alias="neos-g">neos-g.svg</file>
         <file alias="neos-logo">neos-logo.svg</file>
         <file alias="option-file">option.svg</file>
+        <file alias="project">gams-prj.svg</file>
+        <file alias="project-run1">gams-prj1.svg</file>
+        <file alias="project-run2">gams-prj2.svg</file>
+        <file alias="project-run3">gams-prj3.svg</file>
+        <file alias="project-run4">gams-prj4.svg</file>
+        <file alias="project-run5">gams-prj5.svg</file>
+        <file alias="project-run6">gams-prj6.svg</file>
         <file alias="ref-file">ref-file.svg</file>
         <file alias="square-darkyellow">square-darkyellow.svg</file>
         <file alias="square-green">square-green.svg</file>

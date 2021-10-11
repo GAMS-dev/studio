@@ -52,6 +52,21 @@ PExGroupNode::~PExGroupNode()
 
 QIcon PExGroupNode::icon(QIcon::Mode mode, int alpha)
 {
+    PExProjectNode *project = assignedProject();
+    if (project) {
+        FileMeta *fmGms = project->runnableGms();
+        if (fmGms) {
+            PExFileNode *gms = projectRepo()->findFile(fmGms, project);
+            if (gms) {
+                PExGroupNode *group = gms->parentNode();
+                while (group != project) {
+                    if (group == this)
+                        return Theme::icon(":/img/folder-open-run", mode, alpha);
+                    group = group->parentNode();
+                }
+            }
+        }
+    }
     return Theme::icon(":/img/folder-open", mode, alpha);
 }
 
@@ -91,9 +106,10 @@ QString PExGroupNode::location() const
     return mLocation;
 }
 
-void PExGroupNode::setLocation(const QString& location)
+void PExGroupNode::setLocation(const QString& newLocation)
 {
-    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(location) : location;
+    mLocation = mLocation.contains('\\') ? QDir::fromNativeSeparators(newLocation) : newLocation;
+    if (mLocation.endsWith('/')) mLocation.remove(mLocation.length()-1, 1);
     emit changed(id());
 }
 
@@ -112,49 +128,29 @@ QString PExGroupNode::errorText(int lstLine)
     return parentNode() ? parentNode()->errorText(lstLine) : QString();
 }
 
-PExFileNode *PExGroupNode::findFile(QString location, bool recurse) const
+PExFileNode *PExGroupNode::findFile(QString location) const
 {
     if (location.contains('\\')) location = QDir::fromNativeSeparators(location);
     QFileInfo fi(location);
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* file = node->toFile();
+    for (PExFileNode* file: listFiles())
         if (file && FileMetaRepo::equals(QFileInfo(file->location()), fi)) return file;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            PExFileNode* sub = group ? group->findFile(location, true) : nullptr;
-            if (sub) return sub;
-        }
-    }
     return nullptr;
 }
 
-PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta, bool recurse) const
+PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta) const
 {
     if (!fileMeta) return nullptr;
     if (fileMeta->kind() == FileKind::Log) return nullptr;
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* fileNode = node->toFile();
+    for (PExFileNode* fileNode: listFiles())
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            PExFileNode* sub = group ? group->findFile(fileMeta, true) : nullptr;
-            if (sub) return sub;
-        }
-    }
     return nullptr;
 }
 
-QList<PExFileNode*> PExGroupNode::findFiles(FileKind kind, bool recurse) const
+QList<PExFileNode*> PExGroupNode::findFiles(FileKind kind) const
 {
     QList<PExFileNode*> res;
-    for (PExAbstractNode* node: mChildNodes) {
-        PExFileNode* fileNode = node->toFile();
+    for (PExFileNode* fileNode: listFiles())
         if (fileNode && fileNode->file()->kind() == kind) res << fileNode;
-        if (recurse) {
-            const PExGroupNode* group = node->toGroup();
-            res << (group ? group->findFiles(kind, true) : QList<PExFileNode*>());
-        }
-    }
     return res;
 }
 
@@ -188,16 +184,16 @@ PExProjectNode *PExGroupNode::findProject(FileId runId) const
     return nullptr;
 }
 
-QVector<PExFileNode *> PExGroupNode::listFiles(bool recurse) const
+const QVector<PExFileNode *> PExGroupNode::listFiles() const
 {
     QVector<PExFileNode *> res;
     for (PExAbstractNode *node: mChildNodes) {
         PExFileNode *fileNode = node->toFile();
         if (fileNode)
             res << fileNode;
-        else if (recurse) {
+        else {
             PExGroupNode *sub = node->toGroup();
-            if (sub) res << sub->listFiles(true);
+            if (sub) res << sub->listFiles();
         }
     }
     return res;
@@ -239,7 +235,7 @@ AbstractProcess *PExProjectNode::process() const
 QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
-        return PExGroupNode::icon(mode, alpha);
+        return Theme::icon(":/img/project", mode, alpha);
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
@@ -443,7 +439,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     PExFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
-        for (PExAbstractNode *node: childNodes()) {
+        for (PExAbstractNode *node: listFiles()) {
             gmsFileNode = node->toFile();
             if (gmsFileNode->file()->kind() == FileKind::Gms) {
                 gmsFile = gmsFileNode->file();
@@ -463,7 +459,9 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
         setParameter("lst", "");
         return;
     }
-    setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
+    if (location().isEmpty())
+        setLocation(QFileInfo(gmsFile->location()).absoluteDir().path());
+
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
@@ -732,6 +730,22 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
         position++;
     }
     return output;
+}
+
+void PExProjectNode::setWorkDir(const QString &workingDir)
+{
+    if (workDir().isEmpty() || workDir().compare(workingDir, FileMetaRepo::fsCaseSensitive()) == 0)
+        setLocation(workingDir);
+    else {
+        // changed more than letter case
+        setLocation(workingDir);
+        emit workDirChanged(this);
+    }
+}
+
+QString PExProjectNode::workDir() const
+{
+    return location();
 }
 
 ///
