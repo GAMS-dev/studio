@@ -43,9 +43,10 @@ void ProjectOptions::showProject(PExProjectNode *project)
     if (!project) return;
     mProject = project;
     if (mProject) {
-        ui->edMainGms->setText(mProject->mainModelName());
         ui->edName->setText(mProject->name());
         ui->edWorkDir->setText(mProject->workDir());
+        ui->edBaseDir->setText(mProject->location());
+        ui->edMainGms->setText(mProject->mainModelName());
     }
     show();
 }

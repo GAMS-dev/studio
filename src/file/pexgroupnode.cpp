@@ -547,7 +547,7 @@ void PExProjectNode::createMarks(const LogParser::MarkData &marks)
 
 void PExProjectNode::switchLst(const QString &lstFile)
 {
-    if (mParameterHash.contains("lst")) {
+    if (mParameterHash.contains("lst")) { // TODO:LST
         setParameter("ls2", lstFile);
     }
 }
@@ -655,8 +655,8 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 
     QFileInfo fi(gmsLocation);
     if (filestem.isEmpty()) filestem = fi.completeBaseName();
-    if (path.isEmpty()) path = fi.path();
-    else if (QDir(path).isRelative()) path = fi.path() + '/' + path;
+    if (path.isEmpty()) path = workDir();
+    else if (QDir(path).isRelative()) path = workDir() + '/' + path;
 
     setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
@@ -882,8 +882,8 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 
 QString PExProjectNode::tooltip()
 {
-    QString res(QDir::toNativeSeparators(location()) + "\n" + QDir::toNativeSeparators(workDir()));
-    if (runnableGms()) res.append("\n\nMain GMS file: ").append(runnableGms()->name());
+    QString res(QDir::toNativeSeparators(location()) + "\n\nWorking directory: " + QDir::toNativeSeparators(workDir()));
+    if (runnableGms()) res.append("\nMain GMS file: ").append(runnableGms()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());
     if (!parameter("ls2").isEmpty())

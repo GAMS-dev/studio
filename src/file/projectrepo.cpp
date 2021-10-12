@@ -226,6 +226,7 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
             path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
         QDir localBaseDir(path);
         QString workDir = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("workDir").toString()));
+        if (workDir.isEmpty()) workDir = path;
 
         QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
         if (path.isEmpty()) path = QFileInfo(file).absolutePath();
@@ -304,7 +305,7 @@ void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool re
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     nodeObject.insert("path", relativePaths ? "." : project->location() );
-    nodeObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
+    nodeObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     nodeObject.insert("name", project->name());
     nodeObject.insert("options", project->toProject()->getRunParametersHistory());
     emit isNodeExpanded(mTreeModel->index(project), expand);
