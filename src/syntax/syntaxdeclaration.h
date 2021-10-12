@@ -78,7 +78,7 @@ public:
     QStringList docForLastRequest() const override;
 
 protected:
-    int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false);
+    int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false, bool relaxDot = false);
     void setExtraKeywordChars(QString keywordChars) { mExtraKeywordChars = keywordChars; }
 
     QHash<int, DictList*> mKeywords;

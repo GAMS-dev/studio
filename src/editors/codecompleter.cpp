@@ -948,6 +948,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
     case syntax::SyntaxKind::SystemCompileAttrib:
+    case syntax::SyntaxKind::SystemCompileAttribR:
     case syntax::SyntaxKind::UserCompileAttrib:
         filter = cc_None; break;
 

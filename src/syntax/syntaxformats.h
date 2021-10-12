@@ -47,6 +47,7 @@ enum class SyntaxKind {
     SubDCO,
     UserCompileAttrib,
     SystemCompileAttrib,
+    SystemCompileAttribR,
     SystemRunAttrib,
 
     CommentLine,
