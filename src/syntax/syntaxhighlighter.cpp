@@ -260,7 +260,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
 //                                      << " " << nextBlock.syntax->name();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-                            i = nextBlock.end;
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
                                 if (it == mScannedBlockSyntax.constEnd()) {
@@ -269,6 +268,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                                QPair<int,int> currentVal = it.value();
 //                                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
                             }
+                            i = nextBlock.end-1;
                             break;
                         }
                     }

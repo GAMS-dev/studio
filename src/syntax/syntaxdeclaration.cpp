@@ -510,6 +510,7 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
     } else if (kind == SyntaxKind::SystemCompileAttrib) {
         setExtraKeywordChars("._ ");
         QList<QPair<QString, QString>> list2;
+        list2.append(QPair<QString, QString>(QStringLiteral(u"emp.info"), ""));
         for (const QPair<QString, QString> &entry : qAsConst(list)) {
             list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
         }
