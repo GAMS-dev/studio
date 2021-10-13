@@ -263,6 +263,8 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    mData << "%" + syntax::SyntaxAbstract::systemEmpData.first + "%";
+    mDescription << syntax::SyntaxAbstract::systemEmpData.second;
     mType.insert(mData.size()-1, ccSysSufC);
 
     QHash<QString, QString> descript;
@@ -948,6 +950,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
     case syntax::SyntaxKind::SystemCompileAttrib:
+    case syntax::SyntaxKind::SystemCompileAttribR:
     case syntax::SyntaxKind::UserCompileAttrib:
         filter = cc_None; break;
 
