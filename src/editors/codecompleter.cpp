@@ -263,6 +263,8 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    mData << "%" + syntax::SyntaxAbstract::systemEmpData.first + "%";
+    mDescription << syntax::SyntaxAbstract::systemEmpData.second;
     mType.insert(mData.size()-1, ccSysSufC);
 
     QHash<QString, QString> descript;

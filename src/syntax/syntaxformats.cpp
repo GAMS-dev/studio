@@ -27,6 +27,7 @@ namespace studio {
 namespace syntax {
 
 const QVector<QChar> SyntaxAbstract::cSpecialCharacters = {'"', '$', '\'', '.', ';'};
+const QPair<QString, QString> SyntaxAbstract::systemEmpData = QPair<QString, QString>(QStringLiteral(u"emp.info"), "Name of the EMP Info File");
 
 QString syntaxKindName(SyntaxKind kind)
 {

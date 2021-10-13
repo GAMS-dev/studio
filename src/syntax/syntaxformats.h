@@ -209,6 +209,8 @@ public:
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
 
+    static const QPair<QString, QString> systemEmpData;
+
 protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
