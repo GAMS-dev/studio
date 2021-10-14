@@ -59,6 +59,7 @@
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "file/projectoptions.h"
+#include "file/pathrequest.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
@@ -180,7 +181,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
-    connect(&mProjectRepo, &ProjectRepo::loadProjects, this, &MainWindow::loadProjects);
+    connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -2422,38 +2423,56 @@ void MainWindow::restoreFromSettings()
 
 }
 
-void MainWindow::loadProjects(const QString &gspFile)
-{
-    QFile file(gspFile);
-    if (file.open(QFile::ReadOnly)) {
-        QJsonParseError parseResult;
-        QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &parseResult);
-        if (parseResult.error) {
-            appendSystemLogError("Couldn't parse project from " + gspFile);
-            return;
-        }
-        file.close();
-        QVariantMap map = json.object().toVariantMap();
-        QVariantList data = map.value("projects").toList();
-        if (!mProjectRepo.read(data, QFileInfo(gspFile).path())) {
-            QMessageBox::warning(this, "Lost file locations", "Maybe the project file has been moved without the contained files.\n"
-                                                              "For details open the System Log");
-        }
-    } else {
-        appendSystemLogError("Couldn't open project " + gspFile);
-    }
-}
-
 void MainWindow::importProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
     dialog->setAcceptMode(QFileDialog::AcceptOpen);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { openProject(fileName); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
+}
+
+void MainWindow::openProject(const QString gspFile)
+{
+    QJsonDocument json;
+    QFile file(gspFile);
+    if (file.open(QFile::ReadOnly)) {
+        QJsonParseError parseResult;
+        json = QJsonDocument::fromJson(file.readAll(), &parseResult);
+        if (parseResult.error) {
+            appendSystemLogError("Couldn't parse project from " + gspFile);
+            return;
+        }
+        file.close();
+
+        QString path = QFileInfo(file).path();
+        QVariantMap map = json.object().toVariantMap();
+        QVariantList data = map.value("projects").toList();
+        loadProject(data, path, false);
+    } else {
+        appendSystemLogError("Couldn't open project " + gspFile);
+    }
+
+}
+
+void MainWindow::loadProject(const QVariantList data, const QString &basePath, bool ignoreMissingFiles)
+{
+    path::PathRequest *dialog = new path::PathRequest(this);
+    dialog->init(&mProjectRepo, basePath, data);
+
+    if (ignoreMissingFiles || dialog->checkProject()) {
+        dialog->deleteLater();
+        mProjectRepo.read(data, basePath);
+    } else {
+        connect(dialog, &path::PathRequest::finished, this, [dialog]() { dialog->deleteLater(); });
+        connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog]() {
+            mProjectRepo.read(data, dialog->baseDir());
+        });
+        dialog->open();
+    }
 }
 
 void MainWindow::exportProjectDialog(PExProjectNode *project)
@@ -2467,7 +2486,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
-    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project, box]() {
+    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project, box](const QString &dir) {
         if (dialog->directory() != QDir(project->location())) {
 
             if (!dialog->property("warned").toBool()) {
@@ -2954,7 +2973,7 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
 
     if (!forceNew && files.size() == 1) {
         if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
-            loadProjects(files.first());
+            openProject(files.first());
             return;
         }
         FileMeta *file = mFileMetaRepo.fileMeta(files.first());
@@ -2973,7 +2992,7 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
             if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
-                loadProjects(item);
+                openProject(item);
             } else {
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);

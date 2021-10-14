@@ -34,6 +34,8 @@
 namespace gams {
 namespace studio {
 
+const QString ProjectRepo::CIgnoreSuffix(".lst.lxi.log.");
+
 ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new ProjectRootNode(this)))
 {
@@ -215,6 +217,37 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
+bool ProjectRepo::checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir)
+{
+    count = 0;
+    ignored = 0;
+    missed.clear();
+    for (int i = 0; i < data.size(); ++i) {
+        QVariantMap child = data.at(i).toMap();
+        QString path = child.value("path").toString();
+        if (path == "." || path.isEmpty())
+            path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+        QDir localBaseDir(path);
+        QString fileName = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
+
+        if (path.isEmpty()) path = QFileInfo(fileName).absolutePath();
+        QVariantList children = child.value("nodes").toList();
+        if (!children.isEmpty() && !path.isEmpty()) {
+            for (int i = 0; i < children.size(); ++i) {
+                QVariantMap child = children.at(i).toMap();
+                fileName = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
+                QFileInfo file(fileName);
+                if (!file.exists()) {
+                    if (CIgnoreSuffix.contains('.'+file.suffix()+'.')) ++ignored;
+                    else missed << fileName;
+                }
+                ++count;
+            }
+        }
+    }
+    return missed.isEmpty();
+}
+
 bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
 {
     bool res = true;
@@ -277,7 +310,7 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                     node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
                                                                          : codecMib);
                 }
-            } else {
+            } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
             }
@@ -675,7 +708,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     for (QString item: files) {
         if (QFileInfo::exists(item)) {
             if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
-                emit loadProjects(item);
+                emit openProject(item);
                 continue;
             }
             PExFileNode* file = findOrCreateFileNode(item, project);

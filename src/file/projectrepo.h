@@ -107,6 +107,7 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
+    bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir = QString());
     bool read(const QVariantList &data, const QString &sysWorkDir = QString());
     void write(QVariantList &projects) const;
     void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
@@ -135,7 +136,7 @@ signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
-    void loadProjects(const QString &gspFile);
+    void openProject(const QString &gspFile);
     void openFile(FileMeta* fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
@@ -189,6 +190,9 @@ private:
     int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
+
+    static const QString CIgnoreSuffix;
+
 };
 
 } // namespace studio
