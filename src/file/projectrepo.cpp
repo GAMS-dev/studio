@@ -401,7 +401,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
-    connect(project, &PExProjectNode::workDirChanged, this, &ProjectRepo::reassignFiles);
+    connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
     addToIndex(project);
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);

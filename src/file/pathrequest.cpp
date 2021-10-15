@@ -2,6 +2,7 @@
 #include "ui_pathrequest.h"
 #include "projectrepo.h"
 #include <QFileDialog>
+#include <QPushButton>
 
 namespace gams {
 namespace studio {
@@ -16,7 +17,6 @@ PathRequest::PathRequest(QWidget *parent) :
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     setWindowTitle("Select projects base directory");
     mInitialText = ui->laText->text();
-    ui->bCheck->setEnabled(false);
 }
 
 PathRequest::~PathRequest()
@@ -53,6 +53,26 @@ bool PathRequest::checkProject()
     return missed.isEmpty();
 }
 
+void PathRequest::on_edBaseDir_textEdited(const QString &text)
+{
+    updateEditColor(ui->edBaseDir, text);
+}
+
+void PathRequest::updateEditColor(QLineEdit *edit, const QString &text)
+{
+    QDir dir(text.trimmed());
+    if (!dir.exists()) {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
+        QPalette pal = edit->palette();
+        pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
+        edit->setPalette(pal);
+    } else {
+        ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
+        edit->setPalette(QPalette());
+        checkProject();
+    }
+}
+
 QString PathRequest::baseDir() const
 {
     return ui->edBaseDir->text().trimmed();
@@ -77,19 +97,6 @@ void PathRequest::showDirDialog(const QString &title, QLineEdit *lineEdit)
     dialog->setModal(true);
     dialog->show();
 }
-
-void PathRequest::on_bCheck_clicked()
-{
-    checkProject();
-    ui->bCheck->setEnabled(false);
-}
-
-void PathRequest::on_edBaseDir_textChanged(const QString &text)
-{
-    Q_UNUSED(text)
-    ui->bCheck->setEnabled(true);
-}
-
 
 } // namespace path
 } // namespace studio

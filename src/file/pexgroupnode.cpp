@@ -733,13 +733,18 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     return output;
 }
 
+void PExProjectNode::setLocation(const QString &newLocation)
+{
+    // check if changed more than letter case
+    bool changed = workDir().isEmpty() || workDir().compare(newLocation, FileMetaRepo::fsCaseSensitive()) == 0;
+    PExGroupNode::setLocation(newLocation);
+    if (changed)
+        emit baseDirChanged(this);
+}
+
 void PExProjectNode::setWorkDir(const QString &workingDir)
 {
-    bool changed = workDir().isEmpty() || workDir().compare(workingDir, FileMetaRepo::fsCaseSensitive()) == 0;
-    // changed more than letter case
     mWorkDir = workingDir;
-    if (changed)
-        emit workDirChanged(this);
 }
 
 QString PExProjectNode::workDir() const

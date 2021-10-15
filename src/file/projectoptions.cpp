@@ -55,6 +55,8 @@ void ProjectOptions::accept()
 {
     if (ui->edName->text().trimmed().compare(mProject->name()))
         mProject->setName(ui->edName->text().trimmed());
+    if (ui->edBaseDir->text().trimmed().compare(mProject->location(), fsCaseSensitive()))
+        mProject->setLocation(ui->edBaseDir->text().trimmed());
     if (ui->edWorkDir->text().trimmed().compare(mProject->workDir(), fsCaseSensitive()))
         mProject->setWorkDir(ui->edWorkDir->text().trimmed());
     QDialog::accept();
@@ -63,15 +65,25 @@ void ProjectOptions::accept()
 
 void ProjectOptions::on_edWorkDir_textEdited(const QString &text)
 {
+    updateEditColor(ui->edWorkDir, text);
+}
+
+void ProjectOptions::on_edBaseDir_textEdited(const QString &text)
+{
+    updateEditColor(ui->edBaseDir, text);
+}
+
+void ProjectOptions::updateEditColor(QLineEdit *edit, const QString &text)
+{
     QDir dir(text.trimmed());
     if (!dir.exists()) {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(false);
-        QPalette pal = ui->edWorkDir->palette();
+        QPalette pal = edit->palette();
         pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
-        ui->edWorkDir->setPalette(pal);
+        edit->setPalette(pal);
     } else {
         ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(true);
-        ui->edWorkDir->setPalette(QPalette());
+        edit->setPalette(QPalette());
     }
 }
 

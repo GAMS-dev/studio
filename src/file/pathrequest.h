@@ -28,13 +28,11 @@ public:
 
 private slots:
     void on_bDir_clicked();
-
-    void on_bCheck_clicked();
-
-    void on_edBaseDir_textChanged(const QString &text);
+    void on_edBaseDir_textEdited(const QString &text);
 
 private:
     void showDirDialog(const QString &title, QLineEdit *lineEdit);
+    void updateEditColor(QLineEdit *edit, const QString &text);
 
 private:
     Ui::PathRequest *ui;

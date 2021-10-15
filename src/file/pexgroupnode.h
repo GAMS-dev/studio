@@ -100,6 +100,7 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt = nullptr);
+    void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
     QString workDir() const;
 
@@ -118,7 +119,7 @@ public:
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
-    void workDirChanged(PExProjectNode *project);
+    void baseDirChanged(PExProjectNode *project);
 
 public slots:
     void setErrorText(int lstLine, QString text);
