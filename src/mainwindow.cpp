@@ -2477,24 +2477,18 @@ void MainWindow::loadProject(const QVariantList data, const QString &basePath, b
 
 void MainWindow::exportProjectDialog(PExProjectNode *project)
 {
-    QMessageBox *box = new QMessageBox(QMessageBox::Warning, "Loosing file locations",
-                                       "If the project is stored outside it's root, file locations are lost.",
-                                       QMessageBox::Ok, this);
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
                                           project->location()+'/'+project->name()+".gsp");
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
-    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project, box](const QString &dir) {
+    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project](const QString &) {
         if (dialog->directory() != QDir(project->location())) {
-
-            if (!dialog->property("warned").toBool()) {
-                dialog->setProperty("warned", true);
-                box->show();
-                box->raise();
-                box->activateWindow();
-            }
+            QToolTip::showText(QCursor::pos(), "<body><b>Warning!</b><br/>If the project is "
+                                               "stored outside of it's base, file locations are lost.</body>");
+        } else {
+            QToolTip::hideText();
         }
     });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
@@ -2511,7 +2505,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
         }
 
     });
-    connect(dialog, &QFileDialog::finished, this, [dialog, box]() { dialog->deleteLater(); box->deleteLater(); });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
 }
