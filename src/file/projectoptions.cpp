@@ -31,6 +31,8 @@ ProjectOptions::ProjectOptions(QWidget *parent) :
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     setModal(true);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
+    ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
 }
 
 ProjectOptions::~ProjectOptions()
