@@ -29,6 +29,8 @@
 namespace gams {
 namespace studio {
 
+class FileMeta;
+
 struct PositionPair {
     PositionPair(int _pos = -1, int _match = -1, bool _valid = false)
         : pos(_pos), match(_match), valid(_valid) {}
@@ -72,8 +74,8 @@ public:
         return ok ? file : FileId();
     }
     void replaceNext(QRegularExpression regex, QString replacementText);
-
-    void updateSearchSelection(bool isReplaceAction = false);
+    void updateSearchSelection(bool isSingleReplaceAction = false);
+    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm);
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);

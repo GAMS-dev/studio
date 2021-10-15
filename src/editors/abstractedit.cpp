@@ -328,11 +328,10 @@ void AbstractEdit::clearSearchSelection()
     searchSelection = QTextCursor();
 }
 
-void AbstractEdit::updateSearchSelection(bool isReplaceAction)
+void AbstractEdit::updateSearchSelection(bool isSingleReplaceAction)
 {
     // update search selection cursor, but not when replacing
-    if (textCursor() != searchSelection && (!isReplaceAction || !searchSelection.hasSelection())) {
-        qDebug() << QTime::currentTime() << "updateSearchSelection"; // rogo: delete
+    if (textCursor() != searchSelection && (!isSingleReplaceAction || !searchSelection.hasSelection())) {
         SearchLocator::search()->reset();
         searchSelection = textCursor();
     }
@@ -382,6 +381,46 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
         textCursor().insertText(replacementText);
     }
+}
+
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+{
+    QTextCursor tc = textCursor();
+    QTextCursor item;
+    QTextCursor lastItem;
+    int hits = 0;
+
+    int from = 0;
+    int to = 0;
+    bool limit = false;
+    if (hasSearchSelection()) {
+        from = qMin(searchSelection.position(), searchSelection.anchor());
+        to = qMax(searchSelection.position(), searchSelection.anchor());
+        limit = true;
+    }
+
+    tc.beginEditBlock();
+    do {
+        item = fm->document()->find(regex, from);
+        lastItem = item;
+
+        // mitigate infinite loop
+       if (lastItem.selectedText().length() == 0) {
+           if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
+       } else {
+           if (!item.isNull()) {
+               if (limit && item.position() > to) break; // end early, limit reached
+               item.insertText(replaceTerm);
+               from = item.position();
+               hits++;
+                // update anchor because it can move if match.length != replaceterm.length
+               to = qMax(searchSelection.position(), searchSelection.anchor());
+           }
+       }
+    } while(!item.isNull());
+    tc.endEditBlock();
+
+    return hits;
 }
 
 void AbstractEdit::internalExtraSelUpdate()

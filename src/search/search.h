@@ -79,7 +79,7 @@ private:
     void findInSelection(bool isReplaceAction);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
+    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
     QPair<int, int> cursorPosition();
@@ -99,7 +99,7 @@ private:
     QHash<QString, QList<Result>> mResultHash;
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
-    QFlags<QTextDocument::FindFlag> mOptions;
+    QFlags<QTextDocument::FindFlag> mOptions; // used to store search direction
 
     FileId mSearchSelectionFile;
 

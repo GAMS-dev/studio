@@ -43,6 +43,7 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
 
+    // probably unsued, as case sensitivity should be stored in regex
     mOptions.setFlag(QTextDocument::FindCaseSensitively,
                      !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
@@ -108,11 +109,11 @@ void Search::reset()
     mThread.isInterruptionRequested();
 }
 
-void Search::findInSelection(bool isReplaceAction)
+void Search::findInSelection(bool isSingleReplaceAction)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
         mSearchSelectionFile = ae->fileId();
-        ae->updateSearchSelection(isReplaceAction);
+        ae->updateSearchSelection(isSingleReplaceAction);
         ae->findInSelection(mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
@@ -382,33 +383,15 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags)
+int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
-    QTextCursor item;
-    QTextCursor lastItem;
+    AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
+
     int hits = 0;
-
-    QTextCursor tc;
-    if (fm->editors().size() > 0)
-        tc = ViewHelper::toAbstractEdit(fm->editors().constFirst())->textCursor();
-
-    tc.beginEditBlock();
-    do {
-        item = fm->document()->find(regex, lastItem, flags);
-        lastItem = item;
-
-        // mitigate infinite loop
-       if (lastItem.selectedText().length() == 0) {
-           if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
-       } else {
-           if (!item.isNull()) {
-               item.insertText(replaceTerm);
-               hits++;
-           }
-       }
-    } while(!item.isNull());
-    tc.endEditBlock();
-
+    if (ae && fm->editors().size() > 0) {
+        ae->updateSearchSelection();
+        hits = ae->replaceAll(fm, regex, replaceTerm);
+    }
     return hits;
 }
 
@@ -542,7 +525,7 @@ void Search::replaceAll(QString replacementText)
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
         for (FileMeta* fm : qAsConst(opened))
-            hits += replaceOpened(fm, mRegex, replaceTerm, mOptions);
+            hits += replaceOpened(fm, mRegex, replaceTerm);
 
         for (FileMeta* fm : qAsConst(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
