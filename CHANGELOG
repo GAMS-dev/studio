@@ -3,6 +3,9 @@ Version 1.8.0 *
 - added tooltips to source code for keywords and DCOs (can be deactivated in the settings dialog)
 - highlight remotely executed LOG (NEOS or GAMS Engine)
 - change naming from "group" to "project"
+- added new search scope: selection
+    - allows users to search inside a text selection
+    - can be cleared by pressing the "Clear" button in search dialog or Esc
 
 Version 1.7.4 *
 ==================
