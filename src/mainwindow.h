@@ -173,6 +173,7 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
+    void updateRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);

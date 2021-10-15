@@ -187,6 +187,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
+    connect(&mProjectRepo, &ProjectRepo::updateRecentFile, this, &MainWindow::updateRecentFile);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
@@ -1137,6 +1138,12 @@ void MainWindow::updateLoadAmount()
         qreal amount = qAbs(qreal(tv->knownLines()) / tv->lineCount());
         mStatusWidgets->setLoadAmount(amount);
     }
+}
+
+void MainWindow::updateRecentFile()
+{
+    if (mRecent.editor())
+        openFile(mFileMetaRepo.fileMeta(mRecent.editFileId()));
 }
 
 void MainWindow::updateEditorItemCount()

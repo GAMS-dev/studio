@@ -738,6 +738,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
                 closeNode(file);
         }
     }
+    emit updateRecentFile();
 }
 
 void ProjectRepo::reassignFiles(PExProjectNode *project)
@@ -747,6 +748,7 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
     for (PExFileNode *file: files) {
         addToProject(project, file, true);
     }
+    emit updateRecentFile();
     project->setRunnableGms(runGms);
 }
 
