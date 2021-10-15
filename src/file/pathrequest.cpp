@@ -18,6 +18,7 @@ PathRequest::PathRequest(QWidget *parent) :
     setWindowTitle("Select projects base directory");
     mInitialText = ui->laText->text();
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
+    ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
 }
 
 PathRequest::~PathRequest()

@@ -34,6 +34,8 @@ ProjectOptions::ProjectOptions(QWidget *parent) :
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
+    ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
+    ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
 }
 
 ProjectOptions::~ProjectOptions()
