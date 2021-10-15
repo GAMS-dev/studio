@@ -1,6 +1,7 @@
 #include "projectoptions.h"
 #include "ui_projectoptions.h"
 #include "file/pexgroupnode.h"
+#include "file/filemeta.h"
 #include "theme.h"
 
 #include <QDir>
@@ -48,7 +49,7 @@ void ProjectOptions::showProject(PExProjectNode *project)
         ui->edName->setText(mProject->name());
         ui->edWorkDir->setText(mProject->workDir());
         ui->edBaseDir->setText(mProject->location());
-        ui->edMainGms->setText(mProject->mainModelName());
+        ui->edMainGms->setText(mProject->runnableGms()->location());
     }
     show();
 }
