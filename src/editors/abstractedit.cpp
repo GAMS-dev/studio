@@ -325,7 +325,17 @@ bool AbstractEdit::hasSearchSelection()
 
 void AbstractEdit::clearSearchSelection()
 {
-    searchSelection.clearSelection();
+    searchSelection = QTextCursor();
+}
+
+void AbstractEdit::updateSearchSelection(bool isReplaceAction)
+{
+    // update search selection cursor, but not when replacing
+    if (textCursor() != searchSelection && (!isReplaceAction || !searchSelection.hasSelection())) {
+        qDebug() << QTime::currentTime() << "updateSearchSelection"; // rogo: delete
+        SearchLocator::search()->reset();
+        searchSelection = textCursor();
+    }
 }
 
 void AbstractEdit::findInSelection(QList<Result> &results) {
@@ -334,10 +344,6 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     QTextCursor item;
     QTextCursor lastItem;
 
-    if (textCursor() != searchSelection)
-        SearchLocator::search()->reset();
-
-    searchSelection = textCursor();
     if (!searchSelection.hasSelection()) return;
 
     startPos = searchSelection.selectionStart();
@@ -359,6 +365,23 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
+}
+
+void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText)
+{
+    if (isReadOnly()) return;
+
+    int offset = 0;
+    QString selection = textCursor().selectedText();
+    if (hasSearchSelection()) {
+        selection = searchSelection.selectedText();
+        offset = textCursor().position() - searchSelection.position() -1;
+    }
+
+    QRegularExpressionMatch match = regex.match(selection, offset);
+    if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
+        textCursor().insertText(replacementText);
+    }
 }
 
 void AbstractEdit::internalExtraSelUpdate()

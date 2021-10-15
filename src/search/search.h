@@ -55,7 +55,7 @@ public:
     Search(MainWindow* main);
 
     void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
-    void start();
+    void start(bool isReplaceAction = false);
     void stop();
 
     void findNext(Direction direction);
@@ -76,7 +76,7 @@ signals:
 
 private:
     void findInDoc(FileMeta* fm);
-    void findInSelection();
+    void findInSelection(bool isReplaceAction);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);

@@ -107,10 +107,8 @@ private:
 
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
-    bool mSplitSearchContinue = false;
     bool mShowResults = true;
-    bool mIsReplacing = false;
-    bool mSuppressChangeEvent = false;
+    bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
 };
 

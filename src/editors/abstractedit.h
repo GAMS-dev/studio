@@ -71,6 +71,9 @@ public:
         FileId file = property("fileId").toInt(&ok);
         return ok ? file : FileId();
     }
+    void replaceNext(QRegularExpression regex, QString replacementText);
+
+    void updateSearchSelection(bool isReplaceAction = false);
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);

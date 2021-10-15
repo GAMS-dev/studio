@@ -48,17 +48,15 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
 }
 
-void Search::start()
+void Search::start(bool isReplaceAction)
 {
     if (mSearching || mRegex.pattern().isEmpty()) return;
-
     mResults.clear();
     mResultHash.clear();
-
     mSearching = true;
 
     if (mMain->searchDialog()->selectedScope() == Scope::Selection) {
-        findInSelection();
+        findInSelection(isReplaceAction);
         return;
     } // else:
 
@@ -107,23 +105,17 @@ void Search::reset()
     mJumpQueued = false;
     mLastMatchInOpt = -1;
 
-    mSearchSelectionFile = -1;
-
     mThread.isInterruptionRequested();
 }
 
-void Search::findInSelection()
+void Search::findInSelection(bool isReplaceAction)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        if (ae->fileId() != mSearchSelectionFile) { // dont override selection when jumping to results
-            mSearchSelectionFile = ae->fileId();
-            ae->findInSelection(mResults);
-        }
+        mSearchSelectionFile = ae->fileId();
+        ae->updateSearchSelection(isReplaceAction);
+        ae->findInSelection(mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        if (tv->edit()->fileId() != mSearchSelectionFile) {
-            mSearchSelectionFile = tv->edit()->fileId();
-            tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
-        }
+        tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
     }
     // nothing more to do, update UI and return
     finished();
@@ -352,7 +344,6 @@ int Search::NavigateInsideCache(Direction direction)
             mLastMatchInOpt = matchNr;
         }
     }
-
     // navigate to match
     jumpToResult(matchNr);
 
@@ -476,19 +467,17 @@ QList<Result> Search::filteredResultList(QString fileLocation)
 void Search::replaceNext(QString replacementText)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    if (!edit || edit->isReadOnly()) return;
+    if (!edit) return;
 
-    QRegularExpressionMatch match = mRegex.match(edit->textCursor().selectedText());
+    edit->replaceNext(mRegex, replacementText);
 
-    if (edit->textCursor().hasSelection() && match.hasMatch() &&
-            match.captured(0) == edit->textCursor().selectedText()) {
-        edit->textCursor().insertText(replacementText);
-    }
+    start(true); // refresh
     selectNextMatch();
 }
 
 void Search::replaceAll(QString replacementText)
 {
+    // TODO(RG): move to AE
     if (mRegex.pattern().isEmpty()) return;
 
     QList<FileMeta*> opened;

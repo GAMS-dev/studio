@@ -65,7 +65,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
-    mSearch.start();
+    mSearch.start(true);
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -73,6 +73,8 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
     insertHistory();
+
+    mShowResults = true;
 
     mSearch.setParameters(getFilesByScope(), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
@@ -122,8 +124,6 @@ void SearchDialog::finalUpdate()
     if (mSearch.results().size() == 0) {
         setSearchStatus(Search::NoResults);
     } else { updateLabelByCursorPos(); }
-
-    mShowResults = true; // reset default
 }
 
 void SearchDialog::updateUi(bool searching)
@@ -365,7 +365,7 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    if (!mSuppressChangeEvent)
+    if (!mSuppressParameterChangedEvent)
         searchParameterChanged();
 }
 
@@ -417,10 +417,10 @@ void SearchDialog::updateReplaceActionAvailability()
 
 void SearchDialog::clearSearch()
 {
-    mSuppressChangeEvent = true;
+    mSuppressParameterChangedEvent = true;
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
-    mSuppressChangeEvent = false;
+    mSuppressParameterChangedEvent = false;
     mSearch.reset();
     mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
@@ -458,7 +458,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
     QString searching = "Searching (";
     QString dotAnim = ".";
-    QRegularExpression re("\\.*");
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
@@ -500,11 +499,11 @@ void SearchDialog::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
-        mSuppressChangeEvent = true;
+        mSuppressParameterChangedEvent = true;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
-        mSuppressChangeEvent = false;
+        mSuppressParameterChangedEvent = false;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());

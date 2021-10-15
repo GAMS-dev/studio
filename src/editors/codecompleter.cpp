@@ -441,7 +441,7 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     mTypeFilter = completerTypeFilter;
     mSubType = subType;
     mNeedDot = needDot;
-    DEB() << "NeedDot: " << needDot;
+//    DEB() << "NeedDot: " << needDot;
     invalidateFilter();
 }
 
@@ -622,14 +622,14 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
 
 #ifdef QT_DEBUG
     // uncomment this to generate elements for testcompleter
-    if (mEdit) {
-        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-            if (block.isValid())
-                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
-                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
-        }
-    }
+//    if (mEdit) {
+//        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+//        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+//            if (block.isValid())
+//                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+//                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+//        }
+//    }
 #endif
 
     return res;
@@ -646,8 +646,8 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         posInBlock = cur.positionInBlock();
         // uncomment this to generate elements for testcompleter
 #ifdef QT_DEBUG
-        QString debugLine = line;
-        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+//        QString debugLine = line;
+//        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
 #endif
     }
 
@@ -1074,9 +1074,9 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     if (mDebug) {
         // for analysis
 #ifdef QT_DEBUG
-        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
-        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+//        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+//              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
+//        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 #endif
         QString debugText = "Completer at " + QString::number(start) + ": "
                 + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
