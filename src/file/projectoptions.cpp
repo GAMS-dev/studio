@@ -36,6 +36,8 @@ ProjectOptions::ProjectOptions(QWidget *parent) :
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
     ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
+    ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
 }
 
 ProjectOptions::~ProjectOptions()
@@ -114,7 +116,7 @@ void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit)
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
-    dialog->show();
+    dialog->open();
 }
 
 } // namespace project

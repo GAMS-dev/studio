@@ -19,6 +19,7 @@ PathRequest::PathRequest(QWidget *parent) :
     mInitialText = ui->laText->text();
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
     ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
+    ui->bDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
 }
 
 PathRequest::~PathRequest()
@@ -97,7 +98,7 @@ void PathRequest::showDirDialog(const QString &title, QLineEdit *lineEdit)
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
-    dialog->show();
+    dialog->open();
 }
 
 } // namespace path
