@@ -32,12 +32,14 @@ ProjectOptions::ProjectOptions(QWidget *parent) :
     connect(ui->buttonBox, &QDialogButtonBox::rejected, this, &QDialog::reject);
     setModal(true);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
     ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    adjustSize();
 }
 
 ProjectOptions::~ProjectOptions()
