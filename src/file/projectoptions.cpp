@@ -53,9 +53,9 @@ void ProjectOptions::showProject(PExProjectNode *project)
     mProject = project;
     if (mProject) {
         ui->edName->setText(mProject->name());
-        ui->edWorkDir->setText(mProject->workDir());
-        ui->edBaseDir->setText(mProject->location());
-        ui->edMainGms->setText(mProject->runnableGms()->location());
+        ui->edWorkDir->setText(QDir::toNativeSeparators(mProject->workDir()));
+        ui->edBaseDir->setText(QDir::toNativeSeparators(mProject->location()));
+        ui->edMainGms->setText(QDir::toNativeSeparators(mProject->runnableGms()->location()));
     }
     show();
 }
@@ -64,10 +64,12 @@ void ProjectOptions::accept()
 {
     if (ui->edName->text().trimmed().compare(mProject->name()))
         mProject->setName(ui->edName->text().trimmed());
-    if (ui->edBaseDir->text().trimmed().compare(mProject->location(), fsCaseSensitive()))
-        mProject->setLocation(ui->edBaseDir->text().trimmed());
-    if (ui->edWorkDir->text().trimmed().compare(mProject->workDir(), fsCaseSensitive()))
-        mProject->setWorkDir(ui->edWorkDir->text().trimmed());
+    QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
+    if (path.compare(mProject->location(), fsCaseSensitive()))
+        mProject->setLocation(path);
+    path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
+    if (path.compare(mProject->workDir(), fsCaseSensitive()))
+        mProject->setWorkDir(path);
     QDialog::accept();
 }
 
@@ -113,7 +115,7 @@ void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit)
     connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
         if (dialog->selectedFiles().count() == 1) {
             QDir dir(dialog->selectedFiles().first().trimmed());
-            if (dir.exists()) lineEdit->setText(dir.path());
+            if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
         }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });

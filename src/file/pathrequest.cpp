@@ -33,8 +33,7 @@ void PathRequest::init(ProjectRepo *repo, const QString &baseDir, const QVariant
 {
     mData = data;
     mProjectRepo = repo;
-    mInitalBasePath = baseDir;
-    ui->edBaseDir->setText(baseDir);
+    ui->edBaseDir->setText(QDir::toNativeSeparators(baseDir));
 }
 
 bool PathRequest::checkProject()
@@ -80,7 +79,7 @@ void PathRequest::updateEditColor(QLineEdit *edit, const QString &text)
 
 QString PathRequest::baseDir() const
 {
-    return ui->edBaseDir->text().trimmed();
+    return QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
 }
 
 void PathRequest::on_bDir_clicked()
@@ -95,7 +94,7 @@ void PathRequest::showDirDialog(const QString &title, QLineEdit *lineEdit)
     connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
         if (dialog->selectedFiles().count() == 1) {
             QDir dir(dialog->selectedFiles().first().trimmed());
-            if (dir.exists()) lineEdit->setText(dir.path());
+            if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
         }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });

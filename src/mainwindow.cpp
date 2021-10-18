@@ -3932,7 +3932,10 @@ void MainWindow::showProjectOptions(PExProjectNode *project)
 {
     if (!project) return;
     project::ProjectOptions *pOpt = new project::ProjectOptions(this);
-    connect(pOpt, &project::ProjectOptions::finished, this, [pOpt](){ pOpt->deleteLater(); });
+    connect(pOpt, &project::ProjectOptions::finished, this, [this, pOpt](){
+        updateRunState();
+        pOpt->deleteLater();
+    });
     pOpt->showProject(project);
 }
 
