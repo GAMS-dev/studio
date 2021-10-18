@@ -478,7 +478,7 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-        if (!mSettingsDialog || !mSettingsDialog->preventThemeChaning())
+        if (!mSettingsDialog || !mSettingsDialog->preventThemeChanging())
             ViewHelper::updateBaseTheme();
         else {
             mSettingsDialog->delayBaseThemeChange(true);

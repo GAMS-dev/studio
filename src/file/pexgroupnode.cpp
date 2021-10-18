@@ -214,6 +214,7 @@ PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta
     , mWorkDir(workDir)
     , mGamsProcess(new GamsProcess())
 {
+    if (mWorkDir.isEmpty()) mWorkDir = path;
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
