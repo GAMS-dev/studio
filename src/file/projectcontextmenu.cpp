@@ -363,15 +363,15 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 
 void ProjectContextMenu::onOpenTerminal()
 {
-    QString workingDir;
+    QString baseDir;
     PExFileNode *file = mNodes.first()->toFile();
     if (file) {
-        workingDir = QFileInfo(file->location()).path();
+        baseDir = QFileInfo(file->location()).path();
     } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)) {
         PExGroupNode *group = mNodes.first()->toGroup();
-        if (group) workingDir = group->location();
+        if (group) baseDir = group->location();
     }
-    emit openTerminal(workingDir);
+    emit openTerminal(baseDir);
 }
 
 void ProjectContextMenu::onGdxDiff()

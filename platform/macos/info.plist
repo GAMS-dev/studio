@@ -38,6 +38,7 @@
                 <string>GAMS Model Source</string>
                 <key>CFBundleTypeExtensions</key>
                 <array>
+                    <string>gsp</string>
                     <string>gms</string>
                 </array>
                 <key>CFBundleTypeIconFile</key>

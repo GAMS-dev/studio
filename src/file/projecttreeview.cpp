@@ -116,7 +116,8 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
 
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
 {
-    if (event->mimeData()->hasUrls() || event->mimeData()->formats().contains(ItemModelDataType)) {
+    bool isIntern = event->mimeData()->formats().contains(ItemModelDataType);
+    if (event->mimeData()->hasUrls() || isIntern) {
         if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
             startAutoScroll();
         } else {
@@ -124,10 +125,9 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         }
         ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
         QModelIndex ind = indexAt(event->pos());
-        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier)
-                && event->mimeData()->formats().contains(ItemModelDataType)) {
+        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier) && isIntern) {
             event->setDropAction(Qt::MoveAction);
-        } else if (FileMeta::hasExistingFile(event->mimeData()->urls())) {
+        } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())) {
             event->setDropAction(Qt::CopyAction);
         } else {
             event->ignore();

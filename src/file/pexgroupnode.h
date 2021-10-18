@@ -100,6 +100,7 @@ public:
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt = nullptr);
+    void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
     QString workDir() const;
 
@@ -118,7 +119,7 @@ public:
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
-    void workDirChanged(PExProjectNode *project);
+    void baseDirChanged(PExProjectNode *project);
 
 public slots:
     void setErrorText(int lstLine, QString text);
@@ -137,7 +138,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(QString name, QString path, FileMeta *runFileMeta = nullptr);
+    PExProjectNode(QString name, QString path, FileMeta *runFileMeta, QString workDir);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
     void appendChild(PExAbstractNode *child) override;
@@ -145,6 +146,7 @@ protected:
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
+    QString mWorkDir;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     QHash<int, QString> mErrorTexts;

@@ -1,6 +1,8 @@
 Version 1.8.1  *
 ==================
 - fixed highlighting error for compile-time constants with relaxed syntax
+- added working directory for each project
+- added dialog to set the base directory on project import
 
 Version 1.8.0
 ==================

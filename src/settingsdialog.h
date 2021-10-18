@@ -45,7 +45,7 @@ public:
 
     bool miroSettingsEnabled() const;
     void setMiroSettingsEnabled(bool enabled);
-    bool preventThemeChaning();
+    bool preventThemeChanging();
     bool hasDelayedBaseThemeChange();
 
     int engineInitialExpire() const;

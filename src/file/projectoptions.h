@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_PROJECTOPTIONS_H
 
 #include <QDialog>
+#include <QLineEdit>
 
 namespace gams {
 namespace studio {
@@ -29,9 +30,14 @@ public slots:
 
 private slots:
     void on_edWorkDir_textEdited(const QString &text);
-    void on_toolButton_clicked();
+    void on_edBaseDir_textEdited(const QString &text);
+    void on_bWorkDir_clicked();
+    void on_bBaseDir_clicked();
 
 private:
+    void updateEditColor(QLineEdit *edit, const QString &text);
+    void showDirDialog(const QString &title, QLineEdit *lineEdit);
+
     Ui::ProjectOptions *ui;
     PExProjectNode *mProject = nullptr;
 

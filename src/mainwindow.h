@@ -173,6 +173,7 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
+    void updateRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
@@ -389,7 +390,8 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
-    void loadProjects(const QString &gspFile);
+    void openProject(const QString gspFile);
+    void loadProject(const QVariantList data, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
 
