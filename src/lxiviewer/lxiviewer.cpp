@@ -55,6 +55,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
     ui->lxiTreeView->installEventFilter(this);
+    mTextView->edit()->installEventFilter(this);
 }
 
 LxiViewer::~LxiViewer()
@@ -92,6 +93,9 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
             if (ui->lxiTreeView->model()->hasChildren(ui->lxiTreeView->currentIndex()))
                 ui->lxiTreeView->expand(ui->lxiTreeView->currentIndex());
         }
+    }
+    if (event->type() == QEvent::FontChange && watched == mTextView->edit()) {
+        ui->lxiTreeView->setFont(mTextView->edit()->font());
     }
     return false;
 }

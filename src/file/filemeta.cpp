@@ -947,7 +947,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
         tView->setLogParser(parser);
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLst;
+        EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLstChild;
         TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget), type);
         tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
