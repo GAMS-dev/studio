@@ -98,7 +98,6 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
     void openFiles(const QStringList &files, bool forceNew);
     void watchProjectTree();
@@ -445,7 +444,7 @@ private:
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
-    QStringList mInitialFiles;
+    QStringList *mInitialFiles = nullptr;
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
 

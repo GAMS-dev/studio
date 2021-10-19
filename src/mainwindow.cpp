@@ -86,6 +86,7 @@ MainWindow::MainWindow(QWidget *parent)
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
+      mInitialFiles(new QStringList()),
       mAutosaveHandler(new AutosaveHandler(this)),
       mMainTabContextMenu(this),
       mLogTabContextMenu(this),
@@ -332,11 +333,6 @@ MainWindow::~MainWindow()
     delete mSearchDialog;
     delete mPrintDialog;
     FileType::clear();
-}
-
-void MainWindow::setInitialFiles(QStringList files)
-{
-    mInitialFiles = files;
 }
 
 void MainWindow::initWelcomePage()
@@ -2971,6 +2967,11 @@ void MainWindow::openFiles(OpenGroupOption opt)
 void MainWindow::openFiles(const QStringList &files, bool forceNew)
 {
     if (files.size() == 0) return;
+    if (mInitialFiles) {
+        // During initialization only append for later processing
+        mInitialFiles->append(files);
+        return;
+    }
 
     if (!forceNew && files.size() == 1) {
         if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
@@ -3255,6 +3256,11 @@ void MainWindow::parameterRunChanged()
 
 void MainWindow::openInitialFiles()
 {
+    if (!mInitialFiles) return;
+    QStringList files = *mInitialFiles;
+    delete mInitialFiles;
+    mInitialFiles = nullptr;
+
     Settings *settings = Settings::settings();
     projectRepo()->read(settings->toList(skProjects));
 
@@ -3271,8 +3277,7 @@ void MainWindow::openInitialFiles()
             mHistory.files() << map.value("file").toString();
     }
 
-    openFiles(mInitialFiles, false);
-    mInitialFiles.clear();
+    openFiles(files, false);
     watchProjectTree();
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
