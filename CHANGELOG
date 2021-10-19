@@ -3,6 +3,7 @@ Version 1.8.1  *
 - fixed highlighting error for compile-time constants with relaxed syntax
 - added working directory for each project
 - added dialog to set the base directory on project import
+- keep zoom of lxi-view in sync with lst-view and added zoom shortcuts
 
 Version 1.8.0
 ==================
