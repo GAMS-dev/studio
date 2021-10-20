@@ -2479,6 +2479,10 @@ void MainWindow::loadProject(const QVariantList data, const QString &basePath, b
             dialog->deleteLater();
         }
         dialog->open();
+#ifdef __APPLE__
+        dialog->show();
+        dialog->raise();
+#endif
         mActiveDialog = dialog;
     }
 }
