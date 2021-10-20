@@ -3265,6 +3265,7 @@ void MainWindow::openInitialFiles()
     QStringList files = *mInitialFiles;
     delete mInitialFiles;
     mInitialFiles = nullptr;
+    appendSystemLogInfo("Initial files:\n" + files.join("\n"));
 
     Settings *settings = Settings::settings();
     projectRepo()->read(settings->toList(skProjects));
