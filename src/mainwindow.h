@@ -396,6 +396,7 @@ private slots:
     void exportProjectDialog(PExProjectNode *project);
 
 private:
+    void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
     void initIcons();
     void initEnvironment();

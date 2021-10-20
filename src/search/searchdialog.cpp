@@ -380,7 +380,7 @@ void SearchDialog::updateReplaceActionAvailability()
 {
     bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLstChild
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
     activateSearch = activateSearch || (ui->combo_scope->currentIndex() != Search::ThisFile);
 

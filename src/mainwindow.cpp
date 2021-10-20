@@ -4406,14 +4406,7 @@ void MainWindow::on_actionZoom_Out_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
-        }
+        zoomWidget(focusWidget(), -1);
     }
 }
 
@@ -4426,16 +4419,26 @@ void MainWindow::on_actionZoom_In_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            ae->zoomIn();
-            if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            tv->zoomIn();
-            if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
-        }
+        zoomWidget(focusWidget(), 1);
+    }
+}
+
+void MainWindow::zoomWidget(QWidget *widget, int range)
+{
+    if (lxiviewer::LxiViewer *lv = ViewHelper::toLxiViewer(widget)) {
+        int pix = lv->fontInfo().pixelSize();
+        lv->textView()->zoomIn(range);
+        if (pix == lv->fontInfo().pixelSize() && lv->fontInfo().pointSize() > 1) lv->textView()->zoomIn(range);
+
+    } else if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
+        int pix = tv->fontInfo().pixelSize();
+        tv->zoomIn(range);
+        if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn(range);
+
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
+        int pix = ae->fontInfo().pixelSize();
+        ae->zoomIn(range);
+        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
     }
 }
 
@@ -4979,7 +4982,7 @@ void MainWindow::printDocument()
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (!abstractEdit) return;
         abstractEdit->print(&mPrinter);
-    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
         lxiViewer->print(&mPrinter);
@@ -5033,7 +5036,7 @@ bool MainWindow::enabledPrintAction()
     if (!fm || !focusWidget())
         return false;
     return focusWidget() == mRecent.editor()
-            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
 
