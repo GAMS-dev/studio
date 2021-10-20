@@ -703,8 +703,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
     mFilterModel->setGroupRows(mModel->dollarGroupRow(), mModel->percentGroupRow());
     updateFilterFromSyntax(syntax, dcoFlavor, line, posInBlock);
-    QString filterRex = mFilterText;
-    filterRex.replace(".", "\\.").replace("$", "\\$");
+    QString filterRex = QRegularExpression::escape(mFilterText);
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
 
     if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())
