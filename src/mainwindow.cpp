@@ -2470,11 +2470,16 @@ void MainWindow::loadProject(const QVariantList data, const QString &basePath, b
         dialog->deleteLater();
         mProjectRepo.read(data, basePath);
     } else {
-        connect(dialog, &path::PathRequest::finished, this, [dialog]() { dialog->deleteLater(); });
+        connect(dialog, &path::PathRequest::finished, this, [this, dialog]() { dialog->deleteLater(); mActiveDialog = nullptr; });
         connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog]() {
             mProjectRepo.read(data, dialog->baseDir());
         });
+        if (mActiveDialog) {
+            appendSystemLogWarning("PathRequest: Second dialog on top! Only one dialog should be active.");
+            dialog->deleteLater();
+        }
         dialog->open();
+        mActiveDialog = dialog;
     }
 }
 

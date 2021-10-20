@@ -447,6 +447,7 @@ private:
     QStringList *mInitialFiles = nullptr;
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
+    QWidget *mActiveDialog = nullptr;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
