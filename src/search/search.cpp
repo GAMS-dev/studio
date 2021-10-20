@@ -116,6 +116,7 @@ void Search::findInSelection(bool isSingleReplaceAction)
         ae->updateSearchSelection(isSingleReplaceAction);
         ae->findInSelection(mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        mSearchSelectionFile = tv->edit()->fileId();
         tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
     }
     // nothing more to do, update UI and return

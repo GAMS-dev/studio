@@ -187,7 +187,7 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
-    void setSearchSelection();
+    void updateSearchSelection();
     void clearSearchSelection();
     bool hasSearchSelection();
     QPoint searchSelectionStart();

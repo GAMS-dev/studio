@@ -524,7 +524,7 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     return getChunk(chunkNr);
 }
 
-void AbstractTextMapper::setSearchSelection()
+void AbstractTextMapper::updateSearchSelection()
 {
     // sort positions
     if (mPosition < mAnchor) {
