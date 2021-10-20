@@ -1,15 +1,39 @@
-Version 1.8.0 *
+Version 1.8.1  *
 ==================
-- added tooltips to source code for keywords and DCOs (can be deactivated in the settings dialog)
-- highlight remotely executed LOG (NEOS or GAMS Engine)
-- change naming from "group" to "project"
+- fixed highlighting error for compile-time constants with relaxed syntax
+- added working directory for each project
+- added dialog to set the base directory on project import
+- fixes non native separators in project dialogs
+- fixes run buttons not active issue
 - added new search scope: selection
     - allows users to search inside a text selection
     - can be cleared by pressing the "Clear" button in search dialog or Esc
 
-Version 1.7.4 *
+Version 1.8.0
 ==================
-- Fixed crash on editing long lines ending an error mark
+- added tooltips to source code for keywords and DCOs (can be deactivated in the settings dialog)
+- highlight remotely executed LOG (NEOS or GAMS Engine)
+- change naming from "group" to "project"
+- removed obsolete MIRO Hypercube mode
+- files now appear in folders relative to the working directory of the assigned project
+- the projects context menu "Project options" allows to change the name and working directory of the project
+- added import and export of projects
+
+Version 1.7.5
+==================
+- replace TAB characters by the proper amount of spaces on pasting text
+- fix issue when zooming a text containing TAB characters
+- set default TAB size to 8
+- fixed NEOS and GAMS Engine inactive due to an SSL detection issue
+>>>>>>> 1.8.x-release
+
+Version 1.7.4
+==================
+- fixed crash when editing long lines ending in an error mark
+- fixed highlighting of wrong results in Search Result View
+- removed selection in Result View when search data is outdated
+- fixed broken syntax highlighting of execute_*
+- allow to use GAMS Engine on a HTTP server when the local SSL isn't present
 
 Version 1.7.3
 ==================

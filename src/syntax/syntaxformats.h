@@ -47,6 +47,7 @@ enum class SyntaxKind {
     SubDCO,
     UserCompileAttrib,
     SystemCompileAttrib,
+    SystemCompileAttribR,
     SystemRunAttrib,
 
     CommentLine,
@@ -114,6 +115,8 @@ enum FlavorFlag {
     flavorModel = 8,
     flavorPreTable = 16,
     flavorBindLabel = 32,
+
+    flavorExecDot = 4,
 };
 
 enum class SyntaxShift {
@@ -205,6 +208,8 @@ public:
 
     static int stateToInt(SyntaxKind _state);
     static SyntaxKind intToState(int intState);
+
+    static const QPair<QString, QString> systemEmpData;
 
 protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind

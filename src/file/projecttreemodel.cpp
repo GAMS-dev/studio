@@ -114,7 +114,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
     case Qt::FontRole: {
-        if (isCurrent(ind) || isCurrentGroup(ind)) {
+        if (isCurrent(ind) || isCurrentProject(ind)) {
             QFont f;
             f.setBold(true);
             return f;
@@ -128,7 +128,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
                                   : QColor(Qt::gray);
         } else if (Theme::instance()->baseTheme(Theme::instance()->activeTheme())) {
             // dark theme, not current: slightly grayed white
-            if (!isCurrent(ind) && !isCurrentGroup(ind))
+            if (!isCurrent(ind) && !isCurrentProject(ind))
                 return QColor(Qt::white).darker(125);
         }
     }   break;
@@ -138,7 +138,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         while (parInd.isValid() && parInd.parent().isValid() && parInd.parent().parent().isValid())
             parInd = parInd.parent();
         QIcon::Mode mode = isCurrent(ind) ? QIcon::Active : isSelected(ind) ? QIcon::Selected : QIcon::Normal;
-        return mProjectRepo->node(ind)->icon(mode, isCurrentGroup(parInd) ? 100 : 50);
+        return mProjectRepo->node(ind)->icon(mode, isCurrentProject(parInd) ? 100 : 50);
     }
 
     case Qt::ToolTipRole:
@@ -239,8 +239,8 @@ Qt::ItemFlags ProjectTreeModel::flags(const QModelIndex &index) const
     if (!index.isValid()) return flags;
     PExAbstractNode *node = mProjectRepo->node(index);
     if (!node) return flags;
-    PExGroupNode *group = node->toGroup();
-    if (group) {
+    PExProjectNode *project = node->toProject();
+    if (project) {
         flags.setFlag(Qt::ItemIsEditable);
         flags.setFlag(Qt::ItemIsDropEnabled);
     } else flags.setFlag(Qt::ItemIsDragEnabled);
@@ -353,26 +353,25 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
     }
 }
 
-bool ProjectTreeModel::isCurrentGroup(const QModelIndex& ind) const
+bool ProjectTreeModel::isCurrentProject(const QModelIndex& ind) const
 {
     if (mCurrent.isValid()) {
         PExAbstractNode* node = mProjectRepo->node(mCurrent);
-        if (!node || !node->parentNode()) return false;
-        if (node->parentNode()->id() == nodeId(ind)) {
+        if (!node || !node->assignedProject()) return false;
+        if (node->assignedProject()->id() == nodeId(ind)) {
             return true;
         }
     }
     return false;
 }
 
-QModelIndex ProjectTreeModel::findGroup(QModelIndex ind)
+QModelIndex ProjectTreeModel::findProject(QModelIndex ind)
 {
     if (ind.isValid()) {
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        ind = index(group);
+        PExProjectNode *project = node->assignedProject();
+        ind = index(project);
     }
     return ind;
 }
@@ -395,14 +394,14 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
                                                               : nodeId(selected.indexes().first())
                                          : mSelected.first();
     PExAbstractNode *first = mProjectRepo->node(firstId);
-    mAddGroups.clear();
-    int selKind = !first ? 0 : first->toGroup() ? 1 : 2;
+    mAddProjects.clear();
+    int selKind = !first ? 0 : first->toProject() ? 1 : 2;
     for (const QModelIndex &ind: selected.indexes()) {
         NodeId id = nodeId(ind);
         PExAbstractNode *node = mProjectRepo->node(id);
-        int nodeKind = !node ? 0 : node->toGroup() ? 1 : 2;
+        int nodeKind = !node ? 0 : node->toProject() ? 1 : 2;
         if (nodeKind == 1 && selKind == 2) {
-            mAddGroups << ind;
+            mAddProjects << ind;
         }
         if (id.isValid() && !mSelected.contains(id) && (!selKind || nodeKind == selKind)) {
             mSelected << id;
@@ -439,10 +438,10 @@ const QVector<QModelIndex> ProjectTreeModel::popDeclined()
     return res;
 }
 
-const QVector<QModelIndex> ProjectTreeModel::popAddGroups()
+const QVector<QModelIndex> ProjectTreeModel::popAddProjects()
 {
-    QVector<QModelIndex> res = mAddGroups;
-    mAddGroups.clear();
+    QVector<QModelIndex> res = mAddProjects;
+    mAddProjects.clear();
     return res;
 }
 

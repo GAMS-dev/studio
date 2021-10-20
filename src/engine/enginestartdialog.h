@@ -127,6 +127,7 @@ private:
     QString mValidSelfCertUrl;
     UrlChecks mUrlChecks;
     UrlCheck mInitialProtocol = ucNone;
+    bool mNoSSL = false;
     int mLastSslError = 0;
     bool mUrlChanged = false;
     bool mForcePreviousWork = true;

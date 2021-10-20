@@ -38,7 +38,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     // TODO(JM) Check what additional kinds belong here too (kinds that won't be passed to the next line)
     mSingleLineKinds << SyntaxKind::Dco << SyntaxKind::DcoBody << SyntaxKind::SubDCO << SyntaxKind::Title
                      << SyntaxKind::CommentEndline << SyntaxKind::CommentLine << SyntaxKind::String
-                     << SyntaxKind::SystemRunAttrib << SyntaxKind::SystemCompileAttrib << SyntaxKind::UserCompileAttrib;
+                     << SyntaxKind::SystemRunAttrib << SyntaxKind::SystemCompileAttrib << SyntaxKind::SystemCompileAttribR
+                     << SyntaxKind::UserCompileAttrib;
 
     mPostKindBlocker << SyntaxKind::CommentLine << SyntaxKind::CommentBlock << SyntaxKind::CommentEndline
                      << SyntaxKind::CommentInline;
@@ -63,6 +64,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
 
     initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemRunAttrib, d), Theme::Syntax_embedded);
     initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemCompileAttrib, d), Theme::Syntax_embedded);
+    initKind(new SyntaxSimpleKeyword(SyntaxKind::SystemCompileAttribR, d), Theme::Syntax_embedded);
     initKind(new SyntaxSimpleWord(d), Theme::Syntax_embedded);
 
     initKind(new SyntaxAssign(d), Theme::Syntax_formula);
@@ -104,7 +106,8 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRowHead, d), Theme::Syntax_tableHeader);
     initKind(new SyntaxTableAssign(SyntaxKind::IdentifierTableAssignmentRow, d), Theme::Syntax_assignValue);
 
-    mPostSyntax << mKinds.value(SyntaxKind::SystemCompileAttrib) << mKinds.value(SyntaxKind::UserCompileAttrib);
+    mPostSyntax << mKinds.value(SyntaxKind::SystemCompileAttrib)  << mKinds.value(SyntaxKind::SystemCompileAttribR)
+                << mKinds.value(SyntaxKind::UserCompileAttrib);
 
     if (!d->isValid()) {
         EXCEPT() << "ERROR: Incomplete SharedSyntaxData";
@@ -257,7 +260,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                                DEB() << QString(nextBlock.start, ' ') << QString(nextBlock.length(), '_')
 //                                      << " " << nextBlock.syntax->name();
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
-                            i = nextBlock.end;
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::ConstIterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
                                 if (it == mScannedBlockSyntax.constEnd()) {
@@ -266,6 +268,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 //                                QPair<int,int> currentVal = it.value();
 //                                mScannedBlockSyntax.insert(nextBlock.end, QPair<int,int>(int(nextBlock.syntax->kind()), nextBlock.flavor));
                             }
+                            i = nextBlock.end-1;
                             break;
                         }
                     }

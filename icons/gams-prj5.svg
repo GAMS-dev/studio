@@ -1,0 +1,15 @@
+<svg width="128" height="128" version="1.0" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+ <style type="text/css">.st0{fill:#FFFFFF;fill-opacity:1.0;}.st1{fill:#F39619;fill-opacity:1.0;}.st2{fill:#000;fill-opacity:1.0;}</style>
+ <circle cx="60.058" cy="59.942" r="40.027" style="fill:none;stroke-width:1.8194;stroke:#737373"/>
+ <g class="st0">
+ <circle transform="rotate(60)" cx="46.137" cy="-21.949" r="23.978"/>
+ <circle transform="rotate(60)" cx="82.102" cy="-57.983" r="23.978"/>
+ <circle transform="rotate(60)" cx="118.14" cy="-22.018" r="23.978"/>
+ <circle transform="rotate(60)" cx="82.172" cy="14.017" r="23.978"/>
+ </g><g class="st1">
+ <circle transform="rotate(60)" cx="46.234" cy="-21.855" r="20.041"/>
+ <circle transform="rotate(60)" cx="82.165" cy="-57.92" r="20.041"/>
+ <circle transform="rotate(60)" cx="118.23" cy="-21.925" r="20.041"/>
+ <circle transform="rotate(60)" cx="82.269" cy="14.11" r="20.041"/>
+ </g>
+</svg>

@@ -1,0 +1,16 @@
+<svg width="128" height="128" version="1.0" viewBox="0 0 128 128" xmlns="http://www.w3.org/2000/svg">
+ <style type="text/css">.st0{fill:#FFFFFF;fill-opacity:1.0;}.st1{fill:#F39619;fill-opacity:1.0;}.st2{fill:#000;fill-opacity:1.0;}</style>
+ <circle cx="60.058" cy="59.942" r="40.027" style="fill:none;stroke-width:1.8194;stroke:#737373"/>
+ <g class="st0">
+ <circle cx="24.058" cy="59.977" r="23.978"/>
+ <circle class="st0" cx="60.023" cy="23.942" r="23.978"/>
+ <circle class="st0" cx="96.058" cy="59.907" r="23.978"/>
+ <circle class="st0" cx="60.093" cy="95.942" r="23.978"/>
+ </g>
+ <g class="st1">
+ <circle class="st1" cx="24.156" cy="60.07" r="20.041"/>
+ <circle class="st1" cx="60.087" cy="24.005" r="20.041"/>
+ <circle class="st1" cx="96.156" cy="60.001" r="20.041"/>
+ <circle class="st1" cx="60.19" cy="96.035" r="20.041"/>
+ </g>
+</svg>

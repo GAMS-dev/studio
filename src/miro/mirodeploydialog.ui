@@ -13,7 +13,7 @@
   <property name="windowTitle">
    <string>Assembly and Deploy</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout_5">
+  <layout class="QVBoxLayout" name="verticalLayout_3">
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
@@ -108,22 +108,9 @@
        <property name="title">
         <string>Deploy Configuration</string>
        </property>
-       <layout class="QVBoxLayout" name="verticalLayout_3">
+       <layout class="QVBoxLayout" name="verticalLayout_2">
         <item>
          <layout class="QVBoxLayout" name="verticalLayout">
-          <item>
-           <widget class="QCheckBox" name="baseBox">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Base</string>
-            </property>
-           </widget>
-          </item>
           <item>
            <widget class="QLabel" name="label_2">
             <property name="font">
@@ -176,41 +163,13 @@
          </widget>
         </item>
         <item>
-         <layout class="QVBoxLayout" name="verticalLayout_2">
-          <item>
-           <widget class="QCheckBox" name="hypercubeBox">
-            <property name="font">
-             <font>
-              <weight>50</weight>
-              <bold>false</bold>
-             </font>
-            </property>
-            <property name="text">
-             <string>Hypercube</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QPushButton" name="testHcubeButton">
-            <property name="text">
-             <string>Test Deploy</string>
-            </property>
-            <property name="autoDefault">
-             <bool>false</bool>
-            </property>
-           </widget>
-          </item>
-         </layout>
-        </item>
-        <item>
-         <widget class="Line" name="line_2">
-          <property name="orientation">
-           <enum>Qt::Horizontal</enum>
-          </property>
-         </widget>
-        </item>
-        <item>
          <widget class="QLabel" name="errorLabel">
+          <property name="sizePolicy">
+           <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+            <horstretch>0</horstretch>
+            <verstretch>0</verstretch>
+           </sizepolicy>
+          </property>
           <property name="text">
            <string/>
           </property>
@@ -226,6 +185,9 @@
          <spacer name="verticalSpacer">
           <property name="orientation">
            <enum>Qt::Vertical</enum>
+          </property>
+          <property name="sizeType">
+           <enum>QSizePolicy::MinimumExpanding</enum>
           </property>
           <property name="sizeHint" stdset="0">
            <size>
@@ -266,11 +228,8 @@
   </layout>
  </widget>
  <tabstops>
-  <tabstop>baseBox</tabstop>
   <tabstop>targetEnvBox</tabstop>
   <tabstop>testBaseButton</tabstop>
-  <tabstop>hypercubeBox</tabstop>
-  <tabstop>testHcubeButton</tabstop>
   <tabstop>deployButton</tabstop>
  </tabstops>
  <resources/>

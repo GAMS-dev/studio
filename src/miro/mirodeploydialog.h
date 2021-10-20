@@ -43,8 +43,6 @@ class MiroDeployDialog : public QDialog
 public:
     MiroDeployDialog(QWidget *parent = nullptr);
 
-    bool baseMode() const;
-    bool hypercubeMode() const;
     MiroTargetEnvironment targetEnvironment();
 
     void setDefaults();
@@ -66,13 +64,15 @@ signals:
     void deploy(bool test, MiroDeployMode mode);
     void newAssemblyFileData();
 
+protected:
+    void showEvent(QShowEvent *event) override;
+
 private slots:
     void on_createButton_clicked();
     void on_selectAllButton_clicked();
     void on_clearButton_clicked();
 
     void on_testBaseButton_clicked();
-    void on_testHcubeButton_clicked();
     void on_deployButton_clicked();
 
     void updateTestDeployButtons();

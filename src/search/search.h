@@ -90,6 +90,7 @@ private:
     int NavigateInsideCache(Direction direction);
 
     void checkFileChanged(FileId fileId);
+    bool hasResultsForFile(QString filePath);
 
 private slots:
     void finished();
