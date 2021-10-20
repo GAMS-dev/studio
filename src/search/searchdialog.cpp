@@ -232,7 +232,7 @@ void SearchDialog::on_searchPrev()
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
-    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
+    mMain->invalidateResultsView();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -373,7 +373,6 @@ void SearchDialog::searchParameterChanged() {
     setSearchStatus(Search::Clear);
 
     mSearch.reset();
-    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -451,7 +450,7 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
-    mMain->closeResultsPage();
+    mMain->closeResultsView();
 }
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)

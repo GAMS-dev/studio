@@ -89,6 +89,7 @@ private:
     int NavigateOutsideCache(Direction direction, bool firstLevel);
     int NavigateInsideCache(Direction direction);
 
+    void checkFileChanged(FileId fileId);
 
 private slots:
     void finished();
@@ -112,7 +113,6 @@ private:
     int mLastMatchInOpt = -1;
 
     bool mSplitSearchContinue = false;
-    void updateSearchSelection();
 };
 
 }

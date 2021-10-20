@@ -4036,13 +4036,18 @@ void MainWindow::showResults(search::SearchResultModel* results)
     ui->logTabs->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::closeResultsPage()
+void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
 
     delete mResultsView;
     mResultsView = nullptr;
+}
+
+void MainWindow::invalidateResultsView()
+{
+    if (resultsView()) resultsView()->setOutdated();
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)

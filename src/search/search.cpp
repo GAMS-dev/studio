@@ -107,20 +107,28 @@ void Search::reset()
     mLastMatchInOpt = -1;
 
     mThread.isInterruptionRequested();
+    mMain->invalidateResultsView();
 }
 
 void Search::findInSelection(bool isSingleReplaceAction)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        mSearchSelectionFile = ae->fileId();
+        checkFileChanged(ae->fileId());
         ae->updateSearchSelection(isSingleReplaceAction);
         ae->findInSelection(mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        mSearchSelectionFile = tv->edit()->fileId();
+        checkFileChanged(tv->edit()->fileId());
         tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
     }
     // nothing more to do, update UI and return
     finished();
+}
+
+void Search::checkFileChanged(FileId fileId) {
+    if (mSearchSelectionFile != fileId) {
+        mMain->invalidateResultsView();
+        mSearchSelectionFile = fileId;
+    }
 }
 
 void Search::findInDoc(FileMeta* fm)
@@ -152,6 +160,7 @@ void Search::findNext(Direction direction)
     bool requestNewCache = !mCacheAvailable || mResultHash.find(location)->count() == 0;
 
     if (requestNewCache) {
+        mMain->invalidateResultsView();
         mCacheAvailable = false;
         mMain->searchDialog()->updateUi(true);
         start();
