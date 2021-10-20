@@ -32,6 +32,10 @@ SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from
 {
     // for now, searching with bounds works without extra thread
     hasOwnThread = false;
+
+    // convert 0-based line counting to 1-based
+    mFrom += QPoint(0,1);
+    mTo += QPoint(0,1);
 }
 
 SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
