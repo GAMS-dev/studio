@@ -24,13 +24,9 @@
 #include "abstracttextmapper.h"
 #include "exception.h"
 #include "logger.h"
-#include "search/search.h"
-#include "search/searchlocator.h"
-#include "search/searchworker.h"
 
 namespace gams {
 namespace studio {
-using namespace search;
 
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
@@ -501,15 +497,6 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
     return false;
 }
 
-void AbstractTextMapper::findTextInSelection(QRegularExpression searchRegex, FileMeta* file, QList<Result> *results)
-{
-    setSearchSelection(mPosition, mAnchor);
-    QPoint start = convertPos(mSearchSelectionStart);
-    QPoint end = convertPos(mSearchSelectionEnd);
-    SearchWorker sw(file, searchRegex, start, end, results);
-    sw.findInFiles();
-}
-
 AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelta, int *lineInChunk) const
 {
     if (lineInChunk) *lineInChunk = -1;
@@ -537,16 +524,24 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     return getChunk(chunkNr);
 }
 
-void AbstractTextMapper::setSearchSelection(CursorPosition cursor, CursorPosition anchor)
+void AbstractTextMapper::setSearchSelection()
 {
     // sort positions
-    if (cursor < anchor) {
-        mSearchSelectionStart = cursor;
-        mSearchSelectionEnd = anchor;
+    if (mPosition < mAnchor) {
+        mSearchSelectionStart = mPosition;
+        mSearchSelectionEnd = mAnchor;
     } else {
-        mSearchSelectionStart = anchor;
-        mSearchSelectionEnd = cursor;
+        mSearchSelectionStart = mAnchor;
+        mSearchSelectionEnd = mPosition;
     }
+}
+
+QPoint AbstractTextMapper::searchSelectionStart() {
+    return convertPos(mSearchSelectionStart);
+}
+
+QPoint AbstractTextMapper::searchSelectionEnd() {
+    return convertPos(mSearchSelectionEnd);
 }
 
 void AbstractTextMapper::clearSearchSelection() {

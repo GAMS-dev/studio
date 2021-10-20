@@ -27,6 +27,9 @@
 #include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
+#include "search/searchworker.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -37,6 +40,7 @@
 namespace gams {
 namespace studio {
 
+using namespace search;
 
 TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent), mTextKind(kind)
 {
@@ -273,7 +277,11 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results)
 {
     mEdit->searchSelection = mEdit->textCursor();
-    mMapper->findTextInSelection(searchRegex, file, results);
+    mMapper->setSearchSelection();
+    SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(),
+                    mMapper->searchSelectionEnd(), results);
+    sw.findInFiles();
+
 }
 
 void TextView::clearSearchSelection() {

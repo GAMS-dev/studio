@@ -170,7 +170,6 @@ public:
     virtual QString lines(int localLineNrFrom, int lineCount) const;
     virtual QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const;
     virtual bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
-    void findTextInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results);
 
     virtual QString selectedText() const;
     virtual QString positionLine() const;
@@ -188,9 +187,11 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
-    void setSearchSelection(CursorPosition cursor, CursorPosition anchor);
+    void setSearchSelection();
     void clearSearchSelection();
     bool hasSearchSelection();
+    QPoint searchSelectionStart();
+    QPoint searchSelectionEnd();
 
     void dumpPos() const;
 
