@@ -39,7 +39,6 @@ private:
     ProjectRepo *mProjectRepo = nullptr;
     QVariantList mData;
     QString mInitialText;
-    QString mInitalBasePath;
 
 };
 
