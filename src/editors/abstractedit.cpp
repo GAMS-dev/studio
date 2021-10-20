@@ -215,7 +215,7 @@ void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &sel
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
     selection.format.setProperty(QTextFormat::FullWidthSelection, false);
-    selection.cursor = searchSelection;
+    selection.cursor = QTextCursor(searchSelection);
     selections.append(selection);
 }
 

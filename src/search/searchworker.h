@@ -55,7 +55,7 @@ private:
     QPoint mTo = QPoint(0,0);
 
     bool allowInsert(int line, int col);
-    bool hasOwnThread = true;
+    bool mFindInSelection = true;
 };
 
 }

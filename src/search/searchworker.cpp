@@ -31,7 +31,7 @@ SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from
     : mFiles(QList<FileMeta*>() << file), mMatches(list), mRegex(regex), mFrom(from), mTo(to)
 {
     // for now, searching with bounds works without extra thread
-    hasOwnThread = false;
+    mFindInSelection = true;
 
     // convert 0-based line counting to 1-based
     mFrom += QPoint(0,1);
@@ -41,7 +41,7 @@ SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from
 SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
     : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0))
 {
-    hasOwnThread = true;
+    mFindInSelection = false;
 }
 
 SearchWorker::~SearchWorker()
@@ -93,12 +93,12 @@ void SearchWorker::findInFiles()
         emit update(mMatches->size());
     }
     emit resultReady();
-    if (hasOwnThread) thread()->quit();
+    if (!mFindInSelection) thread()->quit();
 }
 
 bool SearchWorker::allowInsert(int line, int col) {
     // no limit set
-    if (mTo == QPoint(0,0)) return true;
+    if (!mFindInSelection) return true;
 
     // check lower bound
     if (line < mFrom.y()) return false;
