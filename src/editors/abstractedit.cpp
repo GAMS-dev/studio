@@ -374,7 +374,7 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     QString selection = textCursor().selectedText();
     if (hasSearchSelection()) {
         selection = searchSelection.selectedText();
-        offset = textCursor().position() - searchSelection.position() -1;
+        offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
     }
 
     QRegularExpressionMatch match = regex.match(selection, offset);
