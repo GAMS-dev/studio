@@ -103,11 +103,16 @@ void Search::reset()
 
     mCacheAvailable = false;
     mOutsideOfList = false;
-    mJumpQueued = false;
     mLastMatchInOpt = -1;
 
     mThread.isInterruptionRequested();
     mMain->invalidateResultsView();
+}
+
+void Search::documentChanged()
+{
+    mMain->invalidateResultsView();
+    mCacheAvailable = false;
 }
 
 void Search::findInSelection(bool isSingleReplaceAction)
@@ -200,12 +205,6 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
     bool allowJumping = false;
-
-    if (mSearching) {
-        mJumpQueued = true;
-        mQueuedJumpForward = direction == Direction::Forward;
-        return -1;
-    }
 
     // allow jumping when we have results but not in the current file
     allowJumping = (mResults.size() > 0)
@@ -354,6 +353,8 @@ int Search::NavigateInsideCache(Direction direction)
             matchNr = (direction == Direction::Backward) ? mResults.size()-1 : 0;
             mLastMatchInOpt = matchNr;
         }
+    } else {
+        mOutsideOfList = false;
     }
     // navigate to match
     jumpToResult(matchNr);
@@ -421,10 +422,6 @@ void Search::finished()
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = true;
-    if (mJumpQueued) {
-        selectNextMatch(mQueuedJumpForward ? Direction::Forward : Direction::Backward);
-        mJumpQueued = false;
-    }
     mMain->searchDialog()->finalUpdate();
 }
 

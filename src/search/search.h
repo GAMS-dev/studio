@@ -70,6 +70,7 @@ public:
     QRegularExpression regex() const;
     bool hasSearchSelection();
     void reset();
+    void documentChanged();
 
 signals:
     void updateLabelByCursorPos(int line, int col);
@@ -109,8 +110,6 @@ private:
     bool mSearching = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
-    bool mJumpQueued = false;
-    bool mQueuedJumpForward = false;
     int mLastMatchInOpt = -1;
 
     bool mSplitSearchContinue = false;
