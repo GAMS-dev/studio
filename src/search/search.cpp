@@ -474,7 +474,6 @@ void Search::replaceNext(QString replacementText)
 
 void Search::replaceAll(QString replacementText)
 {
-    // TODO(RG): move to AE
     if (mRegex.pattern().isEmpty()) return;
 
     QList<FileMeta*> opened;
@@ -508,10 +507,14 @@ void Search::replaceAll(QString replacementText)
         msgBox.exec();
         return;
 
-    } else if (matchedFiles == 1) {
+    } else if (matchedFiles == 1 && mMain->searchDialog()->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mFiles.first()->name() + ". This action cannot be undone. Are you sure?");
+                       + mFiles.first()->name() + ". Are you sure?");
+    } else if (mMain->searchDialog()->selectedScope() == Search::Selection) {
+        msgBox.setText("Are you sure you want to replace all occurrences of '" +
+                       searchTerm + "' with '" + replaceTerm + "' in the selected text in file "
+                       + mFiles.first()->name() + ". Are you sure?");
     } else if (matchedFiles >= 2) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
