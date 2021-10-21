@@ -232,6 +232,7 @@ void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int cha
 {
     Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
     mMain->invalidateResultsView();
+    searchParameterChanged();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
