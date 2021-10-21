@@ -411,7 +411,6 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
 void Search::finished()
 {
-    mMain->searchDialog()->finalUpdate();
     mSearching = false;
 
     for (const Result &r : qAsConst(mResults))
@@ -422,6 +421,7 @@ void Search::finished()
         selectNextMatch(mQueuedJumpForward ? Direction::Forward : Direction::Backward);
         mJumpQueued = false;
     }
+    mMain->searchDialog()->finalUpdate();
 }
 
 const QFlags<QTextDocument::FindFlag> &Search::options() const

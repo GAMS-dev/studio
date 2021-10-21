@@ -25,7 +25,6 @@ Version 1.7.5
 - fix issue when zooming a text containing TAB characters
 - set default TAB size to 8
 - fixed NEOS and GAMS Engine inactive due to an SSL detection issue
->>>>>>> 1.8.x-release
 
 Version 1.7.4
 ==================
