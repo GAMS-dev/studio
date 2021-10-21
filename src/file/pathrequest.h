@@ -22,7 +22,7 @@ class PathRequest : public QDialog
 public:
     explicit PathRequest(QWidget *parent = nullptr);
     ~PathRequest() override;
-    void init(ProjectRepo *repo, const QString &baseDir, const QVariantList &data);
+    void init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantList &data);
     bool checkProject();
     QString baseDir() const;
 

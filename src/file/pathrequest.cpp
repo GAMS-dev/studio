@@ -29,11 +29,12 @@ PathRequest::~PathRequest()
     delete ui;
 }
 
-void PathRequest::init(ProjectRepo *repo, const QString &baseDir, const QVariantList &data)
+void PathRequest::init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantList &data)
 {
     mData = data;
     mProjectRepo = repo;
     ui->edBaseDir->setText(QDir::toNativeSeparators(baseDir));
+    setWindowTitle("Select base directory for " + name);
 }
 
 bool PathRequest::checkProject()
