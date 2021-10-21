@@ -167,6 +167,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
                 if (!files.contains(c->file()))
                     files.append(c->file());
             }
+            break;
         }
         case Search::Selection: {
             if (mMain->recent()->editor())
