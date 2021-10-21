@@ -362,7 +362,11 @@ int Search::NavigateInsideCache(Direction direction)
 }
 
 bool Search::hasResultsForFile(QString filePath) {
-    return mResultHash.find(filePath)->count() > 0;
+    QHash<QString,QList<Result>>::iterator results = mResultHash.find(filePath);
+    if (results == mResultHash.end())
+        return false;
+    else
+        return results->count() > 0;
 }
 
 ///
