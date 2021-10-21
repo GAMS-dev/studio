@@ -38,8 +38,21 @@
                 <string>GAMS Model Source</string>
                 <key>CFBundleTypeExtensions</key>
                 <array>
-                    <string>gsp</string>
                     <string>gms</string>
+                </array>
+                <key>CFBundleTypeIconFile</key>
+                <string>studio.icns</string>
+                <key>CFBundleTypeRole</key>
+                <string>Editor</string>
+                <key>LSTypeIsPackage</key>
+                <false />
+            </dict>
+            <dict>
+                <key>CFBundleTypeName</key>
+                <string>GAMS Studio Project</string>
+                <key>CFBundleTypeExtensions</key>
+                <array>
+                    <string>gsp</string>
                 </array>
                 <key>CFBundleTypeIconFile</key>
                 <string>studio.icns</string>
