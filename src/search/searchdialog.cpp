@@ -599,11 +599,6 @@ bool SearchDialog::wholeWords()
     return ui->cb_wholeWords->isChecked();
 }
 
-QString SearchDialog::searchTerm()
-{
-    return ui->combo_search->currentText();
-}
-
 int SearchDialog::selectedScope()
 {
     return ui->combo_scope->currentIndex();
