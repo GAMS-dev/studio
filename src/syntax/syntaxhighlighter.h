@@ -74,6 +74,8 @@ private:
     CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, int nest = 0);
     int purgeCode(CodeRelationIndex cri);
     QString codeDeb(CodeRelationIndex cri);
+    void syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor);
+    void syntaxDebug(QString text);
 
 private:
     int mScanBlockNr = -1;
