@@ -55,6 +55,7 @@ public:
         Edit_linenrAreaFoldBg,
         Edit_linenrAreaFg,
         Edit_linenrAreaMarkFg,
+        Edit_logRemoteBk,
 
         Mark_errorFg,
         Mark_listingFg,

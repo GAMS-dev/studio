@@ -40,7 +40,9 @@ enum ContextAction {
     actSep1,
     actExplorer,
     actLogTab,
-    actRename,
+    actProjOpt,
+    actProjExport,
+    actProjImport,
     actSep2,
     actSetMain,
     actSep3,
@@ -49,6 +51,7 @@ enum ContextAction {
     actAddNewGms,
     actAddNewOpt,
     actSep5,
+    actCloseProject,
     actCloseGroup,
     actCloseFile,
     actSep6,
@@ -72,7 +75,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
-    mActions.insert(actRename, addAction("Re&name",  this, &ProjectContextMenu::onRenameGroup));
+    mActions.insert(actProjOpt, addAction("&Project options",  this, &ProjectContextMenu::onShowProjectOptions));
     mActions.insert(actSep1, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -123,12 +126,15 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep5, addSeparator());
     mActions.insert(actSelectAll, addAction("Select &all", this, &ProjectContextMenu::onSelectAll));
-    mActions.insert(actCollapseAll, addAction("Collapse all", this, &ProjectContextMenu::onCollapseAll));
+    mActions.insert(actCollapseAll, addAction("Collapse all projects", this, &ProjectContextMenu::onCollapseAll));
     mActions.insert(actExpandAll, addAction("Expand all", this, &ProjectContextMenu::onExpandAll));
 
     mActions.insert(actSep6, addSeparator());
 
-    mActions.insert(actCloseGroup, addAction(mTxtCloseGroup, this, &ProjectContextMenu::onCloseGroup));
+    mActions.insert(actProjExport, addAction("&Export project",  this, &ProjectContextMenu::onExportProject));
+    mActions.insert(actProjImport, addAction("&Import project",  this, &ProjectContextMenu::importProject));
+    mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
+    mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 }
 
@@ -142,6 +148,16 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.first()->toProject();
+    bool isGroup = mNodes.first()->toGroup() && !isProject;
+    PExProjectNode *project = mNodes.first()->assignedProject();
+    bool isOneProject = true;
+    for (PExAbstractNode *node: mNodes) {
+        if (node->assignedProject() != project) {
+            isOneProject = false;
+            break;
+        }
+    }
+
 //    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
 
     PExFileNode *fileNode = mNodes.first()->toFile();
@@ -207,8 +223,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actLogTab]->setVisible(isProject);
     mActions[actLogTab]->setEnabled(single);
 
-    mActions[actRename]->setVisible(isProject);
-    mActions[actRename]->setEnabled(single);
+    mActions[actProjOpt]->setVisible(isProject);
+    mActions[actProjOpt]->setEnabled(single);
+
+//    mActions[actProjExport]->setVisible(isProject);
+    mActions[actProjExport]->setEnabled(isOneProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
@@ -216,15 +235,17 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     mActions[actAddNewGms]->setVisible(isProject);
     mActions[actAddExisting]->setVisible(isProject);
-    mActions[actCloseGroup]->setVisible(isProject);
 
+    mActions[actCloseProject]->setVisible(isProject);
+    mActions[actCloseGroup]->setVisible(isGroup);
     mActions[actCloseFile]->setVisible(fileNode);
-    mActions[actCloseGroup]->setVisible(isProject);
 
     if (!single) {
+        mActions[actCloseProject]->setText(mTxtCloseProject + "s");
         mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
         mActions[actCloseFile]->setText(mTxtCloseFile + "s");
     } else {
+        mActions[actCloseProject]->setText(mTxtCloseProject);
         mActions[actCloseGroup]->setText(mTxtCloseGroup);
         mActions[actCloseFile]->setText(mTxtCloseFile);
     }
@@ -246,16 +267,16 @@ void ProjectContextMenu::onCloseFile()
 
 void ProjectContextMenu::onAddExisitingFile()
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> projects;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!projects.contains(project))
+            projects << project;
     }
 
     QString sourcePath = "";
-    if (!groups.isEmpty()) sourcePath = groups.first()->location();
+    if (!projects.isEmpty()) sourcePath = projects.first()->location();
     else emit getSourcePath(sourcePath);
 
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
@@ -264,23 +285,23 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (PExGroupNode *group: groups) {
+    for (PExProjectNode *project: projects) {
         for (QString filePath: filePaths) {
-            emit addExistingFile(group, filePath);
+            emit addExistingFile(project, filePath);
         }
     }
 }
 
 void ProjectContextMenu::onAddNewFile()
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> projects;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!projects.contains(project))
+            projects << project;
     }
-    emit newFileDialog(groups);
+    emit newFileDialog(projects);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -292,8 +313,20 @@ void ProjectContextMenu::onCloseGroup()
 {
     for (PExAbstractNode *node: mNodes) {
         PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (group) emit closeGroup(group);
+        if (!group) continue;
+        QVector<PExFileNode*> files = group->listFiles();
+        for (PExFileNode* file : files) {
+            emit closeFile(file);
+        }
+    }
+}
+
+void ProjectContextMenu::onCloseProject()
+{
+    for (PExAbstractNode *node: mNodes) {
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (project) emit closeProject(project);
     }
 }
 
@@ -303,20 +336,26 @@ void ProjectContextMenu::onSetMainFile()
     if (file) emit setMainFile(file);
 }
 
-void ProjectContextMenu::onRenameGroup()
+void ProjectContextMenu::onShowProjectOptions()
 {
-    PExGroupNode *group = mNodes.first()->toGroup();
-    if (group) emit renameGroup(group);
+    PExProjectNode *project = mNodes.first()->toProject();
+    if (project) emit showProjectOptions(project);
+}
+
+void ProjectContextMenu::onExportProject()
+{
+    PExProjectNode *project = mNodes.first()->assignedProject();
+    emit exportProject(project);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
-    QVector<PExGroupNode*> groups;
+    QVector<PExProjectNode*> groups;
     for (PExAbstractNode *node: mNodes) {
-        PExGroupNode *group = node->toGroup();
-        if (!group) group = node->parentNode();
-        if (!groups.contains(group))
-            groups << group;
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!groups.contains(project))
+            groups << project;
     }
 
     emit newFileDialog(groups, solverName);
@@ -324,15 +363,15 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 
 void ProjectContextMenu::onOpenTerminal()
 {
-    QString workingDir;
+    QString baseDir;
     PExFileNode *file = mNodes.first()->toFile();
     if (file) {
-        workingDir = QFileInfo(file->location()).path();
+        baseDir = QFileInfo(file->location()).path();
     } else if ((mNodes.first()->type() == NodeType::group) || (mNodes.first()->type() == NodeType::project)) {
         PExGroupNode *group = mNodes.first()->toGroup();
-        if (group) workingDir = group->location();
+        if (group) baseDir = group->location();
     }
-    emit openTerminal(workingDir);
+    emit openTerminal(baseDir);
 }
 
 void ProjectContextMenu::onGdxDiff()

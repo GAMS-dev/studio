@@ -263,6 +263,8 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    mData << "%" + syntax::SyntaxAbstract::systemEmpData.first + "%";
+    mDescription << syntax::SyntaxAbstract::systemEmpData.second;
     mType.insert(mData.size()-1, ccSysSufC);
 
     QHash<QString, QString> descript;
@@ -441,7 +443,7 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     mTypeFilter = completerTypeFilter;
     mSubType = subType;
     mNeedDot = needDot;
-    DEB() << "NeedDot: " << needDot;
+//    DEB() << "NeedDot: " << needDot;
     invalidateFilter();
 }
 
@@ -521,12 +523,16 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         e->accept();
         insertCurrent(e->key() == Qt::Key_Tab);
     }   break;
+    case Qt::Key_Backspace: {
+        qApp->sendEvent(mEdit, e);
+        if (mFilterText.size() == 0) hide();
+        else updateFilter();
+    }   break;
     default: {
         if (e->key() == Qt::Key_Space)
             hide();
         if (mEdit)
             qApp->sendEvent(mEdit, e);
-//            mEdit->keyPressEvent(e);
         updateFilter();
     }
     }
@@ -547,7 +553,7 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Tab:
         break;
     default:
-        if (mEdit) qApp->sendEvent(mEdit, e); // mEdit->keyReleaseEvent(e);
+        if (mEdit) qApp->sendEvent(mEdit, e);
     }
 }
 
@@ -622,14 +628,14 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
 
 #ifdef QT_DEBUG
     // uncomment this to generate elements for testcompleter
-    if (mEdit) {
-        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-            if (block.isValid())
-                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
-                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
-        }
-    }
+//    if (mEdit) {
+//        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+//        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+//            if (block.isValid())
+//                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+//                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+//        }
+//    }
 #endif
 
     return res;
@@ -646,8 +652,8 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         posInBlock = cur.positionInBlock();
         // uncomment this to generate elements for testcompleter
 #ifdef QT_DEBUG
-        QString debugLine = line;
-        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+//        QString debugLine = line;
+//        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
 #endif
     }
 
@@ -701,8 +707,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
     mFilterModel->setGroupRows(mModel->dollarGroupRow(), mModel->percentGroupRow());
     updateFilterFromSyntax(syntax, dcoFlavor, line, posInBlock);
-    QString filterRex = mFilterText;
-    filterRex.replace(".", "\\.").replace("$", "\\$");
+    QString filterRex = QRegularExpression::escape(mFilterText);
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
 
     if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())
@@ -948,6 +953,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::SubDCO:
     case syntax::SyntaxKind::AssignmentSystemData:
     case syntax::SyntaxKind::SystemCompileAttrib:
+    case syntax::SyntaxKind::SystemCompileAttribR:
     case syntax::SyntaxKind::UserCompileAttrib:
         filter = cc_None; break;
 
@@ -1074,9 +1080,9 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     if (mDebug) {
         // for analysis
 #ifdef QT_DEBUG
-        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
-        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+//        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+//              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
+//        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 #endif
         QString debugText = "Completer at " + QString::number(start) + ": "
                 + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)

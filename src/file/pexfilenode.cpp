@@ -43,11 +43,6 @@ PExFileNode::PExFileNode(FileMeta *fileMeta, NodeType type)
 PExFileNode::~PExFileNode()
 {}
 
-void PExFileNode::setParentNode(PExGroupNode *parent)
-{
-    PExAbstractNode::setParentNode(parent);
-}
-
 QIcon PExFileNode::icon(QIcon::Mode mode, int alpha)
 {
     PExGroupNode* par = parentNode();

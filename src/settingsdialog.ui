@@ -209,14 +209,14 @@
           <item row="0" column="1">
            <widget class="QRadioButton" name="rb_openInCurrentProject">
             <property name="text">
-             <string>Open file in current group by default</string>
+             <string>Open file in current project by default</string>
             </property>
            </widget>
           </item>
           <item row="1" column="1">
            <widget class="QRadioButton" name="rb_openInAnyProject">
             <property name="text">
-             <string>Open file finds or creates new group</string>
+             <string>Open file finds or creates new project</string>
             </property>
            </widget>
           </item>
@@ -236,38 +236,6 @@
           <string>Editor Settings</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_5">
-          <item row="4" column="0">
-           <widget class="QCheckBox" name="cb_autoindent">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Enable auto-indentation</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item row="4" column="2">
-           <widget class="QCheckBox" name="cb_autoclose">
-            <property name="text">
-             <string>Auto close opening brackets and quotes</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="0" colspan="2">
            <widget class="QFontComboBox" name="fontComboBox">
             <property name="fontFilters">
@@ -281,16 +249,83 @@
             </property>
            </widget>
           </item>
+          <item row="5" column="0" colspan="2">
+           <widget class="QCheckBox" name="cb_linewrap_editor">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Enable line wrapping in editor</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
+            </property>
+            <property name="checked">
+             <bool>false</bool>
+            </property>
+           </widget>
+          </item>
           <item row="9" column="0">
-           <widget class="QLabel" name="label_tabsize">
+           <widget class="QLabel" name="label_4">
+            <property name="text">
+             <string>Completer casing</string>
+            </property>
+           </widget>
+          </item>
+          <item row="9" column="2">
+           <widget class="QCheckBox" name="cb_completerAutoOpen">
+            <property name="text">
+             <string>Auto open completer</string>
+            </property>
+           </widget>
+          </item>
+          <item row="11" column="2">
+           <widget class="QCheckBox" name="cb_autoFoldDco">
+            <property name="text">
+             <string>Fold DCO blocks on open</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2">
+           <widget class="QCheckBox" name="cb_autoclose">
+            <property name="text">
+             <string>Auto close opening brackets and quotes</string>
+            </property>
+            <property name="checked">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="2">
+           <widget class="QLabel" name="label_3">
+            <property name="text">
+             <string>Font Size</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="label_2">
+            <property name="text">
+             <string>Font</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="2">
+           <widget class="QCheckBox" name="cb_highlightcurrent">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
             <property name="sizePolicy">
-             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
               <horstretch>0</horstretch>
               <verstretch>0</verstretch>
              </sizepolicy>
             </property>
             <property name="text">
-             <string>Tab stop size</string>
+             <string>Highlight current line</string>
+            </property>
+            <property name="checkable">
+             <bool>true</bool>
             </property>
            </widget>
           </item>
@@ -316,18 +351,28 @@
             </property>
            </widget>
           </item>
-          <item row="2" column="2">
-           <widget class="QLabel" name="label_3">
-            <property name="text">
-             <string>Font Size</string>
-            </property>
-           </widget>
-          </item>
-          <item row="2" column="0">
-           <widget class="QLabel" name="label_2">
-            <property name="text">
-             <string>Font</string>
-            </property>
+          <item row="9" column="1">
+           <widget class="QComboBox" name="cb_completerCasing">
+            <item>
+             <property name="text">
+              <string>CamelCase</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>lowercase</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>UPPERCASE</string>
+             </property>
+            </item>
+            <item>
+             <property name="text">
+              <string>dynamic</string>
+             </property>
+            </item>
            </widget>
           </item>
           <item row="7" column="2">
@@ -352,25 +397,6 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="2">
-           <widget class="QCheckBox" name="cb_highlightcurrent">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Highlight current line</string>
-            </property>
-            <property name="checkable">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
           <item row="3" column="2">
            <widget class="QSpinBox" name="sb_fontsize">
             <property name="minimum">
@@ -384,61 +410,42 @@
             </property>
            </widget>
           </item>
-          <item row="5" column="0" colspan="2">
-           <widget class="QCheckBox" name="cb_linewrap_editor">
+          <item row="4" column="0">
+           <widget class="QCheckBox" name="cb_autoindent">
             <property name="enabled">
              <bool>true</bool>
             </property>
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Enable line wrapping in editor</string>
+             <string>Enable auto-indentation</string>
             </property>
             <property name="checkable">
              <bool>true</bool>
             </property>
             <property name="checked">
-             <bool>false</bool>
+             <bool>true</bool>
             </property>
            </widget>
           </item>
-          <item row="8" column="2">
-           <widget class="QCheckBox" name="cb_completerAutoOpen">
+          <item row="11" column="0">
+           <widget class="QLabel" name="label_tabsize">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
             <property name="text">
-             <string>Auto open completer</string>
+             <string>Tab stop size</string>
             </property>
            </widget>
           </item>
-          <item row="8" column="0">
-           <widget class="QLabel" name="label_4">
-            <property name="text">
-             <string>Completer casing</string>
-            </property>
-           </widget>
-          </item>
-          <item row="8" column="1">
-           <widget class="QComboBox" name="cb_completerCasing">
-            <item>
-             <property name="text">
-              <string>CamelCase</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>lowercase</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>UPPERCASE</string>
-             </property>
-            </item>
-            <item>
-             <property name="text">
-              <string>dynamic</string>
-             </property>
-            </item>
-           </widget>
-          </item>
-          <item row="9" column="1">
+          <item row="11" column="1">
            <widget class="QSpinBox" name="sb_tabsize">
             <property name="enabled">
              <bool>true</bool>
@@ -454,10 +461,10 @@
             </property>
            </widget>
           </item>
-          <item row="9" column="2">
-           <widget class="QCheckBox" name="cb_autoFoldDco">
+          <item row="8" column="2">
+           <widget class="QCheckBox" name="cb_smartTooltip">
             <property name="text">
-             <string>Fold DCO blocks on open</string>
+             <string>Smart tooltip help</string>
             </property>
            </widget>
           </item>
@@ -711,8 +718,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>98</width>
-            <height>28</height>
+            <width>100</width>
+            <height>30</height>
            </rect>
           </property>
           <attribute name="label">

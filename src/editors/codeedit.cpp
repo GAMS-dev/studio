@@ -1324,6 +1324,13 @@ void CodeEdit::checkCompleterAutoOpen()
 {
     bool canOpen = true;
     QTextCursor cur(textCursor());
+    if (cur.positionInBlock() > 0) {
+        QChar ch = cur.block().text().at(cur.positionInBlock()-1);
+        if ((ch == '$' || ch == '%') && prepareCompleter()) {
+            showCompleter();
+            return;
+        }
+    }
     if (cur.positionInBlock() > 2) {
         cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
         QString part = cur.selectedText();
@@ -1820,6 +1827,7 @@ void CodeEdit::recalcExtraSelections()
     QList<QTextEdit::ExtraSelection> selections;
     mParenthesesMatch = PositionPair();
     if (!mBlockEdit) {
+        extraSelLineMarks(selections);
         extraSelCurrentLine(selections);
         recalcWordUnderCursor();
         mParenthesesDelay.start(100);
@@ -1851,6 +1859,8 @@ void CodeEdit::checkAndStartCompleterTimer()
 void CodeEdit::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
+    extraSelSearchSelection(selections);
+    extraSelLineMarks(selections);
     extraSelCurrentLine(selections);
     extraSelMarks(selections);
     if (!mBlockEdit) {
@@ -1883,6 +1893,7 @@ void CodeEdit::updateExtraSelections()
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
     extraSelIncludeLink(selections);
+
     setExtraSelections(selections);
 }
 
@@ -1964,6 +1975,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         return;
 
     QRegularExpression regEx = search->regex();
+    bool limitHighlighting = search->hasSearchSelection();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1977,6 +1989,11 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextCursor tc(document());
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
+            if (limitHighlighting) {
+                if (tc.selectionStart() < searchSelection.selectionStart()) continue;
+                else if (tc.selectionEnd() > searchSelection.selectionEnd()) continue;
+            }
+
             selection.cursor = tc;
             selection.format.setForeground(Qt::white);
             selection.format.setBackground(toColor(Theme::Edit_matchesBg));
@@ -2026,9 +2043,9 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
         fileName = "<p style='white-space:pre'>"+fileName+"<br><b>Ctrl-click</b> to open</p>";
-    } else {
+    } else if (Settings::settings()->toBool(skEdSmartTooltipHelp)) {
         QTextCursor cursor = cursorForPosition(pos);
-        if (cursorRect(cursor).right()+1 >= pos.x()) {
+        if (cursorRect(cursor).right()+1 >= pos.x() && pos.x() >= 0) {
             QStringList syntaxDoc;
             emit syntaxDocAt(cursor.block(), cursor.positionInBlock(), syntaxDoc);
             if (syntaxDoc.length() > 1 && !syntaxDoc.at(1).isEmpty())

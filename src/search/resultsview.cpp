@@ -62,7 +62,7 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
     Result r = mResultList->at(selectedRow);
 
     // open so we have a document of the file
-    if (QFileInfo(r.filepath()).exists())
+    if (QFileInfo::exists(r.filepath()))
         mMain->openFilePath(r.filepath());
 
     PExFileNode *node = mMain->projectRepo()->findFile(r.filepath());

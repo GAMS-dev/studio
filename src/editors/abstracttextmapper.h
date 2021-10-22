@@ -26,9 +26,12 @@
 #include <QSet>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QPoint>
+#include "search/result.h"
 
 namespace gams {
 namespace studio {
+
 
 struct LineFormat {
     LineFormat() {}
@@ -49,8 +52,10 @@ struct LineFormat {
     QTextCharFormat format;
     const QTextCharFormat *extraLstFormat = nullptr;
     QString extraLstHRef;
+    bool lineMarked = false;
 };
 
+class FileMeta;
 ///
 /// class AbstractTextMapper
 /// Maps text data into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
@@ -82,8 +87,12 @@ private:
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLineStart == other.absLineStart && charNr == other.charNr; }
+        bool operator !=(const CursorPosition &other) const {
+            return chunkNr != other.chunkNr || absLineStart != other.absLineStart || charNr != other.charNr; }
         bool operator <(const CursorPosition &other) const {
             return absLineStart + charNr < other.absLineStart + other.charNr; }
+        bool operator >(const CursorPosition &other) const {
+            return absLineStart + charNr > other.absLineStart + other.charNr; }
         int effectiveCharNr() const { return qMin(charNr, lineLen); }
         bool isValid() const { return chunkNr >= 0; }
         int chunkNr = -1;
@@ -120,6 +129,7 @@ protected:
         qint64 bStart = -1;
         QByteArray bArray;
         QVector<int> lineBytes;
+        QPoint markedRegion;
         int size() {
             return lineBytes.size() > 1 ? lineBytes.last() - lineBytes.first() : 0;
         }
@@ -132,7 +142,7 @@ public:
     enum SpecialCursorPosition { cursorInvalid = -1, cursorBeforeStart = -2, cursorBeyondEnd = -3 };
 
 public:
-    ~AbstractTextMapper();
+    ~AbstractTextMapper() override;
     virtual AbstractTextMapper::Kind kind() const = 0;
 
     QTextCodec *codec() const;
@@ -177,9 +187,13 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
+    void updateSearchSelection();
+    void clearSearchSelection();
+    bool hasSearchSelection();
+    QPoint searchSelectionStart();
+    QPoint searchSelectionEnd();
 
     void dumpPos() const;
-
 
 public slots:
     virtual void reset();
@@ -211,6 +225,7 @@ protected:
     void removeChunk(int chunkNr);
     virtual void internalRemoveChunk(int chunkNr);
     LinePosition topLine() const { return mTopLine; }
+    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
 
 private:
     QString lines(Chunk *chunk, int startLine, int &lineCount) const;
@@ -219,7 +234,6 @@ private:
     void updateBytesPerLine(const ChunkMetrics &chunkMetrics) const;
     int maxChunksInCache() const;
     int findChunk(int lineNr);
-    Chunk *chunkForRelativeLine(int lineDelta, int *lineInChunk = nullptr) const;
     QPoint convertPos(const CursorPosition &pos) const;
     QPoint convertPosLocal(const CursorPosition &pos) const;
 
@@ -233,6 +247,8 @@ private:
     LinePosition mMaxTopLine;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    CursorPosition mSearchSelectionStart;
+    CursorPosition mSearchSelectionEnd;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;
@@ -242,6 +258,7 @@ private:
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
+
 };
 
 } // namespace studio

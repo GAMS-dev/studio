@@ -23,7 +23,7 @@
 #include <QObject>
 #include <mainwindow.h>
 
-#include <file/filemeta.h>
+#include "file/filemeta.h"
 
 namespace gams {
 namespace studio {
@@ -35,9 +35,10 @@ class Search : public QObject
 public:
     enum Scope {
         ThisFile = 0,
-        ThisGroup= 1,
-        OpenTabs = 2,
-        AllFiles = 3
+        ThisProject= 1,
+        Selection= 2,
+        OpenTabs = 3,
+        AllFiles = 4
     };
 
     enum Status {
@@ -54,33 +55,42 @@ public:
     Search(MainWindow* main);
 
     void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
-    void start();
+    void start(bool isReplaceAction = false);
     void stop();
-    void reset();
-    QList<Result> filteredResultList(QString fileLocation);
 
     void findNext(Direction direction);
     void replaceNext(QString replacementText);
     void replaceAll(QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
-    QList<Result> results() const;
     bool isRunning() const;
+    QList<Result> results() const;
+    QList<Result> filteredResultList(QString fileLocation);
+    const QFlags<QTextDocument::FindFlag> &options() const;
     QRegularExpression regex() const;
+    bool hasSearchSelection();
+    void reset();
+    void documentChanged();
 
 signals:
     void updateLabelByCursorPos(int line, int col);
 
 private:
     void findInDoc(FileMeta* fm);
+    void findInSelection(bool isReplaceAction);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> flags);
+    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
     void jumpToResult(int matchNr);
+
+    int NavigateOutsideCache(Direction direction, bool firstLevel);
+    int NavigateInsideCache(Direction direction);
+
+    void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
 private slots:
@@ -92,14 +102,14 @@ private:
     QHash<QString, QList<Result>> mResultHash;
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
-    QFlags<QTextDocument::FindFlag> mOptions;
+    QFlags<QTextDocument::FindFlag> mOptions; // used to store search direction
+
+    FileId mSearchSelectionFile;
 
     QThread mThread;
     bool mSearching = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
-    bool mJumpQueued = false;
-    bool mQueuedJumpForward = false;
     int mLastMatchInOpt = -1;
 
     bool mSplitSearchContinue = false;

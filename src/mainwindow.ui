@@ -23,7 +23,7 @@
    <string>GAMS Studio</string>
   </property>
   <property name="windowIcon">
-   <iconset resource="../icons/icons.qrc">
+   <iconset>
     <normaloff>:/img/gams-w</normaloff>:/img/gams-w</iconset>
   </property>
   <widget class="QWidget" name="centralWidget">
@@ -104,7 +104,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>24</height>
+     <height>21</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -123,6 +123,9 @@
     <addaction name="actionSave"/>
     <addaction name="actionSave_As"/>
     <addaction name="actionSave_All"/>
+    <addaction name="separator"/>
+    <addaction name="actionImport_Project"/>
+    <addaction name="actionExport_Project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
@@ -299,7 +302,6 @@
      <bool>true</bool>
     </property>
     <addaction name="actionBase_mode"/>
-    <addaction name="actionHypercube_mode"/>
     <addaction name="actionConfiguration_mode"/>
     <addaction name="separator"/>
     <addaction name="actionSkip_model_execution"/>
@@ -457,6 +459,9 @@
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>
+       <property name="elideMode">
+        <enum>Qt::ElideRight</enum>
+       </property>
        <property name="documentMode">
         <bool>true</bool>
        </property>
@@ -538,7 +543,7 @@
   </action>
   <action name="actionExit_Application">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/door-open</normaloff>:/solid/door-open</iconset>
    </property>
    <property name="text">
@@ -550,7 +555,7 @@
   </action>
   <action name="actionGamsHelp">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/book</normaloff>:/solid/book</iconset>
    </property>
    <property name="text">
@@ -587,7 +592,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/output</normaloff>:/solid/output</iconset>
    </property>
    <property name="text">
@@ -605,7 +610,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/project</normaloff>:/solid/project</iconset>
    </property>
    <property name="text">
@@ -617,7 +622,7 @@
   </action>
   <action name="actionNew">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/file</normaloff>:/solid/file</iconset>
    </property>
    <property name="text">
@@ -629,7 +634,7 @@
   </action>
   <action name="actionOpen">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/folder-open-bw</normaloff>:/solid/folder-open-bw</iconset>
    </property>
    <property name="text">
@@ -641,10 +646,10 @@
   </action>
   <action name="actionOpenAlternative">
    <property name="text">
-    <string>&amp;Open in current group...</string>
+    <string>&amp;Open in Current Project...</string>
    </property>
    <property name="toolTip">
-    <string>Open the file(s) in the current group</string>
+    <string>Open the file(s) in the current project</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+O</string>
@@ -652,7 +657,7 @@
   </action>
   <action name="actionSave">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/save</normaloff>:/solid/save</iconset>
    </property>
    <property name="text">
@@ -680,7 +685,7 @@
   </action>
   <action name="actionClose">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/remove</normaloff>:/solid/remove</iconset>
    </property>
    <property name="text">
@@ -715,7 +720,7 @@
   </action>
   <action name="actionGAMS_Library">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/books</normaloff>:/solid/books</iconset>
    </property>
    <property name="text">
@@ -727,7 +732,7 @@
   </action>
   <action name="actionRun">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/play</normaloff>:/solid/play</iconset>
    </property>
    <property name="text">
@@ -739,7 +744,7 @@
   </action>
   <action name="actionCompile">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/code</normaloff>:/solid/code</iconset>
    </property>
    <property name="text">
@@ -754,7 +759,7 @@
   </action>
   <action name="actionRun_with_GDX_Creation">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/run-gdx</normaloff>:/solid/run-gdx</iconset>
    </property>
    <property name="text">
@@ -769,7 +774,7 @@
   </action>
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/code-gdx</normaloff>:/solid/code-gdx</iconset>
    </property>
    <property name="text">
@@ -784,7 +789,7 @@
   </action>
   <action name="actionRunNeos">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/neos</normaloff>:/img/neos</iconset>
    </property>
    <property name="text">
@@ -796,7 +801,7 @@
   </action>
   <action name="actionRunEngine">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/engine</normaloff>:/img/engine</iconset>
    </property>
    <property name="text">
@@ -819,7 +824,7 @@
   </action>
   <action name="actionSettings">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
    </property>
    <property name="text">
@@ -834,7 +839,7 @@
   </action>
   <action name="actionSearch">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/search</normaloff>:/solid/search</iconset>
    </property>
    <property name="text">
@@ -871,7 +876,7 @@
   </action>
   <action name="actionCopy">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/copy</normaloff>:/solid/copy</iconset>
    </property>
    <property name="text">
@@ -886,7 +891,7 @@
   </action>
   <action name="actionPaste">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/paste</normaloff>:/solid/paste</iconset>
    </property>
    <property name="text">
@@ -898,7 +903,7 @@
   </action>
   <action name="actionUndo">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/undo</normaloff>:/solid/undo</iconset>
    </property>
    <property name="text">
@@ -910,7 +915,7 @@
   </action>
   <action name="actionRedo">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/redo</normaloff>:/solid/redo</iconset>
    </property>
    <property name="text">
@@ -930,7 +935,7 @@
   </action>
   <action name="actionCut">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/cut</normaloff>:/solid/cut</iconset>
    </property>
    <property name="text">
@@ -961,7 +966,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/update</normaloff>:/solid/update</iconset>
    </property>
    <property name="text">
@@ -973,7 +978,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/question</normaloff>:/solid/question</iconset>
    </property>
    <property name="text">
@@ -1028,7 +1033,7 @@
   </action>
   <action name="actionZoom_In">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/search-plus</normaloff>:/solid/search-plus</iconset>
    </property>
    <property name="text">
@@ -1040,7 +1045,7 @@
   </action>
   <action name="actionZoom_Out">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/search-minus</normaloff>:/solid/search-minus</iconset>
    </property>
    <property name="text">
@@ -1052,7 +1057,7 @@
   </action>
   <action name="actionReset_Zoom">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/search-off</normaloff>:/solid/search-off</iconset>
    </property>
    <property name="text">
@@ -1110,7 +1115,7 @@
   </action>
   <action name="actionInterrupt">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/stop</normaloff>:/solid/stop</iconset>
    </property>
    <property name="text">
@@ -1125,7 +1130,7 @@
   </action>
   <action name="actionStop">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/kill</normaloff>:/solid/kill</iconset>
    </property>
    <property name="text">
@@ -1170,7 +1175,7 @@
   </action>
   <action name="actionToggleBookmark">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/bookmark</normaloff>:/solid/bookmark</iconset>
    </property>
    <property name="text">
@@ -1185,7 +1190,7 @@
   </action>
   <action name="actionNextBookmark">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
    </property>
    <property name="text">
@@ -1200,7 +1205,7 @@
   </action>
   <action name="actionPreviousBookmark">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
    </property>
    <property name="text">
@@ -1237,7 +1242,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/show</normaloff>:/solid/show</iconset>
    </property>
    <property name="text">
@@ -1247,7 +1252,7 @@
     <string>Show Extended Parameter Editor</string>
    </property>
    <property name="shortcut">
-    <string>Shift+Ctrl+3</string>
+    <string>Ctrl+Shift+3</string>
    </property>
    <property name="shortcutContext">
     <enum>Qt::ApplicationShortcut</enum>
@@ -1258,7 +1263,7 @@
   </action>
   <action name="actionChangelog">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/new</normaloff>:/solid/new</iconset>
    </property>
    <property name="text">
@@ -1267,7 +1272,7 @@
   </action>
   <action name="actionDeleteScratchDirs">
    <property name="text">
-    <string>Delete scratch directories</string>
+    <string>Delete Scratch Directories</string>
    </property>
    <property name="toolTip">
     <string>Delete leftover scratch directories in current working directory</string>
@@ -1286,7 +1291,7 @@
   </action>
   <action name="actionTerminal">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/terminal</normaloff>:/solid/terminal</iconset>
    </property>
    <property name="text">
@@ -1298,7 +1303,7 @@
   </action>
   <action name="actionGDX_Diff">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/gdxdiff</normaloff>:/solid/gdxdiff</iconset>
    </property>
    <property name="text">
@@ -1315,11 +1320,11 @@
   </action>
   <action name="actionBase_mode">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/miro-b</normaloff>:/img/miro-b</iconset>
    </property>
    <property name="text">
-    <string>Run base mode</string>
+    <string>Run Base Mode</string>
    </property>
    <property name="shortcut">
     <string>F8</string>
@@ -1327,7 +1332,7 @@
   </action>
   <action name="actionHypercube_mode">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/miro-h</normaloff>:/img/miro-h</iconset>
    </property>
    <property name="text">
@@ -1339,11 +1344,11 @@
   </action>
   <action name="actionConfiguration_mode">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/miro-c</normaloff>:/img/miro-c</iconset>
    </property>
    <property name="text">
-    <string>Run configuration mode</string>
+    <string>Run Configuration Mode</string>
    </property>
    <property name="shortcut">
     <string>Shift+F7</string>
@@ -1380,12 +1385,12 @@
     <bool>true</bool>
    </property>
    <property name="text">
-    <string>Skip model execution</string>
+    <string>Skip Model Execution</string>
    </property>
   </action>
   <action name="actionDeploy">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/miro-deploy</normaloff>:/img/miro-deploy</iconset>
    </property>
    <property name="text">
@@ -1402,7 +1407,7 @@
     <bool>true</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/hammer</normaloff>:/solid/hammer</iconset>
    </property>
    <property name="text">
@@ -1411,7 +1416,7 @@
   </action>
   <action name="actionEditDefaultConfig">
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/img/gams-config-file</normaloff>:/img/gams-config-file</iconset>
    </property>
    <property name="text">
@@ -1426,7 +1431,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/backward</normaloff>:/solid/backward</iconset>
    </property>
    <property name="text">
@@ -1441,7 +1446,7 @@
     <bool>false</bool>
    </property>
    <property name="icon">
-    <iconset resource="../icons/icons.qrc">
+    <iconset>
      <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
    </property>
    <property name="text">
@@ -1464,7 +1469,7 @@
   </action>
   <action name="actionFoldAllTextBlocks">
    <property name="text">
-    <string>Fold all text blocks</string>
+    <string>Fold All Text Blocks</string>
    </property>
    <property name="shortcut">
     <string>Alt+O</string>
@@ -1472,7 +1477,7 @@
   </action>
   <action name="actionUnfoldAllTextBlocks">
    <property name="text">
-    <string>Unfold all text blocks</string>
+    <string>Unfold All Text Blocks</string>
    </property>
    <property name="shortcut">
     <string>Alt+Shift+O</string>
@@ -1480,7 +1485,7 @@
   </action>
   <action name="actionFoldDcoTextBlocks">
    <property name="text">
-    <string>Fold DCO text blocks</string>
+    <string>Fold DCO Text Blocks</string>
    </property>
    <property name="shortcut">
     <string>Alt+I</string>
@@ -1507,6 +1512,16 @@
     <string>Ctrl+Shift+Down</string>
    </property>
   </action>
+  <action name="actionExport_Project">
+   <property name="text">
+    <string>Export Project</string>
+   </property>
+  </action>
+  <action name="actionImport_Project">
+   <property name="text">
+    <string>Import Project</string>
+   </property>
+  </action>
  </widget>
  <layoutdefault spacing="6" margin="11"/>
  <customwidgets>
@@ -1522,8 +1537,6 @@
    <container>1</container>
   </customwidget>
  </customwidgets>
- <resources>
-  <include location="../icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>

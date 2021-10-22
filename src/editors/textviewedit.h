@@ -40,6 +40,8 @@ public:
     EditorType type() const override;
     int lineCount();
 
+    void setLineMarked(const QVector<bool> &newLineMarked);
+
 signals:
     void keyPressed(QKeyEvent *event);
     void updatePosAndAnchor();
@@ -62,6 +64,7 @@ protected:
     int absoluteBlockNr(const int &localBlockNr) const override;
     int localBlockNr(const int &absoluteBlockNr) const override;
     void extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections) override;
+    void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) override;
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
@@ -72,13 +75,13 @@ protected:
     void paintEvent(QPaintEvent *e) override;
     QString getToolTipText(const QPoint &pos) override;
 
-
 private:
     int topVisibleLine() override;
     int scrollMs(int delta);
 
 private:
     AbstractTextMapper &mMapper;
+    QVector<bool> mLineMarked;
     Settings *mSettings;
     qint64 mTopByte = 0;
     bool mClickStart = false;

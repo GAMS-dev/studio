@@ -254,7 +254,6 @@ void FileSystemModel::removeParentSelection(const QModelIndex &idx)
 {
     if (!idx.isValid())
         return;
-
     auto path = rootDirectory().relativeFilePath(filePath(idx));
     mCheckedFiles.remove(path);
     removeParentSelection(idx.parent());

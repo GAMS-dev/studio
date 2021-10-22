@@ -65,7 +65,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
-    mSearch.start();
+    mSearch.start(true);
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -73,6 +73,8 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
     insertHistory();
+
+    mShowResults = true;
 
     mSearch.setParameters(getFilesByScope(), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
@@ -119,11 +121,9 @@ void SearchDialog::finalUpdate()
 
     updateEditHighlighting();
 
-    if (mSearch.results().size() == 0)
+    if (mSearch.results().size() == 0) {
         setSearchStatus(Search::NoResults);
-    else updateLabelByCursorPos();
-
-    mShowResults = true; // reset default
+    } else { updateLabelByCursorPos(); }
 }
 
 void SearchDialog::updateUi(bool searching)
@@ -155,28 +155,34 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
     QList<FileMeta*> files;
     switch (ui->combo_scope->currentIndex()) {
-    case Search::ThisFile:
-        if (mMain->recent()->editor())
-            return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-        break;
-    case Search::ThisGroup:
-    {
-        PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
-        if (!p) return files;
-        for (PExFileNode *c :p->parentNode()->listFiles(true)) {
-            if (!files.contains(c->file()))
-                files.append(c->file());
+        case Search::ThisFile: {
+            if (mMain->recent()->editor())
+                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            break;
         }
-    }
-        break;
-    case Search::OpenTabs:
-        files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
-        break;
-    case Search::AllFiles:
-        files = mMain->fileRepo()->fileMetas();
-        break;
-    default:
-        break;
+        case Search::ThisProject: {
+            PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+            if (!p) return files;
+            for (PExFileNode *c :p->assignedProject()->listFiles()) {
+                if (!files.contains(c->file()))
+                    files.append(c->file());
+            }
+            break;
+        }
+        case Search::Selection: {
+            if (mMain->recent()->editor())
+                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            break;
+        }
+        case Search::OpenTabs: {
+            files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+            break;
+        }
+        case Search::AllFiles: {
+            files = mMain->fileRepo()->fileMetas();
+            break;
+        }
+        default: break;
     }
 
     // apply filter
@@ -192,7 +198,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     for (FileMeta* fm : qAsConst(files)) {
         bool matchesWildcard = false;
 
-        for (const QRegExp &wildcard : filterList) {
+        for (const QRegExp &wildcard : qAsConst(filterList)) {
             matchesWildcard = wildcard.indexIn(fm->location()) != -1;
             if (matchesWildcard) break; // one match is enough, dont overwrite result
         }
@@ -226,7 +232,7 @@ void SearchDialog::on_searchPrev()
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
-    searchParameterChanged();
+    mSearch.documentChanged();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -359,7 +365,7 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    if (!mSuppressChangeEvent)
+    if (!mSuppressParameterChangedEvent)
         searchParameterChanged();
 }
 
@@ -367,7 +373,6 @@ void SearchDialog::searchParameterChanged() {
     setSearchStatus(Search::Clear);
 
     mSearch.reset();
-    if (mMain->resultsView()) mMain->resultsView()->setOutdated();
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -380,7 +385,7 @@ void SearchDialog::updateReplaceActionAvailability()
 {
     bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLstChild
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
     activateSearch = activateSearch || (ui->combo_scope->currentIndex() != Search::ThisFile);
 
@@ -411,21 +416,23 @@ void SearchDialog::updateReplaceActionAvailability()
 
 void SearchDialog::clearSearch()
 {
-    mSuppressChangeEvent = true;
+    mSuppressParameterChangedEvent = true;
     ui->combo_search->clearEditText();
     ui->txt_replace->clear();
-    mSuppressChangeEvent = false;
+    mSuppressParameterChangedEvent = false;
     mSearch.reset();
     mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mMain->recent()->editor())) {
-        QTextCursor tc = ce->textCursor();
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        QTextCursor tc = ae->textCursor();
         tc.clearSelection();
-        ce->setTextCursor(tc);
+        ae->setTextCursor(tc);
+        ae->clearSearchSelection();
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         QTextCursor tc = tv->edit()->textCursor();
         tc.clearSelection();
         tv->edit()->setTextCursor(tc);
+        tv->clearSearchSelection();
     }
 
     clearResultsView();
@@ -443,14 +450,13 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
-    mMain->closeResultsPage();
+    mMain->closeResultsView();
 }
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
     QString searching = "Searching (";
     QString dotAnim = ".";
-    QRegularExpression re("\\.*");
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
@@ -464,7 +470,11 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::NoResults:
         ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setText("No results.");
+        if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
+            ui->lbl_nrResults->setText("Selection missing.");
+        else
+            ui->lbl_nrResults->setText("No results.");
+
         ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case Search::Clear:
@@ -488,11 +498,11 @@ void SearchDialog::insertHistory()
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {
-        mSuppressChangeEvent = true;
+        mSuppressParameterChangedEvent = true;
         ui->combo_search->removeItem(ui->combo_search->findText(searchText));
         ui->combo_search->insertItem(0, searchText);
         ui->combo_search->setCurrentIndex(0);
-        mSuppressChangeEvent = false;
+        mSuppressParameterChangedEvent = false;
     }
 
     QString filePattern(ui->combo_filePattern->currentText());
@@ -541,32 +551,24 @@ void SearchDialog::autofillSearchField()
 
 void SearchDialog::updateNrMatches(int current)
 {
-    int size = (mSearch.results().size() >= MAX_SEARCH_RESULTS)
-            ? MAX_SEARCH_RESULTS : mSearch.results().size();
+    int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
+    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 
     if (current == 0) {
-        if (size == 1) {
-            ui->lbl_nrResults->setText(QString::number(size) + " match");
-
-        } else {
-            if (size == 0) setSearchStatus(Search::NoResults);
-            else ui->lbl_nrResults->setText(QString::number(size) + " matches");
-        }
+        if (size == 0) setSearchStatus(Search::NoResults);
+        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches"));
 
         if (size >= MAX_SEARCH_RESULTS) {
             ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
-            ui->lbl_nrResults->setToolTip("Search is limited to " + QString::number(MAX_SEARCH_RESULTS) + " matches.");
+            ui->lbl_nrResults->setToolTip("Search is limited to "
+                                              + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
             ui->lbl_nrResults->setToolTip("");
         }
-
     } else {
-        QString plus("");
-        if (size >= MAX_SEARCH_RESULTS) plus = "+";
-        ui->lbl_nrResults->setText(QString::number(current) + " / " + QString::number(size) + plus);
+        ui->lbl_nrResults->setText(QString::number(current) + " / "
+                                     + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : ""));
     }
-
-    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
 }
 
 QRegularExpression SearchDialog::createRegex()
@@ -594,11 +596,6 @@ bool SearchDialog::caseSens()
 bool SearchDialog::wholeWords()
 {
     return ui->cb_wholeWords->isChecked();
-}
-
-QString SearchDialog::searchTerm()
-{
-    return ui->combo_search->currentText();
 }
 
 int SearchDialog::selectedScope()

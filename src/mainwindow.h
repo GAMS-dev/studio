@@ -89,6 +89,7 @@ private:
 class MainWindow : public QMainWindow
 {
     enum OpenGroupOption { ogFindGroup, ogCurrentGroup, ogNewGroup };
+    enum OpenPermission { opNone, opNoGsp, opAll };
 
     friend MainTabContextMenu;
     friend LogTabContextMenu;
@@ -98,9 +99,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
-    void openFiles(const QStringList &files, bool forceNew);
+    void openFiles(QStringList files, bool forceNew);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -127,7 +127,7 @@ public:
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
     void showResults(search::SearchResultModel* results);
-    void closeResultsPage();
+    void closeResultsView();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);
@@ -156,6 +156,7 @@ public:
 
     search::ResultsView *resultsView() const;
     void setResultsView(search::ResultsView *resultsView);
+    void invalidateResultsView();
 
 signals:
     void saved();
@@ -173,6 +174,7 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
+    void updateRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
@@ -180,14 +182,16 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<PExGroupNode *> groups = QVector<PExGroupNode *>(), const QString& solverName="");
+    void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
     bool eventFilter(QObject*sender, QEvent* event) override;
-    void closeGroup(PExGroupNode* group);
+    void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
+    void showProjectOptions(PExProjectNode *project);
 
 private slots:
     void openInitialFiles();
+    void openDelayedFiles();
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
@@ -206,7 +210,7 @@ private slots:
     void neosProgress(AbstractProcess *proc, ProcState progress);
     void remoteProgress(AbstractProcess *proc, ProcState progress);
     void closeNodeConditionally(PExFileNode *node);
-    void addToGroup(PExGroupNode *group, const QString &filepath);
+    void addToGroup(PExProjectNode *project, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
@@ -242,6 +246,8 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
+    void on_actionImport_Project_triggered();
+    void on_actionExport_Project_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -261,7 +267,6 @@ private slots:
 
     // MIRO
     void on_actionBase_mode_triggered();
-    void on_actionHypercube_mode_triggered();
     void on_actionConfiguration_mode_triggered();
     void on_actionStop_MIRO_triggered();
     void on_actionDeploy_triggered();
@@ -387,12 +392,17 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
+    void openProject(const QString gspFile);
+    void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
+    void importProjectDialog();
+    void exportProjectDialog(PExProjectNode *project);
 
 private:
+    void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
-    PExFileNode* addNode(const QString &path, const QString &fileName, PExGroupNode *group = nullptr);
+    PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
@@ -437,9 +447,10 @@ private:
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
-    QStringList mInitialFiles;
+    QStringList mDelayedFiles;
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
+    OpenPermission mOpenPermission = opNone;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
@@ -470,6 +481,7 @@ private:
     QTimer mFileTimer;
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
+    QString mExportProjectFilePath;
 
     bool mDebugMode = false;
     bool mStartedUp = false;

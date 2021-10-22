@@ -135,6 +135,11 @@ int TextViewEdit::scrollMs(int delta)
     return msec;
 }
 
+void TextViewEdit::setLineMarked(const QVector<bool> &newLineMarked)
+{
+    mLineMarked = newLineMarked;
+}
+
 void TextViewEdit::keyPressEvent(QKeyEvent *event)
 {
 //    if (event->key() == Qt::Key_Control) {
@@ -230,6 +235,23 @@ void TextViewEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selecti
 {
     Q_UNUSED(selections)
     return;
+}
+
+void TextViewEdit::extraSelLineMarks(QList<QTextEdit::ExtraSelection> &selections)
+{
+    QTextBlock block = firstVisibleBlock();
+    int i = 0;
+    while (block.isValid()) {
+        if (mLineMarked.size() > i && mLineMarked.at(i)) {
+            QTextEdit::ExtraSelection selection;
+            selection.format.setBackground(toColor(Theme::Edit_logRemoteBk));
+            selection.format.setProperty(QTextFormat::FullWidthSelection, true);
+            selection.cursor = QTextCursor(block);
+            selections.append(selection);
+        }
+        block = block.next();
+        ++i;
+    }
 }
 
 void TextViewEdit::mousePressEvent(QMouseEvent *e)

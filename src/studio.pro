@@ -127,11 +127,13 @@ SOURCES += \
     file/filemeta.cpp \
     file/filemetarepo.cpp \
     file/filetype.cpp \
+    file/pathrequest.cpp \
     file/pexabstractnode.cpp \
     file/pexfilenode.cpp \
     file/pexgroupnode.cpp \
     file/pexlognode.cpp \
     file/projectcontextmenu.cpp \
+    file/projectoptions.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
@@ -322,11 +324,13 @@ HEADERS += \
     file/filemeta.h \
     file/filemetarepo.h \
     file/filetype.h \
+    file/pathrequest.h \
     file/pexabstractnode.h \
     file/pexfilenode.h \
     file/pexgroupnode.h \
     file/pexlognode.h \
     file/projectcontextmenu.h \
+    file/projectoptions.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
     file/projecttreeview.h \
@@ -463,6 +467,8 @@ FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
     engine/enginestartdialog.ui \
+    file/pathrequest.ui \
+    file/projectoptions.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \

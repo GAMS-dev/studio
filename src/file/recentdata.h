@@ -34,21 +34,15 @@ public:
     void reset();
     void setEditor(QWidget* edit, MainWindow* window);
 
-    /**
-     * @brief Name of the main model.
-     * @remark Call <c>hasValidProject()</c> before.
-     */
-    bool hasValidProject();
-
     QWidget* editor() const { return mEditor; }
-    PExGroupNode* group() const {return mGroup; }
+    PExProjectNode* project() const {return mProject; }
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
 
 private:
     QWidget* mEditor;
     FileId mEditFileId;
-    PExGroupNode* mGroup;
+    PExProjectNode* mProject;
     QString mPath;
 };
 

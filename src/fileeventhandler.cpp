@@ -270,12 +270,8 @@ void FileEventHandler::removeFile(FileMeta *file)
     mMainWindow->textMarkRepo()->removeMarks(file->id(), QSet<TextMark::Type>() << TextMark::all);
     if (!file->isOpen()) {
         QVector<PExFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
-        for (PExFileNode* node: qAsConst(nodes)) {
-            PExGroupNode *group = node->parentNode();
+        for (PExFileNode* node: qAsConst(nodes))
             mMainWindow->projectRepo()->closeNode(node);
-            if (group->childCount() == 0)
-                mMainWindow->closeGroup(group);
-        }
         mMainWindow->clearHistory(file);
         mMainWindow->historyChanged();
         return;

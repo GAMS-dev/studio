@@ -65,6 +65,9 @@ public:
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results);
+    void clearSearchSelection();
+    bool hasSearchSelection();
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
     LogParser *logParser() const;
@@ -74,6 +77,11 @@ public:
     void jumpToEnd();
     int firstErrorLine();
     void print(QPagedPaintDevice *printer);
+    inline FileId fileId() {
+        bool ok;
+        FileId file = property("fileId").toInt(&ok);
+        return ok ? file : FileId();
+    }
 
 signals:
     void addProcessData(const QByteArray &data);
@@ -86,7 +94,7 @@ signals:
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
-    void switchLst(const QString &lstName) const;
+    void switchLst(const QString &lstName);
     void registerGeneratedFile(const QString &fileName);
 
 public slots:
@@ -116,11 +124,6 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
-    inline FileId fileId() {
-        bool ok;
-        FileId file = property("fileId").toInt(&ok);
-        return ok ? file : FileId();
-    }
     inline NodeId groupId() {
         bool ok;
         NodeId group = property("groupId").toInt(&ok);

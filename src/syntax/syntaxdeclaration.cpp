@@ -82,24 +82,36 @@ QStringList SyntaxKeywordBase::swapStringCase(const QStringList &list)
     return res;
 }
 
-int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, int &iKey, bool openEnd)
+int SyntaxKeywordBase::findEnd(SyntaxKind kind, const QString& line, int index, int &iKey, bool openEnd, bool relaxDot)
 {
+    static const QString relaxChars("-_ ()");
     iKey = 0;
     int iChar = 0;
+    int iSpace = 0;
+    bool relax = false;
+    bool allowDigit = false;
     while (true) {
         const DictEntry *dEntry = &mKeywords.value(int(kind))->at(iKey);
-        if (iChar+index >= line.length() || !isKeywordChar(line.at(iChar+index), mExtraKeywordChars)) {
+        int linePos = iChar + index + iSpace;
+        if (relax && linePos < line.length() && relaxChars.contains(line.at(linePos))) {
+            ++iSpace;
+        } else if (allowDigit && linePos < line.length() && line.at(linePos) >= '0' && line.at(linePos) <= '9') {
+            ++iSpace;
+        } else if (linePos >= line.length() || !isKeywordChar(line.at(linePos), mExtraKeywordChars)) {
             if (dEntry->length() > iChar) return -1;
             mLastKind = int(kind);
             mLastIKey = iKey;
-            return iChar+index; // reached an valid end
-        } else if (iChar < dEntry->length() &&  dEntry->is(line.at(iChar+index), iChar) ) {
+            return linePos; // reached an valid end
+        } else if (iChar < dEntry->length() &&  dEntry->is(line.at(linePos), iChar) ) {
             // character equals
+            if (relaxDot && line.at(linePos) == '.') {
+                relaxDot = false; relax = true; allowDigit = true;
+            } else allowDigit = false;
             iChar++;
         } else if (openEnd && iChar == dEntry->length()) {
             mLastKind = int(kind);
             mLastIKey = iKey;
-            return iChar+index; // reached an valid end of keyword-start
+            return linePos; // reached an valid end of keyword-start
         } else {
             // different character  at iChar: switch to next keyword
             iKey++;
@@ -482,6 +494,12 @@ SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, int 
     return SyntaxBlock(this);
 }
 
+QString cleanChars(QString source)
+{
+    return source.remove(' ').remove('-').remove('_').remove('(').remove(')');
+}
+
+
 SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     QList<QPair<QString, QString>> list;
@@ -492,15 +510,22 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
     } else if (kind == SyntaxKind::SystemCompileAttrib) {
         setExtraKeywordChars("._ ");
         QList<QPair<QString, QString>> list2;
+        list2.append(systemEmpData);
         for (const QPair<QString, QString> &entry : qAsConst(list)) {
             list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
         }
+        mKeywords.insert(int(kind), new DictList(list2));
+    } else if (kind == SyntaxKind::SystemCompileAttribR) {
+        setExtraKeywordChars("._ ");
+        QList<QPair<QString, QString>> list2;
         QHash<QString, QString> descript;
         for (const QPair<QString, QString> &entry : SyntaxData::systemCTConstText())
             descript.insert(entry.first, entry.second);
         for (const QPair<QString, int> &entry : SyntaxData::systemCTConstants()) {
-            QString key = entry.first.left(entry.first.indexOf('.'));
-            list2.append(QPair<QString, QString>(entry.first, descript.value(key) + ": " + QString::number(entry.second)));
+            int split = entry.first.indexOf('.');
+            QString key = entry.first.left(split);
+            QString value = key + cleanChars(entry.first.mid(split));
+            list2.append(QPair<QString, QString>(value, descript.value(key) + ": " + QString::number(entry.second)));
         }
         mKeywords.insert(int(kind), new DictList(list2));
     } else {
@@ -513,14 +538,14 @@ SyntaxBlock SyntaxSimpleKeyword::find(const SyntaxKind entryKind, int flavor, co
     Q_UNUSED(entryKind)
     int start = index;
     int iKey;
-    if (kind() == SyntaxKind::SystemCompileAttrib) {
+    if (kind() == SyntaxKind::SystemCompileAttrib || kind() == SyntaxKind::SystemCompileAttribR) {
         if (start+1 >= line.length() || line.at(start) != '%')
             return SyntaxBlock(this);
         ++start;
     }
-    int end = findEnd(kind(), line, start, iKey, true);
+    int end = findEnd(kind(), line, start, iKey, false, kind() == SyntaxKind::SystemCompileAttribR);
     if (end > start) {
-        if (kind() == SyntaxKind::SystemCompileAttrib) {
+        if (kind() == SyntaxKind::SystemCompileAttrib || kind() == SyntaxKind::SystemCompileAttribR) {
             if (end >= line.length() || line.at(end) != '%')
                 return SyntaxBlock(this);
             --start;

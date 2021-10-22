@@ -57,7 +57,7 @@ public:
         return w;
     }
     inline static TextView* initEditorType(TextView* w, EditorType type) {
-        Q_ASSERT(type == EditorType::txtRo || type == EditorType::lxiLst || type == EditorType::log);
+        Q_ASSERT(type == EditorType::txtRo || type == EditorType::lxiLstChild || type == EditorType::log);
         if(w) w->setProperty("EditorType", int(type));
         return w;
     }
@@ -101,10 +101,10 @@ public:
         EditorType t = editorType(w);
         if (t == EditorType::lxiLst)
             return toLxiViewer(w)->textView();
-        if (t == EditorType::txtRo || t == EditorType::log)
+        if (t == EditorType::txtRo || t == EditorType::lxiLstChild || t == EditorType::log)
             return static_cast<TextView*>(w);
         EditorType pt = editorType(w->parentWidget());
-        if (pt == EditorType::txtRo || pt == EditorType::log)
+        if (pt == EditorType::txtRo || t == EditorType::lxiLstChild || pt == EditorType::log)
             return static_cast<TextView*>(w->parentWidget());
         return nullptr;
     }
@@ -112,7 +112,14 @@ public:
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
     }
     inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
-        return (editorType(w) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(w) : nullptr;
+        if (editorType(w) == EditorType::lxiLstChild)
+            return static_cast<lxiviewer::LxiViewer*>(w->parentWidget()->parentWidget());
+        if (editorType(w) == EditorType::lxiLst)
+            return static_cast<lxiviewer::LxiViewer*>(w);
+        QWidget *par = w;
+        while (par && ViewHelper::editorType(par) != EditorType::lxiLst)
+            par = par->parentWidget();
+        return (editorType(par) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(par) : nullptr;
     }
     inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
         return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;
@@ -122,6 +129,11 @@ public:
     }
     inline static option::GamsConfigEditor* toGamsConfigEditor(QWidget* w) {
         return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
+    }
+
+    static QStringList dialogProjectFilter() {
+        QStringList res("GAMS Studio Project (*.gsp)");
+        return res;
     }
 
     static QStringList dialogFileFilterUserCreated() {

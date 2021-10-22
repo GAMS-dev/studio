@@ -141,8 +141,8 @@ private slots:
     void processPending();
 
 private: // methods
-    void appendLineData(const QByteArray &data, Chunk *&chunk);
-    void appendEmptyLine();
+    void appendLineData(const QByteArray &data, Chunk *&chunk, bool mark);
+    void appendEmptyLine(bool mark = false);
     void clearLastLine();
     void parseNewLine();
     void fetchLog();
@@ -162,6 +162,8 @@ private: // methods
     void invalidateSize();
     void newPending(Pending pending);
     QString extractLstRef(LineRef lineRef);
+    void markLastLine();
+    QVector<bool> markedLines(int localLineNrFrom, int lineCount) const;
 
 private: // members
     QVector<Chunk*> mChunks;
