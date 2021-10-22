@@ -523,12 +523,16 @@ void CodeCompleter::keyPressEvent(QKeyEvent *e)
         e->accept();
         insertCurrent(e->key() == Qt::Key_Tab);
     }   break;
+    case Qt::Key_Backspace: {
+        qApp->sendEvent(mEdit, e);
+        if (mFilterText.size() == 0) hide();
+        else updateFilter();
+    }   break;
     default: {
         if (e->key() == Qt::Key_Space)
             hide();
         if (mEdit)
             qApp->sendEvent(mEdit, e);
-//            mEdit->keyPressEvent(e);
         updateFilter();
     }
     }
@@ -549,7 +553,7 @@ void CodeCompleter::keyReleaseEvent(QKeyEvent *e)
     case Qt::Key_Tab:
         break;
     default:
-        if (mEdit) qApp->sendEvent(mEdit, e); // mEdit->keyReleaseEvent(e);
+        if (mEdit) qApp->sendEvent(mEdit, e);
     }
 }
 
@@ -703,8 +707,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
          mFilterModel->setFilterCaseSensitivity(Qt::CaseSensitive);
     mFilterModel->setGroupRows(mModel->dollarGroupRow(), mModel->percentGroupRow());
     updateFilterFromSyntax(syntax, dcoFlavor, line, posInBlock);
-    QString filterRex = mFilterText;
-    filterRex.replace(".", "\\.").replace("$", "\\$");
+    QString filterRex = QRegularExpression::escape(mFilterText);
     mFilterModel->setFilterRegularExpression('^'+filterRex+".*");
 
     if (mModel->casing() == caseDynamic && !mFilterModel->rowCount())

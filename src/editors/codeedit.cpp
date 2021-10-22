@@ -1324,6 +1324,13 @@ void CodeEdit::checkCompleterAutoOpen()
 {
     bool canOpen = true;
     QTextCursor cur(textCursor());
+    if (cur.positionInBlock() > 0) {
+        QChar ch = cur.block().text().at(cur.positionInBlock()-1);
+        if ((ch == '$' || ch == '%') && prepareCompleter()) {
+            showCompleter();
+            return;
+        }
+    }
     if (cur.positionInBlock() > 2) {
         cur.setPosition(cur.position()-3, QTextCursor::KeepAnchor);
         QString part = cur.selectedText();
