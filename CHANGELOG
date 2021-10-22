@@ -8,6 +8,8 @@ Version 1.8.1  *
 - added new search scope: selection
     - allows users to search inside a text selection
     - can be cleared by pressing the "Clear" button in search dialog or Esc
+- keep zoom of lxi-view in sync with lst-view and added zoom shortcuts
+- added file integration for GAMS Studio Project (GSP) on macOS
 
 Version 1.8.0
 ==================

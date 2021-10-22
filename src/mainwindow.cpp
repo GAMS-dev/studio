@@ -334,11 +334,6 @@ MainWindow::~MainWindow()
     FileType::clear();
 }
 
-void MainWindow::setInitialFiles(QStringList files)
-{
-    mInitialFiles = files;
-}
-
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
@@ -2444,6 +2439,11 @@ void MainWindow::importProjectDialog()
 
 void MainWindow::openProject(const QString gspFile)
 {
+    if (mOpenPermission == opNoGsp) {
+        if (!mDelayedFiles.contains(gspFile, mFileMetaRepo.fsCaseSensitive()))
+            mDelayedFiles << gspFile;
+        return;
+    }
     QJsonDocument json;
     QFile file(gspFile);
     if (file.open(QFile::ReadOnly)) {
@@ -2455,30 +2455,39 @@ void MainWindow::openProject(const QString gspFile)
         }
         file.close();
 
+        QString name = QFileInfo(gspFile).fileName();
         QString path = QFileInfo(file).path();
         QVariantMap map = json.object().toVariantMap();
         QVariantList data = map.value("projects").toList();
-        loadProject(data, path, false);
+        loadProject(data, name, path, false);
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
     }
-
 }
 
-void MainWindow::loadProject(const QVariantList data, const QString &basePath, bool ignoreMissingFiles)
+void MainWindow::loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles)
 {
     path::PathRequest *dialog = new path::PathRequest(this);
-    dialog->init(&mProjectRepo, basePath, data);
+    dialog->init(&mProjectRepo, name, basePath, data);
 
     if (ignoreMissingFiles || dialog->checkProject()) {
         dialog->deleteLater();
         mProjectRepo.read(data, basePath);
     } else {
-        connect(dialog, &path::PathRequest::finished, this, [dialog]() { dialog->deleteLater(); });
+        connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
+            dialog->deleteLater();
+            mOpenPermission = opAll;
+            QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
+        });
         connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog]() {
             mProjectRepo.read(data, dialog->baseDir());
         });
         dialog->open();
+#ifdef __APPLE__
+        dialog->show();
+        dialog->raise();
+#endif
+        mOpenPermission = opNoGsp;
     }
 }
 
@@ -2968,9 +2977,14 @@ void MainWindow::openFiles(OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
-void MainWindow::openFiles(const QStringList &files, bool forceNew)
+void MainWindow::openFiles(QStringList files, bool forceNew)
 {
     if (files.size() == 0) return;
+    if (mOpenPermission == opNone) {
+        // During initialization only append for later processing
+        mDelayedFiles.append(files);
+        return;
+    }
 
     if (!forceNew && files.size() == 1) {
         if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
@@ -2989,12 +3003,14 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create project
-    PExProjectNode *project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+    PExProjectNode *project = nullptr;
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
             if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
                 openProject(item);
             } else {
+                if (!project)
+                    project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
@@ -3271,12 +3287,19 @@ void MainWindow::openInitialFiles()
             mHistory.files() << map.value("file").toString();
     }
 
-    openFiles(mInitialFiles, false);
-    mInitialFiles.clear();
+    openDelayedFiles();
     watchProjectTree();
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
     historyChanged();
+}
+
+void MainWindow::openDelayedFiles()
+{
+    QStringList files = mDelayedFiles;
+    mDelayedFiles.clear();
+    mOpenPermission = opAll;
+    openFiles(files, false);
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -4412,14 +4435,7 @@ void MainWindow::on_actionZoom_Out_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
-        }
+        zoomWidget(focusWidget(), -1);
     }
 }
 
@@ -4432,16 +4448,26 @@ void MainWindow::on_actionZoom_In_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            ae->zoomIn();
-            if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            tv->zoomIn();
-            if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
-        }
+        zoomWidget(focusWidget(), 1);
+    }
+}
+
+void MainWindow::zoomWidget(QWidget *widget, int range)
+{
+    if (lxiviewer::LxiViewer *lv = ViewHelper::toLxiViewer(widget)) {
+        int pix = lv->fontInfo().pixelSize();
+        lv->textView()->zoomIn(range);
+        if (pix == lv->fontInfo().pixelSize() && lv->fontInfo().pointSize() > 1) lv->textView()->zoomIn(range);
+
+    } else if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
+        int pix = tv->fontInfo().pixelSize();
+        tv->zoomIn(range);
+        if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn(range);
+
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
+        int pix = ae->fontInfo().pixelSize();
+        ae->zoomIn(range);
+        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
     }
 }
 
@@ -4985,7 +5011,7 @@ void MainWindow::printDocument()
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (!abstractEdit) return;
         abstractEdit->print(&mPrinter);
-    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
         lxiViewer->print(&mPrinter);
@@ -5039,7 +5065,7 @@ bool MainWindow::enabledPrintAction()
     if (!fm || !focusWidget())
         return false;
     return focusWidget() == mRecent.editor()
-            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
 
