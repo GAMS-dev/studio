@@ -34,7 +34,7 @@
 
 #ifdef SYNTAXDEBUG
 #ifndef TDEB
-#define TDEB(text) syntaxDebug(text)
+#define TDEB(text) syntaxDebug(text);
 #endif
 #else
 #ifndef TDEB
@@ -160,7 +160,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     int posForSyntaxKind = mPositionForSyntaxKind - textBlock.position();
     if (posForSyntaxKind < 0) posForSyntaxKind = text.length();
     bool emptyLineKinds = true;
-    TDEB(text);
+    TDEB(text)
 
     NestingImpact nestingImpact;
     while (index < text.length()) {
@@ -213,7 +213,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         if (tailBlock.syntax)
                             TDEB(QString(tailBlock.start, ' ') + QString(tailBlock.length(), '.') + " " +
                                  tailBlock.syntax->name() + " flav_" + QString::number(prevFlavor) + "  (tail from " +
-                                 syntax->name() + ")");
+                                 syntax->name() + ")")
                         scanParentheses(text, tailBlock, syntax->kind(), parPosList, nestingImpact);
                     }
                     cri = getCode(cri, tailBlock.shift, tailBlock, 0);
@@ -234,7 +234,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
             if (nextBlock.syntax)
                 TDEB(QString(nextBlock.start, ' ') + QString(nextBlock.length(), '_') + " " + nextBlock.syntax->name() +
-                     " flav_" + QString::number(nextBlock.flavor) + "  (next from " + syntax->name() + ")");
+                     " flav_" + QString::number(nextBlock.flavor) + "  (next from " + syntax->name() + ")")
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), parPosList, nestingImpact);
@@ -273,7 +273,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                         if (nextBlock.isValid()) {
                             if (nextBlock.syntax)
                                 TDEB(QString(nextBlock.start, ' ') + QString(nextBlock.length(), '_') + " " +
-                                     nextBlock.syntax->name());
+                                     nextBlock.syntax->name())
                             setFormat(nextBlock.start, nextBlock.length(), nextBlock.syntax->charFormat());
                             if (scanBlock) {
                                 QMap<int, QPair<int, int>>::Iterator it = mScannedBlockSyntax.upperBound(nextBlock.start);
@@ -307,7 +307,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     } else
         textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
-    TDEB(text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingImpact.impact()) + "]");
+    TDEB(text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingImpact.impact()) + "]")
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
