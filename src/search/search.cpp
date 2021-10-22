@@ -509,17 +509,16 @@ void Search::replaceAll(QString replacementText)
         return;
 
     } else if (matchedFiles == 1 && mMain->searchDialog()->selectedScope() != Search::Selection) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "' in file "
-                       + mFiles.first()->name() + ". Are you sure?");
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
+                       + "' with '" + replaceTerm + "' in file " + mFiles.first()->name() + "?");
     } else if (mMain->searchDialog()->selectedScope() == Search::Selection) {
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
+                       + "' with '" + replaceTerm + "' in the selected text in file "
+                       + mFiles.first()->name() + "?");
+    } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "' in the selected text in file "
-                       + mFiles.first()->name() + ". Are you sure?");
-    } else if (matchedFiles >= 2) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files. " +
-                       "This action cannot be undone. Are you sure?");
+                       searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
+                       "This action cannot be undone!");
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
@@ -557,7 +556,11 @@ void Search::replaceAll(QString replacementText)
     }
 
     QMessageBox ansBox;
-    ansBox.setText(QString::number(hits) + " occurrences of '" + searchTerm + "' were replaced with '" + replaceTerm + "'.");
+    if (hits == 1)
+        ansBox.setText("1 occurrences of '" + searchTerm + "' was replaced with '" + replaceTerm + "'.");
+    else
+        ansBox.setText(QString::number(hits) + " occurrences of '" + searchTerm
+                        + "' were replaced with '" + replaceTerm + "'.");
     ansBox.addButton(QMessageBox::Ok);
     ansBox.exec();
 }
