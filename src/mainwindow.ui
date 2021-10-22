@@ -459,6 +459,9 @@
        <property name="tabPosition">
         <enum>QTabWidget::South</enum>
        </property>
+       <property name="elideMode">
+        <enum>Qt::ElideRight</enum>
+       </property>
        <property name="documentMode">
         <bool>true</bool>
        </property>

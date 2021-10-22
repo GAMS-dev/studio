@@ -107,11 +107,12 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    bool read(const QVariantList &data, const QString &workDir = QString());
+    bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir = QString());
+    bool read(const QVariantList &data, const QString &sysWorkDir = QString());
     void write(QVariantList &projects) const;
     void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString name, QString path, QString runFileName);
+    PExProjectNode *createProject(QString name, QString path, QString runFileName, QString workDir = QString());
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
@@ -135,11 +136,12 @@ signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
-    void loadProjects(const QString &gspFile);
+    void openProject(const QString &gspFile);
     void openFile(FileMeta* fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
+    void updateRecentFile();
     void parentAssigned(const PExAbstractNode *node);
     void deselect(const QVector<QModelIndex> &declined);
     void select(const QVector<QModelIndex> &selected);
@@ -189,6 +191,9 @@ private:
     int mRunIconCount = 1;
     int mRunAnimateIndex = 0;
     bool mDebugMode = false;
+
+    static const QString CIgnoreSuffix;
+
 };
 
 } // namespace studio

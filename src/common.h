@@ -109,16 +109,17 @@ inline unsigned int qHash(FileKind key, unsigned int seed)
 
 enum class EditorType {
     undefined = 0,
-    source = 1,
-    log = 2,
-    syslog = 3,
-    txt = 4,
-    txtRo = 5,
-    lxiLst = 6,
-    gdx = 7,
-    ref = 8,
-    opt = 9,
-    gucfg = 10,
+    source,
+    log,
+    syslog,
+    txt,
+    txtRo,
+    lxiLst,
+    lxiLstChild,
+    gdx,
+    ref,
+    opt,
+    gucfg,
 };
 Q_ENUM_NS(EditorType)
 

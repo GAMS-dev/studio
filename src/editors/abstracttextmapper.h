@@ -26,9 +26,12 @@
 #include <QSet>
 #include <QTextCursor>
 #include <QTextDocument>
+#include <QPoint>
+#include "search/result.h"
 
 namespace gams {
 namespace studio {
+
 
 struct LineFormat {
     LineFormat() {}
@@ -52,6 +55,7 @@ struct LineFormat {
     bool lineMarked = false;
 };
 
+class FileMeta;
 ///
 /// class AbstractTextMapper
 /// Maps text data into chunks of QByteArrays that are loaded on request. Uses indexes to build the lines for the
@@ -83,8 +87,12 @@ private:
     struct CursorPosition {
         bool operator ==(const CursorPosition &other) const {
             return chunkNr == other.chunkNr && absLineStart == other.absLineStart && charNr == other.charNr; }
+        bool operator !=(const CursorPosition &other) const {
+            return chunkNr != other.chunkNr || absLineStart != other.absLineStart || charNr != other.charNr; }
         bool operator <(const CursorPosition &other) const {
             return absLineStart + charNr < other.absLineStart + other.charNr; }
+        bool operator >(const CursorPosition &other) const {
+            return absLineStart + charNr > other.absLineStart + other.charNr; }
         int effectiveCharNr() const { return qMin(charNr, lineLen); }
         bool isValid() const { return chunkNr >= 0; }
         int chunkNr = -1;
@@ -179,9 +187,13 @@ public:
     virtual void setDebugMode(bool debug);
     bool debugMode() const { return mDebugMode; }
     bool atTail();
+    void updateSearchSelection();
+    void clearSearchSelection();
+    bool hasSearchSelection();
+    QPoint searchSelectionStart();
+    QPoint searchSelectionEnd();
 
     void dumpPos() const;
-
 
 public slots:
     virtual void reset();
@@ -235,6 +247,8 @@ private:
     LinePosition mMaxTopLine;
     CursorPosition mAnchor;
     CursorPosition mPosition;
+    CursorPosition mSearchSelectionStart;
+    CursorPosition mSearchSelectionEnd;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;
@@ -244,6 +258,7 @@ private:
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
+
 };
 
 } // namespace studio

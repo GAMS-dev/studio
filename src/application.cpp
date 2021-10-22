@@ -69,7 +69,7 @@ void Application::init()
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
-    mMainWindow->setInitialFiles(mCmdParser.files());
+    mMainWindow->openFiles(mCmdParser.files(), false);
 
     mDistribValidator.start();
     listen();
@@ -157,17 +157,13 @@ void Application::logError(const QString &message)
 bool Application::event(QEvent *event)
 {
     if (event->type() == QEvent::FileOpen) {
+        // this is a macOS only event
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->setInitialFiles({openEvent->url().path()});
         mMainWindow->openFiles({openEvent->url().path()}, false);
         for (auto window : allWindows()) {
             if (!window->isVisible())
                 continue;
-            if (window->windowState() & Qt::WindowMinimized
-#ifndef __APPLE__
-                    || true
-#endif
-                    ) {
+            if (window->windowState() & Qt::WindowMinimized) {
                 window->show();
                 window->raise();
             }

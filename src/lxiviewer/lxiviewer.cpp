@@ -55,6 +55,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
     ui->lxiTreeView->installEventFilter(this);
+    mTextView->edit()->installEventFilter(this);
 }
 
 LxiViewer::~LxiViewer()
@@ -92,7 +93,16 @@ bool LxiViewer::eventFilter(QObject *watched, QEvent *event)
             if (ui->lxiTreeView->model()->hasChildren(ui->lxiTreeView->currentIndex()))
                 ui->lxiTreeView->expand(ui->lxiTreeView->currentIndex());
         }
+    } else if (event->type() == QEvent::FontChange && watched == mTextView->edit()) {
+        ui->lxiTreeView->setFont(mTextView->edit()->font());
+    } else if (event->type() == QEvent::Wheel && watched == ui->lxiTreeView) {
+        QWheelEvent *wheelEv = static_cast<QWheelEvent*>(event);
+        if (wheelEv->modifiers().testFlag(Qt::ControlModifier)) {
+            qApp->sendEvent(mTextView->edit()->viewport(), wheelEv);
+            return true;
+        }
     }
+
     return false;
 }
 

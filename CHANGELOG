@@ -1,4 +1,19 @@
-Version 1.8.0 *
+Version 1.8.1
+==================
+- added new search scope: Selection
+    - allows users to search inside a text selection
+    - can be cleared by pressing the "Clear" button in search dialog or Esc key
+- fixed highlighting error for compile time constants with relaxed syntax
+- added individual working directories for each project
+- added dialog to set the base directory on project import
+- fixed non native path separators in project dialogs
+- fixed run buttons not active issue
+- added zoom for lxi tree view when zooming in lst files
+- added file integration for GAMS Studio Project (GSP) on macOS
+- fixed completer not opening or staying open
+- fixed completer character recognition and wrong CompileTimeConstant start
+
+Version 1.8.0
 ==================
 - added tooltips to source code for keywords and DCOs (can be deactivated in the settings dialog)
 - highlight remotely executed LOG (NEOS or GAMS Engine)

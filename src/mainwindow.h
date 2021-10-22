@@ -89,6 +89,7 @@ private:
 class MainWindow : public QMainWindow
 {
     enum OpenGroupOption { ogFindGroup, ogCurrentGroup, ogNewGroup };
+    enum OpenPermission { opNone, opNoGsp, opAll };
 
     friend MainTabContextMenu;
     friend LogTabContextMenu;
@@ -98,9 +99,8 @@ class MainWindow : public QMainWindow
 public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
-    void setInitialFiles(QStringList files);
     void updateMenuToCodec(int mib);
-    void openFiles(const QStringList &files, bool forceNew);
+    void openFiles(QStringList files, bool forceNew);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -127,7 +127,7 @@ public:
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
     void showResults(search::SearchResultModel* results);
-    void closeResultsPage();
+    void closeResultsView();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);
@@ -156,6 +156,7 @@ public:
 
     search::ResultsView *resultsView() const;
     void setResultsView(search::ResultsView *resultsView);
+    void invalidateResultsView();
 
 signals:
     void saved();
@@ -173,6 +174,7 @@ public slots:
     void updateEditorBlockCount();
     void updateEditorItemCount();
     void updateLoadAmount();
+    void updateRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
@@ -189,6 +191,7 @@ public slots:
 
 private slots:
     void openInitialFiles();
+    void openDelayedFiles();
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
@@ -389,11 +392,13 @@ private slots:
     void updateFixedFonts(const QString &fontFamily, int fontSize);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
-    void loadProjects(const QString &gspFile);
+    void openProject(const QString gspFile);
+    void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
 
 private:
+    void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
@@ -442,9 +447,10 @@ private:
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;
-    QStringList mInitialFiles;
+    QStringList mDelayedFiles;
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
+    OpenPermission mOpenPermission = opNone;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

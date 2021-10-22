@@ -59,6 +59,7 @@
 #include "confirmdialog.h"
 #include "fileeventhandler.h"
 #include "file/projectoptions.h"
+#include "file/pathrequest.h"
 #include "engine/enginestartdialog.h"
 #include "neos/neosstartdialog.h"
 #include "option/gamsuserconfig.h"
@@ -180,12 +181,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
-    connect(&mProjectRepo, &ProjectRepo::loadProjects, this, &MainWindow::loadProjects);
+    connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
+    connect(&mProjectRepo, &ProjectRepo::updateRecentFile, this, &MainWindow::updateRecentFile);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
@@ -332,11 +334,6 @@ MainWindow::~MainWindow()
     FileType::clear();
 }
 
-void MainWindow::setInitialFiles(QStringList files)
-{
-    mInitialFiles = files;
-}
-
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
@@ -476,7 +473,7 @@ bool MainWindow::event(QEvent *event)
     } else if (event->type() == QEvent::WindowActivate) {
         processFileEvents();
     } else if (event->type() == QEvent::ApplicationPaletteChange) {
-        if (!mSettingsDialog || !mSettingsDialog->preventThemeChaning())
+        if (!mSettingsDialog || !mSettingsDialog->preventThemeChanging())
             ViewHelper::updateBaseTheme();
         else {
             mSettingsDialog->delayBaseThemeChange(true);
@@ -1136,6 +1133,12 @@ void MainWindow::updateLoadAmount()
         qreal amount = qAbs(qreal(tv->knownLines()) / tv->lineCount());
         mStatusWidgets->setLoadAmount(amount);
     }
+}
+
+void MainWindow::updateRecentFile()
+{
+    if (mRecent.editor())
+        openFile(mFileMetaRepo.fileMeta(mRecent.editFileId()));
 }
 
 void MainWindow::updateEditorItemCount()
@@ -1821,8 +1824,8 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
     }
 
     if (exitCode == ecTooManyScratchDirs) {
-        PExProjectNode* prj = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
-        QString path = prj ? QDir::toNativeSeparators(prj->location()) : currentPath();
+        PExProjectNode* project = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
+        QString path = project ? QDir::toNativeSeparators(project->workDir()) : currentPath();
 
         // TODO fix QDialog::exec() issue
         QMessageBox msgBox;
@@ -2422,60 +2425,86 @@ void MainWindow::restoreFromSettings()
 
 }
 
-void MainWindow::loadProjects(const QString &gspFile)
-{
-    QFile file(gspFile);
-    if (file.open(QFile::ReadOnly)) {
-        QJsonParseError parseResult;
-        QJsonDocument json = QJsonDocument::fromJson(file.readAll(), &parseResult);
-        if (parseResult.error) {
-            appendSystemLogError("Couldn't parse project from " + gspFile);
-            return;
-        }
-        file.close();
-        QVariantMap map = json.object().toVariantMap();
-        QVariantList data = map.value("projects").toList();
-        if (!mProjectRepo.read(data, QFileInfo(gspFile).path())) {
-            QMessageBox::warning(this, "Lost file locations", "Maybe the project file has been moved without the contained files.\n"
-                                                              "For details open the System Log");
-        }
-    } else {
-        appendSystemLogError("Couldn't open project " + gspFile);
-    }
-}
-
 void MainWindow::importProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
     dialog->setAcceptMode(QFileDialog::AcceptOpen);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { loadProjects(fileName); });
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { openProject(fileName); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
 }
 
+void MainWindow::openProject(const QString gspFile)
+{
+    if (mOpenPermission == opNoGsp) {
+        if (!mDelayedFiles.contains(gspFile, mFileMetaRepo.fsCaseSensitive()))
+            mDelayedFiles << gspFile;
+        return;
+    }
+    QJsonDocument json;
+    QFile file(gspFile);
+    if (file.open(QFile::ReadOnly)) {
+        QJsonParseError parseResult;
+        json = QJsonDocument::fromJson(file.readAll(), &parseResult);
+        if (parseResult.error) {
+            appendSystemLogError("Couldn't parse project from " + gspFile);
+            return;
+        }
+        file.close();
+
+        QString name = QFileInfo(gspFile).fileName();
+        QString path = QFileInfo(file).path();
+        QVariantMap map = json.object().toVariantMap();
+        QVariantList data = map.value("projects").toList();
+        loadProject(data, name, path, false);
+    } else {
+        appendSystemLogError("Couldn't open project " + gspFile);
+    }
+}
+
+void MainWindow::loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles)
+{
+    path::PathRequest *dialog = new path::PathRequest(this);
+    dialog->init(&mProjectRepo, name, basePath, data);
+
+    if (ignoreMissingFiles || dialog->checkProject()) {
+        dialog->deleteLater();
+        mProjectRepo.read(data, basePath);
+    } else {
+        connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
+            dialog->deleteLater();
+            mOpenPermission = opAll;
+            QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
+        });
+        connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog]() {
+            mProjectRepo.read(data, dialog->baseDir());
+        });
+        dialog->open();
+#ifdef __APPLE__
+        dialog->show();
+        dialog->raise();
+#endif
+        mOpenPermission = opNoGsp;
+    }
+}
+
 void MainWindow::exportProjectDialog(PExProjectNode *project)
 {
-    QMessageBox *box = new QMessageBox(QMessageBox::Warning, "Loosing file locations",
-                                       "If the project is stored outside it's root, file locations are lost.",
-                                       QMessageBox::Ok, this);
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
                                           project->location()+'/'+project->name()+".gsp");
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
-    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project, box]() {
+    connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project](const QString &) {
         if (dialog->directory() != QDir(project->location())) {
-
-            if (!dialog->property("warned").toBool()) {
-                dialog->setProperty("warned", true);
-                box->show();
-                box->raise();
-                box->activateWindow();
-            }
+            QToolTip::showText(QCursor::pos(), "<body><b>Warning!</b><br/>If the project is "
+                                               "stored outside of it's base, file locations are lost.</body>");
+        } else {
+            QToolTip::hideText();
         }
     });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
@@ -2492,7 +2521,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
         }
 
     });
-    connect(dialog, &QFileDialog::finished, this, [dialog, box]() { dialog->deleteLater(); box->deleteLater(); });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
 }
@@ -2557,8 +2586,8 @@ void MainWindow::on_actionBase_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
-    miroProcess->setModelName(mRecent.project()->toProject()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.project()->workDir());
+    miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
@@ -2572,8 +2601,8 @@ void MainWindow::on_actionConfiguration_mode_triggered()
 
     auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
-    miroProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
-    miroProcess->setModelName(mRecent.project()->toProject()->mainModelName());
+    miroProcess->setWorkingDirectory(mRecent.project()->workDir());
+    miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
@@ -2584,7 +2613,7 @@ void MainWindow::on_actionStop_MIRO_triggered()
 {
     if (!mRecent.project())
         return;
-    mRecent.project()->toProject()->process()->terminate();
+    mRecent.project()->process()->terminate();
 }
 
 void MainWindow::on_actionDeploy_triggered()
@@ -2592,19 +2621,19 @@ void MainWindow::on_actionDeploy_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    QString assemblyFile = mRecent.project()->toProject()->location() + "/" +
-                           miro::MiroCommon::assemblyFileName(mRecent.project()->toProject()->mainModelName());
+    QString assemblyFile = mRecent.project()->workDir() + "/" +
+                           miro::MiroCommon::assemblyFileName(mRecent.project()->mainModelName());
 
     QStringList checkedFiles;
     if (mRecent.project()) {
         checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                mRecent.project()->toProject()->mainModelName(false));
+                                                                mRecent.project()->mainModelName(false));
     }
 
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
-    mMiroDeployDialog->setWorkingDirectory(mRecent.project()->toProject()->location());
-    mMiroDeployDialog->setModelName(mRecent.project()->toProject()->mainModelName());
+    mMiroDeployDialog->setWorkingDirectory(mRecent.project()->workDir());
+    mMiroDeployDialog->setModelName(mRecent.project()->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -2634,8 +2663,8 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
 
     auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
-    process->setWorkingDirectory(mRecent.project()->toProject()->location());
-    process->setModelName(mRecent.project()->toProject()->mainModelName());
+    process->setWorkingDirectory(mRecent.project()->workDir());
+    process->setModelName(mRecent.project()->mainModelName());
     process->setTestDeployment(testDeploy);
     process->setTargetEnvironment(mMiroDeployDialog->targetEnvironment());
 
@@ -2948,13 +2977,18 @@ void MainWindow::openFiles(OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
-void MainWindow::openFiles(const QStringList &files, bool forceNew)
+void MainWindow::openFiles(QStringList files, bool forceNew)
 {
     if (files.size() == 0) return;
+    if (mOpenPermission == opNone) {
+        // During initialization only append for later processing
+        mDelayedFiles.append(files);
+        return;
+    }
 
     if (!forceNew && files.size() == 1) {
         if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
-            loadProjects(files.first());
+            openProject(files.first());
             return;
         }
         FileMeta *file = mFileMetaRepo.fileMeta(files.first());
@@ -2969,12 +3003,14 @@ void MainWindow::openFiles(const QStringList &files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create project
-    PExProjectNode *project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+    PExProjectNode *project = nullptr;
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
             if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
-                loadProjects(item);
+                openProject(item);
             } else {
+                if (!project)
+                    project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
@@ -3166,7 +3202,7 @@ bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, 
         PExFileNode *runNode = project->findFile(runMeta);
         logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     }
-    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->location();
+    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->workDir();
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
@@ -3251,12 +3287,19 @@ void MainWindow::openInitialFiles()
             mHistory.files() << map.value("file").toString();
     }
 
-    openFiles(mInitialFiles, false);
-    mInitialFiles.clear();
+    openDelayedFiles();
     watchProjectTree();
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
     historyChanged();
+}
+
+void MainWindow::openDelayedFiles()
+{
+    QStringList files = mDelayedFiles;
+    mDelayedFiles.clear();
+    mOpenPermission = opAll;
+    openFiles(files, false);
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -3361,7 +3404,7 @@ neos::NeosProcess *MainWindow::createNeosProcess()
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
     if (!project) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
-    neosProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
+    neosProcess->setWorkingDirectory(mRecent.project()->workDir());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
     project->setProcess(std::move(neosProcess));
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
@@ -3489,7 +3532,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
     }
     auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
     connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
-    engineProcess->setWorkingDirectory(mRecent.project()->toProject()->location());
+    engineProcess->setWorkingDirectory(mRecent.project()->workDir());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : itemList) {
@@ -3689,7 +3732,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
                     project = nodes.first()->assignedProject();
             } else {
                 QFileInfo file(fileMeta->location());
-                project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(), file.absoluteFilePath())->toProject();
+                project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
+                                                     file.absoluteFilePath())->toProject();
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }
@@ -3911,7 +3955,10 @@ void MainWindow::showProjectOptions(PExProjectNode *project)
 {
     if (!project) return;
     project::ProjectOptions *pOpt = new project::ProjectOptions(this);
-    connect(pOpt, &project::ProjectOptions::finished, this, [pOpt](){ pOpt->deleteLater(); });
+    connect(pOpt, &project::ProjectOptions::finished, this, [this, pOpt](){
+        updateRunState();
+        pOpt->deleteLater();
+    });
     pOpt->showProject(project);
 }
 
@@ -4086,7 +4133,8 @@ void MainWindow::showResults(search::SearchResultModel* results)
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
-    QString title("Results: " + results->searchRegex().pattern() + " (" + nr + ")");
+    QString pattern = results->searchRegex().pattern().replace("\n", "");
+    QString title("Results: " + pattern + " (" + nr + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
@@ -4098,13 +4146,18 @@ void MainWindow::showResults(search::SearchResultModel* results)
     ui->logTabs->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::closeResultsPage()
+void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
 
     delete mResultsView;
     mResultsView = nullptr;
+}
+
+void MainWindow::invalidateResultsView()
+{
+    if (resultsView()) resultsView()->setOutdated();
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
@@ -4382,14 +4435,7 @@ void MainWindow::on_actionZoom_Out_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            if (pix == ae->fontInfo().pixelSize()) ae->zoomOut();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            if (pix == tv->fontInfo().pixelSize()) tv->zoomOut();
-        }
+        zoomWidget(focusWidget(), -1);
     }
 }
 
@@ -4402,16 +4448,26 @@ void MainWindow::on_actionZoom_In_triggered()
     } else
 #endif
     {
-        if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-            int pix = ae->fontInfo().pixelSize();
-            ae->zoomIn();
-            if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn();
-        }
-        if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-            int pix = tv->fontInfo().pixelSize();
-            tv->zoomIn();
-            if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn();
-        }
+        zoomWidget(focusWidget(), 1);
+    }
+}
+
+void MainWindow::zoomWidget(QWidget *widget, int range)
+{
+    if (lxiviewer::LxiViewer *lv = ViewHelper::toLxiViewer(widget)) {
+        int pix = lv->fontInfo().pixelSize();
+        lv->textView()->zoomIn(range);
+        if (pix == lv->fontInfo().pixelSize() && lv->fontInfo().pointSize() > 1) lv->textView()->zoomIn(range);
+
+    } else if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
+        int pix = tv->fontInfo().pixelSize();
+        tv->zoomIn(range);
+        if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn(range);
+
+    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
+        int pix = ae->fontInfo().pixelSize();
+        ae->zoomIn(range);
+        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
     }
 }
 
@@ -4732,7 +4788,7 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
     PExProjectNode* node = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
-    QString path = node ? QDir::toNativeSeparators(node->location()) : currentPath();
+    QString path = node ? QDir::toNativeSeparators(node->workDir()) : currentPath();
 
     QMessageBox msgBox;
     msgBox.setWindowTitle("Delete scratch directories");
@@ -4955,7 +5011,7 @@ void MainWindow::printDocument()
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
         if (!abstractEdit) return;
         abstractEdit->print(&mPrinter);
-    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst) {
+    } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
         if (!lxiViewer) return;
         lxiViewer->print(&mPrinter);
@@ -5009,7 +5065,7 @@ bool MainWindow::enabledPrintAction()
     if (!fm || !focusWidget())
         return false;
     return focusWidget() == mRecent.editor()
-            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLst
+            || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild
             || ViewHelper::editorType(recent()->editor()) == EditorType::txtRo;
 }
 

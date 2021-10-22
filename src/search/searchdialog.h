@@ -88,7 +88,6 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
-    QString searchTerm();
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
@@ -102,15 +101,12 @@ private:
     MainWindow *mMain;
     Search mSearch;
 
-    ResultsView *mResultsView = nullptr;
     SearchResultModel* mSearchResultModel = nullptr;
 
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
-    bool mSplitSearchContinue = false;
     bool mShowResults = true;
-    bool mIsReplacing = false;
-    bool mSuppressChangeEvent = false;
+    bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
 };
 

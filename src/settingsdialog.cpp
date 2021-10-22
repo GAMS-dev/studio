@@ -240,7 +240,7 @@ void SettingsDialog::setMiroSettingsEnabled(bool enabled)
     ui->miroBrowseButton->setEnabled(enabled);
 }
 
-bool SettingsDialog::preventThemeChaning()
+bool SettingsDialog::preventThemeChanging()
 {
     if (isVisible()) return true;
     return false;
