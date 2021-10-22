@@ -7,6 +7,8 @@ Version 1.8.1  *
 - fixes run buttons not active issue
 - keep zoom of lxi-view in sync with lst-view and added zoom shortcuts
 - added file integration for GAMS Studio Project (GSP) on macOS
+- fixed completer missing auto open or stays open issues
+- fixed completer character recognition wrong CTC start issues
 
 Version 1.8.0
 ==================
