@@ -20,11 +20,11 @@
 #ifndef SEARCHWORKER_H
 #define SEARCHWORKER_H
 
-#include "result.h"
-
 #include <QMutex>
 #include <QObject>
 #include <QRegularExpression>
+#include <QPoint>
+#include "result.h"
 
 namespace gams {
 namespace studio {
@@ -38,6 +38,7 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
+    SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list);
     SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list);
     ~SearchWorker();
     void findInFiles();
@@ -50,6 +51,11 @@ private:
     QList<FileMeta*> mFiles;
     QList<Result>* mMatches;
     QRegularExpression mRegex;
+    QPoint mFrom = QPoint(0,0);
+    QPoint mTo = QPoint(0,0);
+
+    bool allowInsert(int line, int col);
+    bool mFindInSelection = true;
 };
 
 }

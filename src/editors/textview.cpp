@@ -27,6 +27,9 @@
 #include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
+#include "search/searchworker.h"
 
 #include <QScrollBar>
 #include <QTextBlock>
@@ -37,6 +40,7 @@
 namespace gams {
 namespace studio {
 
+using namespace search;
 
 TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent), mTextKind(kind)
 {
@@ -268,6 +272,25 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
         mEdit->ensureCursorVisible();
     }
     return found;
+}
+
+void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results)
+{
+    mEdit->searchSelection = mEdit->textCursor();
+    mMapper->updateSearchSelection();
+    SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(),
+                    mMapper->searchSelectionEnd(), results);
+    sw.findInFiles();
+}
+
+void TextView::clearSearchSelection() {
+    mEdit->clearSearchSelection();
+    mMapper->clearSearchSelection();
+}
+
+bool TextView::hasSearchSelection()
+{
+    return mMapper->hasSearchSelection();
 }
 
 void TextView::outerScrollAction(int action)
@@ -718,8 +741,8 @@ void TextView::findClosestLstRef(const QTextCursor &cursor)
     if (mMapper->kind() != AbstractTextMapper::memoryMapper) return;
     int line = cursor.blockNumber();
     QString href = static_cast<MemoryMapper*>(mMapper)->findClosestLst(line);
-    if (!href.isEmpty()) jumpToHRef(href);
-    else jumpToHRef("LST:0");
+    if (!href.isEmpty()) emit jumpToHRef(href);
+    else emit jumpToHRef("LST:0");
 }
 
 void TextView::updateExtraSelections()

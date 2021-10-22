@@ -127,7 +127,7 @@ public:
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
     void showResults(search::SearchResultModel* results);
-    void closeResultsPage();
+    void closeResultsView();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);
@@ -156,6 +156,7 @@ public:
 
     search::ResultsView *resultsView() const;
     void setResultsView(search::ResultsView *resultsView);
+    void invalidateResultsView();
 
 signals:
     void saved();

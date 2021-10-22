@@ -17,14 +17,13 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "abstracttextmapper.h"
-#include "exception.h"
-#include "logger.h"
-#include <QFile>
 #include <QTextStream>
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QtMath>
+#include "abstracttextmapper.h"
+#include "exception.h"
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -523,6 +522,36 @@ AbstractTextMapper::Chunk* AbstractTextMapper::chunkForRelativeLine(int lineDelt
     }
     if (lineInChunk) *lineInChunk = chunkLineDelta;
     return getChunk(chunkNr);
+}
+
+void AbstractTextMapper::updateSearchSelection()
+{
+    // sort positions
+    if (mPosition < mAnchor) {
+        mSearchSelectionStart = mPosition;
+        mSearchSelectionEnd = mAnchor;
+    } else {
+        mSearchSelectionStart = mAnchor;
+        mSearchSelectionEnd = mPosition;
+    }
+}
+
+QPoint AbstractTextMapper::searchSelectionStart() {
+    return convertPos(mSearchSelectionStart);
+}
+
+QPoint AbstractTextMapper::searchSelectionEnd() {
+    return convertPos(mSearchSelectionEnd);
+}
+
+void AbstractTextMapper::clearSearchSelection() {
+    mSearchSelectionStart = CursorPosition();
+    mSearchSelectionEnd = CursorPosition();
+}
+
+bool AbstractTextMapper::hasSearchSelection()
+{
+    return !(mSearchSelectionStart == CursorPosition());
 }
 
 void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) const

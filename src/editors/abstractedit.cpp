@@ -23,6 +23,8 @@
 #include <QToolTip>
 #include <QTextDocumentFragment>
 #include "editors/abstractedit.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
 #include "logger.h"
 #include "keys.h"
 #include "theme.h"
@@ -30,6 +32,7 @@
 
 namespace gams {
 namespace studio {
+using namespace search;
 
 AbstractEdit::AbstractEdit(QWidget *parent)
     : QPlainTextEdit(parent)
@@ -206,6 +209,16 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
+void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections) {
+    if (!searchSelection.hasSelection()) return;
+
+    QTextEdit::ExtraSelection selection;
+    selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
+    selection.format.setProperty(QTextFormat::FullWidthSelection, false);
+    selection.cursor = QTextCursor(searchSelection);
+    selections.append(selection);
+}
+
 void AbstractEdit::updateCursorShape(bool greedy)
 {
     QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
@@ -303,6 +316,111 @@ QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
         if (cursorRect(cur).right() < pos.x()) cur = QTextCursor();
     }
     return cur;
+}
+
+bool AbstractEdit::hasSearchSelection()
+{
+    return searchSelection.hasSelection();
+}
+
+void AbstractEdit::clearSearchSelection()
+{
+    searchSelection = QTextCursor();
+}
+
+void AbstractEdit::updateSearchSelection(bool isSingleReplaceAction)
+{
+    // update search selection cursor, but not when replacing
+    if (textCursor() != searchSelection && (!isSingleReplaceAction || !searchSelection.hasSelection())) {
+        SearchLocator::search()->reset();
+        searchSelection = textCursor();
+    }
+}
+
+void AbstractEdit::findInSelection(QList<Result> &results) {
+    int startPos;
+    int endPos;
+    QTextCursor item;
+    QTextCursor lastItem;
+
+    if (!searchSelection.hasSelection()) return;
+
+    startPos = searchSelection.selectionStart();
+    endPos = searchSelection.selectionEnd();
+
+    // ignore search direction for cache generation. otherwise results would be in wrong order
+    QFlags<QTextDocument::FindFlag> cacheOptions = SearchLocator::search()->options();
+    cacheOptions.setFlag(QTextDocument::FindBackward, false);
+
+    do {
+        item = document()->find(SearchLocator::search()->regex(), qMax(startPos, item.position()), cacheOptions);
+        if (item != lastItem) lastItem = item;
+        else break; // mitigate endless loop
+
+        if (!item.isNull() && item.position() <= endPos) {
+            results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
+                                          item.selectedText().length(), property("location").toString(),
+                                          item.block().text().trimmed()));
+        } else break;
+        if (results.size() > MAX_SEARCH_RESULTS) break;
+    } while (!item.isNull());
+}
+
+void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText)
+{
+    if (isReadOnly()) return;
+
+    int offset = 0;
+    QString selection = textCursor().selectedText();
+    if (hasSearchSelection()) {
+        selection = searchSelection.selectedText();
+        offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
+    }
+
+    QRegularExpressionMatch match = regex.match(selection, offset);
+    if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
+        textCursor().insertText(replacementText);
+    }
+}
+
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+{
+    QTextCursor tc = textCursor();
+    QTextCursor item;
+    QTextCursor lastItem;
+    int hits = 0;
+
+    int from = 0;
+    int to = 0;
+    bool limit = false;
+    if (hasSearchSelection()) {
+        from = qMin(searchSelection.position(), searchSelection.anchor());
+        to = qMax(searchSelection.position(), searchSelection.anchor());
+        limit = true;
+    }
+
+    tc.beginEditBlock();
+    do {
+        item = fm->document()->find(regex, from);
+        lastItem = item;
+
+        // mitigate infinite loop
+       if (lastItem.selectedText().length() == 0) {
+           if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
+       } else {
+           if (!item.isNull()) {
+               if (limit && item.position() > to) break; // end early, limit reached
+               item.insertText(replaceTerm);
+               from = item.position();
+               hits++;
+                // update anchor because it can move if match.length != replaceterm.length
+               to = qMax(searchSelection.position(), searchSelection.anchor());
+           }
+       }
+    } while(!item.isNull());
+    tc.endEditBlock();
+
+    return hits;
 }
 
 void AbstractEdit::internalExtraSelUpdate()

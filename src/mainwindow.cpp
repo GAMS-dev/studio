@@ -4133,7 +4133,8 @@ void MainWindow::showResults(search::SearchResultModel* results)
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
     else nr = QString::number(results->size());
 
-    QString title("Results: " + results->searchRegex().pattern() + " (" + nr + ")");
+    QString pattern = results->searchRegex().pattern().replace("\n", "");
+    QString title("Results: " + pattern + " (" + nr + ")");
 
     ui->dockProcessLog->show();
     ui->dockProcessLog->activateWindow();
@@ -4145,13 +4146,18 @@ void MainWindow::showResults(search::SearchResultModel* results)
     ui->logTabs->setCurrentWidget(mResultsView);
 }
 
-void MainWindow::closeResultsPage()
+void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
     if (index != -1) ui->logTabs->removeTab(index);
 
     delete mResultsView;
     mResultsView = nullptr;
+}
+
+void MainWindow::invalidateResultsView()
+{
+    if (resultsView()) resultsView()->setOutdated();
 }
 
 void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)

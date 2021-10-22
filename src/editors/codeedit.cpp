@@ -1859,6 +1859,7 @@ void CodeEdit::checkAndStartCompleterTimer()
 void CodeEdit::updateExtraSelections()
 {
     QList<QTextEdit::ExtraSelection> selections;
+    extraSelSearchSelection(selections);
     extraSelLineMarks(selections);
     extraSelCurrentLine(selections);
     extraSelMarks(selections);
@@ -1892,6 +1893,7 @@ void CodeEdit::updateExtraSelections()
     extraSelMatches(selections);
     extraSelBlockEdit(selections);
     extraSelIncludeLink(selections);
+
     setExtraSelections(selections);
 }
 
@@ -1973,6 +1975,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         return;
 
     QRegularExpression regEx = search->regex();
+    bool limitHighlighting = search->hasSearchSelection();
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
@@ -1986,6 +1989,11 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QTextCursor tc(document());
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
+            if (limitHighlighting) {
+                if (tc.selectionStart() < searchSelection.selectionStart()) continue;
+                else if (tc.selectionEnd() > searchSelection.selectionEnd()) continue;
+            }
+
             selection.cursor = tc;
             selection.format.setForeground(Qt::white);
             selection.format.setBackground(toColor(Theme::Edit_matchesBg));

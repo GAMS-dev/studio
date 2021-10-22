@@ -23,10 +23,13 @@
 #include <QPlainTextEdit>
 #include "common.h"
 #include "syntax/textmarkrepo.h"
+#include "search/result.h"
 #include <QTimer>
 
 namespace gams {
 namespace studio {
+
+class FileMeta;
 
 struct PositionPair {
     PositionPair(int _pos = -1, int _match = -1, bool _valid = false)
@@ -62,10 +65,22 @@ public:
     void updateGroupId();
     virtual void disconnectTimers();
 
+    bool hasSearchSelection();
+    void clearSearchSelection();
+    void findInSelection(QList<search::Result> &results);
+    inline FileId fileId() {
+        bool ok;
+        FileId file = property("fileId").toInt(&ok);
+        return ok ? file : FileId();
+    }
+    void replaceNext(QRegularExpression regex, QString replacementText);
+    void updateSearchSelection(bool isSingleReplaceAction = false);
+    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm);
+
 signals:
-    void requestLstTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
-    void toggleBookmark(FileId fileId, int lineNr, int posInLine);
-    void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
+    void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
 
 public slots:
@@ -92,11 +107,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     const QList<TextMark *> marksAtMouse() const;
-    inline FileId fileId() {
-        bool ok;
-        FileId file = property("fileId").toInt(&ok);
-        return ok ? file : FileId();
-    }
+
     inline NodeId groupId() const {
         bool ok;
         NodeId group = property("groupId").toInt(&ok);
@@ -110,6 +121,7 @@ protected:
     virtual void extraSelCurrentLine(QList<QTextEdit::ExtraSelection>& selections);
     virtual void extraSelMarks(QList<QTextEdit::ExtraSelection> &selections);
     virtual void extraSelLineMarks(QList<QTextEdit::ExtraSelection>& selections) { Q_UNUSED(selections) }
+    virtual void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections);
     virtual void updateCursorShape(bool greedy);
     virtual QPoint toolTipPos(const QPoint &mousePos);
     virtual QVector<int> toolTipLstNumbers(const QPoint &pos);
@@ -120,6 +132,8 @@ protected:
     QPoint linkClickPos() const;
     void setLinkClickPos(const QPoint &linkClickPos);
     QTextCursor cursorForPositionCut(const QPoint &pos) const;
+
+    QTextCursor searchSelection;
 
 private:
     const LineMarks* mMarks = nullptr;
