@@ -1,16 +1,16 @@
 Version 1.8.1  *
 ==================
-- fixed highlighting error for compile-time constants with relaxed syntax
-- added working directory for each project
-- added dialog to set the base directory on project import
-- fixes non native separators in project dialogs
-- fixes run buttons not active issue
-- added new search scope: selection
+- added new search scope: Selection
     - allows users to search inside a text selection
-    - can be cleared by pressing the "Clear" button in search dialog or Esc
-- keep zoom of lxi-view in sync with lst-view and added zoom shortcuts
+    - can be cleared by pressing the "Clear" button in search dialog or Esc key
+- fixed highlighting error for compile time constants with relaxed syntax
+- added individual working directories for each project
+- added dialog to set the base directory on project import
+- fixed non native path separators in project dialogs
+- fixed run buttons not active issue
+- added zoom for lxi tree view when zooming in lst files
 - added file integration for GAMS Studio Project (GSP) on macOS
-- fixed completer missing auto open or stays open issues
+- fixed completer not opening or staying open
 - fixed completer character recognition and wrong CompileTimeConstant start
 
 Version 1.8.0
