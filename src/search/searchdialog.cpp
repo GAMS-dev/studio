@@ -385,15 +385,15 @@ void SearchDialog::updateReplaceActionAvailability()
 {
     bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLstChild
+                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
     activateSearch = activateSearch || (ui->combo_scope->currentIndex() != Search::ThisFile);
 
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    TextView *tm = ViewHelper::toTextView(mMain->recent()->editor());
+    TextView *tv = ViewHelper::toTextView(mMain->recent()->editor());
 
     bool activateReplace = ((edit && !edit->isReadOnly()) ||
-                            (tm && (ui->combo_scope->currentIndex() != Search::ThisFile)));
+                            (tv && (ui->combo_scope->currentIndex() != Search::ThisFile)));
 
     // replace actions (!readonly):
     ui->txt_replace->setEnabled(activateReplace);
