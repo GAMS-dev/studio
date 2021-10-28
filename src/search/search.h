@@ -102,7 +102,7 @@ private:
     QHash<QString, QList<Result>> mResultHash;
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
-    QFlags<QTextDocument::FindFlag> mOptions; // used to store search direction
+    QFlags<QTextDocument::FindFlag> mOptions;
 
     FileId mSearchSelectionFile;
 

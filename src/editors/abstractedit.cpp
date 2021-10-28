@@ -380,7 +380,8 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
 }
 
-int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm, bool selectionScope)
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm,
+                             QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
     QTextCursor tc = textCursor();
     QTextCursor item;
@@ -400,7 +401,7 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
 
     tc.beginEditBlock();
     do {
-        item = fm->document()->find(regex, from);
+        item = fm->document()->find(regex, from, options);
         lastItem = item;
 
         // mitigate infinite loop

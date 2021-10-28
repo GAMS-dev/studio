@@ -583,9 +583,6 @@ QRegularExpression SearchDialog::createRegex()
     if (wholeWords()) searchRegex.setPattern("(?<!\\w)" + searchRegex.pattern() + "(?!\\w)");
     if (!caseSens()) searchRegex.setPatternOptions(searchRegex.patternOptions() | QRegularExpression::CaseInsensitiveOption);
 
-    qDebug() << QTime::currentTime() << "pattern" << searchRegex.pattern(); // rogo: delete
-    qDebug() << QTime::currentTime() << "using optins" << searchRegex.patternOptions(); // rogo: delete
-
     return searchRegex;
 }
 

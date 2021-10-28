@@ -43,7 +43,7 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
 
-    // probably unsued, as case sensitivity should be stored in regex
+    // this is needed for document->find as that is not using the regexes case sensitivity setting
     mOptions.setFlag(QTextDocument::FindCaseSensitively,
                      !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
@@ -408,7 +408,7 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     int hits = 0;
     if (ae && fm->editors().size() > 0) {
-        hits = ae->replaceAll(fm, regex, replaceTerm,
+        hits = ae->replaceAll(fm, regex, replaceTerm, mOptions,
                               mMain->searchDialog()->selectedScope() == Scope::Selection);
     }
     return hits;
