@@ -110,9 +110,6 @@ void AbstractEdit::disconnectTimers()
 void AbstractEdit::updateExtraSelections()
 {
     mSelUpdater.start();
-//    QList<QTextEdit::ExtraSelection> selections;
-//    extraSelMarks(selections);
-    //    setExtraSelections(selections);
 }
 
 void AbstractEdit::unfold(QTextBlock block)
@@ -383,7 +380,7 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
 }
 
-int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm, bool limitToSelection)
 {
     QTextCursor tc = textCursor();
     QTextCursor item;
@@ -393,7 +390,7 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     int from = 0;
     int to = 0;
     bool limit = false;
-    if (hasSearchSelection()) {
+    if (limitToSelection && hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());
         to = qMax(searchSelection.position(), searchSelection.anchor());
         limit = true;
