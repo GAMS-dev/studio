@@ -2,6 +2,11 @@ Version 1.8.2  *
 ==================
 - Fixed links to model on NEOS run
 - Skipped log duplicate in the output
+- fixed Replace All always using Selection scope
+- fixed Replace All always creating Selection scope selection
+- fixed Replace All ignoring case sensitivity setting
+- fixed search File Filter input field being available for Selection scope
+- updated Search Scope tooltip to include new Selection scope
 
 Version 1.8.1
 ==================
