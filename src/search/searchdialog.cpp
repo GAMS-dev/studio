@@ -72,14 +72,13 @@ void SearchDialog::on_btn_Replace_clicked()
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
-    insertHistory();
-
-    mShowResults = true;
 
     mSearch.setParameters(getFilesByScope(), createRegex());
-    mSearch.replaceAll(ui->txt_replace->text());
+    insertHistory();
 
-    searchParameterChanged();
+    clearResultsView();
+    mShowResults = true;
+    mSearch.replaceAll(ui->txt_replace->text());
 }
 
 void SearchDialog::on_btn_FindAll_clicked()

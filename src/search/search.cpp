@@ -547,7 +547,7 @@ void Search::replaceAll(QString replacementText)
         for (FileMeta* fm : qAsConst(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
-        mMain->searchDialog()->setSearchStatus(Search::Clear);
+        mMain->searchDialog()->searchParameterChanged();
     } else if (msgBox.clickedButton() == search) {
         start();
         return;

@@ -380,7 +380,7 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
 }
 
-int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm, bool limitToSelection)
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm, bool selectionScope)
 {
     QTextCursor tc = textCursor();
     QTextCursor item;
@@ -389,15 +389,13 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
 
     int from = 0;
     int to = 0;
-    bool limit = false;
 
-    if (limitToSelection) updateSearchSelection();
+    if (selectionScope) updateSearchSelection();
     else clearSearchSelection();
 
     if (hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());
         to = qMax(searchSelection.position(), searchSelection.anchor());
-        limit = true;
     }
 
     tc.beginEditBlock();
@@ -410,7 +408,7 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
            if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
        } else {
            if (!item.isNull()) {
-               if (limit && item.position() > to) break; // end early, limit reached
+               if (selectionScope && item.position() > to) break; // end early, limit reached
                item.insertText(replaceTerm);
                from = item.position();
                hits++;

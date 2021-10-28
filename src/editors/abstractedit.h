@@ -75,7 +75,7 @@ public:
     }
     void replaceNext(QRegularExpression regex, QString replacementText);
     void updateSearchSelection(bool isSingleReplaceAction = false);
-    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, bool limitToSelection);
+    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, bool selectionScope);
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
