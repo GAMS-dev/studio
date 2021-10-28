@@ -408,7 +408,6 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     int hits = 0;
     if (ae && fm->editors().size() > 0) {
-        ae->updateSearchSelection();
         hits = ae->replaceAll(fm, regex, replaceTerm,
                               mMain->searchDialog()->selectedScope() == Scope::Selection);
     }

@@ -390,7 +390,11 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     int from = 0;
     int to = 0;
     bool limit = false;
-    if (limitToSelection && hasSearchSelection()) {
+
+    if (limitToSelection) updateSearchSelection();
+    else clearSearchSelection();
+
+    if (hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());
         to = qMax(searchSelection.position(), searchSelection.anchor());
         limit = true;
