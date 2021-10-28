@@ -411,7 +411,10 @@ void SearchDialog::updateReplaceActionAvailability()
     ui->cb_regex->setEnabled(activateSearch);
     ui->cb_wholeWords->setEnabled(activateSearch);
 
-    ui->combo_filePattern->setEnabled(activateSearch && (ui->combo_scope->currentIndex() != Search::ThisFile));
+    ui->combo_filePattern->setEnabled(activateSearch
+                                      && !(ui->combo_scope->currentIndex() == Search::ThisFile
+                                           || ui->combo_scope->currentIndex() == Search::Selection)
+                                      );
 }
 
 void SearchDialog::clearSearch()
