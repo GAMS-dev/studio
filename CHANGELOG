@@ -7,6 +7,8 @@ Version 1.8.2  *
 - fixed Replace All ignoring case sensitivity setting
 - fixed search File Filter input field being available for Selection scope
 - updated Search Scope tooltip to include new Selection scope
+- added reset of search results when closing Results View
+- improved availability of Search & Replace actions to better reflect selected search scope
 
 Version 1.8.1
 ==================

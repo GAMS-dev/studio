@@ -389,10 +389,9 @@ void SearchDialog::updateReplaceActionAvailability()
     activateSearch = activateSearch || (ui->combo_scope->currentIndex() != Search::ThisFile);
 
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-    TextView *tv = ViewHelper::toTextView(mMain->recent()->editor());
 
-    bool activateReplace = ((edit && !edit->isReadOnly()) ||
-                            (tv && (ui->combo_scope->currentIndex() != Search::ThisFile)));
+    bool replacableFileInScope = getFilesByScope(true).size() > 0;
+    bool activateReplace = ((edit && !edit->isReadOnly()) || replacableFileInScope);
 
     // replace actions (!readonly):
     ui->txt_replace->setEnabled(activateReplace);
