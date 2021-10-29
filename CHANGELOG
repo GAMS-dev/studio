@@ -9,6 +9,7 @@ Version 1.8.2  *
 - updated Search Scope tooltip to include new Selection scope
 - added reset of search results when closing Results View
 - improved availability of Search & Replace actions to better reflect selected search scope
+- fixed Replace not working after replacing in selection
 
 Version 1.8.1
 ==================

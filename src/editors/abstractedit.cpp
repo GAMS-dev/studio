@@ -363,16 +363,16 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     } while (!item.isNull());
 }
 
-void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText)
+void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
 {
     if (isReadOnly()) return;
 
     int offset = 0;
     QString selection = textCursor().selectedText();
-    if (hasSearchSelection()) {
+    if (selectionScope && hasSearchSelection()) {
         selection = searchSelection.selectedText();
         offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
-    }
+    } else clearSearchSelection();
 
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {

@@ -474,7 +474,7 @@ void Search::replaceNext(QString replacementText)
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
-    edit->replaceNext(mRegex, replacementText);
+    edit->replaceNext(mRegex, replacementText, mMain->searchDialog()->selectedScope() == Search::Selection);
 
     start(true); // refresh
     selectNextMatch();

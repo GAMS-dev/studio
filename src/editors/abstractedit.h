@@ -73,7 +73,7 @@ public:
         FileId file = property("fileId").toInt(&ok);
         return ok ? file : FileId();
     }
-    void replaceNext(QRegularExpression regex, QString replacementText);
+    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
     void updateSearchSelection(bool isSingleReplaceAction = false);
     int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
 
