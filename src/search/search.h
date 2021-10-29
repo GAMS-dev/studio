@@ -71,6 +71,7 @@ public:
     bool hasSearchSelection();
     void reset();
     void documentChanged();
+    void resetResults();
 
 signals:
     void updateLabelByCursorPos(int line, int col);

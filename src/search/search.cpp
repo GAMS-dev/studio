@@ -95,11 +95,18 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
-void Search::reset()
+void Search::resetResults()
 {
     mFiles.clear();
     mResults.clear();
     mResultHash.clear();
+
+    mMain->searchDialog()->updateEditHighlighting();
+}
+
+void Search::reset()
+{
+    resetResults();
 
     mCacheAvailable = false;
     mOutsideOfList = false;
