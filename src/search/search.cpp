@@ -538,8 +538,8 @@ void Search::replaceAll(QString replacementText)
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
     QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *search = msgBox.addButton("Search", QMessageBox::RejectRole);
-    msgBox.setDefaultButton(search);
+    QPushButton *preview = msgBox.addButton("Preview", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(preview);
 
     int hits = 0;
     msgBox.exec();
@@ -555,7 +555,7 @@ void Search::replaceAll(QString replacementText)
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
         mMain->searchDialog()->searchParameterChanged();
-    } else if (msgBox.clickedButton() == search) {
+    } else if (msgBox.clickedButton() == preview) {
         start();
         return;
     } else if (msgBox.clickedButton() == cancel) {
