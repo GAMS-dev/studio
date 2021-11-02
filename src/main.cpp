@@ -39,6 +39,10 @@ int main(int argc, char *argv[])
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
 
     Application app(argc, argv);
+    QFont f = app.font();
+    f.setPointSizeF(8);
+    app.setFont(f);
+
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();
     if (app.checkForOtherInstance()) {
