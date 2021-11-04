@@ -163,7 +163,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     switch (ui->combo_scope->currentIndex()) {
         case Search::ThisFile: {
             if (mMain->recent()->editor())
-                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+                files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
             break;
         }
         case Search::ThisProject: {
@@ -177,7 +177,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         }
         case Search::Selection: {
             if (mMain->recent()->editor())
-                return files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+                files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
             break;
         }
         case Search::OpenTabs: {
@@ -202,6 +202,8 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     QList<FileMeta*> res;
     for (FileMeta* fm : qAsConst(files)) {
+        if (!fm) continue;
+
         bool matchesWildcard = false;
 
         for (const QRegExp &wildcard : qAsConst(filterList)) {
