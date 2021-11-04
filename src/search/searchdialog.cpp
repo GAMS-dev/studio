@@ -40,22 +40,28 @@ SearchDialog::SearchDialog(MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mSearch(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
-    Settings *mSettings = Settings::settings();
 
     connect(&mSearch, &Search::updateLabelByCursorPos, this, &SearchDialog::updateLabelByCursorPos);
 
     ui->setupUi(this);
-    ui->cb_regex->setChecked(mSettings->toBool(skSearchUseRegex));
-    ui->cb_caseSens->setChecked(mSettings->toBool(skSearchCaseSens));
-    ui->cb_wholeWords->setChecked(mSettings->toBool(skSearchWholeWords));
-    ui->lbl_nrResults->setText("");
-    ui->combo_search->setCompleter(nullptr);
     adjustSize();
+
+    restoreSettings();
 }
 
 SearchDialog::~SearchDialog()
 {
     delete ui;
+}
+
+void SearchDialog::restoreSettings()
+{
+    Settings *settings = Settings::settings();
+    ui->cb_regex->setChecked(settings->toBool(skSearchUseRegex));
+    ui->cb_caseSens->setChecked(settings->toBool(skSearchCaseSens));
+    ui->cb_wholeWords->setChecked(settings->toBool(skSearchWholeWords));
+    ui->lbl_nrResults->setText("");
+    ui->combo_search->setCompleter(nullptr);
 }
 
 void SearchDialog::on_btn_Replace_clicked()

@@ -88,6 +88,7 @@ protected:
     void keyPressEvent(QKeyEvent *e);
 
 private:
+    void restoreSettings();
     QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();

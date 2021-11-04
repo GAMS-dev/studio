@@ -101,7 +101,8 @@ void Search::resetResults()
     mResults.clear();
     mResultHash.clear();
 
-    mMain->searchDialog()->updateEditHighlighting();
+    if (mMain->searchDialog())
+        mMain->searchDialog()->updateEditHighlighting();
 }
 
 void Search::reset()
