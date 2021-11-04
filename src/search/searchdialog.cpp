@@ -73,11 +73,11 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
 
-    mSearch.setParameters(getFilesByScope(), createRegex());
+    clearResultsView();
     insertHistory();
 
-    clearResultsView();
     mShowResults = true;
+    mSearch.setParameters(getFilesByScope(), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
 }
 
@@ -87,11 +87,10 @@ void SearchDialog::on_btn_FindAll_clicked()
         if (ui->combo_search->currentText().isEmpty()) return;
 
         updateUi(true);
-        mSearch.setParameters(getFilesByScope(), createRegex());
+        clearResultsView();
         insertHistory();
 
-        clearResultsView();
-
+        mSearch.setParameters(getFilesByScope(), createRegex());
         mShowResults = true;
         mSearch.start();
     } else {
