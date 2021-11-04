@@ -152,6 +152,8 @@ void SearchDialog::updateUi(bool searching)
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
 
+    updateComponentAvailability();
+
     QApplication::processEvents();
 }
 
@@ -220,7 +222,7 @@ void SearchDialog::showEvent(QShowEvent *event)
     Q_UNUSED(event)
 
     autofillSearchField();
-    updateReplaceActionAvailability();
+    updateComponentAvailability();
 }
 
 void SearchDialog::on_searchNext()
@@ -271,7 +273,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 void SearchDialog::on_combo_scope_currentIndexChanged(int)
 {
     searchParameterChanged();
-    updateReplaceActionAvailability();
+    updateComponentAvailability();
 }
 
 void SearchDialog::on_btn_back_clicked()
@@ -384,14 +386,12 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
     searchParameterChanged();
 }
 
-// TODO(RG): merge this with updateUi
-void SearchDialog::updateReplaceActionAvailability()
+void SearchDialog::updateComponentAvailability()
 {
     bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
                           || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
-    activateSearch = activateSearch || (ui->combo_scope->currentIndex() != Search::ThisFile);
 
     AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
 

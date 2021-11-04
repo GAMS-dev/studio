@@ -46,7 +46,7 @@ public:
     void setSelectedScope(int index);
 
     void clearResultsView();
-    void updateReplaceActionAvailability();
+    void updateComponentAvailability();
 
     void autofillSearchField();
 
