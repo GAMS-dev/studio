@@ -629,32 +629,7 @@ void MemoryMapper::addProcessData(const QByteArray &data)
 
     for (int i = start ; i < data.length() ; ++i) {
         // check for line breaks
-        if (data.at(i) == '\r') {
-            len = i-start;
-            if (i+1 < data.size() && data.at(i+1) == '\n') {
-                // normal line break in Windows format - "\r\n"
-                ++i;
-                if (len) {
-                    midData.setRawData(data.data()+start, uint(len));
-                    ensureSpace(midData.size()+1);
-                    chunk = mChunks.last();
-                    appendLineData(midData, chunk, remote);
-                }
-                start = i + 1;
-                cleaned = ensureSpace(1);
-                chunk = mChunks.last();
-                appendEmptyLine(remote);
-            } else {
-                // concealing standalone CR - "\r"
-                start = i + 1;
-                if (len || mLastLineIsOpen) {
-                    parseNewLine();
-                    mInstantRefresh = true;
-                }
-                clearLastLine();
-            }
-        } else if (data.at(i) == '\n') {
-            // normal line break in Linux/Mac format - "\n"
+        if (data.at(i) == '\r' || data.at(i) == '\n') {
             len = i-start;
             if (len) {
                 midData.setRawData(data.data()+start, uint(len));
@@ -662,10 +637,20 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 chunk = mChunks.last();
                 appendLineData(midData, chunk, remote);
             }
-            start = i + 1;
-            cleaned = ensureSpace(1);
-            chunk = mChunks.last();
-            appendEmptyLine(remote);
+            start = i;
+            while (i < data.length() && (data.at(i) == '\r' || data.at(i) == '\n')) {
+                if (data.at(i) == '\n') {
+                    cleaned = ensureSpace(1);
+                    chunk = mChunks.last();
+                    appendEmptyLine(remote);
+                }
+                ++i;
+            }
+            if (i > 0 && data.at(i-1) == '\r' ) {
+                clearLastLine();
+                mInstantRefresh = true;
+            }
+            start = i;
         }
     }
     if (start < data.length()) {
