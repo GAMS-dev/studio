@@ -43,7 +43,7 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
 
-    // probably unsued, as case sensitivity should be stored in regex
+    // this is needed for document->find as that is not using the regexes case sensitivity setting
     mOptions.setFlag(QTextDocument::FindCaseSensitively,
                      !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
@@ -95,11 +95,19 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
-void Search::reset()
+void Search::resetResults()
 {
     mFiles.clear();
     mResults.clear();
     mResultHash.clear();
+
+    if (mMain->searchDialog())
+        mMain->searchDialog()->updateEditHighlighting();
+}
+
+void Search::reset()
+{
+    resetResults();
 
     mCacheAvailable = false;
     mOutsideOfList = false;
@@ -408,8 +416,8 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
 
     int hits = 0;
     if (ae && fm->editors().size() > 0) {
-        ae->updateSearchSelection();
-        hits = ae->replaceAll(fm, regex, replaceTerm);
+        hits = ae->replaceAll(fm, regex, replaceTerm, mOptions,
+                              mMain->searchDialog()->selectedScope() == Scope::Selection);
     }
     return hits;
 }
@@ -467,7 +475,7 @@ void Search::replaceNext(QString replacementText)
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
     if (!edit) return;
 
-    edit->replaceNext(mRegex, replacementText);
+    edit->replaceNext(mRegex, replacementText, mMain->searchDialog()->selectedScope() == Search::Selection);
 
     start(true); // refresh
     selectNextMatch();
@@ -531,8 +539,8 @@ void Search::replaceAll(QString replacementText)
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
     QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *search = msgBox.addButton("Search", QMessageBox::RejectRole);
-    msgBox.setDefaultButton(search);
+    QPushButton *preview = msgBox.addButton("Preview", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(preview);
 
     int hits = 0;
     msgBox.exec();
@@ -547,8 +555,8 @@ void Search::replaceAll(QString replacementText)
         for (FileMeta* fm : qAsConst(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
-        mMain->searchDialog()->setSearchStatus(Search::Clear);
-    } else if (msgBox.clickedButton() == search) {
+        mMain->searchDialog()->searchParameterChanged();
+    } else if (msgBox.clickedButton() == preview) {
         start();
         return;
     } else if (msgBox.clickedButton() == cancel) {

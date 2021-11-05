@@ -1585,7 +1585,7 @@ void MainWindow::activeTabChanged(int index)
 
     loadCommandLines(oldNode, node);
     updateRunState();
-    searchDialog()->updateReplaceActionAvailability();
+    searchDialog()->updateComponentAvailability();
     updateToolbar(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
