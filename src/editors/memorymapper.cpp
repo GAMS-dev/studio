@@ -631,7 +631,9 @@ void MemoryMapper::addProcessData(const QByteArray &data)
         // check for line breaks
         if (data.at(i) == '\r') {
             len = i-start;
-            if (i+1 < data.size() && data.at(i+1) == '\n') {
+            if ((i+1 < data.size() && data.at(i+1) == '\n') ||
+                 (i+2 < data.size() && data.at(i+1) == '\r' && data.at(i+2) == '\n')) {
+                if (data.at(i+1) == '\r') ++i;
                 // normal line break in Windows format - "\r\n"
                 ++i;
                 if (len) {
