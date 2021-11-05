@@ -1,7 +1,7 @@
 Version 1.8.2  *
 ==================
-- Fixed links to model on NEOS run
-- Skipped log duplicate in the output
+- fixed links to model on NEOS run
+- skipped log duplicate in the output
 - fixed Replace All always using Selection scope
 - fixed Replace All always creating Selection scope selection
 - fixed Replace All ignoring case sensitivity setting
@@ -10,7 +10,7 @@ Version 1.8.2  *
 - added reset of search results when closing Results View
 - improved availability of Search & Replace actions to better reflect selected search scope
 - fixed Replace not working after replacing in selection
-- Fixed missing output of Octeract solver
+- fixed missing output of Octeract solver
 
 Version 1.8.1
 ==================
