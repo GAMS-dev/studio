@@ -450,7 +450,6 @@ void MemoryMapper::parseNewLine()
 
     QString line;
     int lastLinkStart = -1;
-//    LineFormat fmt;
     int lstLine = -1;
     mLogParser->quickParse(chunk->bArray, start, end, line, lastLinkStart, lstLine);
     if (mCurrentLstLineRef >= 0) {

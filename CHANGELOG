@@ -1,3 +1,8 @@
+Version 1.8.2  *
+==================
+- Fixed links to model on NEOS run
+- Skipped log duplicate in the output
+
 Version 1.8.1
 ==================
 - added new search scope: Selection
