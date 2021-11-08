@@ -24,6 +24,7 @@ protected:
 private:
     QToolButton *bLeft = nullptr;
     QToolButton *bRight = nullptr;
+    int mWheelSum = 0;
 };
 
 }
