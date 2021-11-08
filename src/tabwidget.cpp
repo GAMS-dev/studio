@@ -35,7 +35,8 @@ bool TabWidget::eventFilter(QObject *sender, QEvent *event)
     if (event->type() == QEvent::Wheel) {
         QWheelEvent *we = static_cast<QWheelEvent*>(event);
         if (!we->modifiers().testFlag(Qt::ControlModifier) && bLeft && bRight) {
-            if (we->angleDelta().y() > 0) {
+            int delta = (we->source() == Qt::MouseEventNotSynthesized) ? we->angleDelta().y() : we->angleDelta().x() / 10;
+            if (delta > 0) {
                 if (!bLeft->isHidden()) bLeft->clicked();
             } else {
                 if (!bRight->isHidden()) bRight->clicked();
