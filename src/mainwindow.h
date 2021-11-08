@@ -189,7 +189,7 @@ public slots:
     void closeResultsView();
 
 private slots:
-    void openInitialFiles();
+    void initDelayedElements();
     void openDelayedFiles();
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
@@ -401,6 +401,7 @@ private:
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
+    void adjustFonts();
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);

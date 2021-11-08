@@ -37,11 +37,7 @@ int main(int argc, char *argv[])
 
     // if we manage do get real highDPI icons into the system this may help (currently it scales up lo-res icons)
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
-
     Application app(argc, argv);
-    QFont f = app.font();
-    f.setPointSizeF(8);
-    app.setFont(f);
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);
     sem.acquire();

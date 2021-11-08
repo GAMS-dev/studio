@@ -140,9 +140,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
     // Status Bar
-    QFont font = ui->statusBar->font();
-    font.setPointSizeF(font.pointSizeF()*0.9);
-    ui->statusBar->setFont(font);
     mStatusWidgets = new StatusWidgets(this);
 
     // Project View Setup
@@ -224,6 +221,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockProjectView->installEventFilter(this);
     ui->dockProcessLog->installEventFilter(this);
     ui->dockHelpView->installEventFilter(this);
+    installEventFilter(this);
 
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
@@ -294,7 +292,7 @@ MainWindow::MainWindow(QWidget *parent)
     // set up services
     search::SearchLocator::provide(mSearchDialog->search());
     SysLogLocator::provide(mSyslog);
-    QTimer::singleShot(0, this, &MainWindow::openInitialFiles);
+    QTimer::singleShot(0, this, &MainWindow::initDelayedElements);
 
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty()) {
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
@@ -371,6 +369,24 @@ void MainWindow::initEnvironment()
     curPath = qgetenv("DYLD_LIBRARY_PATH");
     qputenv("DYLD_LIBRARY_PATH", gamsArr + (curPath.isEmpty()? QByteArray() : QDir::listSeparator().toLatin1() + curPath));
 #endif
+}
+
+void MainWindow::adjustFonts()
+{
+    QFont f(ui->menuBar->font());
+    f.setPointSizeF(ui->menuBar->font().pointSizeF()*0.95);
+    ui->mainTabs->setFont(f);
+    ui->dockProjectView->setFont(f);
+    ui->dockProcessLog->setFont(f);
+    ui->dockHelpView->setFont(f);
+    f.setPointSizeF(f.pointSizeF() * 0.85);
+    ui->statusBar->setFont(f);
+//    DEB() << "Menu: " << ui->menuBar->font().pointSizeF()
+//          << " - " << ui->menuBar->fontMetrics().height()
+//             ;
+//    DEB() << "Tabs: " << ui->mainTabs->font().pointSizeF()
+//          << " - " << ui->mainTabs->fontMetrics().height()
+//             ;
 }
 
 void MainWindow::initIcons()
@@ -2912,6 +2928,11 @@ void MainWindow::dropEvent(QDropEvent* e)
 
 bool MainWindow::eventFilter(QObject* sender, QEvent* event)
 {
+    if (sender == this) {
+        if (event->type() == QEvent::ScreenChangeInternal)
+            adjustFonts();
+        return false;
+    }
     QDockWidget* dw = static_cast<QDockWidget*>(sender);
     if (dw->isFloating()) {
         if (event->type() == QEvent::KeyPress) {
@@ -3282,8 +3303,9 @@ void MainWindow::parameterRunChanged()
         mGamsParameterEditor->runDefaultAction();
 }
 
-void MainWindow::openInitialFiles()
+void MainWindow::initDelayedElements()
 {
+    adjustFonts();
     Settings *settings = Settings::settings();
     projectRepo()->read(settings->toList(skProjects));
 
@@ -3299,7 +3321,6 @@ void MainWindow::openInitialFiles()
         if (map.contains("file"))
             mHistory.files() << map.value("file").toString();
     }
-
     openDelayedFiles();
     watchProjectTree();
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
