@@ -8,8 +8,8 @@ def artifactVersion() {
 
 def isDevelopmentArtifact() {
     return env.BRANCH_NAME != 'master'         &&
-           !(env.BRANCH_NAME ==~ /.*-release/) &&
-           !(env.BRANCH_NAME ==~ /.*-rc/)      &&
+           !(env.BRANCH_NAME ==~ /\d+\.\d+\.x-release/) &&
+           !(env.BRANCH_NAME ==~ /\d+\.\d+\.\d+-rc/)      &&
            !(env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/)
 }
 
