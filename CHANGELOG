@@ -1,3 +1,17 @@
+Version 1.8.2
+==================
+- fixed links to model on NEOS run
+- skipped log duplicate in the output
+- fixed Replace All always using Selection scope
+- fixed Replace All always creating Selection scope selection
+- fixed Replace All ignoring case sensitivity setting
+- fixed search File Filter input field being available for Selection scope
+- updated Search Scope tooltip to include new Selection scope
+- added reset of search results when closing Results View
+- improved availability of Search & Replace actions to better reflect selected search scope
+- fixed Replace not working after replacing in selection
+- fixed missing output of Octeract solver
+
 Version 1.8.1
 ==================
 - added new search scope: Selection

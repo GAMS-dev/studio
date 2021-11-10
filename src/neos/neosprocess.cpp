@@ -68,6 +68,7 @@ NeosProcess::~NeosProcess()
 
 void NeosProcess::execute()
 {
+    mInLogClone = false;
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
 
@@ -445,14 +446,30 @@ void NeosProcess::setProcState(ProcState newState)
 QByteArray NeosProcess::convertReferences(const QByteArray &data)
 {
     QByteArray res;
+    if (mInLogClone) return res;
     res.reserve(data.size()+mOutPath.length());
     QByteArray remotePath("/var/lib/condor/execute/dir_+/gamsexec/");
     QByteArray lstTag("[LST:");
+    QByteArray logClone("%% GAMS LOGFILE %%%%");
     int iRP = 0;
     int iLT = 0;
+    int iLC = 0;
     int iCount = 0;  // count of chars currently not copied
 
     for (int i = 0; i < data.size(); ++i) {
+        if (data.at(i) == logClone.at(iLC)) {
+            ++iLC;
+            if (iLC == logClone.size()) {
+                mInLogClone = true;
+                break;
+            }
+            ++iCount;
+            continue;
+        } else if (iLC > 0) {
+            res.append(data.mid(i+1-iCount, iCount));
+            iCount = 0;
+            iLC = 0;
+        }
         if (iRP == remotePath.length()) {
             // add local path
             iRP = 0;
@@ -472,8 +489,16 @@ QByteArray NeosProcess::convertReferences(const QByteArray &data)
         else iLT = 0;
         ++iCount;
         if (iRP == remotePath.size()) {
-            res.append(mOutPath.toUtf8());
-            res.append(QDir::separator().toLatin1());
+            QByteArray model("MODEL.");
+            if (data.size() > i+1 + model.size() && data.mid(i+1, model.size()).compare(model) == 0) {
+                res.append(mOutPath.toUtf8());
+                res.append(".");
+                i += model.size();
+            } else {
+                res.append(mOutPath.toUtf8());
+                res.append(QDir::separator().toLatin1());
+            }
+
             iRP = 0;
             iLT = 0;
             iCount = 0;
