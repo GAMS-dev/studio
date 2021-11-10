@@ -110,9 +110,6 @@ void AbstractEdit::disconnectTimers()
 void AbstractEdit::updateExtraSelections()
 {
     mSelUpdater.start();
-//    QList<QTextEdit::ExtraSelection> selections;
-//    extraSelMarks(selections);
-    //    setExtraSelections(selections);
 }
 
 void AbstractEdit::unfold(QTextBlock block)
@@ -366,16 +363,16 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     } while (!item.isNull());
 }
 
-void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText)
+void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
 {
     if (isReadOnly()) return;
 
     int offset = 0;
     QString selection = textCursor().selectedText();
-    if (hasSearchSelection()) {
+    if (selectionScope && hasSearchSelection()) {
         selection = searchSelection.selectedText();
         offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
-    }
+    } else clearSearchSelection();
 
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
@@ -383,7 +380,8 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
 }
 
-int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm,
+                             QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
     QTextCursor tc = textCursor();
     QTextCursor item;
@@ -392,16 +390,18 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
 
     int from = 0;
     int to = 0;
-    bool limit = false;
+
+    if (selectionScope) updateSearchSelection();
+    else clearSearchSelection();
+
     if (hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());
         to = qMax(searchSelection.position(), searchSelection.anchor());
-        limit = true;
     }
 
     tc.beginEditBlock();
     do {
-        item = fm->document()->find(regex, from);
+        item = fm->document()->find(regex, from, options);
         lastItem = item;
 
         // mitigate infinite loop
@@ -409,7 +409,7 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
            if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
        } else {
            if (!item.isNull()) {
-               if (limit && item.position() > to) break; // end early, limit reached
+               if (selectionScope && item.position() > to) break; // end early, limit reached
                item.insertText(replaceTerm);
                from = item.position();
                hits++;

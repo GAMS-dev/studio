@@ -96,6 +96,7 @@ private:
     NeosManager *mManager;
     bool mForceGdx = false;
     bool mHasGdx = false;
+    bool mInLogClone = false;
     QString mMail;
     QString mOutPath;
     QString mJobNumber;
