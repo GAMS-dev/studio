@@ -13,6 +13,15 @@ def isDevelopmentArtifact() {
            !(env.TAG_NAME ==~ /v\d+\.\d+\.\d+.*/)
 }
 
+def getNotarizationDefault(){
+    def notarizevalue = false
+    if (!isDevelopmentArtifact()) {
+        notarizevalue = true
+    }
+    return notarizevalue
+}
+
+def NOTARIZATION_DEFAULT = getNotarizationDefault()
 def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
 def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
@@ -23,6 +32,10 @@ def GAMS_FOR_WINDOWS = "C:\\GAMS\\37"
 
 pipeline {
     agent none
+    parameters {
+        booleanParam(name: "Notarize_DMG", defaultValue: "${NOTARIZATION_DEFAULT}", description: "Parameter to enable DMG notarization on macOS")
+
+    }
 
     options {
         parallelsAlwaysFailFast()
@@ -288,7 +301,7 @@ pipeline {
         stage('Notarize') {
             agent { label 'macos' }
             when {
-                expression { return !isDevelopmentArtifact() }
+                expression { params.Notarize_DMG == true }
             }
             steps {
                 withCredentials([usernamePassword(credentialsId: '4568bda5-894f-4fa1-b9c5-a8d42f6e61ac', passwordVariable: 'APPLE_ID_PASS', usernameVariable: 'APPLE_ID_USER')]) {
