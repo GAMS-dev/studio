@@ -279,7 +279,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
-    ui->mainTabs->setUsesScrollButtons(true);
 
     // set up services
     search::SearchLocator::provide(mSearchDialog->search());
