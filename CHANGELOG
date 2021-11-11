@@ -1,3 +1,8 @@
+Version 1.8.3  *
+==================
+- fixed wheel action in tabbars: changes active tab on holding "ctrl", moves the tabs otherwise
+- added touchpad support for tabbars
+
 Version 1.8.2
 ==================
 - fixed links to model on NEOS run
@@ -11,8 +16,6 @@ Version 1.8.2
 - improved availability of Search & Replace actions to better reflect selected search scope
 - fixed Replace not working after replacing in selection
 - fixed missing output of Octeract solver
-- fixed wheel action in tabbars: changes active tab on holding "ctrl", moves the tabs otherwise
-- added touchpad support for tabbars
 
 Version 1.8.1
 ==================
