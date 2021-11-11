@@ -530,30 +530,21 @@ void SearchDialog::autofillSearchField()
     PExAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
     if (!fsc) return;
 
-    if (AbstractEdit *edit = ViewHelper::toAbstractEdit(widget)) {
-        if (edit->textCursor().hasSelection()) {
-            ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
-            ui->combo_search->setCurrentIndex(0);
-        } else {
-            QString text;
-            if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
-                text = ce->wordUnderCursor();
-            if (text.isEmpty()) text = ui->combo_search->itemText(0);
-            ui->combo_search->setEditText(text);
-        }
+    QString searchText;
+    if (CodeEdit *ce = ViewHelper::toCodeEdit(widget)) {
+        if (ce->textCursor().hasSelection())
+            searchText = ce->textCursor().selection().toPlainText();
+        else searchText = ce->wordUnderCursor();
+    } else if (TextView *tv = ViewHelper::toTextView(widget)) {
+        if (tv->hasSelection())
+            searchText = tv->selectedText();
+        else searchText = tv->wordUnderCursor();
     }
 
-    if (TextView *tv = ViewHelper::toTextView(widget)) {
-        if (tv->hasSelection()) {
-            ui->combo_search->insertItem(-1, tv->selectedText());
-            ui->combo_search->setCurrentIndex(0);
-        } else {
-            QString text = tv->wordUnderCursor();
-            if (text.isEmpty()) text = ui->combo_search->itemText(0);
-            ui->combo_search->setEditText(text);
-        }
-    }
+    if (searchText.isEmpty()) searchText = ui->combo_search->itemText(0);
 
+    searchText = searchText.split("\n").at(0);
+    ui->combo_search->setEditText(searchText);
     ui->combo_search->setFocus();
     ui->combo_search->lineEdit()->selectAll();
 }
