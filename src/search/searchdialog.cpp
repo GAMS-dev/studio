@@ -377,7 +377,8 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
         searchParameterChanged();
 }
 
-void SearchDialog::searchParameterChanged() {
+void SearchDialog::searchParameterChanged()
+{
     setSearchStatus(Search::Clear);
 
     mSearch.reset();

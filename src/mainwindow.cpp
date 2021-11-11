@@ -243,7 +243,10 @@ MainWindow::MainWindow(QWidget *parent)
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
+
     mSearchDialog = new search::SearchDialog(this);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
+            &search::SearchDialog::updateComponentAvailability);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -2147,8 +2150,9 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
-        return;
+        // do nothing
     }
+    mSearchDialog->updateComponentAvailability();
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)

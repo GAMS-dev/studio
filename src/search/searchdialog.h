@@ -46,7 +46,6 @@ public:
     void setSelectedScope(int index);
 
     void clearResultsView();
-    void updateComponentAvailability();
 
     void autofillSearchField();
 
@@ -66,6 +65,7 @@ public slots:
     void finalUpdate();
     void intermediateUpdate(int hits);
     void updateNrMatches(int current = 0);
+    void updateComponentAvailability();
 
 private slots:
     void on_btn_FindAll_clicked();
