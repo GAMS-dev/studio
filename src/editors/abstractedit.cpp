@@ -325,10 +325,9 @@ void AbstractEdit::clearSearchSelection()
     searchSelection = QTextCursor();
 }
 
-void AbstractEdit::updateSearchSelection(bool isSingleReplaceAction)
+void AbstractEdit::updateSearchSelection()
 {
-    // update search selection cursor, but not when replacing
-    if (textCursor() != searchSelection && (!isSingleReplaceAction || !searchSelection.hasSelection())) {
+    if (!hasSearchSelection()) {
         SearchLocator::search()->reset();
         searchSelection = textCursor();
     }
@@ -340,6 +339,7 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     QTextCursor item;
     QTextCursor lastItem;
 
+    updateSearchSelection();
     if (!searchSelection.hasSelection()) return;
 
     startPos = searchSelection.selectionStart();

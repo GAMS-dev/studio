@@ -276,8 +276,10 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 
 void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results)
 {
-    mEdit->searchSelection = mEdit->textCursor();
-    mMapper->updateSearchSelection();
+    if (!mEdit->hasSearchSelection()) {
+        mEdit->searchSelection = mEdit->textCursor();
+        mMapper->updateSearchSelection();
+    }
     SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(),
                     mMapper->searchSelectionEnd(), results);
     sw.findInFiles();

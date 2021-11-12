@@ -3,6 +3,7 @@ Version 1.8.3  *
 - fixed wheel action in tabbars: changes active tab on holding "ctrl", moves the tabs otherwise
 - added touchpad support for tabbars
 - fixed replace actions in Search dialog not updating when a tab or file is closed
+- changed behavior of search in selection: Search Selection is now only set once until the user resets it
 
 Version 1.8.2
 ==================

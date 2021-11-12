@@ -49,7 +49,7 @@ void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, boo
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
 }
 
-void Search::start(bool isReplaceAction)
+void Search::start()
 {
     if (mSearching || mRegex.pattern().isEmpty()) return;
     mResults.clear();
@@ -57,7 +57,7 @@ void Search::start(bool isReplaceAction)
     mSearching = true;
 
     if (mMain->searchDialog()->selectedScope() == Scope::Selection) {
-        findInSelection(isReplaceAction);
+        findInSelection();
         return;
     } // else:
 
@@ -123,11 +123,10 @@ void Search::documentChanged()
     mCacheAvailable = false;
 }
 
-void Search::findInSelection(bool isSingleReplaceAction)
+void Search::findInSelection()
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
         checkFileChanged(ae->fileId());
-        ae->updateSearchSelection(isSingleReplaceAction);
         ae->findInSelection(mResults);
     } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
         checkFileChanged(tv->edit()->fileId());
@@ -477,7 +476,7 @@ void Search::replaceNext(QString replacementText)
 
     edit->replaceNext(mRegex, replacementText, mMain->searchDialog()->selectedScope() == Search::Selection);
 
-    start(true); // refresh
+    start(); // refresh cache
     selectNextMatch();
 }
 

@@ -71,7 +71,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
-    mSearch.start(true);
+    mSearch.start();
     mSearch.replaceNext(ui->txt_replace->text());
 }
 

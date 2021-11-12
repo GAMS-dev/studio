@@ -74,7 +74,7 @@ public:
         return ok ? file : FileId();
     }
     void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
-    void updateSearchSelection(bool isSingleReplaceAction = false);
+    void updateSearchSelection();
     int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
 
 signals:
