@@ -40,23 +40,24 @@ class SearchDialog : public QDialog
 public:
     explicit SearchDialog(MainWindow *parent = nullptr);
     ~SearchDialog();
+
     QRegularExpression createRegex();
+    bool regex();
+    bool caseSens();
+    bool wholeWords();
 
     int selectedScope();
     void setSelectedScope(int index);
 
     void clearResultsView();
+    void clearSearch();
 
     void autofillSearchField();
-
-    void clearSearch();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
 
-    bool regex();
-    bool caseSens();
-    bool wholeWords();
+    void updateClearButton();
 
 public slots:
     void on_searchNext();
@@ -96,6 +97,8 @@ private:
     void updateEditHighlighting();
     void updateUi(bool searching);
     void setSearchStatus(Search::Status status, int hits = 0);
+    void clearSelection();
+    void clearSearchSelection();
 
 private:
     Ui::SearchDialog *ui;

@@ -132,6 +132,8 @@ void Search::findInSelection()
         checkFileChanged(tv->edit()->fileId());
         tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
     }
+    mMain->searchDialog()->updateClearButton();
+
     // nothing more to do, update UI and return
     finished();
 }

@@ -310,7 +310,14 @@ void SearchDialog::on_btn_forward_clicked()
 
 void SearchDialog::on_btn_clear_clicked()
 {
-    clearSearch();
+    if (mSearch.hasSearchSelection()) {
+        clearSearchSelection();
+        updateEditHighlighting();
+        clearSelection();
+    } else {
+        clearSearch();
+    }
+    updateClearButton();
 }
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
@@ -423,6 +430,34 @@ void SearchDialog::updateComponentAvailability()
                                       );
 }
 
+void SearchDialog::updateClearButton()
+{
+    if (mSearch.hasSearchSelection())
+        ui->btn_clear->setText("Clear Selection");
+    else ui->btn_clear->setText("Clear");
+}
+
+void SearchDialog::clearSelection()
+{
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+        QTextCursor tc = ae->textCursor();
+        tc.clearSelection();
+        ae->setTextCursor(tc);
+    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+        QTextCursor tc = tv->edit()->textCursor();
+        tc.clearSelection();
+        tv->edit()->setTextCursor(tc);
+    }
+}
+
+void SearchDialog::clearSearchSelection()
+{
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor()))
+        ae->clearSearchSelection();
+    else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
+        tv->clearSearchSelection();
+}
+
 void SearchDialog::clearSearch()
 {
     mSuppressParameterChangedEvent = true;
@@ -432,17 +467,7 @@ void SearchDialog::clearSearch()
     mSearch.reset();
     mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
-    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        QTextCursor tc = ae->textCursor();
-        tc.clearSelection();
-        ae->setTextCursor(tc);
-        ae->clearSearchSelection();
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        QTextCursor tc = tv->edit()->textCursor();
-        tc.clearSelection();
-        tv->edit()->setTextCursor(tc);
-        tv->clearSearchSelection();
-    }
+    clearSelection();
 
     clearResultsView();
     updateEditHighlighting();
