@@ -25,9 +25,24 @@
 
 using gams::studio::Application;
 
+bool prepareScaling()
+{
+    bool res = false;
+    QString studioScale = qgetenv("GAMS_STUDIO_SCALE_FACTOR");
+    QString studioScalePerMonitor = qgetenv("GAMS_STUDIO_SCREEN_SCALE_FACTORS");
+    if (qgetenv("QT_SCALE_FACTOR").isEmpty() && !studioScale.isEmpty()) {
+        qputenv("QT_SCALE_FACTOR", studioScale.toUtf8());
+        res = true;
+    }
+    if (qgetenv("QT_SCREEN_SCALE_FACTORS").isEmpty() && !studioScalePerMonitor.isEmpty()) {
+        qputenv("QT_SCREEN_SCALE_FACTORS", studioScalePerMonitor.toUtf8());
+        res = true;
+    }
+    return res;
+}
+
 int main(int argc, char *argv[])
 {
-    QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
     QApplication::setAttribute(Qt::AA_UseOpenGLES);
     QApplication::setApplicationVersion(STUDIO_VERSION);
     QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
@@ -35,14 +50,8 @@ int main(int argc, char *argv[])
     // to temporarily add additional information enable the following line
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
 
-    {
-        QString studioScale = qgetenv("GAMS_STUDIO_SCALE_FACTOR");
-        QString studioScalePerMonitor = qgetenv("GAMS_STUDIO_SCREEN_SCALE_FACTORS");
-        if (qgetenv("QT_SCALE_FACTOR").isEmpty())
-            qputenv("QT_SCALE_FACTOR", studioScale.toUtf8());
-        if (qgetenv("QT_SCREEN_SCALE_FACTORS").isEmpty())
-            qputenv("QT_SCREEN_SCALE_FACTORS", studioScalePerMonitor.toUtf8());
-    }
+    if (!prepareScaling())
+        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
 
     // if we manage do get real highDPI icons into the system this may help (currently it scales up lo-res icons)
     QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
