@@ -248,6 +248,8 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
             &search::SearchDialog::updateComponentAvailability);
 
+    connect(mSearchDialog, &search::SearchDialog::showResults, this, &MainWindow::showResults);
+    connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
     // stack help under output
@@ -4148,6 +4150,8 @@ void MainWindow::showResults(search::SearchResultModel* results)
 
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
+
+    mResultsView->resizeColumnsToContent();
 }
 
 void MainWindow::closeResultsView()

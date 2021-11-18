@@ -203,7 +203,6 @@ QPair<int, int> Search::cursorPosition() {
 
 ///
 /// \brief Search::findNextEntryInCache compares cursor position to list of results to find the next match.
-/// respects search direction and queues a jump if search is still running.
 /// \param direction Search::Direction
 /// \param cursorPos QPair of LineNr and ColumnNr
 /// \return index of match in result list

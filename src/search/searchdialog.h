@@ -82,7 +82,8 @@ private slots:
     void on_cb_regex_stateChanged(int arg1);
 
 signals:
-    void startSearch();
+    void showResults(SearchResultModel* results);
+    void closeResults();
 
 protected:
     void showEvent(QShowEvent *event);

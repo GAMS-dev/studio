@@ -118,9 +118,7 @@ void SearchDialog::finalUpdate()
     if (mShowResults) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
-        mMain->showResults(mSearchResultModel);
-
-        mMain->resultsView()->resizeColumnsToContent();
+        emit showResults(mSearchResultModel);
     }
 
     updateEditHighlighting();
@@ -484,7 +482,7 @@ void SearchDialog::updateEditHighlighting()
 void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
-    mMain->closeResultsView();
+    emit closeResults();
 }
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
