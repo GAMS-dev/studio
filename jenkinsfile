@@ -409,8 +409,9 @@ pipeline {
                             if [[ $line =~ ^Version.* ]] && [[ $foundFirst == "true" ]]; then
                                 break
                             elif [[ $line =~ ^Version.* ]]; then
-                                CHANGELOG+=$line$'\n'
                                 foundFirst="true"
+                            elif [[ $line =~ ^=.* ]]; then
+                            	 continue
                             else
                                 CHANGELOG+=$line$'\n'
                             fi
