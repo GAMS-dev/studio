@@ -22,7 +22,6 @@
 
 #include <QDialog>
 
-#include "mainwindow.h"
 #include "search.h"
 #include "abstractsearchfilehandler.h"
 #include "searchfilehandler.h"
@@ -89,6 +88,9 @@ private slots:
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);
     void closeResults();
+    void setWidgetPosition(const QPoint& searchWidgetPos);
+    void openHelpDocument(QString doc, QString anchor);
+    void selectResult(int matchNr);
 
 protected:
     void showEvent(QShowEvent *event);
@@ -108,7 +110,6 @@ private:
 
 private:
     Ui::SearchDialog *ui;
-    MainWindow *mMain;
     QWidget* mCurrentEditor;
     SearchFileHandler* mFileHandler = nullptr;
 

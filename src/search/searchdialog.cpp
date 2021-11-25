@@ -37,7 +37,7 @@ namespace studio {
 namespace search {
 
 SearchDialog::SearchDialog(MainWindow *parent, SearchFileHandler *fileHandler) :
-    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mFileHandler(fileHandler), mSearch(parent)
+    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(parent)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -249,7 +249,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
-        mMain->setSearchWidgetPos(pos());
+        emit setWidgetPosition(pos());
         hide();
         if (mFileHandler->fileNode(mCurrentEditor)) {
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))
@@ -268,8 +268,10 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         e->accept();
         on_btn_FindAll_clicked();
     } else if (e == Hotkey::OpenHelp) {
-        mMain->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
-                              help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::SearchAndReplace)));
+        emit openHelpDocument(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
+                                  help::HelpData::getStudioSectionAnchor(
+                                      help::HelpData::getStudioSectionName(
+                                          help::StudioSection::SearchAndReplace)));
     }
     QDialog::keyPressEvent(e);
 }
@@ -366,15 +368,12 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
-
-            if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
-                mMain->resultsView()->selectItem(i);
-
+            emit selectResult(i);
             updateNrMatches(i + 1);
             return i;
         }
     }
-    if (mMain->resultsView()) mMain->resultsView()->selectItem(-1);
+    emit selectResult(-1);
     updateNrMatches();
 
     return -1;

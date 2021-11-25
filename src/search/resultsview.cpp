@@ -127,7 +127,7 @@ int ResultsView::selectNextItem(bool backwards)
 void ResultsView::selectItem(int index)
 {
     if (index < 0) ui->tableView->clearSelection();
-    else ui->tableView->selectRow(index);
+    else if (!mOutdated) ui->tableView->selectRow(index);
 }
 
 int ResultsView::selectedItem()

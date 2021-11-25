@@ -24,7 +24,9 @@ include(../tests.pri)
 
 INCLUDEPATH += $$SRCPATH/search
 
-HEADERS += $$SRCPATH/search/searchdialog.h
-SOURCES += $$SRCPATH/search/searchdialog.cpp
+HEADERS += testsearchdialog.h \
+           $$SRCPATH/search/searchdialog.h
+SOURCES += testsearchdialog.cpp \
+           $$SRCPATH/search/searchdialog.cpp
 
 FORMS   += $$SRCPATH/search/searchdialog.ui

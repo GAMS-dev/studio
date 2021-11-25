@@ -252,6 +252,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(mSearchDialog, &search::SearchDialog::showResults, this, &MainWindow::showResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
+    connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
+    connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
+
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
     // stack help under output
@@ -4137,6 +4140,7 @@ void MainWindow::showResults(search::SearchResultModel* results)
     delete mResultsView;
     mResultsView = new search::ResultsView(results, this);
     connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
