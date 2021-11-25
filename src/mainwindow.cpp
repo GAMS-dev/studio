@@ -246,7 +246,7 @@ MainWindow::MainWindow(QWidget *parent)
     restoreFromSettings();
 
     search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
-    mSearchDialog = new search::SearchDialog(this, sfh);
+    mSearchDialog = new search::SearchDialog(sfh, this);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
             &search::SearchDialog::updateComponentAvailability);
 

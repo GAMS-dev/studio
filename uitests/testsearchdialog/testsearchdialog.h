@@ -22,6 +22,7 @@
 
 #include <QtTest/QTest>
 #include "searchdialog.h"
+#include "testfilehandler.h"
 
 using namespace gams::studio;
 
@@ -37,6 +38,7 @@ private Q_SLOTS:
 
 private:
     search::SearchDialog* mDialog = nullptr;
+    search::TestFileHandler* tfh = nullptr;
 };
 
 #endif // TEST_SEARCH_DIALOG_Hvoid test_availability();

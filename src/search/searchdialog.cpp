@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QTextDocumentFragment>
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "settings.h"
@@ -29,14 +30,13 @@
 #include "viewhelper.h"
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
-
-#include <QTextDocumentFragment>
+#include "help/helpdata.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(SearchFileHandler* fileHandler, MainWindow *parent) :
+SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -476,6 +476,8 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::updateEditHighlighting()
 {
+    if (!mCurrentEditor) return;
+
     if (AbstractEdit* ae = ViewHelper::toCodeEdit(mCurrentEditor))
         ae->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))

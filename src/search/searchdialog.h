@@ -24,7 +24,6 @@
 
 #include "search.h"
 #include "abstractsearchfilehandler.h"
-#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
@@ -40,7 +39,7 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchDialog(SearchFileHandler* fileHandler, MainWindow *parent = nullptr);
+    explicit SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget *parent = nullptr);
     ~SearchDialog();
 
     void setCurrentEditor(QWidget *editor);
@@ -114,7 +113,7 @@ private:
 private:
     Ui::SearchDialog *ui;
     QWidget* mCurrentEditor;
-    SearchFileHandler* mFileHandler = nullptr;
+    AbstractSearchFileHandler* mFileHandler = nullptr;
 
     Search mSearch;
 

@@ -23,10 +23,11 @@
 #include <QPushButton>
 
 using namespace search;
+
 void TestSearchDialog::initTestCase()
 {
-
-    mDialog = new SearchDialog();
+    TestFileHandler* tfh;
+    mDialog = new SearchDialog(tfh);
 }
 
 void TestSearchDialog::cleanupTestCase()
