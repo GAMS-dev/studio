@@ -21,14 +21,14 @@
 #define SEARCH_H
 
 #include <QObject>
-#include <mainwindow.h>
-
 #include "file/filemeta.h"
+#include "searchresultmodel.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
+class SearchDialog;
 class Search : public QObject
 {
     Q_OBJECT
@@ -52,7 +52,7 @@ public:
         Forward = 0,
         Backward = 1
     };
-    Search(MainWindow* main);
+    Search(SearchDialog *sd);
 
     void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
@@ -75,6 +75,8 @@ public:
 
 signals:
     void updateLabelByCursorPos(int line, int col);
+    void invalidateResults();
+    void selectResult(int matchNr);
 
 private:
     void findInDoc(FileMeta* fm);
@@ -98,7 +100,7 @@ private slots:
     void finished();
 
 private:
-    MainWindow *mMain;
+    SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
     QList<FileMeta*> mFiles;

@@ -34,8 +34,11 @@ namespace gams {
 namespace studio {
 namespace search {
 
-Search::Search(MainWindow *main) : mMain(main)
-{ }
+Search::Search(SearchDialog *sd) : mSearchDialog(sd)
+{
+    connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResults);
+    connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
+}
 
 void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
@@ -56,7 +59,7 @@ void Search::start()
     mResultHash.clear();
     mSearching = true;
 
-    if (mMain->searchDialog()->selectedScope() == Scope::Selection) {
+    if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
     } // else:
@@ -84,7 +87,7 @@ void Search::start()
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
     connect(&mThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
     connect(&mThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::update, mMain->searchDialog(), &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
+    connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
@@ -101,8 +104,8 @@ void Search::resetResults()
     mResults.clear();
     mResultHash.clear();
 
-    if (mMain->searchDialog())
-        mMain->searchDialog()->updateEditHighlighting();
+    if (mSearchDialog)
+        mSearchDialog->updateEditHighlighting();
 }
 
 void Search::reset()
@@ -114,25 +117,25 @@ void Search::reset()
     mLastMatchInOpt = -1;
 
     mThread.isInterruptionRequested();
-    mMain->invalidateResultsView();
+    emit invalidateResults();
 }
 
 void Search::documentChanged()
 {
-    mMain->invalidateResultsView();
+    emit invalidateResults();
     mCacheAvailable = false;
 }
 
 void Search::findInSelection()
 {
-    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         checkFileChanged(ae->fileId());
         ae->findInSelection(mResults);
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+    } else if (TextView* tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         checkFileChanged(tv->edit()->fileId());
-        tv->findInSelection(mRegex, mMain->fileRepo()->fileMeta(mSearchSelectionFile), &mResults);
+        tv->findInSelection(mRegex, mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile), &mResults);
     }
-    mMain->searchDialog()->updateClearButton();
+    mSearchDialog->updateClearButton();
 
     // nothing more to do, update UI and return
     finished();
@@ -140,7 +143,7 @@ void Search::findInSelection()
 
 void Search::checkFileChanged(FileId fileId) {
     if (mSearchSelectionFile != fileId) {
-        mMain->invalidateResultsView();
+        emit invalidateResults();
         mSearchSelectionFile = fileId;
     }
 }
@@ -170,14 +173,13 @@ void Search::findInDoc(FileMeta* fm)
 void Search::findNext(Direction direction)
 {
     // create new cache when cached search does not contain results for current file
-    QString location = mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location();
+    QString location = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location();
     bool requestNewCache = !mCacheAvailable || !hasResultsForFile(location);
 
     if (requestNewCache) {
-        mMain->invalidateResultsView();
+        emit invalidateResults();
         mCacheAvailable = false;
-        mMain->searchDialog()->updateUi(true);
-        if (mMain->resultsView()) mMain->resultsView()->setOutdated();
+        mSearchDialog->updateUi(true);
         start();
     }
     selectNextMatch(direction);
@@ -191,10 +193,10 @@ QPair<int, int> Search::cursorPosition() {
     int lineNr = 0;
     int colNr = 0;
 
-    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         lineNr = e->textCursor().blockNumber()+1;
         colNr = e->textCursor().positionInBlock();
-    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+    } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         lineNr = t->position().y()+1;
         colNr = t->position().x();
     }
@@ -216,11 +218,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
     // allow jumping when we have results but not in the current file
     allowJumping = (mResults.size() > 0)
-            && hasResultsForFile(mMain->fileRepo()->fileMeta(mMain->recent()->editor())->location());
+            && hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
 
     // TODO(RG): refactoring candidate:
-    if (mMain->recent()->editor()) {
-        QString file = ViewHelper::location(mMain->recent()->editor());
+    if (mSearchDialog->currentEditor()) {
+        QString file = ViewHelper::location(mSearchDialog->currentEditor());
         for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
             Result r = mResults.at(i);
 
@@ -229,7 +231,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
                 allowJumping = true; // allow jumping after searching the current file
 
                 // just jump to next result if in Solver Option Editor
-                if (ViewHelper::toSolverOptionEdit(mMain->recent()->editor())) {
+                if (ViewHelper::toSolverOptionEdit(mSearchDialog->currentEditor())) {
                     if (direction == Direction::Forward) {
                         if (i < mLastMatchInOpt)
                             continue; // catch up with last hit in opt file
@@ -275,7 +277,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
-        PExFileNode *node = mMain->projectRepo()->findFile(mResults.at(matchNr).filepath());
+        PExFileNode *node = mSearchDialog->fileHandler()->findFile(mResults.at(matchNr).filepath());
         if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
         node->file()->jumpTo(node->projectId(), true, mResults.at(matchNr).lineNr()-1,
@@ -295,13 +297,13 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         matchNr = NavigateInsideCache(direction);
 
     // dont jump outside of cache when searchscope is set to selection
-    if ((mOutsideOfList || !mCacheAvailable) && mMain->searchDialog()->selectedScope() != Scope::Selection)
+    if ((mOutsideOfList || !mCacheAvailable) && mSearchDialog->selectedScope() != Scope::Selection)
         matchNr = NavigateOutsideCache(direction, firstLevel);
 
     // update ui
-    mMain->searchDialog()->updateNrMatches(matchNr+1);
-    if (mMain->resultsView() && !mMain->resultsView()->isOutdated() && (!mOutsideOfList || matchNr == -1))
-        mMain->resultsView()->selectItem(matchNr);
+    mSearchDialog->updateNrMatches(matchNr+1);
+    if (!mOutsideOfList || matchNr == -1)
+        emit selectResult(matchNr);
 }
 
 
@@ -310,7 +312,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     int matchNr = -1;
     bool found = false;
 
-    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
 
         QTextCursor tc = e->textCursor();
         if (!firstLevel) {
@@ -327,7 +329,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
             e->setTextCursor(ntc);
         }
 
-    } else if (TextView* t = ViewHelper::toTextView(mMain->recent()->editor())) {
+    } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         mSplitSearchContinue = !firstLevel;
         found = t->findText(mRegex, mOptions, mSplitSearchContinue);
     }
@@ -342,7 +344,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     if (!found && firstLevel) selectNextMatch(direction, false);
 
     // check if cache was re-entered
-    matchNr = mMain->searchDialog()->updateLabelByCursorPos();
+    matchNr = mSearchDialog->updateLabelByCursorPos();
     mOutsideOfList = matchNr == -1;
 
     return matchNr;
@@ -417,7 +419,7 @@ int Search::replaceOpened(FileMeta* fm, QRegularExpression regex, QString replac
     int hits = 0;
     if (ae && fm->editors().size() > 0) {
         hits = ae->replaceAll(fm, regex, replaceTerm, mOptions,
-                              mMain->searchDialog()->selectedScope() == Scope::Selection);
+                              mSearchDialog->selectedScope() == Scope::Selection);
     }
     return hits;
 }
@@ -430,7 +432,7 @@ void Search::finished()
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = true;
-    mMain->searchDialog()->finalUpdate();
+    mSearchDialog->finalUpdate();
 }
 
 const QFlags<QTextDocument::FindFlag> &Search::options() const
@@ -440,11 +442,11 @@ const QFlags<QTextDocument::FindFlag> &Search::options() const
 
 bool Search::hasSearchSelection()
 {
-    if (mMain->searchDialog()->selectedScope() != Scope::Selection) return false;
+    if (mSearchDialog->selectedScope() != Scope::Selection) return false;
 
-    if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
+    if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         return ce->hasSearchSelection();
-    } else if (TextView *tv = ViewHelper::toTextView(mMain->recent()->editor())) {
+    } else if (TextView *tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         return tv->edit()->hasSearchSelection();
     }
     return false;
@@ -472,10 +474,10 @@ QList<Result> Search::filteredResultList(QString fileLocation)
 
 void Search::replaceNext(QString replacementText)
 {
-    AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor());
     if (!edit) return;
 
-    edit->replaceNext(mRegex, replacementText, mMain->searchDialog()->selectedScope() == Search::Selection);
+    edit->replaceNext(mRegex, replacementText, mSearchDialog->selectedScope() == Search::Selection);
 
     start(); // refresh cache
     selectNextMatch();
@@ -516,10 +518,10 @@ void Search::replaceAll(QString replacementText)
         msgBox.exec();
         return;
 
-    } else if (matchedFiles == 1 && mMain->searchDialog()->selectedScope() != Search::Selection) {
+    } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in file " + mFiles.first()->name() + "?");
-    } else if (mMain->searchDialog()->selectedScope() == Search::Selection) {
+    } else if (mSearchDialog->selectedScope() == Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
                        + mFiles.first()->name() + "?");
@@ -546,7 +548,7 @@ void Search::replaceAll(QString replacementText)
     msgBox.exec();
     if (msgBox.clickedButton() == ok) {
 
-        mMain->searchDialog()->setSearchStatus(Search::Replacing);
+        mSearchDialog->setSearchStatus(Search::Replacing);
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
 
         for (FileMeta* fm : qAsConst(opened))
@@ -555,7 +557,7 @@ void Search::replaceAll(QString replacementText)
         for (FileMeta* fm : qAsConst(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
-        mMain->searchDialog()->searchParameterChanged();
+        mSearchDialog->searchParameterChanged();
     } else if (msgBox.clickedButton() == preview) {
         start();
         return;

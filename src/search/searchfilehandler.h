@@ -14,10 +14,12 @@ class SearchFileHandler : public AbstractSearchFileHandler
 public:
     SearchFileHandler(MainWindow* main);
 
-    FileMeta* fileMeta(QWidget *widget) override;
+    FileMeta* fileMeta(QWidget* widget) override;
+    FileMeta* fileMeta(FileId fileId) override;
     QList<FileMeta*> fileMetas() override;
     QList<FileMeta*> openFiles() override;
-    PExFileNode* fileNode(QWidget *widget) override;
+    PExFileNode* fileNode(QWidget* widget) override;
+    PExFileNode* findFile(QString filepath) override;
 
 private:
     MainWindow* mMain;

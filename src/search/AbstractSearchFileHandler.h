@@ -33,9 +33,11 @@ class AbstractSearchFileHandler
 {
 public:
     virtual FileMeta* fileMeta(QWidget* widget) = 0;
+    virtual FileMeta* fileMeta(FileId fileId) = 0;
     virtual QList<FileMeta*> fileMetas() = 0;
     virtual QList<FileMeta*> openFiles() = 0;
     virtual PExFileNode* fileNode(QWidget* widget) = 0;
+    virtual PExFileNode* findFile(QString filepath) = 0;
 };
 
 }

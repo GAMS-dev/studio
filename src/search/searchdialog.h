@@ -91,6 +91,7 @@ signals:
     void setWidgetPosition(const QPoint& searchWidgetPos);
     void openHelpDocument(QString doc, QString anchor);
     void selectResult(int matchNr);
+    void invalidateResults();
 
 protected:
     void showEvent(QShowEvent *event);
@@ -107,6 +108,8 @@ private:
     void setSearchStatus(Search::Status status, int hits = 0);
     void clearSelection();
     void clearSearchSelection();
+    AbstractSearchFileHandler* fileHandler();
+    QWidget* currentEditor();
 
 private:
     Ui::SearchDialog *ui;

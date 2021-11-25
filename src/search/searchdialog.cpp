@@ -37,7 +37,7 @@ namespace studio {
 namespace search {
 
 SearchDialog::SearchDialog(MainWindow *parent, SearchFileHandler *fileHandler) :
-    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(parent)
+    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -638,6 +638,16 @@ void SearchDialog::setSelectedScope(int index)
 Search* SearchDialog::search()
 {
     return &mSearch;
+}
+
+AbstractSearchFileHandler *SearchDialog::fileHandler()
+{
+    return mFileHandler;
+}
+
+QWidget *SearchDialog::currentEditor()
+{
+    return mCurrentEditor;
 }
 
 }
