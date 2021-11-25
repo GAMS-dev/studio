@@ -22,7 +22,6 @@
 
 #include <QtTest/QTest>
 #include "searchdialog.h"
-#include "help/helpdata.h"
 
 using namespace gams::studio;
 

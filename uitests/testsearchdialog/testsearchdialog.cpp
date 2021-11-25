@@ -25,7 +25,7 @@
 using namespace search;
 void TestSearchDialog::initTestCase()
 {
-//    mMain = new MainWindow();
+
     mDialog = new SearchDialog();
 }
 

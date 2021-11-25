@@ -36,7 +36,7 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(MainWindow *parent, SearchFileHandler *fileHandler) :
+SearchDialog::SearchDialog(SearchFileHandler* fileHandler, MainWindow *parent) :
     QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);

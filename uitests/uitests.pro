@@ -26,4 +26,4 @@ SUBDIRS += \
 #   testtextfile \
    testfilechangedialog \
    testgotodialog \
-#   testsearchdialog
+   testsearchdialog

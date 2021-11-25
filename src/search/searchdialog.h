@@ -40,7 +40,7 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchDialog(MainWindow *parent, SearchFileHandler* fileHandler);
+    explicit SearchDialog(SearchFileHandler* fileHandler, MainWindow *parent = nullptr);
     ~SearchDialog();
 
     void setCurrentEditor(QWidget *editor);
