@@ -21,8 +21,11 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
+
 #include "mainwindow.h"
 #include "search.h"
+#include "abstractsearchfilehandler.h"
+#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
@@ -38,8 +41,10 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchDialog(MainWindow *parent = nullptr);
+    explicit SearchDialog(MainWindow *parent, SearchFileHandler* fileHandler);
     ~SearchDialog();
+
+    void setCurrentEditor(QWidget *editor);
 
     QRegularExpression createRegex();
     bool regex();
@@ -82,7 +87,7 @@ private slots:
     void on_cb_regex_stateChanged(int arg1);
 
 signals:
-    void showResults(SearchResultModel* results);
+    void showResults(gams::studio::search::SearchResultModel* results);
     void closeResults();
 
 protected:
@@ -104,6 +109,9 @@ private:
 private:
     Ui::SearchDialog *ui;
     MainWindow *mMain;
+    QWidget* mCurrentEditor;
+    SearchFileHandler* mFileHandler = nullptr;
+
     Search mSearch;
 
     SearchResultModel* mSearchResultModel = nullptr;

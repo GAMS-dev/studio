@@ -25,7 +25,6 @@
 #include <QPrinter>
 #include <QPrintDialog>
 
-
 #include "editors/codeedit.h"
 #include "file.h"
 #include "file/recentdata.h"

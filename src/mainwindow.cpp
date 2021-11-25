@@ -40,6 +40,7 @@
 #include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
+#include "search/searchfilehandler.h"
 #include "search/searchlocator.h"
 #include "search/searchresultmodel.h"
 #include "search/resultsview.h"
@@ -244,7 +245,8 @@ MainWindow::MainWindow(QWidget *parent)
     initIcons();
     restoreFromSettings();
 
-    mSearchDialog = new search::SearchDialog(this);
+    search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
+    mSearchDialog = new search::SearchDialog(this, sfh);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
             &search::SearchDialog::updateComponentAvailability);
 
@@ -1516,6 +1518,7 @@ void MainWindow::activeTabChanged(int index)
     if (mStartedUp)
         mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
+    mSearchDialog->setCurrentEditor(editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
