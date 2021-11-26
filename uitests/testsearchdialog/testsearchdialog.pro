@@ -25,11 +25,14 @@ include(../tests.pri)
 INCLUDEPATH += $$SRCPATH \
                $$SRCPATH/search
 
-HEADERS += testsearchdialog.h                \
+HEADERS += $$files(*.h, true)                \
+           testsearchdialog.h                \
            $$SRCPATH/file.h                  \
            $$SRCPATH/search/searchdialog.h   \
            testfilehandler.h
-SOURCES += testsearchdialog.cpp              \
+
+SOURCES += $$files(*.cpp, true)              \
+           testsearchdialog.cpp              \
            $$SRCPATH/search/searchdialog.cpp \
            testfilehandler.cpp
 
