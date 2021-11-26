@@ -6,6 +6,7 @@ Version 1.8.3  *
 - changed behavior of search in selection: Search Selection is now only set once until the user resets it
 - changed "Clear" button to remove search selection on first click when present
 - fixed Find Next broken for results across multiple files
+- fixed Find Next always generating new cache when current file had no results
 
 Version 1.8.2
 ==================

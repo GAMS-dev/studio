@@ -172,9 +172,9 @@ void Search::findInDoc(FileMeta* fm)
 
 void Search::findNext(Direction direction)
 {
-    // create new cache when cached search does not contain results for current file
-    QString location = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location();
-    bool requestNewCache = !mCacheAvailable || !hasResultsForFile(location);
+    FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
+    // also create new cache when current file is outside of selected scope
+    bool requestNewCache = !mCacheAvailable || !mFiles.contains(currentFile);
 
     if (requestNewCache) {
         emit invalidateResults();
