@@ -4165,7 +4165,10 @@ void MainWindow::showResults(search::SearchResultModel* results)
 void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
-    if (index != -1) ui->logTabs->removeTab(index);
+    if (index == -1) return;
+
+    ui->logTabs->removeTab(index);
+    searchDialog()->search()->resetResults();
 
     delete mResultsView;
     mResultsView = nullptr;

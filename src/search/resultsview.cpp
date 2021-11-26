@@ -49,7 +49,6 @@ ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
 
 ResultsView::~ResultsView()
 {
-    mMain->searchDialog()->search()->resetResults();
     delete ui;
 }
 
