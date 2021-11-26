@@ -55,7 +55,10 @@ void ProjectOptions::showProject(PExProjectNode *project)
         ui->edName->setText(mProject->name());
         ui->edWorkDir->setText(QDir::toNativeSeparators(mProject->workDir()));
         ui->edBaseDir->setText(QDir::toNativeSeparators(mProject->location()));
-        ui->edMainGms->setText(QDir::toNativeSeparators(mProject->runnableGms()->location()));
+        if (mProject->runnableGms())
+            ui->edMainGms->setText(QDir::toNativeSeparators(mProject->runnableGms()->location()));
+        else
+            ui->edMainGms->setText("-no runnable-");
     }
     show();
 }
