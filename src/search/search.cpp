@@ -214,11 +214,10 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
-    bool allowJumping = false;
 
     // allow jumping when we have results but not in the current file
-    allowJumping = (mResults.size() > 0)
-            && hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
+    bool allowJumping = (mResults.size() > 0)
+            && !hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
 
     // TODO(RG): refactoring candidate:
     if (mSearchDialog->currentEditor()) {
