@@ -21,7 +21,7 @@
 #define TEST_SEARCH_DIALOG_H
 
 #include <QtTest/QTest>
-#include "searchdialog.h"
+#include "search/searchdialog.h"
 #include "testfilehandler.h"
 
 using namespace gams::studio;

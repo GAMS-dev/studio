@@ -22,18 +22,16 @@ TEMPLATE = app
 
 include(../tests.pri)
 
-INCLUDEPATH += $$SRCPATH \
-               $$SRCPATH/search
+INCLUDEPATH += $$SRCPATH
 
-HEADERS += $$files(*.h, true)                \
-           testsearchdialog.h                \
-           $$SRCPATH/file.h                  \
-           $$SRCPATH/search/searchdialog.h   \
-           testfilehandler.h
+QWEBENGINE=false
+HEADERS += $$files($$SRCPATH/*.h, true)      \
+#           testsearchdialog.h                \
+#           testfilehandler.h
 
-SOURCES += $$files(*.cpp, true)              \
-           testsearchdialog.cpp              \
-           $$SRCPATH/search/searchdialog.cpp \
-           testfilehandler.cpp
+SOURCES += $$files($$SRCPATH/*.cpp, true)    \
+#           testsearchdialog.cpp              \
+#           testfilehandler.cpp
 
 FORMS   += $$SRCPATH/search/searchdialog.ui
+

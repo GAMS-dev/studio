@@ -1,7 +1,7 @@
 #ifndef TESTFILEHANDLER_H
 #define TESTFILEHANDLER_H
 
-#include "abstractsearchfilehandler.h"
+#include "search/abstractsearchfilehandler.h"
 
 namespace gams {
 namespace studio {
