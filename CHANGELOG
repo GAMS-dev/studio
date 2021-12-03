@@ -1,6 +1,8 @@
-Version 1.8.3  *
+Version 1.8.3
 ==================
-- fixed wheel action in tabbars: changes active tab on holding "ctrl", moves the tabs otherwise
+- changed mouse wheel behavior in tabbars:
+    - `Mouse Wheel Up/Down`: moves active tab
+    - `Ctrl + Mouse Wheel Up/Down`: changes active tab
 - added touchpad support for tabbars
 - fixed crash on showing "Project Options" for a project without a runnable gms file
 
