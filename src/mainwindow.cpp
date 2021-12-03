@@ -2848,7 +2848,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         }
 
         // search widget
-        if (mSearchDialog->isHidden()) mSearchDialog->clearSearch();
+        if (mSearchDialog->isHidden()) mSearchDialog->on_btn_clear_clicked();
         else mSearchDialog->hide();
 
         e->accept(); return;

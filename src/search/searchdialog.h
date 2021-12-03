@@ -70,6 +70,7 @@ public slots:
     void intermediateUpdate(int hits);
     void updateNrMatches(int current = 0);
     void updateComponentAvailability();
+    void on_btn_clear_clicked();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -78,7 +79,6 @@ private slots:
     void on_combo_scope_currentIndexChanged(int);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
-    void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString);
     void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int arg1);
