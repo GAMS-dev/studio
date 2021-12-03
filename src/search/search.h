@@ -68,6 +68,7 @@ public:
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
     QRegularExpression regex() const;
+    Search::Scope scope() const;
     bool hasSearchSelection();
     void reset();
     void documentChanged();
@@ -106,6 +107,7 @@ private:
     QList<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
+    Scope mScope;
 
     FileId mSearchSelectionFile;
 

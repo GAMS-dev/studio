@@ -534,6 +534,7 @@ void AbstractTextMapper::updateSearchSelection()
         mSearchSelectionStart = mAnchor;
         mSearchSelectionEnd = mPosition;
     }
+    mIsSearchSelectionActive = true;
 }
 
 QPoint AbstractTextMapper::searchSelectionStart() {
@@ -545,13 +546,12 @@ QPoint AbstractTextMapper::searchSelectionEnd() {
 }
 
 void AbstractTextMapper::clearSearchSelection() {
-    mSearchSelectionStart = CursorPosition();
-    mSearchSelectionEnd = CursorPosition();
+    mIsSearchSelectionActive = false;
 }
 
 bool AbstractTextMapper::hasSearchSelection()
 {
-    return !(mSearchSelectionStart == CursorPosition());
+    return mIsSearchSelectionActive;
 }
 
 void AbstractTextMapper::updateBytesPerLine(const ChunkMetrics &chunkLines) const

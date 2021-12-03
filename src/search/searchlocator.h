@@ -25,7 +25,6 @@ namespace studio {
 namespace search {
 
 class Search;
-class SearchResultModel;
 class SearchLocator
 {
 

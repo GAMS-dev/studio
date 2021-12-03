@@ -49,7 +49,7 @@ public:
     bool caseSens();
     bool wholeWords();
 
-    int selectedScope();
+    Search::Scope selectedScope();
     void setSelectedScope(int index);
 
     void clearResultsView();

@@ -627,9 +627,9 @@ bool SearchDialog::wholeWords()
     return ui->cb_wholeWords->isChecked();
 }
 
-int SearchDialog::selectedScope()
+Search::Scope SearchDialog::selectedScope()
 {
-    return ui->combo_scope->currentIndex();
+    return (Search::Scope) ui->combo_scope->currentIndex();
 }
 
 void SearchDialog::setSelectedScope(int index)
