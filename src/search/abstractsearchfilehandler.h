@@ -17,26 +17,31 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHLOCATOR_H
-#define SEARCHLOCATOR_H
+#ifndef ABSTRACTSEARCHFILEHANDLER_H
+#define ABSTRACTSEARCHFILEHANDLER_H
+
+#include <QList>
+#include <QWidget>
+#include "file/filemeta.h"
+#include "file/pexfilenode.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-class Search;
-class SearchLocator
+class AbstractSearchFileHandler
 {
-
 public:
-    static search::Search* search();
-    static void provide(Search* s);
-
-private:
-    static search::Search* mS;
+    virtual FileMeta* fileMeta(QWidget* widget) = 0;
+    virtual FileMeta* fileMeta(FileId fileId) = 0;
+    virtual QList<FileMeta*> fileMetas() = 0;
+    virtual QList<FileMeta*> openFiles() = 0;
+    virtual PExFileNode* fileNode(QWidget* widget) = 0;
+    virtual PExFileNode* findFile(QString filepath) = 0;
 };
 
 }
 }
 }
-#endif // SEARCHLOCATOR_H
+
+#endif // ABSTRACTSEARCHFILEHANDLER_H

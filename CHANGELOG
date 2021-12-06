@@ -5,6 +5,11 @@ Version 1.8.3
     - `Ctrl + Mouse Wheel Up/Down`: changes active tab
 - added touchpad support for tabbars
 - fixed crash on showing "Project Options" for a project without a runnable gms file
+- fixed replace actions in Search dialog not updating when a tab or file is closed
+- changed behavior of search in selection: Search Selection is now only set once until the user resets it
+- changed "Clear" button to remove search selection on first click when present
+- fixed Find Next broken for results across multiple files
+- fixed Find Next always generating new cache when current file had no results
 
 Version 1.8.2
 ==================

@@ -18,12 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-TEMPLATE = subdirs
+TEMPLATE = app
 
-SUBDIRS += \
-#   testmodeldialog  \
-#   testmainwindow \
-#   testtextfile \
-   testfilechangedialog \
-   testgotodialog \
-#   testsearchdialog
+include(../tests.pri)
+
+INCLUDEPATH += $$SRCPATH
+
+QWEBENGINE=false
+HEADERS += $$files($$SRCPATH/*.h, true)      \
+#           testsearchdialog.h                \
+#           testfilehandler.h
+
+SOURCES += $$files($$SRCPATH/*.cpp, true)    \
+#           testsearchdialog.cpp              \
+#           testfilehandler.cpp
+
+FORMS   += $$SRCPATH/search/searchdialog.ui
+

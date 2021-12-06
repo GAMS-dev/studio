@@ -17,26 +17,29 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHLOCATOR_H
-#define SEARCHLOCATOR_H
+#ifndef TEST_SEARCH_DIALOG_H
+#define TEST_SEARCH_DIALOG_H
 
-namespace gams {
-namespace studio {
-namespace search {
+#include <QtTest/QTest>
+#include "search/searchdialog.h"
+#include "testfilehandler.h"
 
-class Search;
-class SearchLocator
+using namespace gams::studio;
+
+class TestSearchDialog : public QObject
 {
+    Q_OBJECT
 
-public:
-    static search::Search* search();
-    static void provide(Search* s);
+private Q_SLOTS:
+    void initTestCase();
+    void cleanupTestCase();
+
+    void test_availability();
 
 private:
-    static search::Search* mS;
+    search::SearchDialog* mDialog = nullptr;
+    search::TestFileHandler* tfh = nullptr;
 };
 
-}
-}
-}
-#endif // SEARCHLOCATOR_H
+#endif // TEST_SEARCH_DIALOG_Hvoid test_availability();
+

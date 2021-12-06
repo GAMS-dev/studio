@@ -21,8 +21,9 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
-#include "mainwindow.h"
+
 #include "search.h"
+#include "abstractsearchfilehandler.h"
 
 namespace gams {
 namespace studio {
@@ -38,26 +39,28 @@ class SearchDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit SearchDialog(MainWindow *parent = nullptr);
+    explicit SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget *parent = nullptr);
     ~SearchDialog();
-    QRegularExpression createRegex();
 
-    int selectedScope();
+    void setCurrentEditor(QWidget *editor);
+
+    QRegularExpression createRegex();
+    bool regex();
+    bool caseSens();
+    bool wholeWords();
+
+    Search::Scope selectedScope();
     void setSelectedScope(int index);
 
     void clearResultsView();
-    void updateComponentAvailability();
+    void clearSearch();
 
     void autofillSearchField();
-
-    void clearSearch();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
 
-    bool regex();
-    bool caseSens();
-    bool wholeWords();
+    void updateClearButton();
 
 public slots:
     void on_searchNext();
@@ -66,6 +69,8 @@ public slots:
     void finalUpdate();
     void intermediateUpdate(int hits);
     void updateNrMatches(int current = 0);
+    void updateComponentAvailability();
+    void on_btn_clear_clicked();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -74,14 +79,18 @@ private slots:
     void on_combo_scope_currentIndexChanged(int);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
-    void on_btn_clear_clicked();
     void on_combo_search_currentTextChanged(const QString);
     void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int arg1);
     void on_cb_regex_stateChanged(int arg1);
 
 signals:
-    void startSearch();
+    void showResults(gams::studio::search::SearchResultModel* results);
+    void closeResults();
+    void setWidgetPosition(const QPoint& searchWidgetPos);
+    void openHelpDocument(QString doc, QString anchor);
+    void selectResult(int matchNr);
+    void invalidateResults();
 
 protected:
     void showEvent(QShowEvent *event);
@@ -96,10 +105,16 @@ private:
     void updateEditHighlighting();
     void updateUi(bool searching);
     void setSearchStatus(Search::Status status, int hits = 0);
+    void clearSelection();
+    void clearSearchSelection();
+    AbstractSearchFileHandler* fileHandler();
+    QWidget* currentEditor();
 
 private:
     Ui::SearchDialog *ui;
-    MainWindow *mMain;
+    QWidget* mCurrentEditor;
+    AbstractSearchFileHandler* mFileHandler = nullptr;
+
     Search mSearch;
 
     SearchResultModel* mSearchResultModel = nullptr;

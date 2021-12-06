@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QTextDocumentFragment>
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "settings.h"
@@ -29,15 +30,14 @@
 #include "viewhelper.h"
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
-
-#include <QTextDocumentFragment>
+#include "help/helpdata.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mSearch(parent)
+SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* parent) :
+    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -64,6 +64,10 @@ void SearchDialog::restoreSettings()
     ui->combo_search->setCompleter(nullptr);
 }
 
+void SearchDialog::setCurrentEditor(QWidget* editor) {
+    mCurrentEditor = editor;
+}
+
 void SearchDialog::on_btn_Replace_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
@@ -71,7 +75,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex());
-    mSearch.start(true);
+    mSearch.start();
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -118,9 +122,7 @@ void SearchDialog::finalUpdate()
     if (mShowResults) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
-        mMain->showResults(mSearchResultModel);
-
-        mMain->resultsView()->resizeColumnsToContent();
+        emit showResults(mSearchResultModel);
     }
 
     updateEditHighlighting();
@@ -162,12 +164,12 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
     QList<FileMeta*> files;
     switch (ui->combo_scope->currentIndex()) {
         case Search::ThisFile: {
-            if (mMain->recent()->editor())
-                files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            if (mCurrentEditor)
+                files << mFileHandler->fileMeta(mCurrentEditor);
             break;
         }
         case Search::ThisProject: {
-            PExFileNode* p = mMain->projectRepo()->findFileNode(mMain->recent()->editor());
+            PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
             if (!p) return files;
             for (PExFileNode *c :p->assignedProject()->listFiles()) {
                 if (!files.contains(c->file()))
@@ -176,16 +178,16 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Search::Selection: {
-            if (mMain->recent()->editor())
-                files << mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+            if (mCurrentEditor)
+                files << mFileHandler->fileMeta(mCurrentEditor);
             break;
         }
         case Search::OpenTabs: {
-            files = QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+            files = mFileHandler->openFiles();
             break;
         }
         case Search::AllFiles: {
-            files = mMain->fileRepo()->fileMetas();
+            files = mFileHandler->fileMetas();
             break;
         }
         default: break;
@@ -199,7 +201,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         filterList.append(QRegExp(s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
 
     // filter files
-    FileMeta* current = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+    FileMeta* current = mFileHandler->fileMeta(mCurrentEditor);
     QList<FileMeta*> res;
     for (FileMeta* fm : qAsConst(files)) {
         if (!fm) continue;
@@ -247,13 +249,13 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
-        mMain->setSearchWidgetPos(pos());
+        emit setWidgetPosition(pos());
         hide();
-        if (mMain->projectRepo()->findFileNode(mMain->recent()->editor())) {
-            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mMain->recent()->editor()))
+        if (mFileHandler->fileNode(mCurrentEditor)) {
+            if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))
                 lv->textView()->setFocus();
             else
-                mMain->recent()->editor()->setFocus();
+                mCurrentEditor->setFocus();
         }
 
     } else if (e == Hotkey::SearchFindPrev) {
@@ -266,8 +268,10 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
         e->accept();
         on_btn_FindAll_clicked();
     } else if (e == Hotkey::OpenHelp) {
-        mMain->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
-                              help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::SearchAndReplace)));
+        emit openHelpDocument(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
+                                  help::HelpData::getStudioSectionAnchor(
+                                      help::HelpData::getStudioSectionName(
+                                          help::StudioSection::SearchAndReplace)));
     }
     QDialog::keyPressEvent(e);
 }
@@ -281,7 +285,7 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 void SearchDialog::on_btn_back_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
-    if (!getFilesByScope().contains(mMain->fileRepo()->fileMeta(mMain->recent()->editor()))) {
+    if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
         setSearchStatus(Search::NoResults);
         return;
     }
@@ -296,7 +300,7 @@ void SearchDialog::on_btn_back_clicked()
 void SearchDialog::on_btn_forward_clicked()
 {
     if (ui->combo_search->currentText().isEmpty()) return;
-    if (!getFilesByScope().contains(mMain->fileRepo()->fileMeta(mMain->recent()->editor()))) {
+    if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
         setSearchStatus(Search::NoResults);
         return;
     }
@@ -310,7 +314,14 @@ void SearchDialog::on_btn_forward_clicked()
 
 void SearchDialog::on_btn_clear_clicked()
 {
-    clearSearch();
+    if (mSearch.hasSearchSelection()) {
+        clearSearchSelection();
+        updateEditHighlighting();
+        clearSelection();
+    } else {
+        clearSearch();
+    }
+    updateClearButton();
 }
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
@@ -334,12 +345,12 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
     updateUi(false);
 
     QString file = "";
-    if(mMain->recent()->editor()) file = ViewHelper::location(mMain->recent()->editor());
+    if(mCurrentEditor) file = ViewHelper::location(mCurrentEditor);
 
     // if unknown get cursor from current editor
     if (lineNr == -1 || colNr == -1) {
-        AbstractEdit* edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
-        TextView* tv = ViewHelper::toTextView(mMain->recent()->editor());
+        AbstractEdit* edit = ViewHelper::toAbstractEdit(mCurrentEditor);
+        TextView* tv = ViewHelper::toTextView(mCurrentEditor);
         if (edit) {
             QTextCursor tc = edit->textCursor();
             lineNr = tc.blockNumber()+1;
@@ -357,15 +368,12 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
         Result match = list.at(i);
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
-
-            if (mMain->resultsView() && !mMain->resultsView()->isOutdated())
-                mMain->resultsView()->selectItem(i);
-
+            emit selectResult(i);
             updateNrMatches(i + 1);
             return i;
         }
     }
-    if (mMain->resultsView()) mMain->resultsView()->selectItem(-1);
+    emit selectResult(-1);
     updateNrMatches();
 
     return -1;
@@ -377,7 +385,8 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
         searchParameterChanged();
 }
 
-void SearchDialog::searchParameterChanged() {
+void SearchDialog::searchParameterChanged()
+{
     setSearchStatus(Search::Clear);
 
     mSearch.reset();
@@ -390,12 +399,12 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 
 void SearchDialog::updateComponentAvailability()
 {
-    bool activateSearch = ViewHelper::editorType(mMain->recent()->editor()) == EditorType::source
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txt
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::lxiLst
-                          || ViewHelper::editorType(mMain->recent()->editor()) == EditorType::txtRo;
+    bool activateSearch = ViewHelper::editorType(mCurrentEditor) == EditorType::source
+                          || ViewHelper::editorType(mCurrentEditor) == EditorType::txt
+                          || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
+                          || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo;
 
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(mMain->recent()->editor());
+    AbstractEdit *edit = ViewHelper::toAbstractEdit(mCurrentEditor);
 
     bool replacableFileInScope = getFilesByScope(true).size() > 0;
     bool activateReplace = ((edit && !edit->isReadOnly()) || replacableFileInScope);
@@ -422,6 +431,34 @@ void SearchDialog::updateComponentAvailability()
                                       );
 }
 
+void SearchDialog::updateClearButton()
+{
+    if (mSearch.hasSearchSelection())
+        ui->btn_clear->setText("Clear Selection");
+    else ui->btn_clear->setText("Clear");
+}
+
+void SearchDialog::clearSelection()
+{
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mCurrentEditor)) {
+        QTextCursor tc = ae->textCursor();
+        tc.clearSelection();
+        ae->setTextCursor(tc);
+    } else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor)) {
+        QTextCursor tc = tv->edit()->textCursor();
+        tc.clearSelection();
+        tv->edit()->setTextCursor(tc);
+    }
+}
+
+void SearchDialog::clearSearchSelection()
+{
+    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mCurrentEditor))
+        ae->clearSearchSelection();
+    else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))
+        tv->clearSearchSelection();
+}
+
 void SearchDialog::clearSearch()
 {
     mSuppressParameterChangedEvent = true;
@@ -431,17 +468,7 @@ void SearchDialog::clearSearch()
     mSearch.reset();
     mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
 
-    if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mMain->recent()->editor())) {
-        QTextCursor tc = ae->textCursor();
-        tc.clearSelection();
-        ae->setTextCursor(tc);
-        ae->clearSearchSelection();
-    } else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor())) {
-        QTextCursor tc = tv->edit()->textCursor();
-        tc.clearSelection();
-        tv->edit()->setTextCursor(tc);
-        tv->clearSearchSelection();
-    }
+    clearSelection();
 
     clearResultsView();
     updateEditHighlighting();
@@ -449,16 +476,18 @@ void SearchDialog::clearSearch()
 
 void SearchDialog::updateEditHighlighting()
 {
-    if (AbstractEdit* ae = ViewHelper::toCodeEdit(mMain->recent()->editor()))
+    if (!mCurrentEditor) return;
+
+    if (AbstractEdit* ae = ViewHelper::toCodeEdit(mCurrentEditor))
         ae->updateExtraSelections();
-    else if (TextView* tv = ViewHelper::toTextView(mMain->recent()->editor()))
+    else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))
         tv->updateExtraSelections();
 }
 
 void SearchDialog::clearResultsView()
 {
     setSearchStatus(Search::Clear);
-    mMain->closeResultsView();
+    emit closeResults();
 }
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
@@ -525,34 +554,25 @@ void SearchDialog::insertHistory()
 
 void SearchDialog::autofillSearchField()
 {
-    QWidget *widget = mMain->recent()->editor();
-    PExAbstractNode *fsc = mMain->projectRepo()->findFileNode(widget);
+    QWidget *widget = mCurrentEditor;
+    PExAbstractNode *fsc = mFileHandler->fileNode(widget);
     if (!fsc) return;
 
-    if (AbstractEdit *edit = ViewHelper::toAbstractEdit(widget)) {
-        if (edit->textCursor().hasSelection()) {
-            ui->combo_search->insertItem(-1, edit->textCursor().selection().toPlainText());
-            ui->combo_search->setCurrentIndex(0);
-        } else {
-            QString text;
-            if (CodeEdit *ce = ViewHelper::toCodeEdit(widget))
-                text = ce->wordUnderCursor();
-            if (text.isEmpty()) text = ui->combo_search->itemText(0);
-            ui->combo_search->setEditText(text);
-        }
+    QString searchText;
+    if (CodeEdit *ce = ViewHelper::toCodeEdit(widget)) {
+        if (ce->textCursor().hasSelection())
+            searchText = ce->textCursor().selection().toPlainText();
+        else searchText = ce->wordUnderCursor();
+    } else if (TextView *tv = ViewHelper::toTextView(widget)) {
+        if (tv->hasSelection())
+            searchText = tv->selectedText();
+        else searchText = tv->wordUnderCursor();
     }
 
-    if (TextView *tv = ViewHelper::toTextView(widget)) {
-        if (tv->hasSelection()) {
-            ui->combo_search->insertItem(-1, tv->selectedText());
-            ui->combo_search->setCurrentIndex(0);
-        } else {
-            QString text = tv->wordUnderCursor();
-            if (text.isEmpty()) text = ui->combo_search->itemText(0);
-            ui->combo_search->setEditText(text);
-        }
-    }
+    if (searchText.isEmpty()) searchText = ui->combo_search->itemText(0);
 
+    searchText = searchText.split("\n").at(0);
+    ui->combo_search->setEditText(searchText);
     ui->combo_search->setFocus();
     ui->combo_search->lineEdit()->selectAll();
 }
@@ -607,9 +627,9 @@ bool SearchDialog::wholeWords()
     return ui->cb_wholeWords->isChecked();
 }
 
-int SearchDialog::selectedScope()
+Search::Scope SearchDialog::selectedScope()
 {
-    return ui->combo_scope->currentIndex();
+    return (Search::Scope) ui->combo_scope->currentIndex();
 }
 
 void SearchDialog::setSelectedScope(int index)
@@ -620,6 +640,16 @@ void SearchDialog::setSelectedScope(int index)
 Search* SearchDialog::search()
 {
     return &mSearch;
+}
+
+AbstractSearchFileHandler *SearchDialog::fileHandler()
+{
+    return mFileHandler;
+}
+
+QWidget *SearchDialog::currentEditor()
+{
+    return mCurrentEditor;
 }
 
 }
