@@ -136,10 +136,15 @@ pipeline {
                                 xvfb-run -a ./$f -xunitxml -o $WORKSPACE/reports/$f.xml
                             done
                         '''
+                        sh '''
+                            cd tests
+                            zip -r unit-test.zip .
+                        '''
                     }
                     post {
                         always {
                             junit allowEmptyResults: true, testResults: 'reports/*.xml'
+                            archiveArtifacts artifacts: 'tests/unit-test.zip, ~/.config/GAMS/gamsconfig.yaml', fingerprint: true
                         }
                     }
                 }
