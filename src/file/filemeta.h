@@ -39,7 +39,6 @@ namespace studio {
 
 class PExProjectNode;
 
-
 class FileMeta: public QObject
 {
     Q_OBJECT

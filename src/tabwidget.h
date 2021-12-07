@@ -2,6 +2,7 @@
 #define TABWIDGET_H
 
 #include <QTabWidget>
+#include <QToolButton>
 
 namespace gams {
 namespace studio {
@@ -18,6 +19,12 @@ signals:
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;
+    bool eventFilter(QObject*sender, QEvent* event) override;
+
+private:
+    QToolButton *bLeft = nullptr;
+    QToolButton *bRight = nullptr;
+    int mWheelSum = 0;
 };
 
 }
