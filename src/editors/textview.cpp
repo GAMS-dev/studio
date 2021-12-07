@@ -276,21 +276,17 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
 
 void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results)
 {
-    mEdit->searchSelection = mEdit->textCursor();
-    mMapper->updateSearchSelection();
-    SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(),
-                    mMapper->searchSelectionEnd(), results);
+    if (!mEdit->hasSearchSelection()) {
+        mEdit->updateSearchSelection();
+        mMapper->updateSearchSelection();
+    }
+    SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(), results);
     sw.findInFiles();
 }
 
 void TextView::clearSearchSelection() {
     mEdit->clearSearchSelection();
     mMapper->clearSearchSelection();
-}
-
-bool TextView::hasSearchSelection()
-{
-    return mMapper->hasSearchSelection();
 }
 
 void TextView::outerScrollAction(int action)

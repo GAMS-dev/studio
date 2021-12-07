@@ -17,26 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHLOCATOR_H
-#define SEARCHLOCATOR_H
+#include "testsearchdialog.h"
 
-namespace gams {
-namespace studio {
-namespace search {
+#include <QLineEdit>
+#include <QPushButton>
+#include <QLabel>
+#include <QComboBox>
 
-class Search;
-class SearchLocator
+using namespace search;
+
+void TestSearchDialog::initTestCase()
 {
-
-public:
-    static search::Search* search();
-    static void provide(Search* s);
-
-private:
-    static search::Search* mS;
-};
-
+    TestFileHandler* tfh = new TestFileHandler();
+    mDialog = new SearchDialog(tfh);
 }
+
+void TestSearchDialog::cleanupTestCase()
+{
+    delete mDialog;
 }
+
+void TestSearchDialog::test_availability()
+{
+    mDialog->show();
+    QTEST_ASSERT(mDialog->findChild<QPushButton*>("btn_Replace"));
+    QTEST_ASSERT(mDialog->findChild<QPushButton*>("btn_clear"));
+    QTEST_ASSERT(mDialog->findChild<QComboBox*>("combo_scope"));
+    QTEST_ASSERT(mDialog->findChild<QComboBox*>("combo_filepattern"));
+    QTEST_ASSERT(mDialog->findChild<QLabel*>("lbl_nrResults"));
 }
-#endif // SEARCHLOCATOR_H
+
+QTEST_MAIN(TestSearchDialog)

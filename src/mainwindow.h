@@ -25,7 +25,6 @@
 #include <QPrinter>
 #include <QPrintDialog>
 
-
 #include "editors/codeedit.h"
 #include "file.h"
 #include "file/recentdata.h"
@@ -126,8 +125,6 @@ public:
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
-    void showResults(search::SearchResultModel* results);
-    void closeResultsView();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);
@@ -188,6 +185,8 @@ public slots:
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
     void showProjectOptions(PExProjectNode *project);
+    void showResults(search::SearchResultModel* results);
+    void closeResultsView();
 
 private slots:
     void openInitialFiles();

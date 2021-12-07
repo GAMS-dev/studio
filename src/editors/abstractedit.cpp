@@ -207,7 +207,7 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
 }
 
 void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections) {
-    if (!searchSelection.hasSelection()) return;
+    if (!hasSearchSelection()) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
@@ -317,20 +317,20 @@ QTextCursor AbstractEdit::cursorForPositionCut(const QPoint &pos) const
 
 bool AbstractEdit::hasSearchSelection()
 {
-    return searchSelection.hasSelection();
+    return mIsSearchSelectionActive;
 }
 
 void AbstractEdit::clearSearchSelection()
 {
-    searchSelection = QTextCursor();
+    mIsSearchSelectionActive = false;
 }
 
-void AbstractEdit::updateSearchSelection(bool isSingleReplaceAction)
+void AbstractEdit::updateSearchSelection()
 {
-    // update search selection cursor, but not when replacing
-    if (textCursor() != searchSelection && (!isSingleReplaceAction || !searchSelection.hasSelection())) {
+    if (!hasSearchSelection()) {
         SearchLocator::search()->reset();
         searchSelection = textCursor();
+        mIsSearchSelectionActive = true;
     }
 }
 
@@ -340,7 +340,8 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     QTextCursor item;
     QTextCursor lastItem;
 
-    if (!searchSelection.hasSelection()) return;
+    updateSearchSelection();
+    if (!mIsSearchSelectionActive) return;
 
     startPos = searchSelection.selectionStart();
     endPos = searchSelection.selectionEnd();

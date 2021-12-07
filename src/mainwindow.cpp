@@ -40,6 +40,7 @@
 #include "settings.h"
 #include "settingsdialog.h"
 #include "search/searchdialog.h"
+#include "search/searchfilehandler.h"
 #include "search/searchlocator.h"
 #include "search/searchresultmodel.h"
 #include "search/resultsview.h"
@@ -243,7 +244,17 @@ MainWindow::MainWindow(QWidget *parent)
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
     initIcons();
     restoreFromSettings();
-    mSearchDialog = new search::SearchDialog(this);
+
+    search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
+    mSearchDialog = new search::SearchDialog(sfh, this);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
+            &search::SearchDialog::updateComponentAvailability);
+
+    connect(mSearchDialog, &search::SearchDialog::showResults, this, &MainWindow::showResults);
+    connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
+    connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
+    connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
+    connect(mSearchDialog, &search::SearchDialog::invalidateResults, this, &MainWindow::invalidateResultsView);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -279,7 +290,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(tabMenu, &QPushButton::pressed, this, &MainWindow::showLogTabsMenu);
     tabMenu->setMaximumWidth(40);
     ui->logTabs->setCornerWidget(tabMenu);
-    ui->mainTabs->setUsesScrollButtons(true);
 
     // set up services
     search::SearchLocator::provide(mSearchDialog->search());
@@ -1512,6 +1522,7 @@ void MainWindow::activeTabChanged(int index)
     if (mStartedUp)
         mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
+    mSearchDialog->setCurrentEditor(editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
@@ -1586,6 +1597,7 @@ void MainWindow::activeTabChanged(int index)
     loadCommandLines(oldNode, node);
     updateRunState();
     searchDialog()->updateComponentAvailability();
+    searchDialog()->updateClearButton();
     updateToolbar(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -2148,8 +2160,9 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         fc->setModified(false);
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Cancel) {
-        return;
+        // do nothing
     }
+    mSearchDialog->updateComponentAvailability();
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -2835,7 +2848,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         }
 
         // search widget
-        if (mSearchDialog->isHidden()) mSearchDialog->clearSearch();
+        if (mSearchDialog->isHidden()) mSearchDialog->on_btn_clear_clicked();
         else mSearchDialog->hide();
 
         e->accept(); return;
@@ -4128,6 +4141,7 @@ void MainWindow::showResults(search::SearchResultModel* results)
     delete mResultsView;
     mResultsView = new search::ResultsView(results, this);
     connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
 
     QString nr;
     if (results->size() > MAX_SEARCH_RESULTS-1) nr = QString::number(MAX_SEARCH_RESULTS) + "+";
@@ -4144,12 +4158,17 @@ void MainWindow::showResults(search::SearchResultModel* results)
 
     ui->logTabs->addTab(mResultsView, title); // add new result page
     ui->logTabs->setCurrentWidget(mResultsView);
+
+    mResultsView->resizeColumnsToContent();
 }
 
 void MainWindow::closeResultsView()
 {
     int index = ui->logTabs->indexOf(mResultsView);
-    if (index != -1) ui->logTabs->removeTab(index);
+    if (index == -1) return;
+
+    ui->logTabs->removeTab(index);
+    searchDialog()->search()->resetResults();
 
     delete mResultsView;
     mResultsView = nullptr;

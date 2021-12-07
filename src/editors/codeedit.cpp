@@ -38,6 +38,8 @@
 namespace gams {
 namespace studio {
 
+using namespace search;
+
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
 CodeEdit::CodeEdit(QWidget *parent)
@@ -1975,7 +1977,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         return;
 
     QRegularExpression regEx = search->regex();
-    bool limitHighlighting = search->hasSearchSelection();
+    bool limitHighlighting = search->scope() == Search::Scope::Selection;
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());

@@ -67,6 +67,7 @@ public:
 
     bool hasSearchSelection();
     void clearSearchSelection();
+    void updateSearchSelection();
     void findInSelection(QList<search::Result> &results);
     inline FileId fileId() {
         bool ok;
@@ -74,7 +75,6 @@ public:
         return ok ? file : FileId();
     }
     void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
-    void updateSearchSelection(bool isSingleReplaceAction = false);
     int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
 
 signals:
@@ -141,6 +141,7 @@ private:
     QPoint mTipPos;
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
+    bool mIsSearchSelectionActive = false;
 
 private slots:
     void internalExtraSelUpdate();

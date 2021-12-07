@@ -24,6 +24,7 @@
 #include "result.h"
 #include "common.h"
 #include "keys.h"
+#include "mainwindow.h"
 
 namespace gams {
 namespace studio {
@@ -48,7 +49,6 @@ ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
 
 ResultsView::~ResultsView()
 {
-    mMain->searchDialog()->search()->resetResults();
     delete ui;
 }
 
@@ -127,7 +127,7 @@ int ResultsView::selectNextItem(bool backwards)
 void ResultsView::selectItem(int index)
 {
     if (index < 0) ui->tableView->clearSelection();
-    else ui->tableView->selectRow(index);
+    else if (!mOutdated) ui->tableView->selectRow(index);
 }
 
 int ResultsView::selectedItem()
