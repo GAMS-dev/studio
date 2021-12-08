@@ -1,3 +1,7 @@
+Version 1.8.4  *
+==================
+- expanded `MIRO installation location` on macOS if the AppBundle has been selected
+
 Version 1.8.3
 ==================
 - changed mouse wheel behavior in tabbars:

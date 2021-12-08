@@ -36,8 +36,8 @@ QString MiroCommon::path(const QString &configMiroPath)
 {
     if (!configMiroPath.isEmpty()) {
         if (configMiroPath.endsWith("GAMS MIRO.app") &&
-            exists(configMiroPath + "/Contents/MacOS/GAMS MIRO")) {
-            return configMiroPath + "/Contents/MacOS/GAMS MIRO";
+            exists(configMiroPath + MIRO_MACOS_APP_BUNDLE_POSTFIX)) {
+            return configMiroPath + MIRO_MACOS_APP_BUNDLE_POSTFIX;
         } else if (exists(configMiroPath)) {
             return configMiroPath;
         }
@@ -108,7 +108,7 @@ bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,
     if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
         QTextStream stream(&file);
         stream.setCodec(QTextCodec::codecForName("UTF-8"));
-        for (auto selectedFile: selectedFiles)
+        for (const auto& selectedFile: selectedFiles)
             stream << selectedFile << "\n";
         file.close();
         return true;
