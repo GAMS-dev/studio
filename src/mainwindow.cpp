@@ -373,20 +373,17 @@ void MainWindow::initEnvironment()
 
 void MainWindow::adjustFonts()
 {
+    const qreal fontFactor = 0.95;
+    const qreal fontFactorStatusbar = 0.85;
+
     QFont f(ui->menuBar->font());
-    f.setPointSizeF(ui->menuBar->font().pointSizeF()*0.95);
+    f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->mainTabs->setFont(f);
     ui->dockProjectView->setFont(f);
     ui->dockProcessLog->setFont(f);
     ui->dockHelpView->setFont(f);
-    f.setPointSizeF(f.pointSizeF() * 0.85);
+    f.setPointSizeF(f.pointSizeF() * fontFactorStatusbar);
     ui->statusBar->setFont(f);
-//    DEB() << "Menu: " << ui->menuBar->font().pointSizeF()
-//          << " - " << ui->menuBar->fontMetrics().height()
-//             ;
-//    DEB() << "Tabs: " << ui->mainTabs->font().pointSizeF()
-//          << " - " << ui->mainTabs->fontMetrics().height()
-//             ;
 }
 
 void MainWindow::initIcons()
