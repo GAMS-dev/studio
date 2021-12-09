@@ -31,7 +31,7 @@
 #include "miro/mirocommon.h"
 #include "themewidget.h"
 #include "viewhelper.h"
-
+#include "miro/mirocommon.h"
 
 namespace gams {
 namespace studio {
@@ -166,7 +166,7 @@ void SettingsDialog::loadSettings()
     // Remote page
     ui->miroEdit->setText(QDir::toNativeSeparators(mSettings->toString(skMiroInstallPath)));
     if (ui->miroEdit->text().isEmpty()) {
-        auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
+        auto path = QDir::toNativeSeparators(miro::MiroCommon::path());
         ui->miroEdit->setText(path);
         mSettings->setString(skMiroInstallPath, path);
     }
@@ -288,7 +288,15 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdSmartTooltipHelp, ui->cb_smartTooltip->isChecked());
 
     // Remote page
-    mSettings->setString(skMiroInstallPath, ui->miroEdit->text());
+    auto miroPath = ui->miroEdit->text();
+#ifdef __APPLE__
+    if (miroPath.contains(miro::MIRO_MACOS_APP_BUNDLE_NAME) &&
+            !miroPath.endsWith(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX)) {
+        miroPath.append(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX);
+        ui->miroEdit->setText(QDir(miroPath).absolutePath());
+    }
+#endif
+    mSettings->setString(skMiroInstallPath, miroPath);
     mSettings->setBool(skNeosAutoConfirm, ui->confirmNeosCheckBox->isChecked());
     mSettings->setBool(skEngineStoreUserToken, ui->cbEngineStoreToken->isChecked());
     if (mEngineInitialExpire != mSettings->toInt(skEngineAuthExpire) || !ui->cbEngineStoreToken->isChecked()) {
@@ -602,7 +610,12 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 
     if (miro.isEmpty()) return;
 
-    ui->miroEdit->setText(QDir::toNativeSeparators(miro));
+    auto path = QDir::toNativeSeparators(miro);
+#ifdef __APPLE__
+    if (!path.endsWith(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX))
+        path.append(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX);
+#endif
+    ui->miroEdit->setText(path);
 }
 
 void SettingsDialog::initColorPage()
