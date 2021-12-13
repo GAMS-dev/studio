@@ -727,7 +727,9 @@ void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryIt
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
-    QString gmsFilePath = Settings::settings()->toString(skDefaultWorkspace) + "/" + inputFile;
+    bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
+    QString destDir = openInCurrent ? mRecent.project()->location() : Settings::settings()->toString(skDefaultWorkspace);
+    QString gmsFilePath = destDir + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
 
     mFileMetaRepo.unwatch(gmsFilePath);
@@ -746,8 +748,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
             switch(answer) {
             case 0: {// open
-                PExProjectNode* project = (Settings::settings()->toBool(skOpenInCurrent)
-                                           && mRecent.project()) ? mRecent.project() : nullptr;
+                PExProjectNode* project = openInCurrent ? mRecent.project() : nullptr;
                 openFileNode(addNode("", gmsFilePath, project));
                 return;
             }
@@ -767,13 +768,13 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     QDir gamsSysDir(CommonPaths::systemDir());
     mLibProcess = new GamsLibProcess(this);
     mLibProcess->setInputFile(inputFile);
-    mLibProcess->setWorkingDirectory(Settings::settings()->toString(skDefaultWorkspace));
+    mLibProcess->setWorkingDirectory(destDir);
 
     QStringList args {
         "-lib",
         QDir::toNativeSeparators(gamsSysDir.filePath(glbFile)),
         (modelName.isEmpty() ? QString::number(-1) : modelName),
-        QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace))
+        QDir::toNativeSeparators(destDir)
     };
     mLibProcess->setParameters(args);
 
