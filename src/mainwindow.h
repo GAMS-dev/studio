@@ -191,6 +191,9 @@ public slots:
 private slots:
     void initDelayedElements();
     void openDelayedFiles();
+    void newProjectDialog();
+    void openProjectOptions(PExProjectNode *project);
+    void createProject(QString projectPath);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,

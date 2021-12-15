@@ -352,7 +352,8 @@ void FileMeta::updateMarks()
 
 void FileMeta::reload()
 {
-    load(mCodec->mibEnum(), false);
+    if (kind() != FileKind::PrO)
+        load(mCodec->mibEnum(), false);
 }
 
 void FileMeta::updateView()
@@ -1010,7 +1011,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
     int i = tabWidget->insertTab(atIndex, res, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
     addEditor(res);
-    if (mEditors.size() == 1 && kind() != FileKind::Log && ViewHelper::toAbstractEdit(res)) {
+    if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(res)) {
         try {
             load(codecMib);
         } catch (Exception &e) {

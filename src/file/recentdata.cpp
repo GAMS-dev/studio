@@ -42,8 +42,9 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
     }
 
     mEditor = edit;
-    mProject = window->projectRepo()->asProject(ViewHelper::groupId(edit));
-    if (PExFileNode* node = window->projectRepo()->findFileNode(edit)) {
+    mProject = (mEditor ?  window->projectRepo()->asProject(ViewHelper::groupId(mEditor)) : nullptr);
+
+    if (PExFileNode* node = window->projectRepo()->findFileNode(mEditor)) {
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
     } else {
@@ -65,6 +66,15 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
         MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
         MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
     }
+    window->updateEditorMode();
+    window->updateEditorPos();
+}
+
+void RecentData::setRawProject(NodeId group, MainWindow *window)
+{
+    setEditor(nullptr, window);
+    mProject = window->projectRepo()->asProject(group);
+    mPath = QFileInfo(mProject->location()).path();
     window->updateEditorMode();
     window->updateEditorPos();
 }

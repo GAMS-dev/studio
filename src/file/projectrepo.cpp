@@ -489,7 +489,7 @@ void ProjectRepo::purgeGroup(PExGroupNode *group)
 {
     if (!group || group->toRoot()) return;
     PExGroupNode *parGroup = group->parentNode();
-    if (group->isEmpty()) {
+    if (group->isEmpty() && !group->toProject()) {
         closeGroup(group);
         if (parGroup) purgeGroup(parGroup);
     }

@@ -152,6 +152,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
+    connect(ui->projectView, &ProjectTreeView::projectSelected, this, [this](QModelIndex idx) {
+        PExProjectNode * project = mProjectRepo.node(idx)->toProject();
+        if (project) openProjectOptions(project);
+    });
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
     mFileMetaRepo.init(&mTextMarkRepo, &mProjectRepo);
@@ -212,6 +216,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this, &MainWindow::reOpenFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::exportProject, this, &MainWindow::exportProjectDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::importProject, this, &MainWindow::importProjectDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, &MainWindow::newProjectDialog);
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -1259,10 +1264,10 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         file.close();
     }
 
-    if (!projects.isEmpty()) { // add file to each selected group
+    if (!projects.isEmpty()) { // add file to each selected project
         for (PExProjectNode *project: projects)
             openFileNode(addNode("", filePath, project));
-    } else { // create new group
+    } else { // create new project
         PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
         PExFileNode* node = addNode("", filePath, project);
         openFileNode(node);
@@ -1486,8 +1491,8 @@ void MainWindow::codecReload(QAction *action)
 {
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
-    if (fm && fm->kind() == FileKind::Log) return;
-    if (fm && fm->kind() == FileKind::Guc) return;
+    if (fm && (fm->kind() == FileKind::Log || fm->kind() == FileKind::Guc || fm->kind() == FileKind::PrO))
+        return;
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
@@ -1928,7 +1933,7 @@ void MainWindow::postGamsLibRun()
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), project);
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
-        if (node->file()->kind() != FileKind::Log)
+        if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::PrO)
             node->file()->load(node->file()->codecMib());
     }
     openFileNode(node);
@@ -3162,7 +3167,7 @@ bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, 
             return false;
         } else if (msgBox.clickedButton() == discardButton) {
             for (FileMeta *file: qAsConst(modifiedFiles))
-                if (file->kind() != FileKind::Log) {
+                if (file->kind() != FileKind::Log && file->kind() != FileKind::PrO) {
                     try {
                         file->load(file->codecMib());
                     } catch (Exception&) {
@@ -3332,6 +3337,36 @@ void MainWindow::openDelayedFiles()
     mDelayedFiles.clear();
     mOpenPermission = opAll;
     openFiles(files, false);
+}
+
+void MainWindow::newProjectDialog()
+{
+    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
+    dialog->setAcceptMode(QFileDialog::AcceptOpen);
+    dialog->setFileMode(QFileDialog::DirectoryOnly);
+
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->open();
+}
+
+void MainWindow::openProjectOptions(PExProjectNode *project)
+{
+    // TODO(JM) open new tab with project options
+    // TODO(JM) when leaving project options tab -> close it
+}
+
+void MainWindow::createProject(QString projectPath)
+{
+    // create empty project
+    QFileInfo fi(projectPath);
+    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
+
+    // enter edit mode of project name
+    QModelIndex mi = mProjectRepo.treeModel()->index(project);
+    if (mi.isValid()) ui->projectView->edit(mi);
 }
 
 void MainWindow::on_actionRun_triggered()

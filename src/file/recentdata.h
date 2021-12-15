@@ -33,6 +33,7 @@ public:
 
     void reset();
     void setEditor(QWidget* edit, MainWindow* window);
+    void setRawProject(NodeId group, MainWindow* window);
 
     QWidget* editor() const { return mEditor; }
     PExProjectNode* project() const {return mProject; }

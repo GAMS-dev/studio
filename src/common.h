@@ -87,6 +87,7 @@ Q_ENUM_NS(NodeType)
 
 enum class FileKind {
     None,
+    PrO,
     Gsp,
     Gms,
     Txt,

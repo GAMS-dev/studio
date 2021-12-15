@@ -43,6 +43,7 @@ enum ContextAction {
     actProjOpt,
     actProjExport,
     actProjImport,
+    actNewProject,
     actSep2,
     actSetMain,
     actSep3,
@@ -133,6 +134,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actProjExport, addAction("&Export project",  this, &ProjectContextMenu::onExportProject));
     mActions.insert(actProjImport, addAction("&Import project",  this, &ProjectContextMenu::importProject));
+    mActions.insert(actNewProject, addAction("&Create project",  this, &ProjectContextMenu::newProject));
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
     mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));

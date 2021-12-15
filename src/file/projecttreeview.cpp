@@ -151,6 +151,17 @@ void ProjectTreeView::keyPressEvent(QKeyEvent *event)
     QTreeView::keyPressEvent(event);
 }
 
+void ProjectTreeView::mouseDoubleClickEvent(QMouseEvent *event)
+{
+    QModelIndex ind = indexAt(event->pos());
+    if (ind.parent() == rootIndex() && !model()->hasChildren(ind)) {
+        event->accept();
+        emit projectSelected(ind);
+    } else {
+        QTreeView::mouseDoubleClickEvent(event);
+    }
+}
+
 void ProjectTreeView::selectAll()
 {
     expandAll();

@@ -34,6 +34,8 @@ public:
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,
                    QList<QModelIndex> &newSelection);
+    void projectSelected(QModelIndex idx);
+
 protected:
     void focusOutEvent(QFocusEvent *event) override;
     void fixFocus();
@@ -44,6 +46,7 @@ protected:
     void dropEvent(QDropEvent *event) override;
     void updateDrag(QDragMoveEvent *event);
     void keyPressEvent(QKeyEvent *event) override;
+    void mouseDoubleClickEvent(QMouseEvent *event) override;
 
 public slots:
     void selectAll() override;
