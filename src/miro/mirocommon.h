@@ -47,6 +47,8 @@ public:
 
     static QString dataDirectory(const QString &modelName);
 
+    static QString dataContractFileName(const QString &modelName);
+
     static QString assemblyFileName(const QString &modelName);
 
     static QString assemblyFileName(const QString &modelLocation,
@@ -68,6 +70,7 @@ private:
 private:
     static const QString ConfFolderPrefix;
     static const QString DataFolderPrefix;
+    static const QString DataContractPostfix;
 };
 
 }

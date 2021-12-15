@@ -31,6 +31,7 @@ namespace miro {
 
 const QString MiroCommon::ConfFolderPrefix = "conf_";
 const QString MiroCommon::DataFolderPrefix = "data_";
+const QString MiroCommon::DataContractPostfix = "_io.json";
 
 QString MiroCommon::path(const QString &configMiroPath)
 {
@@ -54,6 +55,11 @@ QString MiroCommon::confDirectory(const QString &modelName)
 QString MiroCommon::dataDirectory(const QString &modelName)
 {
     return DataFolderPrefix + modelName.toLower();
+}
+
+QString MiroCommon::dataContractFileName(const QString &modelName)
+{
+    return modelName + DataContractPostfix;
 }
 
 QString MiroCommon::assemblyFileName(const QString &modelName)
