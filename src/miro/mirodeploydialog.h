@@ -76,10 +76,10 @@ private slots:
     void on_deployButton_clicked();
 
     void updateTestDeployButtons();
-    bool checkMiroPaths();
 
 private:
     void setupViewModel();
+    bool isDataContractAvailable();
 
 private:
     Ui::MiroDeployDialog *ui;
