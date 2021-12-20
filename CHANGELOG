@@ -1,4 +1,4 @@
-Version 1.8.4  *
+Version 1.9.0  *
 ==================
 - expanded `MIRO installation location` on macOS if the AppBundle has been selected
 - adjusted check if the MIRO data contract is available before the MIRO app is deployed
