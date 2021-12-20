@@ -39,6 +39,9 @@ private slots:
     void testDataDirectory_data();
     void testDataDirectory();
 
+    void testDataContractFileName_data();
+    void testDataContractFileName();
+
     void testAssemblyFileName_data();
     void testAssemblyFileName();
 

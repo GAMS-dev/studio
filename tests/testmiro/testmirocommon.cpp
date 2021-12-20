@@ -98,6 +98,22 @@ void TestMiroCommon::testDataDirectory_data()
     QTest::newRow("model") << "myModel" << "data_mymodel";
 }
 
+void TestMiroCommon::testDataContractFileName_data()
+{
+    QTest::addColumn<QString>("data");
+    QTest::addColumn<QString>("result");
+
+    QTest::newRow("empty") << QString() << "_io.json";
+    QTest::newRow("model") << "myModel" << "myModel_io.json";
+}
+
+void TestMiroCommon::testDataContractFileName()
+{
+    QFETCH(QString, data);
+    QFETCH(QString, result);
+    QCOMPARE(MiroCommon::dataContractFileName(data), result);
+}
+
 void TestMiroCommon::testDataDirectory()
 {
     QFETCH(QString, data);
