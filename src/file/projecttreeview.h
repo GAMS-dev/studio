@@ -34,7 +34,7 @@ public:
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,
                    QList<QModelIndex> &newSelection);
-    void projectSelected(QModelIndex idx);
+    void openProjectOptions(QModelIndex idx);
 
 protected:
     void focusOutEvent(QFocusEvent *event) override;
@@ -46,13 +46,14 @@ protected:
     void dropEvent(QDropEvent *event) override;
     void updateDrag(QDragMoveEvent *event);
     void keyPressEvent(QKeyEvent *event) override;
-    void mouseDoubleClickEvent(QMouseEvent *event) override;
+    void mouseReleaseEvent(QMouseEvent *event) override;
 
 public slots:
     void selectAll() override;
 
 private:
     QItemSelection mSelectionBeforeDrag;
+
 };
 
 } // namespace studio

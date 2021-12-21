@@ -152,7 +152,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
-    connect(ui->projectView, &ProjectTreeView::projectSelected, this, [this](QModelIndex idx) {
+    connect(ui->projectView, &ProjectTreeView::openProjectOptions, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
         if (project) openProjectOptions(project);
     });
@@ -193,7 +193,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
-    connect(&mProjectContextMenu, &ProjectContextMenu::showProjectOptions, this, &MainWindow::showProjectOptions);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
@@ -1535,8 +1534,8 @@ void MainWindow::loadCommandLines(PExFileNode* oldfn, PExFileNode* fn)
 
 void MainWindow::activeTabChanged(int index)
 {
-    PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
+    PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (mStartedUp)
         mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
@@ -2859,10 +2858,10 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         } else if (mGamsParameterEditor->isAParameterEditorFocused(focusWidget())) {
             mGamsParameterEditor->deSelectParameters();
         } else if (mRecent.editor() != nullptr) {
-            if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-                ViewHelper::toSolverOptionEdit(mRecent.editor())->deSelectOptions();
-            } else if (ViewHelper::toGamsConfigEditor(mRecent.editor())) {
-                       ViewHelper::toGamsConfigEditor(mRecent.editor())->deSelectAll();
+            if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                so->deSelectOptions();
+            } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                guc->deSelectAll();
             }
         }
 
@@ -3354,8 +3353,13 @@ void MainWindow::newProjectDialog()
 
 void MainWindow::openProjectOptions(PExProjectNode *project)
 {
-    // TODO(JM) open new tab with project options
-    // TODO(JM) when leaving project options tab -> close it
+    if (!project) return;
+    FileMeta *fm = project->projectOptionsFileMeta();
+    if (!fm) {
+        fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
+        project->setProjectOptionsFileMeta(fm);
+    }
+    openFile(fm, true, project);
 }
 
 void MainWindow::createProject(QString projectPath)
@@ -3834,10 +3838,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             ae->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        } else if (ViewHelper::toSolverOptionEdit(edit)) {
-                   connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        } else if (ViewHelper::toGamsConfigEditor(edit)) {
-                  connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
+            connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
             tabWidget->setCurrentWidget(edit);
@@ -3993,7 +3995,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
     if (!fm) return;
 
     // add to recently closed tabs
-    mClosedTabs << fm->location();
+    if (fm->kind() != FileKind::PrO)
+        mClosedTabs << fm->location();
     int lastIndex = mWp->isVisible() ? 1 : 0;
 
     NavigationHistoryLocator::navigationHistory()->stopRecord();
@@ -4012,21 +4015,14 @@ void MainWindow::closeFileEditors(const FileId fileId)
         fm->removeEditor(edit);
         edit->deleteLater();
     }
-    mClosedTabsIndexes << lastIndex;
+    if (fm->kind() != FileKind::PrO)
+        mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
+    if (fm->kind() == FileKind::PrO) {
+        fm->deleteLater();
+    }
     NavigationHistoryLocator::navigationHistory()->startRecord();
-}
-
-void MainWindow::showProjectOptions(PExProjectNode *project)
-{
-    if (!project) return;
-    project::ProjectOptions *pOpt = new project::ProjectOptions(this);
-    connect(pOpt, &project::ProjectOptions::finished, this, [this, pOpt](){
-        updateRunState();
-        pOpt->deleteLater();
-    });
-    pOpt->showProject(project);
 }
 
 void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)

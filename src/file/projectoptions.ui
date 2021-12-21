@@ -1,13 +1,13 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
  <class>gams::studio::project::ProjectOptions</class>
- <widget class="QDialog" name="gams::studio::project::ProjectOptions">
+ <widget class="QWidget" name="gams::studio::project::ProjectOptions">
   <property name="geometry">
    <rect>
     <x>0</x>
     <y>0</y>
     <width>566</width>
-    <height>157</height>
+    <height>147</height>
    </rect>
   </property>
   <property name="windowTitle">
@@ -108,13 +108,6 @@
        </widget>
       </item>
      </layout>
-    </widget>
-   </item>
-   <item>
-    <widget class="QDialogButtonBox" name="buttonBox">
-     <property name="standardButtons">
-      <set>QDialogButtonBox::Cancel|QDialogButtonBox::Ok</set>
-     </property>
     </widget>
    </item>
   </layout>

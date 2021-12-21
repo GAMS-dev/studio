@@ -110,6 +110,7 @@ inline unsigned int qHash(FileKind key, unsigned int seed)
 
 enum class EditorType {
     undefined = 0,
+    pro,
     source,
     log,
     syslog,
