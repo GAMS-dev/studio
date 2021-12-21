@@ -720,14 +720,11 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     position = 0;
     for(option::OptionItem item : itemList) {
         if (item.recurrent) {
-            if (item.recurrentIndices.first() == position)
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
-        } else {
-            if (item.optionId == -1) { // double-dashed option or unknown option
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
-            } else {
+            if (item.recurrentIndices.first() == position) {
                 output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
             }
+        } else {
+            output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
         }
         position++;
     }
