@@ -1,5 +1,6 @@
 Version 1.8.4  *
 ==================
+- fixed non-overridden recurrence of immediate options on command line parameters
 - expanded `MIRO installation location` on macOS if the AppBundle has been selected
 - adjusted check if the MIRO data contract is available before the MIRO app is deployed
 
