@@ -150,6 +150,9 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
         return OptionErrorType::Missing_Value;
 
     switch(getOptionType(key)) {
+     case   optTypeImmediate : {
+        return OptionErrorType::No_Error;
+     }
      case optTypeEnumInt : {
          bool isCorrectDataType = false;
          int n = value.toInt(&isCorrectDataType);
