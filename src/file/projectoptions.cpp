@@ -79,6 +79,7 @@ void ProjectOptions::save()
 
 void ProjectOptions::on_edName_textChanged(const QString &text)
 {
+    Q_UNUSED(text)
     updateState();
 }
 
