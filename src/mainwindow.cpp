@@ -4342,9 +4342,11 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
     tabData.insert("mainTabs", tabArray);
 
     FileMeta *fm = mRecent.editor() ? mFileMetaRepo.fileMeta(mRecent.editor()) : nullptr;
-    if (fm)
-        tabData.insert("mainTabRecent", fm->location());
-    else if (ui->mainTabs->currentWidget() == mWp)
+    if (fm) {
+        if (fm->kind() == FileKind::PrO)
+            fm = mFileMetaRepo.fileMeta(mRecent.persistentEditor());
+        if (fm) tabData.insert("mainTabRecent", fm->location());
+    } else if (ui->mainTabs->currentWidget() == mWp)
         tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 

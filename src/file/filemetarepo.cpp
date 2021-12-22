@@ -387,7 +387,6 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
 {
     if (location.isEmpty()) return nullptr;
     QString adaptedLocation;
-    // TODO(JM)-1889 - handle special FileType::PrO
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
