@@ -319,11 +319,13 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::closeEvent(QCloseEvent *e)
 void gams::studio::gdxdiffdialog::GdxDiffDialog::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Hotkey::OpenHelp) {
+#ifdef QWEBENGINE
         MainWindow* mainWindow = static_cast<MainWindow*>(parent());
         mainWindow->receiveOpenDoc(help::HelpData::getChapterLocation(help::DocumentType::StudioMain),
                                    help::HelpData::getStudioSectionAnchor(help::HelpData::getStudioSectionName(help::StudioSection::GDXDiff)));
 
         e->accept();
+#endif
         return;
     }
     QDialog::keyPressEvent(e);
