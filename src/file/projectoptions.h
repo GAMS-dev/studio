@@ -1,7 +1,7 @@
 #ifndef GAMS_STUDIO_PROJECTOPTIONS_H
 #define GAMS_STUDIO_PROJECTOPTIONS_H
 
-#include <QDialog>
+#include <QFrame>
 #include <QLineEdit>
 
 namespace gams {
@@ -15,7 +15,7 @@ class ProjectOptions;
 }
 
 
-class ProjectOptions : public QWidget
+class ProjectOptions : public QFrame
 {
     Q_OBJECT
 

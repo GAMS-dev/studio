@@ -784,8 +784,11 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)
 {
-    PExFileNode *node = findFileNode(edit);
+    PExAbstractNode *node = findProjectForOptions(edit);
+    if (!node)
+        node = findFileNode(edit);
     if (!node) return;
+
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);

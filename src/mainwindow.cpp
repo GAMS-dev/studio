@@ -4334,7 +4334,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-        if (!fm) continue;
+        if (!fm || fm->kind() == FileKind::PrO) continue;
         QVariantMap tabObject;
         tabObject.insert("location", fm->location());
         tabArray << tabObject;

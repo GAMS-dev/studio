@@ -23,7 +23,7 @@ Qt::CaseSensitivity fsCaseSensitive()
 }
 
 ProjectOptions::ProjectOptions(QWidget *parent) :
-    QWidget(parent),
+    QFrame(parent),
     ui(new Ui::ProjectOptions)
 {
     ui->setupUi(this);
