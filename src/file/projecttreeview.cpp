@@ -154,18 +154,25 @@ void ProjectTreeView::keyPressEvent(QKeyEvent *event)
 void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
 {
     QModelIndex ind = indexAt(event->pos());
-    if (model()->data(ind, ProjectTreeModel::IsProjectRole).toBool()) {
+    if (event->button() == Qt::LeftButton && model()->data(ind, ProjectTreeModel::IsProjectRole).toBool()) {
         QRect rect = visualRect(ind);
         if (rect.isValid() && event->pos().x() > rect.right() - rect.height()) {
             emit openProjectOptions(ind);
         }
+    } else if (event->button() == Qt::RightButton) {
+        emit customContextMenuRequested(event->pos());
+        return;
     }
     QTreeView::mouseReleaseEvent(event);
 }
 
 void ProjectTreeView::selectAll()
 {
-    expandAll();
+    QModelIndex currMi = currentIndex();
+    if (!currMi.isValid())
+        static_cast<ProjectTreeModel*>(model())->current();
+    if (!model()->data(currMi, ProjectTreeModel::IsProjectRole).toBool())
+        expandAll();
     QTreeView::selectAll();
 }
 

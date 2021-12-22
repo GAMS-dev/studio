@@ -922,14 +922,14 @@ void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
 void MainWindow::projectContextMenuRequested(const QPoint& pos)
 {
     QModelIndex index = ui->projectView->indexAt(pos);
-    QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
-    if (!index.isValid() && list.isEmpty()) return;
     QVector<PExAbstractNode*> nodes;
-    for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
-        nodes << mProjectRepo.node(id);
+    if (index.isValid()) {
+        QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
+        if (!list.contains(index)) return;
+        for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
+            nodes << mProjectRepo.node(id);
+        }
     }
-    if (nodes.empty()) return;
-
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
