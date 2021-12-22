@@ -62,19 +62,18 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
         else
             return mCheckState[index];
     case Qt::DecorationRole:
-        if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
-            if (mOptionItem.at(index).recurrent)
-               return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
+        if (mOptionItem.at(index).recurrent) {
+            if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked)
+                return QVariant::fromValue(Theme::icon(":/img/square-red-yellow"));
+            else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked)
+                    return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
             else
-               return QVariant::fromValue(Theme::icon(":/img/square-red"));
-        } else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked) {
-                  if (mOptionItem.at(index).recurrent)
-                     return QVariant::fromValue(Theme::icon(":/img/square-gray-yellow"));
-                  else
-                     return QVariant::fromValue(Theme::icon(":/img/square-gray"));
-        } else {
-            if (mOptionItem.at(index).recurrent)
                 return QVariant::fromValue(Theme::icon(":/img/square-green-yellow"));
+        } else {
+            if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked)
+                return QVariant::fromValue(Theme::icon(":/img/square-red"));
+            else if (Qt::CheckState(mCheckState[index].toUInt())==Qt::PartiallyChecked)
+                    return QVariant::fromValue(Theme::icon(":/img/square-gray"));
             else
                 return QVariant::fromValue(Theme::icon(":/img/square-green"));
         }
@@ -198,8 +197,11 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
                 return QVariant::fromValue(Theme::color(Theme::Normal_Red));
             else
                  return QVariant::fromValue(QApplication::palette().color(QPalette::Text));
-        } else if (key.startsWith("-") || key.startsWith("/")) {
+        } else {
+             if (key.startsWith("-") || key.startsWith("/"))
                   key = mOptionItem.at(row).key.mid(1);
+             if (mOption->isASynonym(key))
+                key = mOption->getNameFromSynonym(key);
         }
         if (mOption->isValid(key) || mOption->isASynonym(key)) { // valid option
             if (col==GamsParameterTableModel::COLUMN_OPTION_KEY) { // key

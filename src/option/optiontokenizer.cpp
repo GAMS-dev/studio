@@ -22,7 +22,6 @@
 #include <QTextStream>
 #include <QTextCodec>
 #include <QRegularExpression>
-
 #include "optiontokenizer.h"
 #include "gclgms.h"
 #include "option.h"
@@ -157,14 +156,18 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
                 key = item.key.mid(1);
             if (mOption->isASynonym(key))
                key = mOption->getNameFromSynonym(key);
-            if (mOption->isValid(key) || mOption->isASynonym(key))
-                item.optionId = mOption->getOptionDefinition(key).number;
+            if (mOption->isValid(key))
+               item.optionId = mOption->getOptionDefinition(key).number;
         }
         idList << item.optionId;
         idPositionMap.insert(item.optionId, position++);
     }
     for(OptionItem& item : commandLineList) {
-        QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
+        QString key = item.key;
+        if (item.key.startsWith("-") || item.key.startsWith("/"))
+            key = item.key.mid(1);
+        if (mOption->isASynonym(key))
+           key = mOption->getNameFromSynonym(key);
         if (mOption->getOptionType(key) == optTypeImmediate)
             item.recurrent = false;
         else
@@ -416,7 +419,11 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
     } // for (OptionItem item : items)
 
     for (OptionItem& item : itemList) {
-        QString key = (mOption->isASynonym(item.key)?  mOption->getNameFromSynonym(item.key) : item.key);
+        QString key = item.key;
+        if (key.startsWith("-") || key.startsWith("/"))
+            key = key.mid(1);
+        if (mOption->isASynonym(key))
+            key =  mOption->getNameFromSynonym(key);
         if (mOption->getOptionType(key) == optTypeImmediate)
             continue;
 
@@ -1350,8 +1357,11 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
            else
               item.error = OptionErrorType::Invalid_Key;
            continue;
-       } else if (item.key.startsWith("-") || item.key.startsWith("/")) {
-                  key = item.key.mid(1);
+       } else {
+           if (item.key.startsWith("-") || item.key.startsWith("/"))
+              key = item.key.mid(1);
+           if (mOption->isASynonym(key))
+              key = mOption->getNameFromSynonym(key);
        }
        if (mOption->isValid(key) || mOption->isASynonym(key)) { // valid option
            if (mOption->isDeprecated(key)) { // deprecated option
@@ -1365,8 +1375,11 @@ void OptionTokenizer::validateOption(QList<OptionItem> &items)
        }
    }
    for(OptionItem& item : items) {
-
-       QString key = (mOption->isASynonym(item.key) ? mOption->getNameFromSynonym(item.key) : item.key);
+       QString key = item.key;
+       if (key.startsWith("-") || key.startsWith("/"))
+           key = key.mid(1);
+       if (mOption->isASynonym(key))
+          key = mOption->getNameFromSynonym(key);
        if (mOption->getOptionType(key) == optTypeImmediate)
            item.recurrent = false;
        else
