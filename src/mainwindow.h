@@ -247,6 +247,7 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
+    void on_actionNew_Project_triggered();
     void on_actionImport_Project_triggered();
     void on_actionExport_Project_triggered();
     void on_actionClose_triggered();

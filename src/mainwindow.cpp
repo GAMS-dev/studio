@@ -3925,6 +3925,9 @@ void MainWindow::closeProject(PExProjectNode* project)
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
+        if (FileMeta *prOp = project->projectOptionsFileMeta()) {
+            closeFileEditors(prOp->id());
+        }
         mProjectRepo.closeGroup(project);
     }
 }
@@ -5191,6 +5194,10 @@ void MainWindow::on_actionMove_Line_Down_triggered()
     }
 }
 
+void MainWindow::on_actionNew_Project_triggered()
+{
+    newProjectDialog();
+}
 
 void MainWindow::on_actionImport_Project_triggered()
 {
@@ -5204,6 +5211,7 @@ void MainWindow::on_actionExport_Project_triggered()
     if (!project) return;
     exportProjectDialog(project);
 }
+
 
 }
 }
