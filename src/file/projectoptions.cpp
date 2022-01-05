@@ -75,6 +75,7 @@ void ProjectOptions::save()
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
     if (path.compare(mProject->workDir(), fsCaseSensitive()))
         mProject->setWorkDir(path);
+    updateState();
 }
 
 void ProjectOptions::on_edName_textChanged(const QString &text)

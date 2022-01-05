@@ -150,12 +150,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isProject = mNodes.first()->toProject();
     bool isGroup = mNodes.first()->toGroup() && !isProject;
     PExProjectNode *project = mNodes.first()->assignedProject();
-    bool isOneProject = true;
+    bool canExportProject = project->childCount();
     for (PExAbstractNode *node: mNodes) {
-        if (node->assignedProject() != project) {
-            isOneProject = false;
-            break;
-        }
+        if (!canExportProject) break;
+        if (node->assignedProject() != project)
+            canExportProject = false;
     }
 
 //    bool isFolder = !isProject && mNodes.first()->toGroup(); // TODO(JM) separate project from groups (=folders)
@@ -224,7 +223,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actLogTab]->setEnabled(single);
 
 //    mActions[actProjExport]->setVisible(isProject);
-    mActions[actProjExport]->setEnabled(isOneProject);
+    mActions[actProjExport]->setEnabled(canExportProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);

@@ -52,7 +52,7 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
     } else {
-        mEditFileId = FileId();
+        mEditFileId = ViewHelper::fileId(mEditor);
         mPath = Settings::settings()->toString(skDefaultWorkspace);
     }
 
