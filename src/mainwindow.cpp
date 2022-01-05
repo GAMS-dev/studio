@@ -732,7 +732,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryIt
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
-    QString destDir = openInCurrent ? mRecent.project()->location() : Settings::settings()->toString(skDefaultWorkspace);
+    QString destDir = openInCurrent ? mRecent.project()->workDir() : Settings::settings()->toString(skDefaultWorkspace);
     QString gmsFilePath = destDir + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
 
@@ -1191,7 +1191,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
 {
     QString path;
     if (!projects.isEmpty()) {
-        path = projects.constFirst()->location();
+        path = projects.constFirst()->workDir();
 
     } else if (mRecent.editFileId() >= 0) {
         FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
