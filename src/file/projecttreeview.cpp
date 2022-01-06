@@ -85,8 +85,8 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
             int row, col;
             QMap<int,  QVariant> roleDataMap;
             stream >> row >> col >> roleDataMap;
-            pathList << roleDataMap.value(Qt::UserRole).toString();
-            int idNr = roleDataMap.value(Qt::UserRole+1).toInt();
+            pathList << roleDataMap.value(ProjectTreeModel::LocationRole).toString();
+            int idNr = roleDataMap.value(ProjectTreeModel::NodeIdRole).toInt();
             if (idNr > 0) idList << NodeId(idNr); // skips the root node
         }
         // [workaround] sometimes the dropAction isn't set correctly
@@ -149,6 +149,18 @@ void ProjectTreeView::keyPressEvent(QKeyEvent *event)
         return;
     }
     QTreeView::keyPressEvent(event);
+}
+
+void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
+{
+    QModelIndex ind = indexAt(event->pos());
+    if (model()->data(ind, ProjectTreeModel::IsProjectRole).toBool()) {
+        QRect rect = visualRect(ind);
+        if (rect.isValid() && event->pos().x() > rect.right() - rect.height()) {
+            emit openProjectOptions(ind);
+        }
+    }
+    QTreeView::mouseReleaseEvent(event);
 }
 
 void ProjectTreeView::selectAll()

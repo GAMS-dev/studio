@@ -234,6 +234,11 @@ AbstractProcess *PExProjectNode::process() const
     return mGamsProcess.get();
 }
 
+PExProjectNode::~PExProjectNode()
+{
+    setProjectOptionsFileMeta(nullptr);
+}
+
 QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
@@ -467,6 +472,22 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
+}
+
+FileMeta *PExProjectNode::projectOptionsFileMeta() const
+{
+    return mProjectOptionsFileMeta;
+}
+
+void PExProjectNode::setProjectOptionsFileMeta(FileMeta *prOptMeta)
+{
+    if (mProjectOptionsFileMeta) delete mProjectOptionsFileMeta;
+    mProjectOptionsFileMeta = prOptMeta;
+}
+
+void PExProjectNode::unlinkProjectOptionsFileMeta()
+{
+    mProjectOptionsFileMeta = nullptr;
 }
 
 QString PExProjectNode::mainModelName(bool stripped) const

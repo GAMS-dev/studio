@@ -27,10 +27,10 @@
 #include "syntax.h"
 #include "editors/codeedit.h"
 #include "editors/processlogedit.h"
-#include "reference/referenceviewer.h"
+#include "editors/textview.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
-#include "editors/textview.h"
+#include "reference/referenceviewer.h"
 
 class QTabWidget;
 

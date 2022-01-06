@@ -184,13 +184,15 @@ public slots:
     bool eventFilter(QObject*sender, QEvent* event) override;
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
-    void showProjectOptions(PExProjectNode *project);
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
 
 private slots:
     void initDelayedElements();
     void openDelayedFiles();
+    void newProjectDialog();
+    void openProjectOptions(PExProjectNode *project);
+    void createProject(QString projectPath);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
@@ -245,6 +247,7 @@ private slots:
     void on_actionSave_triggered();
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
+    void on_actionNew_Project_triggered();
     void on_actionImport_Project_triggered();
     void on_actionExport_Project_triggered();
     void on_actionClose_triggered();

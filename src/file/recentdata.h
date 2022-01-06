@@ -38,12 +38,14 @@ public:
     PExProjectNode* project() const {return mProject; }
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
+    QWidget* persistentEditor() const { return mPersistentEditor; }
 
 private:
-    QWidget* mEditor;
+    QWidget* mEditor = nullptr;
     FileId mEditFileId;
-    PExProjectNode* mProject;
+    PExProjectNode* mProject = nullptr;
     QString mPath;
+    QWidget* mPersistentEditor = nullptr;
 };
 
 } // namespace studio
