@@ -3119,7 +3119,8 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
 void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
 {
     PExFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject()
+                                        : mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor())));
     if (!project) {
         DEB() << "Nothing to be executed.";
         return;
