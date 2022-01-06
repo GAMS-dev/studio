@@ -21,6 +21,7 @@ Version 1.9.0
 - adjusted loading from a model library to add files to active project if "Open in existing project" is checked
 - added context menu to free space in the Project Explorer
 - fixed jump behavior of search when using "This File" and navigating different files
+- fixed `Clear Selection` button not working as intended when search scope was set to anything but "Selection"
 
 Version 1.8.3
 ==================

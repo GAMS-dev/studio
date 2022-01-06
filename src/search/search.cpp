@@ -443,8 +443,6 @@ const QFlags<QTextDocument::FindFlag> &Search::options() const
 
 bool Search::hasSearchSelection()
 {
-    if (mSearchDialog->selectedScope() != Scope::Selection) return false;
-
     if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         return ce->hasSearchSelection();
     } else if (TextView *tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {

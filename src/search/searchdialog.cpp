@@ -309,12 +309,12 @@ void SearchDialog::findNextPrev(bool backwards) {
 void SearchDialog::on_btn_clear_clicked()
 {
     if (mSearch.hasSearchSelection()) {
-        clearSearchSelection();
-        updateEditHighlighting();
         clearSelection();
     } else {
         clearSearch();
     }
+    clearSearchSelection();
+    updateEditHighlighting();
     updateClearButton();
 }
 
