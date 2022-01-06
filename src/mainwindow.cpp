@@ -3280,7 +3280,7 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
-    ui->actionExport_Project->setEnabled(mRecent.project());
+    ui->actionExport_Project->setEnabled(mRecent.project() && mRecent.project()->childCount());
 }
 
 #ifdef QWEBENGINE
