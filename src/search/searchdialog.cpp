@@ -284,21 +284,15 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 
 void SearchDialog::on_btn_back_clicked()
 {
-    if (ui->combo_search->currentText().isEmpty()) return;
-    if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
-        setSearchStatus(Search::NoResults);
-        return;
-    }
-
-    mShowResults = false;
-    mSearch.setParameters(getFilesByScope(), createRegex(), true);
-
-    insertHistory();
-    mSearch.findNext(Search::Backward);
+    findNextPrev(true);
 }
 
 void SearchDialog::on_btn_forward_clicked()
 {
+    findNextPrev(false);
+}
+
+void SearchDialog::findNextPrev(bool backwards) {
     if (ui->combo_search->currentText().isEmpty()) return;
     if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
         setSearchStatus(Search::NoResults);
@@ -306,10 +300,10 @@ void SearchDialog::on_btn_forward_clicked()
     }
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.setParameters(getFilesByScope(), createRegex(), backwards);
 
     insertHistory();
-    mSearch.findNext(Search::Forward);
+    mSearch.findNext(backwards ? Search::Backward : Search::Forward);
 }
 
 void SearchDialog::on_btn_clear_clicked()
@@ -388,7 +382,6 @@ void SearchDialog::on_combo_search_currentTextChanged(const QString)
 void SearchDialog::searchParameterChanged()
 {
     setSearchStatus(Search::Clear);
-
     mSearch.reset();
 }
 

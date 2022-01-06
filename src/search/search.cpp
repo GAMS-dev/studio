@@ -42,6 +42,7 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
 
 void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
+    mCacheAvailable = files == mFiles;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -173,15 +174,10 @@ void Search::findInDoc(FileMeta* fm)
 
 void Search::findNext(Direction direction)
 {
-    FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
-    // also create new cache when current file is outside of selected scope
-    bool requestNewCache = !mCacheAvailable || !mFiles.contains(currentFile);
-
-    if (requestNewCache) {
+    if (!mCacheAvailable) {
         emit invalidateResults();
-        mCacheAvailable = false;
         mSearchDialog->updateUi(true);
-        start();
+        start(); // generate new cache
     }
     selectNextMatch(direction);
 }

@@ -109,6 +109,7 @@ private:
     void clearSearchSelection();
     AbstractSearchFileHandler* fileHandler();
     QWidget* currentEditor();
+    void findNextPrev(bool backwards);
 
 private:
     Ui::SearchDialog *ui;
