@@ -33,6 +33,13 @@ class ProjectTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
+    enum ProjectRoles {
+        LocationRole = Qt::UserRole,
+        NodeIdRole = Qt::UserRole + 1,
+        IsProjectRole = Qt::UserRole + 2
+    };
+
+public:
     explicit ProjectTreeModel(ProjectRepo *parent, PExGroupNode* root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;

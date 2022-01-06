@@ -42,12 +42,17 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
     }
 
     mEditor = edit;
-    mProject = window->projectRepo()->asProject(ViewHelper::groupId(edit));
-    if (PExFileNode* node = window->projectRepo()->findFileNode(edit)) {
+    mProject = (mEditor ?  window->projectRepo()->asProject(ViewHelper::groupId(mEditor)) : nullptr);
+
+    if (FileMeta *fm = window->fileRepo()->fileMeta(mEditor)) {
+        if (fm->kind() != FileKind::PrO)
+            mPersistentEditor = mEditor;
+    }
+    if (PExFileNode* node = window->projectRepo()->findFileNode(mEditor)) {
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
     } else {
-        mEditFileId = FileId();
+        mEditFileId = ViewHelper::fileId(mEditor);
         mPath = Settings::settings()->toString(skDefaultWorkspace);
     }
 
@@ -75,6 +80,7 @@ void RecentData::reset()
     mPath = Settings::settings()->toString(skDefaultWorkspace);
     mProject = nullptr;
     mEditor = nullptr;
+    mPersistentEditor = nullptr;
 }
 
 

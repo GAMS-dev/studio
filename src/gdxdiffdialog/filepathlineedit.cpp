@@ -16,6 +16,7 @@
  *
  */
 #include "filepathlineedit.h"
+#include "file/projecttreemodel.h"
 #include <QMimeData>
 #include <QDir>
 #include <file/projecttreeview.h>
@@ -41,7 +42,7 @@ void FilePathLineEdit::dragEnterEvent(QDragEnterEvent *event)
             int row, col;
             QMap<int,  QVariant> roleDataMap;
             stream >> row >> col >> roleDataMap;
-            pathList << roleDataMap.value(Qt::UserRole).toString();
+            pathList << roleDataMap.value(ProjectTreeModel::LocationRole).toString();
         }
         if (pathList.size() == 1 && pathList.at(0).toLower().endsWith(".gdx"))
             event->acceptProposedAction();
@@ -64,7 +65,7 @@ void FilePathLineEdit::dropEvent(QDropEvent *event)
             int row, col;
             QMap<int,  QVariant> roleDataMap;
             stream >> row >> col >> roleDataMap;
-            pathList << roleDataMap.value(Qt::UserRole).toString();
+            pathList << roleDataMap.value(ProjectTreeModel::LocationRole).toString();
         }
         if (pathList.size() == 1 && pathList.at(0).toLower().endsWith(".gdx")) {
             setText(pathList.at(0));

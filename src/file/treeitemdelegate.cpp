@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "treeitemdelegate.h"
+#include "projecttreemodel.h"
+#include "theme.h"
 #include <QPainter>
 #include <QLineEdit>
 
@@ -34,7 +36,22 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
     opt.state.setFlag(QStyle::State_Selected, false);
     opt.textElideMode = Qt::ElideMiddle;
     opt.palette.setColor(QPalette::Highlight, Qt::transparent);
+    bool isProject = index.model()->data(index, ProjectTreeModel::IsProjectRole).toBool();
+    QRect btRect = opt.rect;
+    if (isProject) {
+        btRect.setLeft(opt.rect.right() - opt.rect.height());
+        btRect = btRect.marginsRemoved(QMargins(2,2,2,2));
+        opt.rect.setRight(opt.rect.right() - opt.rect.height());
+    }
     QStyledItemDelegate::paint(painter, opt, index);
+    if (isProject) {
+        bool act = false;
+        if (index.row() == 4)
+            act = false;
+        if (opt.state.testFlag(QStyle::State_MouseOver))
+            act = true;
+        Theme::icon(":/%1/cog").paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
+    }
 }
 
 QWidget *TreeItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
