@@ -122,7 +122,7 @@ void TestOptionAPI::testOptFileSuffix_data()
     QTest::newRow("~log")   << "~log"   << false << FileKind::Log ;
 
     QTest::newRow("~op")         << "~op"     << false << FileKind::None;
-    QTest::newRow("empty")       << ""        << false << FileKind::None;
+    QTest::newRow("empty")       << ""        << false << FileKind::PrO;
     QTest::newRow("whitespace")  << " "       << false << FileKind::None;
 }
 
