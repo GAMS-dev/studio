@@ -117,7 +117,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
 {
     bool isIntern = event->mimeData()->formats().contains(ItemModelDataType);
-    if (event->mimeData()->hasUrls() || isIntern) {
+    if ((event->mimeData()->hasUrls() || isIntern) && event->mouseButtons() == Qt::LeftButton) {
         if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
             startAutoScroll();
         } else {
@@ -159,9 +159,6 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
         if (rect.isValid() && event->pos().x() > rect.right() - rect.height()) {
             emit openProjectOptions(ind);
         }
-    } else if (event->button() == Qt::RightButton) {
-        emit customContextMenuRequested(event->pos());
-        return;
     }
     QTreeView::mouseReleaseEvent(event);
 }
