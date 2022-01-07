@@ -32,17 +32,22 @@ enum class MiroDeployMode
     Base      = 1
 };
 
+static const QString MIRO_MACOS_APP_BUNDLE_NAME = "GAMS MIRO.app";
+static const QString MIRO_MACOS_APP_BUNDLE_POSTFIX = "/Contents/MacOS/GAMS MIRO";
+
 class MiroCommon
 {
 private:
     MiroCommon() {}
 
 public:
-    static QString path(const QString &configMiroPath);
+    static QString path(const QString &configMiroPath = QString());
 
     static QString confDirectory(const QString &modelName);
 
     static QString dataDirectory(const QString &modelName);
+
+    static QString dataContractFileName(const QString &modelName);
 
     static QString assemblyFileName(const QString &modelName);
 
@@ -65,6 +70,7 @@ private:
 private:
     static const QString ConfFolderPrefix;
     static const QString DataFolderPrefix;
+    static const QString DataContractPostfix;
 };
 
 }

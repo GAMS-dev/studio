@@ -22,6 +22,7 @@
 #include "editors/codeedit.h"
 #include "editors/processlogedit.h"
 #include "editors/textview.h"
+#include "file/projectoptions.h"
 #include "gdxviewer/gdxviewer.h"
 #include "lxiviewer/lxiviewer.h"
 #include "option/gamsconfigeditor.h"
@@ -48,6 +49,10 @@ public:
     static bool modified(const QWidget *widget);
     static void setModified(QWidget* widget, bool modified);
 
+    inline static project::ProjectOptions* initEditorType(project::ProjectOptions* w) {
+        if(w) w->setProperty("EditorType", int(EditorType::pro));
+        return w;
+    }
     inline static AbstractEdit* initEditorType(AbstractEdit* w, EditorType type) {
         if(w) w->setProperty("EditorType", int(type));
         return w;
@@ -120,6 +125,9 @@ public:
         while (par && ViewHelper::editorType(par) != EditorType::lxiLst)
             par = par->parentWidget();
         return (editorType(par) == EditorType::lxiLst) ? static_cast<lxiviewer::LxiViewer*>(par) : nullptr;
+    }
+    inline static project::ProjectOptions* toProjectOptions(QWidget* w) {
+        return (editorType(w) == EditorType::pro) ? static_cast<project::ProjectOptions*>(w) : nullptr;
     }
     inline static reference::ReferenceViewer* toReferenceViewer(QWidget* w) {
         return (editorType(w) == EditorType::ref) ? static_cast<reference::ReferenceViewer*>(w) : nullptr;

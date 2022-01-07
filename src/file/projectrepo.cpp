@@ -142,8 +142,17 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     PExAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     PExGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
-
     return group->findFile(fileMeta);
+}
+
+PExProjectNode *ProjectRepo::findProjectForOptions(QWidget *projectOptionsWidget) const
+{
+    FileMeta *fileMeta = mFileRepo->fileMeta(projectOptionsWidget);
+    if (!fileMeta || fileMeta->kind() != FileKind::PrO) return nullptr;
+    NodeId groupId = ViewHelper::groupId(projectOptionsWidget);
+    if (!groupId.isValid()) return nullptr;
+    PExAbstractNode *node = mNodes.value(groupId);
+    return node ? node->toProject() : nullptr;
 }
 
 PExAbstractNode *ProjectRepo::next(PExAbstractNode *node)
@@ -390,6 +399,26 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     purgeGroup(oldParent);
 }
 
+QString ProjectRepo::uniqueNodeName(PExGroupNode *parentNode, const QString &name)
+{
+    // Project name should be unique, append number in case
+    QString res = name;
+    int nr = 0;
+    bool conflict = true;
+    while (conflict) {
+        conflict = false;
+        for (PExAbstractNode * node : parentNode->childNodes()) {
+            if (node->name() == res) {
+                ++nr;
+                res = name + QString::number(nr);
+                conflict = true;
+                break;
+            }
+        }
+    }
+    return res;
+}
+
 PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, QString workDir)
 {
     PExGroupNode *root = mTreeModel->rootNode();
@@ -397,7 +426,8 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
 
     PExProjectNode* project = nullptr;
     FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
-    project = new PExProjectNode(name, path, runFile, workDir);
+
+    project = new PExProjectNode(uniqueNodeName(mTreeModel->rootNode(), name), path, runFile, workDir);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
@@ -489,7 +519,7 @@ void ProjectRepo::purgeGroup(PExGroupNode *group)
 {
     if (!group || group->toRoot()) return;
     PExGroupNode *parGroup = group->parentNode();
-    if (group->isEmpty()) {
+    if (group->isEmpty() && !group->toProject()) {
         closeGroup(group);
         if (parGroup) purgeGroup(parGroup);
     }
@@ -754,8 +784,11 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)
 {
-    PExFileNode *node = findFileNode(edit);
+    PExAbstractNode *node = findProjectForOptions(edit);
+    if (!node)
+        node = findFileNode(edit);
     if (!node) return;
+
     QModelIndex mi = mTreeModel->index(node);
     mTreeModel->setCurrent(mi);
     mTreeView->setCurrentIndex(mi);

@@ -49,6 +49,7 @@ public:
 
     PExProjectNode *findProject(NodeId nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
+    PExProjectNode* findProjectForOptions(QWidget *projectOptionsWidget) const;
     PExFileNode *findFile(QString filePath, PExGroupNode *fileGroup = nullptr) const;
     PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr) const;
 
@@ -168,6 +169,7 @@ private:
     bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
+    QString uniqueNodeName(PExGroupNode *parentNode, const QString &name);
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);

@@ -144,15 +144,19 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     case Qt::ToolTipRole:
         return mProjectRepo->node(ind)->tooltip();
 
-    case Qt::UserRole: {
+    case LocationRole: {
         PExFileNode *node = mProjectRepo->node(ind)->toFile();
         if (node) return node->location();
     }   break;
 
-    case Qt::UserRole+1: {
+    case NodeIdRole: {
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (node) return int(node->id());
         break;
+    }
+    case IsProjectRole: {
+        PExProjectNode *node = mProjectRepo->node(ind)->toProject();
+        return bool(node);
     }
     default:
         break;
@@ -426,8 +430,8 @@ QVector<NodeId> ProjectTreeModel::selectedIds() const
 QMap<int, QVariant> ProjectTreeModel::itemData(const QModelIndex &index) const
 {
     QMap<int, QVariant> res = QAbstractItemModel::itemData(index);
-    res.insert(Qt::UserRole, data(index, Qt::UserRole));
-    res.insert(Qt::UserRole+1, data(index, Qt::UserRole+1));
+    res.insert(LocationRole, data(index, LocationRole));
+    res.insert(NodeIdRole, data(index, NodeIdRole));
     return res;
 }
 

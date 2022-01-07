@@ -83,7 +83,7 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
 
 void MiroDeployDialog::setModelName(const QString &modelName) {
     mModelName = modelName;
-    checkMiroPaths();
+    isDataContractAvailable();
 }
 
 QStringList MiroDeployDialog::selectedFiles()
@@ -144,27 +144,18 @@ void MiroDeployDialog::on_deployButton_clicked()
 
 void MiroDeployDialog::updateTestDeployButtons()
 {
-    ui->testBaseButton->setEnabled(mValidAssemblyFile && checkMiroPaths());
-    ui->deployButton->setEnabled(mValidAssemblyFile && checkMiroPaths());
+    ui->testBaseButton->setEnabled(mValidAssemblyFile && isDataContractAvailable());
+    ui->deployButton->setEnabled(mValidAssemblyFile && isDataContractAvailable());
 }
 
-bool MiroDeployDialog::checkMiroPaths()
+bool MiroDeployDialog::isDataContractAvailable()
 {
-    QStringList paths {
-        mWorkingDirectory + "/" + MiroCommon::confDirectory(mModelName),
-        mWorkingDirectory + "/" + MiroCommon::dataDirectory(mModelName) };
+    QString path = mWorkingDirectory + "/" +
+                   MiroCommon::confDirectory(mModelName) + "/" +
+                   MiroCommon::dataContractFileName(mModelName);
 
-    QStringList missing;
-    for (int i=0; i<paths.size(); ++i) {
-        QDir dir(paths[i]);
-        if (!dir.exists() || dir.isEmpty()) {
-            if (missing.size()>0)
-                missing << "and";
-            missing << paths[i];
-        }
-    }
-
-    if (missing.isEmpty()) {
+    QFileInfo file(path);
+    if (file.exists()) {
         ui->errorLabel->setText("");
         return true;
     }
@@ -173,11 +164,8 @@ bool MiroDeployDialog::checkMiroPaths()
     palette.setColor(ui->errorLabel->foregroundRole(),
                      Theme::color(Theme::Normal_Red));
     ui->errorLabel->setPalette(palette);
-    ui->errorLabel->setText("It looks like " +
-                            missing.join(" ") +
-                            (missing.size()>1 ? " are" : " is") +
-                            " missing or empty. Please run MIRO first before"
-                            " executing any MIRO deploy step.");
+    ui->errorLabel->setText("It looks like the data contract is missing: " + path +
+                            "\n\nPlease run MIRO first before executing any MIRO deploy step.");
     return false;
 }
 

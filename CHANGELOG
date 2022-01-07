@@ -1,3 +1,14 @@
+Version 1.9.0
+==================
+- fixed non-overridden recurrence of immediate options on command line parameters
+- expanded `MIRO installation location` on macOS if AppBundle has been selected
+- adjusted check if the MIRO data contract is available before the MIRO app is deployed
+- added possibility to create an new empty project
+- added Project Options editor
+- adjusted loading from a model library to add files to active project if "Open in existing project" is checked
+- added context menu to free space in the Project Explorer
+- fixed jump behavior of search when using "This File" and navigating different files
+
 Version 1.8.3
 ==================
 - changed mouse wheel behavior in tabbars:
@@ -39,6 +50,7 @@ Version 1.8.1
 - added file integration for GAMS Studio Project (GSP) on macOS
 - fixed completer not opening or staying open
 - fixed completer character recognition and wrong CompileTimeConstant start
+- fixed scaling issues on scaled screens
 
 Version 1.8.0
 ==================

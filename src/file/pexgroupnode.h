@@ -55,8 +55,8 @@ public:
     virtual QString location() const;
     QString tooltip() override;
     virtual QString errorText(int lstLine);
-    PExFileNode *findFile(QString location) const;
-    PExFileNode *findFile(const FileMeta *fileMeta) const;
+    virtual PExFileNode *findFile(QString location) const;
+    virtual PExFileNode *findFile(const FileMeta *fileMeta) const;
     QList<PExFileNode*> findFiles(FileKind kind) const;
     PExProjectNode *findProject(const AbstractProcess *process) const;
     PExProjectNode *findProject(FileId runId) const;
@@ -87,11 +87,15 @@ class PExProjectNode : public PExGroupNode
 {
     Q_OBJECT
 public:
+    virtual ~PExProjectNode() override;
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     bool hasLogNode() const;
     PExLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
+    FileMeta *projectOptionsFileMeta() const;
+    void setProjectOptionsFileMeta(FileMeta *prOptMeta);
+    void unlinkProjectOptionsFileMeta();
     QString mainModelName(bool stripped = true) const;
     QString tooltip() override;
     QString errorText(int lstLine) override;
@@ -149,6 +153,7 @@ private:
     QString mWorkDir;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
+    FileMeta *mProjectOptionsFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;

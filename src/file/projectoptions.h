@@ -1,8 +1,9 @@
 #ifndef GAMS_STUDIO_PROJECTOPTIONS_H
 #define GAMS_STUDIO_PROJECTOPTIONS_H
 
-#include <QDialog>
+#include <QFrame>
 #include <QLineEdit>
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -15,31 +16,37 @@ class ProjectOptions;
 }
 
 
-class ProjectOptions : public QDialog
+class ProjectOptions : public QFrame
 {
     Q_OBJECT
 
 public:
     explicit ProjectOptions(QWidget *parent = nullptr);
     ~ProjectOptions() override;
+    void setProject(PExProjectNode *project);
+    bool isModified() const;
+    void save();
 
-    void showProject(PExProjectNode *project);
-
-public slots:
-    void accept() override;
+signals:
+    void modificationChanged(bool modification);
 
 private slots:
-    void on_edWorkDir_textEdited(const QString &text);
-    void on_edBaseDir_textEdited(const QString &text);
+    void on_edName_textChanged(const QString &text);
+    void on_edWorkDir_textChanged(const QString &text);
+    void on_edBaseDir_textChanged(const QString &text);
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
+    void projectChanged(gams::studio::NodeId id);
 
 private:
     void updateEditColor(QLineEdit *edit, const QString &text);
-    void showDirDialog(const QString &title, QLineEdit *lineEdit);
+    void updateState();
+    void showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir);
 
     Ui::ProjectOptions *ui;
     PExProjectNode *mProject = nullptr;
+    bool mModified = false;
+    QString mName;
 
 };
 

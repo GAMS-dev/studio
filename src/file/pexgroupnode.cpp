@@ -234,6 +234,11 @@ AbstractProcess *PExProjectNode::process() const
     return mGamsProcess.get();
 }
 
+PExProjectNode::~PExProjectNode()
+{
+    setProjectOptionsFileMeta(nullptr);
+}
+
 QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 {
     if (gamsProcessState() == QProcess::NotRunning)
@@ -448,7 +453,6 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
                 break;
             }
         }
-        if (!gmsFile) return;
     } else {
         gmsFileNode = findFile(gmsFile);
     }
@@ -459,6 +463,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     setParameter("gms", "");
     if (!gmsFile) {
         setParameter("lst", "");
+        emit changed(id());
         return;
     }
     if (workDir().isEmpty())
@@ -467,6 +472,23 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
+    emit changed(id());
+}
+
+FileMeta *PExProjectNode::projectOptionsFileMeta() const
+{
+    return mProjectOptionsFileMeta;
+}
+
+void PExProjectNode::setProjectOptionsFileMeta(FileMeta *prOptMeta)
+{
+    if (mProjectOptionsFileMeta) delete mProjectOptionsFileMeta;
+    mProjectOptionsFileMeta = prOptMeta;
+}
+
+void PExProjectNode::unlinkProjectOptionsFileMeta()
+{
+    mProjectOptionsFileMeta = nullptr;
 }
 
 QString PExProjectNode::mainModelName(bool stripped) const
@@ -720,14 +742,11 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     position = 0;
     for(option::OptionItem item : itemList) {
         if (item.recurrent) {
-            if (item.recurrentIndices.first() == position)
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
-        } else {
-            if (item.optionId == -1) { // double-dashed option or unknown option
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
-            } else {
+            if (item.recurrentIndices.first() == position) {
                 output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
             }
+        } else {
+            output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
         }
         position++;
     }
