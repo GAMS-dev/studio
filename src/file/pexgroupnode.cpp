@@ -453,7 +453,6 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
                 break;
             }
         }
-        if (!gmsFile) return;
     } else {
         gmsFileNode = findFile(gmsFile);
     }
@@ -464,6 +463,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     setParameter("gms", "");
     if (!gmsFile) {
         setParameter("lst", "");
+        emit changed(id());
         return;
     }
     if (workDir().isEmpty())
@@ -472,6 +472,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
+    emit changed(id());
 }
 
 FileMeta *PExProjectNode::projectOptionsFileMeta() const

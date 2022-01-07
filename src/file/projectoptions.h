@@ -3,6 +3,7 @@
 
 #include <QFrame>
 #include <QLineEdit>
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -35,6 +36,7 @@ private slots:
     void on_edBaseDir_textChanged(const QString &text);
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
+    void projectChanged(gams::studio::NodeId id);
 
 private:
     void updateEditColor(QLineEdit *edit, const QString &text);
@@ -44,6 +46,7 @@ private:
     Ui::ProjectOptions *ui;
     PExProjectNode *mProject = nullptr;
     bool mModified = false;
+    QString mName;
 
 };
 

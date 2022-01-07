@@ -52,9 +52,13 @@ bool ProjectOptions::isModified() const
 
 void ProjectOptions::setProject(PExProjectNode *project)
 {
+    if (mProject)
+        disconnect(mProject, &PExProjectNode::changed, this, &ProjectOptions::projectChanged);
     if (!project) return;
     mProject = project;
     if (mProject) {
+        connect(mProject, &PExProjectNode::changed, this, &ProjectOptions::projectChanged);
+        mName = mProject->name();
         ui->edName->setText(mProject->name());
         ui->edWorkDir->setText(QDir::toNativeSeparators(mProject->workDir()));
         ui->edBaseDir->setText(QDir::toNativeSeparators(mProject->location()));
@@ -133,6 +137,20 @@ void ProjectOptions::on_bWorkDir_clicked()
 void ProjectOptions::on_bBaseDir_clicked()
 {
     showDirDialog("Select Base Directory", ui->edBaseDir, mProject->location());
+}
+
+void ProjectOptions::projectChanged(NodeId id)
+{
+    if (mProject->id() != id) return;
+    if (mName != mProject->name()) {
+        mName = mProject->name();
+        ui->edName->setText(mProject->name());
+    }
+    if (mProject->runnableGms())
+        ui->edMainGms->setText(QDir::toNativeSeparators(mProject->runnableGms()->location()));
+    else
+        ui->edMainGms->setText("-no runnable-");
+    updateState();
 }
 
 void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)

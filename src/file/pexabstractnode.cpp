@@ -54,7 +54,7 @@ NodeType PExAbstractNode::type() const
 
 QString PExAbstractNode::name(NameModifier mod) const
 {
-    Q_UNUSED(mod);
+    Q_UNUSED(mod)
     return mName;
 }
 

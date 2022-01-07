@@ -45,7 +45,7 @@ class PExAbstractNode : public QObject
     Q_OBJECT
 
 public:
-    virtual ~PExAbstractNode();
+    virtual ~PExAbstractNode() override;
 
     NodeId id() const;
 
