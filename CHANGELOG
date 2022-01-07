@@ -6,6 +6,7 @@ Version 1.9.0  *
 - enabled creating an empty project
 - added icon for project options and open project options in main tabs
 - add models from a model library to the folder of the active project if "Open in existing project" is checked
+- fixed jump behavior of search when using "This File" and navigating different files
 
 Version 1.8.3
 ==================
