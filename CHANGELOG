@@ -1,4 +1,4 @@
-Version 1.9.0  *
+Version 1.9.0
 ==================
 - fixed non-overridden recurrence of immediate options on command line parameters
 - expanded `MIRO installation location` on macOS if AppBundle has been selected
