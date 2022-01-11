@@ -58,11 +58,11 @@ EngineManager::EngineManager(QObject* parent)
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
-            [this](OAIHttpRequestWorker *worker) {
+            [this](OAIHttpRequestWorker *worker, OAIModel_version summary) {
         QString vEngine;
         QString vGams;
         if (parseVersions(worker->response, vEngine, vGams)) {
-            emit reVersion(vEngine, vGams);
+            emit reVersion(vEngine, vGams, summary.isInKubernetes());
         } else {
             emit reVersionError("Could not parse versions");
         }

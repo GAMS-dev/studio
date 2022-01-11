@@ -78,7 +78,7 @@ signals:
     void sslValidation(const QString &errorMessage);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
@@ -103,7 +103,7 @@ private slots:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
-    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
 
 private:
     void setProcState(ProcState newState);

@@ -82,7 +82,7 @@ signals:
     void reAuthorize(const QString &token);
     void reAuthorizeError(const QString &error);
     void rePing(const QString &value);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);

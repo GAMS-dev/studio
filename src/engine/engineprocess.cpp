@@ -259,9 +259,10 @@ void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
     }
 }
 
-void EngineProcess::reVersionIntern(const QString &engineVersion, const QString &gamsVersion)
+void EngineProcess::reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes)
 {
     Q_UNUSED(engineVersion)
+    Q_UNUSED(isInKubernetes)
     mGamsVersion = gamsVersion;
 }
 

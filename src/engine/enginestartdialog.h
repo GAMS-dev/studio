@@ -108,7 +108,7 @@ private slots:
     void authorizeError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
@@ -138,6 +138,7 @@ private:
     QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
+    bool mIsInKubernetes = false;
     int mAuthExpireMinutes = 60*2;
 
     static const QString CUnavailable;

@@ -405,11 +405,12 @@ void EngineStartDialog::reListJobsError(const QString &error)
         showLogin();
 }
 
-void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion)
+void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes)
 {
     mUrlChecks = ucNone;
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
+    mIsInKubernetes = isInKubernetes;
     UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
     UrlCheck protServer = protocol(mProc->url().toString());
     if (protUser != ucNone && protUser != protServer) {
