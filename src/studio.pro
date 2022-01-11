@@ -106,16 +106,24 @@ SOURCES += \
     engine/client/OAIJob_no_text_entry_page.cpp \
     engine/client/OAILog_piece.cpp \
     engine/client/OAIModel_job_labels.cpp \
+    engine/client/OAIModel_job_usage.cpp \
     engine/client/OAIMessage.cpp \
     engine/client/OAIMessage_and_token.cpp \
     engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIModel_hypercube_job.cpp \
+    engine/client/OAIModel_hypercube_usage.cpp \
+    engine/client/OAIModel_instance_info.cpp \
     engine/client/OAIModel_version.cpp \
+    engine/client/OAIModel_usage.cpp \
+    engine/client/OAIModel_userinstance_info.cpp \
     engine/client/OAIQuota.cpp \
     engine/client/OAIQuota_exceeded.cpp \
     engine/client/OAIResult_user.cpp \
     engine/client/OAIStatus_code_meaning.cpp \
     engine/client/OAIStream_entry.cpp \
     engine/client/OAIText_entry.cpp \
+    engine/client/OAITime_span.cpp \
+    engine/client/OAIUsageApi.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
     engine/enginestartdialog.cpp \
@@ -304,8 +312,14 @@ HEADERS += \
     engine/client/OAIMessage.h \
     engine/client/OAIMessage_and_token.h \
     engine/client/OAIModel_auth_token.h \
+    engine/client/OAIModel_hypercube_job.h \
+    engine/client/OAIModel_hypercube_usage.h \
+    engine/client/OAIModel_instance_info.h \
     engine/client/OAIModel_job_labels.h \
+    engine/client/OAIModel_job_usage.h \
     engine/client/OAIModel_version.h \
+    engine/client/OAIModel_usage.h \
+    engine/client/OAIModel_userinstance_info.h \
     engine/client/OAIObject.h \
     engine/client/OAIQuota.h \
     engine/client/OAIQuota_exceeded.h \
@@ -313,6 +327,8 @@ HEADERS += \
     engine/client/OAIStatus_code_meaning.h \
     engine/client/OAIStream_entry.h \
     engine/client/OAIText_entry.h \
+    engine/client/OAITime_span.h \
+    engine/client/OAIUsageApi.h \
     engine/enginemanager.h \
     engine/engineprocess.h \
     engine/enginestartdialog.h \
