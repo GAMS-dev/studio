@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -21,13 +21,13 @@
 # Current GAMS Studio version.
 STUDIO_MAJOR_VERSION=1
 STUDIO_MINOR_VERSION=9
-STUDIO_PATCH_LEVEL=1
+STUDIO_PATCH_LEVEL=2
 VERSION='$$STUDIO_MAJOR_VERSION'.'$$STUDIO_MINOR_VERSION'.'$$STUDIO_PATCH_LEVEL'
 
 # Minimum required GAMS Distribution version, which
 # is the latest official GAMS release.
 GAMS_DISTRIB_MAJOR=38
-GAMS_DISTRIB_MINOR=0
+GAMS_DISTRIB_MINOR=1
 GAMS_DISTRIB_GOLD=0
 GAMS_DISTRIB_VERSION=$$GAMS_DISTRIB_MAJOR$$GAMS_DISTRIB_MINOR$$GAMS_DISTRIB_GOLD
 

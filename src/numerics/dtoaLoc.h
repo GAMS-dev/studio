@@ -3,8 +3,8 @@
  * The author of this software is David M. Gay.
  *
  * Copyright (c) 1991, 2000, 2001 by Lucent Technologies.
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * Permission to use, copy, modify, and distribute this software for any
  * purpose without fee is hereby granted, provided that this entire notice

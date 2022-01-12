@@ -1,3 +1,7 @@
+Version 1.9.2  *
+==================
+- fixed crash when opening a model from the model library while using --ignore-settings
+
 Version 1.9.1
 ==================
 - fixed context menu didn't close in Project Explorer

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -35,6 +35,7 @@ ViewHelper::ViewHelper()
 
 FileId ViewHelper::fileId(QWidget *widget)
 {
+    if (!widget) return FileId();
     bool ok;
     FileId res = widget->property("fileId").toInt(&ok);
     return ok ? res : FileId();
