@@ -35,6 +35,7 @@ ViewHelper::ViewHelper()
 
 FileId ViewHelper::fileId(QWidget *widget)
 {
+    if (!widget) return FileId();
     bool ok;
     FileId res = widget->property("fileId").toInt(&ok);
     return ok ? res : FileId();
