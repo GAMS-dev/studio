@@ -62,6 +62,8 @@ public:
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
+    void getUserInstances();
+    void getQuota();
     void listJobs();
     void getVersions();
     void addLastCert();
@@ -80,6 +82,10 @@ signals:
     void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
+    void reUserInstancesError(const QString &errorText);
+    void reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel);
+    void reQuotaError(const QString &errorText);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
 
@@ -119,8 +125,6 @@ private:
     QString mHost;
     QString mBasePath;
     QString mNamespace;
-    QString mUser;
-    QString mPassword;
     QString mAuthToken;
     QString mOutPath;
     QString mEngineVersion;

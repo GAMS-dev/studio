@@ -44,6 +44,10 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
+    connect(mManager, &EngineManager::reUserInstances, this, &EngineProcess::reUserInstances);
+    connect(mManager, &EngineManager::reUserInstancesError, this, &EngineProcess::reUserInstancesError);
+    connect(mManager, &EngineManager::reQuota, this, &EngineProcess::reQuota);
+    connect(mManager, &EngineManager::reQuotaError, this, &EngineProcess::reQuotaError);
     connect(mManager, &EngineManager::sslErrors, this, &EngineProcess::sslErrors);
     connect(mManager, &EngineManager::reAuthorize, this, &EngineProcess::reAuthorize);
     connect(mManager, &EngineManager::reAuthorizeError, this, &EngineProcess::authorizeError);
@@ -377,6 +381,16 @@ void EngineProcess::setIgnoreSslErrorsCurrentUrl(bool ignore)
 bool EngineProcess::isIgnoreSslErrors() const
 {
     return mManager->isIgnoreSslErrors();
+}
+
+void EngineProcess::getUserInstances()
+{
+    mManager->getUserInstances();
+}
+
+void EngineProcess::getQuota()
+{
+    mManager->getQuota();
 }
 
 void EngineProcess::listJobs()

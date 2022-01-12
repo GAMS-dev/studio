@@ -58,6 +58,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->bAlways->setVisible(false);
     ui->cbAcceptCert->setVisible(false);
     ui->bOk->setText("Login");
+    ui->cbInstance->setVisible(false);
+    ui->laInstance->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -87,8 +89,13 @@ void EngineStartDialog::authorizeChanged(QString authToken)
     Q_UNUSED(authToken)
     if (mProc->authToken().isEmpty())
         showLogin();
-    else
+    else {
         mProc->listJobs();
+        if (mIsInKubernetes) {
+            mProc->getUserInstances();
+            mProc->getQuota();
+        }
+    }
 }
 
 void EngineStartDialog::setHiddenMode(bool preferHidden)
@@ -116,6 +123,10 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
+    connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::reQuota, this, &EngineStartDialog::reQuota);
+    connect(mProc, &EngineProcess::reQuotaError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
 }
@@ -252,6 +263,8 @@ void EngineStartDialog::showSubmit()
     ui->bOk->setText("OK");
     ui->nUser->setText(ui->edUser->text().trimmed());
     ui->nUrl->setText(mProc->url().toString());
+    ui->laInstance->setVisible(mIsInKubernetes);
+    ui->cbInstance->setVisible(mIsInKubernetes);
     setCanSubmit(true);
     if (!mHiddenMode)
         ensureOpened();
@@ -425,6 +438,10 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         else {
             showSubmit();
             mProc->listJobs();
+            if (mIsInKubernetes) {
+                mProc->getUserInstances();
+                mProc->getQuota();
+            }
         }
     }
 }
@@ -452,6 +469,35 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     if (!isVisible()) {
         ensureOpened();
     }
+}
+
+void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel)
+{
+    ui->cbInstance->clear();
+    int cur = 0;
+    for (const QPair<QString, QList<int> > &entry : instances) {
+        if (entry.second.size() != 3) continue;
+        if (entry.first == defaultLabel) cur = ui->cbInstance->count();
+        QString text("%1 (%2 vCPU, %3 MiB RAM, %4x)");
+        ui->cbInstance->addItem(text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]));
+    }
+    if (ui->cbInstance->count())
+        ui->cbInstance->setCurrentIndex(cur);
+}
+
+void EngineStartDialog::reUserInstancesError(const QString &errorText)
+{
+    // TODO(JM) decide what to do on failing request here
+}
+
+void EngineStartDialog::reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel)
+{
+
+}
+
+void EngineStartDialog::reQuotaError(const QString &errorText)
+{
+    // TODO(JM) decide what to do on failing request here
 }
 
 void EngineStartDialog::selfSignedCertFound(int sslError)

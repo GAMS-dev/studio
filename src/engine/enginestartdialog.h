@@ -110,6 +110,10 @@ private slots:
     void reListJobsError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
+    void reUserInstancesError(const QString &errorText);
+    void reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel);
+    void reQuotaError(const QString &errorText);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);

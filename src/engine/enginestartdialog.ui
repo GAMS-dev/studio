@@ -320,13 +320,6 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item row="1" column="0">
-           <widget class="QLabel" name="nText3">
-            <property name="text">
-             <string>Total jobs</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
            <widget class="QLabel" name="nJobCount">
             <property name="font">
@@ -353,6 +346,23 @@
              <string>namespace</string>
             </property>
            </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="laInstance">
+            <property name="text">
+             <string>Instance</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="nText3">
+            <property name="text">
+             <string>Total jobs</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="cbInstance"/>
           </item>
          </layout>
         </widget>
