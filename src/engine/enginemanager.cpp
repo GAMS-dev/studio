@@ -68,7 +68,7 @@ EngineManager::EngineManager(QObject* parent)
         QList<QPair<QString, QList<int>>> instList;
         for (const OAIModel_instance_info &ii : infoList) {
             QList<int> list;
-            list << ii.getCpuRequest() << ii.getMemoryRequest() << ii.getMultiplier();
+            list << int(ii.getCpuRequest()) << ii.getMemoryRequest() << int(ii.getMultiplier());
             instList << QPair<QString, QList<int>>(ii.getLabel(), list);
         }
         emit reUserInstances(instList, iiDef.getLabel());
@@ -79,45 +79,16 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mUsageApi, &OAIUsageApi::getQuotaSignal, this, [this](QList<OAIQuota> summary) {
-        QPair<int, QString> diskRemain(-1, "");
-        QPair<int, QString> volRemain(-1, "");
-        QPair<int, QString> parallel(-1, "");
+        QList<QuotaData*> dataList;
         for (const OAIQuota &quota : summary) {
-            if (quota.is_disk_quota_Set() && quota.is_disk_used_Set()) {
-                int remain = quota.getDiskQuota() - quota.getDiskUsed();
-                if (diskRemain.first < 0 || diskRemain.first >= remain) {
-                    if (diskRemain.first > remain) {
-                        diskRemain.first = remain;
-                        diskRemain.second = quota.getUsername();
-                    } else {
-                        diskRemain.second += " and " + quota.getUsername();
-                    }
-                }
-            }
-            if (quota.is_volume_quota_Set() && quota.is_volume_used_Set()) {
-                int remain = quota.getVolumeQuota() - quota.getVolumeUsed();
-                if (volRemain.first < 0 || volRemain.first >= remain) {
-                    if (volRemain.first > remain) {
-                        volRemain.first = remain;
-                        volRemain.second = quota.getUsername();
-                    } else {
-                        volRemain.second += " and " + quota.getUsername();
-                    }
-                }
-            }
-            if (quota.is_parallel_quota_Set()) {
-                int para = quota.getParallelQuota();
-                if (parallel.first < 0 || parallel.first >= para) {
-                    if (parallel.first > para) {
-                        parallel.first = para;
-                        parallel.second = quota.getUsername();
-                    } else {
-                        parallel.second += " and " + quota.getUsername();
-                    }
-                }
-            }
+            QuotaData *data = new QuotaData();
+            data->name = quota.getUsername();
+            data->disk = UsedQuota(quota.getDiskQuota(), quota.getDiskUsed());
+            data->volume = UsedQuota(quota.getVolumeQuota(), quota.getVolumeUsed());
+            data->parallel = quota.getParallelQuota();
+            dataList << data;
         }
-        emit reQuota(diskRemain, volRemain, parallel);
+        emit reQuota(dataList);
     });
     connect(mUsageApi, &OAIUsageApi::getQuotaSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
@@ -330,15 +301,18 @@ void EngineManager::listJobs()
     mJobsApi->listJobs(false, QString("status process_status"), 1, 1);
 }
 
-void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)
+void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance)
 {
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
     QString dummy;
     QStringList dummyL;
+    QStringList labels;
+    if (!instance.isEmpty())
+        labels << QString("instance=%1").arg(instance);
 
-    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, /*labels*/dummyL, model);
+    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, model);
 }
 
 void EngineManager::getJobStatus()

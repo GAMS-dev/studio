@@ -89,13 +89,8 @@ void EngineStartDialog::authorizeChanged(QString authToken)
     Q_UNUSED(authToken)
     if (mProc->authToken().isEmpty())
         showLogin();
-    else {
-        mProc->listJobs();
-        if (mIsInKubernetes) {
-            mProc->getUserInstances();
-            mProc->getQuota();
-        }
-    }
+    else
+        mProc->sendPostLoginRequests();
 }
 
 void EngineStartDialog::setHiddenMode(bool preferHidden)
@@ -124,9 +119,8 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
-    connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reVersionError);
-    connect(mProc, &EngineProcess::reQuota, this, &EngineStartDialog::reQuota);
-    connect(mProc, &EngineProcess::reQuotaError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reUserInstancesError);
+    connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
 }
@@ -263,8 +257,8 @@ void EngineStartDialog::showSubmit()
     ui->bOk->setText("OK");
     ui->nUser->setText(ui->edUser->text().trimmed());
     ui->nUrl->setText(mProc->url().toString());
-    ui->laInstance->setVisible(mIsInKubernetes);
-    ui->cbInstance->setVisible(mIsInKubernetes);
+    ui->laInstance->setVisible(mProc->inKubernetes());
+    ui->cbInstance->setVisible(mProc->inKubernetes());
     setCanSubmit(true);
     if (!mHiddenMode)
         ensureOpened();
@@ -315,6 +309,11 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         disconnect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
         ui->cbAcceptCert->setChecked(false);
         connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
+    }
+    if (mProc->inKubernetes()) {
+        QVariantList data = ui->cbInstance->currentData().toList();
+        if (data.size() == 4)
+            mProc->setSelectedInstance(data.first().toString());
     }
     mProc->setNamespace(ui->edNamespace->text().trimmed());
     emit submit(start);
@@ -418,12 +417,12 @@ void EngineStartDialog::reListJobsError(const QString &error)
         showLogin();
 }
 
-void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes)
+void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes)
 {
+    Q_UNUSED(inKubernetes)
     mUrlChecks = ucNone;
     mEngineVersion = engineVersion;
     mGamsVersion = gamsVersion;
-    mIsInKubernetes = isInKubernetes;
     UrlCheck protUser = protocol(cleanUrl(ui->edUrl->text()));
     UrlCheck protServer = protocol(mProc->url().toString());
     if (protUser != ucNone && protUser != protServer) {
@@ -437,11 +436,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             showLogin();
         else {
             showSubmit();
-            mProc->listJobs();
-            if (mIsInKubernetes) {
-                mProc->getUserInstances();
-                mProc->getQuota();
-            }
+            mProc->sendPostLoginRequests();
         }
     }
 }
@@ -479,7 +474,10 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > 
         if (entry.second.size() != 3) continue;
         if (entry.first == defaultLabel) cur = ui->cbInstance->count();
         QString text("%1 (%2 vCPU, %3 MiB RAM, %4x)");
-        ui->cbInstance->addItem(text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]));
+        text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
+        QVariantList data;
+        data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
+        ui->cbInstance->addItem(text, data);
     }
     if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(cur);
@@ -490,14 +488,17 @@ void EngineStartDialog::reUserInstancesError(const QString &errorText)
     // TODO(JM) decide what to do on failing request here
 }
 
-void EngineStartDialog::reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel)
+void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList &volumeHint)
 {
-
-}
-
-void EngineStartDialog::reQuotaError(const QString &errorText)
-{
-    // TODO(JM) decide what to do on failing request here
+    ui->laAvailDisk->setVisible(diskHint.size() > 1);
+    if (ui->laAvailDisk->isVisible()) {
+        ui->laAvailDisk->setText(diskHint.at(0));
+        ui->laAvailDisk->setToolTip("Caused by " + diskHint.at(1));
+    }
+    if (ui->laAvailVolume->isVisible()) {
+        ui->laAvailVolume->setText(volumeHint.at(0));
+        ui->laAvailVolume->setToolTip("Caused by " + volumeHint.at(1));
+    }
 }
 
 void EngineStartDialog::selfSignedCertFound(int sslError)

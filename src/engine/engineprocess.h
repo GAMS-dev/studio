@@ -29,6 +29,7 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+struct QuotaData;
 class EngineManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine
@@ -62,15 +63,20 @@ public:
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
-    void getUserInstances();
-    void getQuota();
+    void sendPostLoginRequests();
     void listJobs();
+    void getUserInstances();
+    void setSelectedInstance(const QString &selectedInstance);
+    void getQuota();
     void getVersions();
     void addLastCert();
+    bool inKubernetes() const;
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
     void abortRequests();
+
+
 
 signals:
     void authorized(const QString &token);
@@ -84,8 +90,7 @@ signals:
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &errorText);
-    void reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel);
-    void reQuotaError(const QString &errorText);
+    void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
 
@@ -96,6 +101,8 @@ protected slots:
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
+    void reQuota(const QList<QuotaData *> data);
+    void reQuotaError(const QString &errorText);
     void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
@@ -129,6 +136,8 @@ private:
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;
+    bool mInKubernetes = false;
+    QString mUserInstance;
     bool mHasPreviousWorkOption = false;
     bool mForcePreviousWork = false;
     bool mForceGdx = true;

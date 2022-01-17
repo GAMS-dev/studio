@@ -108,12 +108,11 @@ private slots:
     void authorizeError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &errorText);
-    void reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel);
-    void reQuotaError(const QString &errorText);
+    void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);
@@ -142,7 +141,6 @@ private:
     QTimer mUrlChangedTimer;
     QString mEngineVersion;
     QString mGamsVersion;
-    bool mIsInKubernetes = false;
     int mAuthExpireMinutes = 60*2;
 
     static const QString CUnavailable;

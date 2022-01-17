@@ -36,6 +36,24 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+struct UsedQuota {
+    UsedQuota() : max(-1), used(-1) {}
+    UsedQuota(double _max, double _used) : max(_max), used(_used) {}
+    double remain() {
+        if (max < 0 || used < 0) return -1;
+        return max - used;
+    }
+    double max;
+    double used;
+};
+
+struct QuotaData {
+    QString name;
+    UsedQuota disk;
+    UsedQuota volume;
+    double parallel = 0;
+};
+
 class EngineManager: public QObject
 {
     Q_OBJECT
@@ -72,7 +90,7 @@ public:
     void getUserInstances();
     void getQuota();
     void listJobs();
-    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
+    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance);
     void getJobStatus();
     void getLog();
     void getOutputFile();
@@ -89,7 +107,7 @@ signals:
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &error);
-    void reQuota(QPair<int, QString> diskRemain, QPair<int, QString> volRemain, QPair<int, QString> parallel);
+    void reQuota(QList<QuotaData*> data);
     void reQuotaError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);

@@ -197,7 +197,9 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         QString modlName = modelName();
         QString zip = mOutPath + QDir::separator() + modlName + ".zip";
 
-        mManager->submitJob(modlName, mNamespace, zip, remoteParameters());
+        QString instance;
+//        if (mInKubernetes) instance =
+        mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance);
         setProcState(Proc3Queued);
     }
     mSubProc->deleteLater();
@@ -266,7 +268,7 @@ void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
 void EngineProcess::reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes)
 {
     Q_UNUSED(engineVersion)
-    Q_UNUSED(isInKubernetes)
+    mInKubernetes = isInKubernetes;
     mGamsVersion = gamsVersion;
 }
 
@@ -383,6 +385,20 @@ bool EngineProcess::isIgnoreSslErrors() const
     return mManager->isIgnoreSslErrors();
 }
 
+void EngineProcess::sendPostLoginRequests()
+{
+    listJobs();
+    if (mInKubernetes) {
+        getUserInstances();
+        getQuota();
+    }
+}
+
+void EngineProcess::listJobs()
+{
+    mManager->listJobs();
+}
+
 void EngineProcess::getUserInstances()
 {
     mManager->getUserInstances();
@@ -391,11 +407,6 @@ void EngineProcess::getUserInstances()
 void EngineProcess::getQuota()
 {
     mManager->getQuota();
-}
-
-void EngineProcess::listJobs()
-{
-    mManager->listJobs();
 }
 
 void EngineProcess::getVersions()
@@ -478,6 +489,74 @@ void EngineProcess::reGetLog(const QByteArray &data)
     QByteArray res = convertReferences(data);
     if (!res.isEmpty())
         emit newStdChannelData("[]"+res);
+}
+
+void EngineProcess::reQuota(const QList<QuotaData *> data)
+{
+    QPair<QString, QList<double>> diskRemain("", {-1, -1});
+    QPair<QString, QList<double>> volRemain("", {-1, -1});
+    QPair<QString, QList<double>> parallel("", {-1, -1});
+
+    for (QuotaData *q : data) {
+        if (q->disk.remain() >= 0) {
+            if (diskRemain.second.at(0) < 0 || diskRemain.second.at(0) >= q->disk.remain()) {
+                if (diskRemain.second.at(0) > q->disk.remain()) diskRemain.first = "";
+                diskRemain.first += (diskRemain.first.isEmpty() ? "" : " and ") + q->name;
+                diskRemain.second[0] = q->disk.remain();
+                diskRemain.second[1] = q->disk.max;
+            }
+        }
+        if (q->volume.remain() >= 0) {
+            if (volRemain.second.at(0) < 0 || volRemain.second.at(0) >= q->volume.remain()) {
+                if (volRemain.second.at(0) > q->volume.remain()) volRemain.first = "";
+                volRemain.first += (volRemain.first.isEmpty() ? "" : " and ") + q->name;
+                volRemain.second[0] = q->volume.remain();
+                volRemain.second[1] = q->volume.max;
+            }
+        }
+//        if (q->parallel >= 0) {
+//            if (parallel.second.at(0) < 0 || parallel.second.at(0) > q->volume.remain()) {
+//                if (parallel.second.at(0) > q->volume.remain()) parallel.first = "";
+//                parallel.first += (parallel.first.isEmpty() ? "" : " and ") + q->name;
+//                parallel.second[0] = q->parallel;
+//                parallel.second[1] = q->parallel;
+//            }
+//        }
+    }
+    QStringList availDisk;
+    if (diskRemain.second.at(0) >= 0) {
+        QString val;
+        if (diskRemain.second.at(0) > 100000)
+            val = QString::number(diskRemain.second.at(0) / 1000000, 'g', 2) + " MB";
+        else
+            val = QString::number(diskRemain.second.at(0) / 1000, 'g', 3) + " kb";
+        availDisk << val;
+        availDisk << diskRemain.first;
+    }
+    QStringList availVolume;
+    if (volRemain.second.at(0) >= 0) {
+        QString val;
+        int h = qRound((diskRemain.second.at(0) + 1800) / 3600) - 1;
+        int m = qRound((diskRemain.second.at(0) - (h*3600) + 30) / 60) - 1;
+        int s = int(diskRemain.second.at(0)) - (h*3600) - (m*60);
+        if (h)
+            val = QString::number(h) + (m>9 ? ":" : ":0") + QString::number(m) + " h";
+        else
+            val = QString::number(m) + (s>9 ? "." : ".0") + QString::number(s) + " min";
+        availVolume << QString::number(volRemain.second.at(0));
+        availVolume << volRemain.first;
+    }
+//    QStringList availParallel;
+//    if (volRemain.second.at(0) >= 0) {
+//        availParallel << QString::number(parallel.second.at(0));
+//        availParallel << parallel.first;
+//    }
+    emit quotaHint(availDisk, availVolume);
+}
+
+void EngineProcess::reQuotaError(const QString &errorText)
+{
+    // TODO(JM) handle error
 }
 
 void EngineProcess::jobIsQueued()
@@ -730,6 +809,16 @@ void EngineProcess::addFilenames(QString efiFile, QStringList &list)
         }
     }
     file.close();
+}
+
+void EngineProcess::setSelectedInstance(const QString &selectedInstance)
+{
+    mUserInstance = selectedInstance;
+}
+
+bool EngineProcess::inKubernetes() const
+{
+    return mInKubernetes;
 }
 
 bool EngineProcess::forceGdx() const

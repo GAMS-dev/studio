@@ -953,7 +953,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
     if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::PrO) {
-        // TODO(JM)-1889 create ProjectOptions "editor"
         project::ProjectOptions *prop = new project::ProjectOptions(tabWidget);
         prop->setProject(project);
         res = ViewHelper::initEditorType(prop);
