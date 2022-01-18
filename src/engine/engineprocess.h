@@ -58,16 +58,16 @@ public:
     bool setUrl(const QString &url);
     QUrl url();
     void authorize(const QString &username, const QString &password, int expireMinutes);
+    void initUsername(const QString &user);
     void setAuthToken(const QString &bearerToken);
     QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
-    void sendPostLoginRequests();
     void listJobs();
-    void getUserInstances();
+    void listNamespaces();
+    void sendPostLoginRequests();
     void setSelectedInstance(const QString &selectedInstance);
-    void getQuota();
     void getVersions();
     void addLastCert();
     bool inKubernetes() const;
@@ -86,6 +86,8 @@ signals:
     void sslValidation(const QString &errorMessage);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
+    void reListNamspaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);

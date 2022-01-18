@@ -108,6 +108,8 @@ private slots:
     void authorizeError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
+    void reListNamspaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);

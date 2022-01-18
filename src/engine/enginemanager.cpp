@@ -19,9 +19,10 @@
 #include "logger.h"
 #include "client/OAIAuthApi.h"
 #include "client/OAIDefaultApi.h"
-#include "client/OAIUsageApi.h"
 #include "client/OAIJobsApi.h"
 #include "client/OAIHelpers.h"
+#include "client/OAINamespacesApi.h"
+#include "client/OAIUsageApi.h"
 #include <QString>
 #include <iostream>
 #include <QFile>
@@ -41,11 +42,11 @@ QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
-      mUsageApi(new OAIUsageApi()), mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
+      mNamespacesApi(new OAINamespacesApi()), mUsageApi(new OAIUsageApi()), mNetworkManager(NetworkManager::manager()),
+      mQueueFinished(false)
 {
     // ===== initialize Authorization API =====
 
-    mAuthApi->initializeServerConfigs();
     mAuthApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignal, this,
@@ -55,6 +56,23 @@ EngineManager::EngineManager(QObject* parent)
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
         emit reAuthorizeError(getJsonMessageIfFound(text));
+    });
+
+
+    // ===== initialize Namespaces API =====
+
+    mNamespacesApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignal, this, [this](QList<OAINamespace> summary) {
+        QStringList nSpaces;
+        for (const OAINamespace &nspace : summary) {
+            nSpaces << nspace.getName();
+        }
+        emit reListNamspaces(nSpaces);
+    });
+    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reListNamespacesError(getJsonMessageIfFound(text));
     });
 
 
@@ -202,6 +220,7 @@ EngineManager::~EngineManager()
     mAuthApi->deleteLater();
     mDefaultApi->deleteLater();
     mJobsApi->deleteLater();
+    mNamespacesApi->deleteLater();
     mUsageApi->deleteLater();
 }
 
@@ -239,6 +258,7 @@ void EngineManager::setUrl(const QString &url)
     QUrl cleanUrl = url.endsWith('/') ? QUrl(url.left(url.length()-1)) : mUrl;
     mDefaultApi->setNewServerForAllOperations(cleanUrl);
     mJobsApi->setNewServerForAllOperations(cleanUrl);
+    mNamespacesApi->setNewServerForAllOperations(cleanUrl);
     mUsageApi->setNewServerForAllOperations(cleanUrl);
     if (mUrl.scheme() == "https")
         setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
@@ -258,6 +278,7 @@ void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
     mAuthApi->setNetworkAccessManager(mNetworkManager);
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
     mJobsApi->setNetworkAccessManager(mNetworkManager);
+    mNamespacesApi->setNetworkAccessManager(mNetworkManager);
     mUsageApi->setNetworkAccessManager(mNetworkManager);
 }
 
@@ -277,8 +298,15 @@ void EngineManager::setAuthToken(const QString &bearerToken)
     // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
     mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mJobsApi->setPassword("");
+    mNamespacesApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mNamespacesApi->setPassword("");
     mUsageApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mUsageApi->setPassword("");
+}
+
+void EngineManager::initUsername(const QString &user)
+{
+    mUser = user;
 }
 
 void EngineManager::getVersion()
@@ -288,11 +316,13 @@ void EngineManager::getVersion()
 
 void EngineManager::getUserInstances()
 {
+    DEB() << "Get instances for user " << mUser;
     mUsageApi->getUserInstances(mUser);
 }
 
 void EngineManager::getQuota()
 {
+    DEB() << "Get quota for user " << mUser;
     mUsageApi->getQuota(mUser);
 }
 
@@ -301,8 +331,14 @@ void EngineManager::listJobs()
     mJobsApi->listJobs(false, QString("status process_status"), 1, 1);
 }
 
+void EngineManager::listNamespaces()
+{
+    mNamespacesApi->listNamespaces();
+}
+
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance)
 {
+    DEB() << "INSTANCE " << instance;
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);

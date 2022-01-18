@@ -29,6 +29,7 @@ namespace OpenAPI {
 class OAIAuthApi;
 class OAIDefaultApi;
 class OAIJobsApi;
+class OAINamespacesApi;
 class OAIUsageApi;
 }
 
@@ -86,10 +87,12 @@ public:
 
     void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
+    void initUsername(const QString &user);
     void getVersion();
     void getUserInstances();
     void getQuota();
     void listJobs();
+    void listNamespaces();
     void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance);
     void getJobStatus();
     void getLog();
@@ -107,6 +110,8 @@ signals:
     void reVersionError(const QString &errorText);
     void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &error);
+    void reListNamspaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
     void reQuota(QList<QuotaData*> data);
     void reQuotaError(const QString &error);
     void reListJobs(qint32 count);
@@ -133,6 +138,7 @@ private:
     OpenAPI::OAIAuthApi *mAuthApi;
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
+    OpenAPI::OAINamespacesApi *mNamespacesApi;
     OpenAPI::OAIUsageApi *mUsageApi;
     QUrl mUrl;
     QUrl mIgnoreSslUrl;

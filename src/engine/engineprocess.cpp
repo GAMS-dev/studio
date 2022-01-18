@@ -56,6 +56,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
     connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
     connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
+    connect(mManager, &EngineManager::reListNamspaces, this, &EngineProcess::reListNamspaces);
+    connect(mManager, &EngineManager::reListNamespacesError, this, &EngineProcess::reListNamespacesError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
     connect(mManager, &EngineManager::reGetJobStatus, this, &EngineProcess::reGetJobStatus);
     connect(mManager, &EngineManager::reGetOutputFile, this, &EngineProcess::reGetOutputFile);
@@ -198,7 +200,7 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         QString zip = mOutPath + QDir::separator() + modlName + ".zip";
 
         QString instance;
-//        if (mInKubernetes) instance =
+        if (mInKubernetes) instance = mUserInstance;
         mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance);
         setProcState(Proc3Queued);
     }
@@ -360,6 +362,11 @@ void EngineProcess::authorize(const QString &username, const QString &password, 
     setProcState(ProcCheck);
 }
 
+void EngineProcess::initUsername(const QString &user)
+{
+    mManager->initUsername(user);
+}
+
 void EngineProcess::setAuthToken(const QString &bearerToken)
 {
     mAuthToken = bearerToken;
@@ -385,28 +392,23 @@ bool EngineProcess::isIgnoreSslErrors() const
     return mManager->isIgnoreSslErrors();
 }
 
-void EngineProcess::sendPostLoginRequests()
-{
-    listJobs();
-    if (mInKubernetes) {
-        getUserInstances();
-        getQuota();
-    }
-}
-
 void EngineProcess::listJobs()
 {
     mManager->listJobs();
 }
 
-void EngineProcess::getUserInstances()
+void EngineProcess::listNamespaces()
 {
-    mManager->getUserInstances();
+    mManager->listNamespaces();
 }
 
-void EngineProcess::getQuota()
+void EngineProcess::sendPostLoginRequests()
 {
-    mManager->getQuota();
+    mManager->listNamespaces();
+    if (mInKubernetes) {
+        mManager->getUserInstances();
+        mManager->getQuota();
+    }
 }
 
 void EngineProcess::getVersions()
@@ -606,6 +608,7 @@ void EngineProcess::reAuthorize(const QString &token)
     mManager->setAuthToken(token);
     if (!token.isEmpty()) {
         mManager->listJobs();
+        mManager->listNamespaces();
         setProcState(ProcCheck);
     }
     emit authorized(token);
@@ -650,8 +653,9 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
         if (scanDirIndex >= 0) mInParameterBlock = true;
     }
     if (mInParameterBlock) {
-        scanDirIndex = qMax(indexOfEnd(data, "    Input ", scanDirIndex),
-                            indexOfEnd(data, "    Restart ", scanDirIndex));
+        if (data.size())
+            scanDirIndex = qMax(indexOfEnd(data, "    Input ", scanDirIndex),
+                                indexOfEnd(data, "    Restart ", scanDirIndex));
         int end = 0;
         if (scanDirIndex >= 0) {
             end = scanDirIndex;

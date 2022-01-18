@@ -340,13 +340,6 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="edNamespace">
-            <property name="placeholderText">
-             <string>namespace</string>
-            </property>
-           </widget>
-          </item>
           <item row="2" column="0">
            <widget class="QLabel" name="laInstance">
             <property name="text">
@@ -415,6 +408,9 @@
              <string>Available</string>
             </property>
            </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="cbNamespace"/>
           </item>
          </layout>
         </widget>
@@ -494,7 +490,6 @@
   <tabstop>edUser</tabstop>
   <tabstop>edPassword</tabstop>
   <tabstop>cbAcceptCert</tabstop>
-  <tabstop>edNamespace</tabstop>
   <tabstop>cbForceGdx</tabstop>
   <tabstop>bOk</tabstop>
   <tabstop>bCancel</tabstop>

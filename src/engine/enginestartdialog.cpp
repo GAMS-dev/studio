@@ -47,7 +47,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
 
     connect(ui->edUrl, &QLineEdit::textEdited, this, [this]() { mUrlChangedTimer.start(); });
     connect(ui->edUrl, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->edNamespace, &QLineEdit::textChanged, this, &EngineStartDialog::updateSubmitStates);
+    connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
@@ -90,7 +90,7 @@ void EngineStartDialog::authorizeChanged(QString authToken)
     if (mProc->authToken().isEmpty())
         showLogin();
     else
-        mProc->sendPostLoginRequests();
+        mProc->listJobs();
 }
 
 void EngineStartDialog::setHiddenMode(bool preferHidden)
@@ -116,6 +116,8 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
     connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
+    connect(mProc, &EngineProcess::reListNamspaces, this, &EngineStartDialog::reListNamspaces);
+    connect(mProc, &EngineProcess::reListNamespacesError, this, &EngineStartDialog::reListNamespacesError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
     connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
@@ -123,6 +125,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
+    mProc->initUsername(ui->edUser->text().trimmed());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -148,6 +151,7 @@ void EngineStartDialog::initData(const QString &_url, const QString &_user, int 
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
+    if (mProc) mProc->initUsername(_user.trimmed());
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
     if (selfCert) {
@@ -155,7 +159,7 @@ void EngineStartDialog::initData(const QString &_url, const QString &_user, int 
         ui->cbAcceptCert->setChecked(true);
     }
     mAuthExpireMinutes = authExpireMinutes;
-    ui->edNamespace->setText(_nSpace.trimmed());
+    ui->cbNamespace->setCurrentText(_nSpace.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
 }
 
@@ -171,7 +175,7 @@ QString EngineStartDialog::url() const
 
 QString EngineStartDialog::nSpace() const
 {
-    return ui->edNamespace->text();
+    return ui->cbNamespace->currentText();
 }
 
 QString EngineStartDialog::user() const
@@ -197,7 +201,7 @@ void EngineStartDialog::focusEmptyField()
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
         else ui->bOk->setFocus();
     } else {
-        if (ui->edNamespace->text().isEmpty()) ui->edNamespace->setFocus();
+        if (ui->cbNamespace->currentText().isEmpty()) ui->cbNamespace->setFocus();
         else ui->bOk->setFocus();
     }
 }
@@ -282,6 +286,7 @@ void EngineStartDialog::bLogoutClicked()
 {
     ui->edPassword->setText("");
     mProc->setAuthToken("");
+    mProc->initUsername("");
     emit mProc->authorized("");
     showLogin();
 }
@@ -315,7 +320,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         if (data.size() == 4)
             mProc->setSelectedInstance(data.first().toString());
     }
-    mProc->setNamespace(ui->edNamespace->text().trimmed());
+    mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
     emit submit(start);
 }
 
@@ -350,7 +355,7 @@ void EngineStartDialog::setCanLogin(bool value)
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
-    value = value && !ui->edNamespace->text().isEmpty() && mAuthorized;
+    value = value && !ui->cbNamespace->currentText().isEmpty() && mAuthorized;
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
         ui->bAlways->setEnabled(value);
@@ -397,7 +402,7 @@ void EngineStartDialog::updateLoginStates()
 
 void EngineStartDialog::updateSubmitStates()
 {
-    bool enabled = !ui->edNamespace->text().isEmpty();
+    bool enabled = !ui->cbNamespace->currentText().isEmpty();
     setCanSubmit(enabled);
     setConnectionState(mConnectState);
 }
@@ -407,6 +412,7 @@ void EngineStartDialog::reListJobs(qint32 count)
     ui->nJobCount->setText(QString::number(count));
     mAuthorized = true;
     showSubmit();
+    mProc->sendPostLoginRequests();
 }
 
 void EngineStartDialog::reListJobsError(const QString &error)
@@ -415,6 +421,22 @@ void EngineStartDialog::reListJobsError(const QString &error)
     DEB() << "ERROR: " << error;
     if (!inLogin())
         showLogin();
+}
+
+void EngineStartDialog::reListNamspaces(const QStringList &list)
+{
+    QString text = ui->cbNamespace->currentText();
+    ui->cbNamespace->clear();
+    ui->cbNamespace->addItems(list);
+    if (text.trimmed().isEmpty() && list.size())
+        ui->cbNamespace->setCurrentIndex(0);
+    else
+        ui->cbNamespace->setCurrentText(text);
+}
+
+void EngineStartDialog::reListNamespacesError(const QString &error)
+{
+    DEB() << "ListNamespace ERROR: " << error;
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes)
@@ -436,7 +458,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             showLogin();
         else {
             showSubmit();
-            mProc->sendPostLoginRequests();
+            mProc->listJobs();
         }
     }
 }
@@ -485,6 +507,7 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > 
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
 {
+    DEB() << "Error getting user instances:  " << errorText;
     // TODO(JM) decide what to do on failing request here
 }
 
@@ -580,7 +603,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;
-                mProc->setNamespace(ui->edNamespace->text().trimmed());
+                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
                 emit submit(true);
             }
         } else {
