@@ -495,9 +495,9 @@ void EngineProcess::reGetLog(const QByteArray &data)
 
 void EngineProcess::reQuota(const QList<QuotaData *> data)
 {
-    QPair<QString, QList<double>> diskRemain("", {-1, -1});
-    QPair<QString, QList<double>> volRemain("", {-1, -1});
-    QPair<QString, QList<double>> parallel("", {-1, -1});
+    QPair<QString, QList<int>> diskRemain("", {-1, -1});
+    QPair<QString, QList<int>> volRemain("", {-1, -1});
+    QPair<QString, QList<int>> parallel("", {-1, -1});
 
     for (QuotaData *q : data) {
         if (q->disk.remain() >= 0) {
@@ -538,14 +538,15 @@ void EngineProcess::reQuota(const QList<QuotaData *> data)
     QStringList availVolume;
     if (volRemain.second.at(0) >= 0) {
         QString val;
-        int h = qRound((diskRemain.second.at(0) + 1800) / 3600) - 1;
-        int m = qRound((diskRemain.second.at(0) - (h*3600) + 30) / 60) - 1;
-        int s = int(diskRemain.second.at(0)) - (h*3600) - (m*60);
+        int h = (volRemain.second.at(0) / 3600);
+        int m = ((volRemain.second.at(0) - (h*3600)) / 60);
+        int s = int(volRemain.second.at(0)) - (h*3600) - (m*60);
+        DEB() << "seconds " << volRemain.second.at(0) << "   h:" << h;
         if (h)
             val = QString::number(h) + (m>9 ? ":" : ":0") + QString::number(m) + " h";
         else
             val = QString::number(m) + (s>9 ? "." : ".0") + QString::number(s) + " min";
-        availVolume << QString::number(volRemain.second.at(0));
+        availVolume << val;
         availVolume << volRemain.first;
     }
 //    QStringList availParallel;

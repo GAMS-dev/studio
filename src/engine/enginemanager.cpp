@@ -102,8 +102,8 @@ EngineManager::EngineManager(QObject* parent)
             QuotaData *data = new QuotaData();
             data->name = quota.getUsername();
             data->disk = UsedQuota(quota.getDiskQuota(), quota.getDiskUsed());
-            data->volume = UsedQuota(quota.getVolumeQuota(), quota.getVolumeUsed());
-            data->parallel = quota.getParallelQuota();
+            data->volume = UsedQuota(int(quota.getVolumeQuota()), int(quota.getVolumeUsed()));
+            data->parallel = int(quota.getParallelQuota());
             dataList << data;
         }
         emit reQuota(dataList);

@@ -39,20 +39,20 @@ namespace engine {
 
 struct UsedQuota {
     UsedQuota() : max(-1), used(-1) {}
-    UsedQuota(double _max, double _used) : max(_max), used(_used) {}
-    double remain() {
+    UsedQuota(int _max, int _used) : max(_max), used(_used) {}
+    int remain() {
         if (max < 0 || used < 0) return -1;
         return max - used;
     }
-    double max;
-    double used;
+    int max;
+    int used;
 };
 
 struct QuotaData {
     QString name;
     UsedQuota disk;
     UsedQuota volume;
-    double parallel = 0;
+    int parallel = 0;
 };
 
 class EngineManager: public QObject

@@ -60,6 +60,9 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->bOk->setText("Login");
     ui->cbInstance->setVisible(false);
     ui->laInstance->setVisible(false);
+    ui->laAvailable->setVisible(false);
+    ui->laAvailDisk->setVisible(false);
+    ui->laAvailVolume->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -263,6 +266,9 @@ void EngineStartDialog::showSubmit()
     ui->nUrl->setText(mProc->url().toString());
     ui->laInstance->setVisible(mProc->inKubernetes());
     ui->cbInstance->setVisible(mProc->inKubernetes());
+    ui->laAvailable->setVisible(mProc->inKubernetes());
+    ui->laAvailDisk->setVisible(mProc->inKubernetes());
+    ui->laAvailVolume->setVisible(mProc->inKubernetes());
     setCanSubmit(true);
     if (!mHiddenMode)
         ensureOpened();
@@ -516,11 +522,11 @@ void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList
     ui->laAvailDisk->setVisible(diskHint.size() > 1);
     if (ui->laAvailDisk->isVisible()) {
         ui->laAvailDisk->setText(diskHint.at(0));
-        ui->laAvailDisk->setToolTip("Caused by " + diskHint.at(1));
+        ui->laAvailDisk->setToolTip("Limited by " + diskHint.at(1));
     }
     if (ui->laAvailVolume->isVisible()) {
         ui->laAvailVolume->setText(volumeHint.at(0));
-        ui->laAvailVolume->setToolTip("Caused by " + volumeHint.at(1));
+        ui->laAvailVolume->setToolTip("Limited by " + volumeHint.at(1));
     }
 }
 
