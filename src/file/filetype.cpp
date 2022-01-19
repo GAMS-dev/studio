@@ -130,7 +130,7 @@ QStringList FileType::validateSuffixList(const QString &commaSeparatedList, QStr
 {
     QStringList res = commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
     for (const QString &suf : CInvalidUserTypes) {
-        if (res.contains(suf)) {
+        if (res.contains(suf, fsCaseSense())) {
             res.removeAll(suf);
             if (invalid) *invalid << suf;
         }

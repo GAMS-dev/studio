@@ -34,6 +34,15 @@ namespace studio {
 class FileType
 {
 public:
+    static Qt::CaseSensitivity fsCaseSense()
+    {
+    #ifdef __unix__
+        return Qt::CaseSensitive;
+    #else
+        return Qt::CaseInsensitive;
+    #endif
+    }
+
     FileKind kind() const;
     QStringList suffix() const;
     QString defaultSuffix() const;

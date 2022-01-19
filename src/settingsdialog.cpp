@@ -193,7 +193,7 @@ void SettingsDialog::loadSettings()
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
     // misc page
-    ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
+    ui->edUserGamsTypes->setText(mSettings->toString(skUserGamsTypes));
     ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
     ui->cb_userLib->clear();
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
@@ -313,7 +313,7 @@ void SettingsDialog::saveSettings()
 
     // misc page
     ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
-    mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
+    mSettings->setString(skUserGamsTypes, ui->edUserGamsTypes->text());
     mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
 
     // user model library

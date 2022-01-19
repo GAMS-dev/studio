@@ -151,7 +151,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
     bool canExportProject = project && project->childCount();
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         if (!canExportProject) break;
         if (node->assignedProject() != project)
             canExportProject = false;

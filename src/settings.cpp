@@ -343,7 +343,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
     safelyAdd(res, skNeosForceGdx, scSys, {"neos","forceGdx"}, true);
     safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
-    safelyAdd(res, skUserFileTypes, scUser, {"misc","userFileTypes"}, QString());
+    safelyAdd(res, skUserGamsTypes, scUser, {"misc","userFileTypes"}, QString());
 
     safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
 
