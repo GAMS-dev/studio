@@ -316,13 +316,11 @@ void EngineManager::getVersion()
 
 void EngineManager::getUserInstances()
 {
-    DEB() << "Get instances for user " << mUser;
     mUsageApi->getUserInstances(mUser);
 }
 
 void EngineManager::getQuota()
 {
-    DEB() << "Get quota for user " << mUser;
     mUsageApi->getQuota(mUser);
 }
 

@@ -493,7 +493,7 @@ void EngineProcess::reGetLog(const QByteArray &data)
         emit newStdChannelData("[]"+res);
 }
 
-void EngineProcess::reQuota(const QList<QuotaData *> data)
+void EngineProcess::reQuota(const QList<gams::studio::engine::QuotaData *> data)
 {
     QPair<QString, QList<int>> diskRemain("", {-1, -1});
     QPair<QString, QList<int>> volRemain("", {-1, -1});
@@ -559,7 +559,7 @@ void EngineProcess::reQuota(const QList<QuotaData *> data)
 
 void EngineProcess::reQuotaError(const QString &errorText)
 {
-    // TODO(JM) handle error
+    emit quotaHint(QStringList() << "unknown" << errorText, QStringList() << "" << "");
 }
 
 void EngineProcess::jobIsQueued()

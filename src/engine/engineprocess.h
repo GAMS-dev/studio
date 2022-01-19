@@ -103,7 +103,7 @@ protected slots:
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
-    void reQuota(const QList<QuotaData *> data);
+    void reQuota(const QList<gams::studio::engine::QuotaData *> data);
     void reQuotaError(const QString &errorText);
     void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);

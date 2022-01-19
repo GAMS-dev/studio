@@ -128,7 +128,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
-    mProc->initUsername(ui->edUser->text().trimmed());
+    mProc->initUsername(user());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -183,7 +183,7 @@ QString EngineStartDialog::nSpace() const
 
 QString EngineStartDialog::user() const
 {
-    return ui->edUser->text();
+    return ui->edUser->text().trimmed();
 }
 
 QString EngineStartDialog::authToken() const
@@ -200,7 +200,7 @@ void EngineStartDialog::focusEmptyField()
 {
     if (inLogin()) {
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
-        else if (ui->edUser->text().isEmpty()) ui->edUser->setFocus();
+        else if (user().isEmpty()) ui->edUser->setFocus();
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
         else ui->bOk->setFocus();
     } else {
@@ -262,7 +262,7 @@ void EngineStartDialog::showSubmit()
     ui->stackedWidget->setCurrentIndex(1);
     ui->bAlways->setVisible(true);
     ui->bOk->setText("OK");
-    ui->nUser->setText(ui->edUser->text().trimmed());
+    ui->nUser->setText(user());
     ui->nUrl->setText(mProc->url().toString());
     ui->laInstance->setVisible(mProc->inKubernetes());
     ui->cbInstance->setVisible(mProc->inKubernetes());
@@ -310,7 +310,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     ui->bAlways->setEnabled(false);
 
     if (inLogin() && button == ui->bOk) {
-        mProc->authorize(ui->edUser->text(), ui->edPassword->text(), mAuthExpireMinutes);
+        mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
         return;
     }
     mAlways = button == ui->bAlways;
@@ -350,7 +350,7 @@ void EngineStartDialog::getVersion()
 void EngineStartDialog::setCanLogin(bool value)
 {
     value = value && !ui->edUrl->text().isEmpty()
-            && !ui->edUser->text().isEmpty()
+            && !user().isEmpty()
             && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
@@ -361,6 +361,7 @@ void EngineStartDialog::setCanLogin(bool value)
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
+    //TODO(JM) regard kubernetes
     value = value && !ui->cbNamespace->currentText().isEmpty() && mAuthorized;
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
@@ -398,8 +399,7 @@ void EngineStartDialog::urlEdited(const QString &text)
 
 void EngineStartDialog::updateLoginStates()
 {
-    bool enabled = !ui->edUrl->text().isEmpty()
-            && !ui->edUser->text().isEmpty() && !ui->edPassword->text().isEmpty();
+    bool enabled = !ui->edUrl->text().isEmpty() && !user().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
         getVersion();
     }
@@ -423,7 +423,6 @@ void EngineStartDialog::reListJobs(qint32 count)
 
 void EngineStartDialog::reListJobsError(const QString &error)
 {
-    Q_UNUSED(error)
     DEB() << "ERROR: " << error;
     if (!inLogin())
         showLogin();
@@ -442,7 +441,8 @@ void EngineStartDialog::reListNamspaces(const QStringList &list)
 
 void EngineStartDialog::reListNamespacesError(const QString &error)
 {
-    DEB() << "ListNamespace ERROR: " << error;
+    ui->laWarn->setText("Could not read namespaces" + error.trimmed());
+    ui->laWarn->setToolTip("Type in a valid namespace manualy");
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes)
@@ -509,12 +509,14 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > 
     }
     if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(cur);
+    ui->cbInstance->setToolTip("");
 }
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
 {
-    DEB() << "Error getting user instances:  " << errorText;
-    // TODO(JM) decide what to do on failing request here
+    ui->cbInstance->clear();
+    ui->cbInstance->addItem("-no instances defined-");
+    ui->cbInstance->setToolTip(errorText);
 }
 
 void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList &volumeHint)

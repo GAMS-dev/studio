@@ -112,7 +112,7 @@ signals:
     void reUserInstancesError(const QString &error);
     void reListNamspaces(const QStringList &list);
     void reListNamespacesError(const QString &error);
-    void reQuota(QList<QuotaData*> data);
+    void reQuota(QList<gams::studio::engine::QuotaData*> data);
     void reQuotaError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
