@@ -119,7 +119,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
     connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
-    connect(mProc, &EngineProcess::reListNamspaces, this, &EngineStartDialog::reListNamspaces);
+    connect(mProc, &EngineProcess::reListNamspaces, this, &EngineStartDialog::reListNamespaces);
     connect(mProc, &EngineProcess::reListNamespacesError, this, &EngineStartDialog::reListNamespacesError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
@@ -428,21 +428,33 @@ void EngineStartDialog::reListJobsError(const QString &error)
         showLogin();
 }
 
-void EngineStartDialog::reListNamspaces(const QStringList &list)
+void EngineStartDialog::reListNamespaces(const QStringList &list)
 {
-    QString text = ui->cbNamespace->currentText();
+    QString text = ui->cbNamespace->currentText().trimmed();
     ui->cbNamespace->clear();
+    if (list.isEmpty()) {
+        ui->cbNamespace->addItem("-no namespace-", "SKIP");
+        ui->cbNamespace->setToolTip("");
+        return;
+    }
     ui->cbNamespace->addItems(list);
-    if (text.trimmed().isEmpty() && list.size())
-        ui->cbNamespace->setCurrentIndex(0);
+    if (!text.isEmpty() && list.contains(text))
+        ui->cbNamespace->setCurrentIndex(list.indexOf(text));
     else
-        ui->cbNamespace->setCurrentText(text);
+        ui->cbNamespace->setCurrentIndex(0);
+    if (list.size() == 1)
+        ui->cbNamespace->setToolTip("This is the only namespace with permissions");
+    else
+        ui->cbNamespace->setToolTip(QString::number(list.size())+" namespaces with permissions");
 }
 
 void EngineStartDialog::reListNamespacesError(const QString &error)
 {
+    ui->cbNamespace->clear();
+    ui->cbNamespace->addItem("-no namespace-", "SKIP");
+    ui->cbNamespace->setToolTip("");
     ui->laWarn->setText("Could not read namespaces" + error.trimmed());
-    ui->laWarn->setToolTip("Type in a valid namespace manualy");
+    ui->laWarn->setToolTip("Try to login again or contact your administrator");
 }
 
 void EngineStartDialog::reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes)

@@ -66,7 +66,18 @@ EngineManager::EngineManager(QObject* parent)
     connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignal, this, [this](QList<OAINamespace> summary) {
         QStringList nSpaces;
         for (const OAINamespace &nspace : summary) {
-            nSpaces << nspace.getName();
+            bool go = false;
+            const QList<OAIPerm_and_username> perms = nspace.getPermissions();
+            for (const OAIPerm_and_username &perm : perms) {
+                if (perm.getUsername().compare(mUser) == 0) {
+                    int permVal = perm.getPermission();
+                    if ((permVal & 3) == 3) {
+                        go = true;
+                        break;
+                    }
+                }
+            }
+            if (go) nSpaces << nspace.getName();
         }
         emit reListNamspaces(nSpaces);
     });
