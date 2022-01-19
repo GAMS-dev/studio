@@ -1,4 +1,7 @@
-Version 1.9.2  *
+Version 1.9.3  *
+==================
+
+Version 1.9.2
 ==================
 - fixed crash when opening a model from the model library while using --ignore-settings
 
