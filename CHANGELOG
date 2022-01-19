@@ -6,12 +6,12 @@ Version 1.9.3  *
 - checks for file type ignores casing (gms, Gms, GMS are all valid)
 - activated completer and syntax help for user defined GAMS types
 - highlight current section header in LXI viewer
+- added support of selecting an user instance for GAMS Engine SaaS
+- offer available namespaces from GAMS Engine Server
 
 Version 1.9.2
 ==================
 - fixed crash when opening a model from the model library while using --ignore-settings
-- added support of selecting an user instance for GAMS Engine SaaS
-- offer available namespaces from GAMS Engine Server
 
 Version 1.9.1
 ==================
