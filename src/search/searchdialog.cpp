@@ -525,6 +525,9 @@ void SearchDialog::insertHistory()
     QString searchText(ui->combo_search->currentText());
     if (searchText.isEmpty()) return;
 
+    int linebreak = searchText.indexOf("\n");
+    searchText = searchText.left(linebreak);
+
     if (ui->combo_search->findText(searchText) == -1) {
         ui->combo_search->insertItem(0, searchText);
     } else {

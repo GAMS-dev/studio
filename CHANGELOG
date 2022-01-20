@@ -1,6 +1,7 @@
 Version 1.9.2  *
 ==================
 - fixed crash when opening a model from the model library while using --ignore-settings
+- added automatic cut off before line breaks for search terms as search currently doesn't support multi-line terms
 
 Version 1.9.1
 ==================
