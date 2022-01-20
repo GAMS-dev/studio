@@ -129,6 +129,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::sslSelfSigned, this, &EngineStartDialog::selfSignedCertFound);
     mProc->setForceGdx(ui->cbForceGdx->isChecked());
     mProc->initUsername(user());
+    mProc->setNamespace(ui->cbNamespace->currentText());
 }
 
 EngineProcess *EngineStartDialog::process() const
@@ -149,7 +150,8 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, bool _forceGdx)
+void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert,
+                                 const QString &_nSpace, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
@@ -162,7 +164,8 @@ void EngineStartDialog::initData(const QString &_url, const QString &_user, int 
         ui->cbAcceptCert->setChecked(true);
     }
     mAuthExpireMinutes = authExpireMinutes;
-    ui->cbNamespace->setCurrentText(_nSpace.trimmed());
+    ui->cbNamespace->addItem(_nSpace.trimmed());
+    QString dat = nSpace();
     ui->cbForceGdx->setChecked(_forceGdx);
 }
 
@@ -204,7 +207,7 @@ void EngineStartDialog::focusEmptyField()
         else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
         else ui->bOk->setFocus();
     } else {
-        if (ui->cbNamespace->currentText().isEmpty()) ui->cbNamespace->setFocus();
+        if (ui->cbNamespace->count() > 1) ui->cbNamespace->setFocus();
         else ui->bOk->setFocus();
     }
 }
@@ -326,7 +329,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         if (data.size() == 4)
             mProc->setSelectedInstance(data.first().toString());
     }
-    mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
+    mProc->setNamespace(ui->cbNamespace->currentText());
     emit submit(start);
 }
 
@@ -623,7 +626,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;
-                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
+//                mProc->setNamespace(ui->cbNamespace->currentText().trimmed());
                 emit submit(true);
             }
         } else {
