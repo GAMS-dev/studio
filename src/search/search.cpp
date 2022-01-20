@@ -42,7 +42,7 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
 
 void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    mCacheAvailable = files == mFiles;
+    mCacheAvailable = mCacheAvailable && files == mFiles;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
