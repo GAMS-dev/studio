@@ -3024,7 +3024,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     }
 
     if (!forceNew && files.size() == 1) {
-        if (files.first().endsWith(".gsp", FileType::fsCaseSense())) {
+        if (files.first().endsWith(".gsp", Qt::CaseInsensitive)) {
             openProject(files.first());
             return;
         }
@@ -3043,7 +3043,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     PExProjectNode *project = nullptr;
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
-            if (item.endsWith(".gsp", FileType::fsCaseSense())) {
+            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
                 if (!project)

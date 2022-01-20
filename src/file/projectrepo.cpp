@@ -737,7 +737,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QList<NodeId> newIds;
     for (const QString &item: qAsConst(files)) {
         if (QFileInfo::exists(item)) {
-            if (item.endsWith(".gsp", FileType::fsCaseSense())) {
+            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 emit openProject(item);
                 continue;
             }

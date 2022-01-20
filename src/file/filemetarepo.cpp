@@ -258,10 +258,10 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
 {
     QStringList changed;
     for (const QString &suf : suffix) {
-        if (!FileType::userGamsTypes().contains(suf, FileType::fsCaseSense())) changed << suf;
+        if (!FileType::userGamsTypes().contains(suf, Qt::CaseInsensitive)) changed << suf;
     }
     for (const QString &suf : FileType::userGamsTypes()) {
-        if (!suffix.contains(suf, FileType::fsCaseSense())) changed << suf;
+        if (!suffix.contains(suf, Qt::CaseInsensitive)) changed << suf;
     }
     FileType::setUserGamsTypes(suffix);
     QVector<PExProjectNode*> projects;
@@ -269,7 +269,7 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
     while (i.hasNext()) {
         i.next();
         QFileInfo fi(i.value()->location());
-        if (changed.contains(fi.suffix(), FileType::fsCaseSense())) {
+        if (changed.contains(fi.suffix(), Qt::CaseInsensitive)) {
             i.value()->refreshType();
             for (PExAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
                 if (!projects.contains(node->assignedProject())) projects << node->assignedProject();

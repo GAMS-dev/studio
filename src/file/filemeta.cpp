@@ -842,7 +842,7 @@ bool FileMeta::isAutoReload() const
         QStringList autoSuffix = Settings::settings()->toString(skAutoReloadTypes)
                 .split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
         QFileInfo fi(mLocation);
-        autoReload = autoSuffix.contains(fi.suffix(), FileType::fsCaseSense());
+        autoReload = autoSuffix.contains(fi.suffix(), Qt::CaseInsensitive);
     }
     return autoReload;
 }
