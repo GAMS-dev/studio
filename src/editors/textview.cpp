@@ -280,6 +280,8 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
         mEdit->updateSearchSelection();
         mMapper->updateSearchSelection();
     }
+    if (!mEdit->hasSearchSelection()) return;
+
     SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(), results);
     sw.findInFiles();
 }

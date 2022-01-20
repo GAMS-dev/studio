@@ -330,7 +330,7 @@ void AbstractEdit::updateSearchSelection()
     if (!hasSearchSelection()) {
         SearchLocator::search()->reset();
         searchSelection = textCursor();
-        mIsSearchSelectionActive = true;
+        mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
     }
 }
 
@@ -341,10 +341,12 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     QTextCursor lastItem;
 
     updateSearchSelection();
-    if (!mIsSearchSelectionActive) return;
 
     startPos = searchSelection.selectionStart();
     endPos = searchSelection.selectionEnd();
+
+    mIsSearchSelectionActive = startPos != endPos;
+    if (!hasSearchSelection()) return;
 
     // ignore search direction for cache generation. otherwise results would be in wrong order
     QFlags<QTextDocument::FindFlag> cacheOptions = SearchLocator::search()->options();
