@@ -64,10 +64,11 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, bool _forceGdx);
+    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
+    QString userInstance() const;
     QString user() const;
     QString authToken() const;
     bool forceGdx() const;

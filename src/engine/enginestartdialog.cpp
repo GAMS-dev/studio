@@ -151,7 +151,7 @@ bool EngineStartDialog::isCertAccepted()
 }
 
 void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert,
-                                 const QString &_nSpace, bool _forceGdx)
+                                 const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
@@ -165,7 +165,7 @@ void EngineStartDialog::initData(const QString &_url, const QString &_user, int 
     }
     mAuthExpireMinutes = authExpireMinutes;
     ui->cbNamespace->addItem(_nSpace.trimmed());
-    QString dat = nSpace();
+    ui->cbInstance->addItem(_userInst.trimmed(), QVariantList() << _userInst.trimmed());
     ui->cbForceGdx->setChecked(_forceGdx);
 }
 
@@ -182,6 +182,12 @@ QString EngineStartDialog::url() const
 QString EngineStartDialog::nSpace() const
 {
     return ui->cbNamespace->currentText();
+}
+
+QString EngineStartDialog::userInstance() const
+{
+    QVariantList datList = ui->cbInstance->currentData().toList();
+    return  datList.count() ? datList.first().toString() : "";
 }
 
 QString EngineStartDialog::user() const
@@ -511,8 +517,11 @@ void EngineStartDialog::reVersionError(const QString &errorText)
 
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel)
 {
+    QVariantList datList = ui->cbInstance->currentData().toList();
+    QString lastInst = datList.count() ? datList.first().toString() : "";
     ui->cbInstance->clear();
     int cur = 0;
+    int prev = -1;
     for (const QPair<QString, QList<int> > &entry : instances) {
         if (entry.second.size() != 3) continue;
         if (entry.first == defaultLabel) cur = ui->cbInstance->count();
@@ -520,9 +529,12 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > 
         text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
         QVariantList data;
         data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
+        if (entry.first == lastInst) prev = ui->cbInstance->count();
         ui->cbInstance->addItem(text, data);
     }
-    if (ui->cbInstance->count())
+    if (prev >= 0)
+        ui->cbInstance->setCurrentIndex(prev);
+    else if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(cur);
     ui->cbInstance->setToolTip("");
 }
