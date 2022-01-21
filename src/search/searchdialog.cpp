@@ -166,6 +166,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::ThisFile: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
+            return files;
             break;
         }
         case Search::ThisProject: {
@@ -180,6 +181,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::Selection: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
+            return files;
             break;
         }
         case Search::OpenTabs: {

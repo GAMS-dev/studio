@@ -4,10 +4,13 @@ Version 1.9.3  *
 - fixed crash on getting editor type
 - checks for file type ignores casing (gms, Gms, GMS are all valid)
 - activated completer and syntax help for user defined GAMS types
+- fixed default file filter in search dialog expecting files to include a '.' character
+- fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
 
 Version 1.9.2
 ==================
 - fixed crash when opening a model from the model library while using --ignore-settings
+- added automatic cut off before line breaks for search terms as search currently doesn't support multi-line terms
 
 Version 1.9.1
 ==================
