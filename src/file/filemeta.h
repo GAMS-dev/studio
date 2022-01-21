@@ -107,7 +107,7 @@ public slots:
     void invalidateTheme();
 
 signals:
-    void changed(FileId fileId);
+    void changed(gams::studio::FileId fileId);
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);

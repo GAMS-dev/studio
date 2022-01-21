@@ -222,6 +222,16 @@ void FileMeta::refreshType()
             mHighlighter = nullptr;
             disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
             disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
+            for (QWidget *edit : qAsConst(mEditors)) {
+                CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
+                if (scEdit && mHighlighter) {
+                    disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+                    disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+                    disconnect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
+                    disconnect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+                    disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
+                }
+            }
         }
         if (kind() == FileKind::Gms && kind() != oldKind) {
             mHighlighter = new syntax::SyntaxHighlighter(mDocument);
@@ -231,6 +241,9 @@ void FileMeta::refreshType()
                 CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
                 if (scEdit && mHighlighter) {
                     connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+                    connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
+                    connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
+                    connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
                     connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
                 }
             }
@@ -842,7 +855,7 @@ bool FileMeta::isAutoReload() const
         QStringList autoSuffix = Settings::settings()->toString(skAutoReloadTypes)
                 .split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
         QFileInfo fi(mLocation);
-        autoReload = autoSuffix.contains(fi.suffix());
+        autoReload = autoSuffix.contains(fi.suffix(), Qt::CaseInsensitive);
     }
     return autoReload;
 }

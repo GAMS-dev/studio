@@ -111,7 +111,7 @@ enum SettingsKey {
     skNeosAcceptTerms,
     skNeosForceGdx,
     skNeosShortPrio,
-    skUserFileTypes,
+    skUserGamsTypes,
     skAutoReloadTypes,
 
     // solver option editor settings

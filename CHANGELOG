@@ -2,6 +2,8 @@ Version 1.9.3  *
 ==================
 - fixed search not updating cache when document has changed
 - fixed crash on getting editor type
+- checks for file type ignores casing (gms, Gms, GMS are all valid)
+- activated completer and syntax help for user defined GAMS types
 
 Version 1.9.2
 ==================
