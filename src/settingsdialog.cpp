@@ -193,8 +193,8 @@ void SettingsDialog::loadSettings()
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
     // misc page
-    ui->edUserGamsTypes->setText(mSettings->toString(skUserGamsTypes));
-    ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
+    ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
+    ui->edAutoReloadTypes->setText(changeSeparators(mSettings->toString(skAutoReloadTypes), ", "));
     ui->cb_userLib->clear();
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
     ui->cb_userLib->setCurrentIndex(0);
@@ -312,9 +312,11 @@ void SettingsDialog::saveSettings()
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
     // misc page
-    ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
-    mSettings->setString(skUserGamsTypes, ui->edUserGamsTypes->text());
-    mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
+    QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());
+    ui->edUserGamsTypes->setText(suffs.join(", "));
+    mSettings->setString(skUserGamsTypes, suffs.join(","));
+    ui->edAutoReloadTypes->setText(changeSeparators(ui->edAutoReloadTypes->text(), ", "));
+    mSettings->setString(skAutoReloadTypes, changeSeparators(ui->edAutoReloadTypes->text(), ","));
 
     // user model library
     prependUserLib();
@@ -762,6 +764,11 @@ void SettingsDialog::prependUserLib()
     while (ui->cb_userLib->count() > 10)
         ui->cb_userLib->removeItem(ui->cb_userLib->count()-1);
     ui->cb_userLib->setCurrentIndex(0);
+}
+
+QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, const QString &newSeparator)
+{
+    return commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts).join(newSeparator);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()

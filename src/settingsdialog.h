@@ -120,6 +120,7 @@ private:
     void initColorPage();
     void setThemeEditable(bool editable);
     void prependUserLib();
+    QString changeSeparators(const QString &commaSeparatedList, const QString &newSeparator);
 };
 
 }
