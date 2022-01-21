@@ -548,14 +548,22 @@ void EngineStartDialog::reUserInstancesError(const QString &errorText)
 
 void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList &volumeHint)
 {
-    ui->laAvailDisk->setVisible(diskHint.size() > 1);
+    if (diskHint.isEmpty() && volumeHint.isEmpty()) {
+        ui->laAvailDisk->setVisible(true);
+        ui->laAvailDisk->setText("unlimited");
+        ui->laAvailDisk->setToolTip("");
+        ui->laAvailVolume->setVisible(false);
+        return;
+    }
+    ui->laAvailDisk->setVisible(diskHint.size() > 0);
     if (ui->laAvailDisk->isVisible()) {
         ui->laAvailDisk->setText(diskHint.at(0));
-        ui->laAvailDisk->setToolTip("Limited by " + diskHint.at(1));
+        ui->laAvailDisk->setToolTip(diskHint.size() > 1 ? "Limited by " + diskHint.at(1) : "");
     }
+    ui->laAvailVolume->setVisible(volumeHint.size() > 0);
     if (ui->laAvailVolume->isVisible()) {
         ui->laAvailVolume->setText(volumeHint.at(0));
-        ui->laAvailVolume->setToolTip("Limited by " + volumeHint.at(1));
+        ui->laAvailVolume->setToolTip(volumeHint.size() > 1 ? "Limited by " + volumeHint.at(1) : "");
     }
 }
 
