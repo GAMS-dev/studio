@@ -545,6 +545,26 @@ QPoint AbstractTextMapper::searchSelectionEnd() {
     return convertPos(mSearchSelectionEnd);
 }
 
+void AbstractTextMapper::addLineMarker(int absLine)
+{
+    if (mLineMarkers.contains(absLine)) mLineMarkers << absLine;
+}
+
+void AbstractTextMapper::removeLineMarker(int absLine)
+{
+    mLineMarkers.removeAll(absLine);
+}
+
+QList<int> AbstractTextMapper::lineMarkers()
+{
+    return mLineMarkers;
+}
+
+void AbstractTextMapper::clearLineMarkers()
+{
+    mLineMarkers.clear();
+}
+
 void AbstractTextMapper::clearSearchSelection() {
     mIsSearchSelectionActive = false;
 }

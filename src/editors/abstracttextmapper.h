@@ -192,6 +192,10 @@ public:
     bool hasSearchSelection();
     QPoint searchSelectionStart();
     QPoint searchSelectionEnd();
+    void addLineMarker(int absLine);
+    void removeLineMarker(int absLine);
+    QList<int> lineMarkers();
+    void clearLineMarkers();
 
     void dumpPos() const;
 
@@ -250,6 +254,7 @@ private:
     CursorPosition mSearchSelectionStart;
     CursorPosition mSearchSelectionEnd;
     bool mIsSearchSelectionActive = false;
+    QList<int> mLineMarkers;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;
