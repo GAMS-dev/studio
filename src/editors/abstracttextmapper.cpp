@@ -24,6 +24,7 @@
 #include "abstracttextmapper.h"
 #include "exception.h"
 #include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -427,7 +428,22 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
 {
-    Q_UNUSED(formats)
+    if (!mLineMarkers.isEmpty()) {
+        int absTopLine = visibleTopLine();
+        if (absTopLine >= 0) {
+            QTextCharFormat fmt;
+            fmt.setBackground(toColor(Theme::Edit_currentLineBg));
+            fmt.setProperty(QTextFormat::FullWidthSelection, true);
+            LineFormat markedLine(0, 0, fmt);
+            markedLine.lineMarked = true;
+            for (int i = absTopLine; i < absTopLine + lineCount; ++i) {
+                if (mLineMarkers.contains(i))
+                    formats << markedLine;
+                else
+                    formats << LineFormat();
+            }
+        }
+    }
     return lines(localLineNrFrom, lineCount);
 }
 
@@ -545,24 +561,14 @@ QPoint AbstractTextMapper::searchSelectionEnd() {
     return convertPos(mSearchSelectionEnd);
 }
 
-void AbstractTextMapper::addLineMarker(int absLine)
+void AbstractTextMapper::setLineMarkers(const QList<int> lines)
 {
-    if (mLineMarkers.contains(absLine)) mLineMarkers << absLine;
-}
-
-void AbstractTextMapper::removeLineMarker(int absLine)
-{
-    mLineMarkers.removeAll(absLine);
+    mLineMarkers = lines;
 }
 
 QList<int> AbstractTextMapper::lineMarkers()
 {
     return mLineMarkers;
-}
-
-void AbstractTextMapper::clearLineMarkers()
-{
-    mLineMarkers.clear();
 }
 
 void AbstractTextMapper::clearSearchSelection() {

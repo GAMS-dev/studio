@@ -44,7 +44,7 @@ struct LineFormat {
     }
     LineFormat &operator=(const LineFormat &other) {
         start = other.start; end = other.end; format = other.format;
-        extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef;
+        extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef; lineMarked = other.lineMarked;
         return *this;
     }
     int start = -1;
@@ -192,10 +192,8 @@ public:
     bool hasSearchSelection();
     QPoint searchSelectionStart();
     QPoint searchSelectionEnd();
-    void addLineMarker(int absLine);
-    void removeLineMarker(int absLine);
+    void setLineMarkers(const QList<int> lines);
     QList<int> lineMarkers();
-    void clearLineMarkers();
 
     void dumpPos() const;
 
