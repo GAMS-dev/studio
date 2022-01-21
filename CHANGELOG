@@ -2,6 +2,7 @@ Version 1.9.3  *
 ==================
 - fixed search not updating cache when document has changed
 - fixed `Clear Selection` button not working as intended when search scope was set to anything but "Selection"
+- fixed crash on getting editor type
 
 Version 1.9.2
 ==================
