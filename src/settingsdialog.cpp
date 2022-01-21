@@ -64,11 +64,13 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings->block(); // prevent changes from outside this dialog
     initColorPage();
     loadSettings();
-    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
+    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
     "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
     "<i>The following extensions will be automatically removed:<br>%1</i></p>");
-    ui->edUserGamsTypes->setToolTip(tip.arg(FileType::invalidUserGamsTypes().join(", ")));
-    tip = "<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;log,put&quot;)<br>"
+    QStringList invalidGms = FileType::invalidUserGamsTypes();
+    invalidGms.removeAll("");
+    ui->edUserGamsTypes->setToolTip(tip.arg(invalidGms.join(", ")));
+    tip = "<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;log, put&quot;)<br>"
     "On external changes, files of this type will be reloaded automatically.";
     ui->edAutoReloadTypes->setToolTip(tip);
 
