@@ -74,6 +74,7 @@ public:
     void setDebugMode(bool debug);
     void invalidate();
     void jumpToEnd();
+    void setLineMarker(int line);
     int firstErrorLine();
     void print(QPagedPaintDevice *printer);
     inline FileId fileId() {

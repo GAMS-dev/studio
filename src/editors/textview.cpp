@@ -423,6 +423,12 @@ void TextView::jumpToEnd()
     }
 }
 
+void TextView::setLineMarker(int line)
+{
+    mMapper->setLineMarkers(QList<int>() << line);
+    topLineMoved();
+}
+
 void TextView::updateView()
 {
     if (mStayAtTail && *mStayAtTail) {
