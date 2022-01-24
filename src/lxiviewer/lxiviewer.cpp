@@ -134,6 +134,7 @@ void LxiViewer::loadLxi()
 
 void LxiViewer::jumpToTreeItem()
 {
+    TRACE()
     if (ui->splitter->widget(0)->isHidden())
         return;
 
@@ -144,9 +145,9 @@ void LxiViewer::jumpToTreeItem()
     if (!lxiTreeModel) return;
     int itemIdx = 0;
 
-    if (lineNr >= lxiTreeModel->lineNrs().first()) {
+    if (lineNr >= lxiTreeModel->lineNrs().first()-1) {
         itemIdx=1;
-        while (lxiTreeModel->lineNrs().size()>itemIdx && lineNr >= lxiTreeModel->lineNrs()[itemIdx])
+        while (lxiTreeModel->lineNrs().size() > itemIdx && lineNr >= lxiTreeModel->lineNrs()[itemIdx]-1)
             itemIdx++;
         itemIdx--;
     }
@@ -161,6 +162,7 @@ void LxiViewer::jumpToTreeItem()
 
 void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
 {
+    TRACE()
     LxiTreeItem* selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
     int lineNr = selectedItem->lineNr();
 
@@ -182,6 +184,7 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
 
 void LxiViewer::markLine(const QModelIndex &modelIndex)
 {
+    TRACE()
     LxiTreeItem* selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
     int lineNr = selectedItem->lineNr();
     // get first child for virtual nodes
