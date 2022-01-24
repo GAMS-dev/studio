@@ -108,7 +108,7 @@ signals:
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
-    void reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &error);
     void reListNamspaces(const QStringList &list);
     void reListNamespacesError(const QString &error);

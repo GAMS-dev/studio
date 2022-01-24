@@ -515,14 +515,14 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     }
 }
 
-void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<int> > > instances, const QString &defaultLabel)
+void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel)
 {
     QVariantList datList = ui->cbInstance->currentData().toList();
     QString lastInst = datList.count() ? datList.first().toString() : "";
     ui->cbInstance->clear();
     int cur = 0;
     int prev = -1;
-    for (const QPair<QString, QList<int> > &entry : instances) {
+    for (const QPair<QString, QList<double> > &entry : instances) {
         if (entry.second.size() != 3) continue;
         if (entry.first == defaultLabel) cur = ui->cbInstance->count();
         QString text("%1 (%2 vCPU, %3 MiB RAM, %4x)");

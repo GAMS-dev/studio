@@ -94,11 +94,11 @@ EngineManager::EngineManager(QObject* parent)
     connect(mUsageApi, &OAIUsageApi::getUserInstancesSignal, this, [this](OAIModel_userinstance_info summary) {
         OAIModel_instance_info iiDef = summary.getDefaultInstance();
         const QList<OAIModel_instance_info> infoList = summary.getInstancesAvailable();
-        QList<QPair<QString, QList<int>>> instList;
+        QList<QPair<QString, QList<double>>> instList;
         for (const OAIModel_instance_info &ii : infoList) {
-            QList<int> list;
-            list << int(ii.getCpuRequest()) << ii.getMemoryRequest() << int(ii.getMultiplier());
-            instList << QPair<QString, QList<int>>(ii.getLabel(), list);
+            QList<double> list;
+            list << ii.getCpuRequest() << ii.getMemoryRequest() << ii.getMultiplier();
+            instList << QPair<QString, QList<double>>(ii.getLabel(), list);
         }
         emit reUserInstances(instList, iiDef.getLabel());
     });
@@ -112,9 +112,12 @@ EngineManager::EngineManager(QObject* parent)
         for (const OAIQuota &quota : summary) {
             QuotaData *data = new QuotaData();
             data->name = quota.getUsername();
-            data->disk = UsedQuota(quota.getDiskQuota(), quota.getDiskUsed());
-            data->volume = UsedQuota(int(quota.getVolumeQuota()), int(quota.getVolumeUsed()));
-            data->parallel = int(quota.getParallelQuota());
+            if (quota.is_disk_quota_Set())
+                data->disk = UsedQuota(quota.getDiskQuota(), quota.getDiskUsed());
+            if (quota.is_volume_quota_Set())
+                data->volume = UsedQuota(int(quota.getVolumeQuota()), int(quota.getVolumeUsed()));
+            if (quota.is_parallel_quota_Set())
+                data->parallel = int(quota.getParallelQuota());
             dataList << data;
         }
         emit reQuota(dataList);
