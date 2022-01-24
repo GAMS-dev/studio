@@ -534,7 +534,7 @@ void AbstractTextMapper::updateSearchSelection()
         mSearchSelectionStart = mAnchor;
         mSearchSelectionEnd = mPosition;
     }
-    mIsSearchSelectionActive = true;
+    mIsSearchSelectionActive = mSearchSelectionStart != mSearchSelectionEnd;
 }
 
 QPoint AbstractTextMapper::searchSelectionStart() {
