@@ -6,6 +6,7 @@ Version 1.9.4
 - fixed search jump behavior when current file is excluded by file filter
 - fixed crash when executing a project with active project options
 - fixed incorrect handling of files without file extension that could also result in a crash
+- increase tolerance of GDX viewer on reading a faulty file
 
 Version 1.9.3
 ==================
