@@ -328,7 +328,7 @@ void GdxSymbol::calcUelsInColumn()
             currentUel = mKeys[rec*mDim + dim];
             if(lastUel != currentUel) {
                 lastUel = currentUel;
-                if(!sawUel[currentUel]) {
+                if(currentUel > 0 && !sawUel[currentUel]) {
                     sawUel[currentUel] = true;
                     uels->push_back(currentUel);
                 }
