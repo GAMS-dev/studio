@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -88,6 +88,7 @@ public:
     }
 
     inline static EditorType editorType(QWidget* w) {
+        if (!w) return EditorType::undefined;
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
     }

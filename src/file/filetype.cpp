@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -130,7 +130,7 @@ QStringList FileType::validateSuffixList(const QString &commaSeparatedList, QStr
 {
     QStringList res = commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
     for (const QString &suf : CInvalidUserTypes) {
-        if (res.contains(suf)) {
+        if (res.contains(suf, Qt::CaseInsensitive)) {
             res.removeAll(suf);
             if (invalid) *invalid << suf;
         }

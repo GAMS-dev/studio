@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -330,7 +330,7 @@ void AbstractEdit::updateSearchSelection()
     if (!hasSearchSelection()) {
         SearchLocator::search()->reset();
         searchSelection = textCursor();
-        mIsSearchSelectionActive = true;
+        mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
     }
 }
 
@@ -341,10 +341,12 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
     QTextCursor lastItem;
 
     updateSearchSelection();
-    if (!mIsSearchSelectionActive) return;
 
     startPos = searchSelection.selectionStart();
     endPos = searchSelection.selectionEnd();
+
+    mIsSearchSelectionActive = startPos != endPos;
+    if (!hasSearchSelection()) return;
 
     // ignore search direction for cache generation. otherwise results would be in wrong order
     QFlags<QTextDocument::FindFlag> cacheOptions = SearchLocator::search()->options();

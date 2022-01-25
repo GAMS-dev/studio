@@ -1,3 +1,18 @@
+Version 1.9.3
+==================
+- fixed search not updating cache when document has changed
+- fixed `Clear Selection` button not working as intended, when search scope was set to anything but "Selection"
+- fixed random crash in Search and Replace dialog
+- fixed checks for file type ignores casing (gms, Gms, GMS are all valid)
+- fixed completer and syntax help activation for user defined GAMS types
+- added highlight current section header in LXI viewer
+- added selection of user instances on GAMS Engine SaaS
+- added selection of namespaces on GAMS Engine Server
+
+Version 1.9.2
+==================
+- fixed crash when opening a model from the model library while using --ignore-settings
+
 Version 1.9.1
 ==================
 - fixed context menu didn't close in Project Explorer

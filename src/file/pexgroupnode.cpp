@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -756,7 +756,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 void PExProjectNode::setLocation(const QString &newLocation)
 {
     // check if changed more than letter case
-    bool changed = location().isEmpty() || location().compare(newLocation, FileMetaRepo::fsCaseSensitive()) != 0;
+    bool changed = location().isEmpty() || location().compare(newLocation, FileType::fsCaseSense()) != 0;
     PExGroupNode::setLocation(newLocation);
     if (changed)
         emit baseDirChanged(this);

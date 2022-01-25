@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -64,11 +64,13 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     mSettings->block(); // prevent changes from outside this dialog
     initColorPage();
     loadSettings();
-    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms,inc&quot;)."
+    QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
     "<br>These files can be executed, selected as main file,<br>and the syntax will be highlighted.<br><br>"
     "<i>The following extensions will be automatically removed:<br>%1</i></p>");
-    ui->edUserGamsTypes->setToolTip(tip.arg(FileType::invalidUserGamsTypes().join(", ")));
-    tip = "<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;log,put&quot;)<br>"
+    QStringList invalidGms = FileType::invalidUserGamsTypes();
+    invalidGms.removeAll("");
+    ui->edUserGamsTypes->setToolTip(tip.arg(invalidGms.join(", ")));
+    tip = "<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;log, put&quot;)<br>"
     "On external changes, files of this type will be reloaded automatically.";
     ui->edAutoReloadTypes->setToolTip(tip);
 
@@ -193,8 +195,8 @@ void SettingsDialog::loadSettings()
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
 
     // misc page
-    ui->edUserGamsTypes->setText(mSettings->toString(skUserFileTypes));
-    ui->edAutoReloadTypes->setText(mSettings->toString(skAutoReloadTypes));
+    ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
+    ui->edAutoReloadTypes->setText(changeSeparators(mSettings->toString(skAutoReloadTypes), ", "));
     ui->cb_userLib->clear();
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
     ui->cb_userLib->setCurrentIndex(0);
@@ -312,9 +314,11 @@ void SettingsDialog::saveSettings()
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
     // misc page
-    ui->edUserGamsTypes->setText(FileType::validateSuffixList(ui->edUserGamsTypes->text()).join(","));
-    mSettings->setString(skUserFileTypes, ui->edUserGamsTypes->text());
-    mSettings->setString(skAutoReloadTypes, ui->edAutoReloadTypes->text());
+    QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());
+    ui->edUserGamsTypes->setText(suffs.join(", "));
+    mSettings->setString(skUserGamsTypes, suffs.join(","));
+    ui->edAutoReloadTypes->setText(changeSeparators(ui->edAutoReloadTypes->text(), ", "));
+    mSettings->setString(skAutoReloadTypes, changeSeparators(ui->edAutoReloadTypes->text(), ","));
 
     // user model library
     prependUserLib();
@@ -762,6 +766,11 @@ void SettingsDialog::prependUserLib()
     while (ui->cb_userLib->count() > 10)
         ui->cb_userLib->removeItem(ui->cb_userLib->count()-1);
     ui->cb_userLib->setCurrentIndex(0);
+}
+
+QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, const QString &newSeparator)
+{
+    return commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts).join(newSeparator);
 }
 
 void SettingsDialog::on_btn_resetHistory_clicked()

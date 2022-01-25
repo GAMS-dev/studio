@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -24,6 +24,7 @@
 #include "abstracttextmapper.h"
 #include "exception.h"
 #include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -427,7 +428,22 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
 
 QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
 {
-    Q_UNUSED(formats)
+    if (!mLineMarkers.isEmpty()) {
+        int absTopLine = visibleTopLine();
+        if (absTopLine >= 0) {
+            QTextCharFormat fmt;
+            fmt.setBackground(toColor(Theme::Edit_currentLineBg));
+            fmt.setProperty(QTextFormat::FullWidthSelection, true);
+            LineFormat markedLine(0, 0, fmt);
+            markedLine.lineMarked = true;
+            for (int i = absTopLine; i < absTopLine + lineCount; ++i) {
+                if (mLineMarkers.contains(i))
+                    formats << markedLine;
+                else
+                    formats << LineFormat();
+            }
+        }
+    }
     return lines(localLineNrFrom, lineCount);
 }
 
@@ -534,7 +550,7 @@ void AbstractTextMapper::updateSearchSelection()
         mSearchSelectionStart = mAnchor;
         mSearchSelectionEnd = mPosition;
     }
-    mIsSearchSelectionActive = true;
+    mIsSearchSelectionActive = mSearchSelectionStart != mSearchSelectionEnd;
 }
 
 QPoint AbstractTextMapper::searchSelectionStart() {
@@ -543,6 +559,16 @@ QPoint AbstractTextMapper::searchSelectionStart() {
 
 QPoint AbstractTextMapper::searchSelectionEnd() {
     return convertPos(mSearchSelectionEnd);
+}
+
+void AbstractTextMapper::setLineMarkers(const QList<int> lines)
+{
+    mLineMarkers = lines;
+}
+
+QList<int> AbstractTextMapper::lineMarkers()
+{
+    return mLineMarkers;
 }
 
 void AbstractTextMapper::clearSearchSelection() {

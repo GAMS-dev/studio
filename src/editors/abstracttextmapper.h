@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -44,7 +44,7 @@ struct LineFormat {
     }
     LineFormat &operator=(const LineFormat &other) {
         start = other.start; end = other.end; format = other.format;
-        extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef;
+        extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef; lineMarked = other.lineMarked;
         return *this;
     }
     int start = -1;
@@ -192,6 +192,8 @@ public:
     bool hasSearchSelection();
     QPoint searchSelectionStart();
     QPoint searchSelectionEnd();
+    void setLineMarkers(const QList<int> lines);
+    QList<int> lineMarkers();
 
     void dumpPos() const;
 
@@ -250,6 +252,7 @@ private:
     CursorPosition mSearchSelectionStart;
     CursorPosition mSearchSelectionEnd;
     bool mIsSearchSelectionActive = false;
+    QList<int> mLineMarkers;
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;

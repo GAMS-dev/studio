@@ -1,8 +1,8 @@
 ﻿/*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -242,7 +242,7 @@ void SearchDialog::on_searchPrev()
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
-    mSearch.documentChanged();
+    mSearch.invalidateCache();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -309,12 +309,13 @@ void SearchDialog::findNextPrev(bool backwards) {
 void SearchDialog::on_btn_clear_clicked()
 {
     if (mSearch.hasSearchSelection()) {
-        clearSearchSelection();
-        updateEditHighlighting();
         clearSelection();
     } else {
         clearSearch();
     }
+    clearSearchSelection();
+    mSearch.invalidateCache();
+    updateEditHighlighting();
     updateClearButton();
 }
 

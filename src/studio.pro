@@ -1,8 +1,8 @@
 #
 # This file is part of the GAMS Studio project.
 #
-# Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
-# Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+# Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+# Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
 #
 # This program is free software: you can redistribute it and/or modify
 # it under the terms of the GNU General Public License as published by
@@ -100,22 +100,40 @@ SOURCES += \
     engine/client/OAIHelpers.cpp \
     engine/client/OAIHttpFileElement.cpp \
     engine/client/OAIHttpRequest.cpp \
+    engine/client/OAIInex.cpp \
     engine/client/OAIJob.cpp \
     engine/client/OAIJobsApi.cpp \
     engine/client/OAIJob_no_text_entry.cpp \
     engine/client/OAIJob_no_text_entry_page.cpp \
     engine/client/OAILog_piece.cpp \
+    engine/client/OAIModels.cpp \
     engine/client/OAIModel_job_labels.cpp \
+    engine/client/OAIModel_job_usage.cpp \
     engine/client/OAIMessage.cpp \
     engine/client/OAIMessage_and_token.cpp \
     engine/client/OAIModel_auth_token.cpp \
+    engine/client/OAIModel_hypercube_job.cpp \
+    engine/client/OAIModel_hypercube_usage.cpp \
+    engine/client/OAIModel_instance_info.cpp \
     engine/client/OAIModel_version.cpp \
+    engine/client/OAIModel_usage.cpp \
+    engine/client/OAIModel_userinstance_info.cpp \
+    engine/client/OAINamespace.cpp \
+    engine/client/OAINamespace_quota.cpp \
+    engine/client/OAINamespace_with_permission.cpp \
+    engine/client/OAINamespacesApi.cpp \
+    engine/client/OAIPerm_and_username.cpp \
     engine/client/OAIQuota.cpp \
     engine/client/OAIQuota_exceeded.cpp \
     engine/client/OAIResult_user.cpp \
     engine/client/OAIStatus_code_meaning.cpp \
     engine/client/OAIStream_entry.cpp \
     engine/client/OAIText_entry.cpp \
+    engine/client/OAITime_span.cpp \
+    engine/client/OAIUsageApi.cpp \
+    engine/client/OAIUser.cpp \
+    engine/client/OAIUser_group_member.cpp \
+    engine/client/OAIUser_groups.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
     engine/enginestartdialog.cpp \
@@ -296,6 +314,7 @@ HEADERS += \
     engine/client/OAIHelpers.h \
     engine/client/OAIHttpFileElement.h \
     engine/client/OAIHttpRequest.h \
+    engine/client/OAIInex.h \
     engine/client/OAIJob.h \
     engine/client/OAIJobsApi.h \
     engine/client/OAIJob_no_text_entry.h \
@@ -303,9 +322,21 @@ HEADERS += \
     engine/client/OAILog_piece.h \
     engine/client/OAIMessage.h \
     engine/client/OAIMessage_and_token.h \
+    engine/client/OAIModels.h \
     engine/client/OAIModel_auth_token.h \
+    engine/client/OAIModel_hypercube_job.h \
+    engine/client/OAIModel_hypercube_usage.h \
+    engine/client/OAIModel_instance_info.h \
     engine/client/OAIModel_job_labels.h \
+    engine/client/OAIModel_job_usage.h \
     engine/client/OAIModel_version.h \
+    engine/client/OAIModel_usage.h \
+    engine/client/OAIModel_userinstance_info.h \
+    engine/client/OAINamespace.h \
+    engine/client/OAINamespace_quota.h \
+    engine/client/OAINamespace_with_permission.h \
+    engine/client/OAINamespacesApi.h \
+    engine/client/OAIPerm_and_username.h \
     engine/client/OAIObject.h \
     engine/client/OAIQuota.h \
     engine/client/OAIQuota_exceeded.h \
@@ -313,6 +344,11 @@ HEADERS += \
     engine/client/OAIStatus_code_meaning.h \
     engine/client/OAIStream_entry.h \
     engine/client/OAIText_entry.h \
+    engine/client/OAITime_span.h \
+    engine/client/OAIUsageApi.h \
+    engine/client/OAIUser.h \
+    engine/client/OAIUser_group_member.h \
+    engine/client/OAIUser_groups.h \
     engine/enginemanager.h \
     engine/engineprocess.h \
     engine/enginestartdialog.h \

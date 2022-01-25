@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -448,7 +448,7 @@ PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *
 
     for (int i = 0; i < parentNode->childCount(); ++i) {
         PExAbstractNode *node = parentNode->childNode(i);
-        if (node->name().compare(folderName, FileMetaRepo::fsCaseSensitive()) == 0) {
+        if (node->name().compare(folderName, FileType::fsCaseSense()) == 0) {
             PExGroupNode* folder = node->toGroup();
             if (!folder)
                 EXCEPT() << "Folder node '" << folderName << "' already exists as file node";
@@ -735,9 +735,9 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
     QList<NodeId> newIds;
-    for (QString item: files) {
+    for (const QString &item: qAsConst(files)) {
         if (QFileInfo::exists(item)) {
-            if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 emit openProject(item);
                 continue;
             }
@@ -749,7 +749,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             filesNotFound << item;
         }
     }
-    for (NodeId id: newIds) {
+    for (const NodeId &id: qAsConst(newIds)) {
         QModelIndex mi = mTreeModel->index(id);
         newSelection << mi;
     }
@@ -760,7 +760,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project->setParameter("gms", gmsFiles.first()->location());
     }
     if (act & Qt::MoveAction) {
-        for (NodeId nodeId: knownIds) {
+        for (const NodeId &nodeId: qAsConst(knownIds)) {
             PExAbstractNode* aNode = node(nodeId);
             PExFileNode* file = aNode->toFile();
             if (!file) continue;
@@ -775,7 +775,7 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
     FileMeta *runGms = project->runnableGms();
-    for (PExFileNode *file: files) {
+    for (PExFileNode *file: qAsConst(files)) {
         addToProject(project, file, true);
     }
     emit updateRecentFile();

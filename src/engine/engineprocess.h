@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -29,6 +29,7 @@ namespace gams {
 namespace studio {
 namespace engine {
 
+struct QuotaData;
 class EngineManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine
@@ -57,18 +58,25 @@ public:
     bool setUrl(const QString &url);
     QUrl url();
     void authorize(const QString &username, const QString &password, int expireMinutes);
+    void initUsername(const QString &user);
     void setAuthToken(const QString &bearerToken);
     QString authToken() const { return mAuthToken; }
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
     void listJobs();
+    void listNamespaces();
+    void sendPostLoginRequests();
+    void setSelectedInstance(const QString &selectedInstance);
     void getVersions();
     void addLastCert();
+    bool inKubernetes() const;
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
     void abortRequests();
+
+
 
 signals:
     void authorized(const QString &token);
@@ -78,8 +86,13 @@ signals:
     void sslValidation(const QString &errorMessage);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reListNamspaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstancesError(const QString &errorText);
+    void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
 
@@ -90,6 +103,8 @@ protected slots:
     void reGetJobStatus(qint32 status, qint32 gamsExitCode);
     void reKillJob(const QString &text);
     void reGetLog(const QByteArray &data);
+    void reQuota(const QList<gams::studio::engine::QuotaData *> data);
+    void reQuotaError(const QString &errorText);
     void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
@@ -103,7 +118,7 @@ private slots:
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
     void subProcStateChanged(QProcess::ProcessState newState);
-    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion);
+    void reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
 
 private:
     void setProcState(ProcState newState);
@@ -119,12 +134,12 @@ private:
     QString mHost;
     QString mBasePath;
     QString mNamespace;
-    QString mUser;
-    QString mPassword;
     QString mAuthToken;
     QString mOutPath;
     QString mEngineVersion;
     QString mGamsVersion;
+    bool mInKubernetes = false;
+    QString mUserInstance;
     bool mHasPreviousWorkOption = false;
     bool mForcePreviousWork = false;
     bool mForceGdx = true;

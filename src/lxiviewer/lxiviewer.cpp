@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -52,6 +52,7 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     ui->splitter->setStretchFactor(1, 3);
     setFocusProxy(ui->lxiTreeView);
 
+    connect(ui->lxiTreeView, &QTreeView::clicked, this, &LxiViewer::jumpToLine);
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
     ui->lxiTreeView->installEventFilter(this);
@@ -123,6 +124,7 @@ void LxiViewer::loadLxi()
         ui->lxiTreeView->setModel(model);
         QModelIndex idx = model->index(0,0);
         ui->lxiTreeView->setCurrentIndex(idx);
+        markLine(idx);
         if (oldModel)
             delete oldModel;
     }
@@ -142,9 +144,9 @@ void LxiViewer::jumpToTreeItem()
     if (!lxiTreeModel) return;
     int itemIdx = 0;
 
-    if (lineNr >= lxiTreeModel->lineNrs().first()) {
+    if (lineNr >= lxiTreeModel->lineNrs().first()-1) {
         itemIdx=1;
-        while (lxiTreeModel->lineNrs().size()>itemIdx && lineNr >= lxiTreeModel->lineNrs()[itemIdx])
+        while (lxiTreeModel->lineNrs().size() > itemIdx && lineNr >= lxiTreeModel->lineNrs()[itemIdx]-1)
             itemIdx++;
         itemIdx--;
     }
@@ -154,6 +156,7 @@ void LxiViewer::jumpToTreeItem()
         ui->lxiTreeView->expand(treeItem->parentItem()->modelIndex());
     ui->lxiTreeView->selectionModel()->select(treeItem->modelIndex(), QItemSelectionModel::SelectCurrent);
     ui->lxiTreeView->scrollTo(treeItem->modelIndex());
+    mTextView->setLineMarker(treeItem->lineNr()-1);
 }
 
 void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
@@ -174,6 +177,24 @@ void LxiViewer::jumpToLine(const QModelIndex &modelIndex)
     disconnect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
     mTextView->jumpTo(lineNr-1, 0);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
+    mTextView->setLineMarker(lineNr-1);
+}
+
+void LxiViewer::markLine(const QModelIndex &modelIndex)
+{
+    LxiTreeItem* selectedItem = static_cast<LxiTreeItem*>(modelIndex.internalPointer());
+    int lineNr = selectedItem->lineNr();
+    // get first child for virtual nodes
+    if (lineNr == -1) {
+        if (!ui->lxiTreeView->isExpanded(modelIndex)) {
+            QModelIndex mi = modelIndex.model()->index(0, 0, modelIndex);
+            selectedItem = static_cast<LxiTreeItem*>(mi.internalPointer());
+            lineNr = selectedItem->lineNr();
+        }
+        else
+            return;
+    }
+    mTextView->setLineMarker(lineNr-1);
 }
 
 } // namespace lxiviewer

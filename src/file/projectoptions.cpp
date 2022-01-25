@@ -1,3 +1,20 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "projectoptions.h"
 #include "ui_projectoptions.h"
 #include "file/pexgroupnode.h"
@@ -12,15 +29,6 @@
 namespace gams {
 namespace studio {
 namespace project {
-
-Qt::CaseSensitivity fsCaseSensitive()
-{
-#ifdef __unix__
-    return Qt::CaseSensitive;
-#else
-    return Qt::CaseInsensitive;
-#endif
-}
 
 ProjectOptions::ProjectOptions(QWidget *parent) :
     QFrame(parent),
@@ -74,10 +82,10 @@ void ProjectOptions::save()
     if (ui->edName->text().trimmed().compare(mProject->name()))
         mProject->setName(ui->edName->text().trimmed());
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (path.compare(mProject->location(), fsCaseSensitive()))
+    if (path.compare(mProject->location(), FileType::fsCaseSense()))
         mProject->setLocation(path);
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (path.compare(mProject->workDir(), fsCaseSensitive()))
+    if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         mProject->setWorkDir(path);
     updateState();
 }
@@ -118,10 +126,10 @@ void ProjectOptions::updateState()
     if (ui->edName->text().trimmed().compare(mProject->name()))
         isModified = true;
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (path.compare(mProject->location(), fsCaseSensitive()))
+    if (path.compare(mProject->location(), FileType::fsCaseSense()))
         isModified = true;
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (path.compare(mProject->workDir(), fsCaseSensitive()))
+    if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         isModified = true;
     if (isModified != mModified) {
         mModified = isModified;

@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2021 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2021 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -280,6 +280,8 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
         mEdit->updateSearchSelection();
         mMapper->updateSearchSelection();
     }
+    if (!mEdit->hasSearchSelection()) return;
+
     SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(), results);
     sw.findInFiles();
 }
@@ -419,6 +421,12 @@ void TextView::jumpToEnd()
     } else {
         topLineMoved();
     }
+}
+
+void TextView::setLineMarker(int line)
+{
+    mMapper->setLineMarkers(QList<int>() << line);
+    topLineMoved();
 }
 
 void TextView::updateView()
