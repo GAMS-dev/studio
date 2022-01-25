@@ -7,7 +7,7 @@ Version 1.9.3
 - fixed completer and syntax help activation for user defined GAMS types
 - added highlight current section header in LXI viewer
 - added selection of an user instance on GAMS Engine SaaS
-- added selection of available namespaces on GAMS Engine Server
+- added selection of namespaces on GAMS Engine Server
 
 Version 1.9.2
 ==================
