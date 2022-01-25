@@ -111,7 +111,7 @@ enum SettingsKey {
     skNeosAcceptTerms,
     skNeosForceGdx,
     skNeosShortPrio,
-    skUserFileTypes,
+    skUserGamsTypes,
     skAutoReloadTypes,
 
     // solver option editor settings
@@ -128,6 +128,7 @@ enum SettingsKey {
     skEngineAuthExpire,
     skEngineIsSelfCert,
     skEngineNamespace,
+    skEngineUserInstance,
     skEngineForceGdx,
 
     // user model library directory

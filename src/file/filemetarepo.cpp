@@ -47,7 +47,7 @@ FileMeta *FileMetaRepo::fileMeta(const FileId &fileId) const
 
 FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 {
-    if (fsCaseSensitive())
+    if (FileType::fsCaseSense())
         return mFileNames.value(location);
     return mFileNames.value(location.toLower());
 }
@@ -72,20 +72,11 @@ const QList<FileMeta *> FileMetaRepo::fileMetas() const
 void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
 {
     mFiles.insert(fileMeta->id(), fileMeta);
-    if (fsCaseSensitive())
+    if (FileType::fsCaseSense())
         mFileNames.insert(fileMeta->location(), fileMeta);
     else
         mFileNames.insert(fileMeta->location().toLower(), fileMeta);
     watch(fileMeta);
-}
-
-Qt::CaseSensitivity FileMetaRepo::fsCaseSensitive()
-{
-#ifdef __unix__
-    return Qt::CaseSensitive;
-#else
-    return Qt::CaseInsensitive;
-#endif
 }
 
 bool FileMetaRepo::askBigFileEdit() const
@@ -102,7 +93,7 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());
-        if (fsCaseSensitive())
+        if (FileType::fsCaseSense())
             mFileNames.remove(fileMeta->location());
         else
             mFileNames.remove(fileMeta->location().toLower());
@@ -254,7 +245,7 @@ bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
 
 void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
 {
-    if (fsCaseSensitive()) {
+    if (FileType::fsCaseSense()) {
         mFileNames.remove(oldLocation);
         mFileNames.insert(file->location(), file);
     } else {
@@ -267,10 +258,10 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
 {
     QStringList changed;
     for (const QString &suf : suffix) {
-        if (!FileType::userGamsTypes().contains(suf)) changed << suf;
+        if (!FileType::userGamsTypes().contains(suf, Qt::CaseInsensitive)) changed << suf;
     }
     for (const QString &suf : FileType::userGamsTypes()) {
-        if (!suffix.contains(suf)) changed << suf;
+        if (!suffix.contains(suf, Qt::CaseInsensitive)) changed << suf;
     }
     FileType::setUserGamsTypes(suffix);
     QVector<PExProjectNode*> projects;
@@ -278,13 +269,13 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
     while (i.hasNext()) {
         i.next();
         QFileInfo fi(i.value()->location());
-        if (changed.contains(fi.suffix())) {
+        if (changed.contains(fi.suffix(), Qt::CaseInsensitive)) {
             i.value()->refreshType();
             for (PExAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
                 if (!projects.contains(node->assignedProject())) projects << node->assignedProject();
         }
     }
-    for (PExProjectNode * project : projects) {
+    for (PExProjectNode * project : qAsConst(projects)) {
         if (!project->runnableGms() || project->runnableGms()->kind() != FileKind::Gms) {
             project->setRunnableGms();
         }

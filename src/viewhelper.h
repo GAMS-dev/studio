@@ -88,6 +88,7 @@ public:
     }
 
     inline static EditorType editorType(QWidget* w) {
+        if (!w) return EditorType::undefined;
         QVariant v = w ? w->property("EditorType") : QVariant();
         return (v.isValid() ? static_cast<EditorType>(v.toInt()) : EditorType::undefined);
     }

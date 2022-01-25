@@ -21,6 +21,8 @@
 #include "client/OAIDefaultApi.h"
 #include "client/OAIJobsApi.h"
 #include "client/OAIHelpers.h"
+#include "client/OAINamespacesApi.h"
+#include "client/OAIUsageApi.h"
 #include <QString>
 #include <iostream>
 #include <QFile>
@@ -40,9 +42,11 @@ QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
-      mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
+      mNamespacesApi(new OAINamespacesApi()), mUsageApi(new OAIUsageApi()), mNetworkManager(NetworkManager::manager()),
+      mQueueFinished(false)
 {
-    mAuthApi->initializeServerConfigs();
+    // ===== initialize Authorization API =====
+
     mAuthApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignal, this,
@@ -55,14 +59,85 @@ EngineManager::EngineManager(QObject* parent)
     });
 
 
+    // ===== initialize Namespaces API =====
+
+    mNamespacesApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignal, this, [this](QList<OAINamespace> summary) {
+        QStringList nSpaces;
+        for (const OAINamespace &nspace : summary) {
+            bool go = false;
+            const QList<OAIPerm_and_username> perms = nspace.getPermissions();
+            for (const OAIPerm_and_username &perm : perms) {
+                if (perm.getUsername().compare(mUser) == 0) {
+                    int permVal = perm.getPermission();
+                    if ((permVal & 3) == 3) {
+                        go = true;
+                        break;
+                    }
+                }
+            }
+            if (go) nSpaces << nspace.getName();
+        }
+        emit reListNamspaces(nSpaces);
+    });
+    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reListNamespacesError(getJsonMessageIfFound(text));
+    });
+
+
+    // ===== initialize Usage API =====
+
+    mUsageApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mUsageApi, &OAIUsageApi::getUserInstancesSignal, this, [this](OAIModel_userinstance_info summary) {
+        OAIModel_instance_info iiDef = summary.getDefaultInstance();
+        const QList<OAIModel_instance_info> infoList = summary.getInstancesAvailable();
+        QList<QPair<QString, QList<double>>> instList;
+        for (const OAIModel_instance_info &ii : infoList) {
+            QList<double> list;
+            list << ii.getCpuRequest() << ii.getMemoryRequest() << ii.getMultiplier();
+            instList << QPair<QString, QList<double>>(ii.getLabel(), list);
+        }
+        emit reUserInstances(instList, iiDef.getLabel());
+    });
+    connect(mUsageApi, &OAIUsageApi::getUserInstancesSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reUserInstancesError(getJsonMessageIfFound(text));
+    });
+
+    connect(mUsageApi, &OAIUsageApi::getQuotaSignal, this, [this](QList<OAIQuota> summary) {
+        QList<QuotaData*> dataList;
+        for (const OAIQuota &quota : summary) {
+            QuotaData *data = new QuotaData();
+            data->name = quota.getUsername();
+            if (quota.is_disk_quota_Set())
+                data->disk = UsedQuota(quota.getDiskQuota(), quota.getDiskUsed());
+            if (quota.is_volume_quota_Set())
+                data->volume = UsedQuota(int(quota.getVolumeQuota()), int(quota.getVolumeUsed()));
+            if (quota.is_parallel_quota_Set())
+                data->parallel = int(quota.getParallelQuota());
+            dataList << data;
+        }
+        emit reQuota(dataList);
+    });
+    connect(mUsageApi, &OAIUsageApi::getQuotaSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reQuotaError(getJsonMessageIfFound(text));
+    });
+
+
+    // ===== initialize Default API =====
+
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
-            [this](OAIHttpRequestWorker *worker) {
+            [this](OAIHttpRequestWorker *worker, OAIModel_version summary) {
         QString vEngine;
         QString vGams;
         if (parseVersions(worker->response, vEngine, vGams)) {
-            emit reVersion(vEngine, vGams);
+            emit reVersion(vEngine, vGams, summary.isInKubernetes());
         } else {
             emit reVersionError("Could not parse versions");
         }
@@ -78,9 +153,10 @@ EngineManager::EngineManager(QObject* parent)
 
     connect(mNetworkManager, &QNetworkAccessManager::sslErrors, this, &EngineManager::sslErrors);
 
+
+    // ===== initialize Job API =====
+
     mJobsApi->setNetworkAccessManager(mNetworkManager);
-//    mJobsApi->setScheme("https");
-//    mJobsApi->setPort(443);
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal, this,
             [this](OAIMessage_and_token summary) {
@@ -158,6 +234,8 @@ EngineManager::~EngineManager()
     mAuthApi->deleteLater();
     mDefaultApi->deleteLater();
     mJobsApi->deleteLater();
+    mNamespacesApi->deleteLater();
+    mUsageApi->deleteLater();
 }
 
 void EngineManager::startupInit()
@@ -194,6 +272,8 @@ void EngineManager::setUrl(const QString &url)
     QUrl cleanUrl = url.endsWith('/') ? QUrl(url.left(url.length()-1)) : mUrl;
     mDefaultApi->setNewServerForAllOperations(cleanUrl);
     mJobsApi->setNewServerForAllOperations(cleanUrl);
+    mNamespacesApi->setNewServerForAllOperations(cleanUrl);
+    mUsageApi->setNewServerForAllOperations(cleanUrl);
     if (mUrl.scheme() == "https")
         setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
 }
@@ -212,6 +292,8 @@ void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
     mAuthApi->setNetworkAccessManager(mNetworkManager);
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
     mJobsApi->setNetworkAccessManager(mNetworkManager);
+    mNamespacesApi->setNetworkAccessManager(mNetworkManager);
+    mUsageApi->setNetworkAccessManager(mNetworkManager);
 }
 
 bool EngineManager::isIgnoreSslErrors() const
@@ -221,6 +303,7 @@ bool EngineManager::isIgnoreSslErrors() const
 
 void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)
 {
+    mUser = user;
     mAuthApi->createJWTTokenJSON(user, password, expireMinutes * 60);
 }
 
@@ -229,6 +312,15 @@ void EngineManager::setAuthToken(const QString &bearerToken)
     // JM workaround: set headers directly (and remove PW to avoid overwrite) until OAI is complete
     mJobsApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mJobsApi->setPassword("");
+    mNamespacesApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mNamespacesApi->setPassword("");
+    mUsageApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mUsageApi->setPassword("");
+}
+
+void EngineManager::initUsername(const QString &user)
+{
+    mUser = user;
 }
 
 void EngineManager::getVersion()
@@ -236,20 +328,39 @@ void EngineManager::getVersion()
     mDefaultApi->getVersion();
 }
 
+void EngineManager::getUserInstances()
+{
+    mUsageApi->getUserInstances(mUser);
+}
+
+void EngineManager::getQuota()
+{
+    mUsageApi->getQuota(mUser);
+}
+
 void EngineManager::listJobs()
 {
     mJobsApi->listJobs(false, QString("status process_status"), 1, 1);
 }
 
-void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params)
+void EngineManager::listNamespaces()
 {
+    mNamespacesApi->listNamespaces();
+}
+
+void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance)
+{
+    DEB() << "INSTANCE " << instance;
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);
     QString dummy;
     QStringList dummyL;
+    QStringList labels;
+    if (!instance.isEmpty())
+        labels << QString("instance=%1").arg(instance);
 
-    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, dummyL, model);
+    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, model);
 }
 
 void EngineManager::getJobStatus()
@@ -320,6 +431,7 @@ void EngineManager::abortRequests()
     mAuthApi->abortRequests();
     mDefaultApi->abortRequests();
     mJobsApi->abortRequests();
+    mUsageApi->abortRequests();
 }
 
 void EngineManager::cleanup()

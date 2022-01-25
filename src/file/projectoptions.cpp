@@ -30,15 +30,6 @@ namespace gams {
 namespace studio {
 namespace project {
 
-Qt::CaseSensitivity fsCaseSensitive()
-{
-#ifdef __unix__
-    return Qt::CaseSensitive;
-#else
-    return Qt::CaseInsensitive;
-#endif
-}
-
 ProjectOptions::ProjectOptions(QWidget *parent) :
     QFrame(parent),
     ui(new Ui::ProjectOptions)
@@ -91,10 +82,10 @@ void ProjectOptions::save()
     if (ui->edName->text().trimmed().compare(mProject->name()))
         mProject->setName(ui->edName->text().trimmed());
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (path.compare(mProject->location(), fsCaseSensitive()))
+    if (path.compare(mProject->location(), FileType::fsCaseSense()))
         mProject->setLocation(path);
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (path.compare(mProject->workDir(), fsCaseSensitive()))
+    if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         mProject->setWorkDir(path);
     updateState();
 }
@@ -135,10 +126,10 @@ void ProjectOptions::updateState()
     if (ui->edName->text().trimmed().compare(mProject->name()))
         isModified = true;
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (path.compare(mProject->location(), fsCaseSensitive()))
+    if (path.compare(mProject->location(), FileType::fsCaseSense()))
         isModified = true;
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (path.compare(mProject->workDir(), fsCaseSensitive()))
+    if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         isModified = true;
     if (isModified != mModified) {
         mModified = isModified;

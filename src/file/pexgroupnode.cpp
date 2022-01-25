@@ -756,7 +756,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 void PExProjectNode::setLocation(const QString &newLocation)
 {
     // check if changed more than letter case
-    bool changed = location().isEmpty() || location().compare(newLocation, FileMetaRepo::fsCaseSensitive()) != 0;
+    bool changed = location().isEmpty() || location().compare(newLocation, FileType::fsCaseSense()) != 0;
     PExGroupNode::setLocation(newLocation);
     if (changed)
         emit baseDirChanged(this);

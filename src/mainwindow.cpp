@@ -257,7 +257,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
-    connect(mSearchDialog, &search::SearchDialog::invalidateResults, this, &MainWindow::invalidateResultsView);
+    connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -2433,10 +2433,10 @@ void MainWindow::restoreFromSettings()
     setEncodingMIBs(settings->toString(skEncodingMib));
 
     QStringList invalidSuffix;
-    QStringList suffixes = FileType::validateSuffixList(settings->toString(skUserFileTypes), &invalidSuffix);
+    QStringList suffixes = FileType::validateSuffixList(settings->toString(skUserGamsTypes), &invalidSuffix);
     mFileMetaRepo.setUserGamsTypes(suffixes);
     if (!invalidSuffix.isEmpty()) {
-        settings->setString(skUserFileTypes, suffixes.join(","));
+        settings->setString(skUserGamsTypes, suffixes.join(","));
     }
 
     // help
@@ -2472,7 +2472,7 @@ void MainWindow::importProjectDialog()
 void MainWindow::openProject(const QString gspFile)
 {
     if (mOpenPermission == opNoGsp) {
-        if (!mDelayedFiles.contains(gspFile, mFileMetaRepo.fsCaseSensitive()))
+        if (!mDelayedFiles.contains(gspFile, FileType::fsCaseSense()))
             mDelayedFiles << gspFile;
         return;
     }
@@ -3024,7 +3024,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     }
 
     if (!forceNew && files.size() == 1) {
-        if (files.first().endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+        if (files.first().endsWith(".gsp", Qt::CaseInsensitive)) {
             openProject(files.first());
             return;
         }
@@ -3043,7 +3043,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     PExProjectNode *project = nullptr;
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
-            if (item.endsWith(".gsp", FileMetaRepo::fsCaseSensitive())) {
+            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
                 if (!project)
@@ -3556,6 +3556,7 @@ void MainWindow::showEngineStartDialog()
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
+                     Settings::settings()->toString(SettingsKey::skEngineUserInstance),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
 
     connect(proc, &engine::EngineProcess::authorized, this, [this, dialog](const QString &token) {
@@ -3585,6 +3586,7 @@ void MainWindow::engineSubmit(bool start)
     if (!dialog) return;
     if (start) {
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
+        Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
@@ -4087,7 +4089,7 @@ void MainWindow::on_actionSettings_triggered()
         mSettingsDialog->setModal(true);
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
         connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
-            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserFileTypes));
+            QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);
         });
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);

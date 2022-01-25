@@ -64,10 +64,11 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, bool _forceGdx);
+    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
+    QString userInstance() const;
     QString user() const;
     QString authToken() const;
     bool forceGdx() const;
@@ -108,8 +109,13 @@ private slots:
     void authorizeError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reListNamespaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstancesError(const QString &errorText);
+    void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void forceGdxStateChanged(int state);
     void updateConnectStateAppearance();
     void selfSignedCertFound(int sslError);

@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>476</width>
-    <height>295</height>
+    <width>500</width>
+    <height>309</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -320,13 +320,6 @@
           <property name="bottomMargin">
            <number>0</number>
           </property>
-          <item row="1" column="0">
-           <widget class="QLabel" name="nText3">
-            <property name="text">
-             <string>Total jobs</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="1">
            <widget class="QLabel" name="nJobCount">
             <property name="font">
@@ -347,12 +340,89 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
-           <widget class="QLineEdit" name="edNamespace">
-            <property name="placeholderText">
-             <string>namespace</string>
+          <item row="2" column="0">
+           <widget class="QLabel" name="laInstance">
+            <property name="text">
+             <string>Instance</string>
             </property>
            </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="laTotalJobs">
+            <property name="text">
+             <string>Total jobs</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QComboBox" name="cbInstance"/>
+          </item>
+          <item row="3" column="1">
+           <widget class="QWidget" name="widget_6" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_3">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="laAvailDisk">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>x MB   </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QLabel" name="laAvailVolume">
+               <property name="font">
+                <font>
+                 <weight>75</weight>
+                 <bold>true</bold>
+                </font>
+               </property>
+               <property name="text">
+                <string>y  h  </string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <spacer name="horizontalSpacer_4">
+               <property name="orientation">
+                <enum>Qt::Horizontal</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>40</width>
+                 <height>20</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="3" column="0">
+           <widget class="QLabel" name="laAvailable">
+            <property name="text">
+             <string>Available</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QComboBox" name="cbNamespace"/>
           </item>
          </layout>
         </widget>
@@ -432,7 +502,6 @@
   <tabstop>edUser</tabstop>
   <tabstop>edPassword</tabstop>
   <tabstop>cbAcceptCert</tabstop>
-  <tabstop>edNamespace</tabstop>
   <tabstop>cbForceGdx</tabstop>
   <tabstop>bOk</tabstop>
   <tabstop>bCancel</tabstop>

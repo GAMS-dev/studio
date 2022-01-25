@@ -343,7 +343,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skNeosAcceptTerms, scUser, {"neos","acceptTerms"}, false);
     safelyAdd(res, skNeosForceGdx, scSys, {"neos","forceGdx"}, true);
     safelyAdd(res, skNeosShortPrio, scUser, {"neos","priotity"}, true);
-    safelyAdd(res, skUserFileTypes, scUser, {"misc","userFileTypes"}, QString());
+    safelyAdd(res, skUserGamsTypes, scUser, {"misc","userFileTypes"}, QString());
 
     safelyAdd(res, skAutoReloadTypes, scUser, {"misc","autoReloadTypes"}, true);
 
@@ -361,6 +361,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineAuthExpire, scUser, {"engine","authExpire"}, 60*24*7);
     safelyAdd(res, skEngineIsSelfCert, scSys, {"engine","isSelfCert"}, false);
     safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");
+    safelyAdd(res, skEngineUserInstance, scSys, {"engine","userInstance"}, "");
     safelyAdd(res, skEngineForceGdx, scSys, {"engine","forceGdx"}, true);
 
     // syntax color settings

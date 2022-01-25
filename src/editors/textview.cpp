@@ -280,6 +280,8 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
         mEdit->updateSearchSelection();
         mMapper->updateSearchSelection();
     }
+    if (!mEdit->hasSearchSelection()) return;
+
     SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(), results);
     sw.findInFiles();
 }
@@ -419,6 +421,12 @@ void TextView::jumpToEnd()
     } else {
         topLineMoved();
     }
+}
+
+void TextView::setLineMarker(int line)
+{
+    mMapper->setLineMarkers(QList<int>() << line);
+    topLineMoved();
 }
 
 void TextView::updateView()
