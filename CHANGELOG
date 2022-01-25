@@ -1,13 +1,13 @@
-Version 1.9.3  *
+Version 1.9.3
 ==================
 - fixed search not updating cache when document has changed
-- fixed `Clear Selection` button not working as intended when search scope was set to anything but "Selection"
-- fixed crash on getting editor type
-- checks for file type ignores casing (gms, Gms, GMS are all valid)
-- activated completer and syntax help for user defined GAMS types
-- highlight current section header in LXI viewer
-- added support of selecting an user instance for GAMS Engine SaaS
-- offer available namespaces from GAMS Engine Server
+- fixed `Clear Selection` button not working as intended, when search scope was set to anything but "Selection"
+- fixed random crash in Search and Replace dialog
+- fixed checks for file type ignores casing (gms, Gms, GMS are all valid)
+- fixed completer and syntax help activation for user defined GAMS types
+- added highlight current section header in LXI viewer
+- added selection of an user instance on GAMS Engine SaaS
+- added selection of available namespaces on GAMS Engine Server
 
 Version 1.9.2
 ==================
