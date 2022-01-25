@@ -29,11 +29,31 @@ namespace OpenAPI {
 class OAIAuthApi;
 class OAIDefaultApi;
 class OAIJobsApi;
+class OAINamespacesApi;
+class OAIUsageApi;
 }
 
 namespace gams {
 namespace studio {
 namespace engine {
+
+struct UsedQuota {
+    UsedQuota() : max(-1), used(-1) {}
+    UsedQuota(int _max, int _used) : max(_max), used(_used) {}
+    int remain() {
+        if (max < 0 || used < 0) return -1;
+        return max - used;
+    }
+    int max;
+    int used;
+};
+
+struct QuotaData {
+    QString name;
+    UsedQuota disk;
+    UsedQuota volume;
+    int parallel = 0;
+};
 
 class EngineManager: public QObject
 {
@@ -67,9 +87,13 @@ public:
 
     void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
+    void initUsername(const QString &user);
     void getVersion();
+    void getUserInstances();
+    void getQuota();
     void listJobs();
-    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params);
+    void listNamespaces();
+    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance);
     void getJobStatus();
     void getLog();
     void getOutputFile();
@@ -82,8 +106,14 @@ signals:
     void reAuthorize(const QString &token);
     void reAuthorizeError(const QString &error);
     void rePing(const QString &value);
-    void reVersion(const QString &engineVersion, const QString &gamsVersion);
+    void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstancesError(const QString &error);
+    void reListNamspaces(const QStringList &list);
+    void reListNamespacesError(const QString &error);
+    void reQuota(QList<gams::studio::engine::QuotaData*> data);
+    void reQuotaError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
     void reCreateJob(const QString &message, const QString &token);
@@ -106,10 +136,13 @@ private:
 
 private:
     OpenAPI::OAIAuthApi *mAuthApi;
-    QUrl mUrl;
-    QUrl mIgnoreSslUrl;
     OpenAPI::OAIDefaultApi *mDefaultApi;
     OpenAPI::OAIJobsApi *mJobsApi;
+    OpenAPI::OAINamespacesApi *mNamespacesApi;
+    OpenAPI::OAIUsageApi *mUsageApi;
+    QUrl mUrl;
+    QUrl mIgnoreSslUrl;
+    QString mUser;
     QNetworkAccessManager *mNetworkManager;
     static QSslConfiguration *mSslConfigurationIgnoreErrOn;
     static QSslConfiguration *mSslConfigurationIgnoreErrOff;
