@@ -1574,32 +1574,32 @@ void MainWindow::activeTabChanged(int index)
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ui->menuconvert_to->setEnabled(false);
-            if (PExFileNode* fc = mProjectRepo.findFileNode(refViewer)) {
+            if (PExFileNode* fn = mProjectRepo.findFileNode(refViewer)) {
                 ui->menuconvert_to->setEnabled(false);
-                mStatusWidgets->setFileName(QDir::toNativeSeparators(fc->location()));
-                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setFileName(QDir::toNativeSeparators(fn->location()));
+                mStatusWidgets->setEncoding(fn->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
             ui->menuEncoding->setEnabled(false);
-            if (PExFileNode* fc = mProjectRepo.findFileNode(solverOptionEditor)) {
+            if (PExFileNode* fn = mProjectRepo.findFileNode(solverOptionEditor)) {
                 ui->menuEncoding->setEnabled(true);
                 ui->menuconvert_to->setEnabled(true);
-                mStatusWidgets->setFileName(fc->location());
-                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setFileName(fn->location());
+                mStatusWidgets->setEncoding(fn->file()->codecMib());
                 mStatusWidgets->setLineCount(solverOptionEditor->getItemCount());
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
             ui->menuEncoding->setEnabled(false);
-            if (PExFileNode* fc = mProjectRepo.findFileNode(gucEditor)) {
+            if (PExFileNode* fn = mProjectRepo.findFileNode(gucEditor)) {
                 ui->menuEncoding->setEnabled(false);
                 ui->menureload_with->setEnabled(false);
                 ui->menuconvert_to->setEnabled(false);
-                mStatusWidgets->setFileName(fc->location());
-                mStatusWidgets->setEncoding(fc->file()->codecMib());
+                mStatusWidgets->setFileName(fn->location());
+                mStatusWidgets->setEncoding(fn->file()->codecMib());
                 mStatusWidgets->setLineCount(-1);
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
@@ -2788,8 +2788,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (ui->actionDistraction_Free_Mode->isChecked())
         ui->actionDistraction_Free_Mode->setChecked(false);
 
-    PExFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *project = (fc ? fc->assignedProject() : nullptr);
+    PExProjectNode *project = currentProject();
     if (project) project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     updateAndSaveSettings();
@@ -3014,6 +3013,15 @@ void MainWindow::openFiles(OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
+PExProjectNode *MainWindow::currentProject()
+{
+    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    PExProjectNode *project = (node ? node->assignedProject()
+                                    : mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor())));
+    if (!project) project = mRecent.project();
+    return project;
+}
+
 void MainWindow::openFiles(QStringList files, bool forceNew)
 {
     if (files.size() == 0) return;
@@ -3117,21 +3125,19 @@ option::ParameterEditor *MainWindow::gamsParameterEditor() const
     return mGamsParameterEditor;
 }
 
-void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process)
 {
-    PExFileNode* fileNode = (gmsFileNode ? gmsFileNode : mProjectRepo.findFileNode(mRecent.editor()));
-    PExProjectNode* project = (fileNode ? fileNode->assignedProject()
-                                        : mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor())));
+    PExProjectNode* project = currentProject();
     if (!project) {
         DEB() << "Nothing to be executed.";
         return;
     }
-    bool ready = executePrepare(fileNode, project, commandLineStr, std::move(process), gmsFileNode);
+    bool ready = executePrepare(project, commandLineStr, std::move(process));
     if (ready) execution(project);
 }
 
 
-bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, QString commandLineStr,
+bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
                                 std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
 {
     Settings *settings = Settings::settings();
@@ -3227,20 +3233,16 @@ bool MainWindow::executePrepare(PExFileNode* fileNode, PExProjectNode* project, 
     connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
 
     // select gms-file and working dir to run
-    QString gmsFilePath = (gmsFileNode ? gmsFileNode->location() : project->parameter("gms"));
+    QString gmsFilePath = project->parameter("gms");
     if (gmsFilePath == "") {
         appendSystemLogWarning("No runnable GMS file found in group ["+project->name()+"].");
         ui->actionShow_System_Log->trigger();
         return false;
     }
-    if (gmsFileNode)
-        logNode->file()->setCodecMib(fileNode->file()->codecMib());
-    else {
-        FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
-        PExFileNode *runNode = project->findFile(runMeta);
-        logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
-    }
-    QString workDir = gmsFileNode ? QFileInfo(gmsFilePath).path() : project->workDir();
+    FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
+    PExFileNode *runNode = project->findFile(runMeta);
+    logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
+    QString workDir = project->workDir();
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
@@ -3473,8 +3475,7 @@ void MainWindow::showNeosStartDialog()
 
 neos::NeosProcess *MainWindow::createNeosProcess()
 {
-    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    PExProjectNode *project = currentProject();
     if (!project) return nullptr;
     auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
     neosProcess->setWorkingDirectory(mRecent.project()->workDir());
@@ -3487,13 +3488,12 @@ neos::NeosProcess *MainWindow::createNeosProcess()
 
 void MainWindow::prepareNeosProcess()
 {
-    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+    PExProjectNode *project = currentProject();
     if (!project) return;
     updateAndSaveSettings();
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     neosPtr->setStarting();
-    if (!executePrepare(fileNode, project, mGamsParameterEditor->getCurrentCommandLineData()))
+    if (!executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData()))
         return;
     if (!mIgnoreSslErrors) {
         connect(neosPtr, &neos::NeosProcess::sslValidation, this, &MainWindow::sslValidation);
@@ -3508,8 +3508,7 @@ void MainWindow::sslValidation(QString errorMessage)
 {
     if (mIgnoreSslErrors || errorMessage.isEmpty()) {
         updateAndSaveSettings();
-        PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-        PExProjectNode *project = (fileNode ? fileNode->assignedProject() : nullptr);
+        PExProjectNode *project = currentProject();
         if (!project) return;
         execution(project);
     } else {
@@ -3527,8 +3526,7 @@ void MainWindow::sslValidation(QString errorMessage)
 
 void MainWindow::sslUserDecision(QAbstractButton *button)
 {
-    PExFileNode* fileNode = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *project = (fileNode ? fileNode->assignedProject() : nullptr);
+    PExProjectNode *project = currentProject();
     if (!project) return;
     QMessageBox *msgBox = qobject_cast<QMessageBox*>(sender());
     if (msgBox && msgBox->standardButton(button) == QMessageBox::Ignore) {
@@ -3547,6 +3545,7 @@ void MainWindow::showEngineStartDialog()
 {
     // prepare process
     engine::EngineProcess *proc = createEngineProcess();
+    if (!proc) return;
     proc->setAuthToken(mEngineAuthToken);
 
     // prepare dialog
@@ -3599,8 +3598,7 @@ void MainWindow::engineSubmit(bool start)
 engine::EngineProcess *MainWindow::createEngineProcess()
 {
     updateAndSaveSettings();
-    PExFileNode* fc = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *project = (fc ? fc->assignedProject() : nullptr);
+    PExProjectNode *project = currentProject();
     if (!project) {
         DEB() << "Could not create GAMS Engine process";
         return nullptr;
@@ -3620,36 +3618,33 @@ engine::EngineProcess *MainWindow::createEngineProcess()
 
 void MainWindow::prepareEngineProcess()
 {
-    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
-    if (!group) return;
-    AbstractProcess* process = group->process();
+    PExProjectNode *project = currentProject();
+    if (!project) return;
+    AbstractProcess* process = project->process();
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
     if (!engineProcess) return;
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
 
     updateAndSaveSettings();
-    executePrepare(node, group, mGamsParameterEditor->getCurrentCommandLineData());
-    execution(group);
+    executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData());
+    execution(project);
 }
 
 void MainWindow::on_actionInterrupt_triggered()
 {
-    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
-    if (!group) return;
+    PExProjectNode *project = currentProject();
+    if (!project) return;
     mGamsParameterEditor->on_interruptAction();
-    AbstractProcess* process = group->process();
+    AbstractProcess* process = project->process();
     QtConcurrent::run(process, &AbstractProcess::interrupt);
 }
 
 void MainWindow::on_actionStop_triggered()
 {
-    PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
-    PExProjectNode *group = (node ? node->assignedProject() : nullptr);
-    if (!group) return;
+    PExProjectNode *project = currentProject();
+    if (!project) return;
     mGamsParameterEditor->on_stopAction();
-    AbstractProcess* process = group->process();
+    AbstractProcess* process = project->process();
     QtConcurrent::run(process, &GamsProcess::terminate);
 }
 
@@ -4135,9 +4130,9 @@ void MainWindow::openSearchDialog()
                mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
                 mGamsParameterEditor->selectSearchField();
     } else {
-       PExFileNode *fc = mProjectRepo.findFileNode(mRecent.editor());
-       if (fc) {
-           if (fc->file()->kind() == FileKind::Gdx) {
+       PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
+       if (fn) {
+           if (fn->file()->kind() == FileKind::Gdx) {
                gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
                gdx->selectSearchField();
                return;
