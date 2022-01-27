@@ -48,6 +48,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
+    ui->laError->hide();
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -190,6 +191,7 @@ GdxSymbolView::~GdxSymbolView()
 
 void GdxSymbolView::showFilter(QPoint p)
 {
+    if (mSym->hasInvalidUel()) return;
     QTableView* tableView = mTableView ? ui->tvTableViewFilter : ui->tvListView;
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
@@ -287,6 +289,9 @@ GdxSymbol *GdxSymbolView::sym() const
 
 void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 {
+    mSym = nullptr;
+    ui->tvListView->setSortingEnabled(!sym->hasInvalidUel());
+    ui->tvListView->horizontalHeader()->setSortIndicatorShown(sym->hasInvalidUel());
     mSym = sym;
     mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
@@ -609,6 +614,8 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::enableControls()
 {
+    ui->laError->setVisible(mSym->hasInvalidUel());
+
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {

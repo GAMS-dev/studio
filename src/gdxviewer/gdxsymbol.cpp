@@ -194,6 +194,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
+    mHasInvalidUel = false;
     QMutexLocker locker(mGdxMutex);
     mMinUel.resize(mDim);
     for(int i=0; i<mDim; i++)
@@ -328,7 +329,9 @@ void GdxSymbol::calcUelsInColumn()
             currentUel = mKeys[rec*mDim + dim];
             if(lastUel != currentUel) {
                 lastUel = currentUel;
-                if(currentUel > 0 && !sawUel[currentUel]) {
+                if (currentUel <= 0) {
+                    mHasInvalidUel = true;
+                } else if(!sawUel[currentUel]) {
                     sawUel[currentUel] = true;
                     uels->push_back(currentUel);
                 }
@@ -432,6 +435,11 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
         }
     }
+}
+
+bool GdxSymbol::hasInvalidUel() const
+{
+    return mHasInvalidUel;
 }
 
 QStringList GdxSymbol::domains() const
@@ -584,6 +592,7 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
+    if (mHasInvalidUel) return;
     // sort by key column
     if(column<mDim && column >=0) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
@@ -655,6 +664,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
+    if (mHasInvalidUel) return;
     beginResetModel();
     for (int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;

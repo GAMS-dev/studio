@@ -200,7 +200,7 @@ std::vector<int> GdxSymbolTable::labelCompIdx()
 
 QString GdxSymbolTable::uel2Label(int uel)
 {
-    if (uel < 0 || uel >= mUel2Label.size()) {
+    if (uel <= 0 || uel >= mUel2Label.size()) {
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
