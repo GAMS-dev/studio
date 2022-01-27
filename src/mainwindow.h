@@ -140,7 +140,7 @@ public:
     void openSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr,
-                 std::unique_ptr<AbstractProcess> process = nullptr, PExFileNode *gmsFileNode = nullptr);
+                 std::unique_ptr<AbstractProcess> process = nullptr);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -415,10 +415,11 @@ private:
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(PExFileNode* fileNode, PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+    bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
                  PExFileNode *gmsFileNode = nullptr);
     void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
+    PExProjectNode *currentProject();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();

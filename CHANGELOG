@@ -1,6 +1,7 @@
 Version 1.9.4  *
 ==================
 - on adding a gms-file set as main file if project lacks of a main file
+- Fixed crash on executing a project with active project options
 
 Version 1.9.3
 ==================
