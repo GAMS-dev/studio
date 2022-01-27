@@ -301,7 +301,7 @@ void GdxSymbol::calcDefaultColumns()
 {
     if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
         return; // symbols other than variable and equation do not have default values
-    double defVal;
+    double defVal = 0.0;
     for(int valColIdx=0; valColIdx<GMS_VAL_MAX; valColIdx++) {
         if (mType == GMS_DT_VAR)
             defVal = gmsDefRecVar[mSubType][valColIdx];
@@ -592,9 +592,9 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
-    if (mHasInvalidUel) return;
+    if (column < 0 || mHasInvalidUel) return;
     // sort by key column
-    if(column<mDim && column >=0) {
+    if(column < mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         uint uel;

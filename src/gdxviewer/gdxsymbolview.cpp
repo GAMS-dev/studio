@@ -289,9 +289,6 @@ GdxSymbol *GdxSymbolView::sym() const
 
 void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
 {
-    mSym = nullptr;
-    ui->tvListView->setSortingEnabled(!sym->hasInvalidUel());
-    ui->tvListView->horizontalHeader()->setSortIndicatorShown(sym->hasInvalidUel());
     mSym = sym;
     mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
@@ -614,7 +611,11 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::enableControls()
 {
-    ui->laError->setVisible(mSym->hasInvalidUel());
+    if (mSym->hasInvalidUel()) {
+        ui->tvListView->setSortingEnabled(false);
+        ui->tvListView->horizontalHeader()->setSortIndicatorShown(false);
+        ui->laError->setVisible(true);
+    }
 
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
