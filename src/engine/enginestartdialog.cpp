@@ -278,7 +278,7 @@ void EngineStartDialog::showSubmit()
     ui->laAvailable->setVisible(mProc->inKubernetes());
     ui->laAvailDisk->setVisible(mProc->inKubernetes());
     ui->laAvailVolume->setVisible(mProc->inKubernetes());
-    setCanSubmit(true);
+    updateSubmitStates();
     if (!mHiddenMode)
         ensureOpened();
 }
@@ -368,16 +368,6 @@ void EngineStartDialog::setCanLogin(bool value)
     }
 }
 
-void EngineStartDialog::setCanSubmit(bool value)
-{
-    value = value && !ui->cbNamespace->currentText().isEmpty() && mAuthorized &&
-            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() == 4));
-    if (value != ui->bOk->isEnabled()) {
-        ui->bOk->setEnabled(value);
-        ui->bAlways->setEnabled(value);
-    }
-}
-
 void EngineStartDialog::setConnectionState(ServerConnectionState state)
 {
     mConnectState = state;
@@ -417,8 +407,12 @@ void EngineStartDialog::updateLoginStates()
 
 void EngineStartDialog::updateSubmitStates()
 {
-    bool enabled = !ui->cbNamespace->currentText().isEmpty();
-    setCanSubmit(enabled);
+    bool value = !ui->cbNamespace->currentText().isEmpty() && mAuthorized &&
+            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() == 4));
+    if (value != ui->bOk->isEnabled()) {
+        ui->bOk->setEnabled(value);
+        ui->bAlways->setEnabled(value);
+    }
     setConnectionState(mConnectState);
 }
 
@@ -541,6 +535,7 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
         ui->cbInstance->setCurrentIndex(prev);
     else if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(cur);
+    updateSubmitStates();
 }
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
