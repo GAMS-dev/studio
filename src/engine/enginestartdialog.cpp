@@ -370,8 +370,8 @@ void EngineStartDialog::setCanLogin(bool value)
 
 void EngineStartDialog::setCanSubmit(bool value)
 {
-    //TODO(JM) regard kubernetes
-    value = value && !ui->cbNamespace->currentText().isEmpty() && mAuthorized;
+    value = value && !ui->cbNamespace->currentText().isEmpty() && mAuthorized &&
+            (!mProc->inKubernetes() || (ui->cbInstance->count() && ui->cbInstance->currentData().toList().size() == 4));
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
         ui->bAlways->setEnabled(value);
@@ -532,18 +532,23 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
         if (entry.first == lastInst) prev = ui->cbInstance->count();
         ui->cbInstance->addItem(text, data);
     }
+    if (!ui->cbInstance->count()) {
+        ui->cbInstance->addItem("-no instances-");
+        ui->laWarn->setText("No user instances assigned");
+        ui->laWarn->setToolTip("Please contact your administrator");
+    }
     if (prev >= 0)
         ui->cbInstance->setCurrentIndex(prev);
     else if (ui->cbInstance->count())
         ui->cbInstance->setCurrentIndex(cur);
-    ui->cbInstance->setToolTip("");
 }
 
 void EngineStartDialog::reUserInstancesError(const QString &errorText)
 {
     ui->cbInstance->clear();
-    ui->cbInstance->addItem("-no instances defined-");
-    ui->cbInstance->setToolTip(errorText);
+    ui->cbInstance->addItem("-no instances-");
+    ui->laWarn->setText("Error reading user instances: " + errorText);
+    ui->laWarn->setToolTip("Try to login again or contact your administrator");
 }
 
 void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList &volumeHint)
