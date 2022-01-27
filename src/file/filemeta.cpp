@@ -1055,7 +1055,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
 
 FileMeta::Data::Data(QString location, FileType *knownType)
 {
-    if (knownType == &FileType::from(""))
+    if (knownType == &FileType::from("-"))
         knownType = nullptr;
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
@@ -1063,7 +1063,7 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     if (location.startsWith('[')) {
         int len = location.indexOf(']')-2;
         type = knownType ? knownType
-                         : &FileType::from((len > 0) ? location.mid(1, len) : "");
+                         : &FileType::from((len > 0) ? location.mid(1, len) : "-");
     } else {
         QFileInfo fi(location);
         exist = fi.exists();
@@ -1071,6 +1071,12 @@ FileMeta::Data::Data(QString location, FileType *knownType)
         created = fi.birthTime();
         modified = fi.lastModified();
         type = (knownType ? knownType : &FileType::from(fi.suffix()));
+        if (type->kind() == FileKind::PrO) {
+            QFileInfo fi(location);
+            if (fi.exists() && fi.isFile()) {
+                type = &FileType::from(FileKind::Txt);
+            }
+        }
     }
 }
 
