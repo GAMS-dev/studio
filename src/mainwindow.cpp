@@ -3137,8 +3137,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
 }
 
 
-bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
-                                std::unique_ptr<AbstractProcess> process, PExFileNode* gmsFileNode)
+bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr, std::unique_ptr<AbstractProcess> process)
 {
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );

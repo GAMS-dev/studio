@@ -415,8 +415,7 @@ private:
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
-                 PExFileNode *gmsFileNode = nullptr);
+    bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
     void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
     PExProjectNode *currentProject();
