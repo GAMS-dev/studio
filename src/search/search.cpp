@@ -307,7 +307,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     int matchNr = -1;
     bool found = false;
 
-    // do not move cursor in document that is not in scope
+    // do not move cursor in document that is not in scope:
     if (mSearchDialog->getFilesByScope().contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
 

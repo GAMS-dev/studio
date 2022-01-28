@@ -1,11 +1,15 @@
-Version 1.9.3  *
+Version 1.9.4
+==================
+- fixed default file filter in search dialog expecting files to include a '.' character
+- fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
+- fixed search jump behavior when current file is excluded by file filter
+
+Version 1.9.3
 ==================
 - fixed search not updating cache when document has changed
 - fixed crash on getting editor type
 - checks for file type ignores casing (gms, Gms, GMS are all valid)
 - activated completer and syntax help for user defined GAMS types
-- fixed default file filter in search dialog expecting files to include a '.' character
-- fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
 
 Version 1.9.2
 ==================
