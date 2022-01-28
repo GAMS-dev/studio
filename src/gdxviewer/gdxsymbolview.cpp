@@ -49,6 +49,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
     ui->laError->hide();
+    ui->laError->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
