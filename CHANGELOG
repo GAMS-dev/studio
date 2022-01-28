@@ -1,12 +1,11 @@
 Version 1.9.4
 ==================
-- on adding a gms-file set as main file if project lacks main file
-- fixed default file filter in search dialog expecting files to include a '.' character
+- added automatic set of main gms file when adding one to a project that had none before
+- fixed default file filter in search dialog expecting files to include a '.' character on non-windows platforms
 - fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
 - fixed search jump behavior when current file is excluded by file filter
-- on adding a gms-file set as main file if project lacks of a main file
-- Fixed crash on executing a project with active project options
-- fixed open a file without a suffix in the name caused a crash
+- fixed crash when executing a project with active project options
+- fixed incorrect handling of files without file extention that could also result in a crash
 
 Version 1.9.3
 ==================
