@@ -296,10 +296,6 @@ void SearchDialog::on_btn_forward_clicked()
 
 void SearchDialog::findNextPrev(bool backwards) {
     if (ui->combo_search->currentText().isEmpty()) return;
-    if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
-        setSearchStatus(Search::NoResults);
-        return;
-    }
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex(), backwards);
