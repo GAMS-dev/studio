@@ -93,7 +93,6 @@ protected:
     void buttonClicked(QAbstractButton *button);
     void getVersion();
     void setCanLogin(bool value);
-    void setCanSubmit(bool value);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
     bool fetchNextUrl();
