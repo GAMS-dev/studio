@@ -439,12 +439,15 @@
        <property name="editable">
         <bool>true</bool>
        </property>
+       <property name="currentText">
+        <string>*</string>
+       </property>
        <property name="sizeAdjustPolicy">
         <enum>QComboBox::AdjustToContents</enum>
        </property>
        <item>
         <property name="text">
-         <string>*.*</string>
+         <string>*</string>
         </property>
        </item>
        <item>

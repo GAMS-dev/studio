@@ -166,7 +166,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::ThisFile: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            break;
+            return files;
         }
         case Search::ThisProject: {
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
@@ -180,7 +180,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::Selection: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            break;
+            return files;
         }
         case Search::OpenTabs: {
             files = mFileHandler->openFiles();
@@ -294,10 +294,6 @@ void SearchDialog::on_btn_forward_clicked()
 
 void SearchDialog::findNextPrev(bool backwards) {
     if (ui->combo_search->currentText().isEmpty()) return;
-    if (!getFilesByScope().contains(mFileHandler->fileMeta(mCurrentEditor))) {
-        setSearchStatus(Search::NoResults);
-        return;
-    }
 
     mShowResults = false;
     mSearch.setParameters(getFilesByScope(), createRegex(), backwards);
