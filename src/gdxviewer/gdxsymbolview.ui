@@ -96,7 +96,7 @@
         <string>Sorting and filterung disabled for this symbol</string>
        </property>
        <property name="text">
-        <string>Invalid UEL found!</string>
+        <string>Invalid(negative) UEL found!</string>
        </property>
       </widget>
      </item>

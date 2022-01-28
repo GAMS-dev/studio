@@ -322,16 +322,15 @@ void GdxSymbol::calcUelsInColumn()
     for(int dim=0; dim<mDim; dim++) {
         std::vector<int>* uels = new std::vector<int>();
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false};
-
         int lastUel = -1;
         int currentUel = - 1;
         for(int rec=0; rec<mRecordCount; rec++) {
             currentUel = mKeys[rec*mDim + dim];
-            if(lastUel != currentUel) {
+            if (currentUel < 0)
+                mHasInvalidUel = true;
+            else if(lastUel != currentUel) {
                 lastUel = currentUel;
-                if (currentUel <= 0) {
-                    mHasInvalidUel = true;
-                } else if(!sawUel[currentUel]) {
+                if(!sawUel[currentUel]) {
                     sawUel[currentUel] = true;
                     uels->push_back(currentUel);
                 }
