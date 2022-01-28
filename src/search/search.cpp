@@ -216,7 +216,6 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     bool allowJumping = (mResults.size() > 0)
             && !hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
 
-    // TODO(RG): refactoring candidate:
     if (mSearchDialog->currentEditor()) {
         QString file = ViewHelper::location(mSearchDialog->currentEditor());
         for (int i = start; i >= 0 && i < mResults.size(); i += iterator) {
@@ -308,26 +307,29 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     int matchNr = -1;
     bool found = false;
 
-    if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
+    // do not move cursor in document that is not in scope:
+    if (mSearchDialog->getFilesByScope().contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
+        if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
 
-        QTextCursor tc = e->textCursor();
-        if (!firstLevel) {
-            if (direction == Direction::Backward) tc.movePosition(QTextCursor::End);
-            else tc.movePosition(QTextCursor::Start);
+            QTextCursor tc = e->textCursor();
+            if (!firstLevel) {
+                if (direction == Direction::Backward) tc.movePosition(QTextCursor::End);
+                else tc.movePosition(QTextCursor::Start);
+            }
+
+            QTextCursor ntc = e->document()->find(mRegex, direction == Direction::Backward
+                                                  ? tc.position()-tc.selectedText().length()
+                                                  : tc.position(), mOptions);
+            found = !ntc.isNull();
+            if (found) {
+                e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
+                e->setTextCursor(ntc);
+            }
+
+        } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
+            mSplitSearchContinue = !firstLevel;
+            found = t->findText(mRegex, mOptions, mSplitSearchContinue);
         }
-
-        QTextCursor ntc = e->document()->find(mRegex, direction == Direction::Backward
-                                             ? tc.position()-tc.selectedText().length()
-                                             : tc.position(), mOptions);
-        found = !ntc.isNull();
-        if (found) {
-            e->jumpTo(ntc.blockNumber()+1, ntc.columnNumber());
-            e->setTextCursor(ntc);
-        }
-
-    } else if (TextView* t = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
-        mSplitSearchContinue = !firstLevel;
-        found = t->findText(mRegex, mOptions, mSplitSearchContinue);
     }
 
     // try again
