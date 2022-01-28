@@ -5,7 +5,7 @@ Version 1.9.4
 - fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
 - fixed search jump behavior when current file is excluded by file filter
 - fixed crash when executing a project with active project options
-- fixed incorrect handling of files without file extention that could also result in a crash
+- fixed incorrect handling of files without file extension that could also result in a crash
 
 Version 1.9.3
 ==================
