@@ -167,7 +167,6 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
             return files;
-            break;
         }
         case Search::ThisProject: {
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
@@ -182,7 +181,6 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
             return files;
-            break;
         }
         case Search::OpenTabs: {
             files = mFileHandler->openFiles();
