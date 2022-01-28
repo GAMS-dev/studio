@@ -71,7 +71,7 @@ public:
     Search::Scope scope() const;
     bool hasSearchSelection();
     void reset();
-    void documentChanged();
+    void invalidateCache();
     void resetResults();
 
 signals:

@@ -56,6 +56,7 @@ public slots:
 private slots:
     void jumpToTreeItem();
     void jumpToLine(const QModelIndex &modelIndex);
+    void markLine(const QModelIndex &modelIndex);
 
 private:
     Ui::LxiViewer *ui;

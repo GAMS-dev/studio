@@ -128,6 +128,7 @@ enum SettingsKey {
     skEngineAuthExpire,
     skEngineIsSelfCert,
     skEngineNamespace,
+    skEngineUserInstance,
     skEngineForceGdx,
 
     // user model library directory

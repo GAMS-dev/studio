@@ -90,7 +90,7 @@ signals:
     void setWidgetPosition(const QPoint& searchWidgetPos);
     void openHelpDocument(QString doc, QString anchor);
     void selectResult(int matchNr);
-    void invalidateResults();
+    void invalidateResultsView();
 
 protected:
     void showEvent(QShowEvent *event);

@@ -1,5 +1,6 @@
 Version 1.9.4
 ==================
+- on adding a gms-file set as main file if project lacks main file
 - fixed default file filter in search dialog expecting files to include a '.' character
 - fixed file filter in search dialog not being ignored for scopes "This File" and "Selection"
 - fixed search jump behavior when current file is excluded by file filter
@@ -7,9 +8,13 @@ Version 1.9.4
 Version 1.9.3
 ==================
 - fixed search not updating cache when document has changed
-- fixed crash on getting editor type
-- checks for file type ignores casing (gms, Gms, GMS are all valid)
-- activated completer and syntax help for user defined GAMS types
+- fixed `Clear Selection` button not working as intended, when search scope was set to anything but "Selection"
+- fixed random crash in Search and Replace dialog
+- fixed checks for file type ignores casing (gms, Gms, GMS are all valid)
+- fixed completer and syntax help activation for user defined GAMS types
+- added highlight current section header in LXI viewer
+- added selection of user instances on GAMS Engine SaaS
+- added selection of namespaces on GAMS Engine Server
 
 Version 1.9.2
 ==================

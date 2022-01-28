@@ -36,7 +36,7 @@ namespace search {
 
 Search::Search(SearchDialog *sd) : mSearchDialog(sd)
 {
-    connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResults);
+    connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResultsView);
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
 }
 
@@ -114,7 +114,7 @@ void Search::reset()
 {
     resetResults();
 
-    mCacheAvailable = false;
+    invalidateCache();
     mOutsideOfList = false;
     mLastMatchInOpt = -1;
 
@@ -122,7 +122,7 @@ void Search::reset()
     emit invalidateResults();
 }
 
-void Search::documentChanged()
+void Search::invalidateCache()
 {
     emit invalidateResults();
     mCacheAvailable = false;
@@ -445,8 +445,6 @@ const QFlags<QTextDocument::FindFlag> &Search::options() const
 
 bool Search::hasSearchSelection()
 {
-    if (mSearchDialog->selectedScope() != Scope::Selection) return false;
-
     if (AbstractEdit *ce = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         return ce->hasSearchSelection();
     } else if (TextView *tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {

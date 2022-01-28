@@ -572,6 +572,8 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         for (QWidget *w: fileMeta->editors())
             ViewHelper::setGroupId(w, project->id());
     }
+    if (!project->runnableGms() && fileMeta->kind() == FileKind::Gms)
+        project->setRunnableGms(fileMeta);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
 }

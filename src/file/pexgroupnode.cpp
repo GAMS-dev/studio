@@ -453,8 +453,6 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
                 break;
             }
         }
-    } else {
-        gmsFileNode = findFile(gmsFile);
     }
     if (gmsFile && gmsFile->kind() != FileKind::Gms) {
         DEB() << "Only files of FileKind::Gms can become runable";

@@ -244,7 +244,7 @@ void SearchDialog::on_searchPrev()
 void SearchDialog::on_documentContentChanged(int from, int charsRemoved, int charsAdded)
 {
     Q_UNUSED(from)  Q_UNUSED(charsRemoved)  Q_UNUSED(charsAdded)
-    mSearch.documentChanged();
+    mSearch.invalidateCache();
 }
 
 void SearchDialog::keyPressEvent(QKeyEvent* e)
@@ -307,12 +307,13 @@ void SearchDialog::findNextPrev(bool backwards) {
 void SearchDialog::on_btn_clear_clicked()
 {
     if (mSearch.hasSearchSelection()) {
-        clearSearchSelection();
-        updateEditHighlighting();
         clearSelection();
     } else {
         clearSearch();
     }
+    clearSearchSelection();
+    mSearch.invalidateCache();
+    updateEditHighlighting();
     updateClearButton();
 }
 

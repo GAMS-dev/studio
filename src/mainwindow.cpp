@@ -257,7 +257,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
-    connect(mSearchDialog, &search::SearchDialog::invalidateResults, this, &MainWindow::invalidateResultsView);
+    connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -3556,6 +3556,7 @@ void MainWindow::showEngineStartDialog()
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
+                     Settings::settings()->toString(SettingsKey::skEngineUserInstance),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
 
     connect(proc, &engine::EngineProcess::authorized, this, [this, dialog](const QString &token) {
@@ -3585,6 +3586,7 @@ void MainWindow::engineSubmit(bool start)
     if (!dialog) return;
     if (start) {
         Settings::settings()->setString(SettingsKey::skEngineNamespace, dialog->nSpace());
+        Settings::settings()->setString(SettingsKey::skEngineUserInstance, dialog->userInstance());
         Settings::settings()->setBool(SettingsKey::skEngineForceGdx, dialog->forceGdx());
         mEngineNoDialog = dialog->isAlways();
         prepareEngineProcess();
