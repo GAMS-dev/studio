@@ -32,6 +32,7 @@
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
+#include <settings.h>
 
 #include <numerics/doubleformatter.h>
 
@@ -277,6 +278,7 @@ void GdxSymbolView::resetSortFilter()
             mTvModel = nullptr;
             ui->tvTableView->setModel(nullptr);
         }
+        showDefaultView();
     }
 }
 
@@ -292,6 +294,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
         connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+        showDefaultView();
     }
     ui->tvListView->setModel(mSym);
 
@@ -572,6 +575,15 @@ void GdxSymbolView::showTableView()
     mTableView = true;
     if (firstInit)
         autoResizeColumns();
+}
+
+void GdxSymbolView::showDefaultView()
+{
+    if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+        this->showTableView();
+    }
+    else
+        this->showListView();
 }
 
 void GdxSymbolView::toggleView()

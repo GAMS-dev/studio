@@ -41,8 +41,12 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
         QStringList header;
         if (orientation == Qt::Horizontal) {
             if (mNeedDummyColumn) {
-                if (mNeedDummyRow)
-                    return "No Data";
+                if (mNeedDummyRow) {
+                    if (mSym->isLoaded())
+                        return "No Data";
+                    else
+                        return "Loading Data";
+                }
                 if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_PAR)
                     header << "Value";
                 else

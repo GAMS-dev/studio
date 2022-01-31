@@ -72,6 +72,7 @@ private slots:
     void tvFilterScrollRight();
 
 private:
+    enum DefaultSymbolView {listView, tableView };
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
@@ -84,6 +85,7 @@ private:
 
     void showListView();
     void showTableView();
+    void showDefaultView();
     void toggleView();
 
     void selectAll();

@@ -110,6 +110,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
 
+    connect(ui->cb_gdxDefaultSymbolView, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
@@ -193,6 +195,9 @@ void SettingsDialog::loadSettings()
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
+
+    // GDX Viewer
+    ui->cb_gdxDefaultSymbolView->setCurrentIndex(mSettings->toInt(skGdxDefaultSymbolView));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -312,6 +317,9 @@ void SettingsDialog::saveSettings()
     // colors page
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
+
+    // GDX Viewer
+    mSettings->setInt(skGdxDefaultSymbolView, ui->cb_gdxDefaultSymbolView->currentIndex());
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());

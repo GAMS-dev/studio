@@ -335,6 +335,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdFoldedDcoOnOpen, scUser, {"editor","foldedDcoOnOpen"}, false);
     safelyAdd(res, skEdSmartTooltipHelp, scUser, {"editor","smartTooltipHelp"}, true);
 
+    //GDX Viewer
+    safelyAdd(res, skGdxDefaultSymbolView, scUser, {"gdxViewer","gdxDefaultSymbolView"}, 0);
+
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
 
