@@ -1,3 +1,7 @@
+Version 1.9.5  *
+==================
+- increase tolerance of GDX viewer on reading a faulty file containing negative UELs
+
 Version 1.9.4
 ==================
 - added automatic set of main gms file when adding one to a project that had none before
@@ -6,7 +10,6 @@ Version 1.9.4
 - fixed search jump behavior when current file is excluded by file filter
 - fixed crash when executing a project with active project options
 - fixed incorrect handling of files without file extension that could also result in a crash
-- increase tolerance of GDX viewer on reading a faulty file containing negative UELs
 
 Version 1.9.3
 ==================
