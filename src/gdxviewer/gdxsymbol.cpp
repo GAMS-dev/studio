@@ -194,6 +194,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 
 void GdxSymbol::loadData()
 {
+    mHasInvalidUel = false;
     QMutexLocker locker(mGdxMutex);
     mMinUel.resize(mDim);
     for(int i=0; i<mDim; i++)
@@ -300,7 +301,7 @@ void GdxSymbol::calcDefaultColumns()
 {
     if(mType != GMS_DT_VAR && mType != GMS_DT_EQU)
         return; // symbols other than variable and equation do not have default values
-    double defVal;
+    double defVal = 0.0;
     for(int valColIdx=0; valColIdx<GMS_VAL_MAX; valColIdx++) {
         if (mType == GMS_DT_VAR)
             defVal = gmsDefRecVar[mSubType][valColIdx];
@@ -321,12 +322,13 @@ void GdxSymbol::calcUelsInColumn()
     for(int dim=0; dim<mDim; dim++) {
         std::vector<int>* uels = new std::vector<int>();
         bool* sawUel = new bool[qMax(mMaxUel[dim]+1,1)] {false};
-
         int lastUel = -1;
         int currentUel = - 1;
         for(int rec=0; rec<mRecordCount; rec++) {
             currentUel = mKeys[rec*mDim + dim];
-            if(lastUel != currentUel) {
+            if (currentUel < 0)
+                mHasInvalidUel = true;
+            else if(lastUel != currentUel) {
                 lastUel = currentUel;
                 if(!sawUel[currentUel]) {
                     sawUel[currentUel] = true;
@@ -432,6 +434,11 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
         }
     }
+}
+
+bool GdxSymbol::hasInvalidUel() const
+{
+    return mHasInvalidUel;
 }
 
 QStringList GdxSymbol::domains() const
@@ -584,8 +591,9 @@ int GdxSymbol::subType() const
  */
 void GdxSymbol::sort(int column, Qt::SortOrder order)
 {
+    if (column < 0 || mHasInvalidUel) return;
     // sort by key column
-    if(column<mDim && column >=0) {
+    if(column < mDim) {
         std::vector<int> labelCompIdx = mGdxSymbolTable->labelCompIdx();
         QList<QPair<int, int>> l;
         uint uel;
@@ -655,6 +663,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
 
 void GdxSymbol::filterRows()
 {
+    if (mHasInvalidUel) return;
     beginResetModel();
     for (int i=0; i<mRecordCount; i++)
         mRecFilterIdx[i] = i;
