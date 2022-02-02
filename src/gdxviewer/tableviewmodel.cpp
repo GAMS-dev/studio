@@ -28,6 +28,7 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, Q
     for(int i=0; i<mSym->mDim; i++)
         mTvDimOrder << i;
     connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
+    connect(mSym, &GdxSymbol::loadFinished, this, &TableViewModel::setTableViewNoArgs);
 }
 
 TableViewModel::~TableViewModel()
@@ -364,7 +365,8 @@ void TableViewModel::setTableView(int colDim, QVector<int> tvDims)
 
 void TableViewModel::setTableViewNoArgs()
 {
-    setTableView();
+    if (mSym->isLoaded())
+        setTableView();
 }
 
 bool TableViewModel::isAllDefault(int valColIdx)
