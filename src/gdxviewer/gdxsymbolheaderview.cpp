@@ -101,6 +101,13 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
         }
     }
+    if (mHeaderType != HeaderType::TableViewFilter) {
+        QPen pen(painter->pen());
+        pen.setColor(palette().midlight().color());
+        painter->setPen(pen);
+        painter->drawLine(rect.left(), rect.bottom(), rect.right(), rect.bottom());
+    }
+
     mFilterIconX[logicalIndex] = posX;
     mFilterIconY[logicalIndex] = posY;
 }

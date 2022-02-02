@@ -206,6 +206,14 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                     painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
                 painter->save();
             }
+            if (i == dim() - 1) {
+                painter->restore();
+                QPen pen(painter->pen());
+                pen.setColor(palette().midlight().color());
+                painter->setPen(pen);
+                painter->drawLine(rect.left(), rect.bottom(), rect.right(), rect.bottom());
+                painter->save();
+            }
         }
     }
     painter->setBrushOrigin(oldBO);
