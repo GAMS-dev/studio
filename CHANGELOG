@@ -1,3 +1,7 @@
+Version 1.9.5 *
+==================
+- fixed search not properly counting search results
+
 Version 1.9.4
 ==================
 - added automatic set of main gms file when adding one to a project that had none before
