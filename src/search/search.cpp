@@ -70,20 +70,22 @@ void Search::start()
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
+    FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
     for(FileMeta* fm : qAsConst(mFiles)) {
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
 
-        // sort files by modified
-        if (fm->isModified()) modified << fm;
-        else unmodified << fm;
+        // sort files by modified, current file first
+        if (fm->isModified()) {
+            if (fm == currentFile) modified.insert(0, fm);
+            else modified << fm;
+        } else {
+            if (fm == currentFile) unmodified.insert(0, fm);
+            else unmodified << fm;
+        }
     }
-
-    // non-parallel first
-    for (FileMeta* fm : qAsConst(modified))
-        findInDoc(fm);
-
+    // start background task first
     SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
     sw->moveToThread(&mThread);
 
@@ -94,6 +96,9 @@ void Search::start()
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
+
+    for (FileMeta* fm : qAsConst(modified))
+        findInDoc(fm);
 }
 
 void Search::stop()
