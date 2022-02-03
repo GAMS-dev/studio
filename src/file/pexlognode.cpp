@@ -72,10 +72,10 @@ void PExLogNode::clearLog()
         tv->reset();
 }
 
-void PExLogNode::prepareRun()
+void PExLogNode::prepareRun(int logOption)
 {
     Settings *settings = Settings::settings();
-    if (!mLogFile && settings->toBool(skEdWriteLog)) {
+    if (logOption > 2 && !mLogFile && settings->toBool(skEdWriteLog)) {
         mLogFile = new DynamicFile(location(), settings->toInt(skEdLogBackupCount), this);
     }
     mLogFinished = false;

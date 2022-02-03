@@ -36,7 +36,7 @@ public:
     ~PExLogNode() override;
     void resetLst();
     void clearLog();
-    void prepareRun();
+    void prepareRun(int logOption);
     void logDone();
 
     PExFileNode *lstNode() const;

@@ -618,8 +618,9 @@ QStringList PExProjectNode::getRunParametersHistory() const
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt)
+QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt, int &logOption)
 {
+    bool ok;
     // set studio default parameters
     QMultiMap<int, QString> gamsArguments;
     QStringList defaultArgumentList;
@@ -630,7 +631,11 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     int position = 0;
     for (QString arg : defaultArgumentList) {
         defaultArgumentIdList << opt->getOrdinalNumber(arg);
-        gamsArguments.insert(opt->getOrdinalNumber(arg), defaultArgumentValueList.at(position++));
+        if (defaultArgumentIdList.last() == opt->getOrdinalNumber("logoption")) {
+            int lo = defaultArgumentValueList.at(position).toInt(&ok);
+            if (ok) logOption = lo;
+        }
+        gamsArguments.insert(defaultArgumentIdList.last(), defaultArgumentValueList.at(position++));
     }
 
     for(QString param: defaultParameters) {
@@ -711,6 +716,10 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
         } else if (item.optionId == opt->getOrdinalNumber("Reference")) {
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
+
+        } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
+            int lo = item.value.toInt(&ok);
+            if (ok) logOption = lo;
 
         } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
             if (!value.endsWith(".log")) value.append("." + FileType::from(FileKind::Log).defaultSuffix());
