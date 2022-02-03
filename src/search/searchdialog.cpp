@@ -74,7 +74,7 @@ void SearchDialog::on_btn_Replace_clicked()
     insertHistory();
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.setParameters(getFilesByScope(true), createRegex());
     mSearch.start();
     mSearch.replaceNext(ui->txt_replace->text());
 }
@@ -87,7 +87,7 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
     insertHistory();
 
     mShowResults = true;
-    mSearch.setParameters(getFilesByScope(), createRegex());
+    mSearch.setParameters(getFilesByScope(true), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
 }
 

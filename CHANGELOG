@@ -1,6 +1,7 @@
 Version 1.9.5 *
 ==================
 - fixed search not properly counting search results
+- fixed "Replace All" preview wrongfully including read-only files
 
 Version 1.9.4
 ==================
