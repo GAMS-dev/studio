@@ -54,7 +54,7 @@ public:
     };
     Search(SearchDialog *sd);
 
-    void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
+    void setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
     void stop();
 
@@ -104,7 +104,7 @@ private:
     SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
-    QList<FileMeta*> mFiles;
+    QSet<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;

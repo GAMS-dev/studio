@@ -40,9 +40,10 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
 }
 
-void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
+void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    mCacheAvailable = mCacheAvailable && files == mFiles;
+    bool fileListChanged = mFiles != files;
+    mCacheAvailable = mCacheAvailable && !fileListChanged;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -496,7 +497,7 @@ void Search::replaceAll(QString replacementText)
     // sort and filter FMs by editability and modification state
     for (FileMeta* fm : qAsConst(mFiles)) {
         if (fm->isReadOnly()) {
-            mFiles.removeOne(fm);
+            mFiles.remove(fm);
             continue;
         }
 
@@ -513,7 +514,7 @@ void Search::replaceAll(QString replacementText)
     QString searchTerm = mRegex.pattern();
     QString replaceTerm = replacementText;
     QMessageBox msgBox;
-    if (mFiles.length() == 0) {
+    if (mFiles.size() == 0) {
         msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
@@ -521,11 +522,11 @@ void Search::replaceAll(QString replacementText)
 
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
-                       + "' with '" + replaceTerm + "' in file " + mFiles.first()->name() + "?");
+                       + "' with '" + replaceTerm + "' in file " + mFiles.values().first()->name() + "?");
     } else if (mSearchDialog->selectedScope() == Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
-                       + mFiles.first()->name() + "?");
+                       + mFiles.values().first()->name() + "?");
     } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +

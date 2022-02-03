@@ -159,35 +159,40 @@ void SearchDialog::updateUi(bool searching)
     QApplication::processEvents();
 }
 
-QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
+QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
-    QList<FileMeta*> files;
+    QSet<FileMeta*> files;
+    bool ignoreWildcard = false;
     switch (ui->combo_scope->currentIndex()) {
         case Search::ThisFile: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            return files;
+            ignoreWildcard = true;
+            break;
         }
         case Search::ThisProject: {
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
             if (!p) return files;
             for (PExFileNode *c :p->assignedProject()->listFiles()) {
                 if (!files.contains(c->file()))
-                    files.append(c->file());
+                    files.insert(c->file());
             }
             break;
         }
         case Search::Selection: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            return files;
+            ignoreWildcard = true;
+            break;
         }
         case Search::OpenTabs: {
-            files = mFileHandler->openFiles();
+            QList<FileMeta*> openFiles = mFileHandler->openFiles();
+            files = QSet<FileMeta*>(openFiles.begin(), openFiles.end());
             break;
         }
         case Search::AllFiles: {
-            files = mFileHandler->fileMetas();
+            QList<FileMeta*> allFiles = mFileHandler->fileMetas();
+            files = QSet<FileMeta*>(allFiles.begin(), allFiles.end());
             break;
         }
         default: break;
@@ -201,8 +206,7 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         filterList.append(QRegExp(s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
 
     // filter files
-    FileMeta* current = mFileHandler->fileMeta(mCurrentEditor);
-    QList<FileMeta*> res;
+    QSet<FileMeta*> res;
     for (FileMeta* fm : qAsConst(files)) {
         if (!fm) continue;
 
@@ -213,9 +217,8 @@ QList<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             if (matchesWildcard) break; // one match is enough, dont overwrite result
         }
 
-        if (matchesWildcard && (!ignoreReadOnly || !fm->isReadOnly())) {
-            if (fm == current) res.insert(0, fm); // search current file first
-            else res.append(fm);
+        if ((matchesWildcard || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly())) {
+            res.insert(fm);
         }
     }
     return res;
@@ -456,7 +459,7 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
     mSuppressParameterChangedEvent = false;
     mSearch.reset();
-    mSearch.setParameters(QList<FileMeta*>(), QRegularExpression(""));
+    mSearch.setParameters(QSet<FileMeta*>(), QRegularExpression(""));
 
     clearSelection();
 
