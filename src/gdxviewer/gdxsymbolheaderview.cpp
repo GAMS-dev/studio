@@ -101,7 +101,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
                 painter->drawLine(opt.rect.right(), opt.rect.top(), opt.rect.right(), opt.rect.bottom());
         }
     }
-    if (mHeaderType != HeaderType::TableViewFilter) {
+    if (mHeaderType != HeaderType::TableViewFilter && Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 0) {
         QPen pen(painter->pen());
         pen.setColor(palette().midlight().color());
         painter->setPen(pen);

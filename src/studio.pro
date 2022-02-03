@@ -175,6 +175,7 @@ SOURCES += \
     gdxviewer/valuefilter.cpp \
     gdxviewer/valuefilterwidget.cpp \
     gotodialog.cpp \
+    horizontalheaderview.cpp \
     keys.cpp \
     logger.cpp \
     logtabcontextmenu.cpp \
@@ -391,6 +392,7 @@ HEADERS += \
     gdxviewer/valuefilter.h \
     gdxviewer/valuefilterwidget.h \
     gotodialog.h \
+    horizontalheaderview.h \
     keys.h \
     logger.h \
     logtabcontextmenu.h \

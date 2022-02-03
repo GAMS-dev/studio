@@ -24,7 +24,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
-#include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -206,7 +206,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                     painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
                 painter->save();
             }
-            if (i == dim() - 1) {
+            if (i == dim() - 1 && Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 0) {
                 painter->restore();
                 QPen pen(painter->pen());
                 pen.setColor(palette().midlight().color());
