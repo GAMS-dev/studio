@@ -499,12 +499,13 @@ void Search::replaceAll(QString replacementText)
 
     int matchedFiles = 0;
 
+    QList<FileMeta*> searchFiles;
+
     // sort and filter FMs by editability and modification state
     for (FileMeta* fm : qAsConst(mFiles)) {
-        if (fm->isReadOnly()) {
-            mFiles.remove(fm);
-            continue;
-        }
+        if (!fm->isReadOnly()) {
+            searchFiles.append(fm);
+        } else continue;
 
         if (fm->document()) {
             if (!opened.contains(fm)) opened << fm;
@@ -527,11 +528,11 @@ void Search::replaceAll(QString replacementText)
 
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
-                       + "' with '" + replaceTerm + "' in file " + mFiles.values().first()->name() + "?");
+                       + "' with '" + replaceTerm + "' in file " + searchFiles.first()->name() + "?");
     } else if (mSearchDialog->selectedScope() == Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
-                       + mFiles.values().first()->name() + "?");
+                       + searchFiles.first()->name() + "?");
     } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
@@ -539,7 +540,7 @@ void Search::replaceAll(QString replacementText)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : qAsConst(mFiles))
+        for (FileMeta* fm : qAsConst(searchFiles))
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
