@@ -1,3 +1,8 @@
+Version 1.10.0
+==================
+- added new tab for the GDX Viewer to the settings dialog
+- added new setting for specifying the default symbol view of the GDX Viewer
+
 Version 1.9.4
 ==================
 - added automatic set of main gms file when adding one to a project that had none before
