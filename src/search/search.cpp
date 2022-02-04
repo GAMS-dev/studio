@@ -544,7 +544,7 @@ void Search::replaceAll(QString replacementText)
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
-                            "Press \"Search\" to see actual matches that will be replaced.");
+                            "Press \"Preview\" to see actual matches that will be replaced.");
         msgBox.setDetailedText(detailedText);
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
