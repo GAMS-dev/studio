@@ -28,11 +28,12 @@
 #include "common.h"
 #include "valuefilter.h"
 #include "tableviewdomainmodel.h"
+#include "settings.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
-#include <settings.h>
+#include <QTimer>
 
 #include <numerics/doubleformatter.h>
 
@@ -553,23 +554,23 @@ void GdxSymbolView::showTableView()
 
         mTvDomainModel = new TableViewDomainModel(mTvModel);
         ui->tvTableViewFilter->setModel(mTvDomainModel);
-        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
-        ui->tvTableViewFilter->setMaximumHeight(height);
-
-        ui->tbDomLeft->setMaximumHeight(height);
-        ui->tbDomRight->setMaximumHeight(height);
-        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
-        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
 
         ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
         ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-    }
+        QTimer::singleShot(0,this, [this](){
+            int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+            ui->tvTableViewFilter->setMaximumHeight(height);
+            ui->tbDomLeft->setMaximumHeight(height);
+            ui->tbDomRight->setMaximumHeight(height);
+            ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+            ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+            ui->tvTableViewFilter->show();
+        });
+    } else
+        ui->tvTableViewFilter->show();
     ui->pbToggleView->setText("List View");
-
     ui->tvListView->hide();
-
     ui->tvTableView->show();
-    ui->tvTableViewFilter->show();
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
     mTableView = true;
