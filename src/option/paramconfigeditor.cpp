@@ -24,6 +24,7 @@
 #include "paramconfigeditor.h"
 #include "theme.h"
 #include "ui_paramconfigeditor.h"
+#include "headerview.h"
 
 #include <QScrollBar>
 #include <QMessageBox>
@@ -101,6 +102,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     ui->ParamCfgTableView->setColumnHidden(ConfigParamTableModel::COLUMN_ENTRY_NUMBER, true);
     ui->ParamCfgTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    ui->ParamCfgTableView->setHorizontalHeader(new HeaderView(Qt::Horizontal, this));
     ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
     ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
 
@@ -118,6 +120,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     connect(ui->ParamCfgDefSearch, &QLineEdit::textChanged,
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
+    ui->ParamCfgDefTreeView->setHeader(new HeaderView(Qt::Horizontal, this));
     ui->ParamCfgDefTreeView->setModel( proxymodel );
     ui->ParamCfgDefTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->ParamCfgDefTreeView->setSelectionMode(QAbstractItemView::SingleSelection);

@@ -24,11 +24,11 @@
 #include "libraryitem.h"
 #include "librarymodel.h"
 #include "common.h"
+#include "headerview.h"
 
 #include <QDirIterator>
 #include <QMessageBox>
 #include <QTableView>
-#include <QHeaderView>
 #include <QSortFilterProxyModel>
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
@@ -168,6 +168,7 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     QSortFilterProxyModel* proxyModel;
 
     tableView = new QTableView();
+    tableView->setHorizontalHeader(new HeaderView(Qt::Horizontal, this));
     tableView->horizontalHeader()->setStretchLastSection(true);
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);
