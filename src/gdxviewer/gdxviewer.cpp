@@ -27,7 +27,7 @@
 #include "exception.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
-#include "horizontalheaderview.h"
+#include "headerview.h"
 
 #include <QMutex>
 #include <QtConcurrent>
@@ -48,7 +48,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 {
     ui->setupUi(this);
 
-    ui->tvSymbols->setHorizontalHeader(new HorizontalHeaderView(this));
+    ui->tvSymbols->setHorizontalHeader(new HeaderView(Qt::Horizontal, this));
     QPalette palette;
     palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
     palette.setColor(QPalette::HighlightedText, ui->tvSymbols->palette().highlightedText().color());

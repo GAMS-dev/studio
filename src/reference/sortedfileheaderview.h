@@ -23,12 +23,13 @@
 #include <QHeaderView>
 
 #include "symboltablemodel.h"
+#include "headerview.h"
 
 namespace gams {
 namespace studio {
 namespace reference {
 
-class SortedFileHeaderView : public QHeaderView
+class SortedFileHeaderView : public HeaderView
 {
     Q_OBJECT
 

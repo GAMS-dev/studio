@@ -45,6 +45,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setAlternatingRowColors(true);
     ui->symbolView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    ui->symbolView->setHorizontalHeader(new HeaderView(Qt::Horizontal, ui->symbolView));
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->symbolView->horizontalHeader()->setSectionResizeMode( mSymbolTableModel->getLastSectionIndex(), QHeaderView::Stretch );
@@ -75,6 +76,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );
 
+    ui->referenceView->setHeader(new HeaderView(Qt::Horizontal, ui->symbolView));
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);

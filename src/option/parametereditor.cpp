@@ -114,6 +114,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     connect(ui->gamsParameterSearch, &QLineEdit::textChanged,
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
+    ui->gamsParameterTreeView->setHeader(new HeaderView(Qt::Horizontal, this));
     ui->gamsParameterTreeView->setModel( proxymodel );
     ui->gamsParameterTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->gamsParameterTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
