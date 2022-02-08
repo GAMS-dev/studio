@@ -94,6 +94,19 @@ void PExLogNode::prepareRun(int logOption)
 
 void PExLogNode::logDone()
 {
+    QString baseFile = location().left(location().lastIndexOf('.'));
+    QFileInfo fi = QFileInfo(baseFile + ".log");
+    if (fi.exists() && !mLogFile) {
+        QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
+        if (TextView *tv = ViewHelper::toTextView(wid)) {
+            QString path = fi.filePath();
+            if (PExProjectNode *pro = projectRepo()->asProject(projectId())) {
+                QDir dir = pro->location();
+                path = dir.relativeFilePath(path);
+            }
+            tv->addProcessData(QString("LOG:%1[FIL:\"%2\",0]").arg(path).arg(fi.filePath()).toUtf8());
+        }
+    }
     mLogFinished = true;
     mLogCloser.start();
     mRepaintCount = -1;
