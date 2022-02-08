@@ -103,7 +103,7 @@ public:
     bool hasErrorText(int lstLine = -1);
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
-    QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt = nullptr);
+    QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt, int &logOption);
     void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
     QString workDir() const;

@@ -3245,11 +3245,13 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
     if (process)
         project->setProcess(std::move(process));
     AbstractProcess* groupProc = project->process();
-    groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, mGamsParameterEditor->getOptionTokenizer()->getOption()) );
-    logNode->prepareRun();
+    int logOption = 0;
+    groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
+    logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
     int logIndex = ui->logTabs->indexOf(logNode->file()->editors().first());
     if (logIndex >= 0)
