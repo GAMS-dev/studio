@@ -103,6 +103,12 @@ MainWindow::MainWindow(QWidget *parent)
 
     ui->setupUi(this);
 
+    // Init split view
+    ui->splitter->setCollapsible(0, false);
+    ui->splitter->setCollapsible(1, true);
+//    ui->splitter->setOrientation(Qt::Vertical);
+//    ui->splitter->widget(1)->setVisible(false);
+
     // Timers
     mFileTimer.setSingleShot(true);
     mFileTimer.setInterval(100);
@@ -140,6 +146,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
     ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
     ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
+
+    connect(&mMainTabContextMenu, &MainTabContextMenu::openSplitView, this, &MainWindow::openSplitView);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -941,8 +949,11 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 
 void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
 {
+    const QList<EditorType> validSplitTypes {EditorType::source, EditorType::txt, EditorType::lxiLst};
     int tabIndex = ui->mainTabs->tabBar()->tabAt(pos);
-    mMainTabContextMenu.setTabIndex(tabIndex);
+    QWidget *edit = ui->mainTabs->widget(tabIndex);
+    bool canSplit = validSplitTypes.contains(ViewHelper::editorType(edit));
+    mMainTabContextMenu.setTabIndex(tabIndex, canSplit);
     mMainTabContextMenu.exec(ui->mainTabs->tabBar()->mapToGlobal(pos));
 }
 
@@ -3235,6 +3246,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+        logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
         wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
@@ -3694,6 +3706,7 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+            logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
             wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
@@ -3844,7 +3857,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         }
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
-            edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor, tabStrategy);
+            edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
+            fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -4259,6 +4273,18 @@ void MainWindow::closeResultsView()
 
     delete mResultsView;
     mResultsView = nullptr;
+}
+
+void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
+{
+    QWidget *wid = ui->mainTabs->widget(tabIndex);
+    if (!wid) return;
+    peer::PeerViewWidget *peer = new peer::PeerViewWidget(ui->splitter);
+    peer->setOrientation(orientation);
+    FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+
+    QWidget *newWid = fm->createEdit(peer,);
+    peer->setWidget(newWid, fm->name(NameModifier::editState));
 }
 
 void MainWindow::invalidateResultsView()

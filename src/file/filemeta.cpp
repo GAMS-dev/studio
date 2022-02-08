@@ -946,25 +946,25 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, int codecMib, bool forcedAsTextEdit, NewTabStrategy tabStrategy)
+QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int codecMib, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
     if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::PrO) {
-        project::ProjectOptions *prop = new project::ProjectOptions(tabWidget);
+        project::ProjectOptions *prop = new project::ProjectOptions(widget);
         prop->setProject(project);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, tabWidget));
+        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, widget));
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, tabWidget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, widget));
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
         connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);
         connect(parser, &LogParser::setErrorText, project, &PExProjectNode::setErrorText);
-        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, tabWidget), EditorType::log);
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, widget), EditorType::log);
         tView->setDebugMode(mFileRepo->debugMode());
         connect(tView, &TextView::hasHRef, project, &PExProjectNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, project, &PExProjectNode::jumpToHRef);
@@ -976,28 +976,28 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLstChild;
-        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, tabWidget), type);
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, widget), type);
         tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
-            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), tabWidget));
+            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), widget));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
         // Guc Editor ignore other encoding scheme than UTF-8
         mCodec = QTextCodec::codecForName("utf-8");
         res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                       id(), tabWidget));
+                                                                       id(), widget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;
         QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
         if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
-                                                                             id(), mCodec, tabWidget));
+                                                                             id(), mCodec, widget));
         } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
                     QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
-                                                                             id(), mCodec, tabWidget));
+                                                                             id(), mCodec, widget));
         } else {
             SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
             forcedAsTextEdit = true;
@@ -1009,7 +1009,7 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
     if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        codeEdit = new CodeEdit(tabWidget);
+        codeEdit = new CodeEdit(widget);
         edit = (kind() == FileKind::Txt || kind() == FileKind::Efi) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                                                     : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
@@ -1028,6 +1028,12 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
     ViewHelper::setGroupId(res, project->id());
     ViewHelper::setLocation(res, location());
 
+    addEditor(res);
+    return res;
+}
+
+void FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTabStrategy tabStrategy)
+{
     int atIndex = tabWidget->count();
     switch (tabStrategy) {
     case tabAtStart: atIndex = 0; break;
@@ -1035,10 +1041,9 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
     case tabAfterCurrent: atIndex = tabWidget->currentIndex()+1; break;
     case tabAtEnd: break;
     }
-    int i = tabWidget->insertTab(atIndex, res, name(NameModifier::editState));
+    int i = tabWidget->insertTab(atIndex, edit, name(NameModifier::editState));
     tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
-    addEditor(res);
-    if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(res)) {
+    if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(edit)) {
         try {
             load(codecMib);
         } catch (Exception &e) {
@@ -1050,7 +1055,6 @@ QWidget* FileMeta::createEdit(QTabWidget *tabWidget, PExProjectNode *project, in
             e.raise();
         }
     }
-    return res;
 }
 
 FileMeta::Data::Data(QString location, FileType *knownType)

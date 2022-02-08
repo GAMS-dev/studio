@@ -186,6 +186,7 @@ public slots:
     void closeFileEditors(const FileId fileId);
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
+    void openSplitView(int tabIndex, Qt::Orientation orientation);
 
 private slots:
     void initDelayedElements();

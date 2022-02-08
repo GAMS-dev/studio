@@ -230,6 +230,7 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
+    peerviewwidget.cpp \
     process/abstractprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
@@ -446,6 +447,7 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
+    peerviewwidget.h \
     process.h \
     process/abstractprocess.h \
     process/gamslibprocess.h \
@@ -526,6 +528,7 @@ FORMS += \
     option/paramconfigeditor.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \
+    peerviewwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     search/resultsview.ui \

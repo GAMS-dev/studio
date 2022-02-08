@@ -24,6 +24,8 @@ namespace gams {
 namespace studio {
 
 enum TabActions {
+    actSplitH,
+    actSplitV,
     actClose,
     actCloseAll,
     actCloseAllExceptVisible,
@@ -33,6 +35,13 @@ enum TabActions {
 
 MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
+    mActions.insert(actSplitH, addAction("Open &aside", this, [this]() {
+        emit openSplitView(mTabIndex, Qt::Horizontal);
+    }));
+    mActions.insert(actSplitV, addAction("Open &below", this, [this]() {
+        emit openSplitView(mTabIndex, Qt::Vertical);
+    }));
+    addSeparator();
     mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::close));
     mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
     mActions.insert(actCloseAllExceptVisible, addAction("Close &except visible", mParent, &MainWindow::on_actionClose_All_Except_triggered));
@@ -66,9 +75,11 @@ void MainTabContextMenu::closeAllRight()
     }
 }
 
-void MainTabContextMenu::setTabIndex(int tab)
+void MainTabContextMenu::setTabIndex(int tab, bool canSplit)
 {
     mTabIndex = tab;
+    mActions.value(actSplitH)->setVisible(canSplit);
+    mActions.value(actSplitV)->setVisible(canSplit);
     mActions.value(actCloseAllExceptVisible)->setEnabled(mParent->mainTabs()->count() > 1);
     mActions.value(actCloseAllToLeft)->setEnabled(mTabIndex);
     mActions.value(actCloseAllToRight)->setEnabled(mTabIndex < mParent->mainTabs()->count()-1);
