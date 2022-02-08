@@ -721,8 +721,9 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
             int lo = item.value.toInt(&ok);
             if (ok) logOption = lo;
 
-        } else if (QString::compare(item.key, "lf", Qt::CaseInsensitive) == 0) {
-            if (!value.endsWith(".log")) value.append("." + FileType::from(FileKind::Log).defaultSuffix());
+        } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
+            if (!value.endsWith(".log", FileType::fsCaseSense()))
+                value.append("." + FileType::from(FileKind::Log).defaultSuffix());
             setLogLocation(cleanPath(path, value));
         }
 
