@@ -4279,11 +4279,15 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
 {
     QWidget *wid = ui->mainTabs->widget(tabIndex);
     if (!wid) return;
+    PExGroupNode *group = mProjectRepo.asGroup(ViewHelper::groupId(wid));
+    if (!group) return;
+    PExProjectNode *pro = group->assignedProject();
+    if (!pro) return;
     peer::PeerViewWidget *peer = new peer::PeerViewWidget(ui->splitter);
     peer->setOrientation(orientation);
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
 
-    QWidget *newWid = fm->createEdit(peer,);
+    QWidget *newWid = fm->createEdit(peer, pro);
     peer->setWidget(newWid, fm->name(NameModifier::editState));
 }
 

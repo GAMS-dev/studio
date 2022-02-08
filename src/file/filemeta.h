@@ -77,8 +77,7 @@ public:
     void resetTempReloadState();
     void setModified(bool modified=true);
 
-    QWidget *createEdit(QWidget *widget, PExProjectNode *project = nullptr, int codecMib = -1,
-                        bool forcedAsTextEdit = false);
+    QWidget *createEdit(QWidget *widget, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
     void addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
     QWidgetList editors() const;
     QWidget* topEditor() const;
