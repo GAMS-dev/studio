@@ -96,6 +96,7 @@ private:
     bool mLogFinished = false;
     int mRepaintCount = -1;
     int mErrorCount = 0;
+    int mLogOption = 3;
 
     LogParser::MarksBlockState *mbState;
 };
