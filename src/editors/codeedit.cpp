@@ -2334,16 +2334,13 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             } else return;
 
         } else if (e == Hotkey::BlockSelectPgDown || e == Hotkey::BlockSelectPgUp) {
-            int amount = mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount();
+            int amount = int(mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount());
             if (e == Hotkey::BlockSelectPgDown) {
                 if (mCurrentLine + amount >= mEdit->blockCount())
                     amount = mEdit->blockCount() - mCurrentLine - 1;
                 mCurrentLine += amount;
             } else {
-                if (mCurrentLine - amount < 0)
-                    mCurrentLine = 0;
-                else
-                    mCurrentLine -= amount;
+                mCurrentLine = qMax(mCurrentLine - amount, 0);
             }
         } else if (e->key() == Qt::Key_Down) {
             if ((isWord || isMove)) {
@@ -2378,7 +2375,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         //TODO(JM) move viewport manually without changing the mEdit->textCursor
 //        mEdit->setTextCursor(cursor);
         updateExtraSelections();
-        //TODO(JM) adapt statusbar when in block-edit mode
         emit mEdit->cursorPositionChanged();
 
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
