@@ -125,11 +125,11 @@ void Keys::reset()
     setHotkey(Hotkey::MoveViewPageDown, seq);
 
     seq = new KeySeqList("BlockSelectPgUp","Extend block selection by one page up");
-    *seq << QKeySequence("Shift+Alt+PgUp");
+    *seq << QKeySequence("Shift+Alt+PgUp") << QKeySequence("Alt+PgUp");
     setHotkey(Hotkey::BlockSelectPgUp, seq);
 
     seq = new KeySeqList("BlockSelectPgDown","Extend block selection by one page down");
-    *seq << QKeySequence("Shift+Alt+PgDown");
+    *seq << QKeySequence("Shift+Alt+PgDown") << QKeySequence("Alt+PgDown");
     setHotkey(Hotkey::BlockSelectPgDown, seq);
 
     seq = new KeySeqList("MoveToEndOfDoc","Move to the end of document");
