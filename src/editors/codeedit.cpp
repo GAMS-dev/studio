@@ -2282,6 +2282,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+    e->accept();
     if (moveKeys.contains(e->key())) {
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         bool isMove = e->modifiers() & Qt::AltModifier;
@@ -2330,10 +2331,8 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 mColumn -= 1;
                 if (isShift)
                     setSize(mSize+1);
-            } else {
-                e->accept();
-                return;
-            }
+            } else return;
+
         } else if (e == Hotkey::BlockSelectPgDown || e == Hotkey::BlockSelectPgUp) {
             int amount = mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount();
             if (e == Hotkey::BlockSelectPgDown) {
@@ -2347,33 +2346,29 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                     mCurrentLine -= amount;
             }
         } else if (e->key() == Qt::Key_Down) {
-            if ((isWord || isMove)  && mCurrentLine < mEdit->blockCount()-1) {
-                mCurrentLine += 1;
-            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
-                mStartLine += 1;
+            if ((isWord || isMove)) {
+                if (mCurrentLine < mEdit->blockCount()-1) mCurrentLine += 1;
+                else return;
+            } else if (isShift) {
+                if (mStartLine < mEdit->blockCount()-1) mStartLine += 1;
+                else return;
             } else if (qMax(mStartLine, mCurrentLine) < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
                 mStartLine += 1;
-            } else {
-                e->accept();
-                return;
-            }
+            } else return;
+
         } else if (e->key() == Qt::Key_Up) {
-            if ((isWord || isMove) && mCurrentLine > 0) {
-                mCurrentLine -= 1;
-            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
-                mStartLine -= 1;
+            if ((isWord || isMove)) {
+                if (mCurrentLine > 0) mCurrentLine -= 1;
+                else return;
+            } else if (isShift) {
+                if (mStartLine > 0) mStartLine -= 1;
+                else return;
             } else if (qMin(mStartLine, mCurrentLine) > 0) {
                 mCurrentLine -= 1;
                 mStartLine -= 1;
-            } else {
-                e->accept();
-                return;
-            }
-        } else {
-            e->accept();
-            return;
-        }
+            } else return;
+        } else return;
         QTextCursor cursor(block);
         if (block.length() > mColumn+mSize)
             cursor.setPosition(block.position()+mColumn+mSize);
@@ -2381,9 +2376,8 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+block.length()-1);
 
         //TODO(JM) move viewport manually without changing the mEdit->textCursor
-        mEdit->setTextCursor(cursor);
+//        mEdit->setTextCursor(cursor);
         updateExtraSelections();
-        e->accept();
         //TODO(JM) adapt statusbar when in block-edit mode
         emit mEdit->cursorPositionChanged();
 
@@ -2393,13 +2387,12 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             setSize((e->key() == Qt::Key_Backspace) ? -1 : 1);
         }
         replaceBlockText("");
+        e->ignore();
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->toInt(skEdTabSize));
-        e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->toInt(skEdTabSize));
-        e->accept();
         return;
     } else if (e->text().length()) {
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
@@ -2408,6 +2401,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cur);
         mEdit->rawKeyPressEvent(e);
         QTimer::singleShot(0, mEdit, &CodeEdit::checkBlockInsertion);
+        e->ignore();
     }
 
     startCursorTimer();
@@ -2530,9 +2524,9 @@ void CodeEdit::BlockEdit::updateExtraSelections()
         mSelections << select;
         if (cursor.blockNumber() == mCurrentLine) {
             //TODO(JM) move viewport manually without changing the mEdit->textCursor
-            QTextCursor c = mEdit->textCursor();
-            c.setPosition(cursor.position());
-            mEdit->setTextCursor(c);
+//            QTextCursor c = mEdit->textCursor();
+//            c.setPosition(cursor.position());
+//            mEdit->setTextCursor(c);
         }
     }
     mEdit->updateExtraSelections();
