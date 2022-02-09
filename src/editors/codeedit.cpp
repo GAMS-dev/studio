@@ -2379,10 +2379,14 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
             cursor.setPosition(block.position()+mColumn+mSize);
         else
             cursor.setPosition(block.position()+block.length()-1);
+
+        //TODO(JM) move viewport manually without changing the mEdit->textCursor
         mEdit->setTextCursor(cursor);
         updateExtraSelections();
         e->accept();
+        //TODO(JM) adapt statusbar when in block-edit mode
         emit mEdit->cursorPositionChanged();
+
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) {
             mLastCharType = CharType::None;
@@ -2479,7 +2483,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.setX(left + metric.width(str.left(cursorColumn)));
+            cursorRect.setX(left + metric.width(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
         }
         cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 
@@ -2525,6 +2529,7 @@ void CodeEdit::BlockEdit::updateExtraSelections()
         select.cursor = cursor;
         mSelections << select;
         if (cursor.blockNumber() == mCurrentLine) {
+            //TODO(JM) move viewport manually without changing the mEdit->textCursor
             QTextCursor c = mEdit->textCursor();
             c.setPosition(cursor.position());
             mEdit->setTextCursor(c);
