@@ -2464,9 +2464,9 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
             if (block.length() <= beyondStart) {
-                selRect.moveLeft(left + metric.width(str.left(beyondStart)));
+                selRect.moveLeft(left + metric.width(str.left(beyondStart)) - mEdit->horizontalScrollBar()->value());
             }
-            selRect.setRight(left + metric.width(str.left(beyondEnd)));
+            selRect.setRight(left + metric.width(str.left(beyondEnd)) - mEdit->horizontalScrollBar()->value());
             painter.fillRect(selRect, mEdit->palette().highlight());
         }
 
