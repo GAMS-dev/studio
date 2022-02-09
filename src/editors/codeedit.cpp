@@ -2334,6 +2334,18 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 e->accept();
                 return;
             }
+        } else if (e == Hotkey::BlockSelectPgDown || e == Hotkey::BlockSelectPgUp) {
+            int amount = mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount();
+            if (e == Hotkey::BlockSelectPgDown) {
+                if (mCurrentLine + amount >= mEdit->blockCount())
+                    amount = mEdit->blockCount() - mCurrentLine - 1;
+                mCurrentLine += amount;
+            } else {
+                if (mCurrentLine - amount < 0)
+                    mCurrentLine = 0;
+                else
+                    mCurrentLine -= amount;
+            }
         } else if (e->key() == Qt::Key_Down) {
             if ((isWord || isMove)  && mCurrentLine < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
