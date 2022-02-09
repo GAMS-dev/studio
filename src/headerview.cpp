@@ -43,7 +43,7 @@ bool HeaderView::platformShouldDrawBorder() const
 {
 #ifdef _WIN32
     return true;
-#elif
+#else
     return false;
 #endif
 }
