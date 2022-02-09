@@ -230,7 +230,6 @@ SOURCES += \
     option/solveroptiondefinitionmodel.cpp \
     option/solveroptiontablemodel.cpp \
     option/solveroptionwidget.cpp \
-    peerviewwidget.cpp \
     process/abstractprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
@@ -257,6 +256,7 @@ SOURCES += \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
+    splitviewwidget.cpp \
     statuswidgets.cpp \
     support/checkforupdatewrapper.cpp \
     support/distributionvalidator.cpp \
@@ -447,7 +447,6 @@ HEADERS += \
     option/solveroptiondefinitionmodel.h \
     option/solveroptiontablemodel.h \
     option/solveroptionwidget.h \
-    peerviewwidget.h \
     process.h \
     process/abstractprocess.h \
     process/gamslibprocess.h \
@@ -476,6 +475,7 @@ HEADERS += \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
+    splitviewwidget.h \
     statuswidgets.h \
     support/checkforupdatewrapper.h \
     support/distributionvalidator.h \
@@ -528,12 +528,12 @@ FORMS += \
     option/paramconfigeditor.ui \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \
-    peerviewwidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     search/resultsview.ui \
     search/searchdialog.ui \
     settingsdialog.ui \
+    splitviewwidget.ui \
     support/gamslicensingdialog.ui \
     support/updatedialog.ui \
     tabdialog.ui \

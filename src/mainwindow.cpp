@@ -69,6 +69,7 @@
 #include "tabbarstyle.h"
 #include "support/gamslicenseinfo.h"
 #include "headerviewproxy.h"
+#include "splitviewwidget.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -4283,12 +4284,12 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     if (!group) return;
     PExProjectNode *pro = group->assignedProject();
     if (!pro) return;
-    peer::PeerViewWidget *peer = new peer::PeerViewWidget(ui->splitter);
-    peer->setOrientation(orientation);
+    split::SplitViewWidget *split = new split::SplitViewWidget(ui->splitter);
+    split->setOrientation(orientation);
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
 
-    QWidget *newWid = fm->createEdit(peer, pro);
-    peer->setWidget(newWid, fm->name(NameModifier::editState));
+    QWidget *newWid = fm->createEdit(split, pro);
+    split->setWidget(newWid, fm->name(NameModifier::editState));
 }
 
 void MainWindow::invalidateResultsView()
