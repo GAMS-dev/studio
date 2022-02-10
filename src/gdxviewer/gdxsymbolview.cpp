@@ -269,9 +269,6 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
-        ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
-        mSym->resetSortFilter();
-        mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
             ui->tvTableViewFilter->setModel(nullptr);
@@ -281,6 +278,9 @@ void GdxSymbolView::resetSortFilter()
             mTvModel = nullptr;
             ui->tvTableView->setModel(nullptr);
         }
+        ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
+        mSym->resetSortFilter();
+        mSqDefaults->setChecked(false);
         mLVFirstInit = true;
         mTVFirstInit = true;
         mTVResizeOnInit = true;
