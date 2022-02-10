@@ -129,7 +129,7 @@ void SearchDialog::finalUpdate()
 
     if (mSearch.results().size() == 0) {
         setSearchStatus(Search::NoResults);
-    } else { updateLabelByCursorPos(); }
+    } else updateLabelByCursorPos();
 }
 
 void SearchDialog::updateUi(bool searching)

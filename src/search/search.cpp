@@ -301,6 +301,10 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     if ((mOutsideOfList || !mCacheAvailable) && mSearchDialog->selectedScope() != Scope::Selection)
         matchNr = NavigateOutsideCache(direction, firstLevel);
 
+    if (mSearching && matchNr == -1) { // not found but still searching
+        mJumpQueued = true;
+    }
+
     // update ui
     mSearchDialog->updateNrMatches(matchNr+1);
     if (!mOutsideOfList || matchNr == -1)
@@ -342,6 +346,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     if (!found) {
         matchNr = findNextEntryInCache(direction);
         found = matchNr != -1;
+
         jumpToResult(matchNr);
     }
 
@@ -437,6 +442,11 @@ void Search::finished()
 
     mCacheAvailable = true;
     mSearchDialog->finalUpdate();
+
+    if (mJumpQueued) {
+        mJumpQueued = false;
+        selectNextMatch();
+    }
 }
 
 Search::Scope Search::scope() const

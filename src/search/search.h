@@ -113,6 +113,7 @@ private:
 
     QThread mThread;
     bool mSearching = false;
+    bool mJumpQueued = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
     int mLastMatchInOpt = -1;
