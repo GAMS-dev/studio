@@ -51,6 +51,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
 
+    mDefaultSymbolView = DefaultSymbolView(Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView));
+
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
     mContextMenuTV.addAction(cpComma);
@@ -279,6 +281,9 @@ void GdxSymbolView::resetSortFilter()
             mTvModel = nullptr;
             ui->tvTableView->setModel(nullptr);
         }
+        mLVFirstInit = true;
+        mTVFirstInit = true;
+        mTVResizeOnInit = true;
         showDefaultView();
     }
 }
@@ -294,7 +299,8 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+        if (mDefaultSymbolView == DefaultSymbolView::listView)
+            connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
         showDefaultView();
     }
     ui->tvListView->setModel(mSym);
@@ -542,14 +548,19 @@ void GdxSymbolView::showListView()
     ui->tbDomRight->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
+    if (mLVFirstInit) {
+        autoResizeColumns();
+        mLVFirstInit = false;
+    }
 }
 
 void GdxSymbolView::showTableView()
 {
-    bool firstInit = !mTvModel;
-    if (firstInit) {
+    if (!mTvModel) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
+        if (mDefaultSymbolView == DefaultSymbolView::tableView)
+            connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
         ui->tvTableView->setModel(mTvModel);
 
         mTvDomainModel = new TableViewDomainModel(mTvModel);
@@ -570,12 +581,14 @@ void GdxSymbolView::showTableView()
         ui->tvTableViewFilter->show();
     ui->pbToggleView->setText("List View");
     ui->tvListView->hide();
+    mTableView = true;
     ui->tvTableView->show();
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
-    mTableView = true;
-    if (firstInit)
+    if (mTVFirstInit) {
         autoResizeColumns();
+        mTVFirstInit = false;
+    }
 }
 
 void GdxSymbolView::showDefaultView()

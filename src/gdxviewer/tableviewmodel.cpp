@@ -361,6 +361,7 @@ void TableViewModel::setTableView(int colDim, QVector<int> tvDims)
     }
     initTableView(mTvColDim, mTvDimOrder);
     endResetModel();
+    emit initFinished();
 }
 
 void TableViewModel::setTableViewNoArgs()

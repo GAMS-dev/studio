@@ -110,6 +110,12 @@ private:
     int mTvFilterSection=0;
     int mTvFilterSectionMax=0;
 
+    bool mLVFirstInit = true;
+    bool mTVFirstInit = true;
+    bool mTVResizeOnInit = true;
+
+    DefaultSymbolView mDefaultSymbolView;
+
     // QObject interface
 public:
     bool eventFilter(QObject *watched, QEvent *event);
