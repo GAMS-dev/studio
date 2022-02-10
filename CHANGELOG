@@ -1,8 +1,10 @@
-Version 1.9.5  *
+Version 1.9.5 *
 ==================
 - increase tolerance of GDX viewer on reading a faulty file containing negative UELs
 - fixed empty log file when using logoption=2
 - added page-up/-down to extend block edit selection
+- fixed search not properly counting search results
+- fixed "Replace All" preview wrongfully including read-only files
 
 Version 1.9.4
 ==================

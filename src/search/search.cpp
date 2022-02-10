@@ -40,9 +40,10 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
 }
 
-void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
+void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    mCacheAvailable = mCacheAvailable && files == mFiles;
+    bool fileListChanged = mFiles != files;
+    mCacheAvailable = mCacheAvailable && !fileListChanged;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -69,20 +70,22 @@ void Search::start()
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
+    FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
     for(FileMeta* fm : qAsConst(mFiles)) {
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
 
-        // sort files by modified
-        if (fm->isModified()) modified << fm;
-        else unmodified << fm;
+        // sort files by modified, current file first
+        if (fm->isModified()) {
+            if (fm == currentFile) modified.insert(0, fm);
+            else modified << fm;
+        } else {
+            if (fm == currentFile) unmodified.insert(0, fm);
+            else unmodified << fm;
+        }
     }
-
-    // non-parallel first
-    for (FileMeta* fm : qAsConst(modified))
-        findInDoc(fm);
-
+    // start background task first
     SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
     sw->moveToThread(&mThread);
 
@@ -93,6 +96,9 @@ void Search::start()
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
+
+    for (FileMeta* fm : qAsConst(modified))
+        findInDoc(fm);
 }
 
 void Search::stop()
@@ -493,12 +499,13 @@ void Search::replaceAll(QString replacementText)
 
     int matchedFiles = 0;
 
+    QList<FileMeta*> searchFiles;
+
     // sort and filter FMs by editability and modification state
     for (FileMeta* fm : qAsConst(mFiles)) {
-        if (fm->isReadOnly()) {
-            mFiles.removeOne(fm);
-            continue;
-        }
+        if (!fm->isReadOnly()) {
+            searchFiles.append(fm);
+        } else continue;
 
         if (fm->document()) {
             if (!opened.contains(fm)) opened << fm;
@@ -513,7 +520,7 @@ void Search::replaceAll(QString replacementText)
     QString searchTerm = mRegex.pattern();
     QString replaceTerm = replacementText;
     QMessageBox msgBox;
-    if (mFiles.length() == 0) {
+    if (mFiles.size() == 0) {
         msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
@@ -521,11 +528,11 @@ void Search::replaceAll(QString replacementText)
 
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
-                       + "' with '" + replaceTerm + "' in file " + mFiles.first()->name() + "?");
+                       + "' with '" + replaceTerm + "' in file " + searchFiles.first()->name() + "?");
     } else if (mSearchDialog->selectedScope() == Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
-                       + mFiles.first()->name() + "?");
+                       + searchFiles.first()->name() + "?");
     } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
@@ -533,11 +540,11 @@ void Search::replaceAll(QString replacementText)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : qAsConst(mFiles))
+        for (FileMeta* fm : qAsConst(searchFiles))
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
-                            "Press \"Search\" to see actual matches that will be replaced.");
+                            "Press \"Preview\" to see actual matches that will be replaced.");
         msgBox.setDetailedText(detailedText);
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
