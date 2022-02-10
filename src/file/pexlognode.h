@@ -36,7 +36,7 @@ public:
     ~PExLogNode() override;
     void resetLst();
     void clearLog();
-    void prepareRun();
+    void prepareRun(int logOption);
     void logDone();
 
     PExFileNode *lstNode() const;
@@ -96,6 +96,7 @@ private:
     bool mLogFinished = false;
     int mRepaintCount = -1;
     int mErrorCount = 0;
+    int mLogOption = 3;
 
     LogParser::MarksBlockState *mbState;
 };

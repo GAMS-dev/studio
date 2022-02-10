@@ -48,6 +48,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
+    ui->laError->hide();
+    ui->laError->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -190,6 +192,7 @@ GdxSymbolView::~GdxSymbolView()
 
 void GdxSymbolView::showFilter(QPoint p)
 {
+    if (mSym->hasInvalidUel()) return;
     QTableView* tableView = mTableView ? ui->tvTableViewFilter : ui->tvListView;
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
@@ -609,6 +612,12 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::enableControls()
 {
+    if (mSym->hasInvalidUel()) {
+        ui->tvListView->setSortingEnabled(false);
+        ui->tvListView->horizontalHeader()->setSortIndicatorShown(false);
+        ui->laError->setVisible(true);
+    }
+
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {

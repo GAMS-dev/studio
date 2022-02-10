@@ -63,6 +63,7 @@ public:
     void loadData();
     void stopLoadingData();
     bool isAllDefault(int valColIdx);
+    bool hasInvalidUel() const;
     int subType() const;
     void sort(int column, Qt::SortOrder order = Qt::AscendingOrder) override;
     void filterRows();
@@ -124,6 +125,7 @@ private:
     int mRecordCount;
     QString mExplText;
     QString mName;
+    bool mHasInvalidUel = false;
 
     std::vector<int> mMinUel;
     std::vector<int> mMaxUel;
