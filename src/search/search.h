@@ -75,7 +75,6 @@ public:
     void resetResults();
 
 signals:
-    void updateLabelByCursorPos(int line, int col);
     void invalidateResults();
     void selectResult(int matchNr);
 

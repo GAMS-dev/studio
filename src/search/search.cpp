@@ -297,13 +297,12 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
     if (mCacheAvailable && !mOutsideOfList)
         matchNr = NavigateInsideCache(direction);
 
+    // queue jump for when cache is finished. will be reset if an outside-of-cache result is found
+    if (mSearching) mJumpQueued = true;
+
     // dont jump outside of cache when searchscope is set to selection
     if ((mOutsideOfList || !mCacheAvailable) && mSearchDialog->selectedScope() != Scope::Selection)
         matchNr = NavigateOutsideCache(direction, firstLevel);
-
-    if (mSearching && matchNr == -1) { // not found but still searching
-        mJumpQueued = true;
-    }
 
     // update ui
     mSearchDialog->updateNrMatches(matchNr+1);
@@ -343,7 +342,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     }
 
     // try again
-    if (!found) {
+    if (!found && !mSearching) {
         matchNr = findNextEntryInCache(direction);
         found = matchNr != -1;
 
@@ -351,6 +350,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     }
 
     if (!found && firstLevel) selectNextMatch(direction, false);
+    if (found) mJumpQueued = false;
 
     // check if cache was re-entered
     matchNr = mSearchDialog->updateLabelByCursorPos();
