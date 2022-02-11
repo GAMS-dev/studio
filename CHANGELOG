@@ -5,6 +5,7 @@ Version 1.9.5 *
 - added page-up/-down to extend block edit selection
 - fixed search not properly counting search results
 - fixed "Replace All" preview wrongfully including read-only files
+- fixed jumping to wrong group when navigating search results
 
 Version 1.9.4
 ==================
