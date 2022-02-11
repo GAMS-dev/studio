@@ -147,6 +147,7 @@ void CodeEdit::blockEditBlink()
 
 void CodeEdit::checkBlockInsertion()
 {
+    if (!mBlockEdit) return;
     bool extraJoin = mBlockEditInsText.isNull();
     QTextCursor cur = textCursor();
     bool validText = (mBlockEditRealPos != cur.position());
