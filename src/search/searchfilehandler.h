@@ -35,11 +35,13 @@ public:
     FileMeta* fileMeta(FileId fileId) override;
     QList<FileMeta*> fileMetas() override;
     QList<FileMeta*> openFiles() override;
+    PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFile(QString filepath) override;
 
 private:
     MainWindow* mMain;
+
 };
 
 }

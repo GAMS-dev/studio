@@ -22,6 +22,7 @@
 #include "searchresultmodel.h"
 #include "searchworker.h"
 #include "file/filemeta.h"
+#include "viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -80,7 +81,7 @@ void SearchWorker::findInFiles()
                     if (allowInsert(lineCounter, match.capturedStart())) {
                         mMatches->append(Result(lineCounter, match.capturedStart(),
                                                 match.capturedLength(), file.fileName(),
-                                                line.trimmed()));
+                                                ViewHelper::groupId(fm->topEditor()), line.trimmed()));
                     }
                 }
 

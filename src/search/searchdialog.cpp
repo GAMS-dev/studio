@@ -174,8 +174,7 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
             if (!p) return files;
             for (PExFileNode *c :p->assignedProject()->listFiles()) {
-                if (!files.contains(c->file()))
-                    files.insert(c->file());
+                files.insert(c->file());
             }
             break;
         }
