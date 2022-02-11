@@ -62,7 +62,8 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
     Result r = mResultList->at(selectedRow);
 
-    PExFileNode *node = mMain->projectRepo()->findOrCreateFileNode(r.filepath());
+    PExFileNode *node = mMain->projectRepo()->findOrCreateFileNode(r.filepath(),
+                                                                   mMain->projectRepo()->findProject(r.parentGroup()));
     if (!node) EXCEPT() << "File not found: " << r.filepath();
 
     // jump to line
