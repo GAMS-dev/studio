@@ -235,6 +235,8 @@ protected:
         bool overwriteMode() const;
         void setSize(int size);
         void shiftVertical(int offset);
+        void checkHorizontalScroll();
+        bool isHScrollLocked() { return mHScrollLocked; }
 
     private:
         CodeEdit* mEdit;
@@ -246,10 +248,25 @@ protected:
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
         bool mOverwrite = false;
+        bool mHScrollLocked = false;
+    };
+    class BlockEditCursorWatch
+    {
+        int mColFrom = 0;
+        BlockEdit *mBlockEdit;
+    public:
+        BlockEditCursorWatch(BlockEdit *bEdit) : mBlockEdit(bEdit) {
+            mColFrom = mBlockEdit->colFrom();
+        }
+        ~BlockEditCursorWatch() {
+            if (mBlockEdit->colFrom() != mColFrom)
+                mBlockEdit->checkHorizontalScroll();
+        }
     };
 
 protected:
     BlockEdit* blockEdit() {return mBlockEdit;}
+    void scrollContentsBy(int dx, int dy) override;
 
 private:
     LineNumberArea *mLineNumberArea;
@@ -308,9 +325,7 @@ private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
     bool mNoCursorFocus = false;
-
 };
-
 
 } // namespace studio
 } // namespace gams

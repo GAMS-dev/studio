@@ -737,6 +737,16 @@ void CodeEdit::checkCursorAfterFolding()
     }
 }
 
+void CodeEdit::scrollContentsBy(int dx, int dy)
+{
+    int reDx = 0;
+    if (mBlockEdit && mBlockEdit->isHScrollLocked() && dx > 0)
+        reDx = dx;
+    AbstractEdit::scrollContentsBy(dx, dy);
+    if (reDx)
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + reDx);
+}
+
 bool CodeEdit::ensureUnfolded(int line)
 {
     int lastUnfoldedNr = -1;
@@ -2284,6 +2294,8 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     e->accept();
     if (moveKeys.contains(e->key())) {
+        mHScrollLocked = true;
+        BlockEditCursorWatch watch(this);
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isShift = e->modifiers() & Qt::ShiftModifier;
@@ -2366,14 +2378,6 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 mStartLine -= 1;
             } else return;
         } else return;
-        QTextCursor cursor(block);
-        if (block.length() > mColumn+mSize)
-            cursor.setPosition(block.position()+mColumn+mSize);
-        else
-            cursor.setPosition(block.position()+block.length()-1);
-
-        //TODO(JM) move viewport manually without changing the mEdit->textCursor
-//        mEdit->setTextCursor(cursor);
         updateExtraSelections();
         emit mEdit->cursorPositionChanged();
 
@@ -2423,6 +2427,33 @@ void CodeEdit::BlockEdit::refreshCursors()
 {
     mBlinkStateHidden = !mBlinkStateHidden;
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
+}
+
+void CodeEdit::BlockEdit::checkHorizontalScroll()
+{
+    mHScrollLocked = false;
+    QTextCursor cursor(mEdit->textCursor());
+    QTextBlock block = cursor.block();
+    if (cursor.isNull()) {
+        block = mEdit->firstVisibleBlock();
+        cursor.setPosition(block.position());
+    }
+    int existChars = qMin(block.length()-1, colFrom());
+    cursor.setPosition(block.position() + existChars);
+    QFontMetricsF metric(mEdit->font());
+    qreal curOffset = mEdit->cursorRect(cursor).left();
+    if (int beyondEnd = colFrom() > existChars ? colFrom() - existChars : 0) {
+        QString str = QString(beyondEnd, ' ');
+        curOffset += metric.width(str);
+    }
+    int offset = 0;
+    if (curOffset < 4)
+        offset = qRound(curOffset) - 4;
+    else if (mEdit->viewport()->width() < curOffset)
+        offset = qRound(curOffset - mEdit->viewport()->width() - 4 + metric.averageCharWidth());
+    if (offset)
+        mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->value() + offset);
+
 }
 
 void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
@@ -2519,10 +2550,9 @@ void CodeEdit::BlockEdit::updateExtraSelections()
         select.cursor = cursor;
         mSelections << select;
         if (cursor.blockNumber() == mCurrentLine) {
-            //TODO(JM) move viewport manually without changing the mEdit->textCursor
-//            QTextCursor c = mEdit->textCursor();
-//            c.setPosition(cursor.position());
-//            mEdit->setTextCursor(c);
+            QTextCursor c = mEdit->textCursor();
+            c.setPosition(cursor.position());
+            mEdit->setTextCursor(c);
         }
     }
     mEdit->updateExtraSelections();
