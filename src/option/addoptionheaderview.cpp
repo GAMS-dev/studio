@@ -31,15 +31,11 @@ namespace studio {
 namespace option {
 
 AddOptionHeaderView::AddOptionHeaderView(Qt::Orientation orientation, QWidget *parent) :
-        HeaderView(orientation, parent)
-{
-    setAutoLineWindows(false);
-}
+        QHeaderView(orientation, parent)
+{}
 
 AddOptionHeaderView::~AddOptionHeaderView()
-{
-
-}
+{}
 
 bool AddOptionHeaderView::event(QEvent *event)
 {
@@ -115,7 +111,6 @@ void AddOptionHeaderView::paintSection(QPainter* painter, const QRect &rect, int
          mIconY= posY;
          mLogicalIndex = logicalIndex;
     }
-    paintSectionBorder(painter, rect);
 }
 
 } // namepsace option

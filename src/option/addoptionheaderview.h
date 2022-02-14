@@ -20,13 +20,13 @@
 #ifndef ADDOPTIONHEADERVIEW_H
 #define ADDOPTIONHEADERVIEW_H
 
-#include "headerview.h"
+#include <QHeaderView>
 
 namespace gams {
 namespace studio {
 namespace option {
 
-class AddOptionHeaderView : public HeaderView
+class AddOptionHeaderView : public QHeaderView
 {
     Q_OBJECT
 

@@ -22,6 +22,7 @@
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
 #include "columnfilter.h"
+#include "headerviewproxy.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
 #include "theme.h"
@@ -162,6 +163,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->tvTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
@@ -370,8 +373,8 @@ void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
 
     QStringList sList;
     if (copyLabels) { // copy labels as well in table view mode
-        int colHeaderDim = ((NestedHeaderView*)tv->horizontalHeader())->dim();
-        int rowHeaderDim = ((NestedHeaderView*)tv->verticalHeader())->dim();
+        int colHeaderDim = (static_cast<NestedHeaderView*>(tv->horizontalHeader()))->dim();
+        int rowHeaderDim = (static_cast<NestedHeaderView*>(tv->verticalHeader()))->dim();
         for (int i=0; i<colHeaderDim; i++) {
             for (int j=0; j<rowHeaderDim; j++)
                 sList << separator;

@@ -5,10 +5,30 @@
 namespace gams {
 namespace studio {
 
-HeaderViewProxy::HeaderViewProxy(QColor sepColor) : QProxyStyle(), mSepColor(sepColor)
+HeaderViewProxy *HeaderViewProxy::mInstance = nullptr;
+
+void HeaderViewProxy::setSepColor(const QColor &newSepColor)
+{
+    mSepColor = newSepColor;
+}
+
+HeaderViewProxy::HeaderViewProxy() : QProxyStyle()
 {}
 
-bool HeaderViewProxy::platformShouldDrawBorder() const
+HeaderViewProxy *HeaderViewProxy::instance()
+{
+    if (!mInstance)
+        mInstance = new HeaderViewProxy();
+    return mInstance;
+}
+
+void HeaderViewProxy::deleteInstance()
+{
+    delete mInstance;
+    mInstance = nullptr;
+}
+
+bool HeaderViewProxy::platformShouldDrawBorder()
 {
 #ifdef _WIN32
     return true;

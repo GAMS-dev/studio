@@ -19,7 +19,7 @@
 #define NESTEDHEADERVIEW_H
 
 #include "tableviewmodel.h"
-#include "headerview.h"
+#include <QHeaderView>
 
 #include <QPainter>
 #include <QMouseEvent>
@@ -28,7 +28,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class NestedHeaderView : public HeaderView
+class NestedHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:

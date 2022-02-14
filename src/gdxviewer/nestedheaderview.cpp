@@ -31,7 +31,7 @@ namespace studio {
 namespace gdxviewer {
 
 NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
-    :HeaderView(orientation, parent)
+    :QHeaderView(orientation, parent)
 {
     setAcceptDrops(true);
     connect(this, &QHeaderView::sectionResized, this, [this]() { ddEnabled = false; });
@@ -204,11 +204,6 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                     painter->drawLine(opt.rect.left(), opt.rect.top(), opt.rect.right(), opt.rect.top());
                 else
                     painter->drawLine(opt.rect.left(), opt.rect.bottom(), opt.rect.right(), opt.rect.bottom());
-                painter->save();
-            }
-            if (i == dim() - 1 && Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 0) {
-                painter->restore();
-                paintSectionBorder(painter, rect);
                 painter->save();
             }
         }

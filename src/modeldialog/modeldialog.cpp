@@ -169,7 +169,8 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     QSortFilterProxyModel* proxyModel;
 
     tableView = new QTableView();
-    tableView->horizontalHeader()->setStyle(new HeaderViewProxy(palette().midlight().color()));
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     tableView->horizontalHeader()->setStretchLastSection(true);
     tableView->setSelectionBehavior(QAbstractItemView::SelectRows);
     tableView->setSelectionMode(QAbstractItemView::SingleSelection);

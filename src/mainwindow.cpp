@@ -68,6 +68,7 @@
 #include "keys.h"
 #include "tabbarstyle.h"
 #include "support/gamslicenseinfo.h"
+#include "headerviewproxy.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -168,6 +169,8 @@ MainWindow::MainWindow(QWidget *parent)
 #endif
 
     initToolBar();
+    HeaderViewProxy *hProxy = HeaderViewProxy::instance();
+    hProxy->setSepColor(palette().midlight().color());
 
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
@@ -345,6 +348,7 @@ MainWindow::~MainWindow()
     delete mSearchDialog;
     delete mPrintDialog;
     FileType::clear();
+    HeaderViewProxy::deleteInstance();
 }
 
 void MainWindow::initWelcomePage()

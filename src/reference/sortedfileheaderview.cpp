@@ -31,9 +31,8 @@ namespace studio {
 namespace reference {
 
 SortedFileHeaderView::SortedFileHeaderView(Qt::Orientation orientation, QWidget *parent)  :
-    HeaderView(orientation, parent)
+    QHeaderView(orientation, parent)
 {
-    setAutoLineWindows(false);
     mHeaderContextMenu = new QMenu(this);
     QAction* actionAscendingSort  = new QAction("Ascending Order", this);
     actionAscendingSort->setData(SymbolTableModel::AscendingOrder);
@@ -99,7 +98,6 @@ void SortedFileHeaderView::paintSection(QPainter *painter, const QRect &rect, in
         mIconY= posY;
         mLogicalIndex = logicalIndex;
     }
-    paintSectionBorder(painter, rect);
 }
 
 
