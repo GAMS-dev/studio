@@ -236,6 +236,7 @@ protected:
         void setSize(int size);
         void shiftVertical(int offset);
         void checkHorizontalScroll();
+        void setHScrollLocked(bool lock) { mHScrollLocked = lock; }
         bool isHScrollLocked() { return mHScrollLocked; }
 
     private:
@@ -257,10 +258,13 @@ protected:
     public:
         BlockEditCursorWatch(BlockEdit *bEdit) : mBlockEdit(bEdit) {
             mColFrom = mBlockEdit->colFrom();
+            mBlockEdit->setHScrollLocked(true);
         }
         ~BlockEditCursorWatch() {
-            if (mBlockEdit->colFrom() != mColFrom)
+            if (mBlockEdit->colFrom() != mColFrom) {
+                mBlockEdit->setHScrollLocked(false);
                 mBlockEdit->checkHorizontalScroll();
+            }
         }
     };
 

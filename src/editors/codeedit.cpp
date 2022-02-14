@@ -2199,6 +2199,7 @@ void CodeEdit::BlockEdit::selectTo(int blockNr, int colNr)
 {
     mCurrentLine = blockNr;
     setSize(colNr - mColumn);
+    BlockEditCursorWatch watch(this);
     updateExtraSelections();
     startCursorTimer();
 }
@@ -2295,16 +2296,11 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     e->accept();
     if (moveKeys.contains(e->key())) {
-        mHScrollLocked = true;
         BlockEditCursorWatch watch(this);
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isShift = e->modifiers() & Qt::ShiftModifier;
         bool isWord = e->modifiers() & Qt::ControlModifier;
-#ifdef __APPLE__
-//        bool isWord = (e->modifiers() & Qt::MetaModifier);
-#else
-#endif
         if (e->key() == Qt::Key_Home) {
             if (isShift) setSize(-mColumn);
             else {
@@ -2432,7 +2428,6 @@ void CodeEdit::BlockEdit::refreshCursors()
 
 void CodeEdit::BlockEdit::checkHorizontalScroll()
 {
-    mHScrollLocked = false;
     QTextCursor cursor(mEdit->textCursor());
     QTextBlock block = cursor.block();
     if (cursor.isNull()) {
