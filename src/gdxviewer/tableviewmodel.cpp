@@ -28,6 +28,7 @@ TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, Q
     for(int i=0; i<mSym->mDim; i++)
         mTvDimOrder << i;
     connect(mSym, &GdxSymbol::modelReset, this, &TableViewModel::setTableViewNoArgs);
+    connect(mSym, &GdxSymbol::loadFinished, this, &TableViewModel::setTableViewNoArgs);
 }
 
 TableViewModel::~TableViewModel()
@@ -41,8 +42,12 @@ QVariant TableViewModel::headerData(int section, Qt::Orientation orientation, in
         QStringList header;
         if (orientation == Qt::Horizontal) {
             if (mNeedDummyColumn) {
-                if (mNeedDummyRow)
-                    return "No Data";
+                if (mNeedDummyRow) {
+                    if (mSym->isLoaded())
+                        return "No Data";
+                    else
+                        return "Loading Data";
+                }
                 if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_PAR)
                     header << "Value";
                 else
@@ -356,11 +361,13 @@ void TableViewModel::setTableView(int colDim, QVector<int> tvDims)
     }
     initTableView(mTvColDim, mTvDimOrder);
     endResetModel();
+    emit initFinished();
 }
 
 void TableViewModel::setTableViewNoArgs()
 {
-    setTableView();
+    if (mSym->isLoaded())
+        setTableView();
 }
 
 bool TableViewModel::isAllDefault(int valColIdx)

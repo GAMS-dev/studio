@@ -72,6 +72,7 @@ private slots:
     void tvFilterScrollRight();
 
 private:
+    enum DefaultSymbolView {listView, tableView };
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;
@@ -84,6 +85,7 @@ private:
 
     void showListView();
     void showTableView();
+    void showDefaultView();
     void toggleView();
 
     void selectAll();
@@ -107,6 +109,12 @@ private:
 
     int mTvFilterSection=0;
     int mTvFilterSectionMax=0;
+
+    bool mLVFirstInit = true;
+    bool mTVFirstInit = true;
+    bool mTVResizeOnInit = true;
+
+    DefaultSymbolView mDefaultSymbolView;
 
     // QObject interface
 public:

@@ -103,6 +103,9 @@ enum SettingsKey {
     skEdFoldedDcoOnOpen,
     skEdSmartTooltipHelp,
 
+    // GDX Viewer
+    skGdxDefaultSymbolView,
+
     // MIRO settings page
     skMiroInstallPath,
 
