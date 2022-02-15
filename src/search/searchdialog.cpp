@@ -41,8 +41,6 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    connect(&mSearch, &Search::updateLabelByCursorPos, this, &SearchDialog::updateLabelByCursorPos);
-
     ui->setupUi(this);
     adjustSize();
 
@@ -126,10 +124,7 @@ void SearchDialog::finalUpdate()
     }
 
     updateEditHighlighting();
-
-    if (mSearch.results().size() == 0) {
-        setSearchStatus(Search::NoResults);
-    } else { updateLabelByCursorPos(); }
+    updateNrMatches();
 }
 
 void SearchDialog::updateUi(bool searching)
@@ -173,10 +168,8 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::ThisProject: {
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
             if (!p) return files;
-            for (PExFileNode *c :p->assignedProject()->listFiles()) {
-                if (!files.contains(c->file()))
-                    files.insert(c->file());
-            }
+            for (PExFileNode *c :p->assignedProject()->listFiles())
+                files.insert(c->file());
             break;
         }
         case Search::Selection: {
