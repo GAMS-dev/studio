@@ -741,7 +741,7 @@ void CodeEdit::checkCursorAfterFolding()
 void CodeEdit::scrollContentsBy(int dx, int dy)
 {
     int reDx = 0;
-    if (mBlockEdit && mBlockEdit->isHScrollLocked() && dx > 0)
+    if (mBlockEdit && mBlockSelectState != bsNone && dx > 0)
         reDx = dx;
     AbstractEdit::scrollContentsBy(dx, dy);
     if (reDx)
@@ -971,10 +971,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             if (mBlockEdit) endBlockEdit();
             startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
         } else if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
-            if (mBlockEdit) mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
-            else startBlockEdit(anchor.blockNumber(), anchor.columnNumber());
+            if (!mBlockEdit) startBlockEdit(anchor.blockNumber(), anchor.columnNumber());
         }
         if (mBlockEdit) {
+            BlockEditCursorWatch watch(mBlockEdit, bsMouse);
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
             emit cursorPositionChanged();
         }
@@ -1003,6 +1003,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
+            BlockEditCursorWatch watch(mBlockEdit, bsMouse);
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
         }
     } else {
@@ -1557,6 +1558,7 @@ void CodeEdit::endBlockEdit(bool adjustCursor)
     mBlockEdit = nullptr;
     setCursorWidth(2);
     setOverwriteMode(overwrite);
+    mBlockSelectState = bsNone;
 }
 
 void dumpClipboard()
@@ -2199,7 +2201,6 @@ void CodeEdit::BlockEdit::selectTo(int blockNr, int colNr)
 {
     mCurrentLine = blockNr;
     setSize(colNr - mColumn);
-    BlockEditCursorWatch watch(this);
     updateExtraSelections();
     startCursorTimer();
 }
@@ -2296,7 +2297,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
     e->accept();
     if (moveKeys.contains(e->key())) {
-        BlockEditCursorWatch watch(this);
+        BlockEditCursorWatch watch(this, bsKey);
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isShift = e->modifiers() & Qt::ShiftModifier;
@@ -2450,6 +2451,16 @@ void CodeEdit::BlockEdit::checkHorizontalScroll()
     if (offset)
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->value() + offset);
 
+}
+
+void CodeEdit::BlockEdit::setBlockSelectState(BlockSelectState state)
+{
+    mEdit->mBlockSelectState = state;
+}
+
+CodeEdit::BlockSelectState CodeEdit::BlockEdit::blockSelectState()
+{
+    return mEdit->mBlockSelectState;
 }
 
 void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)

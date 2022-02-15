@@ -41,6 +41,7 @@ class LineNumberArea;
 class SearchWidget;
 class CodeCompleter;
 
+
 struct BlockEditPos
 {
     BlockEditPos(int _startLine, int _endLine, int _column)
@@ -52,6 +53,7 @@ struct BlockEditPos
 
 class CodeEdit : public AbstractEdit
 {
+    enum BlockSelectState {bsNone, bsKey, bsMouse};
     Q_OBJECT
 
 public:
@@ -236,8 +238,8 @@ protected:
         void setSize(int size);
         void shiftVertical(int offset);
         void checkHorizontalScroll();
-        void setHScrollLocked(bool lock) { mHScrollLocked = lock; }
-        bool isHScrollLocked() { return mHScrollLocked; }
+        void setBlockSelectState(BlockSelectState state);
+        BlockSelectState blockSelectState();
 
     private:
         CodeEdit* mEdit;
@@ -249,22 +251,19 @@ protected:
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
         bool mOverwrite = false;
-        bool mHScrollLocked = false;
     };
     class BlockEditCursorWatch
     {
         int mColFrom = 0;
         BlockEdit *mBlockEdit;
     public:
-        BlockEditCursorWatch(BlockEdit *bEdit) : mBlockEdit(bEdit) {
+        BlockEditCursorWatch(BlockEdit *bEdit, BlockSelectState state) : mBlockEdit(bEdit) {
             mColFrom = mBlockEdit->colFrom();
-            mBlockEdit->setHScrollLocked(true);
+            mBlockEdit->setBlockSelectState(state);
         }
         ~BlockEditCursorWatch() {
-            if (mBlockEdit->colFrom() != mColFrom) {
-                mBlockEdit->setHScrollLocked(false);
-                mBlockEdit->checkHorizontalScroll();
-            }
+            mBlockEdit->setBlockSelectState(bsNone);
+            mBlockEdit->checkHorizontalScroll();
         }
     };
 
@@ -299,6 +298,7 @@ private:
     LinePair mFoldMark;
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
+    BlockSelectState mBlockSelectState = bsNone;
 };
 
 class LineNumberArea : public QWidget
