@@ -50,6 +50,9 @@ public:
     void execute() override;
     void interrupt() override;
     void terminate() override;
+    void terminateLocal() override;
+    bool isRemote() override { return true; }
+
     void setParameters(const QStringList &parameters) override;
     void forcePreviousWork();
     void setHasPreviousWorkOption(bool value);
@@ -111,7 +114,7 @@ protected slots:
     void reAuthorize(const QString &token);
 
 private slots:
-    void pullStatus();
+    void pollStatus();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void packCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
@@ -151,7 +154,7 @@ private:
     QString mJobNumber;
     QString mJobPassword;
     ProcState mProcState;
-    QTimer mPullTimer;
+    QTimer mPollTimer;
     AbstractGamsProcess *mSubProc = nullptr;
 
     enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};

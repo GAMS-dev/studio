@@ -66,9 +66,9 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
 
     setIgnoreSslErrorsCurrentUrl(false);
-    mPullTimer.setInterval(1000);
-    mPullTimer.setSingleShot(true);
-    connect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
+    mPollTimer.setInterval(1000);
+    mPollTimer.setSingleShot(true);
+    connect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
 }
 
 EngineProcess::~EngineProcess()
@@ -295,6 +295,13 @@ void EngineProcess::terminate()
     completed(-1);
 }
 
+void EngineProcess::terminateLocal()
+{
+    AbstractGamsProcess::terminate();
+    setProcState(ProcIdle);
+    completed(-1);
+}
+
 void EngineProcess::setParameters(const QStringList &parameters)
 {
     if (parameters.size()) {
@@ -418,8 +425,8 @@ void EngineProcess::getVersions()
 
 void EngineProcess::completed(int exitCode)
 {
-    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
-    mPullTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
+    mPollTimer.stop();
     mManager->cleanup();
     setProcState(ProcIdle);
     mQueuedTimer.invalidate();
@@ -446,7 +453,7 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
     emit newStdChannelData(newLstEntry.arg(QDir::separator(), modelName(), lstPath, token).toUtf8());
     // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
-    pullStatus();
+    pollStatus();
 }
 
 const QHash<QString, EngineProcess::JobStatusEnum> EngineProcess::CJobStatus {
@@ -573,8 +580,8 @@ void EngineProcess::jobIsQueued()
 
 void EngineProcess::reGetOutputFile(const QByteArray &data)
 {
-    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
-    mPullTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
+    mPollTimer.stop();
     if (data.isEmpty()) {
         emit newStdChannelData("\nEmpty result received\n");
         completed(-1);
@@ -598,8 +605,8 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
 
 void EngineProcess::reError(const QString &errorText)
 {
-    disconnect(&mPullTimer, &QTimer::timeout, this, &EngineProcess::pullStatus);
-    mPullTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
+    mPollTimer.stop();
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
 }
@@ -615,11 +622,11 @@ void EngineProcess::reAuthorize(const QString &token)
     emit authorized(token);
 }
 
-void EngineProcess::pullStatus()
+void EngineProcess::pollStatus()
 {
     if (mProcState > Proc3Queued) mManager->getLog();
     mManager->getJobStatus();
-    mPullTimer.start();
+    mPollTimer.start();
 }
 
 void EngineProcess::setProcState(ProcState newState)

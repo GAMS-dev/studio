@@ -221,9 +221,16 @@ void NeosProcess::interrupt()
 
 void NeosProcess::terminate()
 {
-    bool ok;
+    bool ok = false;
     mManager->killJob(ok);
     if (!ok) AbstractGamsProcess::interrupt();
+    setProcState(ProcIdle);
+    completed(-1);
+}
+
+void NeosProcess::terminateLocal()
+{
+    AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);
 }

@@ -37,7 +37,7 @@ protected:
     AbstractProcess(const QString &appName, QObject *parent = nullptr);
 
 public:
-    virtual ~AbstractProcess() {}
+    ~AbstractProcess() override {}
 
     void setInputFile(const QString &file);
     QString inputFile() const;
@@ -45,6 +45,8 @@ public:
     virtual void execute() = 0;
     virtual void interrupt();
     virtual void terminate();
+    virtual void terminateLocal() { terminate(); }
+    virtual bool isRemote() { return false; }
 
     virtual QProcess::ProcessState state() const = 0;
 

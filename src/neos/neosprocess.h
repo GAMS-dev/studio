@@ -52,6 +52,9 @@ public:
     void execute() override;
     void interrupt() override;
     void terminate() override;
+    void terminateLocal() override;
+    bool isRemote() override { return true; }
+
     void setParameters(const QStringList &parameters) override;
     QProcess::ProcessState state() const override;
     void validate();

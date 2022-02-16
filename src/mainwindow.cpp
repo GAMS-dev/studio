@@ -2329,25 +2329,36 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
     if (projects.isEmpty()) return true;
     QVector<PExProjectNode *> runningGroups;
     QStringList runningNames;
+    int remoteCount = 0;
     for (PExProjectNode* project: projects) {
         if (project->process() && project->process()->state() != QProcess::NotRunning) {
             runningGroups << project;
             runningNames << project->name();
+            if (project->process()->isRemote())
+                ++remoteCount;
         }
     }
-    if (runningGroups.isEmpty()) return true;
+    if (runningNames.isEmpty()) return true;
+    int localCount = runningNames.size() - remoteCount;
+
     QString title = runningNames.size() > 1 ? QString::number(runningNames.size())+" processes are running"
                                             : runningNames.first()+" is running";
-    QString message = runningNames.size() > 1 ? "processes?\n" : "process?\n";
-    while (runningNames.size() > 4) runningNames.removeLast();
+    if (remoteCount == localCount) title += " remotely";
+    else if (remoteCount) title += ", "+QString::number(remoteCount)+" remotely";
+
+    QString message = QString("Do you want to stop the ")
+            + (runningNames.size() > 1 ? "processes?\n" : "process?\n");
+    while (runningNames.size() > 3) runningNames.removeLast();
     while (runningNames.size() < runningGroups.size()) runningNames << "...";
     message += runningNames.join("\n");
-    int choice = QMessageBox::question(this, title,
-                          "Do you want to stop the "+message,
-                          "Stop", "Cancel");
-    if (choice == 1) return false;
+    int choice = remoteCount ? QMessageBox::question(this, title, message, "Stop All", "Stop Local", "Cancel")
+                             : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel") + 1;
+    if (choice == 2) return false;
     for (PExProjectNode* project: qAsConst(runningGroups)) {
-        project->process()->terminate();
+        if (project->process()->isRemote() && choice == 1)
+            project->process()->terminateLocal();
+        else
+            project->process()->terminate();
     }
     return true;
 }
