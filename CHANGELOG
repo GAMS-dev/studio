@@ -9,6 +9,7 @@ Version 1.9.5 *
 - Added separator line in horizontal header of GDX viewer
 - Added separator line on Windows in horizontal headers of tables and tree views
 - fixed horizontal scroll and block mark issues in block edit mode
+- remote jobs now can be kept active on Studio exit
 
 Version 1.9.4
 ==================
