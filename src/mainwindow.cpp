@@ -2343,7 +2343,7 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
 
     QString title = runningNames.size() > 1 ? QString::number(runningNames.size())+" processes are running"
                                             : runningNames.first()+" is running";
-    if (remoteCount == localCount) title += " remotely";
+    if (!localCount) title += " remotely";
     else if (remoteCount) title += ", "+QString::number(remoteCount)+" remotely";
 
     QString message = QString("Do you want to stop the ")
@@ -2351,8 +2351,10 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
     while (runningNames.size() > 3) runningNames.removeLast();
     while (runningNames.size() < runningGroups.size()) runningNames << "...";
     message += runningNames.join("\n");
-    int choice = remoteCount ? QMessageBox::question(this, title, message, "Stop All", "Stop Local", "Cancel")
-                             : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel") + 1;
+
+    int choice = remoteCount ?  localCount ? QMessageBox::question(this, title, message, "Stop All", "Stop Local", "Cancel")
+                                           : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel")
+                             : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
     if (choice == 2) return false;
     for (PExProjectNode* project: qAsConst(runningGroups)) {
         if (project->process()->isRemote() && choice == 1)
