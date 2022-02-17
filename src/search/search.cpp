@@ -86,7 +86,8 @@ void Search::start()
         }
     }
     // start background task first
-    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
+    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? ViewHelper::groupId(currentFile->topEditor()) : NodeId();
+    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
