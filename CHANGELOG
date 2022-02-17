@@ -6,6 +6,9 @@ Version 1.9.5 *
 - fixed search not properly counting search results
 - fixed "Replace All" preview wrongfully including read-only files
 - fixed jumping to wrong group when navigating search results
+- fixed Search not always jumping to a result outside current file
+- added separator line in horizontal header of GDX viewer
+- added separator line on Windows in horizontal headers of tables and tree views
 
 Version 1.9.4
 ==================

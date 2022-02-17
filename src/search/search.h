@@ -75,7 +75,6 @@ public:
     void resetResults();
 
 signals:
-    void updateLabelByCursorPos(int line, int col);
     void invalidateResults();
     void selectResult(int matchNr);
 
@@ -113,6 +112,7 @@ private:
 
     QThread mThread;
     bool mSearching = false;
+    bool mJumpQueued = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
     int mLastMatchInOpt = -1;

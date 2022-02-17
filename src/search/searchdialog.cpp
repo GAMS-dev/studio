@@ -41,8 +41,6 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
-    connect(&mSearch, &Search::updateLabelByCursorPos, this, &SearchDialog::updateLabelByCursorPos);
-
     ui->setupUi(this);
     adjustSize();
 
@@ -126,10 +124,7 @@ void SearchDialog::finalUpdate()
     }
 
     updateEditHighlighting();
-
-    if (mSearch.results().size() == 0) {
-        setSearchStatus(Search::NoResults);
-    } else { updateLabelByCursorPos(); }
+    updateNrMatches();
 }
 
 void SearchDialog::updateUi(bool searching)

@@ -19,8 +19,8 @@
 #define NESTEDHEADERVIEW_H
 
 #include "tableviewmodel.h"
-
 #include <QHeaderView>
+
 #include <QPainter>
 #include <QMouseEvent>
 
