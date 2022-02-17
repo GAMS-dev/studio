@@ -160,7 +160,8 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
+        bool ok = mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
+        if (!ok) completed(-1);
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
