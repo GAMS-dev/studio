@@ -24,7 +24,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
-#include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {

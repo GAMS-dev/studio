@@ -32,14 +32,10 @@ namespace option {
 
 AddOptionHeaderView::AddOptionHeaderView(Qt::Orientation orientation, QWidget *parent) :
         QHeaderView(orientation, parent)
-{
-
-}
+{}
 
 AddOptionHeaderView::~AddOptionHeaderView()
-{
-
-}
+{}
 
 bool AddOptionHeaderView::event(QEvent *event)
 {
