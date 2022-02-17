@@ -37,6 +37,8 @@ protected:
     AbstractProcess(const QString &appName, QObject *parent = nullptr);
 
 public:
+    enum TerminateOption { termLocal, termRemote, termIgnored };
+
     ~AbstractProcess() override {}
 
     void setInputFile(const QString &file);
@@ -46,7 +48,7 @@ public:
     virtual void interrupt();
     virtual void terminate();
     virtual void terminateLocal() { terminate(); }
-    virtual bool isRemote() { return false; }
+    virtual TerminateOption terminateOption() { return termLocal; }
 
     virtual QProcess::ProcessState state() const = 0;
 

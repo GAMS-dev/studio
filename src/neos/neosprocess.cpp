@@ -214,7 +214,7 @@ void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
 void NeosProcess::interrupt()
 {
     bool ok;
-    mManager->killJob(ok);
+    mManager->killJob(ok); // This is currently ignored by the server
     if (!ok) AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);
@@ -223,7 +223,7 @@ void NeosProcess::interrupt()
 void NeosProcess::terminate()
 {
     bool ok = false;
-    mManager->killJob(ok);
+    mManager->killJob(ok); // This is currently ignored by the server
     if (!ok) AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);

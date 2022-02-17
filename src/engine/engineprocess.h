@@ -51,7 +51,7 @@ public:
     void interrupt() override;
     void terminate() override;
     void terminateLocal() override;
-    bool isRemote() override { return true; }
+    TerminateOption terminateOption() override { return termRemote; }
 
     void setParameters(const QStringList &parameters) override;
     void forcePreviousWork();
