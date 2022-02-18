@@ -41,6 +41,7 @@ class LineNumberArea;
 class SearchWidget;
 class CodeCompleter;
 
+
 struct BlockEditPos
 {
     BlockEditPos(int _startLine, int _endLine, int _column)
@@ -52,6 +53,7 @@ struct BlockEditPos
 
 class CodeEdit : public AbstractEdit
 {
+    enum BlockSelectState {bsNone, bsKey, bsMouse};
     Q_OBJECT
 
 public:
@@ -235,6 +237,9 @@ protected:
         bool overwriteMode() const;
         void setSize(int size);
         void shiftVertical(int offset);
+        void checkHorizontalScroll();
+        void setBlockSelectState(BlockSelectState state);
+        BlockSelectState blockSelectState();
 
     private:
         CodeEdit* mEdit;
@@ -247,9 +252,24 @@ protected:
         QList<QTextEdit::ExtraSelection> mSelections;
         bool mOverwrite = false;
     };
+    class BlockEditCursorWatch
+    {
+        int mColFrom = 0;
+        BlockEdit *mBlockEdit;
+    public:
+        BlockEditCursorWatch(BlockEdit *bEdit, BlockSelectState state) : mBlockEdit(bEdit) {
+            mColFrom = mBlockEdit->colFrom();
+            mBlockEdit->setBlockSelectState(state);
+        }
+        ~BlockEditCursorWatch() {
+            mBlockEdit->setBlockSelectState(bsNone);
+            mBlockEdit->checkHorizontalScroll();
+        }
+    };
 
 protected:
     BlockEdit* blockEdit() {return mBlockEdit;}
+    void scrollContentsBy(int dx, int dy) override;
 
 private:
     LineNumberArea *mLineNumberArea;
@@ -278,6 +298,7 @@ private:
     LinePair mFoldMark;
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
+    BlockSelectState mBlockSelectState = bsNone;
 };
 
 class LineNumberArea : public QWidget
@@ -308,9 +329,7 @@ private:
     CodeEdit *mCodeEditor;
     QHash<int, QIcon> mIcons;
     bool mNoCursorFocus = false;
-
 };
-
 
 } // namespace studio
 } // namespace gams
