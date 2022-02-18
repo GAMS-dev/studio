@@ -396,7 +396,8 @@ void MainWindow::adjustFonts()
 
     QFont f(ui->menuBar->font());
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
-    ui->mainTabs->setFont(f);
+    ui->centralWidget->setFont(f);
+    ui->splitter->setFont(f);
     ui->dockProjectView->setFont(f);
     ui->dockProcessLog->setFont(f);
     ui->dockHelpView->setFont(f);
@@ -4287,8 +4288,9 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     split::SplitViewWidget *split = new split::SplitViewWidget(ui->splitter);
     split->setOrientation(orientation);
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-
     QWidget *newWid = fm->createEdit(split, pro);
+    Settings *settings = Settings::settings();
+    newWid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
     split->setWidget(newWid, fm->name(NameModifier::editState));
 }
 

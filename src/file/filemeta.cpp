@@ -438,6 +438,23 @@ void FileMeta::invalidateTheme()
     updateSyntaxColors();
 }
 
+bool FileMeta::eventFilter(QObject *sender, QEvent *event)
+{
+    if ((event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) && mEditors.size() > 1) {
+        QFont f;
+        bool def = false;
+        for (QWidget *wid : mEditors) {
+            if (wid == sender) {f = wid->font(); def = true; }
+        }
+        if (def) {
+            for (QWidget *wid : mEditors)
+                if (wid != sender && !wid->font().isCopyOf(f))
+                    wid->setFont(f);
+        }
+    }
+    return QObject::eventFilter(sender, event);
+}
+
 void FileMeta::addEditor(QWidget *edit)
 {
     if (!edit) return;
@@ -449,6 +466,7 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
+    edit->installEventFilter(this);
     initEditorColors();
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());

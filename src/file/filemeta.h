@@ -112,6 +112,9 @@ signals:
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
 
+protected:
+    bool eventFilter(QObject*sender, QEvent* event) override;
+
 private slots:
     void modificationChanged(bool modiState);
     void contentsChange(int from, int charsRemoved, int charsAdded);

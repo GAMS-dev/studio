@@ -181,7 +181,6 @@ public slots:
     void parameterRunChanged();
     void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
-    bool eventFilter(QObject*sender, QEvent* event) override;
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
     void showResults(search::SearchResultModel* results);
@@ -375,6 +374,7 @@ private slots:
     void sslUserDecision(QAbstractButton *button);
 
 protected:
+    bool eventFilter(QObject*sender, QEvent* event) override;
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
