@@ -22,6 +22,7 @@
 #include "gdxsymbolheaderview.h"
 #include "gdxsymbol.h"
 #include "columnfilter.h"
+#include "headerviewproxy.h"
 #include "nestedheaderview.h"
 #include "tableviewmodel.h"
 #include "theme.h"
@@ -48,6 +49,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
+    ui->laError->hide();
+    ui->laError->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -160,6 +163,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
     ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->tvTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
     ui->tvTableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tvTableView->verticalHeader()->setMinimumSectionSize(1);
@@ -190,6 +195,7 @@ GdxSymbolView::~GdxSymbolView()
 
 void GdxSymbolView::showFilter(QPoint p)
 {
+    if (mSym->hasInvalidUel()) return;
     QTableView* tableView = mTableView ? ui->tvTableViewFilter : ui->tvListView;
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
@@ -367,8 +373,8 @@ void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
 
     QStringList sList;
     if (copyLabels) { // copy labels as well in table view mode
-        int colHeaderDim = ((NestedHeaderView*)tv->horizontalHeader())->dim();
-        int rowHeaderDim = ((NestedHeaderView*)tv->verticalHeader())->dim();
+        int colHeaderDim = (static_cast<NestedHeaderView*>(tv->horizontalHeader()))->dim();
+        int rowHeaderDim = (static_cast<NestedHeaderView*>(tv->verticalHeader()))->dim();
         for (int i=0; i<colHeaderDim; i++) {
             for (int j=0; j<rowHeaderDim; j++)
                 sList << separator;
@@ -609,6 +615,12 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::enableControls()
 {
+    if (mSym->hasInvalidUel()) {
+        ui->tvListView->setSortingEnabled(false);
+        ui->tvListView->horizontalHeader()->setSortIndicatorShown(false);
+        ui->laError->setVisible(true);
+    }
+
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
     if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {

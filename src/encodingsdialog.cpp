@@ -19,6 +19,7 @@
  */
 #include "encodingsdialog.h"
 #include "ui_encodingsdialog.h"
+#include "headerviewproxy.h"
 
 #include <QCheckBox>
 #include <QTextCodec>
@@ -38,6 +39,8 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
 
     QList<int> mibs = QTextCodec::availableMibs();
     std::sort(mibs.begin(), mibs.end());
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->tableWidget->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     ui->tableWidget->setRowCount(mibs.count());
     ui->tableWidget->setWordWrap(false);
 

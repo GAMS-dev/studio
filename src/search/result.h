@@ -21,6 +21,7 @@
 #define RESULT_H
 
 #include <QString>
+#include "common.h"
 
 namespace gams {
 namespace studio {
@@ -30,12 +31,13 @@ class Result
 {
     friend class SearchResultList;
 public:
-    explicit Result(int lineNr, int colNr, int length, QString fileLoc, QString context = "");
+    explicit Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context = "");
     int lineNr() const;
     int colNr() const;
     QString filepath() const;
     QString context() const;
     int length() const;
+    NodeId parentGroup() const;
     bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
 
 private:
@@ -44,6 +46,7 @@ private:
     int mLength;
     QString mFilepath;
     QString mContext;
+    NodeId mParent;
 };
 
 }

@@ -54,7 +54,7 @@ public:
     };
     Search(SearchDialog *sd);
 
-    void setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
+    void setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
     void stop();
 
@@ -75,7 +75,6 @@ public:
     void resetResults();
 
 signals:
-    void updateLabelByCursorPos(int line, int col);
     void invalidateResults();
     void selectResult(int matchNr);
 
@@ -104,7 +103,7 @@ private:
     SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
-    QList<FileMeta*> mFiles;
+    QSet<FileMeta*> mFiles;
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;
@@ -113,6 +112,7 @@ private:
 
     QThread mThread;
     bool mSearching = false;
+    bool mJumpQueued = false;
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
     int mLastMatchInOpt = -1;

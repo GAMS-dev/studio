@@ -98,7 +98,7 @@ protected:
 
 private:
     void restoreSettings();
-    QList<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
+    QSet<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();

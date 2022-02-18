@@ -39,7 +39,7 @@ class SearchWorker : public QObject
     Q_OBJECT
 public:
     SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list);
-    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list);
+    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project);
     ~SearchWorker();
     void findInFiles();
 
@@ -53,6 +53,7 @@ private:
     QRegularExpression mRegex;
     QPoint mFrom = QPoint(0,0);
     QPoint mTo = QPoint(0,0);
+    NodeId mProject;
 
     bool allowInsert(int line, int col);
     bool mFindInSelection = true;

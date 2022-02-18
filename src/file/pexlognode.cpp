@@ -72,10 +72,11 @@ void PExLogNode::clearLog()
         tv->reset();
 }
 
-void PExLogNode::prepareRun()
+void PExLogNode::prepareRun(int logOption)
 {
+    mLogOption = logOption;
     Settings *settings = Settings::settings();
-    if (!mLogFile && settings->toBool(skEdWriteLog)) {
+    if (logOption > 2 && !mLogFile && settings->toBool(skEdWriteLog)) {
         mLogFile = new DynamicFile(location(), settings->toInt(skEdLogBackupCount), this);
     }
     mLogFinished = false;
@@ -94,6 +95,25 @@ void PExLogNode::prepareRun()
 
 void PExLogNode::logDone()
 {
+    QString baseFile = location().left(location().lastIndexOf('.'));
+    if (mLogOption < 3) {
+        QString message;
+        QDir dir = location();
+        QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
+        TextView *tv = ViewHelper::toTextView(wid);
+        QFileInfo fi = QFileInfo(baseFile + ".log");
+        QString path = fi.filePath();
+        if (mLogOption == 2) {
+            if (PExProjectNode *pro = projectRepo()->asProject(projectId())) {
+                QDir dir = pro->location();
+                path = dir.relativeFilePath(path);
+            }
+            message = QString("LOG:%1[FIL:\"%2\",0]").arg(path).arg(fi.filePath());
+        } else {
+            message = QString("LOG: no log (logoption=%1)").arg(mLogOption);
+        }
+        tv->addProcessData(message.toUtf8());
+    }
     mLogFinished = true;
     mLogCloser.start();
     mRepaintCount = -1;

@@ -45,6 +45,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     ui->symbolView->setAlternatingRowColors(true);
     ui->symbolView->setContextMenuPolicy(Qt::CustomContextMenu);
 
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->symbolView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     ui->symbolView->horizontalHeader()->setStretchLastSection(true);
     ui->symbolView->horizontalHeader()->setSectionResizeMode(QHeaderView::Interactive);
     ui->symbolView->horizontalHeader()->setSectionResizeMode( mSymbolTableModel->getLastSectionIndex(), QHeaderView::Stretch );
@@ -57,7 +59,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
         ui->symbolView->setSortingEnabled(true);
     }
     else {
-        ui->symbolView->setHorizontalHeader( new SortedFileHeaderView(Qt::Horizontal, ui->symbolView) );
+        ui->symbolView->setHorizontalHeader(new SortedFileHeaderView(Qt::Horizontal, ui->symbolView));
+        if (HeaderViewProxy::platformShouldDrawBorder())
+            ui->symbolView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     }
 
     QAction* resizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { resizeColumnToContents(); }, QKeySequence("Ctrl+R"));
@@ -75,6 +79,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );
 
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->referenceView->header()->setStyle(HeaderViewProxy::instance());
     ui->referenceView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->referenceView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->referenceView->setItemsExpandable(true);

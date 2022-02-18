@@ -83,10 +83,13 @@ void NeosManager::version()
     emit submitCall("version");
 }
 
-void NeosManager::submitJob(QString fileName, QString eMail, QString params, bool prioShort, bool wantGdx)
+bool NeosManager::submitJob(QString fileName, QString eMail, QString params, bool prioShort, bool wantGdx)
 {
     QFile f(fileName);
-    if (!f.exists() || !f.open(QFile::ReadOnly)) return;
+    if (!f.exists() || !f.open(QFile::ReadOnly)) {
+        emit reGetIntermediateResultsNonBlocking(QString("Can't open %1").arg(fileName).toUtf8());
+        return false;
+    }
     QByteArray data = f.readAll();
     f.close();
     mLogOffset = 0;
@@ -94,6 +97,7 @@ void NeosManager::submitJob(QString fileName, QString eMail, QString params, boo
     QString prio = (prioShort?"short":"long");
     QString jobData = mRawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"").arg(eMail);
     emit submitCall("submitJob", QVariantList() << jobData);
+    return true;
 }
 
 void NeosManager::watchJob(int jobNumber, QString password)

@@ -30,6 +30,7 @@
 #include "definitionitemdelegate.h"
 #include "optionsortfilterproxymodel.h"
 #include "solveroptiondefinitionmodel.h"
+#include "headerviewproxy.h"
 #include "mainwindow.h"
 #include "editors/systemlogedit.h"
 #include "settings.h"
@@ -103,6 +104,8 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
     ui->solverOptionTableView->setHorizontalHeader(headerView);
     ui->solverOptionTableView->setColumnHidden( mOptionTableModel->getColumnEntryNumber(), true);
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->solverOptionTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
     ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
     if (ui->solverOptionTableView->model()->rowCount()<=0) {
@@ -145,6 +148,8 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
 
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->solverOptionTreeView->header()->setStyle(HeaderViewProxy::instance());
     ui->solverOptionTreeView->setModel( proxymodel );
     ui->solverOptionTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->solverOptionTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
