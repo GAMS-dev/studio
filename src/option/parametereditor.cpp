@@ -23,6 +23,7 @@
 #include "parametereditor.h"
 #include "ui_parametereditor.h"
 
+#include "headerviewproxy.h"
 #include "addoptionheaderview.h"
 #include "commonpaths.h"
 #include "definitionitemdelegate.h"
@@ -92,6 +93,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 
     ui->gamsParameterTableView->setHorizontalHeader(headerView);
     ui->gamsParameterTableView->setColumnHidden(GamsParameterTableModel::COLUMN_ENTRY_NUMBER, true);
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->gamsParameterTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
     ui->gamsParameterTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
@@ -114,6 +117,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     connect(ui->gamsParameterSearch, &QLineEdit::textChanged,
             proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
 
+    if (HeaderViewProxy::platformShouldDrawBorder())
+        ui->gamsParameterTreeView->header()->setStyle(HeaderViewProxy::instance());
     ui->gamsParameterTreeView->setModel( proxymodel );
     ui->gamsParameterTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->gamsParameterTreeView->setSelectionMode(QAbstractItemView::SingleSelection);

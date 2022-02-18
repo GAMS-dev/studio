@@ -360,7 +360,7 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
         if (!item.isNull() && item.position() <= endPos) {
             results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                           item.selectedText().length(), property("location").toString(),
-                                          item.block().text().trimmed()));
+                                          groupId(), item.block().text().trimmed()));
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());

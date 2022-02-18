@@ -147,6 +147,7 @@ void CodeEdit::blockEditBlink()
 
 void CodeEdit::checkBlockInsertion()
 {
+    if (!mBlockEdit) return;
     bool extraJoin = mBlockEditInsText.isNull();
     QTextCursor cur = textCursor();
     bool validText = (mBlockEditRealPos != cur.position());
@@ -737,6 +738,16 @@ void CodeEdit::checkCursorAfterFolding()
     }
 }
 
+void CodeEdit::scrollContentsBy(int dx, int dy)
+{
+    int reDx = 0;
+    if (mBlockEdit && mBlockSelectState != bsNone && dx > 0)
+        reDx = dx;
+    AbstractEdit::scrollContentsBy(dx, dy);
+    if (reDx)
+        horizontalScrollBar()->setValue(horizontalScrollBar()->value() + reDx);
+}
+
 bool CodeEdit::ensureUnfolded(int line)
 {
     int lastUnfoldedNr = -1;
@@ -960,10 +971,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             if (mBlockEdit) endBlockEdit();
             startBlockEdit(cursor.blockNumber(), textCursorColumn(e->pos()));
         } else if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier)) {
-            if (mBlockEdit) mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
-            else startBlockEdit(anchor.blockNumber(), anchor.columnNumber());
+            if (!mBlockEdit) startBlockEdit(anchor.blockNumber(), anchor.columnNumber());
         }
         if (mBlockEdit) {
+            BlockEditCursorWatch watch(mBlockEdit, bsMouse);
             mBlockEdit->selectTo(cursor.blockNumber(), textCursorColumn(e->pos()));
             emit cursorPositionChanged();
         }
@@ -992,6 +1003,7 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 
     if (mBlockEdit) {
         if ((e->buttons() & Qt::LeftButton) && (e->modifiers() & Qt::AltModifier)) {
+            BlockEditCursorWatch watch(mBlockEdit, bsMouse);
             mBlockEdit->selectTo(cursorForPosition(e->pos()).blockNumber(), textCursorColumn(e->pos()));
         }
     } else {
@@ -1546,6 +1558,7 @@ void CodeEdit::endBlockEdit(bool adjustCursor)
     mBlockEdit = nullptr;
     setCursorWidth(2);
     setOverwriteMode(overwrite);
+    mBlockSelectState = bsNone;
 }
 
 void dumpClipboard()
@@ -2282,15 +2295,13 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
     QSet<int> moveKeys;
     moveKeys << Qt::Key_Home << Qt::Key_End << Qt::Key_Down << Qt::Key_Up
              << Qt::Key_Left << Qt::Key_Right << Qt::Key_PageUp << Qt::Key_PageDown;
+    e->accept();
     if (moveKeys.contains(e->key())) {
+        BlockEditCursorWatch watch(this, bsKey);
         QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);
         bool isMove = e->modifiers() & Qt::AltModifier;
         bool isShift = e->modifiers() & Qt::ShiftModifier;
         bool isWord = e->modifiers() & Qt::ControlModifier;
-#ifdef __APPLE__
-//        bool isWord = (e->modifiers() & Qt::MetaModifier);
-#else
-#endif
         if (e->key() == Qt::Key_Home) {
             if (isShift) setSize(-mColumn);
             else {
@@ -2330,60 +2341,56 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
                 mColumn -= 1;
                 if (isShift)
                     setSize(mSize+1);
+            } else return;
+
+        } else if (e == Hotkey::BlockSelectPgDown || e == Hotkey::BlockSelectPgUp) {
+            int amount = int(mEdit->height() / mEdit->blockBoundingGeometry(block).height() / block.lineCount());
+            if (e == Hotkey::BlockSelectPgDown) {
+                if (mCurrentLine + amount >= mEdit->blockCount())
+                    amount = mEdit->blockCount() - mCurrentLine - 1;
+                mCurrentLine += amount;
             } else {
-                e->accept();
-                return;
+                mCurrentLine = qMax(mCurrentLine - amount, 0);
             }
         } else if (e->key() == Qt::Key_Down) {
-            if ((isWord || isMove)  && mCurrentLine < mEdit->blockCount()-1) {
-                mCurrentLine += 1;
-            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
-                mStartLine += 1;
+            if ((isWord || isMove)) {
+                if (mCurrentLine < mEdit->blockCount()-1) mCurrentLine += 1;
+                else return;
+            } else if (isShift) {
+                if (mStartLine < mEdit->blockCount()-1) mStartLine += 1;
+                else return;
             } else if (qMax(mStartLine, mCurrentLine) < mEdit->blockCount()-1) {
                 mCurrentLine += 1;
                 mStartLine += 1;
-            } else {
-                e->accept();
-                return;
-            }
+            } else return;
+
         } else if (e->key() == Qt::Key_Up) {
-            if ((isWord || isMove) && mCurrentLine > 0) {
-                mCurrentLine -= 1;
-            } else if (isShift && mStartLine < mEdit->blockCount()-1) {
-                mStartLine -= 1;
+            if ((isWord || isMove)) {
+                if (mCurrentLine > 0) mCurrentLine -= 1;
+                else return;
+            } else if (isShift) {
+                if (mStartLine > 0) mStartLine -= 1;
+                else return;
             } else if (qMin(mStartLine, mCurrentLine) > 0) {
                 mCurrentLine -= 1;
                 mStartLine -= 1;
-            } else {
-                e->accept();
-                return;
-            }
-        } else {
-            e->accept();
-            return;
-        }
-        QTextCursor cursor(block);
-        if (block.length() > mColumn+mSize)
-            cursor.setPosition(block.position()+mColumn+mSize);
-        else
-            cursor.setPosition(block.position()+block.length()-1);
-        mEdit->setTextCursor(cursor);
+            } else return;
+        } else return;
         updateExtraSelections();
-        e->accept();
         emit mEdit->cursorPositionChanged();
+
     } else if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace) {
         if (!mSize && mColumn >= 0) {
             mLastCharType = CharType::None;
             setSize((e->key() == Qt::Key_Backspace) ? -1 : 1);
         }
         replaceBlockText("");
+        e->ignore();
     } else if (e == Hotkey::Indent) {
         mEdit->indent(mEdit->mSettings->toInt(skEdTabSize));
-        e->accept();
         return;
     } else if (e == Hotkey::Outdent) {
         mEdit->indent(-mEdit->mSettings->toInt(skEdTabSize));
-        e->accept();
         return;
     } else if (e->text().length()) {
         mEdit->mBlockEditRealPos = mEdit->textCursor().position();
@@ -2392,6 +2399,7 @@ void CodeEdit::BlockEdit::keyPressEvent(QKeyEvent* e)
         mEdit->setTextCursor(cur);
         mEdit->rawKeyPressEvent(e);
         QTimer::singleShot(0, mEdit, &CodeEdit::checkBlockInsertion);
+        e->ignore();
     }
 
     startCursorTimer();
@@ -2417,6 +2425,42 @@ void CodeEdit::BlockEdit::refreshCursors()
 {
     mBlinkStateHidden = !mBlinkStateHidden;
     mEdit->viewport()->update(mEdit->viewport()->visibleRegion());
+}
+
+void CodeEdit::BlockEdit::checkHorizontalScroll()
+{
+    QTextCursor cursor(mEdit->textCursor());
+    QTextBlock block = cursor.block();
+    if (cursor.isNull()) {
+        block = mEdit->firstVisibleBlock();
+        cursor.setPosition(block.position());
+    }
+    int existChars = qMin(block.length()-1, colFrom());
+    cursor.setPosition(block.position() + existChars);
+    QFontMetricsF metric(mEdit->font());
+    qreal curOffset = mEdit->cursorRect(cursor).left();
+    if (int beyondEnd = colFrom() > existChars ? colFrom() - existChars : 0) {
+        QString str = QString(beyondEnd, ' ');
+        curOffset += metric.width(str);
+    }
+    int offset = 0;
+    if (curOffset < 4)
+        offset = qRound(curOffset) - 4;
+    else if (mEdit->viewport()->width() < curOffset)
+        offset = qRound(curOffset - mEdit->viewport()->width() - 4 + metric.averageCharWidth());
+    if (offset)
+        mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->value() + offset);
+
+}
+
+void CodeEdit::BlockEdit::setBlockSelectState(BlockSelectState state)
+{
+    mEdit->mBlockSelectState = state;
+}
+
+CodeEdit::BlockSelectState CodeEdit::BlockEdit::blockSelectState()
+{
+    return mEdit->mBlockSelectState;
 }
 
 void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
@@ -2452,9 +2496,9 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
             if (block.length() <= beyondStart) {
-                selRect.moveLeft(left + metric.width(str.left(beyondStart)));
+                selRect.moveLeft(left + metric.width(str.left(beyondStart)) - mEdit->horizontalScrollBar()->value());
             }
-            selRect.setRight(left + metric.width(str.left(beyondEnd)));
+            selRect.setRight(left + metric.width(str.left(beyondEnd)) - mEdit->horizontalScrollBar()->value());
             painter.fillRect(selRect, mEdit->palette().highlight());
         }
 
@@ -2467,7 +2511,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.setX(left + metric.width(str.left(cursorColumn)));
+            cursorRect.setX(left + metric.width(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
         }
         cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 

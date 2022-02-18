@@ -51,7 +51,7 @@ public:
 
     void ping();
     void version();
-    void submitJob(QString fileName, QString eMail, QString params = QString(), bool prioShort = true, bool wantGdx = true);
+    bool submitJob(QString fileName, QString eMail, QString params = QString(), bool prioShort = true, bool wantGdx = true);
     void watchJob(int jobNumber, QString password);
     void getJobStatus();
     void getCompletionCode();

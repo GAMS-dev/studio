@@ -1,7 +1,21 @@
-Version 1.10.0
+Version 1.10.0 *
 ==================
 - added new tab for the GDX Viewer to the settings dialog
 - added new setting for specifying the default symbol view of the GDX Viewer
+
+Version 1.9.5
+==================
+- fixed crash in GDX Viewer related to reading a file containing negative UELs
+- fixed empty log file when using logoption=2
+- added 'Page-up/-down' keys to extend block edit selection
+- fixed search not properly counting search results across multiple files
+- fixed "Replace All" preview wrongfully including read-only files
+- fixed jumping to wrong group when navigating search results
+- fixed Search not always jumping to a result outside current file
+- added separator line on Windows in horizontal headers of tables and tree views
+- fixed horizontal scroll and block mark issues in block edit mode
+- remote jobs now can be kept active on Studio exit
+- fixed NEOS freezing when the GMS file isn't located in the working directory
 
 Version 1.9.4
 ==================

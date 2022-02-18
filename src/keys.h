@@ -42,6 +42,8 @@ enum struct Hotkey {
     MoveViewLineDown = 16,
     MoveViewPageUp = 17,
     MoveViewPageDown = 18,
+    BlockSelectPgUp = 19,
+    BlockSelectPgDown = 20,
     MoveToEndOfDoc = 21,
     MoveToStartOfDoc = 22,
     MoveToEndOfLine = 23,
@@ -50,6 +52,7 @@ enum struct Hotkey {
     MoveCharGroupLeft = 26,
     SelectAll = 27,
     CodeCompleter = 28,
+
 //    BookmarkToggle = 30,
 //    BookmarkNext = 31,
 //    BookmarkPrev = 32,

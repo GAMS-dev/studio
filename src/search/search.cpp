@@ -40,9 +40,10 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
 }
 
-void Search::setParameters(QList<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
+void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    mCacheAvailable = mCacheAvailable && files == mFiles;
+    bool fileListChanged = mFiles != files;
+    mCacheAvailable = mCacheAvailable && !fileListChanged;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -69,21 +70,24 @@ void Search::start()
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
+    FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
     for(FileMeta* fm : qAsConst(mFiles)) {
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
 
-        // sort files by modified
-        if (fm->isModified()) modified << fm;
-        else unmodified << fm;
+        // sort files by modified, current file first
+        if (fm->isModified()) {
+            if (fm == currentFile) modified.insert(0, fm);
+            else modified << fm;
+        } else {
+            if (fm == currentFile) unmodified.insert(0, fm);
+            else unmodified << fm;
+        }
     }
-
-    // non-parallel first
-    for (FileMeta* fm : qAsConst(modified))
-        findInDoc(fm);
-
-    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
+    // start background task first
+    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? ViewHelper::groupId(currentFile->topEditor()) : NodeId();
+    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -93,6 +97,9 @@ void Search::start()
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
+
+    for (FileMeta* fm : qAsConst(modified))
+        findInDoc(fm);
 }
 
 void Search::stop()
@@ -166,7 +173,8 @@ void Search::findInDoc(FileMeta* fm)
 
         if (!item.isNull()) {
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                   item.selectedText().length(), fm->location(), item.block().text().trimmed()));
+                                   item.selectedText().length(), fm->location(),
+                                   ViewHelper::groupId(mSearchDialog->currentEditor()), item.block().text().trimmed()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
@@ -272,11 +280,12 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
-        PExFileNode *node = mSearchDialog->fileHandler()->findFile(mResults.at(matchNr).filepath());
-        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
+        Result r = mResults.at(matchNr);
 
-        node->file()->jumpTo(node->projectId(), true, mResults.at(matchNr).lineNr()-1,
-                             qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+        PExFileNode *node = mSearchDialog->fileHandler()->findFile(r.filepath());
+        if (!node) EXCEPT() << "File not found: " << r.filepath();
+
+        node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     }
 }
 
@@ -290,6 +299,9 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
 
     if (mCacheAvailable && !mOutsideOfList)
         matchNr = NavigateInsideCache(direction);
+
+    // queue jump for when cache is finished. will be reset if an outside-of-cache result is found
+    if (mSearching) mJumpQueued = true;
 
     // dont jump outside of cache when searchscope is set to selection
     if ((mOutsideOfList || !mCacheAvailable) && mSearchDialog->selectedScope() != Scope::Selection)
@@ -333,13 +345,15 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     }
 
     // try again
-    if (!found) {
+    if (!found && !mSearching) {
         matchNr = findNextEntryInCache(direction);
         found = matchNr != -1;
+
         jumpToResult(matchNr);
     }
 
     if (!found && firstLevel) selectNextMatch(direction, false);
+    if (found) mJumpQueued = false;
 
     // check if cache was re-entered
     matchNr = mSearchDialog->updateLabelByCursorPos();
@@ -431,6 +445,11 @@ void Search::finished()
 
     mCacheAvailable = true;
     mSearchDialog->finalUpdate();
+
+    if (mJumpQueued) {
+        mJumpQueued = false;
+        selectNextMatch();
+    }
 }
 
 Search::Scope Search::scope() const
@@ -493,12 +512,13 @@ void Search::replaceAll(QString replacementText)
 
     int matchedFiles = 0;
 
+    QList<FileMeta*> searchFiles;
+
     // sort and filter FMs by editability and modification state
     for (FileMeta* fm : qAsConst(mFiles)) {
-        if (fm->isReadOnly()) {
-            mFiles.removeOne(fm);
-            continue;
-        }
+        if (!fm->isReadOnly()) {
+            searchFiles.append(fm);
+        } else continue;
 
         if (fm->document()) {
             if (!opened.contains(fm)) opened << fm;
@@ -513,7 +533,7 @@ void Search::replaceAll(QString replacementText)
     QString searchTerm = mRegex.pattern();
     QString replaceTerm = replacementText;
     QMessageBox msgBox;
-    if (mFiles.length() == 0) {
+    if (mFiles.size() == 0) {
         msgBox.setText("No files matching criteria.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
@@ -521,11 +541,11 @@ void Search::replaceAll(QString replacementText)
 
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
-                       + "' with '" + replaceTerm + "' in file " + mFiles.first()->name() + "?");
+                       + "' with '" + replaceTerm + "' in file " + searchFiles.first()->name() + "?");
     } else if (mSearchDialog->selectedScope() == Search::Selection) {
         msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
-                       + mFiles.first()->name() + "?");
+                       + searchFiles.first()->name() + "?");
     } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
                        searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
@@ -533,11 +553,11 @@ void Search::replaceAll(QString replacementText)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : qAsConst(mFiles))
+        for (FileMeta* fm : qAsConst(searchFiles))
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
-                            "Press \"Search\" to see actual matches that will be replaced.");
+                            "Press \"Preview\" to see actual matches that will be replaced.");
         msgBox.setDetailedText(detailedText);
     }
     QPushButton *ok = msgBox.addButton(QMessageBox::Ok);

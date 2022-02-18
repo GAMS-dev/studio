@@ -23,6 +23,7 @@
 #include <QHeaderView>
 
 #include "symboltablemodel.h"
+#include "headerviewproxy.h"
 
 namespace gams {
 namespace studio {
