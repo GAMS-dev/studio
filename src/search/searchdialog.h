@@ -113,7 +113,7 @@ private:
 
 private:
     Ui::SearchDialog *ui;
-    QWidget* mCurrentEditor;
+    QWidget* mCurrentEditor = nullptr;
     AbstractSearchFileHandler* mFileHandler = nullptr;
 
     Search mSearch;
