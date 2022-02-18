@@ -149,6 +149,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
     connect(&mMainTabContextMenu, &MainTabContextMenu::openSplitView, this, &MainWindow::openSplitView);
+    connect(ui->mainTabs, &TabWidget::openSplitView, this, &MainWindow::openSplitView);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -4285,6 +4286,9 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     if (!group) return;
     PExProjectNode *pro = group->assignedProject();
     if (!pro) return;
+
+    // TODO(JM) if split is active, close current split
+
     split::SplitViewWidget *split = new split::SplitViewWidget(ui->splitter);
     split->setOrientation(orientation);
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);

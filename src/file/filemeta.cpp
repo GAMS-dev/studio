@@ -526,6 +526,7 @@ void FileMeta::removeEditor(QWidget *edit)
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
     mEditors.removeAt(i);
+    edit->removeEventFilter(this);
 
     if (aEdit) {
         aEdit->setMarks(nullptr);
