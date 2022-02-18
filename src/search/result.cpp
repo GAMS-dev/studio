@@ -23,8 +23,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-Result::Result(int lineNr, int colNr, int length, QString fileLoc, QString context) :
-    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context)
+Result::Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context) :
+    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context), mParent(parent)
 {
     mContext.truncate(40);
 }
@@ -52,6 +52,11 @@ QString Result::context() const
 int Result::length() const
 {
     return mLength;
+}
+
+NodeId Result::parentGroup() const
+{
+    return mParent;
 }
 
 }

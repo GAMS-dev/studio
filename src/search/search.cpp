@@ -86,7 +86,8 @@ void Search::start()
         }
     }
     // start background task first
-    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults);
+    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? ViewHelper::groupId(currentFile->topEditor()) : NodeId();
+    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
@@ -172,7 +173,8 @@ void Search::findInDoc(FileMeta* fm)
 
         if (!item.isNull()) {
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                   item.selectedText().length(), fm->location(), item.block().text().trimmed()));
+                                   item.selectedText().length(), fm->location(),
+                                   ViewHelper::groupId(mSearchDialog->currentEditor()), item.block().text().trimmed()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
@@ -278,11 +280,12 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
-        PExFileNode *node = mSearchDialog->fileHandler()->findFile(mResults.at(matchNr).filepath());
-        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
+        Result r = mResults.at(matchNr);
 
-        node->file()->jumpTo(node->projectId(), true, mResults.at(matchNr).lineNr()-1,
-                             qMax(mResults.at(matchNr).colNr(), 0), mResults.at(matchNr).length());
+        PExFileNode *node = mSearchDialog->fileHandler()->findFile(r.filepath());
+        if (!node) EXCEPT() << "File not found: " << r.filepath();
+
+        node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     }
 }
 

@@ -168,8 +168,9 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::ThisProject: {
             PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
             if (!p) return files;
-            for (PExFileNode *c :p->assignedProject()->listFiles())
+            for (PExFileNode *c :p->assignedProject()->listFiles()) {
                 files.insert(c->file());
+            }
             break;
         }
         case Search::Selection: {

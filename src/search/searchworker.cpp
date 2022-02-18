@@ -22,6 +22,7 @@
 #include "searchresultmodel.h"
 #include "searchworker.h"
 #include "file/filemeta.h"
+#include "viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -38,8 +39,8 @@ SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from
     mTo += QPoint(0,1);
 }
 
-SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list)
-    : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0))
+SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project)
+    : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0)), mProject(project)
 {
     mFindInSelection = false;
 }
@@ -51,8 +52,12 @@ SearchWorker::~SearchWorker()
 void SearchWorker::findInFiles()
 {
     bool cacheFull = false;
+    NodeId projectGroup = mProject;
     for (FileMeta* fm : qAsConst(mFiles)) {
         if (cacheFull) break;
+
+        if (!mProject.isValid())
+            projectGroup = ViewHelper::groupId(fm->topEditor());
 
         int lineCounter = 0;
         QFile file(fm->location());
@@ -80,6 +85,7 @@ void SearchWorker::findInFiles()
                     if (allowInsert(lineCounter, match.capturedStart())) {
                         mMatches->append(Result(lineCounter, match.capturedStart(),
                                                 match.capturedLength(), file.fileName(),
+                                                projectGroup,
                                                 line.trimmed()));
                     }
                 }

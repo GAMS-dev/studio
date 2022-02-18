@@ -44,6 +44,11 @@ QList<FileMeta*> SearchFileHandler::openFiles()
     return QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
 }
 
+PExFileNode* SearchFileHandler::fileNode(NodeId nodeId)
+{
+    return mMain->projectRepo()->asFileNode(nodeId);
+}
+
 PExFileNode* SearchFileHandler::fileNode(QWidget *widget)
 {
     return mMain->projectRepo()->findFileNode(widget);
