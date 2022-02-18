@@ -160,7 +160,8 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
         QString g00 = mOutPath + ".g00";
-        mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
+        bool ok = mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
+        if (!ok) completed(-1);
     } else {
         DEB() << "Wrong step order: step 1 expected, step " << mProcState << " faced.";
     }
@@ -213,7 +214,7 @@ void NeosProcess::unzipStateChanged(QProcess::ProcessState newState)
 void NeosProcess::interrupt()
 {
     bool ok;
-    mManager->killJob(ok);
+    mManager->killJob(ok); // This is currently ignored by the server
     if (!ok) AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);
@@ -221,23 +222,29 @@ void NeosProcess::interrupt()
 
 void NeosProcess::terminate()
 {
-    bool ok;
-    mManager->killJob(ok);
+    bool ok = false;
+    mManager->killJob(ok); // This is currently ignored by the server
     if (!ok) AbstractGamsProcess::interrupt();
+    setProcState(ProcIdle);
+    completed(-1);
+}
+
+void NeosProcess::terminateLocal()
+{
+    AbstractGamsProcess::interrupt();
     setProcState(ProcIdle);
     completed(-1);
 }
 
 void NeosProcess::setParameters(const QStringList &parameters)
 {
+    mOutPath = workingDirectory();
     if (parameters.size()) {
-        mOutPath = parameters.size() ? parameters.first() : QString();
-        if (mOutPath.startsWith('"'))
-            mOutPath = mOutPath.mid(1, mOutPath.length()-2);
-        int i = mOutPath.lastIndexOf('.');
-        if (i >= 0) mOutPath = mOutPath.left(i);
-    } else {
-        mOutPath = QString();
+        QString name = parameters.size() ? parameters.first() : QString();
+        if (name.startsWith('"'))
+            name = name.mid(1, name.length()-2);
+        name = QFileInfo(name).completeBaseName();
+        if (!name.isEmpty()) mOutPath += QDir::separator() + name;
     }
     AbstractProcess::setParameters(parameters);
 }
