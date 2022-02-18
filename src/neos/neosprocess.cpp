@@ -238,14 +238,13 @@ void NeosProcess::terminateLocal()
 
 void NeosProcess::setParameters(const QStringList &parameters)
 {
+    mOutPath = workingDirectory();
     if (parameters.size()) {
-        mOutPath = parameters.size() ? parameters.first() : QString();
-        if (mOutPath.startsWith('"'))
-            mOutPath = mOutPath.mid(1, mOutPath.length()-2);
-        int i = mOutPath.lastIndexOf('.');
-        if (i >= 0) mOutPath = mOutPath.left(i);
-    } else {
-        mOutPath = QString();
+        QString name = parameters.size() ? parameters.first() : QString();
+        if (name.startsWith('"'))
+            name = name.mid(1, name.length()-2);
+        name = QFileInfo(name).completeBaseName();
+        if (!name.isEmpty()) mOutPath += QDir::separator() + name;
     }
     AbstractProcess::setParameters(parameters);
 }
