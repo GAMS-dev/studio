@@ -150,6 +150,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mMainTabContextMenu, &MainTabContextMenu::openSplitView, this, &MainWindow::openSplitView);
     connect(ui->mainTabs, &TabWidget::openSplitView, this, &MainWindow::openSplitView);
+    mSplitView = new split::SplitViewWidget(ui->splitter);
+    mSplitView->setVisible(false);
+    connect(mSplitView, &split::SplitViewWidget::hidden, this, &MainWindow::closeSplitEdit);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -2444,6 +2447,16 @@ void MainWindow::updateAndSaveSettings()
     QVariantMap tabData;
     writeTabs(tabData);
     settings->setMap(skTabs, tabData);
+    QPoint splitSize = settings->toPoint(skSplitViewSize);
+    if (mSplitView->isVisible()) {
+        if (ui->splitter->orientation() == Qt::Horizontal)
+            splitSize.setX(ui->splitter->sizes().at(1));
+        else
+            splitSize.setY(ui->splitter->sizes().at(1));
+        settings->setInt(skSplitOrientation, ui->splitter->orientation());
+    }
+    settings->setPoint(skSplitViewSize, splitSize);
+    settings->setInt(skSplitViewTabIndex, splitViewTabIndex());
 
     historyChanged();
 
@@ -2604,6 +2617,17 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
+}
+
+void MainWindow::closeSplitEdit()
+{
+    QWidget *edit = mSplitView->widget();
+    if (edit) {
+        mSplitView->removeWidget();
+        FileMeta *fm = mFileMetaRepo.fileMeta(edit);
+        if (fm) fm->removeEditor(edit);
+        edit->deleteLater();
+    }
 }
 
 QString MainWindow::currentPath()
@@ -3070,6 +3094,16 @@ PExProjectNode *MainWindow::currentProject()
     return project;
 }
 
+int MainWindow::splitViewTabIndex()
+{
+    if (!mSplitView->isVisible()) return -1;
+    QWidget *wid = mSplitView->widget();
+    FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+    if (!fm || fm->editors().size() < 2) return -1;
+    wid = fm->editors().at(0) == wid ? fm->editors().at(1) : fm->editors().at(0);
+    return ui->mainTabs->indexOf(wid);
+}
+
 void MainWindow::openFiles(QStringList files, bool forceNew)
 {
     if (files.size() == 0) return;
@@ -3368,6 +3402,9 @@ void MainWindow::initDelayedElements()
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
         if (!readTabs(joTabs)) return;
+        if (int ind = settings->toInt(skSplitViewTabIndex)) {
+            openSplitView(settings->toInt(skSplitViewTabIndex), Qt::Orientation(settings->toInt(skSplitOrientation)));
+        }
     }
     mHistory.files().clear();
     const QVariantList joHistory = settings->toList(skHistory);
@@ -4287,15 +4324,18 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     PExProjectNode *pro = group->assignedProject();
     if (!pro) return;
 
-    // TODO(JM) if split is active, close current split
-
-    split::SplitViewWidget *split = new split::SplitViewWidget(ui->splitter);
-    split->setOrientation(orientation);
+    closeSplitEdit();
+    if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
+    mSplitView->setOrientation(orientation);
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-    QWidget *newWid = fm->createEdit(split, pro);
+    QWidget *newWid = fm->createEdit(mSplitView, pro);
     Settings *settings = Settings::settings();
     newWid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
-    split->setWidget(newWid, fm->name(NameModifier::editState));
+    mSplitView->setWidget(newWid, fm->name(NameModifier::editState));
+    mSplitView->setVisible(true);
+    QPoint splitSizes = settings->toPoint(skSplitViewSize);
+    int splitSize = orientation == Qt::Horizontal ? splitSizes.x() : splitSizes.y();
+    ui->splitter->setSizes({ ui->splitter->width()-ui->splitter->handleWidth()-splitSize, splitSize });
 }
 
 void MainWindow::invalidateResultsView()

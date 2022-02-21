@@ -77,6 +77,9 @@ namespace miro {
 class MiroDeployDialog;
 }
 class TabBarStyle;
+namespace split {
+class SplitViewWidget;
+}
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -399,6 +402,7 @@ private slots:
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
+    void closeSplitEdit();
 
 private:
     void zoomWidget(QWidget * widget, int range);
@@ -420,6 +424,7 @@ private:
     void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
     PExProjectNode *currentProject();
+    int splitViewTabIndex();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -455,6 +460,7 @@ private:
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
+    split::SplitViewWidget *mSplitView = nullptr;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
