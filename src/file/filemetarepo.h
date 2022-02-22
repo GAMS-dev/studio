@@ -78,6 +78,7 @@ private slots:
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();
+    void fontChanged(FileMeta *fileMeta, QFont f);
 
 private:
     void addFileMeta(FileMeta* fileMeta);

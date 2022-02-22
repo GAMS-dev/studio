@@ -364,6 +364,20 @@ void FileMetaRepo::checkMissing()
     }
 }
 
+void FileMetaRepo::fontChanged(FileMeta *fileMeta, QFont f)
+{
+    QSet<FileKind> editKinds = { FileKind::Gms,
+                                 FileKind::Txt,
+                                 FileKind::TxtRO,
+                                 FileKind::Lst,
+                                 FileKind::Lxi   };
+    if (!editKinds.contains(fileMeta->kind())) return;
+    for (FileMeta* fm: openFiles()) {
+        if (fm != fileMeta && editKinds.contains(fm->kind()) && !fm->topEditor()->font().isCopyOf(f))
+            fm->topEditor()->setFont(f);
+    }
+}
+
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 {
     if (mTextMarkRepo == textMarkRepo && mProjectRepo == projectRepo) return;
@@ -382,6 +396,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
+        connect(res, &FileMeta::fontChanged, this, &FileMetaRepo::fontChanged);
         addFileMeta(res);
         if (mAutoReloadLater.contains(location)) {
             mAutoReloadLater.removeAll(location);

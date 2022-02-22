@@ -111,6 +111,7 @@ signals:
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
+    void fontChanged(FileMeta *fileMeta, QFont f);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;

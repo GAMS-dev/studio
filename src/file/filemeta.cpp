@@ -440,17 +440,22 @@ void FileMeta::invalidateTheme()
 
 bool FileMeta::eventFilter(QObject *sender, QEvent *event)
 {
-    if ((event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) && mEditors.size() > 1) {
+    if (event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) {
         QFont f;
-        bool def = false;
+        bool defined = false;
         for (QWidget *wid : mEditors) {
-            if (wid == sender) {f = wid->font(); def = true; }
+            if (wid == sender) {
+                f = wid->font();
+                defined = true;
+            }
         }
-        if (def) {
+        if (defined && mEditors.size() > 1) { // sync second editor (split view)
             for (QWidget *wid : mEditors)
                 if (wid != sender && !wid->font().isCopyOf(f))
                     wid->setFont(f);
         }
+        if (defined)
+            emit fontChanged(this, f);
     }
     return QObject::eventFilter(sender, event);
 }
