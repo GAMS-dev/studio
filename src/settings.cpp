@@ -289,7 +289,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skSplitViewTabIndex, scSys, {"splitView", "tabIndex"}, -1);
-    safelyAdd(res, skSplitViewSize, scSys, {"splitView", "size"}, QString("500,300"));
+    safelyAdd(res, skSplitViewSize, scSys, {"splitView", "size"}, QString("10,10"));
     safelyAdd(res, skSplitOrientation, scSys, {"splitView", "orientation"}, 1);
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
 
