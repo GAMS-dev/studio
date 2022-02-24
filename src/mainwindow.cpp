@@ -1330,14 +1330,6 @@ void MainWindow::on_actionOpenAlternative_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
-    bool isSplit = false;
-    QWidget *wid = focusWidget();
-    while (wid && wid->parentWidget()) {
-        isSplit = wid == mSplitView;
-        if (isSplit) break;
-        wid = wid->parentWidget();
-    }
-    DEB() << "isSplit = " << isSplit;
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (!fm) return;
 
