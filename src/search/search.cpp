@@ -606,9 +606,11 @@ QList<FileMeta*> Search::askUserForDirectory()
     QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search");
     QList<FileMeta*> res;
 
+    QDir folder(path);
+    PExProjectNode* group = mFileHandler->createProject(folder.dirName(), path);
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        res.append(mFileHandler->findOrCreateFile(it.next()));
+        res.append(mFileHandler->findOrCreateFile(it.next(), group));
     }
 
     return res;
