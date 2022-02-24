@@ -385,6 +385,18 @@ pipeline {
                 }
             }
         }
+        stage('Copy Artifacts') {
+            agent { label 'master' }
+            when {
+                expression { return !isDevelopmentArtifact() }
+            }
+            steps {
+                sh '''
+                    mkdir -p artifacts
+                '''
+                copyArtifacts filter: '*.AppImage, *.dmg, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
+            }
+        }
         stage('Deploy to GitHub') {
             agent { label 'master' }
             when {
@@ -392,10 +404,6 @@ pipeline {
                 tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
             }
             steps {
-                sh '''
-                    mkdir -p artifacts
-                '''
-                copyArtifacts filter: '*.AppImage, *.dmg, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
                 withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
                     sh '''#!/bin/bash -xe
                         ## get version information for artifact, tag name and description
