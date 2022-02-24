@@ -243,6 +243,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
+    connect(qApp, &QApplication::focusChanged, this, &MainWindow::checkCurrentFocus);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
@@ -1329,6 +1330,14 @@ void MainWindow::on_actionOpenAlternative_triggered()
 
 void MainWindow::on_actionSave_triggered()
 {
+    bool isSplit = false;
+    QWidget *wid = focusWidget();
+    while (wid && wid->parentWidget()) {
+        isSplit = wid == mSplitView;
+        if (isSplit) break;
+        wid = wid->parentWidget();
+    }
+    DEB() << "isSplit = " << isSplit;
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (!fm) return;
 
@@ -3211,7 +3220,10 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     project->clearErrorTexts();
-    if (QWidget * wid = ui->mainTabs->currentWidget()) wid->setFocus();
+    if (mSplitView->widget() && mRecent.editor() == mSplitView->widget())
+        mSplitView->widget()->setFocus();
+    else if (QWidget * wid = ui->mainTabs->currentWidget())
+        wid->setFocus();
 
     // gather modified files and autosave or request to save
     QVector<FileMeta*> modifiedFiles;
@@ -3426,6 +3438,23 @@ void MainWindow::newProjectDialog()
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
+}
+
+void MainWindow::checkCurrentFocus(QWidget *old, QWidget *now)
+{
+    Q_UNUSED(old)
+    QWidget *wid = now;
+    while (wid && wid->parentWidget()) {
+        if (wid->parentWidget() == ui->splitter) {
+            if (wid == ui->mainTabs) {
+                mRecent.setEditor(ui->mainTabs->currentWidget(), this);
+            } else {
+                mRecent.setEditor(mSplitView->widget(), this);
+            }
+            break;
+        }
+        wid = wid->parentWidget();
+    }
 }
 
 void MainWindow::openProjectOptions(PExProjectNode *project)

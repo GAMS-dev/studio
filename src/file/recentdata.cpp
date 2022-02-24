@@ -25,6 +25,8 @@ namespace studio {
 
 void RecentData::setEditor(QWidget *edit, MainWindow* window)
 {
+    if (mEditor == edit) return;
+
     if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
         MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
         MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);

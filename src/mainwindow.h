@@ -195,6 +195,7 @@ private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void newProjectDialog();
+    void checkCurrentFocus(QWidget *old, QWidget *now);
     void openProjectOptions(PExProjectNode *project);
     void createProject(QString projectPath);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
