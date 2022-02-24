@@ -441,21 +441,31 @@ void FileMeta::invalidateTheme()
 bool FileMeta::eventFilter(QObject *sender, QEvent *event)
 {
     if (event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) {
-        QFont f;
-        bool defined = false;
+        const QFont *f = nullptr;
+        QList<QWidget*> syncEdits;
         for (QWidget *wid : mEditors) {
-            if (wid == sender) {
-                f = wid->font();
-                defined = true;
+            if (lxiviewer::LxiViewer *lst = ViewHelper::toLxiViewer(wid)) {
+                if (lst->textView()->edit() == sender)
+                    f = &lst->textView()->edit()->font();
+                else
+                    syncEdits << lst->textView()->edit();
+            } else if (TextView *tv = ViewHelper::toTextView(wid)) {
+                if (tv->edit() == sender)
+                    f = &tv->edit()->font();
+                else
+                    syncEdits << tv->edit();
+            } else {
+                if (wid == sender)
+                    f = &wid->font();
+                else
+                    syncEdits << wid;
             }
         }
-        if (defined && mEditors.size() > 1) { // sync second editor (split view)
-            for (QWidget *wid : mEditors)
-                if (wid != sender && !wid->font().isCopyOf(f))
-                    wid->setFont(f);
+        for (QWidget *wid : syncEdits) {
+            if (!wid->font().isCopyOf(*f))
+                wid->setFont(*f);
         }
-        if (defined)
-            emit fontChanged(this, f);
+        if (f) emit fontChanged(this, *f);
     }
     return QObject::eventFilter(sender, event);
 }
@@ -471,13 +481,13 @@ void FileMeta::addEditor(QWidget *edit)
         EXCEPT() << "Type assignment missing for this editor/viewer";
 
     mEditors.prepend(edit);
-    edit->installEventFilter(this);
     initEditorColors();
     ViewHelper::setLocation(edit, location());
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
 
     if (aEdit) {
+        edit->installEventFilter(this);
         if (!mDocument)
             linkDocument(aEdit->document());
         else
@@ -500,6 +510,7 @@ void FileMeta::addEditor(QWidget *edit)
     }
 
     if (TextView* tv = ViewHelper::toTextView(edit)) {
+        tv->edit()->installEventFilter(this);
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);

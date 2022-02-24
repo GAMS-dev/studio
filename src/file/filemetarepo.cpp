@@ -79,6 +79,12 @@ void FileMetaRepo::addFileMeta(FileMeta *fileMeta)
     watch(fileMeta);
 }
 
+FontGroup FileMetaRepo::fontGroupFor(FileKind fileKind)
+{
+    const QSet<FileKind> textGroup {FileKind::Gms, FileKind::Log, FileKind::Lst, FileKind::Lxi, FileKind::Txt, FileKind::TxtRO};
+    return textGroup.contains(fileKind) ? fgText : fgTable;
+}
+
 bool FileMetaRepo::askBigFileEdit() const
 {
     return mAskBigFileEdit;
@@ -372,10 +378,7 @@ void FileMetaRepo::fontChanged(FileMeta *fileMeta, QFont f)
                                  FileKind::Lst,
                                  FileKind::Lxi   };
     if (!editKinds.contains(fileMeta->kind())) return;
-    for (FileMeta* fm: openFiles()) {
-        if (fm != fileMeta && editKinds.contains(fm->kind()) && !fm->topEditor()->font().isCopyOf(f))
-            fm->topEditor()->setFont(f);
-    }
+    emit setGroupFontSize(fontGroupFor(fileMeta->kind()), f.pointSize());
 }
 
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)

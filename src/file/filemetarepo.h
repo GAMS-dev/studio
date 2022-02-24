@@ -67,6 +67,7 @@ public:
 signals:
     void fileEvent(FileEvent &e);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
+    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
 
 public slots:
     void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
@@ -82,6 +83,7 @@ private slots:
 
 private:
     void addFileMeta(FileMeta* fileMeta);
+    FontGroup fontGroupFor(FileKind fileKind);
 
 private:
     FileId mNextFileId = 0;

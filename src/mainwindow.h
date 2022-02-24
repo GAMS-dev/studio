@@ -189,6 +189,7 @@ public slots:
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
     void openSplitView(int tabIndex, Qt::Orientation orientation);
+    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
 
 private slots:
     void initDelayedElements();
@@ -395,7 +396,7 @@ protected:
     void initGamsStandardPaths();
 
 private slots:
-    void updateFixedFonts(const QString &fontFamily, int fontSize);
+    void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
@@ -439,7 +440,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
-    QFont createEditorFont(const QString &fontFamily, int pointSize);
+    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), int pointSize = 0);
     bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
@@ -461,6 +462,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     split::SplitViewWidget *mSplitView = nullptr;
+    QHash<FontGroup, int> mGroupFontSize;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

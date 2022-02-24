@@ -194,6 +194,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
+    connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
@@ -282,8 +283,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(createEditorFont(Settings::settings()->toString(skEdFontFamily),
-                                      Settings::settings()->toInt(skEdFontSize)));
+    mSyslog->setFont(createEditorFont(fgLog));
     on_actionShow_System_Log_triggered();
 
     mNavigationHistory = new NavigationHistory(this);
@@ -2873,8 +2873,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         on_actionPrint_triggered();
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
-        updateFixedFonts(Settings::settings()->toString(skEdFontFamily),
-                         Settings::settings()->toInt(skEdFontSize));
+        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
 
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
@@ -3272,10 +3271,9 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
         logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-        wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+        wid->setFont(createEditorFont(fgLog));
         if (TextView* tv = ViewHelper::toTextView(wid))
-            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
-                                                                      : AbstractEdit::NoWrap);
+            tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
         MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
@@ -3735,7 +3733,7 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
             logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-            wid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+            wid->setFont(createEditorFont(fgLog));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
                                                                           : AbstractEdit::NoWrap);
@@ -3904,14 +3902,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             ce->addAction(ui->actionRun);
         }
         if (TextView *tv = ViewHelper::toTextView(edit)) {
-            tv->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+            tv->setFont(createEditorFont(fgText));
             connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
             connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
         }
         if (ViewHelper::toCodeEdit(edit)) {
             AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-            ae->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+            ae->setFont(createEditorFont(fgText));
             if (!ae->isReadOnly())
                 connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
@@ -4317,8 +4315,7 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
 
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
     QWidget *newWid = fm->createEdit(mSplitView, pro);
-    Settings *settings = Settings::settings();
-    newWid->setFont(createEditorFont(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)));
+    newWid->setFont(createEditorFont(fgText));
     mSplitView->setWidget(newWid, fm->name(NameModifier::editState));
     mSplitView->showAndAdjust(orientation);
     Settings::settings()->setInt(skSplitViewTabIndex, tabIndex);
@@ -4329,23 +4326,39 @@ void MainWindow::invalidateResultsView()
     if (resultsView()) resultsView()->setOutdated();
 }
 
-void MainWindow::updateFixedFonts(const QString &fontFamily, int fontSize)
+void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily)
 {
-    QFont font = createEditorFont(fontFamily, fontSize);
-    for (QWidget* edit: openEditors()) {
-        if (ViewHelper::toCodeEdit(edit))
-            ViewHelper::toAbstractEdit(edit)->setFont(font);
-        else if (ViewHelper::toTextView(edit))
-            ViewHelper::toTextView(edit)->edit()->setFont(font);
+    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
+        mGroupFontSize.insert(fontGroup, fontSize);
+        QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
+        if (fontGroup == fgLog) {
+            for (QWidget* log: openLogs()) {
+                if (ViewHelper::toTextView(log))
+                    ViewHelper::toTextView(log)->edit()->setFont(f);
+                else
+                    log->setFont(f);
+            }
+            mSyslog->setFont(f);
+        } else {
+            for (QWidget* edit: openEditors()) {
+                if (fontGroup == fgText) {
+                    if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
+                        ae->setFont(f);
+                    } else if (TextView *tv = ViewHelper::toTextView(edit)) {
+                        tv->edit()->setFont(f);
+                    }
+                } else if (fontGroup == fgTable) {
+                    // TODO(JM) handle non-fixed fonts (GDX, REF, etc.)
+                }
+            }
+        }
     }
-    for (QWidget* log: openLogs()) {
-        if (ViewHelper::toTextView(log))
-            ViewHelper::toTextView(log)->edit()->setFont(font);
-        else
-            log->setFont(font);
-    }
+}
 
-    mSyslog->setFont(font);
+void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)
+{
+    setGroupFontSize(fgText, fontSize, fontFamily);
+    setGroupFontSize(fgLog, fontSize, fontFamily);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -4592,8 +4605,8 @@ void MainWindow::on_actionReset_Zoom_triggered()
     } else
 #endif
     {
-        Settings *settings = Settings::settings();
-        updateFixedFonts(settings->toString(skEdFontFamily), settings->toInt(skEdFontSize)); // reset all editors
+        // reset all editors
+        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
     }
 }
 
@@ -4989,8 +5002,11 @@ void MainWindow::deleteScratchDirs(const QString &path)
     }
 }
 
-QFont MainWindow::createEditorFont(const QString &fontFamily, int pointSize)
+QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, int pointSize)
 {
+    if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
+    if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
+    if (!pointSize) pointSize = Settings::settings()->toInt(skEdFontSize);
     QFont font(fontFamily, pointSize);
     font.setHintingPreference(QFont::PreferNoHinting);
     return font;
