@@ -53,6 +53,9 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     ui->setupUi(this);
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+    if (!mUserLibPath.isEmpty())
+        loadUserLibs();
+
     QDir gamsSysDir(CommonPaths::systemDir());
     QList<LibraryItem> items;
 
@@ -88,9 +91,6 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
             SysLogLocator::systemLog()->append(glbParser.errorMessage(),LogMsgType::Error);
         }
     }
-
-    if (!mUserLibPath.isEmpty())
-        loadUserLibs();
 
     connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
