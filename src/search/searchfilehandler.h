@@ -38,6 +38,7 @@ public:
     PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFile(QString filepath) override;
+    FileMeta *findOrCreateFile(QString filepath) override;
 
 private:
     MainWindow* mMain;

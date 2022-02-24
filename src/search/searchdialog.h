@@ -61,6 +61,7 @@ public:
     Search* search();
 
     void updateClearButton();
+    QList<FileMeta*> filterFiles(QList<FileMeta *> files, bool ignoreReadOnly);
 
 public slots:
     void on_searchNext();

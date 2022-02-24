@@ -39,6 +39,7 @@ public:
     virtual PExFileNode* fileNode(NodeId nodeId) = 0;
     virtual PExFileNode* fileNode(QWidget* widget) = 0;
     virtual PExFileNode* findFile(QString filepath) = 0;
+    virtual FileMeta* findOrCreateFile(QString filepath) = 0;
 };
 
 }

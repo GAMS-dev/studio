@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QFileDialog>
 #include <QTextDocumentFragment>
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
@@ -37,7 +38,7 @@ namespace studio {
 namespace search {
 
 SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this)
+    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this, fileHandler)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -189,9 +190,15 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             files = QSet<FileMeta*>(allFiles.begin(), allFiles.end());
             break;
         }
+
         default: break;
     }
 
+    return filterFiles(files, ignoreReadOnly);
+}
+
+QList<FileMeta*> SearchDialog::filterFiles(QList<FileMeta*> files, bool ignoreReadOnly)
+{
     // apply filter
     QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     // convert user input to wildcard list

@@ -22,6 +22,7 @@
 #include <QTextDocument>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QFileDialog>
 #include "search.h"
 #include "searchdialog.h"
 #include "searchworker.h"
@@ -29,12 +30,13 @@
 #include "editors/abstractedit.h"
 #include "editors/textview.h"
 #include "viewhelper.h"
+#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-Search::Search(SearchDialog *sd) : mSearchDialog(sd)
+Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSearchDialog(sd), mFileHandler(fileHandler)
 {
     connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResultsView);
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
@@ -65,7 +67,10 @@ void Search::start()
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
-    } // else:
+    } else if (mSearchDialog->selectedScope() == Scope::Folder) {
+        mFiles = askUserForDirectory();
+        mFiles = mSearchDialog->filterFiles(mFiles, false);
+    } // else
 
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
@@ -594,6 +599,19 @@ void Search::replaceAll(QString replacementText)
                         + "' were replaced with '" + replaceTerm + "'.");
     ansBox.addButton(QMessageBox::Ok);
     ansBox.exec();
+}
+
+QList<FileMeta*> Search::askUserForDirectory()
+{
+    QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search");
+    QList<FileMeta*> res;
+
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    while (it.hasNext()) {
+        res.append(mFileHandler->findOrCreateFile(it.next()));
+    }
+
+    return res;
 }
 
 }

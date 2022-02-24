@@ -29,30 +29,32 @@ namespace studio {
 namespace search {
 
 class SearchDialog;
+class AbstractSearchFileHandler;
 class Search : public QObject
 {
     Q_OBJECT
 public:
     enum Scope {
-        ThisFile = 0,
-        ThisProject= 1,
-        Selection= 2,
-        OpenTabs = 3,
-        AllFiles = 4
+        ThisFile,
+        ThisProject,
+        Selection,
+        OpenTabs,
+        AllFiles,
+        Folder
     };
 
     enum Status {
-        Searching = 0,
-        NoResults = 1,
-        Clear = 2,
-        Replacing = 4
+        Searching,
+        NoResults,
+        Clear,
+        Replacing
     };
 
     enum Direction {
-        Forward = 0,
-        Backward = 1
+        Forward,
+        Backward
     };
-    Search(SearchDialog *sd);
+    Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
 
     void setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
     void start();
@@ -96,6 +98,8 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
+    QList<FileMeta*> askUserForDirectory();
+
 private slots:
     void finished();
 
@@ -107,6 +111,7 @@ private:
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;
+    AbstractSearchFileHandler* mFileHandler;
 
     FileId mSearchSelectionFile;
 

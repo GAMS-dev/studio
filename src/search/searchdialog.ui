@@ -384,6 +384,11 @@
          <string>All Files</string>
         </property>
        </item>
+       <item>
+        <property name="text">
+         <string>Folder</string>
+        </property>
+       </item>
       </widget>
      </item>
      <item>
