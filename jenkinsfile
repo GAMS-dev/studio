@@ -449,7 +449,7 @@ This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher.
                             ## upload artifacts to GitHub
                             cd artifacts
                             ls -al
-                            parallel github-release upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
+                            parallel github-release --verbose upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
                         fi
                     '''
                 }

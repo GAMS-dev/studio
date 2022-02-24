@@ -3,6 +3,10 @@ Version 1.10.0 *
 - added new tab for the GDX Viewer to the settings dialog
 - added new setting for specifying the default symbol view of the GDX Viewer
 
+Version 1.9.6
+==================
+- fixed a crash caused by set search options in Search Dialog
+
 Version 1.9.5
 ==================
 - fixed crash in GDX Viewer related to reading a file containing negative UELs
