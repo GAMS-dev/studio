@@ -169,12 +169,12 @@ public slots:
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateRunState();
-    void updateEditorPos();
-    void updateEditorMode();
-    void updateEditorBlockCount();
-    void updateEditorItemCount();
-    void updateLoadAmount();
-    void updateRecentFile();
+    void updateStatusFile();
+    void updateStatusPos();
+    void updateStatusMode();
+    void updateStatusLineCount();
+    void updateStatusLoadAmount();
+    void openRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);

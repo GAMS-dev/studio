@@ -203,7 +203,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
-    connect(&mProjectRepo, &ProjectRepo::updateRecentFile, this, &MainWindow::updateRecentFile);
+    connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
@@ -1131,7 +1131,16 @@ void MainWindow::focusProcessLogs()
     ui->logTabs->currentWidget()->setFocus();
 }
 
-void MainWindow::updateEditorPos()
+void MainWindow::updateStatusFile()
+{
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
+    if (fm) {
+        mStatusWidgets->setFileName(QDir::toNativeSeparators(fm->location()));
+        mStatusWidgets->setEncoding(fm->codecMib());
+    }
+}
+
+void MainWindow::updateStatusPos()
 {
     QPoint pos;
     QPoint anchor;
@@ -1151,7 +1160,7 @@ void MainWindow::updateEditorPos()
     mStatusWidgets->setPosAndAnchor(pos, anchor);
 }
 
-void MainWindow::updateEditorMode()
+void MainWindow::updateStatusMode()
 {
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
@@ -1166,15 +1175,18 @@ void MainWindow::updateEditorMode()
     }
 }
 
-void MainWindow::updateEditorBlockCount()
+void MainWindow::updateStatusLineCount()
 {
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor()))
         mStatusWidgets->setLineCount(edit->blockCount());
     else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
         mStatusWidgets->setLineCount(tv->lineCount());
+    else if (option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor()))
+        mStatusWidgets->setLineCount(edit->getItemCount());
+    else mStatusWidgets->setLineCount(-1);
 }
 
-void MainWindow::updateLoadAmount()
+void MainWindow::updateStatusLoadAmount()
 {
     if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         qreal amount = qAbs(qreal(tv->knownLines()) / tv->lineCount());
@@ -1182,16 +1194,10 @@ void MainWindow::updateLoadAmount()
     }
 }
 
-void MainWindow::updateRecentFile()
+void MainWindow::openRecentFile()
 {
     if (mRecent.editor())
         openFile(mFileMetaRepo.fileMeta(mRecent.editFileId()));
-}
-
-void MainWindow::updateEditorItemCount()
-{
-    option::SolverOptionWidget* edit = ViewHelper::toSolverOptionEdit(mRecent.editor());
-    if (edit) mStatusWidgets->setLineCount(edit->getItemCount());
 }
 
 void MainWindow::currentDocumentChanged(int from, int charsRemoved, int charsAdded)
@@ -1445,8 +1451,7 @@ void MainWindow::on_actionSave_As_triggered()
                     openFileNode(node, true);
                     on_mainTabs_tabCloseRequested(index);
                 }
-                mStatusWidgets->setFileName(filePath);
-
+                updateStatusFile();
                 updateAndSaveSettings();
             }
         }
@@ -1501,7 +1506,7 @@ void MainWindow::codecChanged(QAction *action)
             fm->setCodecMib(action->data().toInt());
         }
         updateMenuToCodec(action->data().toInt());
-        mStatusWidgets->setEncoding(fm->codecMib());
+        updateStatusFile();
     }
 }
 
@@ -1526,9 +1531,8 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
-
             updateMenuToCodec(fm->codecMib());
-            mStatusWidgets->setEncoding(fm->codecMib());
+            updateStatusFile();
         }
     }
 }
@@ -1567,36 +1571,22 @@ void MainWindow::activeTabChanged(int index)
 
     if (node) {
         changeToLog(node, false, false);
-        mStatusWidgets->setFileName(QDir::toNativeSeparators(node->location()));
-        mStatusWidgets->setEncoding(node->file()->codecMib());
+        updateStatusFile();
 
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            mStatusWidgets->setLineCount(edit->blockCount());
             ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
             ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
         } else if (TextView* tv = ViewHelper::toTextView(editWidget)) {
             ui->menuEncoding->setEnabled(true);
             ui->menuconvert_to->setEnabled(false);
-            try {
-                mStatusWidgets->setLineCount(tv->lineCount());
-            } catch (Exception &e) {
-//                QMessageBox::warning(this, "Exception", e.what());
-                if (fileRepo()->fileMeta(tv))
-                    closeFileEditors(fileRepo()->fileMeta(tv)->id());
-                e.raise();
-            }
         } else if (ViewHelper::toGdxViewer(editWidget)) {
             ui->menuconvert_to->setEnabled(false);
-            mStatusWidgets->setLineCount(-1);
             node->file()->reload();
         } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
             ui->menuEncoding->setEnabled(false);
             ui->menuconvert_to->setEnabled(false);
             if (PExFileNode* fn = mProjectRepo.findFileNode(refViewer)) {
                 ui->menuconvert_to->setEnabled(false);
-                mStatusWidgets->setFileName(QDir::toNativeSeparators(fn->location()));
-                mStatusWidgets->setEncoding(fn->file()->codecMib());
-                mStatusWidgets->setLineCount(-1);
                 updateMenuToCodec(node->file()->codecMib());
             }
         } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
@@ -1604,9 +1594,6 @@ void MainWindow::activeTabChanged(int index)
             if (PExFileNode* fn = mProjectRepo.findFileNode(solverOptionEditor)) {
                 ui->menuEncoding->setEnabled(true);
                 ui->menuconvert_to->setEnabled(true);
-                mStatusWidgets->setFileName(fn->location());
-                mStatusWidgets->setEncoding(fn->file()->codecMib());
-                mStatusWidgets->setLineCount(solverOptionEditor->getItemCount());
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
@@ -1616,9 +1603,6 @@ void MainWindow::activeTabChanged(int index)
                 ui->menuEncoding->setEnabled(false);
                 ui->menureload_with->setEnabled(false);
                 ui->menuconvert_to->setEnabled(false);
-                mStatusWidgets->setFileName(fn->location());
-                mStatusWidgets->setEncoding(fn->file()->codecMib());
-                mStatusWidgets->setLineCount(-1);
                 node->file()->reload();
                 updateMenuToCodec(node->file()->codecMib());
             }
@@ -1626,9 +1610,6 @@ void MainWindow::activeTabChanged(int index)
         updateMenuToCodec(node->file()->codecMib());
     } else {
         ui->menuEncoding->setEnabled(false);
-        mStatusWidgets->setFileName("");
-        mStatusWidgets->setEncoding(-1);
-        mStatusWidgets->setLineCount(-1);
     }
 
     loadCommandLines(oldNode, node);
@@ -1639,7 +1620,11 @@ void MainWindow::activeTabChanged(int index)
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
-    updateEditorMode();
+    updateStatusMode();
+    updateStatusFile();
+    updateStatusLineCount();
+    updateStatusLoadAmount();
+    updateStatusPos();
 
     mNavigationHistory->setActiveTab(editWidget);
     updateCursorHistoryAvailability();
@@ -1907,9 +1892,9 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
                     int errLine = tv->firstErrorLine();
                     if (errLine >= 0) tv->jumpTo(errLine, 0);
                 }
-                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos);
-                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount);
-                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount);
+                MainWindow::disconnect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos);
+                MainWindow::disconnect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount);
+                MainWindow::disconnect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount);
             }
         }
     }
@@ -3280,9 +3265,9 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
-        MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+        MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
     }
     // cleanup bookmarks
     const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
@@ -3760,9 +3745,9 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
                                                                           : AbstractEdit::NoWrap);
         }
         if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
-            MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateEditorPos, Qt::UniqueConnection);
-            MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
-            MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
         }
     }
     if (logNode->file()->isOpen()) {
@@ -4728,7 +4713,7 @@ void MainWindow::on_actionOverwrite_Mode_toggled(bool overwriteMode)
     mOverwriteMode = overwriteMode;
     if (ce && !ce->isReadOnly()) {
         ce->setOverwriteMode(overwriteMode);
-        updateEditorMode();
+        updateStatusMode();
     }
 }
 

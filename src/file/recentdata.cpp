@@ -27,20 +27,21 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
 {
     if (mEditor == edit) return;
 
-    if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-        MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
-    }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-//        MainWindow::disconnect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount);
-        window->resetLoadAmount();
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
+        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
+    } else {
+        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
+            MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateStatusPos);
+            MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateStatusPos);
+            MainWindow::disconnect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateStatusLineCount);
+            MainWindow::disconnect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
+        }
+        if (TextView* tv = ViewHelper::toTextView(mEditor)) {
+            MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateStatusPos);
+            MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateStatusLineCount);
+            MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateStatusLoadAmount);
+            window->resetLoadAmount();
+        }
     }
 
     mEditor = edit;
@@ -58,22 +59,28 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
         mPath = Settings::settings()->toString(skDefaultWorkspace);
     }
 
-    if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-        MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateEditorBlockCount);
-        MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateEditorItemCount );
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
+        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
+    } else {
+        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
+            MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateStatusPos);
+            MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateStatusPos);
+            MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateStatusLineCount);
+            MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
+        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
+            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
+        }
+        if (TextView* tv = ViewHelper::toTextView(mEditor)) {
+            MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
+        }
     }
-    if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-        MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateEditorPos, Qt::UniqueConnection);
-//        MainWindow::connect(tv, &TextView::cursorPositionChanged, window, &MainWindow::updateEditorPos);
-        MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateEditorBlockCount, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateLoadAmount, Qt::UniqueConnection);
-    }
-    window->updateEditorMode();
-    window->updateEditorPos();
+    window->updateStatusFile();
+    window->updateStatusLineCount();
+    window->updateStatusPos();
+    window->updateStatusMode();
+    window->updateStatusLoadAmount();
 }
 
 void RecentData::reset()
