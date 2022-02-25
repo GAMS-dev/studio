@@ -614,6 +614,7 @@ void Search::replaceAll(QString replacementText)
 QSet<FileMeta*> Search::askUserForDirectory()
 {
     QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search",
+                                                     !mLastFolder.isEmpty() ? mLastFolder :
                                                      mFileHandler->fileMeta(mSearchDialog->mCurrentEditor)->location());
     QSet<FileMeta*> res;
     mLastFolder = path;
