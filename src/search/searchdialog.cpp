@@ -63,8 +63,9 @@ void SearchDialog::restoreSettings()
     ui->combo_search->setCompleter(nullptr);
 }
 
-void SearchDialog::setCurrentEditor(QWidget* editor) {
+void SearchDialog::editorChanged(QWidget* editor) {
     mCurrentEditor = editor;
+    mSearch.activeFileChanged();
 }
 
 void SearchDialog::on_btn_Replace_clicked()
@@ -190,6 +191,12 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             files = QSet<FileMeta*>(allFiles.begin(), allFiles.end());
             break;
         }
+        case Search::Folder: {
+            QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
+            while (it.hasNext())
+                files.append(mFileHandler->findOrCreateFile(it.next()));
+        }
+
 
         default: break;
     }

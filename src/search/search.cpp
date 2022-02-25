@@ -44,8 +44,6 @@ Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSear
 
 void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    bool fileListChanged = mFiles != files;
-    mCacheAvailable = mCacheAvailable && !fileListChanged;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -68,8 +66,10 @@ void Search::start()
         findInSelection();
         return;
     } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        mFiles = askUserForDirectory();
-        mFiles = mSearchDialog->filterFiles(mFiles, false);
+        if (mFiles.length() == 0) {
+            mFiles = askUserForDirectory();
+            mFiles = mSearchDialog->filterFiles(mFiles, false);
+        }
     } // else
 
     QList<FileMeta*> unmodified;
@@ -120,6 +120,12 @@ void Search::resetResults()
 
     if (mSearchDialog)
         mSearchDialog->updateEditHighlighting();
+}
+
+void Search::activeFileChanged()
+{
+    if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())))
+        mCacheAvailable = false;
 }
 
 void Search::reset()
@@ -286,9 +292,8 @@ void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
         Result r = mResults.at(matchNr);
-
-        PExFileNode *node = mSearchDialog->fileHandler()->findFile(r.filepath());
-        if (!node) EXCEPT() << "File not found: " << r.filepath();
+        PExFileNode* node = mSearchDialog->fileHandler()->findFileNode(mResults.at(matchNr).filepath());
+        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
         node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     }
@@ -457,6 +462,11 @@ void Search::finished()
     }
 }
 
+const QString &Search::lastFolder() const
+{
+    return mLastFolder;
+}
+
 Search::Scope Search::scope() const
 {
     return mScope;
@@ -477,7 +487,7 @@ bool Search::hasSearchSelection()
     return false;
 }
 
-QRegularExpression Search::regex() const
+const QRegularExpression Search::regex() const
 {
     return mRegex;
 }
@@ -603,14 +613,14 @@ void Search::replaceAll(QString replacementText)
 
 QList<FileMeta*> Search::askUserForDirectory()
 {
-    QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search");
+    QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search",
+                                                     mFileHandler->fileMeta(mSearchDialog->mCurrentEditor)->location());
     QList<FileMeta*> res;
+    mLastFolder = path;
 
-    QDir folder(path);
-    PExProjectNode* group = mFileHandler->createProject(folder.dirName(), path);
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        res.append(mFileHandler->findOrCreateFile(it.next(), group));
+        res.append(mFileHandler->findOrCreateFile(it.next()));
     }
 
     return res;

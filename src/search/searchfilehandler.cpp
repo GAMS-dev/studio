@@ -54,9 +54,9 @@ PExFileNode* SearchFileHandler::fileNode(QWidget *widget)
     return mMain->projectRepo()->findFileNode(widget);
 }
 
-PExFileNode* SearchFileHandler::findFile(QString filepath)
+PExFileNode* SearchFileHandler::findFileNode(QString filepath)
 {
-    return mMain->projectRepo()->findFile(filepath);
+    return mMain->projectRepo()->findOrCreateFileNode(filepath);
 }
 
 PExProjectNode* SearchFileHandler::createProject(QString name, QString path)
@@ -64,9 +64,9 @@ PExProjectNode* SearchFileHandler::createProject(QString name, QString path)
     return mMain->projectRepo()->createProject(name, path, "");
 }
 
-FileMeta* SearchFileHandler::findOrCreateFile(QString filepath, PExProjectNode* group)
+FileMeta* SearchFileHandler::findOrCreateFile(QString filepath)
 {
-    return mMain->projectRepo()->findOrCreateFileNode(filepath, group->assignedProject())->file();
+    return mMain->fileRepo()->findOrCreateFileMeta(filepath);
 }
 
 }

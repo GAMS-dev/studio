@@ -42,7 +42,7 @@ public:
     explicit SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget *parent = nullptr);
     ~SearchDialog();
 
-    void setCurrentEditor(QWidget *editor);
+    void editorChanged(QWidget *editor);
 
     QRegularExpression createRegex();
     bool regex();

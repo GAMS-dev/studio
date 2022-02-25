@@ -69,12 +69,15 @@ public:
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
-    QRegularExpression regex() const;
+    const QString& lastFolder() const;
+    const QRegularExpression regex() const;
     Search::Scope scope() const;
     bool hasSearchSelection();
     void reset();
     void invalidateCache();
     void resetResults();
+    void activeFileChanged();
+
 
 signals:
     void invalidateResults();
@@ -112,10 +115,10 @@ private:
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;
     AbstractSearchFileHandler* mFileHandler;
-
     FileId mSearchSelectionFile;
-
     QThread mThread;
+    QString mLastFolder;
+
     bool mSearching = false;
     bool mJumpQueued = false;
     bool mCacheAvailable = false;

@@ -1295,23 +1295,11 @@ void MainWindow::on_actionNew_triggered()
 void MainWindow::on_actionOpen_triggered()
 {
     openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup);
-//    QString path = currentPath();
-//    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-//                                                      ViewHelper::dialogFileFilterAll().join(";;"),
-//                                                      nullptr,
-//                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
-//    openFiles(files, false);
 }
 
 void MainWindow::on_actionOpenAlternative_triggered()
 {
     openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
-//    QString path = currentPath();
-//    QStringList files = QFileDialog::getOpenFileNames(this, "Open file", path,
-//                                                      ViewHelper::dialogFileFilterAll().join(";;"),
-//                                                      nullptr,
-//                                                      DONT_RESOLVE_SYMLINKS_ON_MACOS);
-//    openFiles(files, true);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -1545,7 +1533,7 @@ void MainWindow::activeTabChanged(int index)
     if (mStartedUp)
         mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
-    mSearchDialog->setCurrentEditor(editWidget);
+    mSearchDialog->editorChanged(editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
