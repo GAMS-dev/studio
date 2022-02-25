@@ -101,7 +101,7 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
-    QList<FileMeta*> askUserForDirectory();
+    QSet<FileMeta *> askUserForDirectory();
 
 private slots:
     void finished();

@@ -66,7 +66,7 @@ void Search::start()
         findInSelection();
         return;
     } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        if (mFiles.length() == 0) {
+        if (mFiles.count() == 0) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
         }
@@ -611,16 +611,16 @@ void Search::replaceAll(QString replacementText)
     ansBox.exec();
 }
 
-QList<FileMeta*> Search::askUserForDirectory()
+QSet<FileMeta*> Search::askUserForDirectory()
 {
     QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search",
                                                      mFileHandler->fileMeta(mSearchDialog->mCurrentEditor)->location());
-    QList<FileMeta*> res;
+    QSet<FileMeta*> res;
     mLastFolder = path;
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        res.append(mFileHandler->findOrCreateFile(it.next()));
+        res.insert(mFileHandler->findOrCreateFile(it.next()));
     }
 
     return res;

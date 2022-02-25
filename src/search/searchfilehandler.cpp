@@ -34,14 +34,14 @@ FileMeta* SearchFileHandler::fileMeta(FileId fileId)
     return mMain->fileRepo()->fileMeta(fileId);
 }
 
-QList<FileMeta*> SearchFileHandler::fileMetas()
+QSet<FileMeta *> SearchFileHandler::fileMetas()
 {
-    return mMain->fileRepo()->fileMetas();
+    return QSet<FileMeta*>(mMain->fileRepo()->fileMetas().begin(), mMain->fileRepo()->fileMetas().end());
 }
 
-QList<FileMeta*> SearchFileHandler::openFiles()
+QSet<FileMeta*> SearchFileHandler::openFiles()
 {
-    return QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+    return QSet<FileMeta*>(mMain->fileRepo()->openFiles().begin(), mMain->fileRepo()->openFiles().end());
 }
 
 PExFileNode* SearchFileHandler::fileNode(NodeId nodeId)

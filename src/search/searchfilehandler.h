@@ -33,8 +33,8 @@ public:
 
     FileMeta* fileMeta(QWidget* widget) override;
     FileMeta* fileMeta(FileId fileId) override;
-    QList<FileMeta*> fileMetas() override;
-    QList<FileMeta*> openFiles() override;
+    QSet<FileMeta*> fileMetas() override;
+    QSet<FileMeta *> openFiles() override;
     PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFileNode(QString filepath) override;

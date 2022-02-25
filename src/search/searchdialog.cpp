@@ -159,12 +159,10 @@ void SearchDialog::updateUi(bool searching)
 QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
 {
     QSet<FileMeta*> files;
-    bool ignoreWildcard = false;
     switch (ui->combo_scope->currentIndex()) {
         case Search::ThisFile: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            ignoreWildcard = true;
             break;
         }
         case Search::ThisProject: {
@@ -178,34 +176,31 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::Selection: {
             if (mCurrentEditor)
                 files << mFileHandler->fileMeta(mCurrentEditor);
-            ignoreWildcard = true;
             break;
         }
         case Search::OpenTabs: {
-            QList<FileMeta*> openFiles = mFileHandler->openFiles();
-            files = QSet<FileMeta*>(openFiles.begin(), openFiles.end());
+            files = mFileHandler->openFiles();
             break;
         }
         case Search::AllFiles: {
-            QList<FileMeta*> allFiles = mFileHandler->fileMetas();
-            files = QSet<FileMeta*>(allFiles.begin(), allFiles.end());
+            files = mFileHandler->fileMetas();
             break;
         }
         case Search::Folder: {
             QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
             while (it.hasNext())
-                files.append(mFileHandler->findOrCreateFile(it.next()));
+                files.insert(mFileHandler->findOrCreateFile(it.next()));
         }
-
-
         default: break;
     }
 
     return filterFiles(files, ignoreReadOnly);
 }
 
-QList<FileMeta*> SearchDialog::filterFiles(QList<FileMeta*> files, bool ignoreReadOnly)
+QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreReadOnly)
 {
+    bool ignoreWildcard = selectedScope() == Search::ThisFile || selectedScope() == Search::Selection;
+
     // apply filter
     QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     // convert user input to wildcard list
