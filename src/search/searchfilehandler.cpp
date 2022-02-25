@@ -36,12 +36,14 @@ FileMeta* SearchFileHandler::fileMeta(FileId fileId)
 
 QSet<FileMeta *> SearchFileHandler::fileMetas()
 {
-    return QSet<FileMeta*>(mMain->fileRepo()->fileMetas().begin(), mMain->fileRepo()->fileMetas().end());
+    QList<FileMeta*> fileMetas = mMain->fileRepo()->fileMetas();
+    return QSet<FileMeta*>(fileMetas.begin(), fileMetas.end());
 }
 
 QSet<FileMeta*> SearchFileHandler::openFiles()
 {
-    return QSet<FileMeta*>(mMain->fileRepo()->openFiles().begin(), mMain->fileRepo()->openFiles().end());
+    QList<FileMeta*> openFiles = mMain->fileRepo()->fileMetas();
+    return QSet<FileMeta*>(openFiles.begin(), openFiles.end());
 }
 
 PExFileNode* SearchFileHandler::fileNode(NodeId nodeId)

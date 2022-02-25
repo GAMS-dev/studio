@@ -117,6 +117,7 @@ void Search::resetResults()
     mFiles.clear();
     mResults.clear();
     mResultHash.clear();
+    mLastFolder.clear();
 
     if (mSearchDialog)
         mSearchDialog->updateEditHighlighting();
