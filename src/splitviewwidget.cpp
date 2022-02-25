@@ -52,14 +52,13 @@ void SplitViewWidget::setOrientation(Qt::Orientation orientation)
     });
 }
 
-bool SplitViewWidget::setWidget(QWidget *widget, QString fileName)
+bool SplitViewWidget::setWidget(QWidget *widget)
 {
     if (layout()->count() != 1)
         return false;
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
-    ui->laFile->setText(fileName);
     return true;
 }
 
@@ -74,6 +73,12 @@ void SplitViewWidget::removeWidget()
 QWidget *SplitViewWidget::widget()
 {
     return mWidget;
+}
+
+void SplitViewWidget::setFileName(const QString &fileName, const QString &filePath)
+{
+    ui->laFile->setText(fileName);
+    ui->laFile->setToolTip(filePath);
 }
 
 void SplitViewWidget::setScrollLocked(bool lock)

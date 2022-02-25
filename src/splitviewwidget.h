@@ -20,9 +20,10 @@ public:
     explicit SplitViewWidget(QWidget *parent = nullptr);
     ~SplitViewWidget() override;
     void setOrientation(Qt::Orientation orientation);
-    bool setWidget(QWidget *widget, QString fileName);
+    bool setWidget(QWidget *widget);
     void removeWidget();
     QWidget *widget();
+    void setFileName(const QString &fileName, const QString &filePath);
     void setScrollLocked(bool lock);
     bool isScrollLocked();
     QSize preferredSize();

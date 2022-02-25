@@ -1643,10 +1643,15 @@ void MainWindow::fileChanged(const FileId fileId)
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
     for (QWidget *edit: fm->editors()) {
-        int index = ui->mainTabs->indexOf(edit);
-        if (index >= 0) {
-            ViewHelper::setModified(ui->mainTabs->widget(index), fm->isModified());
-            ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
+        if (mSplitView->widget() == edit) {
+            ViewHelper::setModified(edit, fm->isModified());
+            mSplitView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
+        } else {
+            int index = ui->mainTabs->indexOf(edit);
+            if (index >= 0) {
+                ViewHelper::setModified(edit, fm->isModified());
+                ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
+            }
         }
     }
 }
@@ -4322,7 +4327,8 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
     QWidget *newWid = fm->createEdit(mSplitView, pro);
     newWid->setFont(createEditorFont(fgText));
-    mSplitView->setWidget(newWid, fm->name(NameModifier::editState));
+    mSplitView->setWidget(newWid);
+    mSplitView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
     mSplitView->showAndAdjust(orientation);
     Settings::settings()->setInt(skSplitViewTabIndex, tabIndex);
 }
