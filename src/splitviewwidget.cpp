@@ -23,12 +23,20 @@ SplitViewWidget::SplitViewWidget(QWidget *parent) :
     mPrefSize = Settings::settings()->toSize(skSplitViewSize);
     if (mPrefSize == QSize(10,10))
         mPrefSize = QSize(mSplitter->width() / 2, mSplitter->height() / 2);
-    ui->bClose->setIcon(Theme::icon(":/%1/remove"));
-    ui->bSwitchOrientation->setIcon(Theme::icon(":/%1/split-h"));
-    ui->bSyncScroll->setIcon(Theme::icon(":/%1/lock-open"));
+    ui->toolBar->setIconSize(QSize(16,16));
 
-    //TODO(JM) deactivated until fully defined
-    ui->bSyncScroll->setVisible(false);
+    mActOrient = new QAction(Theme::icon(":/%1/split-h"), "Split horizontally", this);
+    connect(mActOrient, &QAction::triggered, this, &SplitViewWidget::onSwitchOrientation);
+    ui->toolBar->addAction(mActOrient);
+
+    mActSync = new QAction(Theme::icon(":/%1/lock-open"), "Synchronize scrolling", this);
+    mActSync->setCheckable(true);
+    connect(mActSync, &QAction::triggered, this, &SplitViewWidget::onSyncScroll);
+    ui->toolBar->addAction(mActSync);
+
+    mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
+    connect(mActClose, &QAction::triggered, this, &SplitViewWidget::onClose);
+    ui->toolBar->addAction(mActClose);
 }
 
 SplitViewWidget::~SplitViewWidget()
@@ -42,8 +50,7 @@ void SplitViewWidget::setOrientation(Qt::Orientation orientation)
     if (!visible) setVisible(true);
     if (mSplitter->orientation() == orientation && visible) return;
     mSplitter->setOrientation(orientation);
-    ui->bSwitchOrientation->setIcon(Theme::icon(mSplitter->orientation() == Qt::Horizontal ? ":/%1/split-h"
-                                                                                           : ":/%1/split-v"));
+    mActOrient->setIcon(Theme::icon(mSplitter->orientation() == Qt::Horizontal ? ":/%1/split-h" : ":/%1/split-v"));
     Settings::settings()->setInt(skSplitOrientation, orientation);
     QTimer::singleShot(0, this, [this, orientation](){
         int splitSize = qMax(50, orientation == Qt::Horizontal ? mPrefSize.width() : mPrefSize.height());
@@ -83,13 +90,13 @@ void SplitViewWidget::setFileName(const QString &fileName, const QString &filePa
 
 void SplitViewWidget::setScrollLocked(bool lock)
 {
+    mActSync->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
     emit scrollLocked(lock);
-    ui->bSyncScroll->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
 }
 
 bool SplitViewWidget::isScrollLocked()
 {
-    return ui->bSyncScroll->isChecked();
+    return mActSync->isChecked();
 }
 
 QSize SplitViewWidget::preferredSize()
@@ -119,22 +126,20 @@ void SplitViewWidget::splitterMoved(int pos, int index)
     Settings::settings()->setSize(skSplitViewSize, preferredSize());
 }
 
-void SplitViewWidget::on_bSwitchOrientation_clicked()
+void SplitViewWidget::onSwitchOrientation()
 {
     setOrientation(mSplitter->orientation() == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal);
 }
 
+void SplitViewWidget::onSyncScroll(bool checked)
+{
+    setScrollLocked(checked);
+}
 
-void SplitViewWidget::on_bClose_clicked()
+void SplitViewWidget::onClose()
 {
     setVisible(false);
     emit hidden();
-}
-
-
-void SplitViewWidget::on_bSyncScroll_toggled(bool checked)
-{
-    setScrollLocked(checked);
 }
 
 } // namespace split

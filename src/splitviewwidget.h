@@ -37,12 +37,15 @@ signals:
 private slots:
     void splitterMoved(int pos, int index);
 
-    void on_bSwitchOrientation_clicked();
-    void on_bClose_clicked();
-    void on_bSyncScroll_toggled(bool checked);
+    void onSwitchOrientation();
+    void onSyncScroll(bool checked);
+    void onClose();
 
 private:
     Ui::SplitViewWidget *ui;
+    QAction *mActOrient;
+    QAction *mActSync;
+    QAction *mActClose;
     QSplitter *mSplitter = nullptr;
     QWidget *mWidget = nullptr;
     QSize mPrefSize;

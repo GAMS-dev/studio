@@ -30,7 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QWidget" name="widget" native="true">
+    <widget class="QWidget" name="titleBar" native="true">
      <property name="sizePolicy">
       <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
        <horstretch>0</horstretch>
@@ -45,7 +45,7 @@
        <number>4</number>
       </property>
       <property name="topMargin">
-       <number>2</number>
+       <number>0</number>
       </property>
       <property name="rightMargin">
        <number>4</number>
@@ -74,48 +74,7 @@
        </spacer>
       </item>
       <item>
-       <widget class="QToolButton" name="bSwitchOrientation">
-        <property name="toolTip">
-         <string>split vertical</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../icons/icons.qrc">
-          <normaloff>:/solid/split-h</normaloff>:/solid/split-h</iconset>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="bSyncScroll">
-        <property name="toolTip">
-         <string>synchronize scrolling off</string>
-        </property>
-        <property name="text">
-         <string>...</string>
-        </property>
-        <property name="icon">
-         <iconset resource="../icons/icons.qrc">
-          <normaloff>:/solid/lock-open</normaloff>:/solid/lock-open</iconset>
-        </property>
-        <property name="checkable">
-         <bool>true</bool>
-        </property>
-       </widget>
-      </item>
-      <item>
-       <widget class="QToolButton" name="bClose">
-        <property name="toolTip">
-         <string>close</string>
-        </property>
-        <property name="text">
-         <string/>
-        </property>
-        <property name="icon">
-         <iconset resource="../icons/icons.qrc">
-          <normaloff>:/solid/remove</normaloff>:/solid/remove</iconset>
-        </property>
+       <widget class="QToolBar" name="toolBar" native="true">
        </widget>
       </item>
      </layout>
@@ -123,8 +82,6 @@
    </item>
   </layout>
  </widget>
- <resources>
-  <include location="../icons/icons.qrc"/>
- </resources>
+ <resources/>
  <connections/>
 </ui>
