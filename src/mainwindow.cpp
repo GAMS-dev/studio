@@ -528,8 +528,7 @@ bool MainWindow::event(QEvent *event)
 void MainWindow::moveEvent(QMoveEvent *event)
 {
     Q_UNUSED(event)
-    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
-    QScreen *screen = window()->windowHandle()->screen();
+    QScreen *screen = window()->screen();
     QSize scrDiff = screen->availableSize() - frameSize();
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setPoint(skWinPos, pos());
@@ -542,8 +541,7 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     // JM: In the closing procedure the WindowFlag "Maximized" is deleted without resizing the window. That leads to a
     // resizeEvent with the wrong (maximized) size. Thus the metrics need to be taken into account here to skip that.
 
-    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
-    QScreen *screen = window()->windowHandle()->screen();
+    QScreen *screen = window()->screen();
     QSize scrDiff = screen->availableSize() - frameSize();
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setSize(skWinSize, size());
@@ -2390,8 +2388,7 @@ void MainWindow::updateAndSaveSettings()
 {
     Settings *settings = Settings::settings();
 
-    // TODO(JM) this can be replaced later, Qt 5.14. provides ::screen() getter
-    QScreen *screen = window()->windowHandle()->screen();
+    QScreen *screen = window()->screen();
     QSize scrDiff = screen->availableSize() - frameSize();
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         settings->setSize(skWinSize, size());
@@ -3865,12 +3862,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     // open edit if existing or create one
     if (edit) {
-        if (project) ViewHelper::setGroupId(edit, project->id());
-        else {
-            NodeId groupId = ViewHelper::groupId(edit);
-            // TODO(JM) Review this: project isn't used, this "if" may do nothing at all
-            if (groupId.isValid()) project = mProjectRepo.findProject(groupId);
-        }
+        if (project)
+            ViewHelper::setGroupId(edit, project->id());
         if (focus) {
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
