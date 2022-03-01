@@ -32,7 +32,6 @@ public:
 
 signals:
     void hidden();
-    void scrollLocked(bool lock);
 
 private slots:
     void splitterMoved(int pos, int index);

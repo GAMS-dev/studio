@@ -33,6 +33,7 @@ SplitViewWidget::SplitViewWidget(QWidget *parent) :
     mActSync->setCheckable(true);
     connect(mActSync, &QAction::triggered, this, &SplitViewWidget::onSyncScroll);
     ui->toolBar->addAction(mActSync);
+    mActSync->setChecked(Settings::settings()->toBool(skSplitScollLock));
 
     mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
     connect(mActClose, &QAction::triggered, this, &SplitViewWidget::onClose);
@@ -91,7 +92,7 @@ void SplitViewWidget::setFileName(const QString &fileName, const QString &filePa
 void SplitViewWidget::setScrollLocked(bool lock)
 {
     mActSync->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
-    emit scrollLocked(lock);
+    Settings::settings()->setBool(skSplitScollLock, lock);
 }
 
 bool SplitViewWidget::isScrollLocked()

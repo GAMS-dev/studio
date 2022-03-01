@@ -291,6 +291,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSplitViewTabIndex, scSys, {"splitView", "tabIndex"}, -1);
     safelyAdd(res, skSplitViewSize, scSys, {"splitView", "size"}, QString("10,10"));
     safelyAdd(res, skSplitOrientation, scSys, {"splitView", "orientation"}, 1);
+    safelyAdd(res, skSplitScollLock, scSys, {"splitView", "scrollLock"}, false);
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
 
     // user model library directory

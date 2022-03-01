@@ -195,6 +195,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::fileEvent, this, &MainWindow::fileEvent);
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
+    connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
@@ -4357,6 +4358,40 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fon
             }
         }
     }
+}
+
+void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dy)
+{
+    if (!dy || !sendingEdit || !mSplitView->isVisible() || !mSplitView->isScrollLocked())
+        return;
+
+    // Only if edit has focus
+    QWidget *wid = QApplication::focusWidget();
+    bool focussed = false;
+    while (wid && !focussed) {
+        if (wid == sendingEdit)
+            focussed = true;
+        else if (!wid->parentWidget()) break;
+        else wid = wid->parentWidget();
+    }
+    if (!focussed) return;
+
+    // Determine the other widget
+    QWidget *edit = nullptr;
+    if (mSplitView->widget() != sendingEdit) {
+        edit = mSplitView->widget();
+    } else {
+        edit = ui->mainTabs->currentWidget();
+    }
+    if (!edit) return;
+
+    // sync scroll
+    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
+        lxi->textView()->scrollSynchronize(dy);
+    else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit))
+        ae->scrollSynchronize(dy);
+    else if (TextView *tv = ViewHelper::toTextView(edit))
+        tv->scrollSynchronize(dy);
 }
 
 void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)

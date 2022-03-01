@@ -17,18 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "editors/abstractedit.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
+#include "viewhelper.h"
+#include "logger.h"
+#include "keys.h"
+#include "theme.h"
+
 #include <QMimeData>
 #include <QTextBlock>
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextDocumentFragment>
-#include "editors/abstractedit.h"
-#include "search/search.h"
-#include "search/searchlocator.h"
-#include "logger.h"
-#include "keys.h"
-#include "theme.h"
 #include <QApplication>
+
 
 namespace gams {
 namespace studio {
@@ -426,6 +429,11 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     return hits;
 }
 
+void AbstractEdit::scrollSynchronize(int dy)
+{
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
+}
+
 void AbstractEdit::internalExtraSelUpdate()
 {
     QList<QTextEdit::ExtraSelection> selections;
@@ -546,6 +554,13 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
             res << mark;
     }
     return res;
+}
+
+void AbstractEdit::scrollContentsBy(int dx, int dy)
+{
+    QPlainTextEdit::scrollContentsBy(dx, dy);
+    FileId fId = ViewHelper::fileId(this);
+    emit scrolled(this, -dy);
 }
 
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)

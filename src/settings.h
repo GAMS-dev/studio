@@ -64,6 +64,7 @@ enum SettingsKey {
     skSplitViewTabIndex,
     skSplitViewSize,
     skSplitOrientation,
+    skSplitScollLock,
 
     // settings of help page
     skHelpBookmarks,

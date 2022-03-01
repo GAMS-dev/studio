@@ -39,6 +39,7 @@
 #include <QPlainTextDocumentLayout>
 #include <QTextCodec>
 #include <QScrollBar>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -363,6 +364,11 @@ void FileMeta::updateMarks()
     mDirtyLines.clear();
 }
 
+void FileMeta::scrolled(QWidget *widget, int dy)
+{
+    emit scrollSynchronize(widget, dy);
+}
+
 void FileMeta::reload()
 {
     if (kind() != FileKind::PrO)
@@ -495,6 +501,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(aEdit, &AbstractEdit::scrolled, this, &FileMeta::scrolled);
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
         if (scEdit && mHighlighter) {
@@ -514,6 +521,11 @@ void FileMeta::addEditor(QWidget *edit)
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
+            connect(lxi, &lxiviewer::LxiViewer::scrolled, this, &FileMeta::scrolled);
+        else
+            connect(tv, &TextView::scrolled, this, &FileMeta::scrolled);
+        disconnect(aEdit, &AbstractEdit::scrolled, this, &FileMeta::scrolled);
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
@@ -559,6 +571,7 @@ void FileMeta::removeEditor(QWidget *edit)
         }
         disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(aEdit, &AbstractEdit::scrolled, this, &FileMeta::scrolled);
     }
 
     if (TextView* tv = ViewHelper::toTextView(edit)) {
@@ -566,6 +579,7 @@ void FileMeta::removeEditor(QWidget *edit)
         tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(tv, &TextView::scrolled, this, &FileMeta::scrolled);
     } if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
        disconnect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
     } if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {

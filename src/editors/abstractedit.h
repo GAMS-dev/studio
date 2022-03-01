@@ -76,12 +76,14 @@ public:
     }
     void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
     int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
+    void scrollSynchronize(int dy);
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
+    void scrolled(QWidget *widget, int dy);
 
 public slots:
     virtual void updateExtraSelections();
@@ -107,6 +109,7 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
     const QList<TextMark *> marksAtMouse() const;
+    void scrollContentsBy(int dx, int dy) override;
 
     inline NodeId groupId() const {
         bool ok;

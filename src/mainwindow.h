@@ -190,6 +190,7 @@ public slots:
     void closeResultsView();
     void openSplitView(int tabIndex, Qt::Orientation orientation);
     void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
+    void scrollSynchronize(QWidget *sendingEdit, int dy);
 
 private slots:
     void initDelayedElements();

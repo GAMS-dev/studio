@@ -112,6 +112,7 @@ signals:
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void fontChanged(FileMeta *fileMeta, QFont f);
+    void scrollSynchronize(QWidget *sendingEdit, int dy);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;
@@ -121,6 +122,7 @@ private slots:
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
     void updateMarks();
+    void scrolled(QWidget *widget, int dy);
 
 private:
     struct Data {

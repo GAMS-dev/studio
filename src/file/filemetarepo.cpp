@@ -32,8 +32,7 @@ namespace studio {
 
 FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
 {
-    connect(&mWatcher, &QFileSystemWatcher::fileChanged,
-            this, &FileMetaRepo::fileChanged);
+    connect(&mWatcher, &QFileSystemWatcher::fileChanged, this, &FileMetaRepo::fileChanged);
     mMissCheckTimer.setInterval(5000);
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
@@ -400,6 +399,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         connect(res, &FileMeta::fontChanged, this, &FileMetaRepo::fontChanged);
+        connect(res, &FileMeta::scrollSynchronize, this, &FileMetaRepo::scrollSynchronize);
         addFileMeta(res);
         if (mAutoReloadLater.contains(location)) {
             mAutoReloadLater.removeAll(location);
