@@ -16,6 +16,7 @@ SplitViewWidget::SplitViewWidget(QWidget *parent) :
     ui(new Ui::SplitViewWidget)
 {
     ui->setupUi(this);
+    setVisible(false);
     mSplitter = qobject_cast<QSplitter*>(parent);
     if (!mSplitter)
         FATAL() << "SplitViewWidget needs to be child of a QSplitter";
@@ -48,7 +49,7 @@ SplitViewWidget::~SplitViewWidget()
 void SplitViewWidget::setOrientation(Qt::Orientation orientation)
 {
     bool visible = isVisible();
-    if (!visible) setVisible(true);
+    if (!visible && widget()) setVisible(true);
     if (mSplitter->orientation() == orientation && visible) return;
     mSplitter->setOrientation(orientation);
     mActOrient->setIcon(Theme::icon(mSplitter->orientation() == Qt::Horizontal ? ":/%1/split-h" : ":/%1/split-v"));
@@ -67,6 +68,7 @@ bool SplitViewWidget::setWidget(QWidget *widget)
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
+//    setVisible(true);
     return true;
 }
 
@@ -76,6 +78,7 @@ void SplitViewWidget::removeWidget()
         layout()->removeWidget(mWidget);
         mWidget = nullptr;
     }
+    setVisible(false);
 }
 
 QWidget *SplitViewWidget::widget()
@@ -119,6 +122,7 @@ QList<int> SplitViewWidget::sizes()
 void SplitViewWidget::splitterMoved(int pos, int index)
 {
     Q_UNUSED(pos)
+    if (!isVisible()) return;
     if (mSplitter->widget(index) != this) return;
     if (mSplitter->orientation() == Qt::Horizontal)
         mPrefSize.setWidth(mSplitter->sizes().at(index));

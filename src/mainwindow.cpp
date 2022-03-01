@@ -147,7 +147,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mMainTabContextMenu, &MainTabContextMenu::openSplitView, this, &MainWindow::openSplitView);
     connect(ui->mainTabs, &TabWidget::openSplitView, this, &MainWindow::openSplitView);
     mSplitView = new split::SplitViewWidget(ui->splitter);
-    mSplitView->setVisible(false);
     connect(mSplitView, &split::SplitViewWidget::hidden, this, &MainWindow::closeSplitEdit);
 
     // Status Bar
@@ -2172,7 +2171,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     }
 
     int ret = QMessageBox::Discard;
-    if (fc->editors().size() == 1 && fc->isModified()) {
+    if (fc->isModified()) {
         // only ask, if this is the last editor of this file
         ret = showSaveChangesMsgBox(ui->mainTabs->tabText(index)+" has been modified.");
     }
@@ -4074,6 +4073,10 @@ void MainWindow::closeFileEditors(const FileId fileId)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
+
+    if (ViewHelper::fileId(mSplitView->widget()) == fileId) {
+        closeSplitEdit();
+    }
 
     // add to recently closed tabs
     if (fm->kind() != FileKind::PrO)
