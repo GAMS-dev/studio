@@ -55,8 +55,8 @@ LxiViewer::LxiViewer(TextView *textView, const QString &lstFile, QWidget *parent
     connect(ui->lxiTreeView, &QTreeView::clicked, this, &LxiViewer::jumpToLine);
     connect(ui->lxiTreeView, &QTreeView::doubleClicked, this, &LxiViewer::jumpToLine);
     connect(mTextView, &TextView::selectionChanged, this, &LxiViewer::jumpToTreeItem);
-    connect(mTextView, &TextView::scrolled, this, [this](QWidget *, int dy) {
-        emit scrolled(this, dy);
+    connect(mTextView, &TextView::scrolled, this, [this](QWidget *, int dx, int dy) {
+        emit scrolled(this, dx, dy);
     });
     ui->lxiTreeView->installEventFilter(this);
     mTextView->edit()->installEventFilter(this);

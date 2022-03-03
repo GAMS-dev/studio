@@ -77,7 +77,7 @@ public:
     void setLineMarker(int line);
     int firstErrorLine();
     void print(QPagedPaintDevice *printer);
-    void scrollSynchronize(int dy);
+    void scrollSynchronize(int dx, int dy);
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
@@ -97,7 +97,7 @@ signals:
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
     void switchLst(const QString &lstName);
     void registerGeneratedFile(const QString &fileName);
-    void scrolled(QWidget *widget, int dy);
+    void scrolled(QWidget *widget, int dx, int dy);
 
 public slots:
     void updateExtraSelections();

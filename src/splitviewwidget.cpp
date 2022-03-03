@@ -68,7 +68,6 @@ bool SplitViewWidget::setWidget(QWidget *widget)
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
-//    setVisible(true);
     return true;
 }
 

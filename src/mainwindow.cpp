@@ -4363,14 +4363,14 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fon
     }
 }
 
-void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dy)
+void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
 {
-    if (!dy || !sendingEdit || !mSplitView->isVisible() || !mSplitView->isScrollLocked())
+    if ((!dx && !dy) || !sendingEdit || !mSplitView->isVisible() || !mSplitView->isScrollLocked())
         return;
 
     // Only if edit has focus
     QWidget *wid = QApplication::focusWidget();
-    bool focussed = false;
+    bool focussed = mRecent.editor() == sendingEdit;
     while (wid && !focussed) {
         if (wid == sendingEdit)
             focussed = true;
@@ -4390,11 +4390,11 @@ void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dy)
 
     // sync scroll
     if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
-        lxi->textView()->scrollSynchronize(dy);
+        lxi->textView()->scrollSynchronize(dx, dy);
     else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit))
-        ae->scrollSynchronize(dy);
+        ae->scrollSynchronize(dx, dy);
     else if (TextView *tv = ViewHelper::toTextView(edit))
-        tv->scrollSynchronize(dy);
+        tv->scrollSynchronize(dx, dy);
 }
 
 void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)

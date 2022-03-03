@@ -364,9 +364,9 @@ void FileMeta::updateMarks()
     mDirtyLines.clear();
 }
 
-void FileMeta::scrolled(QWidget *widget, int dy)
+void FileMeta::scrolled(QWidget *widget, int dx, int dy)
 {
-    emit scrollSynchronize(widget, dy);
+    emit scrollSynchronize(widget, dx, dy);
 }
 
 void FileMeta::reload()

@@ -73,7 +73,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](){
         if (int dy = verticalScrollBar()->value() - mScrollPos.y()) {
             mScrollPos.setY(verticalScrollBar()->value());
-            emit scrolled(this, dy);
+            emit scrolled(this, 0, dy);
         }
     });
 
@@ -146,8 +146,9 @@ void TextView::print(QPagedPaintDevice *printer)
     document.print(printer);
 }
 
-void TextView::scrollSynchronize(int dy)
+void TextView::scrollSynchronize(int dx, int dy)
 {
+    mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->value() + dx);
     mMapper->setVisibleTopLine(mMapper->visibleTopLine() + dy);
     updateView();
 }

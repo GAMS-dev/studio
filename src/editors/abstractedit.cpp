@@ -48,6 +48,29 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     mToolTipUpdater.setInterval(500);
     connect(&mToolTipUpdater, &QTimer::timeout, this, &AbstractEdit::internalToolTipUpdate);
     connect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::ensureCursorVisible);
+
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() {
+        mScrollPos.setY(verticalScrollBar()->value());
+    });
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() {
+        mScrollPos.setX(horizontalScrollBar()->value());
+    });
+
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](){
+        if (int dy = verticalScrollBar()->value() - mScrollPos.y()) {
+            mScrollPos.setX(horizontalScrollBar()->value());
+            mScrollPos.setY(verticalScrollBar()->value());
+            emit scrolled(this, 0, dy);
+        }
+    });
+    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, [this](){
+        if (int dx = horizontalScrollBar()->value() - mScrollPos.x()) {
+            mScrollPos.setX(horizontalScrollBar()->value());
+            mScrollPos.setY(verticalScrollBar()->value());
+            emit scrolled(this, dx, 0);
+        }
+    });
+
 }
 
 AbstractEdit::~AbstractEdit()
@@ -429,8 +452,9 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     return hits;
 }
 
-void AbstractEdit::scrollSynchronize(int dy)
+void AbstractEdit::scrollSynchronize(int dx, int dy)
 {
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
     verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
 }
 
@@ -554,13 +578,6 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
             res << mark;
     }
     return res;
-}
-
-void AbstractEdit::scrollContentsBy(int dx, int dy)
-{
-    QPlainTextEdit::scrollContentsBy(dx, dy);
-    FileId fId = ViewHelper::fileId(this);
-    emit scrolled(this, -dy);
 }
 
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)

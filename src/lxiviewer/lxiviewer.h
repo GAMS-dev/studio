@@ -51,7 +51,7 @@ public:
     void resetView();
 
 signals:
-    void scrolled(QWidget *widget, int dy);
+    void scrolled(QWidget *widget, int dx, int dy);
 
 public slots:
     void loadLxi();
