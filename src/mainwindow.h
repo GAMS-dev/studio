@@ -87,7 +87,7 @@ private:
 
 class MainWindow : public QMainWindow
 {
-    enum OpenGroupOption { ogFindGroup, ogCurrentGroup, ogNewGroup };
+    enum OpenGroupOption { ogNone, ogFindGroup, ogCurrentGroup, ogNewGroup };
     enum OpenPermission { opNone, opNoGsp, opAll };
 
     friend MainTabContextMenu;
@@ -100,6 +100,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew);
+    PExFileNode* openFileWithOption(QString fileName, OpenGroupOption opt = ogNone);
     void watchProjectTree();
 
     bool outputViewVisibility();

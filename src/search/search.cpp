@@ -292,11 +292,14 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
-        Result r = mResults.at(matchNr);
-        PExFileNode* node = mSearchDialog->fileHandler()->findFileNode(mResults.at(matchNr).filepath());
-        if (!node) EXCEPT() << "File not found: " << mResults.at(matchNr).filepath();
 
-        node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+        Result r = mResults.at(matchNr);
+        PExFileNode* node = mFileHandler->openFile(r.filepath());
+        if (!node) EXCEPT() << "File not found: " << r.filepath();
+
+        NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
+
+        node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     }
 }
 
