@@ -35,10 +35,10 @@ enum TabActions {
 
 MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
-    mActions.insert(actSplitH, addAction("Open &aside", this, [this]() {
+    mActions.insert(actSplitH, addAction("Split &vertical", this, [this]() {
         emit openSplitView(mTabIndex, Qt::Horizontal);
     }));
-    mActions.insert(actSplitV, addAction("Open &below", this, [this]() {
+    mActions.insert(actSplitV, addAction("Split &horizontal", this, [this]() {
         emit openSplitView(mTabIndex, Qt::Vertical);
     }));
     addSeparator();

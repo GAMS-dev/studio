@@ -25,8 +25,6 @@ namespace studio {
 
 void RecentData::setEditor(QWidget *edit, MainWindow* window)
 {
-    if (mEditor == edit) return;
-
     if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
         MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
     } else {

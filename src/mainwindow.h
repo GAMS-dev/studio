@@ -407,6 +407,10 @@ private slots:
     void exportProjectDialog(PExProjectNode *project);
     void closeSplitEdit();
 
+    void on_actionSplit_Vertical_triggered();
+
+    void on_actionSplit_Horizontal_triggered();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
@@ -432,7 +436,7 @@ private:
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
-    bool isActiveTabRunnable();
+    bool isActiveProjectRunnable();
     bool isRecentGroupRunning();
     void loadCommandLines(PExFileNode* oldfn, PExFileNode* fn);
     void dockWidgetShow(QDockWidget* dw, bool show);

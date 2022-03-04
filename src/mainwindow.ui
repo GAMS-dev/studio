@@ -218,6 +218,8 @@
     <addaction name="separator"/>
     <addaction name="actionNextTab"/>
     <addaction name="actionPreviousTab"/>
+    <addaction name="actionSplit_Vertical"/>
+    <addaction name="actionSplit_Horizontal"/>
     <addaction name="separator"/>
     <addaction name="actionGoBack"/>
     <addaction name="actionGoForward"/>
@@ -1518,6 +1520,32 @@
   <action name="actionNew_Project">
    <property name="text">
     <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionSplit_Vertical">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/split-v</normaloff>:/solid/split-v</iconset>
+   </property>
+   <property name="text">
+    <string>Split &amp;Vertical</string>
+   </property>
+   <property name="toolTip">
+    <string>Split edit area vertical
+(Ctrl+Click on a tab)</string>
+   </property>
+  </action>
+  <action name="actionSplit_Horizontal">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/split-h</normaloff>:/solid/split-h</iconset>
+   </property>
+   <property name="text">
+    <string>Split &amp;Horizontal</string>
+   </property>
+   <property name="toolTip">
+    <string>Split edit area horizontal
+(Shift+Ctrl+Click on a tab)</string>
    </property>
   </action>
  </widget>

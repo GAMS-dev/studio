@@ -1976,7 +1976,7 @@ void MainWindow::on_actionGamsHelp_triggered()
             auto section = help::HelpData::getStudioSectionName(help::StudioSection::ProcessLog);
             mHelpWidget->on_helpContentRequested(help::DocumentType::StudioMain, "", section);
         } else {
-            QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
+            QWidget* editWidget = mRecent.editor();
             if (editWidget) {
                 FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
                 if (!fm) {
@@ -2228,9 +2228,9 @@ void MainWindow::showWelcomePage()
 
 }
 
-bool MainWindow::isActiveTabRunnable()
+bool MainWindow::isActiveProjectRunnable()
 {
-    QWidget* editWidget = (ui->mainTabs->currentIndex() < 0 ? nullptr : ui->mainTabs->widget((ui->mainTabs->currentIndex())) );
+    QWidget* editWidget = mRecent.editor();
     if (editWidget) {
        FileMeta* fm = mFileMetaRepo.fileMeta(editWidget);
        if (!fm) { // assuming a welcome page here
@@ -2771,7 +2771,7 @@ void MainWindow::setMiroRunning(bool running)
 
 void MainWindow::updateMiroEnabled(bool printError)
 {
-    bool available = isMiroAvailable(printError) && isActiveTabRunnable();
+    bool available = isMiroAvailable(printError) && isActiveProjectRunnable();
     ui->menuMIRO->setEnabled(available);
     mMiroDeployDialog->setEnabled(available && !mMiroRunning);
     ui->actionBase_mode->setEnabled(available && !mMiroRunning);
@@ -3344,7 +3344,7 @@ void MainWindow::execution(PExProjectNode *project)
 void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
-    mGamsParameterEditor->updateRunState(isActiveTabRunnable(), isRecentGroupRunning());
+    mGamsParameterEditor->updateRunState(isActiveProjectRunnable(), isRecentGroupRunning());
     ui->actionExport_Project->setEnabled(mRecent.project() && mRecent.project()->childCount());
 }
 
@@ -3366,7 +3366,7 @@ void MainWindow::setMainGms(PExFileNode *node)
 
 void MainWindow::parameterRunChanged()
 {
-    if (isActiveTabRunnable() && !isRecentGroupRunning())
+    if (isActiveProjectRunnable() && !isRecentGroupRunning())
         mGamsParameterEditor->runDefaultAction();
 }
 
@@ -3868,7 +3868,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             if (tabWidget == ui->mainTabs) {
-                activeTabChanged(tabWidget->indexOf(edit));
+                if (tabWidget->indexOf(edit) >= 0)
+                    activeTabChanged(tabWidget->indexOf(edit));
             }
         }
     } else {
@@ -4310,8 +4311,8 @@ void MainWindow::closeResultsView()
 
 void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
 {
-    closeSplitEdit();
     if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
+    closeSplitEdit();
 
     QWidget *wid = ui->mainTabs->widget(tabIndex);
     if (!wid) return;
@@ -5365,6 +5366,18 @@ void MainWindow::on_actionExport_Project_triggered()
     PExProjectNode *project = mRecent.project();
     if (!project) return;
     exportProjectDialog(project);
+}
+
+
+void MainWindow::on_actionSplit_Vertical_triggered()
+{
+    openSplitView(ui->mainTabs->currentIndex(), Qt::Horizontal);
+}
+
+
+void MainWindow::on_actionSplit_Horizontal_triggered()
+{
+    openSplitView(ui->mainTabs->currentIndex(), Qt::Vertical);
 }
 
 
