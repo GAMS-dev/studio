@@ -196,7 +196,7 @@ private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void newProjectDialog();
-    void checkCurrentFocus(QWidget *old, QWidget *now);
+    void updateRecentEdit(QWidget *old, QWidget *now);
     void openProjectOptions(PExProjectNode *project);
     void createProject(QString projectPath);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
@@ -396,6 +396,7 @@ protected:
     int currentLogTab();
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
+    QWidget *currentEdit();
 
 private slots:
     void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());

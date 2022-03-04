@@ -243,7 +243,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
     connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
-    connect(qApp, &QApplication::focusChanged, this, &MainWindow::checkCurrentFocus);
+    connect(qApp, &QApplication::focusChanged, this, &MainWindow::updateRecentEdit);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
@@ -568,6 +568,15 @@ void MainWindow::initGamsStandardPaths()
     support::GamsLicenseInfo licenseInfo;
     CommonPaths::setGamsStandardPaths(licenseInfo.gamsConfigLocations(), CommonPaths::StandardConfigPath);
     CommonPaths::setGamsStandardPaths(licenseInfo.gamsDataLocations(), CommonPaths::StandardDataPath);
+}
+
+QWidget *MainWindow::currentEdit()
+{
+    if (mSplitView->widget() && mRecent.editor() == mSplitView)
+        return mRecent.editor();
+    if (ui->mainTabs->currentWidget() != mWp)
+        return ui->mainTabs->currentWidget();
+    return nullptr;
 }
 
 void MainWindow::getParameterValue(QString param, QString &value)
@@ -2608,9 +2617,8 @@ void MainWindow::closeSplitEdit()
 
 QString MainWindow::currentPath()
 {
-    if (ui->mainTabs->currentWidget() && ui->mainTabs->currentWidget() != mWp) {
+    if (currentEdit() != nullptr)
         return mRecent.path();
-    }
     return Settings::settings()->toString(skDefaultWorkspace);
 
 }
@@ -3199,9 +3207,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
     project->clearErrorTexts();
-    if (mSplitView->widget() && mRecent.editor() == mSplitView->widget())
-        mSplitView->widget()->setFocus();
-    else if (QWidget * wid = ui->mainTabs->currentWidget())
+    if (QWidget *wid = currentEdit())
         wid->setFocus();
 
     // gather modified files and autosave or request to save
@@ -3419,7 +3425,7 @@ void MainWindow::newProjectDialog()
     dialog->open();
 }
 
-void MainWindow::checkCurrentFocus(QWidget *old, QWidget *now)
+void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
     Q_UNUSED(old)
     QWidget *wid = now;
@@ -3920,7 +3926,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
-            tabWidget->setCurrentWidget(edit);
+            if (edit == mSplitView->widget())
+                edit->setFocus();
+            else
+                tabWidget->setCurrentWidget(edit);
             raiseEdit(edit);
             updateMenuToCodec(fileMeta->codecMib());
         }
@@ -3931,14 +3940,14 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     }
     // set keyboard focus to editor
-    if (tabWidget->currentWidget())
+    if (edit != mSplitView->widget() && tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
 
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
         PExFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
-        mRecent.setEditor(tabWidget->currentWidget(), this);
+        mRecent.setEditor(edit, this);
         updateRunState();
     }
     addToOpenedFiles(fileMeta->location());
@@ -4530,7 +4539,7 @@ void MainWindow::setResultsView(search::ResultsView *resultsView)
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if (ui->mainTabs->currentWidget() == mWp) return;
+    if (!currentEdit()) return;
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
     if (!tv && !codeEdit) return;
@@ -5185,6 +5194,8 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
     if (!mNavigationHistory->itemValid(item)) return;
 
     mNavigationHistory->stopRecord();
+
+    // TODO(JM) regard splitView in cursor history
 
     // check if tab is still opened
     if (ui->mainTabs->indexOf(item.tab) > 0) {
