@@ -187,9 +187,11 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Search::Folder: {
-            QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
-            while (it.hasNext())
-                files.insert(mFileHandler->findOrCreateFile(it.next()));
+            if (!mSearch.lastFolder().isEmpty()) {
+                QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
+                while (it.hasNext())
+                    files.insert(mFileHandler->findOrCreateFile(it.next()));
+            }
         }
         default: break;
     }
