@@ -1567,8 +1567,6 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
-    if (mStartedUp)
-        mProjectRepo.editorActivated(editWidget, focusWidget() != ui->projectView);
     mRecent.setEditor(editWidget, this);
     mSearchDialog->setCurrentEditor(editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
@@ -3436,6 +3434,8 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             } else {
                 mRecent.setEditor(mSplitView->widget(), this);
             }
+            if (mStartedUp)
+                mProjectRepo.editorActivated(mRecent.editor(), false);
             break;
         }
         wid = wid->parentWidget();
@@ -3871,11 +3871,16 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         if (project)
             ViewHelper::setGroupId(edit, project->id());
         if (focus) {
-            tabWidget->setCurrentWidget(edit);
-            raiseEdit(edit);
-            if (tabWidget == ui->mainTabs) {
-                if (tabWidget->indexOf(edit) >= 0)
-                    activeTabChanged(tabWidget->indexOf(edit));
+            if (edit == mSplitView->widget()) {
+                edit->setFocus();
+                raiseEdit(edit);
+            } else {
+                tabWidget->setCurrentWidget(edit);
+                raiseEdit(edit);
+                if (tabWidget == ui->mainTabs) {
+                    if (tabWidget->indexOf(edit) >= 0)
+                        activeTabChanged(tabWidget->indexOf(edit));
+                }
             }
         }
     } else {
