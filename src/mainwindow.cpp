@@ -69,7 +69,7 @@
 #include "tabbarstyle.h"
 #include "support/gamslicenseinfo.h"
 #include "headerviewproxy.h"
-#include "splitviewwidget.h"
+#include "pinviewwidget.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -142,12 +142,12 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
     ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
 
-    // SplitView
+    // PinView
     ui->splitter->setCollapsible(0, false);
-    connect(&mMainTabContextMenu, &MainTabContextMenu::openSplitView, this, &MainWindow::openSplitView);
-    connect(ui->mainTabs, &TabWidget::openSplitView, this, &MainWindow::openSplitView);
-    mSplitView = new split::SplitViewWidget(ui->splitter);
-    connect(mSplitView, &split::SplitViewWidget::hidden, this, &MainWindow::closeSplitEdit);
+    connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, &MainWindow::openPinView);
+    connect(ui->mainTabs, &TabWidget::openPinView, this, &MainWindow::openPinView);
+    mPinView = new split::PinViewWidget(ui->splitter);
+    connect(mPinView, &split::PinViewWidget::hidden, this, &MainWindow::closeSplitEdit);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -572,7 +572,7 @@ void MainWindow::initGamsStandardPaths()
 
 QWidget *MainWindow::currentEdit()
 {
-    if (mSplitView->widget() && mRecent.editor() == mSplitView)
+    if (mPinView->widget() && mRecent.editor() == mPinView)
         return mRecent.editor();
     if (ui->mainTabs->currentWidget() != mWp)
         return ui->mainTabs->currentWidget();
@@ -1648,9 +1648,9 @@ void MainWindow::fileChanged(const FileId fileId)
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
     for (QWidget *edit: fm->editors()) {
-        if (mSplitView->widget() == edit) {
+        if (mPinView->widget() == edit) {
             ViewHelper::setModified(edit, fm->isModified());
-            mSplitView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
+            mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
         } else {
             int index = ui->mainTabs->indexOf(edit);
             if (index >= 0) {
@@ -2438,7 +2438,7 @@ void MainWindow::updateAndSaveSettings()
     QVariantMap tabData;
     writeTabs(tabData);
     settings->setMap(skTabs, tabData);
-    settings->setInt(skSplitViewTabIndex, splitViewTabIndex());
+    settings->setInt(skPinViewTabIndex, pinViewTabIndex());
 
     historyChanged();
 
@@ -2603,14 +2603,14 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
 
 void MainWindow::closeSplitEdit()
 {
-    QWidget *edit = mSplitView->widget();
+    QWidget *edit = mPinView->widget();
     if (edit) {
-        mSplitView->removeWidget();
+        mPinView->removeWidget();
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) fm->removeEditor(edit);
         edit->deleteLater();
     }
-    Settings::settings()->setInt(skSplitViewTabIndex, -1);
+    Settings::settings()->setInt(skPinViewTabIndex, -1);
 }
 
 QString MainWindow::currentPath()
@@ -3075,10 +3075,10 @@ PExProjectNode *MainWindow::currentProject()
     return project;
 }
 
-int MainWindow::splitViewTabIndex()
+int MainWindow::pinViewTabIndex()
 {
-    if (!mSplitView->isVisible()) return -1;
-    QWidget *wid = mSplitView->widget();
+    if (!mPinView->isVisible()) return -1;
+    QWidget *wid = mPinView->widget();
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
     if (!fm || fm->editors().size() < 2) return -1;
     wid = fm->editors().at(0) == wid ? fm->editors().at(1) : fm->editors().at(0);
@@ -3383,8 +3383,8 @@ void MainWindow::initDelayedElements()
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
         if (!readTabs(joTabs)) return;
-        if (int ind = settings->toInt(skSplitViewTabIndex)) {
-            openSplitView(ind, Qt::Orientation(settings->toInt(skSplitOrientation)));
+        if (int ind = settings->toInt(skPinViewTabIndex)) {
+            openPinView(ind, Qt::Orientation(settings->toInt(skPinOrientation)));
         }
     }
     mHistory.files().clear();
@@ -3432,7 +3432,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             if (wid == ui->mainTabs) {
                 mRecent.setEditor(ui->mainTabs->currentWidget(), this);
             } else {
-                mRecent.setEditor(mSplitView->widget(), this);
+                mRecent.setEditor(mPinView->widget(), this);
             }
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
@@ -3871,7 +3871,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         if (project)
             ViewHelper::setGroupId(edit, project->id());
         if (focus) {
-            if (edit == mSplitView->widget()) {
+            if (edit == mPinView->widget()) {
                 edit->setFocus();
                 raiseEdit(edit);
             } else {
@@ -3931,7 +3931,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
         }
         if (focus) {
-            if (edit == mSplitView->widget())
+            if (edit == mPinView->widget())
                 edit->setFocus();
             else
                 tabWidget->setCurrentWidget(edit);
@@ -3945,7 +3945,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     }
     // set keyboard focus to editor
-    if (edit != mSplitView->widget() && tabWidget->currentWidget())
+    if (edit != mPinView->widget() && tabWidget->currentWidget())
         if (focus) tabWidget->currentWidget()->setFocus();
 
     if (tabWidget != ui->logTabs) {
@@ -4089,7 +4089,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
 
-    if (ViewHelper::fileId(mSplitView->widget()) == fileId) {
+    if (ViewHelper::fileId(mPinView->widget()) == fileId) {
         closeSplitEdit();
     }
 
@@ -4323,7 +4323,7 @@ void MainWindow::closeResultsView()
     mResultsView = nullptr;
 }
 
-void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
+void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 {
     if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
     closeSplitEdit();
@@ -4336,12 +4336,12 @@ void MainWindow::openSplitView(int tabIndex, Qt::Orientation orientation)
     if (!pro) return;
 
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-    QWidget *newWid = fm->createEdit(mSplitView, pro);
+    QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(createEditorFont(fgText));
-    mSplitView->setWidget(newWid);
-    mSplitView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
-    mSplitView->showAndAdjust(orientation);
-    Settings::settings()->setInt(skSplitViewTabIndex, tabIndex);
+    mPinView->setWidget(newWid);
+    mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
+    mPinView->showAndAdjust(orientation);
+    Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
 }
 
 void MainWindow::invalidateResultsView()
@@ -4380,7 +4380,7 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fon
 
 void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
 {
-    if ((!dx && !dy) || !sendingEdit || !mSplitView->isVisible() || !mSplitView->isScrollLocked())
+    if ((!dx && !dy) || !sendingEdit || !mPinView->isVisible() || !mPinView->isScrollLocked())
         return;
 
     // Only if edit has focus
@@ -4396,8 +4396,8 @@ void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
 
     // Determine the other widget
     QWidget *edit = nullptr;
-    if (mSplitView->widget() != sendingEdit) {
-        edit = mSplitView->widget();
+    if (mPinView->widget() != sendingEdit) {
+        edit = mPinView->widget();
     } else {
         edit = ui->mainTabs->currentWidget();
     }
@@ -5200,7 +5200,7 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
 
     mNavigationHistory->stopRecord();
 
-    // TODO(JM) regard splitView in cursor history
+    // TODO(JM) regard pinView in cursor history
 
     // check if tab is still opened
     if (ui->mainTabs->indexOf(item.tab) > 0) {
@@ -5385,15 +5385,15 @@ void MainWindow::on_actionExport_Project_triggered()
 }
 
 
-void MainWindow::on_actionSplit_Vertical_triggered()
+void MainWindow::on_actionPin_Right_triggered()
 {
-    openSplitView(ui->mainTabs->currentIndex(), Qt::Horizontal);
+    openPinView(ui->mainTabs->currentIndex(), Qt::Horizontal);
 }
 
 
-void MainWindow::on_actionSplit_Horizontal_triggered()
+void MainWindow::on_actionPin_Below_triggered()
 {
-    openSplitView(ui->mainTabs->currentIndex(), Qt::Vertical);
+    openPinView(ui->mainTabs->currentIndex(), Qt::Vertical);
 }
 
 

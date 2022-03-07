@@ -33,7 +33,7 @@ public:
 
 signals:
     void closeTab(int);
-    void openSplitView(int tabIndex, Qt::Orientation orientation);
+    void openPinView(int tabIndex, Qt::Orientation orientation);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;

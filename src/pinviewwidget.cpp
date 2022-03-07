@@ -1,5 +1,5 @@
-#include "splitviewwidget.h"
-#include "ui_splitviewwidget.h"
+#include "pinviewwidget.h"
+#include "ui_pinviewwidget.h"
 #include "theme.h"
 #include "exception.h"
 #include "logger.h"
@@ -11,49 +11,49 @@ namespace gams {
 namespace studio {
 namespace split {
 
-SplitViewWidget::SplitViewWidget(QWidget *parent) :
+PinViewWidget::PinViewWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::SplitViewWidget)
+    ui(new Ui::PinViewWidget)
 {
     ui->setupUi(this);
     setVisible(false);
     mSplitter = qobject_cast<QSplitter*>(parent);
     if (!mSplitter)
-        FATAL() << "SplitViewWidget needs to be child of a QSplitter";
-    connect(mSplitter, &QSplitter::splitterMoved, this, &SplitViewWidget::splitterMoved);
-    mPrefSize = Settings::settings()->toSize(skSplitViewSize);
+        FATAL() << "PinViewWidget needs to be child of a QSplitter";
+    connect(mSplitter, &QSplitter::splitterMoved, this, &PinViewWidget::splitterMoved);
+    mPrefSize = Settings::settings()->toSize(skPinViewSize);
     if (mPrefSize == QSize(10,10))
         mPrefSize = QSize(mSplitter->width() / 2, mSplitter->height() / 2);
     ui->toolBar->setIconSize(QSize(16,16));
 
     mActOrient = new QAction(Theme::icon(":/%1/split-h"), "Split horizontally", this);
-    connect(mActOrient, &QAction::triggered, this, &SplitViewWidget::onSwitchOrientation);
+    connect(mActOrient, &QAction::triggered, this, &PinViewWidget::onSwitchOrientation);
     ui->toolBar->addAction(mActOrient);
 
     mActSync = new QAction(Theme::icon(":/%1/lock-open"), "Synchronize scrolling", this);
     mActSync->setCheckable(true);
-    connect(mActSync, &QAction::triggered, this, &SplitViewWidget::onSyncScroll);
+    connect(mActSync, &QAction::triggered, this, &PinViewWidget::onSyncScroll);
     ui->toolBar->addAction(mActSync);
-    mActSync->setChecked(Settings::settings()->toBool(skSplitScollLock));
+    mActSync->setChecked(Settings::settings()->toBool(skPinScollLock));
 
     mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
-    connect(mActClose, &QAction::triggered, this, &SplitViewWidget::onClose);
+    connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
     ui->toolBar->addAction(mActClose);
 }
 
-SplitViewWidget::~SplitViewWidget()
+PinViewWidget::~PinViewWidget()
 {
     delete ui;
 }
 
-void SplitViewWidget::setOrientation(Qt::Orientation orientation)
+void PinViewWidget::setOrientation(Qt::Orientation orientation)
 {
     bool visible = isVisible();
     if (!visible && widget()) setVisible(true);
     if (mSplitter->orientation() == orientation && visible) return;
     mSplitter->setOrientation(orientation);
     mActOrient->setIcon(Theme::icon(mSplitter->orientation() == Qt::Horizontal ? ":/%1/split-h" : ":/%1/split-v"));
-    Settings::settings()->setInt(skSplitOrientation, orientation);
+    Settings::settings()->setInt(skPinOrientation, orientation);
     QTimer::singleShot(0, this, [this, orientation](){
         int splitSize = qMax(50, orientation == Qt::Horizontal ? mPrefSize.width() : mPrefSize.height());
         int all = (orientation == Qt::Horizontal ? mSplitter->width() : mSplitter->height());
@@ -61,7 +61,7 @@ void SplitViewWidget::setOrientation(Qt::Orientation orientation)
     });
 }
 
-bool SplitViewWidget::setWidget(QWidget *widget)
+bool PinViewWidget::setWidget(QWidget *widget)
 {
     if (layout()->count() != 1)
         return false;
@@ -71,7 +71,7 @@ bool SplitViewWidget::setWidget(QWidget *widget)
     return true;
 }
 
-void SplitViewWidget::removeWidget()
+void PinViewWidget::removeWidget()
 {
     if (mWidget) {
         layout()->removeWidget(mWidget);
@@ -80,45 +80,45 @@ void SplitViewWidget::removeWidget()
     setVisible(false);
 }
 
-QWidget *SplitViewWidget::widget()
+QWidget *PinViewWidget::widget()
 {
     return mWidget;
 }
 
-void SplitViewWidget::setFileName(const QString &fileName, const QString &filePath)
+void PinViewWidget::setFileName(const QString &fileName, const QString &filePath)
 {
     ui->laFile->setText(fileName);
     ui->laFile->setToolTip(filePath);
 }
 
-void SplitViewWidget::setScrollLocked(bool lock)
+void PinViewWidget::setScrollLocked(bool lock)
 {
     mActSync->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
-    Settings::settings()->setBool(skSplitScollLock, lock);
+    Settings::settings()->setBool(skPinScollLock, lock);
 }
 
-bool SplitViewWidget::isScrollLocked()
+bool PinViewWidget::isScrollLocked()
 {
     return mActSync->isChecked();
 }
 
-QSize SplitViewWidget::preferredSize()
+QSize PinViewWidget::preferredSize()
 {
     return mPrefSize;
 }
 
-void SplitViewWidget::showAndAdjust(Qt::Orientation orientation)
+void PinViewWidget::showAndAdjust(Qt::Orientation orientation)
 {
     setOrientation(orientation);
 }
 
-QList<int> SplitViewWidget::sizes()
+QList<int> PinViewWidget::sizes()
 {
     int splitSize = (mSplitter->orientation() == Qt::Horizontal) ? width() : height();
     return { mSplitter->width() - mSplitter->handleWidth() - splitSize, splitSize };
 }
 
-void SplitViewWidget::splitterMoved(int pos, int index)
+void PinViewWidget::splitterMoved(int pos, int index)
 {
     Q_UNUSED(pos)
     if (!isVisible()) return;
@@ -127,20 +127,20 @@ void SplitViewWidget::splitterMoved(int pos, int index)
         mPrefSize.setWidth(mSplitter->sizes().at(index));
     else
         mPrefSize.setHeight(mSplitter->sizes().at(index));
-    Settings::settings()->setSize(skSplitViewSize, preferredSize());
+    Settings::settings()->setSize(skPinViewSize, preferredSize());
 }
 
-void SplitViewWidget::onSwitchOrientation()
+void PinViewWidget::onSwitchOrientation()
 {
     setOrientation(mSplitter->orientation() == Qt::Horizontal ? Qt::Vertical : Qt::Horizontal);
 }
 
-void SplitViewWidget::onSyncScroll(bool checked)
+void PinViewWidget::onSyncScroll(bool checked)
 {
     setScrollLocked(checked);
 }
 
-void SplitViewWidget::onClose()
+void PinViewWidget::onClose()
 {
     setVisible(false);
     emit hidden();

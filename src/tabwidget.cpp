@@ -73,7 +73,7 @@ bool TabWidget::eventFilter(QObject *sender, QEvent *event)
         if (me->button() == Qt::LeftButton && me->modifiers().testFlag(Qt::ControlModifier)) {
             int index = tabBar()->tabAt(tabBar()->mapFromGlobal(me->globalPos()));
             Qt::Orientation orient = (me->modifiers().testFlag(Qt::ShiftModifier) ? Qt::Vertical : Qt::Horizontal);
-            emit openSplitView(index, orient);
+            emit openPinView(index, orient);
             return true;
         }
     }

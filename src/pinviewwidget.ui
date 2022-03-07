@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>gams::studio::split::SplitViewWidget</class>
- <widget class="QWidget" name="gams::studio::split::SplitViewWidget">
+ <class>gams::studio::split::PinViewWidget</class>
+ <widget class="QWidget" name="gams::studio::split::PinViewWidget">
   <property name="geometry">
    <rect>
     <x>0</x>

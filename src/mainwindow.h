@@ -78,7 +78,7 @@ class MiroDeployDialog;
 }
 class TabBarStyle;
 namespace split {
-class SplitViewWidget;
+class PinViewWidget;
 }
 
 struct HistoryData {
@@ -188,7 +188,7 @@ public slots:
     void closeFileEditors(const FileId fileId);
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
-    void openSplitView(int tabIndex, Qt::Orientation orientation);
+    void openPinView(int tabIndex, Qt::Orientation orientation);
     void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
 
@@ -407,10 +407,8 @@ private slots:
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
     void closeSplitEdit();
-
-    void on_actionSplit_Vertical_triggered();
-
-    void on_actionSplit_Horizontal_triggered();
+    void on_actionPin_Right_triggered();
+    void on_actionPin_Below_triggered();
 
 private:
     void zoomWidget(QWidget * widget, int range);
@@ -432,7 +430,7 @@ private:
     void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
     PExProjectNode *currentProject();
-    int splitViewTabIndex();
+    int pinViewTabIndex();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
@@ -468,7 +466,7 @@ private:
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
-    split::SplitViewWidget *mSplitView = nullptr;
+    split::PinViewWidget *mPinView = nullptr;
     QHash<FontGroup, int> mGroupFontSize;
 
     WelcomePage *mWp;

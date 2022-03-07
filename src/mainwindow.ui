@@ -218,8 +218,8 @@
     <addaction name="separator"/>
     <addaction name="actionNextTab"/>
     <addaction name="actionPreviousTab"/>
-    <addaction name="actionSplit_Vertical"/>
-    <addaction name="actionSplit_Horizontal"/>
+    <addaction name="actionPin_Right"/>
+    <addaction name="actionPin_Below"/>
     <addaction name="separator"/>
     <addaction name="actionGoBack"/>
     <addaction name="actionGoForward"/>
@@ -1522,29 +1522,29 @@
     <string>New Project</string>
    </property>
   </action>
-  <action name="actionSplit_Vertical">
+  <action name="actionPin_Right">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/split-v</normaloff>:/solid/split-v</iconset>
    </property>
    <property name="text">
-    <string>Split &amp;Vertical</string>
+    <string>Pin &amp;Right</string>
    </property>
    <property name="toolTip">
-    <string>Split edit area vertical
+    <string>Pin edit to the right
 (Ctrl+Click on a tab)</string>
    </property>
   </action>
-  <action name="actionSplit_Horizontal">
+  <action name="actionPin_Below">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/split-h</normaloff>:/solid/split-h</iconset>
    </property>
    <property name="text">
-    <string>Split &amp;Horizontal</string>
+    <string>Pin &amp;Below</string>
    </property>
    <property name="toolTip">
-    <string>Split edit area horizontal
+    <string>Pin edit below
 (Shift+Ctrl+Click on a tab)</string>
    </property>
   </action>

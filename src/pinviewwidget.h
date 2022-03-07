@@ -1,5 +1,5 @@
-#ifndef GAMS_STUDIO_SPLITVIEWWIDGET_H
-#define GAMS_STUDIO_SPLITVIEWWIDGET_H
+#ifndef GAMS_STUDIO_PINVIEWWIDGET_H
+#define GAMS_STUDIO_PINVIEWWIDGET_H
 
 #include <QWidget>
 #include <QSplitter>
@@ -9,16 +9,16 @@ namespace studio {
 namespace split {
 
 namespace Ui {
-class SplitViewWidget;
+class PinViewWidget;
 }
 
-class SplitViewWidget : public QWidget
+class PinViewWidget : public QWidget
 {
     Q_OBJECT
 
 public:
-    explicit SplitViewWidget(QWidget *parent = nullptr);
-    ~SplitViewWidget() override;
+    explicit PinViewWidget(QWidget *parent = nullptr);
+    ~PinViewWidget() override;
     void setOrientation(Qt::Orientation orientation);
     bool setWidget(QWidget *widget);
     void removeWidget();
@@ -41,7 +41,7 @@ private slots:
     void onClose();
 
 private:
-    Ui::SplitViewWidget *ui;
+    Ui::PinViewWidget *ui;
     QAction *mActOrient;
     QAction *mActSync;
     QAction *mActClose;
@@ -54,4 +54,4 @@ private:
 } // namespace split
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_SPLITVIEWWIDGET_H
+#endif // GAMS_STUDIO_PINVIEWWIDGET_H

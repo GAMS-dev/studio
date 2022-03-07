@@ -61,10 +61,10 @@ enum SettingsKey {
     skProjects,
     skTabs,
     skHistory,
-    skSplitViewTabIndex,
-    skSplitViewSize,
-    skSplitOrientation,
-    skSplitScollLock,
+    skPinViewTabIndex,
+    skPinViewSize,
+    skPinOrientation,
+    skPinScollLock,
 
     // settings of help page
     skHelpBookmarks,

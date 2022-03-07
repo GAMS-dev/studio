@@ -35,7 +35,7 @@ public:
     void setTabIndex(int tab, bool canSplit);
 
 signals:
-    void openSplitView(int tabIndex, Qt::Orientation orientation);
+    void openPinView(int tabIndex, Qt::Orientation orientation);
 
 private:
     QHash<int, QAction*> mActions;
