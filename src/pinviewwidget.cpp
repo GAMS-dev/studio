@@ -26,7 +26,7 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
         mPrefSize = QSize(mSplitter->width() / 2, mSplitter->height() / 2);
     ui->toolBar->setIconSize(QSize(16,16));
 
-    mActOrient = new QAction(Theme::icon(":/%1/split-h"), "Split horizontally", this);
+    mActOrient = new QAction(Theme::icon(":/%1/split-h"), "Pin below", this);
     connect(mActOrient, &QAction::triggered, this, &PinViewWidget::onSwitchOrientation);
     ui->toolBar->addAction(mActOrient);
 
@@ -53,6 +53,7 @@ void PinViewWidget::setOrientation(Qt::Orientation orientation)
     if (mSplitter->orientation() == orientation && visible) return;
     mSplitter->setOrientation(orientation);
     mActOrient->setIcon(Theme::icon(mSplitter->orientation() == Qt::Horizontal ? ":/%1/split-h" : ":/%1/split-v"));
+    mActOrient->setToolTip(mSplitter->orientation() == Qt::Horizontal ? "Pin below" : "Pin right");
     Settings::settings()->setInt(skPinOrientation, orientation);
     QTimer::singleShot(0, this, [this, orientation](){
         int splitSize = qMax(50, orientation == Qt::Horizontal ? mPrefSize.width() : mPrefSize.height());
