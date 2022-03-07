@@ -959,11 +959,10 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 
 void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
 {
-    const QList<EditorType> validSplitTypes {EditorType::source, EditorType::txt, EditorType::lxiLst};
     int tabIndex = ui->mainTabs->tabBar()->tabAt(pos);
     QWidget *edit = ui->mainTabs->widget(tabIndex);
-    bool canSplit = validSplitTypes.contains(ViewHelper::editorType(edit));
-    mMainTabContextMenu.setTabIndex(tabIndex, canSplit);
+    FileMeta *fm = mFileMetaRepo.fileMeta(edit);
+    mMainTabContextMenu.setTabIndex(tabIndex, fm);
     mMainTabContextMenu.exec(ui->mainTabs->tabBar()->mapToGlobal(pos));
 }
 
@@ -4326,6 +4325,7 @@ void MainWindow::closeResultsView()
 void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 {
     if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
+    if (!mFileMetaRepo.fileMeta(ui->mainTabs->widget(tabIndex))) return;
     closeSplitEdit();
 
     QWidget *wid = ui->mainTabs->widget(tabIndex);
