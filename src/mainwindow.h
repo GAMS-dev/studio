@@ -77,7 +77,7 @@ namespace miro {
 class MiroDeployDialog;
 }
 class TabBarStyle;
-namespace split {
+namespace pin {
 class PinViewWidget;
 }
 
@@ -466,7 +466,7 @@ private:
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
-    split::PinViewWidget *mPinView = nullptr;
+    pin::PinViewWidget *mPinView = nullptr;
     QHash<FontGroup, int> mGroupFontSize;
 
     WelcomePage *mWp;

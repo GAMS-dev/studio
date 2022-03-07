@@ -9,7 +9,7 @@
 
 namespace gams {
 namespace studio {
-namespace split {
+namespace pin {
 
 PinViewWidget::PinViewWidget(QWidget *parent) :
     QWidget(parent),

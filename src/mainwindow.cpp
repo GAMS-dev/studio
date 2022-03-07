@@ -146,8 +146,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->splitter->setCollapsible(0, false);
     connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, &MainWindow::openPinView);
     connect(ui->mainTabs, &TabWidget::openPinView, this, &MainWindow::openPinView);
-    mPinView = new split::PinViewWidget(ui->splitter);
-    connect(mPinView, &split::PinViewWidget::hidden, this, &MainWindow::closeSplitEdit);
+    mPinView = new pin::PinViewWidget(ui->splitter);
+    connect(mPinView, &pin::PinViewWidget::hidden, this, &MainWindow::closeSplitEdit);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -4337,7 +4337,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
     QWidget *newWid = fm->createEdit(mPinView, pro);
-    newWid->setFont(createEditorFont(fgText));
+    newWid->setFont(createEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
     mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
     mPinView->showAndAdjust(orientation);
@@ -5061,6 +5061,11 @@ void MainWindow::deleteScratchDirs(const QString &path)
 
 QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, int pointSize)
 {
+    if (fGroup == FontGroup::fgTable) {
+        if (fontFamily.isEmpty()) fontFamily = font().family();
+        if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
+        return QFont(fontFamily, pointSize);
+    }
     if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
     if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
     if (!pointSize) pointSize = Settings::settings()->toInt(skEdFontSize);

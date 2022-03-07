@@ -6,7 +6,7 @@
 
 namespace gams {
 namespace studio {
-namespace split {
+namespace pin {
 
 namespace Ui {
 class PinViewWidget;

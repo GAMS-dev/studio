@@ -84,7 +84,6 @@ private slots:
 
 private:
     void addFileMeta(FileMeta* fileMeta);
-    FontGroup fontGroupFor(FileKind fileKind);
 
 private:
     FileId mNextFileId = 0;

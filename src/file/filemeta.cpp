@@ -295,6 +295,14 @@ QString FileMeta::name(NameModifier mod)
     return mName;
 }
 
+FontGroup FileMeta::fontGroup()
+{
+    const QSet<FileKind> editKind {FileKind::Gms, FileKind::Lst, FileKind::Lxi, FileKind::None, FileKind::Txt, FileKind::TxtRO};
+    if (kind() == FileKind::Log) return FontGroup::fgLog;
+    if (editKind.contains(kind())) return FontGroup::fgText;
+    return FontGroup::fgTable;
+}
+
 QWidgetList FileMeta::editors() const
 {
     return mEditors;
