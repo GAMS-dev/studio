@@ -35,12 +35,15 @@ enum TabActions {
 
 MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
+    setToolTipsVisible(true);
     mActions.insert(actSplitH, addAction("Pin &right", this, [this]() {
         emit openPinView(mTabIndex, Qt::Horizontal);
     }));
+    mActions.value(actSplitH)->setToolTip("Pin edit to the right <b>Ctrl+Click</b>");
     mActions.insert(actSplitV, addAction("Pin &below", this, [this]() {
         emit openPinView(mTabIndex, Qt::Vertical);
     }));
+    mActions.value(actSplitV)->setToolTip("Pin edit to the bottom <b>Shift+Ctrl+Click</b>");
     addSeparator();
     mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::close));
     mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
