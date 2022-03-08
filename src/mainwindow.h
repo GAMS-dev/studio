@@ -406,7 +406,7 @@ private slots:
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
-    void closeSplitEdit();
+    void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();
 

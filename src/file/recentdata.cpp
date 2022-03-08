@@ -54,6 +54,8 @@ void RecentData::setEditor(QWidget *edit, MainWindow* window)
         mPath = QFileInfo(node->location()).path();
     } else {
         mEditFileId = ViewHelper::fileId(mEditor);
+        if (!mEditFileId.isValid())
+            mEditor = nullptr;
         mPath = Settings::settings()->toString(skDefaultWorkspace);
     }
 

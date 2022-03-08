@@ -147,7 +147,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, &MainWindow::openPinView);
     connect(ui->mainTabs, &TabWidget::openPinView, this, &MainWindow::openPinView);
     mPinView = new pin::PinViewWidget(ui->splitter);
-    connect(mPinView, &pin::PinViewWidget::hidden, this, &MainWindow::closeSplitEdit);
+    connect(mPinView, &pin::PinViewWidget::hidden, this, &MainWindow::closePinView);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -335,6 +335,7 @@ void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        // to actualize the project if changed
         mRecent.setEditor(mRecent.editor(), this);
         updateRunState();
     });
@@ -345,6 +346,7 @@ void MainWindow::watchProjectTree()
         }
     });
     mStartedUp = true;
+    updateRecentEdit(nullptr, ui->mainTabs->currentWidget());
 }
 
 MainWindow::~MainWindow()
@@ -1566,8 +1568,7 @@ void MainWindow::activeTabChanged(int index)
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
-    mRecent.setEditor(editWidget, this);
-    mSearchDialog->setCurrentEditor(editWidget);
+    updateRecentEdit(mRecent.editor(), editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
@@ -2600,7 +2601,7 @@ void MainWindow::exportProjectDialog(PExProjectNode *project)
     dialog->open();
 }
 
-void MainWindow::closeSplitEdit()
+void MainWindow::closePinView()
 {
     QWidget *edit = mPinView->widget();
     if (edit) {
@@ -2608,6 +2609,7 @@ void MainWindow::closeSplitEdit()
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) fm->removeEditor(edit);
         edit->deleteLater();
+        updateRecentEdit(edit, ui->mainTabs->currentWidget());
     }
     Settings::settings()->setInt(skPinViewTabIndex, -1);
 }
@@ -3428,13 +3430,12 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     QWidget *wid = now;
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
-            if (wid == ui->mainTabs) {
-                mRecent.setEditor(ui->mainTabs->currentWidget(), this);
-            } else {
-                mRecent.setEditor(mPinView->widget(), this);
-            }
+            mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget(), this);
+            mSearchDialog->setCurrentEditor(mRecent.editor());
+            mFileMetaRepo.fileMeta(mRecent.editor())->editToTop(mRecent.editor());
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
+            updateRunState();
             break;
         }
         wid = wid->parentWidget();
@@ -3951,8 +3952,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         // if there is already a log -> show it
         PExFileNode* fileNode = mProjectRepo.findFileNode(edit);
         changeToLog(fileNode, false, false);
-        mRecent.setEditor(edit, this);
-        updateRunState();
+        updateRecentEdit(mRecent.editor(), edit);
     }
     addToOpenedFiles(fileMeta->location());
 }
@@ -4089,7 +4089,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     if (!fm) return;
 
     if (ViewHelper::fileId(mPinView->widget()) == fileId) {
-        closeSplitEdit();
+        closePinView();
     }
 
     // add to recently closed tabs
@@ -4326,7 +4326,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 {
     if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
     if (!mFileMetaRepo.fileMeta(ui->mainTabs->widget(tabIndex))) return;
-    closeSplitEdit();
+    closePinView();
 
     QWidget *wid = ui->mainTabs->widget(tabIndex);
     if (!wid) return;
