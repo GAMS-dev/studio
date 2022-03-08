@@ -1631,7 +1631,6 @@ void MainWindow::activeTabChanged(int index)
     updateStatusLoadAmount();
     updateStatusPos();
 
-    mNavigationHistory->setActiveTab(editWidget);
     updateCursorHistoryAvailability();
 }
 
@@ -3430,9 +3429,11 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     QWidget *wid = now;
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
+            PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
             mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget(), this);
-            mSearchDialog->setCurrentEditor(mRecent.editor());
             mFileMetaRepo.fileMeta(mRecent.editor())->editToTop(mRecent.editor());
+            mSearchDialog->setCurrentEditor(mRecent.editor());
+            mNavigationHistory->setCurrentEdit(mRecent.editor(), pinKind);
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
             updateRunState();
@@ -5205,23 +5206,34 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
 
     mNavigationHistory->stopRecord();
 
-    // TODO(JM) regard pinView in cursor history
-
-    // check if tab is still opened
-    if (ui->mainTabs->indexOf(item.tab) > 0) {
-        ui->mainTabs->setCurrentWidget(item.tab);
-        item.tab->setFocus();
+    // check if the edit is still open
+    if (item.edit == mPinView->widget()) {
+        item.edit->setFocus();
+    } else if (ui->mainTabs->indexOf(item.edit) > 0) {
+        ui->mainTabs->setCurrentWidget(item.edit);
+        item.edit->setFocus();
     } else {
         if (!item.filePath.isEmpty()) {
-            openFilePath(item.filePath, true);
+            if (item.pinKind == pkNone) {
+                openFilePath(item.filePath, true);
+            } else {
+                FileMeta *fm = mFileMetaRepo.fileMeta(item.filePath);
+                if (!fm->isOpen())
+                    openFilePath(item.filePath, false);
+                int tabInd = ui->mainTabs->indexOf(fm->editors().first());
+                openPinView(tabInd, Qt::Orientation(item.pinKind));
+                if (mPinView->widget()) mPinView->widget()->setFocus();
+            }
+
+
         }
     }
 
     if (item.lineNr >= 0) {
         // restore text cursor if editor available
-        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab()))
+        if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEdit()))
             ce->jumpTo(item.lineNr, item.col);
-        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentTab()))
+        else if (TextView* tv = ViewHelper::toTextView(mNavigationHistory->currentEdit()))
             tv->jumpTo(item.lineNr, item.col, 0, true);
         // else: nothing to do
     }
@@ -5237,21 +5249,21 @@ void MainWindow::updateCursorHistoryAvailability()
 
 void MainWindow::on_actionFoldAllTextBlocks_triggered()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEdit())) {
         ce->foldAll();
     }
 }
 
 void MainWindow::on_actionUnfoldAllTextBlocks_triggered()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEdit())) {
         ce->unfoldAll();
     }
 }
 
 void MainWindow::on_actionFoldDcoTextBlocks_triggered()
 {
-    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentTab())) {
+    if (CodeEdit* ce = ViewHelper::toCodeEdit(mNavigationHistory->currentEdit())) {
         ce->foldAll(true);
     }
 }

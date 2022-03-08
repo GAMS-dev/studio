@@ -64,6 +64,11 @@ void PinViewWidget::setOrientation(Qt::Orientation orientation)
     });
 }
 
+Qt::Orientation PinViewWidget::orientation()
+{
+    return mSplitter->orientation();
+}
+
 bool PinViewWidget::setWidget(QWidget *widget)
 {
     if (layout()->count() != 1)
