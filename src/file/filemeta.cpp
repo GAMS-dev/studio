@@ -1099,7 +1099,8 @@ void FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewT
     case tabAtEnd: break;
     }
     int i = tabWidget->insertTab(atIndex, edit, name(NameModifier::editState));
-    tabWidget->setTabToolTip(i, QDir::toNativeSeparators(location()));
+    tabWidget->setTabToolTip(i, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location()) +
+                             "<br>- Pin right <b>Ctrl+Click</b><br>- Pin below <b>Shift+Ctrl+Click</b></p>");
     if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(edit)) {
         try {
             load(codecMib);
