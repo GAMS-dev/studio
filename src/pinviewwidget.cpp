@@ -6,6 +6,7 @@
 #include "settings.h"
 
 #include <QTimer>
+#include <QMouseEvent>
 
 namespace gams {
 namespace studio {
@@ -39,6 +40,7 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
     mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
     connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
     ui->toolBar->addAction(mActClose);
+    ui->laFile->installEventFilter(this);
 }
 
 PinViewWidget::~PinViewWidget()
@@ -117,6 +119,17 @@ QList<int> PinViewWidget::sizes()
 {
     int splitSize = (mSplitter->orientation() == Qt::Horizontal) ? width() : height();
     return { mSplitter->width() - mSplitter->handleWidth() - splitSize, splitSize };
+}
+
+bool PinViewWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched == ui->laFile && event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        if (me->button() == Qt::MiddleButton) {
+            onClose();
+        }
+    }
+    return QWidget::eventFilter(watched, event);
 }
 
 void PinViewWidget::splitterMoved(int pos, int index)

@@ -29,6 +29,7 @@ public:
     QSize preferredSize();
     void showAndAdjust(Qt::Orientation orientation);
     QList<int> sizes();
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 signals:
     void hidden();
@@ -39,6 +40,9 @@ private slots:
     void onSwitchOrientation();
     void onSyncScroll(bool checked);
     void onClose();
+
+protected:
+
 
 private:
     Ui::PinViewWidget *ui;
