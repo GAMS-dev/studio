@@ -397,7 +397,6 @@ protected:
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
     QWidget *currentEdit();
-    bool isPinnable(FileMeta *fm);
 
 private slots:
     void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
