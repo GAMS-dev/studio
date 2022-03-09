@@ -581,6 +581,12 @@ QWidget *MainWindow::currentEdit()
     return nullptr;
 }
 
+bool MainWindow::isPinnable(FileMeta *fm)
+{
+    QSet<FileKind> suppressedKinds {FileKind::Guc, FileKind::Opt, };
+    return fm && !suppressedKinds.contains(fm->kind());
+}
+
 void MainWindow::getParameterValue(QString param, QString &value)
 {
     bool joker = param.endsWith('*');
@@ -964,7 +970,7 @@ void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
     int tabIndex = ui->mainTabs->tabBar()->tabAt(pos);
     QWidget *edit = ui->mainTabs->widget(tabIndex);
     FileMeta *fm = mFileMetaRepo.fileMeta(edit);
-    mMainTabContextMenu.setTabIndex(tabIndex, fm);
+    mMainTabContextMenu.setTabIndex(tabIndex, isPinnable(fm));
     mMainTabContextMenu.exec(ui->mainTabs->tabBar()->mapToGlobal(pos));
 }
 
@@ -3431,7 +3437,10 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
             mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget(), this);
-            mFileMetaRepo.fileMeta(mRecent.editor())->editToTop(mRecent.editor());
+            FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
+            fm->editToTop(mRecent.editor());
+            ui->actionPin_Right->setEnabled(isPinnable(fm));
+            ui->actionPin_Below->setEnabled(isPinnable(fm));
             mSearchDialog->setCurrentEditor(mRecent.editor());
             mNavigationHistory->setCurrentEdit(mRecent.editor(), pinKind);
             if (mStartedUp)
@@ -4327,7 +4336,6 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 {
     if (tabIndex < 0 || tabIndex >= ui->mainTabs->tabBar()->count()) return;
     if (!mFileMetaRepo.fileMeta(ui->mainTabs->widget(tabIndex))) return;
-    closePinView();
 
     QWidget *wid = ui->mainTabs->widget(tabIndex);
     if (!wid) return;
@@ -4335,8 +4343,10 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     if (!group) return;
     PExProjectNode *pro = group->assignedProject();
     if (!pro) return;
-
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+    if (!isPinnable(fm)) return;
+    closePinView();
+
     QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(createEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
