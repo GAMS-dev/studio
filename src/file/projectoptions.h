@@ -32,20 +32,49 @@ namespace Ui {
 class ProjectOptions;
 }
 
+class ProjectData : public QObject
+{
+    Q_OBJECT
+public:
+    enum Field {name, workDir, baseDir, mainGms};
+
+    ProjectData(PExProjectNode *project);
+    virtual ~ProjectData() override {}
+    void setFieldData(Field field, QString value);
+    QString fieldData(Field field);
+    PExProjectNode *project() { return mProject; }
+    void save();
+
+signals:
+    void changed(Field field);
+
+private slots:
+    void projectChanged(NodeId id);
+
+private:
+    QHash<Field, QString> mData;
+    PExProjectNode *mProject;
+};
+
 
 class ProjectOptions : public QFrame
 {
     Q_OBJECT
 
 public:
-    explicit ProjectOptions(QWidget *parent = nullptr);
+
+    explicit ProjectOptions(ProjectData *sharedData, QWidget *parent = nullptr);
     ~ProjectOptions() override;
-    void setProject(PExProjectNode *project);
+    ProjectData *sharedData() const;
     bool isModified() const;
     void save();
 
+
 signals:
     void modificationChanged(bool modification);
+
+public slots:
+    void updateData();
 
 private slots:
     void on_edName_textChanged(const QString &text);
@@ -56,12 +85,13 @@ private slots:
     void projectChanged(gams::studio::NodeId id);
 
 private:
+    void setSharedData(ProjectData *sharedData);
     void updateEditColor(QLineEdit *edit, const QString &text);
     void updateState();
     void showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir);
 
     Ui::ProjectOptions *ui;
-    PExProjectNode *mProject = nullptr;
+    ProjectData *mSharedData;
     bool mModified = false;
     QString mName;
 

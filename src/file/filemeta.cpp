@@ -316,6 +316,11 @@ QWidget *FileMeta::topEditor() const
 void FileMeta::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState)
+    if (!modiState && kind() == FileKind::PrO) {
+        if (project::ProjectOptions *pro = ViewHelper::toProjectOptions(topEditor())) {
+            mName = '['+pro->sharedData()->fieldData(project::ProjectData::name)+']';
+        }
+    }
     emit changed(id());
 }
 
@@ -1010,8 +1015,15 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
     if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
     if (kind() == FileKind::PrO) {
-        project::ProjectOptions *prop = new project::ProjectOptions(widget);
-        prop->setProject(project);
+        project::ProjectData *sharedData = nullptr;
+        project::ProjectOptions *otherProp = nullptr;
+        if (editors().size()) {
+            otherProp = ViewHelper::toProjectOptions(topEditor());
+            sharedData = otherProp->sharedData();
+        } else {
+            sharedData = new project::ProjectData(project);
+        }
+        project::ProjectOptions *prop = new project::ProjectOptions(sharedData, widget);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
         res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, widget));

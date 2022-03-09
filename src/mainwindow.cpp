@@ -5224,8 +5224,6 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
                 openPinView(tabInd, Qt::Orientation(item.pinKind));
                 if (mPinView->widget()) mPinView->widget()->setFocus();
             }
-
-
         }
     }
 
