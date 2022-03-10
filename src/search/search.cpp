@@ -626,6 +626,8 @@ QSet<FileMeta*> Search::askUserForDirectory()
 
     QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search", openPath.path());
     QSet<FileMeta*> res;
+    if (path.isEmpty()) return res;
+
     mLastFolder = path;
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);

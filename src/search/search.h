@@ -78,7 +78,6 @@ public:
     void resetResults();
     void activeFileChanged();
 
-
 signals:
     void invalidateResults();
     void selectResult(int matchNr);
