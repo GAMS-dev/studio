@@ -1,6 +1,6 @@
 Version 1.9.7  *
 ==================
-- Fixed crash in ModelLibrary dialog on ctr-rightClick on entry
+- Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
 
 Version 1.9.6
 ==================
