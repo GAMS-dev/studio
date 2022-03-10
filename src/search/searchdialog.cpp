@@ -218,7 +218,7 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
         bool matchesWildcard = false;
 
         for (const QRegExp &wildcard : qAsConst(filterList)) {
-            matchesWildcard = wildcard.indexIn(fm->location()) != -1;
+            matchesWildcard = wildcard.exactMatch(fm->location());
             if (matchesWildcard) break; // one match is enough, dont overwrite result
         }
 
