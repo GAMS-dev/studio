@@ -1,6 +1,8 @@
 #include "headerviewproxy.h"
+#include "theme.h"
 #include <QPainter>
 #include <QStyleOption>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -39,6 +41,10 @@ bool HeaderViewProxy::platformShouldDrawBorder()
 
 void HeaderViewProxy::drawControl(ControlElement oCtrElement, const QStyleOption *styleOption, QPainter *painter, const QWidget *widget) const
 {
+    if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1) {
+        QApplication::style()->drawControl(oCtrElement, styleOption, painter, widget);
+        return;
+    }
     QProxyStyle::drawControl(oCtrElement, styleOption, painter, widget);
     if (platformShouldDrawBorder() && oCtrElement == QStyle::CE_HeaderSection) {
         painter->save();
