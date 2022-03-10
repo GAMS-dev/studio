@@ -91,6 +91,7 @@ signals:
     void openHelpDocument(QString doc, QString anchor);
     void selectResult(int matchNr);
     void invalidateResultsView();
+    void extraSelectionsUpdated();
 
 protected:
     void showEvent(QShowEvent *event);

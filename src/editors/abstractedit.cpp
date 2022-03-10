@@ -70,7 +70,6 @@ AbstractEdit::AbstractEdit(QWidget *parent)
             emit scrolled(this, dx, 0);
         }
     });
-
 }
 
 AbstractEdit::~AbstractEdit()

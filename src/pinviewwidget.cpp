@@ -31,11 +31,13 @@ PinViewWidget::PinViewWidget(QWidget *parent) :
     connect(mActOrient, &QAction::triggered, this, &PinViewWidget::onSwitchOrientation);
     ui->toolBar->addAction(mActOrient);
 
+    bool locked = Settings::settings()->toBool(skPinScollLock);
     mActSync = new QAction(Theme::icon(":/%1/lock-open"), "Synchronize scrolling", this);
     mActSync->setCheckable(true);
     connect(mActSync, &QAction::triggered, this, &PinViewWidget::onSyncScroll);
     ui->toolBar->addAction(mActSync);
-    mActSync->setChecked(Settings::settings()->toBool(skPinScollLock));
+    mActSync->setChecked(locked);
+    setScrollLocked(locked);
 
     mActClose = new QAction(Theme::icon(":/%1/remove"), "Close split view", this);
     connect(mActClose, &QAction::triggered, this, &PinViewWidget::onClose);
@@ -107,6 +109,7 @@ void PinViewWidget::setFontGroup(FontGroup fontGroup)
 void PinViewWidget::setScrollLocked(bool lock)
 {
     if (!mActSync->isEnabled()) return;
+    if (mActSync->isChecked() != lock) mActSync->setChecked(lock);
     mActSync->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
     Settings::settings()->setBool(skPinScollLock, lock);
 }

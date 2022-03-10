@@ -272,6 +272,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
+    connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -574,11 +575,21 @@ void MainWindow::initGamsStandardPaths()
 
 QWidget *MainWindow::currentEdit()
 {
-    if (mPinView->widget() && mRecent.editor() == mPinView)
+    if (mPinView->widget() && mRecent.editor() == mPinView->widget())
         return mRecent.editor();
     if (ui->mainTabs->currentWidget() != mWp)
         return ui->mainTabs->currentWidget();
     return nullptr;
+}
+
+QWidget *MainWindow::otherEdit()
+{
+    // Only if edit has focus
+    if (currentEdit() != mPinView->widget())
+        return mPinView->widget();
+    QWidget *wid = ui->mainTabs->currentWidget();
+    if (wid == mWp) return nullptr;
+    return wid;
 }
 
 void MainWindow::getParameterValue(QString param, QString &value)
@@ -4395,13 +4406,7 @@ void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
     }
     if (!focussed) return;
 
-    // Determine the other widget
-    QWidget *edit = nullptr;
-    if (mPinView->widget() != sendingEdit) {
-        edit = mPinView->widget();
-    } else {
-        edit = ui->mainTabs->currentWidget();
-    }
+    QWidget *edit = otherEdit();
     if (!edit) return;
 
     // sync scroll
@@ -4411,6 +4416,17 @@ void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
         ae->scrollSynchronize(dx, dy);
     else if (TextView *tv = ViewHelper::toTextView(edit))
         tv->scrollSynchronize(dx, dy);
+}
+
+void MainWindow::extraSelectionsUpdated()
+{
+    QWidget *edit = otherEdit();
+    FileMeta *fm = mFileMetaRepo.fileMeta(edit);
+    if (!fm || fm->fontGroup() != fgText) return;
+    if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit))
+        ae->updateExtraSelections();
+    else if (TextView *tv = ViewHelper::toTextView(edit))
+        tv->updateExtraSelections();
 }
 
 void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)

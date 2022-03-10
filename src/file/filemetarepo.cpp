@@ -388,7 +388,6 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
         connect(res, &FileMeta::fontChanged, this, &FileMetaRepo::fontChanged);
-        connect(res, &FileMeta::scrollSynchronize, this, &FileMetaRepo::scrollSynchronize);
         addFileMeta(res);
         if (mAutoReloadLater.contains(location)) {
             mAutoReloadLater.removeAll(location);

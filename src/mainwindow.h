@@ -191,6 +191,7 @@ public slots:
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
+    void extraSelectionsUpdated();
 
 private slots:
     void initDelayedElements();
@@ -397,6 +398,7 @@ protected:
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
     QWidget *currentEdit();
+    QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
