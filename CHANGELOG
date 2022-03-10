@@ -1,6 +1,7 @@
 Version 1.9.7  *
 ==================
 - Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+- Fixed white table headers in dark mode
 
 Version 1.9.6
 ==================
