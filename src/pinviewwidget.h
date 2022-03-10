@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QSplitter>
 
+#include "common.h"
+
 namespace gams {
 namespace studio {
 namespace pin {
@@ -25,6 +27,7 @@ public:
     void removeWidget();
     QWidget *widget();
     void setFileName(const QString &fileName, const QString &filePath);
+    void setFontGroup(FontGroup fontGroup);
     void setScrollLocked(bool lock);
     bool isScrollLocked();
     QSize preferredSize();

@@ -99,15 +99,21 @@ void PinViewWidget::setFileName(const QString &fileName, const QString &filePath
     ui->laFile->setToolTip(filePath);
 }
 
+void PinViewWidget::setFontGroup(FontGroup fontGroup)
+{
+    mActSync->setEnabled(fontGroup == FontGroup::fgText);
+}
+
 void PinViewWidget::setScrollLocked(bool lock)
 {
+    if (!mActSync->isEnabled()) return;
     mActSync->setIcon(Theme::icon(lock ? ":/%1/lock" : ":/%1/lock-open"));
     Settings::settings()->setBool(skPinScollLock, lock);
 }
 
 bool PinViewWidget::isScrollLocked()
 {
-    return mActSync->isChecked();
+    return mActSync->isEnabled() && mActSync->isChecked();
 }
 
 QSize PinViewWidget::preferredSize()

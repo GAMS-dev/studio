@@ -4345,6 +4345,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(createEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
+    mPinView->setFontGroup(fm->fontGroup());
     mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
