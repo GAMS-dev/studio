@@ -3875,19 +3875,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
     if (edit) {
         if (project)
             ViewHelper::setGroupId(edit, project->id());
-        if (focus) {
-            if (edit == mPinView->widget()) {
-                edit->setFocus();
-                raiseEdit(edit);
-            } else {
-                tabWidget->setCurrentWidget(edit);
-                raiseEdit(edit);
-                if (tabWidget == ui->mainTabs) {
-                    if (tabWidget->indexOf(edit) >= 0)
-                        activeTabChanged(tabWidget->indexOf(edit));
-                }
-            }
-        }
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
@@ -3913,45 +3900,21 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             DEB() << "Error: could not create editor for '" << fileMeta->location() << "'";
             return;
         }
-        if (ViewHelper::toCodeEdit(edit)) {
-            CodeEdit* ce = ViewHelper::toCodeEdit(edit);
-            connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
-            connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
-            connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
-            connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
-            ce->addAction(ui->actionRun);
-        }
-        if (TextView *tv = ViewHelper::toTextView(edit)) {
-            tv->setFont(createEditorFont(fgText));
-            connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
-            connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
-
-        }
-        if (ViewHelper::toCodeEdit(edit)) {
-            AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-            ae->setFont(createEditorFont(fgText));
-            if (!ae->isReadOnly())
-                connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
-            connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-        }
-        if (focus) {
-            if (edit == mPinView->widget())
-                edit->setFocus();
-            else
-                tabWidget->setCurrentWidget(edit);
-            raiseEdit(edit);
-            updateMenuToCodec(fileMeta->codecMib());
-        }
-        if (fileMeta->kind() == FileKind::Ref) {
-            reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
-            connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
-        }
-
+        initEdit(fileMeta, edit);
     }
     // set keyboard focus to editor
-    if (edit != mPinView->widget() && tabWidget->currentWidget())
-        if (focus) tabWidget->currentWidget()->setFocus();
+    if (focus && edit) {
+        if (edit == mPinView->widget()) {
+            edit->setFocus();
+        } else {
+            tabWidget->setCurrentWidget(edit);
+            tabWidget->currentWidget()->setFocus();
+            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0)
+                activeTabChanged(tabWidget->indexOf(edit));
+        }
+        raiseEdit(edit);
+        updateMenuToCodec(fileMeta->codecMib());
+    }
 
     if (tabWidget != ui->logTabs) {
         // if there is already a log -> show it
@@ -3960,6 +3923,36 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         updateRecentEdit(mRecent.editor(), edit);
     }
     addToOpenedFiles(fileMeta->location());
+}
+
+void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
+{
+    if (ViewHelper::toCodeEdit(edit)) {
+        CodeEdit* ce = ViewHelper::toCodeEdit(edit);
+        connect(ce, &CodeEdit::requestAdvancedActions, this, &MainWindow::getAdvancedActions);
+        connect(ce, &CodeEdit::cloneBookmarkMenu, this, &MainWindow::cloneBookmarkMenu);
+        connect(ce, &CodeEdit::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+        connect(ce, &CodeEdit::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
+        ce->addAction(ui->actionRun);
+    }
+    if (TextView *tv = ViewHelper::toTextView(edit)) {
+        tv->setFont(createEditorFont(fgText));
+        connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
+        connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
+
+    }
+    if (ViewHelper::toCodeEdit(edit)) {
+        AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
+        ae->setFont(createEditorFont(fgText));
+        if (!ae->isReadOnly())
+            connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
+        connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+    }
+    if (fileMeta->kind() == FileKind::Ref) {
+        reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
+        connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
+    }
 }
 
 void MainWindow::openFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
@@ -4165,8 +4158,8 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
     if (fi.isFile()) {
         PExFileNode* fn = mProjectRepo.findFileNode(mRecent.editor());
         if (fn) {
-           PExProjectNode* project =  fn->assignedProject();
-           mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
+            PExProjectNode* project =  fn->assignedProject();
+            mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         }
         openFilePath(fi.absoluteFilePath(), true);
         CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
@@ -4349,6 +4342,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
+    initEdit(fm, newWid);
 }
 
 void MainWindow::invalidateResultsView()

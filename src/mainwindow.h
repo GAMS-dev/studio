@@ -397,6 +397,7 @@ protected:
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
     QWidget *currentEdit();
+    void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
     void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
