@@ -77,6 +77,7 @@ public:
     void invalidateCache();
     void resetResults();
     void activeFileChanged();
+    bool hasCache() const;
 
 signals:
     void invalidateResults();

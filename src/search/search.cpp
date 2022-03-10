@@ -66,7 +66,7 @@ void Search::start()
         findInSelection();
         return;
     } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        if (mFiles.count() == 0) {
+        if (!mCacheAvailable) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
         }
@@ -112,21 +112,11 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
-void Search::resetResults()
-{
-    mFiles.clear();
-    mResults.clear();
-    mResultHash.clear();
-    mLastFolder.clear();
-
-    if (mSearchDialog)
-        mSearchDialog->updateEditHighlighting();
-}
-
 void Search::activeFileChanged()
 {
-    if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())))
-        mCacheAvailable = false;
+    if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))){
+        invalidateCache();
+    }
 }
 
 void Search::reset()
@@ -137,8 +127,19 @@ void Search::reset()
     mOutsideOfList = false;
     mLastMatchInOpt = -1;
 
+
     mThread.isInterruptionRequested();
     emit invalidateResults();
+}
+
+void Search::resetResults()
+{
+    mFiles.clear();
+    mResults.clear();
+    mResultHash.clear();
+
+    if (mSearchDialog)
+        mSearchDialog->updateEditHighlighting();
 }
 
 void Search::invalidateCache()
@@ -469,6 +470,11 @@ void Search::finished()
 const QString &Search::lastFolder() const
 {
     return mLastFolder;
+}
+
+bool Search::hasCache() const
+{
+    return mCacheAvailable;
 }
 
 Search::Scope Search::scope() const
