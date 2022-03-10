@@ -66,7 +66,7 @@ void Search::start()
         findInSelection();
         return;
     } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        if (!mCacheAvailable) {
+        if (mFiles.count() == 0) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
         }
@@ -531,6 +531,11 @@ void Search::replaceNext(QString replacementText)
 void Search::replaceAll(QString replacementText)
 {
     if (mRegex.pattern().isEmpty()) return;
+
+    if (mFiles.isEmpty() && scope() == Search::Scope::Folder) {
+        mFiles = askUserForDirectory();
+        mFiles = mSearchDialog->filterFiles(mFiles, true);
+    }
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
