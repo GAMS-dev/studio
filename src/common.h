@@ -108,6 +108,12 @@ inline unsigned int qHash(FileKind key, unsigned int seed)
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
 
+enum FontGroup {
+    fgText  = 0x01,
+    fgLog   = 0x02,
+    fgTable = 0x04
+};
+
 enum class EditorType {
     undefined = 0,
     pro,

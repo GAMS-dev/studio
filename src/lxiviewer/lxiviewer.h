@@ -50,6 +50,9 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override;
     void resetView();
 
+signals:
+    void scrolled(QWidget *widget, int dx, int dy);
+
 public slots:
     void loadLxi();
 

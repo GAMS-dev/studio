@@ -28,10 +28,13 @@
 namespace gams {
 namespace studio {
 
+enum PinKind { pkNone, pkHorizontal, pkVertical };
+
 struct CursorHistoryItem {
-    QWidget* tab = nullptr;
+    QWidget* edit = nullptr;
     int lineNr = -1;
     int col = -1;
+    PinKind pinKind = pkNone;
     QString filePath = "";
 };
 
@@ -52,8 +55,8 @@ public:
     bool canGoBackward();
 
     bool itemValid(CursorHistoryItem item);
-    void setActiveTab(QWidget* newTab);
-    QWidget *currentTab() const;
+    void setCurrentEdit(QWidget* edit, PinKind pinKind);
+    QWidget *currentEdit() const;
 
 signals:
     void historyChanged();
@@ -66,11 +69,12 @@ private:
     QStack<CursorHistoryItem> mHistory;
 
     int mStackPosition = -1;
-    QWidget* mCurrentTab = nullptr;
+    QWidget* mCurrentEdit = nullptr;
+    PinKind mPinKind = pkNone;
     bool mHasCursor = false;
     bool mStopRecord = true;
 
-    void insertCursorItem(QWidget* widget, int line = -1, int pos = -1);
+    void insertCursorItem(int line = -1, int pos = -1);
 };
 
 } // namespace studio

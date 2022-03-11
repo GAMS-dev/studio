@@ -63,6 +63,7 @@ public:
     FileKind kind() const;
     QString kindAsStr() const;
     QString name(NameModifier mod = NameModifier::raw);
+    FontGroup fontGroup();
     QTextDocument* document() const;
     int codecMib() const;
     void setCodecMib(int mib);
@@ -76,9 +77,10 @@ public:
     void setAutoReload();
     void resetTempReloadState();
     void setModified(bool modified=true);
+    bool isPinnable();
 
-    QWidget *createEdit(QTabWidget* tabWidget, PExProjectNode *project = nullptr, int codecMib = -1,
-                        bool forcedAsTextEdit = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    QWidget *createEdit(QWidget *widget, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
+    void addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void editToTop(QWidget* edit);
@@ -111,6 +113,10 @@ signals:
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
+    void fontChanged(FileMeta *fileMeta, QFont f);
+
+protected:
+    bool eventFilter(QObject*sender, QEvent* event) override;
 
 private slots:
     void modificationChanged(bool modiState);

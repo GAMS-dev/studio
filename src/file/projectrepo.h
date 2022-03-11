@@ -142,7 +142,7 @@ signals:
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
-    void updateRecentFile();
+    void openRecentFile();
     void parentAssigned(const PExAbstractNode *node);
     void deselect(const QVector<QModelIndex> &declined);
     void select(const QVector<QModelIndex> &selected);

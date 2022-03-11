@@ -469,6 +469,7 @@ void SearchDialog::updateEditHighlighting()
         ae->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))
         tv->updateExtraSelections();
+    emit extraSelectionsUpdated();
 }
 
 void SearchDialog::clearResultsView()

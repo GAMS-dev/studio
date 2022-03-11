@@ -3,6 +3,7 @@ Version 1.10.0 *
 - added new tab for the GDX Viewer to the settings dialog
 - added new setting for specifying the default symbol view of the GDX Viewer
 - user model libraries have been moved to the front of the Model Library Explorer.
+- added pin view: the main edit area can be split vertically or horizontally to show a second editor of the selected TAB
 
 Version 1.9.6
 ==================

@@ -73,6 +73,8 @@
         <file alias="insert">solid/insert.svg</file>
         <file alias="kill">solid/kill.svg</file>
         <file alias="link">solid/link.svg</file>
+        <file alias="lock">solid/lock.svg</file>
+        <file alias="lock-open">solid/lock-open.svg</file>
         <file alias="menu">solid/menu.svg</file>
         <file alias="new">solid/new.svg</file>
         <file alias="minus">solid/minus.svg</file>
@@ -98,6 +100,8 @@
         <file alias="search-off">solid/search-off.svg</file>
         <file alias="search-plus">solid/search-plus.svg</file>
         <file alias="show">solid/angle-double-down.svg</file>
+        <file alias="split-h">solid/split-h.svg</file>
+        <file alias="split-v">solid/split-v.svg</file>
         <file alias="stop">solid/stop.svg</file>
         <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>

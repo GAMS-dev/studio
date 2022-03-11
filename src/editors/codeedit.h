@@ -121,6 +121,7 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     virtual bool showFolding() const;

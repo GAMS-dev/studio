@@ -77,6 +77,9 @@ namespace miro {
 class MiroDeployDialog;
 }
 class TabBarStyle;
+namespace pin {
+class PinViewWidget;
+}
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -166,12 +169,12 @@ public slots:
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
     void updateRunState();
-    void updateEditorPos();
-    void updateEditorMode();
-    void updateEditorBlockCount();
-    void updateEditorItemCount();
-    void updateLoadAmount();
-    void updateRecentFile();
+    void updateStatusFile();
+    void updateStatusPos();
+    void updateStatusMode();
+    void updateStatusLineCount();
+    void updateStatusLoadAmount();
+    void openRecentFile();
     void setMainGms(PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
@@ -181,16 +184,20 @@ public slots:
     void parameterRunChanged();
     void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="");
     void updateCursorHistoryAvailability();
-    bool eventFilter(QObject*sender, QEvent* event) override;
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
+    void openPinView(int tabIndex, Qt::Orientation orientation);
+    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
+    void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
+    void extraSelectionsUpdated();
 
 private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void newProjectDialog();
+    void updateRecentEdit(QWidget *old, QWidget *now);
     void openProjectOptions(PExProjectNode *project);
     void createProject(QString projectPath);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
@@ -374,6 +381,7 @@ private slots:
     void sslUserDecision(QAbstractButton *button);
 
 protected:
+    bool eventFilter(QObject*sender, QEvent* event) override;
     void closeEvent(QCloseEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *event) override;
@@ -389,15 +397,21 @@ protected:
     int currentLogTab();
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
+    QWidget *currentEdit();
+    QWidget *otherEdit();
+    void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
-    void updateFixedFonts(const QString &fontFamily, int fontSize);
+    void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
     void exportProjectDialog(PExProjectNode *project);
+    void closePinView();
+    void on_actionPin_Right_triggered();
+    void on_actionPin_Below_triggered();
 
 private:
     void zoomWidget(QWidget * widget, int range);
@@ -419,11 +433,12 @@ private:
     void execution(PExProjectNode *project);
     void openFiles(OpenGroupOption opt);
     PExProjectNode *currentProject();
+    int pinViewTabIndex();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
     void showWelcomePage();
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
-    bool isActiveTabRunnable();
+    bool isActiveProjectRunnable();
     bool isRecentGroupRunning();
     void loadCommandLines(PExFileNode* oldfn, PExFileNode* fn);
     void dockWidgetShow(QDockWidget* dw, bool show);
@@ -433,7 +448,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
-    QFont createEditorFont(const QString &fontFamily, int pointSize);
+    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), int pointSize = 0);
     bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
@@ -454,6 +469,8 @@ private:
     NavigationHistory* mNavigationHistory;
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
+    pin::PinViewWidget *mPinView = nullptr;
+    QHash<FontGroup, int> mGroupFontSize;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

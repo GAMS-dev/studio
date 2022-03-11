@@ -33,6 +33,7 @@ public:
 
 signals:
     void closeTab(int);
+    void openPinView(int tabIndex, Qt::Orientation orientation);
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event) override;

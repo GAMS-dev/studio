@@ -77,7 +77,7 @@ QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
 
 QString TabBarStyle::platformGetText(const QString &text, const QWidget *tabWidget) const
 {
-    if (tabWidget->parentWidget()->parentWidget() == mMainTabs && ViewHelper::modified(tabWidget))
+    if (tabWidget && tabWidget->parentWidget()->parentWidget() == mMainTabs && ViewHelper::modified(tabWidget))
         return text+"*";
     return text;
 }
