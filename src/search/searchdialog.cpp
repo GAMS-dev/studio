@@ -397,15 +397,16 @@ void SearchDialog::on_cb_caseSens_stateChanged(int)
 
 void SearchDialog::updateComponentAvailability()
 {
-    bool activateSearch = ViewHelper::editorType(mCurrentEditor) == EditorType::source
-                          || ViewHelper::editorType(mCurrentEditor) == EditorType::txt
-                          || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
-                          || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo;
-
-    AbstractEdit *edit = ViewHelper::toAbstractEdit(mCurrentEditor);
+    // activate search for certain filetypes, unless scope is set to Folder then always activate.
+    bool allFiles = selectedScope() == Search::Folder;
+    bool activateSearch = allFiles || getFilesByScope().size() > 0 ||
+                                        (ViewHelper::editorType(mCurrentEditor) == EditorType::source
+                                            || ViewHelper::editorType(mCurrentEditor) == EditorType::txt
+                                            || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
+                                            || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo);
 
     bool replacableFileInScope = getFilesByScope(true).size() > 0;
-    bool activateReplace = ((edit && !edit->isReadOnly()) || replacableFileInScope);
+    bool activateReplace = allFiles || replacableFileInScope;
 
     // replace actions (!readonly):
     ui->txt_replace->setEnabled(activateReplace);

@@ -64,7 +64,8 @@ const QList<FileMeta *> FileMetaRepo::fileMetas() const
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();
-        res << i.value();
+        if (i.value()->kind() != FileKind::PrO)
+            res << i.value();
     }
     return res;
 }
