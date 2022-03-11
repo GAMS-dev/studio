@@ -74,6 +74,7 @@ void Search::start()
         }
     } // else
 
+    mSearchDialog->updateUi(true);
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
@@ -111,6 +112,7 @@ void Search::start()
 
 void Search::stop()
 {
+    mSearchDialog->updateUi(false);
     mThread.requestInterruption();
 }
 

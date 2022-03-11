@@ -96,7 +96,6 @@ void SearchDialog::on_btn_FindAll_clicked()
     if (!mSearch.isRunning()) {
         if (ui->combo_search->currentText().isEmpty()) return;
 
-        updateUi(true);
         clearResultsView();
         insertHistory();
 
@@ -105,7 +104,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         mSearch.start();
     } else {
         mSearch.stop();
-        updateUi(false);
     }
 }
 
@@ -151,7 +149,7 @@ void SearchDialog::updateUi(bool searching)
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
 
-    updateComponentAvailability();
+    if (!searching) updateComponentAvailability();
 
     QApplication::processEvents();
 }
