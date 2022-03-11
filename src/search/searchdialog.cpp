@@ -208,7 +208,7 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
     // convert user input to wildcard list
     QList<QRegExp> filterList;
     for (const QString &s : qAsConst(filter))
-        filterList.append(QRegExp(s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+        filterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
 
     // filter files
     QSet<FileMeta*> res;
