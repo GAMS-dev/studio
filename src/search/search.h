@@ -81,6 +81,7 @@ public:
 
 signals:
     void invalidateResults();
+    void updateUI();
     void selectResult(int matchNr);
 
 private:

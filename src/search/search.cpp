@@ -74,7 +74,7 @@ void Search::start()
         }
     } // else
 
-    mSearchDialog->updateUi(true);
+    emit updateUI();
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
@@ -112,7 +112,7 @@ void Search::start()
 
 void Search::stop()
 {
-    mSearchDialog->updateUi(false);
+    emit updateUI();
     mThread.requestInterruption();
 }
 
@@ -201,7 +201,7 @@ void Search::findNext(Direction direction)
 {
     if (!mCacheAvailable) {
         emit invalidateResults();
-        mSearchDialog->updateUi(true);
+        emit updateUI();
         start(); // generate new cache
     }
     selectNextMatch(direction);

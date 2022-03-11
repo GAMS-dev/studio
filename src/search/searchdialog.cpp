@@ -46,6 +46,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     adjustSize();
 
     restoreSettings();
+    connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
 }
 
 SearchDialog::~SearchDialog()
@@ -115,7 +116,7 @@ void SearchDialog::intermediateUpdate(int hits)
 
 void SearchDialog::finalUpdate()
 {
-    updateUi(false);
+    updateUi();
 
     if (mShowResults) {
         if (mSearchResultModel) delete mSearchResultModel;
@@ -127,8 +128,10 @@ void SearchDialog::finalUpdate()
     updateNrMatches();
 }
 
-void SearchDialog::updateUi(bool searching)
+void SearchDialog::updateUi()
 {
+    bool searching = mSearch.isRunning();
+
     if (searching)
         ui->btn_FindAll->setText("Abort");
     else
@@ -339,8 +342,6 @@ void SearchDialog::on_cb_regex_stateChanged(int arg1)
 ///
 int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 {
-    updateUi(false);
-
     QString file = "";
     if(mCurrentEditor) file = ViewHelper::location(mCurrentEditor);
 
