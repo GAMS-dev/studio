@@ -115,7 +115,7 @@ void Search::stop()
 void Search::activeFileChanged()
 {
     if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))){
-        invalidateCache();
+        mCacheAvailable = false;
     }
 }
 

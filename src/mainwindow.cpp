@@ -2971,10 +2971,10 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFileWithOption(QString fileName, OpenGroupOption opt)
+PExFileNode* MainWindow::openFileWithOption(QString fileName, OpenGroupOption opt, PExProjectNode* knownProject)
 {
     PExProjectNode *curProject = mRecent.project();
-    PExProjectNode *project = nullptr;
+    PExProjectNode *project = knownProject;
     PExFileNode *fileNode = nullptr;
 
     if (opt == ogNone)
