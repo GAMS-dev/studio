@@ -69,6 +69,8 @@ void Search::start()
         if (!mCacheAvailable) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
+
+            if (mFiles.count() == 0) return;
         }
     } // else
 
@@ -535,6 +537,8 @@ void Search::replaceAll(QString replacementText)
     if (mFiles.isEmpty() && scope() == Search::Scope::Folder) {
         mFiles = askUserForDirectory();
         mFiles = mSearchDialog->filterFiles(mFiles, true);
+
+        if (mFiles.count() == 0) return;
     }
 
     QList<FileMeta*> opened;
