@@ -2270,7 +2270,8 @@ void MainWindow::on_actionShow_Welcome_Page_triggered()
 
 void MainWindow::triggerGamsLibFileCreation(modeldialog::LibraryItem *item)
 {
-    openModelFromLib(item->library()->glbFile(), item);
+    if (item)
+        openModelFromLib(item->library()->glbFile(), item);
 }
 
 const HistoryData &MainWindow::history()

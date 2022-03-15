@@ -1,3 +1,7 @@
+Version 1.9.7  *
+==================
+- Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+
 Version 1.9.6
 ==================
 - fixed a crash caused by set search options in Search Dialog
