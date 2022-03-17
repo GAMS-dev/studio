@@ -237,9 +237,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
 
+    FileMeta* currentFm = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
+
     // allow jumping when we have results but not in the current file
     bool allowJumping = (mResults.size() > 0)
-            && !hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
+            && !hasResultsForFile(currentFm ? currentFm->location() : "");
 
     if (mSearchDialog->currentEditor()) {
         QString file = ViewHelper::location(mSearchDialog->currentEditor());
