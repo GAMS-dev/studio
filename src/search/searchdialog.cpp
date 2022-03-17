@@ -190,8 +190,12 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         case Search::Folder: {
             if (!mSearch.lastFolder().isEmpty()) {
                 QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
-                while (it.hasNext())
-                    files.insert(mFileHandler->findOrCreateFile(it.next()));
+                while (it.hasNext()) {
+                    QString path = it.next();
+                    if (path.isEmpty()) break;
+
+                    files.insert(mFileHandler->findOrCreateFile(path));
+                }
             }
         }
         default: break;

@@ -651,7 +651,10 @@ QSet<FileMeta*> Search::askUserForDirectory()
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     while (it.hasNext()) {
-        res.insert(mFileHandler->findOrCreateFile(it.next()));
+        QString path = it.next();
+        if (path.isEmpty()) break;
+
+        res.insert(mFileHandler->findOrCreateFile(path));
     }
 
     return res;
