@@ -60,7 +60,6 @@ void Search::start()
     if (mSearching || mRegex.pattern().isEmpty()) return;
     mResults.clear();
     mResultHash.clear();
-    mSearching = true;
 
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
@@ -74,6 +73,7 @@ void Search::start()
         }
     } // else
 
+    mSearching = true;
     emit updateUI();
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
