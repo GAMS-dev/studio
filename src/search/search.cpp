@@ -65,7 +65,7 @@ void Search::start()
         findInSelection();
         return;
     } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        if (!mCacheAvailable) {
+        if (!mCacheAvailable || mSearchDialog->mShowResults) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
 
