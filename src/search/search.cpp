@@ -508,7 +508,7 @@ const QRegularExpression Search::regex() const
     return mRegex;
 }
 
-bool Search::isRunning() const
+bool Search::isSearching() const
 {
     return mSearching;
 }

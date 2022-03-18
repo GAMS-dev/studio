@@ -94,7 +94,7 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 
 void SearchDialog::on_btn_FindAll_clicked()
 {
-    if (!mSearch.isRunning()) {
+    if (!mSearch.isSearching()) {
         if (ui->combo_search->currentText().isEmpty()) return;
 
         clearResultsView();
@@ -130,7 +130,7 @@ void SearchDialog::finalUpdate()
 
 void SearchDialog::updateUi()
 {
-    bool searching = mSearch.isRunning();
+    bool searching = mSearch.isSearching();
 
     if (searching)
         ui->btn_FindAll->setText("Abort");
@@ -238,8 +238,10 @@ void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event)
 
-    autofillSearchField();
-    updateComponentAvailability();
+    if (!mSearch.isSearching()) {
+        autofillSearchField();
+        updateComponentAvailability();
+    }
 }
 
 void SearchDialog::on_searchNext()

@@ -65,7 +65,7 @@ public:
     void replaceAll(QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
-    bool isRunning() const;
+    bool isSearching() const;
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
