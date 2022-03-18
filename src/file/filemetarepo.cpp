@@ -63,7 +63,8 @@ const QList<FileMeta *> FileMetaRepo::fileMetas() const
     QHashIterator<FileId, FileMeta*> i(mFiles);
     while (i.hasNext()) {
         i.next();
-        res << i.value();
+        if (i.value()->kind() != FileKind::PrO)
+            res << i.value();
     }
     return res;
 }
@@ -346,7 +347,7 @@ void FileMetaRepo::checkMissing()
         FileMeta *file = fileMeta(fileName);
         if (!file) continue;
         mProjectRepo->fileChanged(file->id());
-        if (QFileInfo(fileName).exists()) {
+        if (QFileInfo::exists(fileName)) {
             watch(file);
             file->refreshMetaData();
             FileEventKind feKind = FileEventKind::changedExtern;
@@ -382,7 +383,6 @@ void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownType)
 {
     if (location.isEmpty()) return nullptr;
-    QString adaptedLocation;
     FileMeta* res = fileMeta(location);
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);

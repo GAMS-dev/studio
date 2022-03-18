@@ -90,19 +90,20 @@ private:
 
 class MainWindow : public QMainWindow
 {
-    enum OpenGroupOption { ogFindGroup, ogCurrentGroup, ogNewGroup };
-    enum OpenPermission { opNone, opNoGsp, opAll };
-
     friend MainTabContextMenu;
     friend LogTabContextMenu;
 
     Q_OBJECT
 
 public:
+    enum OpenGroupOption { ogNone, ogFindGroup, ogCurrentGroup, ogNewGroup };
+    enum OpenPermission { opNone, opNoGsp, opAll };
+
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew);
+    PExFileNode* openFileWithOption(QString fileName, OpenGroupOption opt = ogNone, PExProjectNode* knownProject = nullptr);
     void watchProjectTree();
 
     bool outputViewVisibility();

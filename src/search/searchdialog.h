@@ -42,7 +42,7 @@ public:
     explicit SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget *parent = nullptr);
     ~SearchDialog();
 
-    void setCurrentEditor(QWidget *editor);
+    void editorChanged(QWidget *editor);
 
     QRegularExpression createRegex();
     bool regex();
@@ -61,6 +61,7 @@ public:
     Search* search();
 
     void updateClearButton();
+    QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
 public slots:
     void on_searchNext();
@@ -104,7 +105,7 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
-    void updateUi(bool searching);
+    void updateUi();
     void setSearchStatus(Search::Status status, int hits = 0);
     void clearSelection();
     void clearSearchSelection();

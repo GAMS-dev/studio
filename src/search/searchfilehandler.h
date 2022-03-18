@@ -33,11 +33,14 @@ public:
 
     FileMeta* fileMeta(QWidget* widget) override;
     FileMeta* fileMeta(FileId fileId) override;
-    QList<FileMeta*> fileMetas() override;
-    QList<FileMeta*> openFiles() override;
+    QSet<FileMeta*> fileMetas() override;
+    QSet<FileMeta *> openFiles() override;
     PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
-    PExFileNode* findFile(QString filepath) override;
+    PExFileNode* findFileNode(QString filepath) override;
+    PExProjectNode *createProject(QString name, QString path) override;
+    FileMeta* findOrCreateFile(QString filepath) override;
+    PExFileNode *openFile(QString fileName) override;
 
 private:
     MainWindow* mMain;

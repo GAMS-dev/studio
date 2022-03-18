@@ -22,6 +22,7 @@
 #include <QTextDocument>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QFileDialog>
 #include "search.h"
 #include "searchdialog.h"
 #include "searchworker.h"
@@ -29,12 +30,13 @@
 #include "editors/abstractedit.h"
 #include "editors/textview.h"
 #include "viewhelper.h"
+#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-Search::Search(SearchDialog *sd) : mSearchDialog(sd)
+Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSearchDialog(sd), mFileHandler(fileHandler)
 {
     connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResultsView);
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
@@ -42,8 +44,6 @@ Search::Search(SearchDialog *sd) : mSearchDialog(sd)
 
 void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
 {
-    bool fileListChanged = mFiles != files;
-    mCacheAvailable = mCacheAvailable && !fileListChanged;
     mFiles = files;
     mRegex = regex;
     mOptions = QFlags<QTextDocument::FindFlag>();
@@ -60,13 +60,19 @@ void Search::start()
     if (mSearching || mRegex.pattern().isEmpty()) return;
     mResults.clear();
     mResultHash.clear();
-    mSearching = true;
 
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
-    } // else:
+    } else if (mSearchDialog->selectedScope() == Scope::Folder) {
+        if (!mCacheAvailable || mSearchDialog->mShowResults) {
+            mFiles = askUserForDirectory();
+            mFiles = mSearchDialog->filterFiles(mFiles, false);
+        }
+    } // else
 
+    mSearching = true;
+    emit updateUI();
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
@@ -104,17 +110,15 @@ void Search::start()
 
 void Search::stop()
 {
+    emit updateUI();
     mThread.requestInterruption();
 }
 
-void Search::resetResults()
+void Search::activeFileChanged()
 {
-    mFiles.clear();
-    mResults.clear();
-    mResultHash.clear();
-
-    if (mSearchDialog)
-        mSearchDialog->updateEditHighlighting();
+    if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))){
+        mCacheAvailable = false;
+    }
 }
 
 void Search::reset()
@@ -125,8 +129,19 @@ void Search::reset()
     mOutsideOfList = false;
     mLastMatchInOpt = -1;
 
+
     mThread.isInterruptionRequested();
     emit invalidateResults();
+}
+
+void Search::resetResults()
+{
+    mFiles.clear();
+    mResults.clear();
+    mResultHash.clear();
+
+    if (mSearchDialog)
+        mSearchDialog->updateEditHighlighting();
 }
 
 void Search::invalidateCache()
@@ -184,7 +199,7 @@ void Search::findNext(Direction direction)
 {
     if (!mCacheAvailable) {
         emit invalidateResults();
-        mSearchDialog->updateUi(true);
+        emit updateUI();
         start(); // generate new cache
     }
     selectNextMatch(direction);
@@ -220,9 +235,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
 
+    FileMeta* currentFm = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
+
     // allow jumping when we have results but not in the current file
     bool allowJumping = (mResults.size() > 0)
-            && !hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
+            && !hasResultsForFile(currentFm ? currentFm->location() : "");
 
     if (mSearchDialog->currentEditor()) {
         QString file = ViewHelper::location(mSearchDialog->currentEditor());
@@ -280,12 +297,14 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 void Search::jumpToResult(int matchNr)
 {
     if (matchNr > -1 && matchNr < mResults.size()) {
-        Result r = mResults.at(matchNr);
 
-        PExFileNode *node = mSearchDialog->fileHandler()->findFile(r.filepath());
+        Result r = mResults.at(matchNr);
+        PExFileNode* node = mFileHandler->openFile(r.filepath());
         if (!node) EXCEPT() << "File not found: " << r.filepath();
 
-        node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+        NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
+
+        node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     }
 }
 
@@ -443,13 +462,24 @@ void Search::finished()
     for (const Result &r : qAsConst(mResults))
         mResultHash[r.filepath()].append(r);
 
-    mCacheAvailable = true;
+    mCacheAvailable = mResults.count() > 0;
+
     mSearchDialog->finalUpdate();
 
     if (mJumpQueued) {
         mJumpQueued = false;
         selectNextMatch();
     }
+}
+
+const QString &Search::lastFolder() const
+{
+    return mLastFolder;
+}
+
+bool Search::hasCache() const
+{
+    return mCacheAvailable;
 }
 
 Search::Scope Search::scope() const
@@ -472,12 +502,12 @@ bool Search::hasSearchSelection()
     return false;
 }
 
-QRegularExpression Search::regex() const
+const QRegularExpression Search::regex() const
 {
     return mRegex;
 }
 
-bool Search::isRunning() const
+bool Search::isSearching() const
 {
     return mSearching;
 }
@@ -506,6 +536,13 @@ void Search::replaceNext(QString replacementText)
 void Search::replaceAll(QString replacementText)
 {
     if (mRegex.pattern().isEmpty()) return;
+
+    if (mFiles.isEmpty() && scope() == Search::Scope::Folder) {
+        mFiles = askUserForDirectory();
+        mFiles = mSearchDialog->filterFiles(mFiles, true);
+
+        if (mFiles.count() == 0) return;
+    }
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
@@ -594,6 +631,33 @@ void Search::replaceAll(QString replacementText)
                         + "' were replaced with '" + replaceTerm + "'.");
     ansBox.addButton(QMessageBox::Ok);
     ansBox.exec();
+}
+
+QSet<FileMeta*> Search::askUserForDirectory()
+{
+    QDir openPath(".");
+    if (!mLastFolder.isEmpty()) {
+        openPath = QDir(mLastFolder);
+    } else if (FileMeta* fm = mFileHandler->fileMeta(mSearchDialog->mCurrentEditor)) {
+        openPath = QDir(QFileInfo(fm->location()).absolutePath());
+    }
+
+    QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search", openPath.path());
+
+    mLastFolder = path;
+
+    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    QSet<FileMeta*> res;
+    if (path.isEmpty()) return res;
+
+    while (it.hasNext()) {
+        QString path = it.next();
+        if (path.isEmpty()) break;
+
+        res.insert(mFileHandler->findOrCreateFile(path));
+    }
+
+    return res;
 }
 
 }

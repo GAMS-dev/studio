@@ -3,6 +3,11 @@ Version 1.10.0 *
 - added new tab for the GDX Viewer to the settings dialog
 - added new setting for specifying the default symbol view of the GDX Viewer
 - user model libraries have been moved to the front of the Model Library Explorer.
+- added new search scope: Folder
+    - this allows users to search a folder on disk without having to load the whole folder in studio first
+- search now respects open file behavior settings when jumping to results in unopened files
+- fixed crash in search when current editor has no file associated
+- fixed search not being interruptable when searching many small files
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor of the selected TAB
 
 Version 1.9.7  *

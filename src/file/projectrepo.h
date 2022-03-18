@@ -184,7 +184,6 @@ private:
     ProjectTreeView* mTreeView = nullptr;
     ProjectTreeModel* mTreeModel = nullptr;
     QHash<NodeId, PExAbstractNode*> mNodes;
-    QVector<PExAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
     QVector<PExProjectNode*> mRunnigGroups;
