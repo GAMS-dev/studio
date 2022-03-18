@@ -68,8 +68,6 @@ void Search::start()
         if (!mCacheAvailable || mSearchDialog->mShowResults) {
             mFiles = askUserForDirectory();
             mFiles = mSearchDialog->filterFiles(mFiles, false);
-
-            if (mFiles.count() == 0) return;
         }
     } // else
 
@@ -644,12 +642,11 @@ QSet<FileMeta*> Search::askUserForDirectory()
     }
 
     QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search", openPath.path());
-    QSet<FileMeta*> res;
-    if (path.isEmpty()) return res;
 
     mLastFolder = path;
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
+    QSet<FileMeta*> res;
     while (it.hasNext()) {
         QString path = it.next();
         if (path.isEmpty()) break;
