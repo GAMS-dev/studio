@@ -462,7 +462,8 @@ void Search::finished()
     for (const Result &r : qAsConst(mResults))
         mResultHash[r.filepath()].append(r);
 
-    mCacheAvailable = true;
+    mCacheAvailable = mResults.count() > 0;
+
     mSearchDialog->finalUpdate();
 
     if (mJumpQueued) {
@@ -647,6 +648,8 @@ QSet<FileMeta*> Search::askUserForDirectory()
 
     QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
     QSet<FileMeta*> res;
+    if (path.isEmpty()) return res;
+
     while (it.hasNext()) {
         QString path = it.next();
         if (path.isEmpty()) break;
