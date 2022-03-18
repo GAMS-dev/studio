@@ -13,7 +13,7 @@ def isDebugBuildAllowed() {
 
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
-def GAMS_FOR_WINDOWS = "C:\\GAMS\\36"
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\39"
 
 pipeline {
     agent none
