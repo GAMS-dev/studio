@@ -32,8 +32,7 @@ namespace studio {
 
 FileMetaRepo::FileMetaRepo(QObject *parent) : QObject(parent)
 {
-    connect(&mWatcher, &QFileSystemWatcher::fileChanged,
-            this, &FileMetaRepo::fileChanged);
+    connect(&mWatcher, &QFileSystemWatcher::fileChanged, this, &FileMetaRepo::fileChanged);
     mMissCheckTimer.setInterval(5000);
     mMissCheckTimer.setSingleShot(true);
     connect(&mMissCheckTimer, &QTimer::timeout, this, &FileMetaRepo::checkMissing);
@@ -365,6 +364,12 @@ void FileMetaRepo::checkMissing()
     }
 }
 
+void FileMetaRepo::fontChanged(FileMeta *fileMeta, QFont f)
+{
+    if (fileMeta->fontGroup() != FontGroup::fgText) return;
+    emit setGroupFontSize(fileMeta->fontGroup(), f.pointSize());
+}
+
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 {
     if (mTextMarkRepo == textMarkRepo && mProjectRepo == projectRepo) return;
@@ -382,6 +387,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
+        connect(res, &FileMeta::fontChanged, this, &FileMetaRepo::fontChanged);
         addFileMeta(res);
         if (mAutoReloadLater.contains(location)) {
             mAutoReloadLater.removeAll(location);

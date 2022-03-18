@@ -8,6 +8,12 @@ Version 1.10.0 *
 - search now respects open file behavior settings when jumping to results in unopened files
 - fixed crash in search when current editor has no file associated
 - fixed search not being interruptable when searching many small files
+- added pin view: the main edit area can be split vertically or horizontally to show a second editor of the selected TAB
+
+Version 1.9.7  *
+==================
+- Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+- Fixed white table headers in dark mode
 
 Version 1.9.6
 ==================

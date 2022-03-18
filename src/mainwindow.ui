@@ -36,10 +36,7 @@
    <property name="contextMenuPolicy">
     <enum>Qt::NoContextMenu</enum>
    </property>
-   <layout class="QGridLayout" name="gridLayout">
-    <property name="sizeConstraint">
-     <enum>QLayout::SetMinimumSize</enum>
-    </property>
+   <layout class="QHBoxLayout" name="horizontalLayout">
     <property name="leftMargin">
      <number>0</number>
     </property>
@@ -52,49 +49,44 @@
     <property name="bottomMargin">
      <number>0</number>
     </property>
-    <item row="0" column="0">
-     <layout class="QGridLayout" name="mainLayout">
-      <property name="topMargin">
-       <number>0</number>
+    <item>
+     <widget class="QSplitter" name="splitter">
+      <property name="orientation">
+       <enum>Qt::Horizontal</enum>
       </property>
-      <property name="horizontalSpacing">
-       <number>6</number>
-      </property>
-      <item row="0" column="0">
-       <widget class="gams::studio::TabWidget" name="mainTabs">
-        <property name="sizePolicy">
-         <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
-          <horstretch>3</horstretch>
-          <verstretch>0</verstretch>
-         </sizepolicy>
-        </property>
-        <property name="minimumSize">
-         <size>
-          <width>400</width>
-          <height>300</height>
-         </size>
-        </property>
-        <property name="acceptDrops">
-         <bool>true</bool>
-        </property>
-        <property name="currentIndex">
-         <number>-1</number>
-        </property>
-        <property name="documentMode">
-         <bool>true</bool>
-        </property>
-        <property name="tabsClosable">
-         <bool>true</bool>
-        </property>
-        <property name="movable">
-         <bool>true</bool>
-        </property>
-        <property name="tabBarAutoHide">
-         <bool>false</bool>
-        </property>
-       </widget>
-      </item>
-     </layout>
+      <widget class="gams::studio::TabWidget" name="mainTabs">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Minimum" vsizetype="MinimumExpanding">
+         <horstretch>3</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <property name="minimumSize">
+        <size>
+         <width>400</width>
+         <height>300</height>
+        </size>
+       </property>
+       <property name="acceptDrops">
+        <bool>true</bool>
+       </property>
+       <property name="currentIndex">
+        <number>-1</number>
+       </property>
+       <property name="documentMode">
+        <bool>true</bool>
+       </property>
+       <property name="tabsClosable">
+        <bool>true</bool>
+       </property>
+       <property name="movable">
+        <bool>true</bool>
+       </property>
+       <property name="tabBarAutoHide">
+        <bool>false</bool>
+       </property>
+      </widget>
+     </widget>
     </item>
    </layout>
   </widget>
@@ -226,6 +218,8 @@
     <addaction name="separator"/>
     <addaction name="actionNextTab"/>
     <addaction name="actionPreviousTab"/>
+    <addaction name="actionPin_Right"/>
+    <addaction name="actionPin_Below"/>
     <addaction name="separator"/>
     <addaction name="actionGoBack"/>
     <addaction name="actionGoForward"/>
@@ -1526,6 +1520,32 @@
   <action name="actionNew_Project">
    <property name="text">
     <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionPin_Right">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/split-v</normaloff>:/solid/split-v</iconset>
+   </property>
+   <property name="text">
+    <string>Pin &amp;Right</string>
+   </property>
+   <property name="toolTip">
+    <string>Pin edit to the right
+(Ctrl+Click on a tab)</string>
+   </property>
+  </action>
+  <action name="actionPin_Below">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/split-h</normaloff>:/solid/split-h</iconset>
+   </property>
+   <property name="text">
+    <string>Pin &amp;Below</string>
+   </property>
+   <property name="toolTip">
+    <string>Pin edit below
+(Shift+Ctrl+Click on a tab)</string>
    </property>
   </action>
  </widget>

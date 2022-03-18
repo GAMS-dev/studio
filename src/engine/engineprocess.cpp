@@ -378,7 +378,6 @@ void EngineProcess::setAuthToken(const QString &bearerToken)
 {
     mAuthToken = bearerToken;
     mManager->setAuthToken(bearerToken);
-    // TODO(JM): check for namespace permissions and wait for answer before changing to idle
 }
 
 void EngineProcess::setNamespace(const QString &nSpace)

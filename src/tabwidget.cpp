@@ -68,6 +68,14 @@ bool TabWidget::eventFilter(QObject *sender, QEvent *event)
             }
             return true;
         }
+    } else if (event->type() == QEvent::MouseButtonPress) {
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        if (me->button() == Qt::LeftButton && me->modifiers().testFlag(Qt::ControlModifier)) {
+            int index = tabBar()->tabAt(tabBar()->mapFromGlobal(me->globalPos()));
+            Qt::Orientation orient = (me->modifiers().testFlag(Qt::ShiftModifier) ? Qt::Vertical : Qt::Horizontal);
+            emit openPinView(index, orient);
+            return true;
+        }
     }
     return false;
 }

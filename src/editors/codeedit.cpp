@@ -1050,6 +1050,7 @@ void CodeEdit::paintEvent(QPaintEvent* e)
         int top = static_cast<int>(fRect.top());
         int bottom = top + static_cast<int>(fRect.height());
         QPainter painter(viewport());
+        painter.save();
         QRect paintRect(e->rect());
         while (block.isValid() && top <= paintRect.bottom()) {
             if (block.isVisible() && bottom >= paintRect.top()) {
@@ -1089,6 +1090,7 @@ void CodeEdit::paintEvent(QPaintEvent* e)
             bottom = top + static_cast<int>(blockBoundingRect(block).height());
             ++blockNumber;
         }
+        painter.restore();
     }
 }
 

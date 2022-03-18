@@ -378,12 +378,12 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
 void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(value, ui->sb_fontsize->value());
+    emit editorFontChanged(ui->sb_fontsize->value(), value);
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 {
-    emit editorFontChanged(ui->fontComboBox->currentFont().family(), size);
+    emit editorFontChanged(size, ui->fontComboBox->currentFont().family());
 }
 
 void SettingsDialog::on_sb_tabsize_valueChanged(int size)
@@ -586,8 +586,7 @@ void SettingsDialog::on_btn_import_clicked()
     }
 
     emit editorLineWrappingChanged();
-    emit editorFontChanged(mSettings->toString(skEdFontFamily),
-                           mSettings->toInt(skEdFontSize));
+    emit editorFontChanged(mSettings->toInt(skEdFontSize), mSettings->toString(skEdFontFamily));
 #ifndef __APPLE__
     ViewHelper::setAppearance(); // update ui
 #endif

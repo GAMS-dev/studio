@@ -703,7 +703,7 @@ SyntaxBlock SyntaxSubDCO::validTail(const QString &line, int index, int flavor, 
     hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) ++end;
-    // TODO(JM) review: add silly additional condition, trying to calm down the compiler
+    // Add silly additional condition to calm down the compiler
     if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DcoBody);
     if (end > index) return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
     return SyntaxBlock(this);
