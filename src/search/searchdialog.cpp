@@ -111,7 +111,6 @@ void SearchDialog::on_btn_FindAll_clicked()
 void SearchDialog::intermediateUpdate(int hits)
 {
     setSearchStatus(Search::Searching, hits);
-    QApplication::processEvents();
 }
 
 void SearchDialog::finalUpdate()
