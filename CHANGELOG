@@ -5,6 +5,11 @@ Version 1.10.0 *
 - user model libraries have been moved to the front of the Model Library Explorer.
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor of the selected TAB
 
+Version 1.9.7  *
+==================
+- Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+- Fixed white table headers in dark mode
+
 Version 1.9.6
 ==================
 - fixed a crash caused by set search options in Search Dialog
