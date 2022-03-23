@@ -43,7 +43,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->setupUi(this);
-    adjustSize();
+//    adjustSize();
 
     restoreSettings();
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
