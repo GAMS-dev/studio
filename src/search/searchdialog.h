@@ -21,6 +21,7 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
+#include <QComboBox>
 
 #include "search.h"
 #include "abstractsearchfilehandler.h"
@@ -112,6 +113,7 @@ private:
     AbstractSearchFileHandler* fileHandler();
     QWidget* currentEditor();
     void findNextPrev(bool backwards);
+    void addEntryToComboBox(QComboBox* box);
 
 private:
     Ui::SearchDialog *ui;

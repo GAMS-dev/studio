@@ -210,36 +210,11 @@
           <bool>true</bool>
          </property>
          <property name="currentText">
-          <string>*</string>
+          <string/>
          </property>
          <property name="sizeAdjustPolicy">
           <enum>QComboBox::AdjustToContents</enum>
          </property>
-         <item>
-          <property name="text">
-           <string>*</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>*.gms</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>*.gms, *.inc</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>*.log</string>
-          </property>
-         </item>
-         <item>
-          <property name="text">
-           <string>*.lst</string>
-          </property>
-         </item>
         </widget>
        </item>
       </layout>

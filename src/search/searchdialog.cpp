@@ -143,6 +143,7 @@ void SearchDialog::updateUi()
     ui->cb_caseSens->setEnabled(!searching);
     ui->cb_wholeWords->setEnabled(!searching);
     ui->combo_filePattern->setEnabled(!searching);
+    ui->combo_fileExcludePattern->setEnabled(!searching);
     ui->combo_scope->setEnabled(!searching);
     ui->combo_search->setEnabled(!searching);
     ui->txt_replace->setEnabled(!searching);
@@ -206,28 +207,38 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
 {
     bool ignoreWildcard = selectedScope() == Search::ThisFile || selectedScope() == Search::Selection;
 
-    // apply filter
-    QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
-    // convert user input to wildcard list
-    QList<QRegExp> filterList;
-    for (const QString &s : qAsConst(filter))
-        filterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+    // create list of include filter regexes
+    QStringList includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
+    QList<QRegExp> includeFilterList;
+    for (const QString &s : qAsConst(includeFilter))
+        includeFilterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+
+    // create list of exclude filters
+    QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
+    QList<QRegExp> excludeFilterList;
+    for (const QString &e : qAsConst(excludeFilter))
+        excludeFilterList.append(QRegExp("*" + e.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+
 
     // filter files
     QSet<FileMeta*> res;
     for (FileMeta* fm : qAsConst(files)) {
         if (!fm) continue;
+        bool include = includeFilterList.count() == 0;
 
-        bool matchesWildcard = false;
-
-        for (const QRegExp &wildcard : qAsConst(filterList)) {
-            matchesWildcard = wildcard.exactMatch(fm->location());
-            if (matchesWildcard) break; // one match is enough, dont overwrite result
+        for (const QRegExp &wildcard : qAsConst(includeFilterList)) {
+            include = wildcard.exactMatch(fm->location());
+            if (include) break; // one match is enough, dont overwrite result
         }
 
-        if ((matchesWildcard || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly())) {
+        if (include)
+        for (const QRegExp &wildcard : qAsConst(excludeFilterList)) {
+            include = !wildcard.exactMatch(fm->location());
+            if (!include) break;
+        }
+
+        if ((include || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly()))
             res.insert(fm);
-        }
     }
     return res;
 }
@@ -427,10 +438,10 @@ void SearchDialog::updateComponentAvailability()
     ui->cb_regex->setEnabled(activateSearch);
     ui->cb_wholeWords->setEnabled(activateSearch);
 
-    ui->combo_filePattern->setEnabled(activateSearch
-                                      && !(ui->combo_scope->currentIndex() == Search::ThisFile
-                                           || ui->combo_scope->currentIndex() == Search::Selection)
-                                      );
+    bool activateFileFilters = activateSearch && !(ui->combo_scope->currentIndex() == Search::ThisFile
+                                    || ui->combo_scope->currentIndex() == Search::Selection);
+    ui->combo_filePattern->setEnabled(activateFileFilters);
+    ui->combo_fileExcludePattern->setEnabled(activateFileFilters);
 }
 
 void SearchDialog::updateClearButton()
@@ -538,23 +549,25 @@ void SearchDialog::insertHistory()
     int linebreak = searchText.indexOf("\n");
     searchText = searchText.left(linebreak);
 
-    if (ui->combo_search->findText(searchText) == -1) {
-        ui->combo_search->insertItem(0, searchText);
+    addEntryToComboBox(ui->combo_search);
+    addEntryToComboBox(ui->combo_filePattern);
+    addEntryToComboBox(ui->combo_fileExcludePattern);
+    addEntryToComboBox(ui->combo_path);
+}
+
+void SearchDialog::addEntryToComboBox(QComboBox* box)
+{
+    QString content = box->currentText();
+    if (content.isEmpty()) return;
+
+    if (box->findText(content) == -1) {
+        box->insertItem(0, content);
     } else {
         mSuppressParameterChangedEvent = true;
-        ui->combo_search->removeItem(ui->combo_search->findText(searchText));
-        ui->combo_search->insertItem(0, searchText);
-        ui->combo_search->setCurrentIndex(0);
+        box->removeItem(box->findText(content));
+        box->insertItem(0, content);
+        box->setCurrentIndex(0);
         mSuppressParameterChangedEvent = false;
-    }
-
-    QString filePattern(ui->combo_filePattern->currentText());
-    if (ui->combo_filePattern->findText(filePattern) == -1) {
-        ui->combo_filePattern->insertItem(0, filePattern);
-    } else {
-        ui->combo_filePattern->removeItem(ui->combo_filePattern->findText(filePattern));
-        ui->combo_filePattern->insertItem(0, filePattern);
-        ui->combo_filePattern->setCurrentIndex(0);
     }
 }
 

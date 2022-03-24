@@ -3476,9 +3476,6 @@ void MainWindow::createProject(QString projectPath)
     QFileInfo fi(projectPath);
     PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
     openProjectOptions(project);
-    // enter edit mode of project name
-//    QModelIndex mi = mProjectRepo.treeModel()->index(project);
-//    if (mi.isValid()) ui->projectView->edit(mi);
 }
 
 void MainWindow::on_actionRun_triggered()
