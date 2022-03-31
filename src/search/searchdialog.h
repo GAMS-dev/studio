@@ -57,7 +57,7 @@ public:
     void clearSearch();
 
     void autofillSearchField();
-    void setFindInFiles();
+    void focusFolderScope();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
@@ -84,8 +84,10 @@ private slots:
     void on_btn_forward_clicked();
     void on_combo_search_currentTextChanged(const QString);
     void on_cb_caseSens_stateChanged(int);
-    void on_cb_wholeWords_stateChanged(int arg1);
-    void on_cb_regex_stateChanged(int arg1);
+    void on_cb_wholeWords_stateChanged(int);
+    void on_cb_regex_stateChanged(int);
+    void on_btn_browse_clicked();
+    void on_cb_subdirs_stateChanged(int);
 
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);

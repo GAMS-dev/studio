@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>439</width>
-    <height>292</height>
+    <height>301</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -79,7 +79,7 @@
         <x>0</x>
         <y>0</y>
         <width>427</width>
-        <height>73</height>
+        <height>68</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -225,7 +225,7 @@
         <x>0</x>
         <y>0</y>
         <width>427</width>
-        <height>73</height>
+        <height>68</height>
        </rect>
       </property>
       <property name="sizePolicy">
@@ -359,7 +359,7 @@
         <x>0</x>
         <y>0</y>
         <width>427</width>
-        <height>73</height>
+        <height>68</height>
        </rect>
       </property>
       <attribute name="label">
@@ -421,7 +421,7 @@
         </widget>
        </item>
        <item row="1" column="1" colspan="2">
-        <widget class="QCheckBox" name="checkBox">
+        <widget class="QCheckBox" name="cb_subdirs">
          <property name="text">
           <string>Include Subdirectories</string>
          </property>
@@ -781,6 +781,9 @@
      </property>
      <property name="alignment">
       <set>Qt::AlignCenter</set>
+     </property>
+     <property name="wordWrap">
+      <bool>true</bool>
      </property>
      <property name="margin">
       <number>2</number>

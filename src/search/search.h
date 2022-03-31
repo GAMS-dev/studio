@@ -47,7 +47,8 @@ public:
         Searching,
         NoResults,
         Clear,
-        Replacing
+        Replacing,
+        InvalidPath
     };
 
     enum Direction {
@@ -69,7 +70,6 @@ public:
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
-    const QString& lastFolder() const;
     const QRegularExpression regex() const;
     Search::Scope scope() const;
     bool hasSearchSelection();
@@ -102,8 +102,6 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
-    QSet<FileMeta *> askUserForDirectory();
-
 private slots:
     void finished();
 
@@ -118,7 +116,6 @@ private:
     AbstractSearchFileHandler* mFileHandler;
     FileId mSearchSelectionFile;
     QThread mThread;
-    QString mLastFolder;
 
     bool mSearching = false;
     bool mJumpQueued = false;

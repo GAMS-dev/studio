@@ -61,14 +61,13 @@ void Search::start()
     mResults.clear();
     mResultHash.clear();
 
+    if (mFiles.empty()) {
+        return;
+    }
+
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
-    } else if (mSearchDialog->selectedScope() == Scope::Folder) {
-        if (!mCacheAvailable || mSearchDialog->mShowResults) {
-            mFiles = askUserForDirectory();
-            mFiles = mSearchDialog->filterFiles(mFiles, false);
-        }
     } // else
 
     mSearching = true;
@@ -472,11 +471,6 @@ void Search::finished()
     }
 }
 
-const QString &Search::lastFolder() const
-{
-    return mLastFolder;
-}
-
 bool Search::hasCache() const
 {
     return mCacheAvailable;
@@ -536,13 +530,6 @@ void Search::replaceNext(QString replacementText)
 void Search::replaceAll(QString replacementText)
 {
     if (mRegex.pattern().isEmpty()) return;
-
-    if (mFiles.isEmpty() && scope() == Search::Scope::Folder) {
-        mFiles = askUserForDirectory();
-        mFiles = mSearchDialog->filterFiles(mFiles, true);
-
-        if (mFiles.count() == 0) return;
-    }
 
     QList<FileMeta*> opened;
     QList<FileMeta*> unopened;
@@ -631,33 +618,6 @@ void Search::replaceAll(QString replacementText)
                         + "' were replaced with '" + replaceTerm + "'.");
     ansBox.addButton(QMessageBox::Ok);
     ansBox.exec();
-}
-
-QSet<FileMeta*> Search::askUserForDirectory()
-{
-    QDir openPath(".");
-    if (!mLastFolder.isEmpty()) {
-        openPath = QDir(mLastFolder);
-    } else if (FileMeta* fm = mFileHandler->fileMeta(mSearchDialog->mCurrentEditor)) {
-        openPath = QDir(QFileInfo(fm->location()).absolutePath());
-    }
-
-    QString path = QFileDialog::getExistingDirectory(mSearchDialog, "Pick a folder to search", openPath.path());
-
-    mLastFolder = path;
-
-    QDirIterator it(path, QDir::Files, QDirIterator::Subdirectories);
-    QSet<FileMeta*> res;
-    if (path.isEmpty()) return res;
-
-    while (it.hasNext()) {
-        QString path = it.next();
-        if (path.isEmpty()) break;
-
-        res.insert(mFileHandler->findOrCreateFile(path));
-    }
-
-    return res;
 }
 
 }

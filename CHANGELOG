@@ -1,6 +1,7 @@
 Version 1.10.1 *
 ==================
 - added `Ctrl+Shift+F` shortcut to open search with "Folder" scope
+- added "Invalid Path" feedback when using "Folder" scope
 
 Version 1.10.0
 ==================

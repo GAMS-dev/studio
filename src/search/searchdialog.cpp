@@ -187,14 +187,23 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Search::Folder: {
-            if (!mSearch.lastFolder().isEmpty()) {
-                QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
-                while (it.hasNext()) {
-                    QString path = it.next();
-                    if (path.isEmpty()) break;
+            if (ui->combo_path->currentText().isEmpty()) {
+                focusFolderScope();
+                return files;
+            }
 
-                    files.insert(mFileHandler->findOrCreateFile(path));
-                }
+            QDir dir(ui->combo_path->currentText());
+            if (!dir.exists()) {
+                setSearchStatus(Search::InvalidPath);
+                return files;
+            }
+
+            QDirIterator it(dir.path(), QDir::Files, QDirIterator::Subdirectories);
+            while (it.hasNext()) {
+                QString path = it.next();
+                if (path.isEmpty()) break;
+
+                files.insert(mFileHandler->findOrCreateFile(path));
             }
         }
         default: break;
@@ -339,15 +348,18 @@ void SearchDialog::on_btn_clear_clicked()
     updateClearButton();
 }
 
-void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
+void SearchDialog::on_cb_wholeWords_stateChanged(int)
 {
-    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
-void SearchDialog::on_cb_regex_stateChanged(int arg1)
+void SearchDialog::on_cb_regex_stateChanged(int)
 {
-    Q_UNUSED(arg1)
+    searchParameterChanged();
+}
+
+void SearchDialog::on_cb_subdirs_stateChanged(int)
+{
     searchParameterChanged();
 }
 
@@ -513,9 +525,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 
     switch (status) {
     case Search::Searching:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
-
         ui->lbl_nrResults->setText(searching + QString::number(hits) + ") "
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
@@ -526,17 +535,15 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         else
             ui->lbl_nrResults->setText("No results.");
 
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case Search::Clear:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("");
-        ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
         break;
     case Search::Replacing:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("Replacing...");
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        break;
+    case Search::InvalidPath:
+        ui->lbl_nrResults->setText("Invalid Path: " + ui->combo_path->currentText());
         break;
     }
 }
@@ -631,7 +638,7 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
-void SearchDialog::setFindInFiles() {
+void SearchDialog::focusFolderScope() {
     ui->toolBox->setCurrentWidget(ui->page_findinfiles);
     ui->combo_scope->setCurrentIndex(ui->combo_scope->findText("Folder"));
 }
@@ -674,6 +681,22 @@ AbstractSearchFileHandler *SearchDialog::fileHandler()
 QWidget *SearchDialog::currentEditor()
 {
     return mCurrentEditor;
+}
+
+void SearchDialog::on_btn_browse_clicked()
+{
+    QString oldPath = ui->combo_path->currentText();
+
+    QDir openPath(".");
+    if (!oldPath.isEmpty()) {
+        openPath = QDir(oldPath);
+    } else if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+        openPath = QDir(QFileInfo(fm->location()).absolutePath());
+    }
+
+    QString path = QFileDialog::getExistingDirectory(this, "Pick a folder to search", openPath.path());
+    if (!path.isEmpty())
+        ui->combo_path->setCurrentText(path);
 }
 
 }

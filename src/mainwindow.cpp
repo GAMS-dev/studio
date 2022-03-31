@@ -2949,7 +2949,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     // modified opening actions
     if ((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier) && e->key() == Qt::Key_F) {
         openSearchDialog();
-        mSearchDialog->setFindInFiles();
+        mSearchDialog->focusFolderScope();
     }
 
     QMainWindow::keyPressEvent(e);
