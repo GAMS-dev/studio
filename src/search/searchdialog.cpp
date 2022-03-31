@@ -198,7 +198,10 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
                 return files;
             }
 
-            QDirIterator it(dir.path(), QDir::Files, QDirIterator::Subdirectories);
+            QDirIterator::IteratorFlag options = ui->cb_subdirs->isChecked()
+                                                    ? QDirIterator::Subdirectories
+                                                    : QDirIterator::NoIteratorFlags;
+            QDirIterator it(dir.path(), QDir::Files, options);
             while (it.hasNext()) {
                 QString path = it.next();
                 if (path.isEmpty()) break;
