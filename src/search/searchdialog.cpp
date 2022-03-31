@@ -631,6 +631,11 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
+void SearchDialog::setFindInFiles() {
+    ui->toolBox->setCurrentWidget(ui->page_findinfiles);
+    ui->combo_scope->setCurrentIndex(ui->combo_scope->findText("Folder"));
+}
+
 bool SearchDialog::regex()
 {
     return ui->cb_regex->isChecked();

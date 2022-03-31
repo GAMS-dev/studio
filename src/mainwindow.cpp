@@ -2923,7 +2923,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         else mSearchDialog->hide();
 
         e->accept(); return;
-    }
+    } // end escape block
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
@@ -2945,6 +2945,13 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         toggleDebugMode();
         e->accept(); return;
     }
+
+    // modified opening actions
+    if ((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier) && e->key() == Qt::Key_F) {
+        openSearchDialog();
+        mSearchDialog->setFindInFiles();
+    }
+
     QMainWindow::keyPressEvent(e);
 }
 

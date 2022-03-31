@@ -57,6 +57,7 @@ public:
     void clearSearch();
 
     void autofillSearchField();
+    void setFindInFiles();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();

@@ -1,3 +1,7 @@
+Version 1.10.1 *
+==================
+- added `Ctrl+Shift+F` shortcut to open search with "Folder" scope
+
 Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog
