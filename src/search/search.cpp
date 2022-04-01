@@ -109,7 +109,6 @@ void Search::start()
 
 void Search::stop()
 {
-    emit updateUI();
     mThread.requestInterruption();
 }
 
