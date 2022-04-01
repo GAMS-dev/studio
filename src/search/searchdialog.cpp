@@ -647,7 +647,7 @@ QRegularExpression SearchDialog::createRegex()
 }
 
 void SearchDialog::focusFolderScope() {
-    on_cb_findinfiles_toggled(true);
+    ui->cb_findinfiles->setChecked(true);
     ui->combo_scope->setCurrentIndex(ui->combo_scope->findText("Folder"));
 }
 
