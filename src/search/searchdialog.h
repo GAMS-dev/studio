@@ -88,6 +88,9 @@ private slots:
     void on_cb_regex_stateChanged(int);
     void on_btn_browse_clicked();
     void on_cb_subdirs_stateChanged(int);
+    void on_cb_filters_toggled(bool checked);
+    void on_cb_replace_toggled(bool checked);
+    void on_cb_findinfiles_toggled(bool checked);
 
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);
@@ -117,6 +120,7 @@ private:
     QWidget* currentEditor();
     void findNextPrev(bool backwards);
     void addEntryToComboBox(QComboBox* box);
+    void adjustHeight();
 
 private:
     Ui::SearchDialog *ui;

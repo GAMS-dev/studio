@@ -43,6 +43,9 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->setupUi(this);
+    ui->cb_filters->setChecked(false);
+    ui->cb_replace->setChecked(false);
+    ui->cb_findinfiles->setChecked(false);
 
     restoreSettings();
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
@@ -644,7 +647,7 @@ QRegularExpression SearchDialog::createRegex()
 }
 
 void SearchDialog::focusFolderScope() {
-    ui->toolBox->setCurrentWidget(ui->page_findinfiles);
+    on_cb_findinfiles_toggled(true);
     ui->combo_scope->setCurrentIndex(ui->combo_scope->findText("Folder"));
 }
 
@@ -702,6 +705,35 @@ void SearchDialog::on_btn_browse_clicked()
     QString path = QFileDialog::getExistingDirectory(this, "Pick a folder to search", openPath.path());
     if (!path.isEmpty())
         ui->combo_path->setCurrentText(path);
+}
+
+
+void SearchDialog::on_cb_filters_toggled(bool checked)
+{
+    ui->frame_filters->setVisible(checked);
+    adjustHeight();
+}
+
+
+void SearchDialog::on_cb_replace_toggled(bool checked)
+{
+    ui->frame_replace->setVisible(checked);
+    adjustHeight();
+}
+
+
+void SearchDialog::on_cb_findinfiles_toggled(bool checked)
+{
+    ui->frame_findinfiles->setVisible(checked);
+    adjustHeight();
+}
+
+void SearchDialog::adjustHeight()
+{
+     // set minimum possible height
+    ui->lbl_nrResults->resize(width(), 1);
+    QApplication::processEvents(); // this is necessary for correct resizing of the dialog
+    resize(width(), 1);
 }
 
 }

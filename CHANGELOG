@@ -3,6 +3,7 @@ Version 1.10.1 *
 - added `Ctrl+Shift+F` shortcut to open search with "Folder" scope
 - added "Invalid Path" feedback when using "Folder" scope
 - added info about number of files to search dialog
+- changed default position of search dialog to top right
 
 Version 1.10.0
 ==================
