@@ -252,6 +252,7 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
         if ((include || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly()))
             res.insert(fm);
     }
+    mFilesInScope = res.count();
     return res;
 }
 
@@ -521,14 +522,15 @@ void SearchDialog::clearResultsView()
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
-    QString searching = "Searching (";
+    QString searching = "Searching ";
     QString dotAnim = ".";
+    QString files = (mFilesInScope > 1 ? QString::number(mFilesInScope) + " files" : "");
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
     switch (status) {
     case Search::Searching:
-        ui->lbl_nrResults->setText(searching + QString::number(hits) + ") "
+        ui->lbl_nrResults->setText(searching + files + " (" + QString::number(hits) + ") "
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
     case Search::NoResults:
@@ -536,14 +538,14 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
         else
-            ui->lbl_nrResults->setText("No results.");
+            ui->lbl_nrResults->setText("No results" + files + ".");
 
         break;
     case Search::Clear:
         ui->lbl_nrResults->setText("");
         break;
     case Search::Replacing:
-        ui->lbl_nrResults->setText("Replacing...");
+        ui->lbl_nrResults->setText("Replacing... " + files);
         break;
     case Search::InvalidPath:
         ui->lbl_nrResults->setText("Invalid Path: " + ui->combo_path->currentText());
@@ -609,14 +611,14 @@ void SearchDialog::autofillSearchField()
 void SearchDialog::updateNrMatches(int current)
 {
     int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
-    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files" : "");
 
     if (current == 0) {
         if (size == 0) setSearchStatus(Search::NoResults);
-        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches"));
+        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches") + files);
 
         if (size >= MAX_SEARCH_RESULTS) {
-            ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
+            ui->lbl_nrResults->setText(QString::number(MAX_SEARCH_RESULTS) + "+ matches" + files);
             ui->lbl_nrResults->setToolTip("Search is limited to "
                                               + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
@@ -624,7 +626,7 @@ void SearchDialog::updateNrMatches(int current)
         }
     } else {
         ui->lbl_nrResults->setText(QString::number(current) + " / "
-                                     + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : ""));
+                                     + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : "") + files);
     }
 }
 

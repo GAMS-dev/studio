@@ -124,6 +124,7 @@ private:
     AbstractSearchFileHandler* mFileHandler = nullptr;
 
     Search mSearch;
+    int mFilesInScope;
 
     SearchResultModel* mSearchResultModel = nullptr;
 
