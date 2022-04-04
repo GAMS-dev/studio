@@ -141,14 +141,14 @@ void CodeCompleterModel::initData()
     it = src.constBegin();
     while (it != src.constEnd()) {
         if (it->first == "ord") {
-            mData << "option " << "options ";
+            mData << "option" << "options";
             mDescription << "" << "";
         }
         if (it->first == "sum") {
             mData << "solve ";
             mDescription << "";
         }
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -156,7 +156,7 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::embedded();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -164,7 +164,7 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::keyExecute();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -174,7 +174,7 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::embeddedEnd();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -184,7 +184,7 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::options();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -194,7 +194,7 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::modelTypes();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
         ++it;
     }
@@ -214,18 +214,18 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::execute();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
-        mData << '.' + it->first + ' ';
+        mData << '.' + it->first;
         mDescription << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccSubDcoC);
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << "$call." + it->first + ' ';
+        mData << "$call." + it->first;
         mDescription << it->second;
-        mData << "$hiddenCall." + it->first + ' ';
+        mData << "$hiddenCall." + it->first;
         mDescription << it->second;
         ++it;
     }
@@ -303,16 +303,16 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::execute();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first + ' ';
+        mData << it->first;
         mDescription << it->second;
-        mData << '.' + it->first + ' ';
+        mData << '.' + it->first;
         mDescription << it->second;
         ++it;
     }
     mType.insert(mData.size()-1, ccExec);
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << "execute." + it->first + ' ';
+        mData << "execute." + it->first;
         mDescription << it->second;
         ++it;
     }
@@ -627,7 +627,7 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
             if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
                 dotPos = lastEnd;
         }
-        if (it.key() > pos) {
+        if (it.key() > pos || (it.key() == pos && pos == block.length()-1)) {
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
@@ -667,8 +667,8 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         block = cur.block();
         line = cur.block().text();
         posInBlock = cur.positionInBlock();
-        // uncomment this to generate elements for testcompleter
 #ifdef QT_DEBUG
+        // uncomment this to generate elements for testcompleter
 //        QString debugLine = line;
 //        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
 #endif
@@ -732,6 +732,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 
     if (!mFilterModel->rowCount() ||
             (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
+        DEB() << "Filter-RowCount " << mFilterModel->rowCount();
         hide();
         return;
     }
@@ -1097,6 +1098,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     if (mDebug) {
         // for analysis
 #ifdef QT_DEBUG
+        // uncomment this to generate elements for testcompleter
 //        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
 //              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
 //        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;

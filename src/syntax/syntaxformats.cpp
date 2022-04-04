@@ -674,7 +674,7 @@ SyntaxSubDCO::SyntaxSubDCO(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxK
     mSubKinds << SyntaxKind::SubDCO << SyntaxKind::DcoBody;
 }
 
-SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
