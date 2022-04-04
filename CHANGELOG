@@ -11,9 +11,6 @@ Version 1.10.0
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor
     - `Ctrl + Left Click` a Tab to open it in a vertical split
     - `Ctrl + Shift + Left Click` a Tab to open it in a horizontal split
-
-Version 1.9.7
-==================
 - Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
 - Fixed white table headers in dark mode
 
