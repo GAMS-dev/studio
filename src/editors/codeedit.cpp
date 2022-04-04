@@ -1739,6 +1739,21 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
+void CodeEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
+{
+    mCompleter->suppressOpenBegin();
+    AbstractEdit::replaceNext(regex, replacementText, selectionScope);
+    mCompleter->suppressOpenStop();
+}
+
+int CodeEdit::replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
+{
+    mCompleter->suppressOpenBegin();
+    int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
+    mCompleter->suppressOpenStop();
+    return res;
+}
+
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");

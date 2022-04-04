@@ -139,6 +139,8 @@ public:
     QString filterText() const;
     int typeFilter() const;
     QStringList splitTypes(int filter = -1);
+    void suppressOpenBegin();
+    void suppressOpenStop();
     void suppressNextOpenTrigger();
     void setDebugMode(bool debug);
 
@@ -170,7 +172,7 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     QString mPreferredText;
-    bool mSuppressNextOpenTrigger = false;
+    int mSuppressOpen = 0;
     bool mDebug = false;
 
     static const QSet<int> cEnteringSyntax;

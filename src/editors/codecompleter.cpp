@@ -487,8 +487,9 @@ bool CodeCompleter::event(QEvent *event)
 
 void CodeCompleter::showEvent(QShowEvent *event)
 {
-    if (mSuppressNextOpenTrigger) {
-        mSuppressNextOpenTrigger = false;
+    if (mSuppressOpen) {
+        if (mSuppressOpen == 1)
+            mSuppressOpen = 0;
         return;
     }
     QListView::showEvent(event);
@@ -802,8 +803,9 @@ int CodeCompleter::rowCount()
 
 void CodeCompleter::ShowIfData()
 {
-    if (mSuppressNextOpenTrigger) {
-        mSuppressNextOpenTrigger = false;
+    if (mSuppressOpen) {
+        if (mSuppressOpen == 1)
+            mSuppressOpen = 0;
         return;
     }
     updateFilter();
@@ -870,9 +872,19 @@ QStringList CodeCompleter::splitTypes(int filter)
     return res;
 }
 
+void CodeCompleter::suppressOpenBegin()
+{
+    mSuppressOpen = 2;
+}
+
+void CodeCompleter::suppressOpenStop()
+{
+    mSuppressOpen = 0;
+}
+
 void CodeCompleter::suppressNextOpenTrigger()
 {
-    mSuppressNextOpenTrigger = true;
+    mSuppressOpen = 1;
 }
 
 void CodeCompleter::setVisible(bool visible)

@@ -110,6 +110,9 @@ public:
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
+    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope) override;
+    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options,
+                   bool selectionScope) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;

@@ -74,8 +74,8 @@ public:
         FileId file = property("fileId").toInt(&ok);
         return ok ? file : FileId();
     }
-    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
-    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
+    virtual void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
+    virtual int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
     virtual void scrollSynchronize(int dx, int dy);
 
 signals:
