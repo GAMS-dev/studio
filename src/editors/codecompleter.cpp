@@ -30,6 +30,9 @@
 #include <QScreen>
 #include <QAction>
 
+// uncomment this to generate elements for testcompleter
+//#define COMPLETER_DEBUG
+
 namespace gams {
 namespace studio {
 
@@ -460,7 +463,6 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     mTypeFilter = completerTypeFilter;
     mSubType = subType;
     mNeedDot = needDot;
-//    DEB() << "NeedDot: " << needDot;
     invalidateFilter();
 }
 
@@ -502,6 +504,10 @@ bool CodeCompleter::event(QEvent *event)
 
 void CodeCompleter::showEvent(QShowEvent *event)
 {
+    if (mSuppressNextOpenTrigger) {
+        mSuppressNextOpenTrigger = false;
+        return;
+    }
     QListView::showEvent(event);
     setFocus();
 }
@@ -627,7 +633,7 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
             if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
                 dotPos = lastEnd;
         }
-        if (it.key() > pos || (it.key() == pos && pos == block.length()-1)) {
+        if (it.key() >= pos) {
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
                     break;
@@ -643,16 +649,15 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
             dcoFlavor = res.second;
     }
 
-#ifdef QT_DEBUG
-    // uncomment this to generate elements for testcompleter
-//    if (mEdit) {
-//        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-//        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-//            if (block.isValid())
-//                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
-//                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
-//        }
-//    }
+#ifdef COMPLETER_DEBUG
+    if (mEdit) {
+        if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
+        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+            if (block.isValid())
+                DEB() << "    mSynSim.addBlockSyntax(" << it.key()
+                      << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
+        }
+    }
 #endif
 
     return res;
@@ -667,10 +672,9 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
         block = cur.block();
         line = cur.block().text();
         posInBlock = cur.positionInBlock();
-#ifdef QT_DEBUG
-        // uncomment this to generate elements for testcompleter
-//        QString debugLine = line;
-//        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
+#ifdef COMPLETER_DEBUG
+        QString debugLine = line;
+        DEB() << "    // TEST: \n    line = \"" << debugLine.replace("\"", "\\\"") << "\";";
 #endif
     }
 
@@ -814,6 +818,10 @@ int CodeCompleter::rowCount()
 
 void CodeCompleter::ShowIfData()
 {
+    if (mSuppressNextOpenTrigger) {
+        mSuppressNextOpenTrigger = false;
+        return;
+    }
     updateFilter();
     if (rowCount() &&
             (mFilterModel->rowCount() > 1 || mFilterModel->data(mFilterModel->index(0,0)).toString() != mFilterText)) {
@@ -876,6 +884,11 @@ QStringList CodeCompleter::splitTypes(int filter)
         }
     }
     return res;
+}
+
+void CodeCompleter::suppressNextOpenTrigger()
+{
+    mSuppressNextOpenTrigger = true;
 }
 
 void CodeCompleter::setVisible(bool visible)
@@ -1097,11 +1110,10 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
 
     if (mDebug) {
         // for analysis
-#ifdef QT_DEBUG
-        // uncomment this to generate elements for testcompleter
-//        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
-//              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
-//        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
+#ifdef COMPLETER_DEBUG
+        DEB() << " -> " << start << ": " << syntax::syntaxKindName(syntax.first) << "," << syntax.second
+              << "   filter: " << QString::number(filter, 16) << " [" << splitTypes(filter).join(",") << "]";
+        DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 #endif
         QString debugText = "Completer at " + QString::number(start) + ": "
                 + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
