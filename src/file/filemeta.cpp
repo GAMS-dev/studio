@@ -1053,10 +1053,15 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), widget));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
-        // Guc Editor ignore other encoding scheme than UTF-8
-        mCodec = QTextCodec::codecForName("utf-8");
-        res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                       id(), widget));
+        QFileInfo fileInfo(name());
+        if (QString::compare(fileInfo.completeBaseName(),"gamsconfig", Qt::CaseInsensitive)==0) {
+            // Guc Editor ignore other encoding scheme than UTF-8
+            mCodec = QTextCodec::codecForName("utf-8");
+            res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
+                                                                         id(), widget));
+        } else {
+            forcedAsTextEdit = true;
+        }
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;

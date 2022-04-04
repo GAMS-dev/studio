@@ -163,8 +163,10 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isRunnable = false;
     bool isOpen = fileNode && fileNode->file()->isOpen();
     bool isOpenable = fileNode && !fileNode->file()->isOpen();
-    bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
-    bool isGucFile = fileNode && fileNode->file()->kind() == FileKind::Guc;
+    bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt &&
+                     fileNode ? mAvailableSolvers.contains(QFileInfo(fileNode->location()).completeBaseName(), Qt::CaseInsensitive) : false ;
+    bool isGucFile = fileNode && fileNode->file()->kind() == FileKind::Guc &&
+                     fileNode ? QString::compare( QFileInfo(fileNode->location()).completeBaseName(),"gamsconfig")==0 : false ;
     bool isOpenableAsText = isOpenable && (isOptFile || isGucFile);
     bool isOpenWithSolverOptionEditor = false;
     bool isOpenWithGamsUserConfigEditor = false;
