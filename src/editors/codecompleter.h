@@ -139,6 +139,7 @@ public:
     QString filterText() const;
     int typeFilter() const;
     QStringList splitTypes(int filter = -1);
+    bool isOpenSuppressed();
     void suppressOpenBegin();
     void suppressOpenStop();
     void suppressNextOpenTrigger();

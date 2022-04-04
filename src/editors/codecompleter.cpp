@@ -872,6 +872,11 @@ QStringList CodeCompleter::splitTypes(int filter)
     return res;
 }
 
+bool CodeCompleter::isOpenSuppressed()
+{
+    return mSuppressOpen;
+}
+
 void CodeCompleter::suppressOpenBegin()
 {
     mSuppressOpen = 2;
