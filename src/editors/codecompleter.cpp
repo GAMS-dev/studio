@@ -217,15 +217,6 @@ void CodeCompleterModel::initData()
     src = syntax::SyntaxData::execute();
     it = src.constBegin();
     while (it != src.constEnd()) {
-        mData << it->first;
-        mDescription << it->second;
-        mData << '.' + it->first;
-        mDescription << it->second;
-        ++it;
-    }
-    mType.insert(mData.size()-1, ccSubDcoC);
-    it = src.constBegin();
-    while (it != src.constEnd()) {
         mData << "$call." + it->first;
         mDescription << it->second;
         mData << "$hiddenCall." + it->first;
@@ -234,9 +225,6 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDcoStrt);
 
-    mData << ".set";
-    mDescription << "compile-time variable based on a GAMS set";
-    mType.insert(mData.size()-1, ccSubDcoE);
     mData << "$eval.set";
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalGlobal.set";
@@ -245,11 +233,6 @@ void CodeCompleterModel::initData()
     mDescription << "compile-time variable based on a GAMS set";
     mType.insert(mData.size()-1, ccDcoStrt);
 
-    mData << "noError";
-    mDescription << "abort without error";
-    mData << ".noError";
-    mDescription << "abort without error";
-    mType.insert(mData.size()-1, ccSubDcoA);
     mData << "$abort.noError";
     mDescription << "abort without error";
     mType.insert(mData.size()-1, ccDcoStrt);
@@ -652,11 +635,12 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
 #ifdef COMPLETER_DEBUG
     if (mEdit) {
         if (block.isValid()) DEB() << "    mSynSim.clearBlockSyntax();";
-        for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        for (QMap<int,QPair<int, int> >::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
             if (block.isValid())
                 DEB() << "    mSynSim.addBlockSyntax(" << it.key()
                       << ", SyntaxKind::" << syntax::syntaxKindName(it.value().first) << ", " << it.value().second << ");";
         }
+        DEB() << " <" << syntax::syntaxKindName(res.first) << ", " << res.second << ">";
     }
 #endif
 
@@ -853,11 +837,11 @@ int CodeCompleter::typeFilter() const
 QStringList CodeCompleter::splitTypes(int filter)
 {
     static const QMap<CodeCompleterType, QString> groupTypes {
-        {cc_None,"cc_None"}, {cc_Dco,"cc_Dco"}, {cc_SubDco,"ccSubDco"}, {cc_Res,"cc_Res"},
+        {cc_None,"cc_None"}, {cc_Dco,"cc_Dco"}, {cc_Res,"cc_Res"},
         {cc_Start,"cc_Start"}, {cc_All,"cc_All"},
     };
     static const QMap<CodeCompleterType, QString> baseTypes {
-        {ccDcoStrt,"ccDcoStrt"}, {ccDcoEnd,"ccDcoEnd"}, {ccSubDcoA,"ccSubDcoA"}, {ccSubDcoC,"ccSubDcoC"}, {ccSubDcoE,"ccSubDcoE"},
+        {ccDcoStrt,"ccDcoStrt"}, {ccDcoEnd,"ccDcoEnd"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccCtConst,"ccCtConst"}, {ccDecl,"ccDecl"},
         {ccDeclAddS,"ccDeclAddS"}, {ccDeclAddS,"ccDeclAddV"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"},
         {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
@@ -1095,12 +1079,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
                 }
             }
         }
-        if (dcoFlavor == 16)
-            filter = ccSubDcoA | ccSysSufC | ccCtConst;
-        else if (dcoFlavor == 17)
-            filter = ccSubDcoC | ccSysSufC | ccCtConst;
-        else if (dcoFlavor == 18)
-            filter = ccSubDcoE | ccSysSufC | ccCtConst;
+        if (dcoFlavor >= 16 && dcoFlavor <= 18 )
+            filter = ccSysSufC | ccCtConst;
         else
             filter = filter & ~cc_Dco;
     } else {

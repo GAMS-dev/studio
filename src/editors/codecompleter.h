@@ -40,9 +40,9 @@ enum CodeCompleterType {
 
     ccDcoStrt   = 0x00000001, // DCO (starter and standalone)
     ccDcoEnd    = 0x00000002, // DCO (ender, e.g. $offText)
-    ccSubDcoA   = 0x00000004, // sub DCO of $abort
-    ccSubDcoC   = 0x00000008, // sub DCO of $call
-    ccSubDcoE   = 0x0000000C, // sub DCO of $eval (disjunct to A and C, can be combined, filter adapted)
+//    ccSubDcoA   = 0x00000004, // sub DCO of $abort
+//    ccSubDcoC   = 0x00000008, // sub DCO of $call
+//    ccSubDcoE   = 0x0000000C, // sub DCO of $eval (disjunct to A and C, can be combined, filter adapted)
 
     cc_Dco      = 0x0000000F, // all DCOs
     cc_SubDco   = 0x0000000C, // all sub DCOs
