@@ -1881,6 +1881,8 @@ void CodeEdit::startCompleterTimer()
             showCompleter();
         else
             mCompleterTimer.start(500);
+    } else {
+        mCompleter->suppressOpenStop();
     }
 }
 
