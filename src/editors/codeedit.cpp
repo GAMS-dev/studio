@@ -331,7 +331,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
     int vertScroll = verticalScrollBar()->sliderPosition();
     int topBlock = firstVisibleBlock().blockNumber();
-    if (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace)
+    if (mCompleter && (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace))
         mCompleter->suppressNextOpenTrigger();
     if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
@@ -1741,16 +1741,16 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
 
 void CodeEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
 {
-    mCompleter->suppressOpenBegin();
+    if (mCompleter) mCompleter->suppressOpenBegin();
     AbstractEdit::replaceNext(regex, replacementText, selectionScope);
-    mCompleter->suppressOpenStop();
+    if (mCompleter) mCompleter->suppressOpenStop();
 }
 
 int CodeEdit::replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
-    mCompleter->suppressOpenBegin();
+    if (mCompleter) mCompleter->suppressOpenBegin();
     int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
-    mCompleter->suppressOpenStop();
+    if (mCompleter) mCompleter->suppressOpenStop();
     return res;
 }
 
@@ -1881,7 +1881,7 @@ void CodeEdit::startCompleterTimer()
             showCompleter();
         else
             mCompleterTimer.start(500);
-    } else {
+    } else if (mCompleter) {
         mCompleter->suppressOpenStop();
     }
 }
