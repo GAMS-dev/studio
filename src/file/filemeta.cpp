@@ -533,7 +533,8 @@ void FileMeta::addEditor(QWidget *edit)
             connect(lxi, &lxiviewer::LxiViewer::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         else
             connect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
-        disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
+        if (aEdit)
+            disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
