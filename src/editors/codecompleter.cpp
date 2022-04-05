@@ -604,6 +604,11 @@ const QSet<int> CodeCompleter::cExecuteSyntax {
     int(syntax::SyntaxKind::ExecuteKey),
     int(syntax::SyntaxKind::ExecuteBody)
 };
+const QSet<int> CodeCompleter::cBlockSyntax {
+    int(syntax::SyntaxKind::CommentBlock),
+    int(syntax::SyntaxKind::IgnoredBlock),
+    int(syntax::SyntaxKind::EmbeddedBody)
+};
 
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
 {
@@ -624,6 +629,8 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
                 res = it.value();
             }
             if (cEnteringSyntax.contains(it.value().first) && lastEnd < pos)
+                res = it.value();
+            if (cBlockSyntax.contains(it.value().first) && lastEnd == pos)
                 res = it.value();
             break;
         }
