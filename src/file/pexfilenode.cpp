@@ -48,7 +48,7 @@ QIcon PExFileNode::icon(QIcon::Mode mode, int alpha)
     PExGroupNode* par = parentNode();
     while (par && !par->toProject()) par = par->parentNode();
     if (!par) return QIcon();
-    return FileIcon::iconForFileKind(file()->kind(), !file()->isReadOnly(),
+    return FileIcon::iconForFileKind(file()->kind(), file()->isReadOnly(),
                                      par->toProject()->parameter("gms") == location(), mode, alpha);
 }
 
