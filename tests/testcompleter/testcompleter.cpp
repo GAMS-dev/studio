@@ -54,10 +54,10 @@ void TestCompleter::testDco()
 
     // ===== TEST: empty line in non-GAMS blocks
     line = "";
+    expect = ccDcoEnd;
+
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::CommentBlock, 0);
-
-    expect = ccDcoEnd;
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 

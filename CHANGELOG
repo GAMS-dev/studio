@@ -13,6 +13,8 @@ Version 1.10.0
     - `Ctrl + Shift + Left Click` a Tab to open it in a horizontal split
 - Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
 - Fixed white table headers in dark mode
+- Fixed code completer activation issues
+- Fixed completer allowed multiple DCO suffixes
 
 Version 1.9.6
 ==================
