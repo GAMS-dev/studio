@@ -59,7 +59,7 @@ public:
     FileId id() const;
     QString location() const;
     QStringList suffix() const;
-    void setKind(const QString &suffix);
+    void setKind(FileKind kind);
     FileKind kind() const;
     QString kindAsStr() const;
     QString name(NameModifier mod = NameModifier::raw);

@@ -1545,9 +1545,9 @@ bool SolverOptionWidget::saveAs(const QString &location)
                                                , LogMsgType::Warning);
             warning = true;
         }
-        if (FileType::from(FileKind::Opt) != FileType::from(QFileInfo(location).suffix())) {
+        if (FileType::from(FileKind::Opt) != FileType::from(QFileInfo(location).fileName())) {
             mOptionTokenizer->logger()->append(QString("Unrecognized file suffix '%1'. Saved options into '%2' may cause solver option editor to display the contents improperly.")
-                                                       .arg(QFileInfo(location).suffix()).arg(QFileInfo(location).fileName())
+                                                       .arg(QFileInfo(location).fileName()).arg(QFileInfo(location).fileName())
                                                , LogMsgType::Warning);
             warning = true;
         }

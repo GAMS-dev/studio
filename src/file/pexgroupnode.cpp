@@ -861,7 +861,7 @@ void PExProjectNode::addNodesForSpecialFiles()
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
-            PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
+            PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
             if (runFile)
                 node->file()->setCodec(runFile->codec());
             else {

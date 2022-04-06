@@ -1401,7 +1401,7 @@ void MainWindow::on_actionSave_As_triggered()
                  break;
 
         choice = 1;
-        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).suffix())) {
+        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).fileName())) {
             if (fileMeta->kind() == FileKind::Opt)
                 choice = QMessageBox::question(this, "Invalid Option File Suffix"
                                                    , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
@@ -2102,7 +2102,7 @@ void MainWindow::on_actionChangelog_triggered()
         return;
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    fm->setKind("log");
+    fm->setKind(FileKind::TxtRO);
     openFile(fm, true);
 }
 
@@ -4153,7 +4153,7 @@ PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, P
     PExFileNode *node = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
-        FileType fType = FileType::from(fInfo.suffix());
+        FileType fType = FileType::from(fInfo.fileName());
 
         if (fType == FileKind::Gsp) {
             // Placeholder to read the project and create all nodes for associated files

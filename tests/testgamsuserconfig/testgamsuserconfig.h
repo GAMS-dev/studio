@@ -31,6 +31,8 @@ private slots:
 
     void testUserConfigDir();
 
+    void testFileType();
+
     void testReadEmptyDefaultGamsConfigFile();
     void testReadDefaultGamsConfigFile();
 
