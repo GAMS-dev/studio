@@ -117,6 +117,7 @@ private:
     void findNextPrev(bool backwards);
     void addEntryToComboBox(QComboBox* box);
     void adjustHeight();
+    void setSearchedFiles(int files);
 
 private:
     Ui::SearchDialog *ui;

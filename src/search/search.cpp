@@ -53,6 +53,7 @@ void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool
                      !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
     mScope = mSearchDialog->selectedScope();
+    mSearchDialog->setSearchedFiles(mFiles.size());
 }
 
 void Search::start()

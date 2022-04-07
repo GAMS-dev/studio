@@ -250,7 +250,6 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
         if ((include || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly()))
             res.insert(fm);
     }
-    mFilesInScope = res.count();
     return res;
 }
 
@@ -712,6 +711,11 @@ void SearchDialog::adjustHeight()
     ui->lbl_nrResults->resize(width(), 1);
     QApplication::processEvents(); // this is necessary for correct resizing of the dialog
     resize(width(), 1);
+}
+
+void SearchDialog::setSearchedFiles(int files)
+{
+    mFilesInScope = files;
 }
 
 }
