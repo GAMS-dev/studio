@@ -1402,16 +1402,22 @@ void MainWindow::on_actionSave_As_triggered()
 
         choice = 1;
         if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).fileName())) {
-            if (fileMeta->kind() == FileKind::Opt)
-                choice = QMessageBox::question(this, "Invalid Option File Suffix"
-                                                   , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
+            if (fileMeta->kind() == FileKind::Opt) {
+                choice = QMessageBox::question(this, "Invalid Option File Name or Suffix"
+                                                   , QString("'%1' is not a valid solver option file name or suffix. File Saved as '%2' may not be displayed properly.")
                                                           .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
-            else
+            } else if (fileMeta->kind() == FileKind::Guc) {
+                choice = QMessageBox::question(this, "Invalid Gams Configuration File Name or Suffix"
+                                                   , QString("'%1' is not a valid Gams configuration file name or suffix. File saved as '%1' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).fileName())
+                                                   , "Select other", "Continue", "Abort", 0, 2);
+            } else {
                 choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
+                                                   , QString("Suffix '%1' is of different type than source file suffix '%2'. File saved as '%3' may not be displayed properly.")
                                                           .arg(QFileInfo(filePath).suffix(), QFileInfo(fileMeta->location()).suffix(), QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
+            }
         }
         if (choice == 0)
             continue;
