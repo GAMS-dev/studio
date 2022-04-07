@@ -62,6 +62,7 @@ void Search::start()
     mResultHash.clear();
 
     if (mFiles.empty()) {
+        mSearchDialog->setSearchStatus(Search::NoResults);
         return;
     }
 

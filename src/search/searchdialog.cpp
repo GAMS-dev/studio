@@ -538,11 +538,14 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
     case Search::NoResults:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
-        else
-            ui->lbl_nrResults->setText("No results" + files + ".");
+        else {
+            if (mFilesInScope == 1)
+                ui->lbl_nrResults->setText("No results in 1 file.");
+            else
+                ui->lbl_nrResults->setText("No results in " + QString::number(mFilesInScope) + "files.");
+        }
 
         break;
     case Search::Clear:
