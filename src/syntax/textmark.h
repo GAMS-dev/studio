@@ -22,6 +22,7 @@
 
 #include <QTextDocument>
 #include <QVector>
+#include <QFileInfo>
 #include "file/filetype.h"
 #include "common.h"
 
@@ -124,7 +125,7 @@ struct TextMarkData
     int column;
     int size;
     FileKind fileKind() {
-        return FileType::from(location.right(4).toLower()).kind();
+        return FileType::from( QFileInfo(location).fileName().toLower() ).kind();
     }
 };
 

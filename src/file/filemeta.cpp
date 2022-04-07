@@ -213,7 +213,7 @@ void FileMeta::unlinkAndFreeDocument()
 void FileMeta::refreshType()
 {
     QFileInfo f(mLocation);
-    FileType* newFT = &FileType::from(f.suffix());
+    FileType* newFT = &FileType::from(f.fileName());
     FileKind oldKind = kind();
     mData = Data(mLocation, newFT); // react to changes in location and extension
     if (mDocument) {
@@ -269,9 +269,9 @@ QStringList FileMeta::suffix() const
     return mData.type->suffix();
 }
 
-void FileMeta::setKind(const QString &suffix)
+void FileMeta::setKind(FileKind kind)
 {
-    mData.type = &FileType::from(suffix);
+    mData.type = &FileType::from(kind);
 }
 
 FileKind FileMeta::kind() const
@@ -533,7 +533,8 @@ void FileMeta::addEditor(QWidget *edit)
             connect(lxi, &lxiviewer::LxiViewer::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         else
             connect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
-        disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
+        if (aEdit)
+            disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
@@ -1053,10 +1054,10 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
         if (kind() == FileKind::Lst)
             res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), widget));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
-        // Guc Editor ignore other encoding scheme than UTF-8
-        mCodec = QTextCodec::codecForName("utf-8");
-        res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                       id(), widget));
+            // Guc Editor ignore other encoding scheme than UTF-8
+            mCodec = QTextCodec::codecForName("utf-8");
+            res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
+                                                                         id(), widget));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;
@@ -1138,19 +1139,18 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
 
-    if (location.startsWith('[')) {
-        int len = location.indexOf(']')-2;
-        type = knownType ? knownType
-                         : &FileType::from((len > 0) ? location.mid(1, len) : "-");
+    QFileInfo fi(location);
+    if (fi.fileName().startsWith('[')) {
+        int len = fi.fileName().indexOf(']')-1;
+        QString loc = (len > 0) ? fi.fileName().mid(1, len) : "-";
+        type = knownType ? knownType : &FileType::from( QString::compare(loc, fi.completeBaseName())==0 ? loc : "-" );
     } else {
-        QFileInfo fi(location);
         exist = fi.exists();
         size = fi.size();
         created = fi.birthTime();
         modified = fi.lastModified();
-        type = (knownType ? knownType : &FileType::from(fi.suffix()));
+        type = (knownType ? knownType : &FileType::from(fi.fileName()));
         if (type->kind() == FileKind::PrO) {
-            QFileInfo fi(location);
             if (fi.exists() && fi.isFile()) {
                 type = &FileType::from(FileKind::Txt);
             }

@@ -27,6 +27,7 @@ HEADERS +=                  \
     testgamsuserconfig.h    \
     $$SRCPATH/option/gamsuserconfig.h   \
     $$SRCPATH/exception.h   \
+    $$SRCPATH/file/filetype.h \
     $$SRCPATH/commonpaths.h
 
 SOURCES +=                    \
@@ -34,5 +35,8 @@ SOURCES +=                    \
     $$SRCPATH/option/gamsuserconfig.cpp       \
     $$SRCPATH/editors/sysloglocator.cpp       \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/file/filetype.cpp \
     $$SRCPATH/exception.cpp   \
-    $$SRCPATH/commonpaths.cpp
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/support/SolverConfigInfo.cpp \
+

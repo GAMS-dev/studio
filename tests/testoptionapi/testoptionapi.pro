@@ -34,5 +34,8 @@ HEADERS += \
 SOURCES += \
     testoptionapi.cpp \
     $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/file/filetype.cpp \
-    $$SRCPATH/exception.cpp
+    $$SRCPATH/exception.cpp \
+    $$SRCPATH/support/solverconfiginfo.cpp

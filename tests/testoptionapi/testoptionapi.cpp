@@ -54,88 +54,97 @@ void TestOptionAPI::initTestCase()
 
 void TestOptionAPI::testOptFileSuffix_data()
 {
-    QTest::addColumn<QString>("suffix");
-    QTest::addColumn<bool>("valid");
+    QTest::addColumn<QString>("fileName");
+    QTest::addColumn<bool>("validAsOpt");
     QTest::addColumn<FileKind>("expectedKind");
 
-    QTest::newRow("opt")   << "opt"    << true << FileKind::Opt;
-    QTest::newRow("op2")   << "op2"    << true << FileKind::Opt;
-    QTest::newRow("OP2")   << "OP2"    << true << FileKind::Opt;
-    QTest::newRow("op9")   << "op9"    << true << FileKind::Opt;
-    QTest::newRow("Op9")   << "Op9"    << true << FileKind::Opt;
-    QTest::newRow("o10")   << "o10"    << true << FileKind::Opt;
-    QTest::newRow("101")   << "101"    << true << FileKind::Opt;
-    QTest::newRow("1222")  << "1222"   << true << FileKind::Opt;
-    QTest::newRow("98765") << "98765"  << true << FileKind::Opt;
+    QTest::newRow("opt")   << "cplex.opt"    << true << FileKind::Opt;
+    QTest::newRow("op2")   << "cplex.op2"    << true << FileKind::Opt;
+    QTest::newRow("OP2")   << "cplex.OP2"    << true << FileKind::Opt;
+    QTest::newRow("op9")   << "cplex.op9"    << true << FileKind::Opt;
+    QTest::newRow("Op9")   << "cplex.Op9"    << true << FileKind::Opt;
+    QTest::newRow("o10")   << "cplex.o10"    << true << FileKind::Opt;
+    QTest::newRow("101")   << "cplex.101"    << true << FileKind::Opt;
+    QTest::newRow("1222")  << "cplex.1222"   << true << FileKind::Opt;
+    QTest::newRow("98765") << "cplex.98765"  << true << FileKind::Opt;
 
-    QTest::newRow("Opt")   << "Opt"    << true << FileKind::Opt;
-    QTest::newRow("OPt")   << "OPt"    << true << FileKind::Opt;
-    QTest::newRow("opT")   << "opT"    << true << FileKind::Opt;
-    QTest::newRow("OPT")   << "OPT"    << true << FileKind::Opt;
+    QTest::newRow("Opt")   << "cplex.Opt"    << true << FileKind::Opt;
+    QTest::newRow("OPt")   << "cplex.OPt"    << true << FileKind::Opt;
+    QTest::newRow("opT")   << "cplex.opT"    << true << FileKind::Opt;
+    QTest::newRow("OPT")   << "cplex.OPT"    << true << FileKind::Opt;
 
-    QTest::newRow("opt9")   << "opt9"   << false << FileKind::None;
-    QTest::newRow("opt99")  << "op99"   << false << FileKind::None;
-    QTest::newRow("opt999") << "op999"  << false << FileKind::None;
-    QTest::newRow("optt")   << "optt"   << false << FileKind::None;
-    QTest::newRow("opt_1")  << "opt_1"  << false << FileKind::None;
+    QTest::newRow("notopt")   << "notASolver.opt"  << false << FileKind::None;
+    QTest::newRow("notop2")   << "notASolver.op2"  << false << FileKind::None;
 
-    QTest::newRow("op0")    << "op0"    << false << FileKind::None;
-    QTest::newRow("op1")    << "op1"    << false << FileKind::None;
-    QTest::newRow("op01")   << "op01"   << false << FileKind::None;
-    QTest::newRow("op10")   << "op10"   << false << FileKind::None;
-    QTest::newRow("op99")   << "op99"   << false << FileKind::None;
-    QTest::newRow("op123")  << "op123"  << false << FileKind::None;
+    QTest::newRow("opt9")   << "cplex.opt9"   << false << FileKind::None;
+    QTest::newRow("opt99")  << "cplex.op99"   << false << FileKind::None;
+    QTest::newRow("opt999") << "cplex.op999"  << false << FileKind::None;
+    QTest::newRow("optt")   << "cplex.optt"   << false << FileKind::None;
+    QTest::newRow("opt_1")  << "cplex.opt_1"  << false << FileKind::None;
 
-    QTest::newRow("o1")     << "o1"     << false << FileKind::None;
-    QTest::newRow("o02")    << "o02"    << false << FileKind::None;
-    QTest::newRow("o123")   << "o123"   << false << FileKind::None;
-    QTest::newRow("ox10")   << "ox10"   << false << FileKind::None;
+    QTest::newRow("op0")    << "cpelx.op0"    << false << FileKind::None;
+    QTest::newRow("op1")    << "cpelx.op1"    << false << FileKind::None;
+    QTest::newRow("op01")   << "cpelx.op01"   << false << FileKind::None;
+    QTest::newRow("op10")   << "cpelx.op10"   << false << FileKind::None;
+    QTest::newRow("op99")   << "cpelx.op99"   << false << FileKind::None;
+    QTest::newRow("op123")  << "cpelx.op123"  << false << FileKind::None;
 
-    QTest::newRow("012")    << "012"    << false << FileKind::None;
-    QTest::newRow("23")     << "23"     << false << FileKind::None;
-    QTest::newRow("1p2")    << "1p2"    << false << FileKind::None;
-    QTest::newRow("12t34")  << "12t34"  << false << FileKind::None;
-    QTest::newRow("2pt")    << "2pt"    << false << FileKind::None;
+    QTest::newRow("o1")     << "cplex.o1"     << false << FileKind::None;
+    QTest::newRow("o02")    << "cplex.o02"    << false << FileKind::None;
+    QTest::newRow("o123")   << "cplex.o123"   << false << FileKind::None;
+    QTest::newRow("ox10")   << "cplex.ox10"   << false << FileKind::None;
 
-    QTest::newRow("opt.opt")    << "opt.opt"    << false << FileKind::None;
-    QTest::newRow("opt.op1")    << "opt.op1"    << false << FileKind::None;
-    QTest::newRow("opt.o12")    << "opt.o12"    << false << FileKind::None;
-    QTest::newRow("opt.100")    << "opt.100"    << false << FileKind::None;
-    QTest::newRow("opt.101")    << "opt.101"    << false << FileKind::None;
-    QTest::newRow("opt.123")    << "opt.123"    << false << FileKind::None;
-    QTest::newRow("opt.1234")   << "opt.1234"   << false << FileKind::None;
-    QTest::newRow("op1.opt")    << "op1.opt"    << false << FileKind::None;
-    QTest::newRow("o12.opt")    << "o12.opt"    << false << FileKind::None;
-    QTest::newRow("123.opt")    << "123.opt"    << false << FileKind::None;
-    QTest::newRow("1234.opt")   << "1234.opt"   << false << FileKind::None;
+    QTest::newRow("012")    << "cplex.012"    << false << FileKind::None;
+    QTest::newRow("23")     << "cplex.23"     << false << FileKind::None;
+    QTest::newRow("1p2")    << "cplex.1p2"    << false << FileKind::None;
+    QTest::newRow("12t34")  << "cplex.12t34"  << false << FileKind::None;
+    QTest::newRow("2pt")    << "cplex.2pt"    << false << FileKind::None;
 
-    QTest::newRow("gsp")    << "gsp"    << false << FileKind::Gsp ;
-    QTest::newRow("pro")    << "pro"    << false << FileKind::Gsp ;
-    QTest::newRow("gms")    << "gms"    << false << FileKind::Gms ;
-    QTest::newRow("inc")    << "inc"    << false << FileKind::Gms ;
-    QTest::newRow("txt")    << "txt"    << false << FileKind::Txt ;
-    QTest::newRow("log")    << "log"    << false << FileKind::TxtRO ;
-    QTest::newRow("lst")    << "lst"    << false << FileKind::Lst ;
-    QTest::newRow("lxi")    << "lxi"    << false << FileKind::Lxi ;
-    QTest::newRow("gdx")    << "gdx"    << false << FileKind::Gdx ;
-    QTest::newRow("ref")    << "ref"    << false << FileKind::Ref ;
-    QTest::newRow("~log")   << "~log"   << false << FileKind::Log ;
+    QTest::newRow("opt.opt")    << "cplex.opt.opt"    << false << FileKind::None;
+    QTest::newRow("opt.op1")    << "cplex.opt.op1"    << false << FileKind::None;
+    QTest::newRow("opt.o12")    << "cplex.opt.o12"    << false << FileKind::None;
+    QTest::newRow("opt.100")    << "cplex.opt.100"    << false << FileKind::None;
+    QTest::newRow("opt.101")    << "cplex.opt.101"    << false << FileKind::None;
+    QTest::newRow("opt.123")    << "cplex.opt.123"    << false << FileKind::None;
+    QTest::newRow("opt.1234")   << "cplex.opt.1234"   << false << FileKind::None;
+    QTest::newRow("op1.opt")    << "cplex.op1.opt"    << false << FileKind::None;
+    QTest::newRow("o12.opt")    << "cplex.o12.opt"    << false << FileKind::None;
+    QTest::newRow("123.opt")    << "cplex.123.opt"    << false << FileKind::None;
+    QTest::newRow("1234.opt")   << "cplex.1234.opt"   << false << FileKind::None;
 
-    QTest::newRow("~op")         << "~op"     << false << FileKind::None;
-    QTest::newRow("empty")       << ""        << false << FileKind::PrO;
-    QTest::newRow("whitespace")  << " "       << false << FileKind::None;
+    QTest::newRow("gsp")    << "xyz.gsp"    << false << FileKind::Gsp ;
+    QTest::newRow("pro")    << "xyz.pro"    << false << FileKind::Gsp ;
+    QTest::newRow("gms")    << "xyz.gms"    << false << FileKind::Gms ;
+    QTest::newRow("inc")    << "xyz.inc"    << false << FileKind::Gms ;
+    QTest::newRow("txt")    << "xyz.txt"    << false << FileKind::Txt ;
+    QTest::newRow("log")    << "xyz.log"    << false << FileKind::TxtRO ;
+    QTest::newRow("lst")    << "xyz.lst"    << false << FileKind::Lst ;
+    QTest::newRow("lxi")    << "xyz.lxi"    << false << FileKind::Lxi ;
+    QTest::newRow("gdx")    << "xyz.gdx"    << false << FileKind::Gdx ;
+    QTest::newRow("ref")    << "xyz.ref"    << false << FileKind::Ref ;
+    QTest::newRow("~log")   << "xyz.~log"   << false << FileKind::Log ;
+    QTest::newRow("efi")    << "xyz.efi"    << false << FileKind::Efi ;
+
+    QTest::newRow("Guc")   << "gamsconfig.yaml"     << false << FileKind::Guc ;
+    QTest::newRow("yaml")  << "notAgamsconfig.yaml" << false << FileKind::None;
+    QTest::newRow("~op")   << "abc.~op"             << false << FileKind::None;
+
+    QTest::newRow("-")           << "-"        << false << FileKind::PrO;
+    QTest::newRow("nosuffix")   << "noSuffix"  << false << FileKind::PrO;
+    QTest::newRow("empty")       << ""         << false << FileKind::PrO;
+    QTest::newRow("whitespace")  << " "        << false << FileKind::PrO;
 }
 
 void TestOptionAPI::testOptFileSuffix()
 {
-    QFETCH(QString, suffix);
-    QFETCH(bool, valid);
+    QFETCH(QString, fileName);
+    QFETCH(bool, validAsOpt);
     QFETCH(FileKind, expectedKind);
 
-    QCOMPARE(valid, FileKind::Opt == FileType::from(suffix).kind());
-    QCOMPARE(valid, FileType::from(FileKind::Opt) == FileType::from(suffix));
-    QCOMPARE(valid, QString::compare(FileType::from(suffix).defaultSuffix(), "opt", Qt::CaseInsensitive)==0 );
-    QCOMPARE(FileType::from(expectedKind), FileType::from(suffix));
+    QCOMPARE(validAsOpt, FileKind::Opt == FileType::from(fileName).kind());
+    QCOMPARE(validAsOpt, FileType::from(FileKind::Opt) == FileType::from(fileName));
+    QCOMPARE(validAsOpt, QString::compare(FileType::from(fileName).defaultSuffix(), "opt", Qt::CaseInsensitive)==0 );
+    QCOMPARE(FileType::from(expectedKind), FileType::from(fileName));
 }
 
 void TestOptionAPI::testEOLChars()

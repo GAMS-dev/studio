@@ -33,5 +33,10 @@ HEADERS += \
 
 SOURCES += \
     testdialogfilefilter.cpp \
-    $$SRCPATH/file/filetype.cpp
+    $$SRCPATH/commonpaths.cpp \
+    $$SRCPATH/exception.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/editors/sysloglocator.cpp \
+    $$SRCPATH/file/filetype.cpp \
+    $$SRCPATH/support/solverconfiginfo.cpp
 
