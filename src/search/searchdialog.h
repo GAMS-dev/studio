@@ -57,7 +57,6 @@ public:
     void clearSearch();
 
     void autofillSearchField();
-    void focusFolderScope();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
@@ -88,9 +87,6 @@ private slots:
     void on_cb_regex_stateChanged(int);
     void on_btn_browse_clicked();
     void on_cb_subdirs_stateChanged(int);
-    void on_cb_filters_toggled(bool checked);
-    void on_cb_replace_toggled(bool checked);
-    void on_cb_findinfiles_toggled(bool checked);
 
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);

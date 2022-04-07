@@ -2945,13 +2945,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         toggleDebugMode();
         e->accept(); return;
     }
-
-    // modified opening actions
-    if ((e->modifiers() & Qt::ControlModifier) && (e->modifiers() & Qt::ShiftModifier) && e->key() == Qt::Key_F) {
-        openSearchDialog();
-        mSearchDialog->focusFolderScope();
-    }
-
     QMainWindow::keyPressEvent(e);
 }
 

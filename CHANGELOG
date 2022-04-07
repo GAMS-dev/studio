@@ -2,7 +2,6 @@ Version 1.10.1 *
 ==================
 - added input field for Folder path and a browse button
 - added "include subdirectories" checkbox for folder scope
-- added `Ctrl+Shift+F` shortcut to open search with "Folder" scope
 - added "Invalid Path" feedback when using "Folder" scope
 - added file exclusion pattern input field and functionality
 - added info about number of files to search dialog

@@ -43,9 +43,9 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->setupUi(this);
-    ui->cb_filters->setChecked(false);
-    ui->cb_replace->setChecked(false);
-    ui->cb_findinfiles->setChecked(false);
+    ui->frame_findinfiles->setVisible(false);
+    ui->frame_filters->setVisible(false);
+    adjustHeight();
 
     restoreSettings();
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
@@ -190,13 +190,8 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Search::Folder: {
-            if (ui->combo_path->currentText().isEmpty()) {
-                focusFolderScope();
-                return files;
-            }
-
             QDir dir(ui->combo_path->currentText());
-            if (!dir.exists()) {
+            if (ui->combo_path->currentText().isEmpty() || !dir.exists()) {
                 setSearchStatus(Search::InvalidPath);
                 return files;
             }
@@ -320,6 +315,12 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 {
     searchParameterChanged();
     updateComponentAvailability();
+
+    ui->frame_findinfiles->setVisible(ui->combo_scope->currentIndex() == Search::Folder);
+    ui->frame_filters->setVisible(!(ui->combo_scope->currentIndex() == Search::ThisFile
+                                    || ui->combo_scope->currentIndex() == Search::Selection));
+    adjustHeight();
+
 }
 
 void SearchDialog::on_btn_back_clicked()
@@ -646,11 +647,6 @@ QRegularExpression SearchDialog::createRegex()
     return searchRegex;
 }
 
-void SearchDialog::focusFolderScope() {
-    ui->cb_findinfiles->setChecked(true);
-    ui->combo_scope->setCurrentIndex(ui->combo_scope->findText("Folder"));
-}
-
 bool SearchDialog::regex()
 {
     return ui->cb_regex->isChecked();
@@ -707,30 +703,9 @@ void SearchDialog::on_btn_browse_clicked()
         ui->combo_path->setCurrentText(path);
 }
 
-
-void SearchDialog::on_cb_filters_toggled(bool checked)
-{
-    ui->frame_filters->setVisible(checked);
-    adjustHeight();
-}
-
-
-void SearchDialog::on_cb_replace_toggled(bool checked)
-{
-    ui->frame_replace->setVisible(checked);
-    adjustHeight();
-}
-
-
-void SearchDialog::on_cb_findinfiles_toggled(bool checked)
-{
-    ui->frame_findinfiles->setVisible(checked);
-    adjustHeight();
-}
-
 void SearchDialog::adjustHeight()
 {
-     // set minimum possible height
+    // set minimum possible height
     ui->lbl_nrResults->resize(width(), 1);
     QApplication::processEvents(); // this is necessary for correct resizing of the dialog
     resize(width(), 1);
