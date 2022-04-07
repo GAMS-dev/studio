@@ -556,7 +556,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         ui->lbl_nrResults->setText("Replacing... " + files);
         break;
     case Search::InvalidPath:
-        ui->lbl_nrResults->setText("Invalid Path: " + ui->combo_path->currentText());
+        ui->lbl_nrResults->setText("Invalid Path: \"" + ui->combo_path->currentText() + "\"");
         break;
     }
 }
@@ -710,7 +710,6 @@ void SearchDialog::on_btn_browse_clicked()
 void SearchDialog::adjustHeight()
 {
     // set minimum possible height
-    ui->lbl_nrResults->resize(width(), 1);
     QApplication::processEvents(); // this is necessary for correct resizing of the dialog
     resize(width(), 1);
 }
