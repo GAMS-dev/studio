@@ -340,6 +340,14 @@
            <property name="toolTip">
             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;Scope of where to search.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;This File:&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; Searches only the file which is currently opened in the editor.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;This Project:&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; Searches files related to the project which is currently active.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Selection:&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; Searches the text selected in the current file. Keep in mind that starting a new search moves the search selection to the currently selected text.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Open Tabs:&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; Searches all files that have open editors.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;All Files:&lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt; Searches all files that appear in the project explorer.&lt;/span&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt; font-weight:600;&quot;&gt;Folder: &lt;/span&gt;&lt;span style=&quot; font-family:'MS Shell Dlg 2'; font-size:8pt;&quot;&gt;Searches all files in a specified folder.&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
            </property>
+           <property name="currentIndex">
+            <number>1</number>
+           </property>
+           <item>
+            <property name="text">
+             <string>Selection</string>
+            </property>
+           </item>
            <item>
             <property name="text">
              <string>This File</string>
@@ -348,11 +356,6 @@
            <item>
             <property name="text">
              <string>This Project</string>
-            </property>
-           </item>
-           <item>
-            <property name="text">
-             <string>Selection</string>
             </property>
            </item>
            <item>

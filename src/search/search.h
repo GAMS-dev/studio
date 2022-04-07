@@ -35,9 +35,9 @@ class Search : public QObject
     Q_OBJECT
 public:
     enum Scope {
+        Selection,
         ThisFile,
         ThisProject,
-        Selection,
         OpenTabs,
         AllFiles,
         Folder
