@@ -1414,8 +1414,8 @@ void MainWindow::on_actionSave_As_triggered()
                                                    , "Select other", "Continue", "Abort", 0, 2);
             } else {
                 choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Suffix '%1' is of different type than source file suffix '%2'. File saved as '%3' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix(), QFileInfo(fileMeta->location()).suffix(), QFileInfo(filePath).fileName())
+                                                   , QString("Target '%1'' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
             }
         }
