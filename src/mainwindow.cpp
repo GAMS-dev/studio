@@ -3927,8 +3927,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         } else {
             tabWidget->setCurrentWidget(edit);
             tabWidget->currentWidget()->setFocus();
-            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0)
-                activeTabChanged(tabWidget->indexOf(edit));
+            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
+                if (!ViewHelper::toGamsConfigEditor((edit)))
+                    activeTabChanged(tabWidget->indexOf(edit));
+            }
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
