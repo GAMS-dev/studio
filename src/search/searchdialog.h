@@ -87,6 +87,8 @@ private slots:
     void on_cb_regex_stateChanged(int);
     void on_btn_browse_clicked();
     void on_cb_subdirs_stateChanged(int);
+    void on_combo_path_currentTextChanged(const QString);
+    void on_combo_fileExcludePattern_currentTextChanged(const QString);
 
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);

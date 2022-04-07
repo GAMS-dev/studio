@@ -153,6 +153,7 @@ void SearchDialog::updateUi()
     ui->label->setEnabled(!searching);
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
+    ui->label_4->setEnabled(!searching);
 
     if (!searching) updateComponentAvailability();
 
@@ -413,14 +414,15 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    if (!mSuppressParameterChangedEvent)
-        searchParameterChanged();
+    searchParameterChanged();
 }
 
 void SearchDialog::searchParameterChanged()
 {
-    setSearchStatus(Search::Clear);
-    mSearch.reset();
+    if (!mSuppressParameterChangedEvent) {
+        setSearchStatus(Search::Clear);
+        mSearch.reset();
+    }
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -543,7 +545,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
             if (mFilesInScope == 1)
                 ui->lbl_nrResults->setText("No results in 1 file.");
             else
-                ui->lbl_nrResults->setText("No results in " + QString::number(mFilesInScope) + "files.");
+                ui->lbl_nrResults->setText("No results in " + QString::number(mFilesInScope) + " files.");
         }
 
         break;
@@ -617,7 +619,7 @@ void SearchDialog::autofillSearchField()
 void SearchDialog::updateNrMatches(int current)
 {
     int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
-    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files" : "");
+    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : ".");
 
     if (current == 0) {
         if (size == 0) setSearchStatus(Search::NoResults);
@@ -716,6 +718,18 @@ void SearchDialog::adjustHeight()
 void SearchDialog::setSearchedFiles(int files)
 {
     mFilesInScope = files;
+}
+
+
+void SearchDialog::on_combo_path_currentTextChanged(const QString)
+{
+    searchParameterChanged();
+}
+
+
+void SearchDialog::on_combo_fileExcludePattern_currentTextChanged(const QString)
+{
+    searchParameterChanged();
 }
 
 }
