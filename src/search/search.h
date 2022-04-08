@@ -49,7 +49,8 @@ public:
         Clear,
         Replacing,
         InvalidPath,
-        CollectingFiles
+        CollectingFiles,
+        Ok
     };
 
     enum Direction {

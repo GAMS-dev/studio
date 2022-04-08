@@ -48,7 +48,7 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     adjustHeight();
 
     restoreSettings();
-    connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
+    connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateDialogState);
 }
 
 SearchDialog::~SearchDialog()
@@ -114,19 +114,19 @@ void SearchDialog::intermediateUpdate(int hits)
 
 void SearchDialog::finalUpdate()
 {
-    updateUi();
+    setSearchStatus(Search::Ok, mSearch.results().size());
+    updateDialogState();
 
-    if (mShowResults) {
+    if (mShowResults && mSearch.results().size() > 0) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         emit showResults(mSearchResultModel);
     }
 
     updateEditHighlighting();
-    updateNrMatches();
 }
 
-void SearchDialog::updateUi()
+void SearchDialog::updateDialogState()
 {
     bool searching = mSearch.isSearching();
 
@@ -189,8 +189,10 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         }
         case Search::Folder: {
             QDir dir(ui->combo_path->currentText());
-            if (ui->combo_path->currentText().isEmpty() || !dir.exists())
+            if (ui->combo_path->currentText().isEmpty() || !dir.exists()){
+                setSearchStatus(Search::InvalidPath);
                 return files;
+            }
 
             QDirIterator::IteratorFlag options = ui->cb_subdirs->isChecked()
                                                     ? QDirIterator::Subdirectories
@@ -396,12 +398,12 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             emit selectResult(i);
-            updateNrMatches(i + 1);
+            updateMatchLabel(i + 1);
             return i;
         }
     }
     emit selectResult(-1);
-    updateNrMatches();
+    updateMatchLabel();
 
     return -1;
 }
@@ -520,9 +522,14 @@ void SearchDialog::clearResultsView()
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
+    if (status == Search::Ok && mSearchStatus == Search::InvalidPath)
+        return;
+    else
+        mSearchStatus = status;
+
     QString searching = "Searching ";
     QString dotAnim = ".";
-    QString files = (mFilesInScope > 1 ? QString::number(mFilesInScope) + " files" : "");
+    QString files = (mFilesInScope > 1 ? ("; " + QString::number(mFilesInScope) + " files searched") : "");
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
@@ -531,6 +538,10 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         ui->lbl_nrResults->setText(searching + files + " (" + QString::number(hits) + ") "
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
+    case Search::Ok:
+        ui->lbl_nrResults->setText(QString::number(hits) + ((hits == 1) ? " match" : " matches") + files + ".");
+        if (hits > 0)
+            break;
     case Search::NoResults:
         if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
@@ -612,17 +623,14 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->lineEdit()->selectAll();
 }
 
-void SearchDialog::updateNrMatches(int current)
+void SearchDialog::updateMatchLabel(int current)
 {
     int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
-    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : ".");
+    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : "");
 
     if (current == 0) {
-        if (size == 0) setSearchStatus(Search::NoResults);
-        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches") + files);
-
         if (size >= MAX_SEARCH_RESULTS) {
-            ui->lbl_nrResults->setText(QString::number(MAX_SEARCH_RESULTS) + "+ matches" + files);
+            ui->lbl_nrResults->setText(QString::number(MAX_SEARCH_RESULTS) + "+ matches" + files + ".");
             ui->lbl_nrResults->setToolTip("Search is limited to "
                                               + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {

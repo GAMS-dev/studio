@@ -4298,7 +4298,7 @@ void MainWindow::showResults(search::SearchResultModel* results)
 
     delete mResultsView;
     mResultsView = new search::ResultsView(results, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
     connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
 
     QString nr;

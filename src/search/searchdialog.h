@@ -64,13 +64,15 @@ public:
     void updateClearButton();
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
+    void setSearchStatus(Search::Status status, int hits = 0);
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate(int hits);
-    void updateNrMatches(int current = 0);
+    void updateMatchLabel(int current = 0);
     void updateComponentAvailability();
     void on_btn_clear_clicked();
 
@@ -110,8 +112,7 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
-    void updateUi();
-    void setSearchStatus(Search::Status status, int hits = 0);
+    void updateDialogState();
     void clearSelection();
     void clearSearchSelection();
     AbstractSearchFileHandler* fileHandler();
@@ -136,6 +137,7 @@ private:
     bool mShowResults = true;
     bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
+    Search::Status mSearchStatus = Search::Status::Clear;
 };
 
 }

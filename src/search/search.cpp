@@ -65,13 +65,12 @@ void Search::start(bool ignoreReadonly, bool searchBackwards)
 
     mSearching = true;
     mSearchDialog->setSearchStatus(Search::CollectingFiles);
-    mSearchDialog->updateUi();
+    mSearchDialog->updateDialogState();
 
     setParameters(ignoreReadonly, searchBackwards);
     if (mRegex.pattern().isEmpty()) {
-        mSearching = false;
         mSearchDialog->setSearchStatus(Search::Clear);
-        mSearchDialog->updateUi();
+        mSearchDialog->finalUpdate();
         return;
     }
 
@@ -133,6 +132,7 @@ void Search::reset()
     invalidateCache();
     mOutsideOfList = false;
     mLastMatchInOpt = -1;
+    mSearchDialog->setSearchStatus(Status::Clear);
 
     mFiles.clear();
     mRegex = QRegularExpression("");
@@ -336,7 +336,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         matchNr = NavigateOutsideCache(direction, firstLevel);
 
     // update ui
-    mSearchDialog->updateNrMatches(matchNr+1);
+    mSearchDialog->updateMatchLabel(matchNr+1);
     if (!mOutsideOfList || matchNr == -1)
         emit selectResult(matchNr);
 }
