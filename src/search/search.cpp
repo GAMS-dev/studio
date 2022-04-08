@@ -69,14 +69,9 @@ void Search::start(bool ignoreReadonly, bool searchBackwards)
 
     setParameters(ignoreReadonly, searchBackwards);
     if (mRegex.pattern().isEmpty()) {
+        mSearching = false;
         mSearchDialog->setSearchStatus(Search::Clear);
-        mSearching = false;
-        return;
-    }
-
-    if (mFiles.empty()) {
-        mSearchDialog->setSearchStatus(Search::NoResults);
-        mSearching = false;
+        mSearchDialog->updateUi();
         return;
     }
 
