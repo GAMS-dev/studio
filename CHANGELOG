@@ -2,10 +2,7 @@ Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog
 - added new setting to specify the default symbol view of the GDX Viewer
-- user model libraries have been moved to the first tab the Model Library Explorer
-- added new search scope: Folder
-    - this allows users to search a folder on disk without having to load the whole folder in studio first
-- search now respects open file behavior settings when jumping to results in unopened files
+- user model libraries have been moved to the first tab of the Model Library Explorer
 - fixed crash in search when current editor has no file associated
 - fixed search not being interruptable when searching many small files
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor
@@ -16,7 +13,10 @@ Version 1.10.0
 - fixed code completer activation issues
 - fixed completer allowed multiple DCO suffixes
 - configuration editor now displays only gamsconfig.yaml file
-- added input field for Folder path and a browse button
+- added new search scope: Folder
+    - this allows users to search a folder on disk without having to load the whole folder in studio first
+- search now respects open file behavior settings when jumping to results in unopened files
+- added input field for Folder path and a browse button in search dialog
 - added "include subdirectories" checkbox for folder scope
 - added file exclusion pattern input field and functionality
 - added info about number of files to search dialog
