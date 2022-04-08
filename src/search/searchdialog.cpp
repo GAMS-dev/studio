@@ -77,8 +77,7 @@ void SearchDialog::on_btn_Replace_clicked()
     insertHistory();
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(true), createRegex());
-    mSearch.start();
+    mSearch.start(true);
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -90,7 +89,6 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
     insertHistory();
 
     mShowResults = true;
-    mSearch.setParameters(getFilesByScope(true), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
 }
 
@@ -102,7 +100,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         clearResultsView();
         insertHistory();
 
-        mSearch.setParameters(getFilesByScope(), createRegex());
         mShowResults = true;
         mSearch.start();
     } else {
@@ -337,7 +334,6 @@ void SearchDialog::findNextPrev(bool backwards) {
     if (ui->combo_search->currentText().isEmpty()) return;
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(), createRegex(), backwards);
 
     insertHistory();
     mSearch.findNext(backwards ? Search::Backward : Search::Forward);
@@ -440,7 +436,7 @@ void SearchDialog::updateComponentAvailability()
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo);
 
-    bool replacableFileInScope = getFilesByScope(true).size() > 0;
+    bool replacableFileInScope = allFiles || getFilesByScope(true).size() > 0;
     bool activateReplace = allFiles || replacableFileInScope;
 
     // replace actions (!readonly):
@@ -500,7 +496,6 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
     mSuppressParameterChangedEvent = false;
     mSearch.reset();
-    mSearch.setParameters(QSet<FileMeta*>(), QRegularExpression(""));
 
     clearSelection();
 
@@ -557,6 +552,9 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::InvalidPath:
         ui->lbl_nrResults->setText("Invalid Path: \"" + ui->combo_path->currentText() + "\"");
+        break;
+    case Search::CollectingFiles:
+        ui->lbl_nrResults->setText("Collecting files...");
         break;
     }
 }
