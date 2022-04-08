@@ -35,9 +35,9 @@ class Search : public QObject
     Q_OBJECT
 public:
     enum Scope {
+        Selection,
         ThisFile,
         ThisProject,
-        Selection,
         OpenTabs,
         AllFiles,
         Folder
@@ -47,7 +47,9 @@ public:
         Searching,
         NoResults,
         Clear,
-        Replacing
+        Replacing,
+        InvalidPath,
+        CollectingFiles
     };
 
     enum Direction {
@@ -56,8 +58,7 @@ public:
     };
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
 
-    void setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
-    void start();
+    void start(bool ignoreReadonly = false, bool searchBackwards = false);
     void stop();
 
     void findNext(Direction direction);
@@ -69,7 +70,6 @@ public:
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
-    const QString& lastFolder() const;
     const QRegularExpression regex() const;
     Search::Scope scope() const;
     bool hasSearchSelection();
@@ -88,6 +88,7 @@ private:
     void findInDoc(FileMeta* fm);
     void findInSelection();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
+    void setParameters(bool ignoreReadonly, bool searchBackwards = false);
 
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
@@ -101,8 +102,6 @@ private:
 
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
-
-    QSet<FileMeta *> askUserForDirectory();
 
 private slots:
     void finished();
@@ -118,7 +117,6 @@ private:
     AbstractSearchFileHandler* mFileHandler;
     FileId mSearchSelectionFile;
     QThread mThread;
-    QString mLastFolder;
 
     bool mSearching = false;
     bool mJumpQueued = false;

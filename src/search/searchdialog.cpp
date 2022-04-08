@@ -43,7 +43,9 @@ SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* pare
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->setupUi(this);
-    adjustSize();
+    ui->frame_findinfiles->setVisible(false);
+    ui->frame_filters->setVisible(false);
+    adjustHeight();
 
     restoreSettings();
     connect(&mSearch, &Search::updateUI, this, &SearchDialog::updateUi);
@@ -75,8 +77,7 @@ void SearchDialog::on_btn_Replace_clicked()
     insertHistory();
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(true), createRegex());
-    mSearch.start();
+    mSearch.start(true);
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -88,7 +89,6 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
     insertHistory();
 
     mShowResults = true;
-    mSearch.setParameters(getFilesByScope(true), createRegex());
     mSearch.replaceAll(ui->txt_replace->text());
 }
 
@@ -100,7 +100,6 @@ void SearchDialog::on_btn_FindAll_clicked()
         clearResultsView();
         insertHistory();
 
-        mSearch.setParameters(getFilesByScope(), createRegex());
         mShowResults = true;
         mSearch.start();
     } else {
@@ -144,12 +143,14 @@ void SearchDialog::updateUi()
     ui->cb_caseSens->setEnabled(!searching);
     ui->cb_wholeWords->setEnabled(!searching);
     ui->combo_filePattern->setEnabled(!searching);
+    ui->combo_fileExcludePattern->setEnabled(!searching);
     ui->combo_scope->setEnabled(!searching);
     ui->combo_search->setEnabled(!searching);
     ui->txt_replace->setEnabled(!searching);
     ui->label->setEnabled(!searching);
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
+    ui->label_4->setEnabled(!searching);
 
     if (!searching) updateComponentAvailability();
 
@@ -187,14 +188,19 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Search::Folder: {
-            if (!mSearch.lastFolder().isEmpty()) {
-                QDirIterator it(mSearch.lastFolder(), QDir::Files, QDirIterator::Subdirectories);
-                while (it.hasNext()) {
-                    QString path = it.next();
-                    if (path.isEmpty()) break;
+            QDir dir(ui->combo_path->currentText());
+            if (ui->combo_path->currentText().isEmpty() || !dir.exists())
+                return files;
 
-                    files.insert(mFileHandler->findOrCreateFile(path));
-                }
+            QDirIterator::IteratorFlag options = ui->cb_subdirs->isChecked()
+                                                    ? QDirIterator::Subdirectories
+                                                    : QDirIterator::NoIteratorFlags;
+            QDirIterator it(dir.path(), QDir::Files, options);
+            while (it.hasNext()) {
+                QString path = it.next();
+                if (path.isEmpty()) break;
+
+                files.insert(mFileHandler->findOrCreateFile(path));
             }
         }
         default: break;
@@ -207,28 +213,38 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
 {
     bool ignoreWildcard = selectedScope() == Search::ThisFile || selectedScope() == Search::Selection;
 
-    // apply filter
-    QStringList filter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
-    // convert user input to wildcard list
-    QList<QRegExp> filterList;
-    for (const QString &s : qAsConst(filter))
-        filterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+    // create list of include filter regexes
+    QStringList includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
+    QList<QRegExp> includeFilterList;
+    for (const QString &s : qAsConst(includeFilter))
+        includeFilterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+
+    // create list of exclude filters
+    QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
+    QList<QRegExp> excludeFilterList;
+    for (const QString &e : qAsConst(excludeFilter))
+        excludeFilterList.append(QRegExp("*" + e.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+
 
     // filter files
     QSet<FileMeta*> res;
     for (FileMeta* fm : qAsConst(files)) {
         if (!fm) continue;
+        bool include = includeFilterList.count() == 0;
 
-        bool matchesWildcard = false;
-
-        for (const QRegExp &wildcard : qAsConst(filterList)) {
-            matchesWildcard = wildcard.exactMatch(fm->location());
-            if (matchesWildcard) break; // one match is enough, dont overwrite result
+        for (const QRegExp &wildcard : qAsConst(includeFilterList)) {
+            include = wildcard.exactMatch(fm->location());
+            if (include) break; // one match is enough, dont overwrite result
         }
 
-        if ((matchesWildcard || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly())) {
+        if (include)
+        for (const QRegExp &wildcard : qAsConst(excludeFilterList)) {
+            include = !wildcard.exactMatch(fm->location());
+            if (!include) break;
+        }
+
+        if ((include || ignoreWildcard) && (!ignoreReadOnly || !fm->isReadOnly()))
             res.insert(fm);
-        }
     }
     return res;
 }
@@ -294,6 +310,12 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int)
 {
     searchParameterChanged();
     updateComponentAvailability();
+
+    ui->frame_findinfiles->setVisible(ui->combo_scope->currentIndex() == Search::Folder);
+    ui->frame_filters->setVisible(!(ui->combo_scope->currentIndex() == Search::ThisFile
+                                    || ui->combo_scope->currentIndex() == Search::Selection));
+    adjustHeight();
+
 }
 
 void SearchDialog::on_btn_back_clicked()
@@ -310,7 +332,6 @@ void SearchDialog::findNextPrev(bool backwards) {
     if (ui->combo_search->currentText().isEmpty()) return;
 
     mShowResults = false;
-    mSearch.setParameters(getFilesByScope(), createRegex(), backwards);
 
     insertHistory();
     mSearch.findNext(backwards ? Search::Backward : Search::Forward);
@@ -329,15 +350,18 @@ void SearchDialog::on_btn_clear_clicked()
     updateClearButton();
 }
 
-void SearchDialog::on_cb_wholeWords_stateChanged(int arg1)
+void SearchDialog::on_cb_wholeWords_stateChanged(int)
 {
-    Q_UNUSED(arg1)
     searchParameterChanged();
 }
 
-void SearchDialog::on_cb_regex_stateChanged(int arg1)
+void SearchDialog::on_cb_regex_stateChanged(int)
 {
-    Q_UNUSED(arg1)
+    searchParameterChanged();
+}
+
+void SearchDialog::on_cb_subdirs_stateChanged(int)
+{
     searchParameterChanged();
 }
 
@@ -384,14 +408,15 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
-    if (!mSuppressParameterChangedEvent)
-        searchParameterChanged();
+    searchParameterChanged();
 }
 
 void SearchDialog::searchParameterChanged()
 {
-    setSearchStatus(Search::Clear);
-    mSearch.reset();
+    if (!mSuppressParameterChangedEvent) {
+        setSearchStatus(Search::Clear);
+        mSearch.reset();
+    }
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -409,7 +434,7 @@ void SearchDialog::updateComponentAvailability()
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo);
 
-    bool replacableFileInScope = getFilesByScope(true).size() > 0;
+    bool replacableFileInScope = allFiles || getFilesByScope(true).size() > 0;
     bool activateReplace = allFiles || replacableFileInScope;
 
     // replace actions (!readonly):
@@ -428,10 +453,10 @@ void SearchDialog::updateComponentAvailability()
     ui->cb_regex->setEnabled(activateSearch);
     ui->cb_wholeWords->setEnabled(activateSearch);
 
-    ui->combo_filePattern->setEnabled(activateSearch
-                                      && !(ui->combo_scope->currentIndex() == Search::ThisFile
-                                           || ui->combo_scope->currentIndex() == Search::Selection)
-                                      );
+    bool activateFileFilters = activateSearch && !(ui->combo_scope->currentIndex() == Search::ThisFile
+                                    || ui->combo_scope->currentIndex() == Search::Selection);
+    ui->combo_filePattern->setEnabled(activateFileFilters);
+    ui->combo_fileExcludePattern->setEnabled(activateFileFilters);
 }
 
 void SearchDialog::updateClearButton()
@@ -469,7 +494,6 @@ void SearchDialog::clearSearch()
     ui->txt_replace->clear();
     mSuppressParameterChangedEvent = false;
     mSearch.reset();
-    mSearch.setParameters(QSet<FileMeta*>(), QRegularExpression(""));
 
     clearSelection();
 
@@ -496,37 +520,39 @@ void SearchDialog::clearResultsView()
 
 void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
-    QString searching = "Searching (";
+    QString searching = "Searching ";
     QString dotAnim = ".";
+    QString files = (mFilesInScope > 1 ? QString::number(mFilesInScope) + " files" : "");
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
     switch (status) {
     case Search::Searching:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
-
-        ui->lbl_nrResults->setText(searching + QString::number(hits) + ") "
+        ui->lbl_nrResults->setText(searching + files + " (" + QString::number(hits) + ") "
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
     case Search::NoResults:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
-        else
-            ui->lbl_nrResults->setText("No results.");
+        else {
+            if (mFilesInScope == 1)
+                ui->lbl_nrResults->setText("No results in 1 file.");
+            else
+                ui->lbl_nrResults->setText("No results in " + QString::number(mFilesInScope) + " files.");
+        }
 
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
         break;
     case Search::Clear:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
         ui->lbl_nrResults->setText("");
-        ui->lbl_nrResults->setFrameShape(QFrame::NoFrame);
         break;
     case Search::Replacing:
-        ui->lbl_nrResults->setAlignment(Qt::AlignCenter);
-        ui->lbl_nrResults->setText("Replacing...");
-        ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+        ui->lbl_nrResults->setText("Replacing... " + files);
+        break;
+    case Search::InvalidPath:
+        ui->lbl_nrResults->setText("Invalid Path: \"" + ui->combo_path->currentText() + "\"");
+        break;
+    case Search::CollectingFiles:
+        ui->lbl_nrResults->setText("Collecting files...");
         break;
     }
 }
@@ -539,23 +565,25 @@ void SearchDialog::insertHistory()
     int linebreak = searchText.indexOf("\n");
     searchText = searchText.left(linebreak);
 
-    if (ui->combo_search->findText(searchText) == -1) {
-        ui->combo_search->insertItem(0, searchText);
+    addEntryToComboBox(ui->combo_search);
+    addEntryToComboBox(ui->combo_filePattern);
+    addEntryToComboBox(ui->combo_fileExcludePattern);
+    addEntryToComboBox(ui->combo_path);
+}
+
+void SearchDialog::addEntryToComboBox(QComboBox* box)
+{
+    QString content = box->currentText();
+    if (content.isEmpty()) return;
+
+    if (box->findText(content) == -1) {
+        box->insertItem(0, content);
     } else {
         mSuppressParameterChangedEvent = true;
-        ui->combo_search->removeItem(ui->combo_search->findText(searchText));
-        ui->combo_search->insertItem(0, searchText);
-        ui->combo_search->setCurrentIndex(0);
+        box->removeItem(box->findText(content));
+        box->insertItem(0, content);
+        box->setCurrentIndex(0);
         mSuppressParameterChangedEvent = false;
-    }
-
-    QString filePattern(ui->combo_filePattern->currentText());
-    if (ui->combo_filePattern->findText(filePattern) == -1) {
-        ui->combo_filePattern->insertItem(0, filePattern);
-    } else {
-        ui->combo_filePattern->removeItem(ui->combo_filePattern->findText(filePattern));
-        ui->combo_filePattern->insertItem(0, filePattern);
-        ui->combo_filePattern->setCurrentIndex(0);
     }
 }
 
@@ -587,14 +615,14 @@ void SearchDialog::autofillSearchField()
 void SearchDialog::updateNrMatches(int current)
 {
     int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
-    ui->lbl_nrResults->setFrameShape(QFrame::StyledPanel);
+    QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : ".");
 
     if (current == 0) {
         if (size == 0) setSearchStatus(Search::NoResults);
-        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches"));
+        else ui->lbl_nrResults->setText(QString::number(size) + ((size == 1) ? " match" : " matches") + files);
 
         if (size >= MAX_SEARCH_RESULTS) {
-            ui->lbl_nrResults->setText( QString::number(MAX_SEARCH_RESULTS) + "+ matches");
+            ui->lbl_nrResults->setText(QString::number(MAX_SEARCH_RESULTS) + "+ matches" + files);
             ui->lbl_nrResults->setToolTip("Search is limited to "
                                               + QString::number(MAX_SEARCH_RESULTS) + " matches.");
         } else {
@@ -602,7 +630,7 @@ void SearchDialog::updateNrMatches(int current)
         }
     } else {
         ui->lbl_nrResults->setText(QString::number(current) + " / "
-                                     + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : ""));
+                                     + QString::number(size) + ((size >= MAX_SEARCH_RESULTS) ? "+" : "") + files);
     }
 }
 
@@ -657,6 +685,46 @@ AbstractSearchFileHandler *SearchDialog::fileHandler()
 QWidget *SearchDialog::currentEditor()
 {
     return mCurrentEditor;
+}
+
+void SearchDialog::on_btn_browse_clicked()
+{
+    QString oldPath = ui->combo_path->currentText();
+
+    QDir openPath(".");
+    if (!oldPath.isEmpty()) {
+        openPath = QDir(oldPath);
+    } else if (FileMeta* fm = mFileHandler->fileMeta(mCurrentEditor)) {
+        openPath = QDir(QFileInfo(fm->location()).absolutePath());
+    }
+
+    QString path = QFileDialog::getExistingDirectory(this, "Pick a folder to search", openPath.path());
+    if (!path.isEmpty())
+        ui->combo_path->setCurrentText(path);
+}
+
+void SearchDialog::adjustHeight()
+{
+    // set minimum possible height
+    QApplication::processEvents(); // this is necessary for correct resizing of the dialog
+    resize(width(), 1);
+}
+
+void SearchDialog::setSearchedFiles(int files)
+{
+    mFilesInScope = files;
+}
+
+
+void SearchDialog::on_combo_path_currentTextChanged(const QString)
+{
+    searchParameterChanged();
+}
+
+
+void SearchDialog::on_combo_fileExcludePattern_currentTextChanged(const QString)
+{
+    searchParameterChanged();
 }
 
 }

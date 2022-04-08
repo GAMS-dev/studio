@@ -2929,7 +2929,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         else mSearchDialog->hide();
 
         e->accept(); return;
-    }
+    } // end escape block
 
     // focus shortcuts
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_1)) {
@@ -3482,9 +3482,6 @@ void MainWindow::createProject(QString projectPath)
     QFileInfo fi(projectPath);
     PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
     openProjectOptions(project);
-    // enter edit mode of project name
-//    QModelIndex mi = mProjectRepo.treeModel()->index(project);
-//    if (mi.isValid()) ui->projectView->edit(mi);
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -4273,14 +4270,7 @@ void MainWindow::openSearchDialog()
        } else {
 
            if (mSearchWidgetPos.isNull()) {
-               int sbs;
-               if (mRecent.editor() && ViewHelper::toAbstractEdit(mRecent.editor())
-                       && ViewHelper::toAbstractEdit(mRecent.editor())->verticalScrollBar()->isVisible())
-                   sbs = qApp->style()->pixelMetric(QStyle::PM_ScrollBarExtent) + 2;
-               else
-                   sbs = 2;
-
-               QPoint c = mapToGlobal(centralWidget()->pos());
+               int margin = 25;
 
                int wDiff = frameGeometry().width() - geometry().width();
                int hDiff = frameGeometry().height() - geometry().height();
@@ -4288,14 +4278,16 @@ void MainWindow::openSearchDialog()
                int wSize = mSearchDialog->width() + wDiff;
                int hSize = mSearchDialog->height() + hDiff;
 
-               QPoint p(qMin(c.x() + (centralWidget()->width() - sbs), QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
-                        qMin(c.y() + centralWidget()->height(), QGuiApplication::primaryScreen()->virtualGeometry().height()) - hSize
-                        );
+               QPoint p(qMin(pos().x() + (width() - margin),
+                             QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                        qMin(pos().y() + hDiff + margin,
+                             QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
+                       );
                mSearchWidgetPos = p;
            }
 
-           mSearchDialog->move(mSearchWidgetPos);
            mSearchDialog->show();
+           mSearchDialog->move(mSearchWidgetPos);
        }
     }
 }
