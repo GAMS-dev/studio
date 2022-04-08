@@ -310,7 +310,7 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
         QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
         if (!name.isEmpty() || !file.isEmpty()) {
             QString suf = child["type"].toString();
-            if (suf == "gms") suf = QFileInfo(name).suffix();
+            if (suf == "gms") suf = QFileInfo(name).fileName();
             FileType *ft = &FileType::from(suf);
             if (QFileInfo(file).exists()) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);

@@ -62,7 +62,7 @@ CodeEdit::CodeEdit(QWidget *parent)
     connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::recalcExtraSelections);
     connect(this, &CodeEdit::textChanged, this, &CodeEdit::startCompleterTimer);
-    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::checkAndStartCompleterTimer);
+    connect(this, &CodeEdit::cursorPositionChanged, this, &CodeEdit::updateCompleter);
     connect(this->verticalScrollBar(), &QScrollBar::actionTriggered, this, &CodeEdit::updateExtraSelections);
     connect(document(), &QTextDocument::undoCommandAdded, this, &CodeEdit::undoCommandAdded);
 
@@ -331,6 +331,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
 {
     int vertScroll = verticalScrollBar()->sliderPosition();
     int topBlock = firstVisibleBlock().blockNumber();
+    if (mCompleter && (e->key() == Qt::Key_Delete || e->key() == Qt::Key_Backspace))
+        mCompleter->suppressNextOpenTrigger();
     if (!mBlockEdit && mAllowBlockEdit && e == Hotkey::BlockEditStart) {
         QTextCursor c = textCursor();
         QTextCursor anc = c;
@@ -1737,6 +1739,21 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
+void CodeEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
+{
+    if (mCompleter) mCompleter->suppressOpenBegin();
+    AbstractEdit::replaceNext(regex, replacementText, selectionScope);
+    if (mCompleter) mCompleter->suppressOpenStop();
+}
+
+int CodeEdit::replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
+{
+    if (mCompleter) mCompleter->suppressOpenBegin();
+    int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
+    if (mCompleter) mCompleter->suppressOpenStop();
+    return res;
+}
+
 PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
@@ -1859,15 +1876,17 @@ void CodeEdit::recalcExtraSelections()
 
 void CodeEdit::startCompleterTimer()
 {
-    if (mCompleter && mSettings->toBool(skEdCompleterAutoOpen)) {
+    if (mCompleter && !mCompleter->isOpenSuppressed() && mSettings->toBool(skEdCompleterAutoOpen)) {
         if (mCompleter && mCompleter->isVisible())
             showCompleter();
         else
             mCompleterTimer.start(500);
+    } else if (mCompleter) {
+        mCompleter->suppressOpenStop();
     }
 }
 
-void CodeEdit::checkAndStartCompleterTimer()
+void CodeEdit::updateCompleter()
 {
     if (mCompleter && mCompleter->isVisible())
         showCompleter();

@@ -55,7 +55,7 @@ public:
     bool operator !=(const FileKind& kind) const;
 
     static void clear();
-    static FileType& from(QString suffix);
+    static FileType& from(const QString &fileName);
     static FileType& from(FileKind kind);
     static QStringList validateSuffixList(const QString &commaSeparatedList, QStringList *invalid = nullptr);
     static void setUserGamsTypes(const QStringList &suffix);
@@ -75,6 +75,8 @@ private:
     static int mGmsFixedTypes;
     static QStringList mUserGamsTypes;
     static const QStringList CInvalidUserTypes;
+
+    static QStringList mSolverNames;
 };
 
 } // namespace studio

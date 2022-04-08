@@ -11,16 +11,16 @@ Version 1.10.0
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor
     - `Ctrl + Left Click` a Tab to open it in a vertical split
     - `Ctrl + Shift + Left Click` a Tab to open it in a horizontal split
+- fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+- fixed white table headers in dark mode
+- fixed code completer activation issues
+- fixed completer allowed multiple DCO suffixes
+- configuration editor now displays only gamsconfig.yaml file
 - added input field for Folder path and a browse button
 - added "include subdirectories" checkbox for folder scope
 - added file exclusion pattern input field and functionality
 - added info about number of files to search dialog
 - changed default position of search dialog to top right
-
-Version 1.9.7
-==================
-- Fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
-- Fixed white table headers in dark mode
 
 Version 1.9.6
 ==================

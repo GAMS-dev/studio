@@ -674,7 +674,7 @@ SyntaxSubDCO::SyntaxSubDCO(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxK
     mSubKinds << SyntaxKind::SubDCO << SyntaxKind::DcoBody;
 }
 
-SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -690,7 +690,9 @@ SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind,
 
     for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {
         const QString &sub = subDCOs.at(i);
-        if (line.length() >= start+sub.length() && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0) {
+        if (line.length() >= start+sub.length()
+                && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0
+                && (line.length() == start+sub.length() || !line.at(start+sub.length()).isLetterOrNumber())) {
             SyntaxShift shift = (line.length() == start+sub.length()) ? SyntaxShift::skip : SyntaxShift::shift;
             return SyntaxBlock(this, flavor, index, start+sub.length(), shift);
         }

@@ -1401,17 +1401,23 @@ void MainWindow::on_actionSave_As_triggered()
                  break;
 
         choice = 1;
-        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).suffix())) {
-            if (fileMeta->kind() == FileKind::Opt)
-                choice = QMessageBox::question(this, "Invalid Option File Suffix"
-                                                   , QString("'%1' is not a valid option file suffix. Saved file '%2' may not be displayed properly.")
+        if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).fileName())) {
+            if (fileMeta->kind() == FileKind::Opt) {
+                choice = QMessageBox::question(this, "Invalid Option File Name or Suffix"
+                                                   , QString("'%1' is not a valid solver option file name or suffix. File Saved as '%2' may not be displayed properly.")
                                                           .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
-            else
-                choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Suffix '%1' is of different type than source file suffix '%2'. Saved file '%3' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix(), QFileInfo(fileMeta->location()).suffix(), QFileInfo(filePath).fileName())
+            } else if (fileMeta->kind() == FileKind::Guc) {
+                choice = QMessageBox::question(this, "Invalid Gams Configuration File Name or Suffix"
+                                                   , QString("'%1' is not a valid Gams configuration file name or suffix. File saved as '%1' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
+            } else {
+                choice = QMessageBox::question(this, "Different File Type"
+                                                   , QString("Target '%1'' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
+                                                          .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
+                                                   , "Select other", "Continue", "Abort", 0, 2);
+            }
         }
         if (choice == 0)
             continue;
@@ -2102,7 +2108,7 @@ void MainWindow::on_actionChangelog_triggered()
         return;
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    fm->setKind("log");
+    fm->setKind(FileKind::TxtRO);
     openFile(fm, true);
 }
 
@@ -3918,8 +3924,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         } else {
             tabWidget->setCurrentWidget(edit);
             tabWidget->currentWidget()->setFocus();
-            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0)
-                activeTabChanged(tabWidget->indexOf(edit));
+            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
+                if (!ViewHelper::toGamsConfigEditor((edit)))
+                    activeTabChanged(tabWidget->indexOf(edit));
+            }
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
@@ -4150,7 +4158,7 @@ PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, P
     PExFileNode *node = nullptr;
     if (!fileName.isEmpty()) {
         QFileInfo fInfo(path, fileName);
-        FileType fType = FileType::from(fInfo.suffix());
+        FileType fType = FileType::from(fInfo.fileName());
 
         if (fType == FileKind::Gsp) {
             // Placeholder to read the project and create all nodes for associated files

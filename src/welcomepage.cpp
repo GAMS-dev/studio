@@ -75,7 +75,7 @@ void WelcomePage::historyChanged()
                                   + "<small>" + file.filePath() + "</small>", file.filePath(), this);
             tmpLabel->setToolTip(file.filePath());
             tmpLabel->setIconSize(QSize(16,16));
-            tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.suffix()).kind()));
+            tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.fileName()).kind()));
             connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
             ui->layout_lastFiles->addWidget(tmpLabel);
             j++;
