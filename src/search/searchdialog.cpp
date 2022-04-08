@@ -189,10 +189,8 @@ QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
         }
         case Search::Folder: {
             QDir dir(ui->combo_path->currentText());
-            if (ui->combo_path->currentText().isEmpty() || !dir.exists()) {
-                setSearchStatus(Search::InvalidPath);
+            if (ui->combo_path->currentText().isEmpty() || !dir.exists())
                 return files;
-            }
 
             QDirIterator::IteratorFlag options = ui->cb_subdirs->isChecked()
                                                     ? QDirIterator::Subdirectories
