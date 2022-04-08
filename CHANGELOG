@@ -1,11 +1,3 @@
-Version 1.10.1 *
-==================
-- added input field for Folder path and a browse button
-- added "include subdirectories" checkbox for folder scope
-- added file exclusion pattern input field and functionality
-- added info about number of files to search dialog
-- changed default position of search dialog to top right
-
 Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog
@@ -19,6 +11,11 @@ Version 1.10.0
 - added pin view: the main edit area can be split vertically or horizontally to show a second editor
     - `Ctrl + Left Click` a Tab to open it in a vertical split
     - `Ctrl + Shift + Left Click` a Tab to open it in a horizontal split
+- added input field for Folder path and a browse button
+- added "include subdirectories" checkbox for folder scope
+- added file exclusion pattern input field and functionality
+- added info about number of files to search dialog
+- changed default position of search dialog to top right
 
 Version 1.9.7
 ==================
