@@ -287,20 +287,10 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
-//        DEB() << QGuiApplication::clipboard()->mimeData()->formats().join("  |  ");
-//        DEB() << QGuiApplication::clipboard()->mimeData()->data(QLatin1String("application/x-qt-windows-mime;value=\"Chromium Web Custom MIME Data Format\""));
-//        DEB() << "----";
-//        copy();
         QMimeData *dat = new QMimeData();
-        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor()));
+        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
         dat->setText(textCursor().selectedText());
         QGuiApplication::clipboard()->setMimeData(dat);
-
-//        const QTextDocumentFragment fragment(textCursor());
-//        dat->setData(QLatin1String("text/html"), fragment.toHtml("utf-8").toUtf8());
-//        dat->setText(fragment.toPlainText());
-//        DEB() << "HTML:\n" << dat->data("text/html");
-//        QGuiApplication::clipboard()->setMimeData(dat);
     }
 }
 
