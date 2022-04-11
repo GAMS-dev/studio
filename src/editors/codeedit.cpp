@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include <QPalette>
 #include <QDir>
+#include <QMimeData>
 
 #include "editors/codeedit.h"
 #include "codecompleter.h"
@@ -34,6 +35,7 @@
 #include "search/searchlocator.h"
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
+#include "syntax/htmlconverter.h"
 
 namespace gams {
 namespace studio {
@@ -285,7 +287,20 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
-        copy();
+//        DEB() << QGuiApplication::clipboard()->mimeData()->formats().join("  |  ");
+//        DEB() << QGuiApplication::clipboard()->mimeData()->data(QLatin1String("application/x-qt-windows-mime;value=\"Chromium Web Custom MIME Data Format\""));
+//        DEB() << "----";
+//        copy();
+        QMimeData *dat = new QMimeData();
+        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor()));
+        dat->setText(textCursor().selectedText());
+        QGuiApplication::clipboard()->setMimeData(dat);
+
+//        const QTextDocumentFragment fragment(textCursor());
+//        dat->setData(QLatin1String("text/html"), fragment.toHtml("utf-8").toUtf8());
+//        dat->setText(fragment.toPlainText());
+//        DEB() << "HTML:\n" << dat->data("text/html");
+//        QGuiApplication::clipboard()->setMimeData(dat);
     }
 }
 
