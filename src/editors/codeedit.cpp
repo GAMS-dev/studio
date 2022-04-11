@@ -287,9 +287,11 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
+
         QMimeData *dat = new QMimeData();
         dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
-        dat->setText(textCursor().selectedText());
+        const QTextDocumentFragment fragment(textCursor());
+        dat->setText(fragment.toPlainText());
         QGuiApplication::clipboard()->setMimeData(dat);
     }
 }
