@@ -54,7 +54,7 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
             block = QTextBlock();
         } else {
             block = block.next();
-            res.append("<br>");
+            res.append("</div><div>");
         }
         i = 0;
     }
