@@ -1120,18 +1120,18 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-copy") {
+            menu->removeAction(act);
+            act->disconnect();
+            act->setEnabled(true);
+            connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
+            menu->insertAction(lastAct, act);
         } else if (hasBlockSelection) {
             if (act->objectName() == "edit-cut") {
                 menu->removeAction(act);
                 act->disconnect();
                 act->setEnabled(true);
                 connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
-                menu->insertAction(lastAct, act);
-            } else if (act->objectName() == "edit-copy") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
                 menu->insertAction(lastAct, act);
             } else if (act->objectName() == "edit-delete") {
                 menu->removeAction(act);
