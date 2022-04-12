@@ -14,7 +14,8 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
 {
     QByteArray res;
     if (!cursor.hasSelection()) return res;
-    res.append(QString("<html>\n<body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
+    res.append(QString("<html><head><style type=\"text/css\"> span {background-color: %1;}</style></head>"
+                       "<body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
                        "background-color: %1;font-family: Consolas, 'Courier New', monospace;font-weight: normal;"
                        "font-size: 14px;line-height: 19px;white-space: pre;\"><div>").arg(background.name()).toUtf8());
     QTextDocument *doc = cursor.document();
