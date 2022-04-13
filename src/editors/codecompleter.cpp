@@ -56,24 +56,27 @@ void CodeCompleterModel::initData()
     mDollarGroupRow = mData.size();
     mData << "$...";
     mDescription << "";
+    mType.insert(mData.size()-1, ccDcoStrt);
+
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
         if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut" ||
-                it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode")
-            delayedIterators << it;
-        else {
+                it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode") {
             mData << '$' + it->first;
             mDescription << it->second;
+        } else {
+            delayedIterators << it;
         }
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(mData.size()-1, ccDcoEnd);
+
     for (const QList<QPair<QString, QString>>::ConstIterator &it : qAsConst(delayedIterators)) {
         mData << '$' + it->first;
         mDescription << it->second;
     }
-    mType.insert(mData.size()-1, ccDcoEnd);
+    mType.insert(mData.size()-1, ccDcoStrt);
 
     // declarations
     src = syntax::SyntaxData::declaration();
@@ -450,6 +453,15 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     invalidateFilter();
 }
 
+bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
+{
+    int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
+    if ((pat & ccDcoEnd) && pat != ccDcoEnd) {
+        return source_left.data(Qt::UserRole).toInt() == ccDcoEnd;
+    }
+    return QSortFilterProxyModel::lessThan(source_left, source_right);
+}
+
 
 // ----------- Completer ---------------
 
@@ -729,7 +741,6 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 
     if (!mFilterModel->rowCount() ||
             (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
-        DEB() << "Filter-RowCount " << mFilterModel->rowCount();
         hide();
         return;
     }
@@ -1077,16 +1088,16 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     int subType = 0;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
-            filter = ccDcoEnd;
+            filter = cc_Start | ccDcoEnd;
             subType = 1;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
-            filter = ccDcoEnd;
+            filter = cc_Start | ccDcoEnd;
             subType = syntax.second == 3 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = ccResEnd;
             } else {
-                filter = ccDcoEnd;
+                filter = cc_Start | ccDcoEnd;
                 subType = (syntax.second == 19) ? 4 : 5;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
