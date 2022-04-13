@@ -59,7 +59,7 @@ void CodeCompleterModel::initData()
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
-        if (it->first == "offText" || it->first == "offPut" ||
+        if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut" ||
                 it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode")
             delayedIterators << it;
         else {
@@ -398,9 +398,10 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (type == ccDcoEnd) {
         switch (mSubType) {
         case 1: if (text.toLower() != "$offtext") return false; break;
-        case 2: if (text.toLower() != "$offput") return false; break;
-        case 3: if (text.toLower() != "$offembeddedcode") return false; break;
-        case 4: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
+        case 2: if (text.toLower() != "$offecho") return false; break;
+        case 3: if (text.toLower() != "$offput") return false; break;
+        case 4: if (text.toLower() != "$offembeddedcode") return false; break;
+        case 5: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
         default: ;
         }
     }
@@ -984,7 +985,6 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
     case syntax::SyntaxKind::IgnoredHead:
-    case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
         filter = cc_Start; break;
@@ -1006,6 +1006,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Dco:
         filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
+    case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::CommentBlock:
     case syntax::SyntaxKind::CommentLine:
@@ -1078,15 +1079,15 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
             filter = ccDcoEnd;
             subType = 1;
-        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock && syntax.second == 5) {
+        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
             filter = ccDcoEnd;
-            subType = 2;
+            subType = syntax.second == 3 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = ccResEnd;
             } else {
                 filter = ccDcoEnd;
-                subType = (syntax.second == 19) ? 3 : 4;
+                subType = (syntax.second == 19) ? 4 : 5;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
             filter = filter & ccDcoStrt;
