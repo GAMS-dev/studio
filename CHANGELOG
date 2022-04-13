@@ -1,6 +1,8 @@
 Version 1.10.1  *
 ==================
 - fixed broken syntax in data statements with division
+- added completer handling of offEcho
+- allow all keywords in completer after open a paired DCO and sort closing DCOs to the top
 
 Version 1.10.0
 ==================
