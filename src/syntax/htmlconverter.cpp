@@ -14,10 +14,13 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
 {
     QByteArray res;
     if (!cursor.hasSelection()) return res;
-    res.append(QString("<html><head><style type=\"text/css\"> span {background-color: %1;}</style></head>"
-                       "<body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
-                       "background-color: %1;font-family: Consolas, 'Courier New', monospace;font-weight: normal;"
-                       "font-size: 14px;line-height: 19px;white-space: pre;\"><div>").arg(background.name()).toUtf8());
+    QString backColor;
+#ifndef __APPLE__
+    backColor = QString("background-color: %1;").arg(background.name());
+#endif
+    res.append(QString("<html><body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
+                       "font-family: Consolas, 'Courier New', monospace;font-weight: normal;"
+                       "font-size: 14px;line-height: 19px;white-space: pre;%1\"><div>").arg(backColor).toUtf8());
     QTextDocument *doc = cursor.document();
 
     QTextCursor cur(doc);
@@ -60,7 +63,6 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
         i = 0;
     }
     res.append("</div></div><!--EndFragment-->\n</body>\n</html>");
-    DEB() << res;
     return res;
 }
 
