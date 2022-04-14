@@ -308,10 +308,13 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
     QDialog::keyPressEvent(e);
 }
 
-void SearchDialog::on_combo_scope_currentIndexChanged(int)
+void SearchDialog::on_combo_scope_currentIndexChanged(int scope)
 {
     searchParameterChanged();
     updateComponentAvailability();
+
+    if (scope != Search::Selection)
+        clearSearchSelection();
 
     ui->frame_findinfiles->setVisible(ui->combo_scope->currentIndex() == Search::Folder);
     ui->frame_filters->setVisible(!(ui->combo_scope->currentIndex() == Search::ThisFile
@@ -348,7 +351,6 @@ void SearchDialog::on_btn_clear_clicked()
     }
     clearSearchSelection();
     mSearch.invalidateCache();
-    updateEditHighlighting();
     updateClearButton();
 }
 
@@ -487,6 +489,8 @@ void SearchDialog::clearSearchSelection()
         ae->clearSearchSelection();
     else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))
         tv->clearSearchSelection();
+
+    updateEditHighlighting();
 }
 
 void SearchDialog::clearSearch()

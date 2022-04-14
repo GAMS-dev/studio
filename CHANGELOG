@@ -1,3 +1,7 @@
+Version 1.10.1*
+==================
+- added automatic removal of search selection when leaving "Selection" search scope
+
 Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog

@@ -80,7 +80,7 @@ private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
     void on_btn_ReplaceAll_clicked();
-    void on_combo_scope_currentIndexChanged(int);
+    void on_combo_scope_currentIndexChanged(int scope);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_combo_search_currentTextChanged(const QString);
