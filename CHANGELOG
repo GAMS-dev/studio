@@ -1,6 +1,8 @@
 Version 1.10.1*
 ==================
 - added automatic removal of search selection when leaving "Selection" search scope
+- added feedback for empty search term
+- fixed search dialog not saving position when closing with the X button
 
 Version 1.10.0
 ==================

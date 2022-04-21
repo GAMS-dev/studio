@@ -56,6 +56,14 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
+void SearchDialog::closeEvent (QCloseEvent *event)
+{
+    emit setWidgetPosition(pos());
+    hide();
+    event->accept();
+    QDialog::closeEvent(event);
+}
+
 void SearchDialog::restoreSettings()
 {
     Settings *settings = Settings::settings();
@@ -555,7 +563,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
             else
                 ui->lbl_nrResults->setText("No results in " + QString::number(mFilesInScope) + " files.");
         }
-
         break;
     case Search::Clear:
         ui->lbl_nrResults->setText("");

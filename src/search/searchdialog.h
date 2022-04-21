@@ -104,6 +104,7 @@ signals:
 protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
+    void closeEvent(QCloseEvent *event);
 
 private:
     void restoreSettings();

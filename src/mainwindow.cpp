@@ -4268,7 +4268,6 @@ void MainWindow::openSearchDialog()
            mSearchDialog->activateWindow();
            mSearchDialog->autofillSearchField();
        } else {
-
            if (mSearchWidgetPos.isNull()) {
                int margin = 25;
 
