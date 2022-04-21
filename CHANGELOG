@@ -1,3 +1,7 @@
+Version 1.10.1  *
+==================
+- fixed broken syntax in data statements with division
+
 Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog
