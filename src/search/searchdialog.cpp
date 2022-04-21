@@ -73,7 +73,7 @@ void SearchDialog::editorChanged(QWidget* editor) {
 
 void SearchDialog::on_btn_Replace_clicked()
 {
-    if (ui->combo_search->currentText().isEmpty()) return;
+    if (!checkSearchTerm()) return;
     insertHistory();
 
     mShowResults = false;
@@ -83,7 +83,7 @@ void SearchDialog::on_btn_Replace_clicked()
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
 {
-    if (ui->combo_search->currentText().isEmpty()) return;
+    if (!checkSearchTerm()) return;
 
     clearResultsView();
     insertHistory();
@@ -95,7 +95,7 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
 void SearchDialog::on_btn_FindAll_clicked()
 {
     if (!mSearch.isSearching()) {
-        if (ui->combo_search->currentText().isEmpty()) return;
+        if (!checkSearchTerm()) return;
 
         clearResultsView();
         insertHistory();
@@ -334,7 +334,7 @@ void SearchDialog::on_btn_forward_clicked()
 }
 
 void SearchDialog::findNextPrev(bool backwards) {
-    if (ui->combo_search->currentText().isEmpty()) return;
+    if (!checkSearchTerm()) return;
 
     mShowResults = false;
 
@@ -566,6 +566,9 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
     case Search::InvalidPath:
         ui->lbl_nrResults->setText("Invalid Path: \"" + ui->combo_path->currentText() + "\"");
         break;
+    case Search::EmptySearchTerm:
+        ui->lbl_nrResults->setText("Please enter search term.");
+        break;
     case Search::CollectingFiles:
         ui->lbl_nrResults->setText("Collecting files...");
         break;
@@ -720,6 +723,14 @@ void SearchDialog::adjustHeight()
     // set minimum possible height
     QApplication::processEvents(); // this is necessary for correct resizing of the dialog
     resize(width(), 1);
+}
+
+bool SearchDialog::checkSearchTerm() {
+    if (ui->combo_search->currentText().isEmpty()) {
+        setSearchStatus(Search::EmptySearchTerm);
+        return false;
+    }
+    return true;
 }
 
 void SearchDialog::setSearchedFiles(int files)

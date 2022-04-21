@@ -121,6 +121,7 @@ private:
     void addEntryToComboBox(QComboBox* box);
     void adjustHeight();
     void setSearchedFiles(int files);
+    bool checkSearchTerm();
 
 private:
     Ui::SearchDialog *ui;

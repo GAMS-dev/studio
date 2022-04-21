@@ -49,6 +49,7 @@ public:
         Clear,
         Replacing,
         InvalidPath,
+        EmptySearchTerm,
         CollectingFiles,
         Ok
     };
