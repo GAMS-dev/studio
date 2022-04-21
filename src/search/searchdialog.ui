@@ -660,6 +660,9 @@
           </property>
           <item row="1" column="1">
            <widget class="QCheckBox" name="cb_subdirs">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked the search includes subfolders in the selected directory. Otherwise only files that are located in the chosen directory are searched.  &lt;/p&gt;&lt;p&gt;Hidden folders are &lt;span style=&quot; font-weight:700;&quot;&gt;always&lt;/span&gt; excluded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Include Subdirectories</string>
             </property>
