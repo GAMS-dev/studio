@@ -278,7 +278,8 @@ void CodeEdit::cutSelection()
         mBlockEdit->selectionToClipboard();
         mBlockEdit->replaceBlockText(QStringList()<<QString());
     } else {
-        cut();
+        copySelection();
+        textCursor().removeSelectedText();
     }
 }
 
