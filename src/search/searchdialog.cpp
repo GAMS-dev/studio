@@ -754,7 +754,8 @@ void SearchDialog::jumpToResult(int matchNr)
         bool found = false;
 
         // find project
-        for (PExGroupNode* g : mFileHandler->projects()) {
+        QVector<PExProjectNode*> projects = mFileHandler->projects();
+        for (PExGroupNode* g : qAsConst(projects)) {
             if (g->name() == name) {
                 mCurrentSearchGroup = g->toProject();
                 found = true;
