@@ -51,6 +51,7 @@ public:
         InvalidPath,
         EmptySearchTerm,
         CollectingFiles,
+        InvalidRegex,
         Ok
     };
 

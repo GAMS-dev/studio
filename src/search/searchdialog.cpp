@@ -418,10 +418,21 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
     return -1;
 }
 
+void SearchDialog::checkRegex()
+{
+    if (!regex()) return;
+
+    QRegularExpression regex(ui->combo_search->currentText());
+    if (!regex.isValid())
+        setSearchStatus(Search::InvalidRegex);
+}
+
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
     searchParameterChanged();
     mCurrentSearchGroup = nullptr;
+
+    checkRegex();
 }
 
 void SearchDialog::searchParameterChanged()
@@ -537,8 +548,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 {
     if (status == Search::Ok && mSearchStatus == Search::InvalidPath)
         return;
-    else
-        mSearchStatus = status;
+    else mSearchStatus = status;
 
     QString searching = "Searching ";
     QString dotAnim = ".";
@@ -576,6 +586,9 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::EmptySearchTerm:
         ui->lbl_nrResults->setText("Please enter search term.");
+        break;
+    case Search::InvalidRegex:
+        ui->lbl_nrResults->setText("Invalid Regular Expression: " + createRegex().errorString());
         break;
     case Search::CollectingFiles:
         ui->lbl_nrResults->setText("Collecting files...");
@@ -780,12 +793,10 @@ void SearchDialog::setSearchedFiles(int files)
     mFilesInScope = files;
 }
 
-
 void SearchDialog::on_combo_path_currentTextChanged(const QString)
 {
     searchParameterChanged();
 }
-
 
 void SearchDialog::on_combo_fileExcludePattern_currentTextChanged(const QString)
 {

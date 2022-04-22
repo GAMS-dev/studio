@@ -124,6 +124,7 @@ private:
     void adjustHeight();
     void setSearchedFiles(int files);
     bool checkSearchTerm();
+    void checkRegex();
 
 private:
     Ui::SearchDialog *ui;
