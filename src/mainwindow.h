@@ -103,7 +103,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew);
-    PExFileNode* openFileWithOption(QString fileName, OpenGroupOption opt = ogNone, PExProjectNode* knownProject = nullptr);
+    PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
     void watchProjectTree();
 
     bool outputViewVisibility();

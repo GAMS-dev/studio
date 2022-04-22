@@ -71,8 +71,8 @@ FileMeta* SearchFileHandler::findOrCreateFile(QString filepath)
     return mMain->fileRepo()->findOrCreateFileMeta(filepath);
 }
 
-PExFileNode* SearchFileHandler::openFile(QString fileName) {
-    return mMain->openFileWithOption(fileName);
+PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* knownProject) {
+    return mMain->openFileWithOption(fileName, knownProject);
 }
 
 }

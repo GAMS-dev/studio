@@ -65,6 +65,7 @@ public:
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
     void setSearchStatus(Search::Status status, int hits = 0);
+    void jumpToResult(int matchNr);
 
 public slots:
     void on_searchNext();

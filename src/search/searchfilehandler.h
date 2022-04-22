@@ -40,7 +40,7 @@ public:
     PExFileNode* findFileNode(QString filepath) override;
     PExProjectNode *createProject(QString name, QString path) override;
     FileMeta* findOrCreateFile(QString filepath) override;
-    PExFileNode *openFile(QString fileName) override;
+    PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) override;
 
 private:
     MainWindow* mMain;

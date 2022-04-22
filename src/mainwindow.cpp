@@ -3008,7 +3008,7 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFileWithOption(QString fileName, OpenGroupOption opt, PExProjectNode* knownProject)
+PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt)
 {
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
@@ -3075,7 +3075,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
     PExFileNode *fileNode = nullptr;
     for (const QString &fileName : files) {
         // detect if the file is already present at the scope
-        fileNode = openFileWithOption(fileName, opt);
+        fileNode = openFileWithOption(fileName, nullptr, opt);
         if (!firstNode) firstNode = fileNode;
     }
 

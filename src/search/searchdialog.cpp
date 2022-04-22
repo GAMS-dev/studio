@@ -732,12 +732,27 @@ void SearchDialog::adjustHeight()
     resize(width(), 1);
 }
 
-bool SearchDialog::checkSearchTerm() {
+bool SearchDialog::checkSearchTerm()
+{
     if (ui->combo_search->currentText().isEmpty()) {
         setSearchStatus(Search::EmptySearchTerm);
         return false;
     }
     return true;
+}
+
+void SearchDialog::jumpToResult(int matchNr)
+{
+    if (matchNr > -1 && matchNr < mSearch.results().size()) {
+
+        Result r = mSearch.results().at(matchNr);
+        PExFileNode* node = mFileHandler->openFile(r.filepath(), nullptr);
+        if (!node) EXCEPT() << "File not found: " << r.filepath();
+
+        NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
+
+        node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+    }
 }
 
 void SearchDialog::setSearchedFiles(int files)
