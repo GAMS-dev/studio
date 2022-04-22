@@ -38,9 +38,10 @@ public:
     PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFileNode(QString filepath) override;
-    PExProjectNode *createProject(QString name, QString path) override;
+    PExProjectNode* createProject(QString name, QString path) override;
     FileMeta* findOrCreateFile(QString filepath) override;
     PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) override;
+    QVector<PExProjectNode*> projects() override;
 
 private:
     MainWindow* mMain;

@@ -75,6 +75,11 @@ PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* know
     return mMain->openFileWithOption(fileName, knownProject);
 }
 
+QVector<PExProjectNode *> SearchFileHandler::projects()
+{
+    return mMain->projectRepo()->projects();
+}
+
 }
 }
 }

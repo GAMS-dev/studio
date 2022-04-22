@@ -421,6 +421,7 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
     searchParameterChanged();
+    mCurrentSearchGroup = nullptr;
 }
 
 void SearchDialog::searchParameterChanged()
@@ -743,16 +744,34 @@ bool SearchDialog::checkSearchTerm()
 
 void SearchDialog::jumpToResult(int matchNr)
 {
-    if (matchNr > -1 && matchNr < mSearch.results().size()) {
+    if (!(matchNr > -1 && matchNr < mSearch.results().size())) return;
 
-        Result r = mSearch.results().at(matchNr);
-        PExFileNode* node = mFileHandler->openFile(r.filepath(), nullptr);
-        if (!node) EXCEPT() << "File not found: " << r.filepath();
+    Result r = mSearch.results().at(matchNr);
 
-        NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
+    // create group for search results
+    if (r.parentGroup() == -1) {
+        QString name = "Search: " + ui->combo_search->currentText();
+        bool found = false;
 
-        node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
+        // find project
+        for (PExGroupNode* g : mFileHandler->projects()) {
+            if (g->name() == name) {
+                mCurrentSearchGroup = g->toProject();
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            QFileInfo dir(r.filepath());
+            mCurrentSearchGroup = mFileHandler->createProject(name, dir.absolutePath());
+        }
     }
+
+    PExFileNode* node = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
+    if (!node) EXCEPT() << "File not found: " << r.filepath();
+
+    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
+    node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 }
 
 void SearchDialog::setSearchedFiles(int files)

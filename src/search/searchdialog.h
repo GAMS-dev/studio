@@ -141,6 +141,7 @@ private:
     bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
     Search::Status mSearchStatus = Search::Status::Clear;
+    PExProjectNode* mCurrentSearchGroup = nullptr;
 };
 
 }
