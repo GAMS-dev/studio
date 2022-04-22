@@ -765,19 +765,19 @@
   <tabstop>txt_replace</tabstop>
   <tabstop>combo_filePattern</tabstop>
   <tabstop>combo_fileExcludePattern</tabstop>
+  <tabstop>combo_path</tabstop>
+  <tabstop>btn_browse</tabstop>
+  <tabstop>cb_subdirs</tabstop>
   <tabstop>cb_caseSens</tabstop>
   <tabstop>cb_regex</tabstop>
   <tabstop>cb_wholeWords</tabstop>
   <tabstop>combo_scope</tabstop>
   <tabstop>btn_back</tabstop>
   <tabstop>btn_forward</tabstop>
-  <tabstop>btn_FindAll</tabstop>
   <tabstop>btn_clear</tabstop>
   <tabstop>btn_Replace</tabstop>
   <tabstop>btn_ReplaceAll</tabstop>
-  <tabstop>btn_browse</tabstop>
-  <tabstop>combo_path</tabstop>
-  <tabstop>cb_subdirs</tabstop>
+  <tabstop>btn_FindAll</tabstop>
  </tabstops>
  <resources/>
  <connections/>
