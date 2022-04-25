@@ -523,6 +523,10 @@ void SyntaxHighlighter::syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName,
     if (syntaxBlock.syntax)
         DEB() << QString(syntaxBlock.start, ' ') << QString(syntaxBlock.length(), '.') << " "
               << syntaxBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntaxName << ")";
+#else
+    Q_UNUSED(syntaxBlock)
+    Q_UNUSED(syntaxName)
+    Q_UNUSED(prevFlavor)
 #endif
 }
 
@@ -530,6 +534,8 @@ void SyntaxHighlighter::syntaxDebug(QString text)
 {
 #ifdef SYNTAXDEBUG
     DEB() << text;
+#else
+    Q_UNUSED(text)
 #endif
 }
 
