@@ -399,16 +399,17 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     purgeGroup(oldParent);
 }
 
-QString ProjectRepo::uniqueNodeName(PExGroupNode *parentNode, const QString &name)
+QString ProjectRepo::uniqueNodeName(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node)
 {
     // Project name should be unique, append number in case
+    if (!parentNode) return name;
     QString res = name;
     int nr = 0;
     bool conflict = true;
     while (conflict) {
         conflict = false;
-        for (PExAbstractNode * node : parentNode->childNodes()) {
-            if (node->name() == res) {
+        for (PExAbstractNode * n : parentNode->childNodes()) {
+            if (n != node && n->name() == res) {
                 ++nr;
                 res = name + QString::number(nr);
                 conflict = true;

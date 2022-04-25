@@ -247,6 +247,16 @@ QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
+void PExProjectNode::setName(const QString &name)
+{
+    QString uniqueName = projectRepo()->uniqueNodeName(parentNode(), name, this);
+    PExGroupNode::setName(uniqueName);
+    if (mLogNode) {
+        DEB() << "LOG: " << mLogNode->name();
+
+    }
+}
+
 bool PExProjectNode::hasLogNode() const
 {
     return mLogNode;
