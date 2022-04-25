@@ -54,7 +54,7 @@ void TestCompleter::testDco()
 
     // ===== TEST: empty line in non-GAMS blocks
     line = "";
-    expect = ccDcoEnd;
+    expect = ccDcoEnd | cc_Start;
 
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::CommentBlock, 0);
