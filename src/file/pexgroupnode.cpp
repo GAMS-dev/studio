@@ -224,7 +224,8 @@ PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta
 void PExProjectNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
     if (mGamsProcess == process) return;
-    mGamsProcess->disconnect();
+    if (mGamsProcess)
+        mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
 }
