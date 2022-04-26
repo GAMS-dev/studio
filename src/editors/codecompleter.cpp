@@ -459,6 +459,9 @@ bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModel
     if ((pat & ccDcoEnd) && pat != ccDcoEnd) {
         return source_left.data(Qt::UserRole).toInt() == ccDcoEnd;
     }
+    if ((pat & ccResEnd) && pat != ccResEnd) {
+        return source_left.data(Qt::UserRole).toInt() == ccResEnd;
+    }
     return QSortFilterProxyModel::lessThan(source_left, source_right);
 }
 
@@ -1095,7 +1098,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             subType = syntax.second == 3 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
-                filter = ccResEnd;
+                filter = cc_Start | ccResEnd;
             } else {
                 filter = cc_Start | ccDcoEnd;
                 subType = (syntax.second == 19) ? 4 : 5;
