@@ -122,7 +122,7 @@ public:
             QMessageLogger(mFile, mLine, "").debug().noquote().nospace() << indent() << "IN  " << mFunctionName;
         incDepth();
     }
-    ~TimeTracer() {
+    ~TimeTracer() override {
         decDepth();
         if (!mFunctionName.isEmpty())
             *this << "OUT " << timeString() << " ms " << mFunctionName;

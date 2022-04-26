@@ -32,14 +32,8 @@
 //#define SYNTAXDEBUG
 #endif
 
-#ifdef SYNTAXDEBUG
 #ifndef TDEB
 #define TDEB(text) syntaxDebug(text);
-#endif
-#else
-#ifndef TDEB
-#define TDEB(text)
-#endif
 #endif
 
 namespace gams {
@@ -525,15 +519,24 @@ QString SyntaxHighlighter::codeDeb(CodeRelationIndex cri)
 
 void SyntaxHighlighter::syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor)
 {
+#ifdef SYNTAXDEBUG
     if (syntaxBlock.syntax)
         DEB() << QString(syntaxBlock.start, ' ') << QString(syntaxBlock.length(), '.') << " "
               << syntaxBlock.syntax->name() << " flav_" << prevFlavor << "  (tail from " << syntaxName << ")";
-
+#else
+    Q_UNUSED(syntaxBlock)
+    Q_UNUSED(syntaxName)
+    Q_UNUSED(prevFlavor)
+#endif
 }
 
 void SyntaxHighlighter::syntaxDebug(QString text)
 {
+#ifdef SYNTAXDEBUG
     DEB() << text;
+#else
+    Q_UNUSED(text)
+#endif
 }
 
 

@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include <QPalette>
 #include <QDir>
+#include <QMimeData>
 
 #include "editors/codeedit.h"
 #include "codecompleter.h"
@@ -34,6 +35,7 @@
 #include "search/searchlocator.h"
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
+#include "syntax/htmlconverter.h"
 
 namespace gams {
 namespace studio {
@@ -276,7 +278,8 @@ void CodeEdit::cutSelection()
         mBlockEdit->selectionToClipboard();
         mBlockEdit->replaceBlockText(QStringList()<<QString());
     } else {
-        cut();
+        copySelection();
+        textCursor().removeSelectedText();
     }
 }
 
@@ -285,7 +288,11 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
-        copy();
+        QMimeData *dat = new QMimeData();
+        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
+        const QTextDocumentFragment fragment(textCursor());
+        dat->setText(fragment.toPlainText());
+        QGuiApplication::clipboard()->setMimeData(dat);
     }
 }
 
@@ -1114,18 +1121,18 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-copy") {
+            menu->removeAction(act);
+            act->disconnect();
+            act->setEnabled(true);
+            connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
+            menu->insertAction(lastAct, act);
         } else if (hasBlockSelection) {
             if (act->objectName() == "edit-cut") {
                 menu->removeAction(act);
                 act->disconnect();
                 act->setEnabled(true);
                 connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
-                menu->insertAction(lastAct, act);
-            } else if (act->objectName() == "edit-copy") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
                 menu->insertAction(lastAct, act);
             } else if (act->objectName() == "edit-delete") {
                 menu->removeAction(act);
