@@ -213,6 +213,7 @@ private slots:
     void fileChanged(const FileId fileId);
     void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
+    void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();

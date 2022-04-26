@@ -252,8 +252,11 @@ void PExProjectNode::setName(const QString &name)
     QString uniqueName = projectRepo()->uniqueNodeName(parentNode(), name, this);
     PExGroupNode::setName(uniqueName);
     if (mLogNode) {
-        DEB() << "LOG: " << mLogNode->name();
-
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
+        QString logName = workDir()+"/"+uniqueName+"."+suffix;
+        mLogNode->file()->setLocation(logName);
+        if (mLogNode->file()->editors().size())
+            emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
     }
 }
 
@@ -414,9 +417,7 @@ PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QFileInfo fi = !parameter("gms").isEmpty()
-                       ? parameter("gms") : QFileInfo(workDir()+"/"+name()+"."+suffix);
-        QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
+        QString logName = workDir()+"/"+name()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new PExLogNode(fm, this);
     }

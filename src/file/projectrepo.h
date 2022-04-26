@@ -142,6 +142,7 @@ signals:
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
+    void logTabRenamed(QWidget *wid, const QString &newName);
     void openRecentFile();
     void parentAssigned(const PExAbstractNode *node);
     void deselect(const QVector<QModelIndex> &declined);
