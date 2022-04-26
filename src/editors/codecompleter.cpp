@@ -631,6 +631,7 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
     emit scanSyntax(block, blockSyntax);
+    if (!blockSyntax.isEmpty()) res = blockSyntax.first();
     int lastEnd = 0;
     dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
@@ -998,7 +999,6 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::IgnoredHead:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
         filter = cc_Start; break;
@@ -1020,6 +1020,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Dco:
         filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
+    case syntax::SyntaxKind::IgnoredHead:
     case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::CommentBlock:
@@ -1093,7 +1094,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
             filter = cc_Start | ccDcoEnd;
             subType = 1;
-        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
+        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredHead
+                   || syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
             filter = cc_Start | ccDcoEnd;
             subType = syntax.second == 3 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
