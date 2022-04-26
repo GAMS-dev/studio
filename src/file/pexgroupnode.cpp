@@ -696,7 +696,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     if (path.isEmpty()) path = workDir();
     else if (QDir(path).isRelative()) path = workDir() + '/' + path;
 
-    setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
+    setLogLocation(cleanPath(path, name() + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
