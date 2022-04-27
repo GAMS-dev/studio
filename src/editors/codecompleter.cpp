@@ -56,24 +56,27 @@ void CodeCompleterModel::initData()
     mDollarGroupRow = mData.size();
     mData << "$...";
     mDescription << "";
+    mType.insert(mData.size()-1, ccDcoStrt);
+
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
     while (it != src.constEnd()) {
-        if (it->first == "offText" || it->first == "offPut" ||
-                it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode")
-            delayedIterators << it;
-        else {
+        if (it->first == "offText" || it->first == "offEcho" || it->first == "offPut" ||
+                it->first == "offEmbeddedCode" || it->first == "endEmbeddedCode" || it->first == "pauseEmbeddedCode") {
             mData << '$' + it->first;
             mDescription << it->second;
+        } else {
+            delayedIterators << it;
         }
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(mData.size()-1, ccDcoEnd);
+
     for (const QList<QPair<QString, QString>>::ConstIterator &it : qAsConst(delayedIterators)) {
         mData << '$' + it->first;
         mDescription << it->second;
     }
-    mType.insert(mData.size()-1, ccDcoEnd);
+    mType.insert(mData.size()-1, ccDcoStrt);
 
     // declarations
     src = syntax::SyntaxData::declaration();
@@ -398,9 +401,10 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (type == ccDcoEnd) {
         switch (mSubType) {
         case 1: if (text.toLower() != "$offtext") return false; break;
-        case 2: if (text.toLower() != "$offput") return false; break;
-        case 3: if (text.toLower() != "$offembeddedcode") return false; break;
-        case 4: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
+        case 2: if (text.toLower() != "$offecho") return false; break;
+        case 3: if (text.toLower() != "$offput") return false; break;
+        case 4: if (text.toLower() != "$offembeddedcode") return false; break;
+        case 5: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
         default: ;
         }
     }
@@ -447,6 +451,18 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
     mSubType = subType;
     mNeedDot = needDot;
     invalidateFilter();
+}
+
+bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
+{
+    int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
+    if ((pat & ccDcoEnd) && pat != ccDcoEnd) {
+        return source_left.data(Qt::UserRole).toInt() == ccDcoEnd;
+    }
+    if ((pat & ccResEnd) && pat != ccResEnd) {
+        return source_left.data(Qt::UserRole).toInt() == ccResEnd;
+    }
+    return QSortFilterProxyModel::lessThan(source_left, source_right);
 }
 
 
@@ -615,6 +631,7 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
     emit scanSyntax(block, blockSyntax);
+    if (!blockSyntax.isEmpty()) res = blockSyntax.first();
     int lastEnd = 0;
     dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
@@ -728,7 +745,6 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
 
     if (!mFilterModel->rowCount() ||
             (mFilterModel->rowCount() == 1 && mFilterModel->data(mFilterModel->index(0,0)).toString() == mFilterText)) {
-        DEB() << "Filter-RowCount " << mFilterModel->rowCount();
         hide();
         return;
     }
@@ -983,8 +999,6 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
-    case syntax::SyntaxKind::IgnoredHead:
-    case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::Semicolon:
     case syntax::SyntaxKind::CommaIdent:
         filter = cc_Start; break;
@@ -1006,6 +1020,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Dco:
         filter = ccDcoStrt | ccSysSufC | ccCtConst; break;
 
+    case syntax::SyntaxKind::IgnoredHead:
+    case syntax::SyntaxKind::IgnoredBlock:
     case syntax::SyntaxKind::DcoComment:
     case syntax::SyntaxKind::CommentBlock:
     case syntax::SyntaxKind::CommentLine:
@@ -1076,17 +1092,18 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     int subType = 0;
     if (isWhitespace) {
         if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
-            filter = ccDcoEnd;
+            filter = cc_Start | ccDcoEnd;
             subType = 1;
-        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock && syntax.second == 5) {
-            filter = ccDcoEnd;
-            subType = 2;
+        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredHead
+                   || syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
+            filter = cc_Start | ccDcoEnd;
+            subType = syntax.second == 3 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
-                filter = ccResEnd;
+                filter = cc_Start | ccResEnd;
             } else {
-                filter = ccDcoEnd;
-                subType = (syntax.second == 19) ? 3 : 4;
+                filter = cc_Start | ccDcoEnd;
+                subType = (syntax.second == 19) ? 4 : 5;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
             filter = filter & ccDcoStrt;
