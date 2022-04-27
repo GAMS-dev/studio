@@ -247,6 +247,19 @@ QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
+void PExProjectNode::setName(const QString &name)
+{
+    QString uniqueName = projectRepo()->uniqueNodeName(parentNode(), name, this);
+    PExGroupNode::setName(uniqueName);
+    if (mLogNode) {
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
+        QString logName = workDir()+"/"+uniqueName+"."+suffix;
+        mLogNode->file()->setLocation(logName);
+        if (mLogNode->file()->editors().size())
+            emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
+    }
+}
+
 bool PExProjectNode::hasLogNode() const
 {
     return mLogNode;
@@ -404,9 +417,7 @@ PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QFileInfo fi = !parameter("gms").isEmpty()
-                       ? parameter("gms") : QFileInfo(workDir()+"/"+name()+"."+suffix);
-        QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
+        QString logName = workDir()+"/"+name()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new PExLogNode(fm, this);
     }
@@ -685,7 +696,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     if (path.isEmpty()) path = workDir();
     else if (QDir(path).isRelative()) path = workDir() + '/' + path;
 
-    setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
+    setLogLocation(cleanPath(path, name() + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
     clearParameters();
     // set default lst name to revert deleted o parameter values

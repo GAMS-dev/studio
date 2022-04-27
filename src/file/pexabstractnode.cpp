@@ -60,10 +60,8 @@ QString PExAbstractNode::name(NameModifier mod) const
 
 void PExAbstractNode::setName(const QString& name)
 {
-    if (mName != name) {
-        mName = name;
-        emit changed(mId);
-    }
+    mName = name;
+    emit changed(mId);
 }
 
 const ProjectRootNode *PExAbstractNode::root() const
