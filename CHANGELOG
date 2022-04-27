@@ -1,11 +1,4 @@
-Version 1.10.1  *
-==================
-- fixed broken syntax in data statements with division
-- added completer handling of offEcho
-- allow all keywords in completer after open a paired DCO and sort closing DCOs to the top
-- ensure unique project name and keep log name in sync with project name
-
-Version 1.10.0
+Version 1.10.0 *
 ==================
 - added GDX Viewer tab to the settings dialog
 - added new setting to specify the default symbol view of the GDX Viewer
@@ -28,6 +21,10 @@ Version 1.10.0
 - added file exclusion pattern input field and functionality
 - added info about number of files to search dialog
 - changed default position of search dialog to top right
+- fixed broken syntax in data statements with division
+- added completer handling of offEcho
+- allow all keywords in completer after open a paired DCO and sort closing DCOs to the top
+- ensure unique project name and keep log name in sync with project name
 
 Version 1.9.6
 ==================
