@@ -571,8 +571,16 @@ QList<int> AbstractTextMapper::lineMarkers()
     return mLineMarkers;
 }
 
-void AbstractTextMapper::clearSearchSelection() {
-    mIsSearchSelectionActive = false;
+void AbstractTextMapper::clearSearchSelection()
+{
+    mSearchSelectionStart = CursorPosition();
+    mSearchSelectionEnd = CursorPosition();
+    setSearchSelectionActive(false);
+}
+
+void AbstractTextMapper::setSearchSelectionActive(bool active)
+{
+    mIsSearchSelectionActive = active;
 }
 
 bool AbstractTextMapper::hasSearchSelection()

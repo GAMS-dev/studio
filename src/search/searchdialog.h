@@ -116,7 +116,7 @@ private:
     void updateEditHighlighting();
     void updateDialogState();
     void clearSelection();
-    void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     AbstractSearchFileHandler* fileHandler();
     QWidget* currentEditor();
     void findNextPrev(bool backwards);

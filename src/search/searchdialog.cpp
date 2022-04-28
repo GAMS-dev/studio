@@ -321,8 +321,7 @@ void SearchDialog::on_combo_scope_currentIndexChanged(int scope)
     searchParameterChanged();
     updateComponentAvailability();
 
-    if (scope != Search::Selection)
-        clearSearchSelection();
+    setSearchSelectionActive(scope == Search::Selection);
 
     ui->frame_findinfiles->setVisible(ui->combo_scope->currentIndex() == Search::Folder);
     ui->frame_filters->setVisible(!(ui->combo_scope->currentIndex() == Search::ThisFile
@@ -357,7 +356,7 @@ void SearchDialog::on_btn_clear_clicked()
     } else {
         clearSearch();
     }
-    clearSearchSelection();
+    setSearchSelectionActive(false);
     mSearch.invalidateCache();
     updateClearButton();
 }
@@ -496,19 +495,21 @@ void SearchDialog::clearSelection()
         QTextCursor tc = ae->textCursor();
         tc.clearSelection();
         ae->setTextCursor(tc);
+        ae->clearSearchSelection();
     } else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor)) {
         QTextCursor tc = tv->edit()->textCursor();
         tc.clearSelection();
         tv->edit()->setTextCursor(tc);
+        tv->clearSearchSelection();
     }
 }
 
-void SearchDialog::clearSearchSelection()
+void SearchDialog::setSearchSelectionActive(bool active)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mCurrentEditor))
-        ae->clearSearchSelection();
+        ae->setSearchSelectionActive(active);
     else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor))
-        tv->clearSearchSelection();
+        tv->setSearchSelectionActive(active);
 
     updateEditHighlighting();
 }
