@@ -557,6 +557,9 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 
     hits = (hits > MAX_SEARCH_RESULTS-1) ? MAX_SEARCH_RESULTS : hits;
 
+    if (status == Search::Ok && hits == 0)
+        status = Search::NoResults;
+
     switch (status) {
     case Search::Searching:
         ui->lbl_nrResults->setText(searching + files + " (" + QString::number(hits) + ") "
@@ -564,8 +567,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         break;
     case Search::Ok:
         ui->lbl_nrResults->setText(QString::number(hits) + ((hits == 1) ? " match" : " matches") + files + ".");
-        if (hits > 0)
-            break;
+        break;
     case Search::NoResults:
         if (selectedScope() == Search::Scope::Selection && !mSearch.hasSearchSelection())
             ui->lbl_nrResults->setText("Selection missing.");
