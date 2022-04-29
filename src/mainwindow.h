@@ -103,7 +103,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew);
-    PExFileNode* openFileWithOption(QString fileName, OpenGroupOption opt = ogNone, PExProjectNode* knownProject = nullptr);
+    PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -213,6 +213,7 @@ private slots:
     void fileChanged(const FileId fileId);
     void fileClosed(const FileId fileId);
     void fileEvent(const FileEvent &e);
+    void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
     void postGamsRun(NodeId origin, int exitCode);
     void postGamsLibRun();

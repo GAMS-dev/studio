@@ -296,9 +296,16 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
     sw.findInFiles();
 }
 
-void TextView::clearSearchSelection() {
+void TextView::clearSearchSelection()
+{
     mEdit->clearSearchSelection();
     mMapper->clearSearchSelection();
+}
+
+void TextView::setSearchSelectionActive(bool active)
+{
+    mEdit->setSearchSelectionActive(active);
+    mMapper->setSearchSelectionActive(active);
 }
 
 void TextView::outerScrollAction(int action)

@@ -347,13 +347,19 @@ bool AbstractEdit::hasSearchSelection()
 
 void AbstractEdit::clearSearchSelection()
 {
-    mIsSearchSelectionActive = false;
+    searchSelection = textCursor();
+    mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
+}
+
+void AbstractEdit::setSearchSelectionActive(bool active)
+{
+    // only set truely active if a selection exists
+    mIsSearchSelectionActive = active && !searchSelection.selection().isEmpty();
 }
 
 void AbstractEdit::updateSearchSelection()
 {
     if (!hasSearchSelection()) {
-        SearchLocator::search()->reset();
         searchSelection = textCursor();
         mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
     }
@@ -379,6 +385,7 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
 
     do {
         item = document()->find(SearchLocator::search()->regex(), qMax(startPos, item.position()), cacheOptions);
+
         if (item != lastItem) lastItem = item;
         else break; // mitigate endless loop
 
@@ -400,8 +407,7 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     if (selectionScope && hasSearchSelection()) {
         selection = searchSelection.selectedText();
         offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
-    } else clearSearchSelection();
-
+    }
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
         textCursor().insertText(replacementText);
@@ -420,7 +426,6 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     int to = 0;
 
     if (selectionScope) updateSearchSelection();
-    else clearSearchSelection();
 
     if (hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());

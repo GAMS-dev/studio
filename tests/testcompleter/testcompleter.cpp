@@ -54,7 +54,7 @@ void TestCompleter::testDco()
 
     // ===== TEST: empty line in non-GAMS blocks
     line = "";
-    expect = ccDcoEnd;
+    expect = ccDcoEnd | cc_Start;
 
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::CommentBlock, 0);
@@ -76,7 +76,7 @@ void TestCompleter::testDco()
     mCompleter->updateFilter( 0, line);
     QVERIFY2(mCompleter->typeFilter() == expect, describe(mCompleter->typeFilter(), expect, mCompleter->splitTypes()));
 
-    expect = ccResEnd;
+    expect = ccResEnd | cc_Start;
     mSynSim.clearBlockSyntax();
     mSynSim.addBlockSyntax(0, SyntaxKind::EmbeddedBody, 0);
     mCompleter->updateFilter( 0, line);

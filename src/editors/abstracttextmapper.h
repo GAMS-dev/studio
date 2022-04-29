@@ -189,6 +189,7 @@ public:
     bool atTail();
     void updateSearchSelection();
     void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     bool hasSearchSelection();
     QPoint searchSelectionStart();
     QPoint searchSelectionEnd();

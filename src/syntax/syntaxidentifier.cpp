@@ -267,7 +267,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
     QString quote("'\"");
     QString extender(".:*");
     QString ender(flavor & flavorModel ? "/,+-" : "/,");
-    QString pPairs("()");
+    QString pPairs("()[]");
     int end = start;
     bool extended = false;
     if (flavor & flavorBindLabel) {
@@ -289,7 +289,7 @@ SyntaxBlock AssignmentLabel::find(const SyntaxKind entryKind, int flavor, const 
             if (quote.contains(line.at(pos))) {
                 pos = endOfQuotes(line, pos);
                 if (pos < start) return SyntaxBlock(this);
-            } else if (line.at(pos) == '(') {
+            } else if (pPairs.indexOf(line.at(pos)) % 2 == 0) {
                 ++nesting;
                 pos = endOfParentheses(line, pos, pPairs, nesting);
                 if (pos <= start) pos = line.length()-1; // wrong_nesting

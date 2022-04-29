@@ -85,7 +85,7 @@
           <bool>true</bool>
          </property>
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -185,7 +185,7 @@
           <bool>true</bool>
          </property>
          <property name="sizePolicy">
-          <sizepolicy hsizetype="Maximum" vsizetype="Fixed">
+          <sizepolicy hsizetype="MinimumExpanding" vsizetype="Fixed">
            <horstretch>0</horstretch>
            <verstretch>0</verstretch>
           </sizepolicy>
@@ -660,6 +660,9 @@
           </property>
           <item row="1" column="1">
            <widget class="QCheckBox" name="cb_subdirs">
+            <property name="toolTip">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;If checked the search includes subfolders in the selected directory. Otherwise only files that are located in the chosen directory are searched.  &lt;/p&gt;&lt;p&gt;Hidden folders are &lt;span style=&quot; font-weight:700;&quot;&gt;always&lt;/span&gt; excluded.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
             <property name="text">
              <string>Include Subdirectories</string>
             </property>
@@ -757,6 +760,25 @@
   </layout>
  </widget>
  <layoutdefault spacing="6" margin="9"/>
+ <tabstops>
+  <tabstop>combo_search</tabstop>
+  <tabstop>txt_replace</tabstop>
+  <tabstop>combo_filePattern</tabstop>
+  <tabstop>combo_fileExcludePattern</tabstop>
+  <tabstop>combo_path</tabstop>
+  <tabstop>btn_browse</tabstop>
+  <tabstop>cb_subdirs</tabstop>
+  <tabstop>cb_caseSens</tabstop>
+  <tabstop>cb_regex</tabstop>
+  <tabstop>cb_wholeWords</tabstop>
+  <tabstop>combo_scope</tabstop>
+  <tabstop>btn_back</tabstop>
+  <tabstop>btn_forward</tabstop>
+  <tabstop>btn_clear</tabstop>
+  <tabstop>btn_Replace</tabstop>
+  <tabstop>btn_ReplaceAll</tabstop>
+  <tabstop>btn_FindAll</tabstop>
+ </tabstops>
  <resources/>
  <connections/>
 </ui>

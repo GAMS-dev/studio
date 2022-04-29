@@ -67,6 +67,7 @@ public:
 
     bool hasSearchSelection();
     void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     void updateSearchSelection();
     void findInSelection(QList<search::Result> &results);
     inline FileId fileId() {

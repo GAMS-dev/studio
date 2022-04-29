@@ -56,7 +56,7 @@ public:
     void clearResultsView();
     void clearSearch();
 
-    void autofillSearchField();
+    void autofillSearchDialog();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
@@ -64,13 +64,16 @@ public:
     void updateClearButton();
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
+    void setSearchStatus(Search::Status status, int hits = 0);
+    void jumpToResult(int matchNr);
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate(int hits);
-    void updateNrMatches(int current = 0);
+    void updateMatchLabel(int current = 0);
     void updateComponentAvailability();
     void on_btn_clear_clicked();
 
@@ -78,7 +81,7 @@ private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
     void on_btn_ReplaceAll_clicked();
-    void on_combo_scope_currentIndexChanged(int);
+    void on_combo_scope_currentIndexChanged(int scope);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_combo_search_currentTextChanged(const QString);
@@ -102,6 +105,7 @@ signals:
 protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
+    void closeEvent(QCloseEvent *event);
 
 private:
     void restoreSettings();
@@ -110,16 +114,17 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
-    void updateUi();
-    void setSearchStatus(Search::Status status, int hits = 0);
+    void updateDialogState();
     void clearSelection();
-    void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     AbstractSearchFileHandler* fileHandler();
     QWidget* currentEditor();
     void findNextPrev(bool backwards);
     void addEntryToComboBox(QComboBox* box);
     void adjustHeight();
     void setSearchedFiles(int files);
+    bool checkSearchTerm();
+    void checkRegex();
 
 private:
     Ui::SearchDialog *ui;
@@ -136,6 +141,8 @@ private:
     bool mShowResults = true;
     bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
+    Search::Status mSearchStatus = Search::Status::Clear;
+    PExProjectNode* mCurrentSearchGroup = nullptr;
 };
 
 }
