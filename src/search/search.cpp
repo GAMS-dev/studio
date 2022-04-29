@@ -529,6 +529,8 @@ void Search::replaceNext(QString replacementText)
 
 void Search::replaceAll(QString replacementText)
 {
+    setParameters(true);
+
     if (mRegex.pattern().isEmpty()) return;
 
     QList<FileMeta*> opened;
