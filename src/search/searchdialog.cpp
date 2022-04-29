@@ -419,10 +419,8 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
 
 void SearchDialog::checkRegex()
 {
-    if (!regex()) return;
-
-    QRegularExpression regex(ui->combo_search->currentText());
-    if (!regex.isValid())
+    QRegularExpression re(ui->combo_search->currentText());
+    if (regex() && !re.isValid())
         setSearchStatus(Search::InvalidRegex);
     updateComponentAvailability();
 }
