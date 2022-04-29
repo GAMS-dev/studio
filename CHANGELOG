@@ -1,3 +1,14 @@
+Version 1.10.1*
+==================
+- added automatic removal of search selection when leaving "Selection" search scope
+- added feedback for empty search term in search dialog
+- added feedback for invalid regex in search dialog
+- added feedback for invalid path in search dialog
+- fixed search dialog not saving position when closing with the X button
+- added automatic clearing of search selection when changing scope
+- fixed layout and tab order of search dialog
+- added Search related group to project explorer when files where found that were unknown to Studio
+
 Version 1.10.0
 ==================
 - added GDX Viewer tab to the settings dialog
@@ -21,15 +32,6 @@ Version 1.10.0
 - added file exclusion pattern input field and functionality
 - added info about number of files to search dialog
 - changed default position of search dialog to top right
-- added automatic removal of search selection when leaving "Selection" search scope
-- added feedback for empty search term in search dialog
-- added feedback for invalid regex in search dialog
-- added feedback for invalid path in search dialog
-- fixed search dialog not saving position when closing with the X button
-- added automatic clearing of search selection when changing scope
-- fixed layout and tab order of search dialog
-- added Search related group to project explorer when files where found that were unknown to Studio
-
 
 Version 1.9.6
 ==================
