@@ -1,6 +1,6 @@
-Version 1.10.1*
+Version 1.10.1
 ==================
-- added automatic removal of search selection when leaving "Selection" search scope
+- added automatic deactivation of search selection when leaving "Selection" search scope
 - added feedback for empty search term in search dialog
 - added feedback for invalid regex in search dialog
 - added feedback for invalid path in search dialog
@@ -9,8 +9,8 @@ Version 1.10.1*
 - fixed layout and tab order of search dialog
 - added Search related group to project explorer when files where found that were unknown to Studio
 - fixed broken syntax in data statements with division
-- added completer handling of offEcho
-- allow all keywords in completer after open a paired DCO and sort closing DCOs to the top
+- added completer handling for offEcho
+- changed behavior of completer: allow all keywords after opening a paired DCO and showing closing DCOs first
 - ensure unique project name and keep log name in sync with project name
 
 Version 1.10.0
