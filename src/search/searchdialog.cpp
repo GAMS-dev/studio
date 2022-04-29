@@ -264,7 +264,7 @@ void SearchDialog::showEvent(QShowEvent *event)
     Q_UNUSED(event)
 
     if (!mSearch.isSearching()) {
-        autofillSearchField();
+        autofillSearchDialog();
         updateComponentAvailability();
     }
 }
@@ -629,7 +629,7 @@ void SearchDialog::addEntryToComboBox(QComboBox* box)
     }
 }
 
-void SearchDialog::autofillSearchField()
+void SearchDialog::autofillSearchDialog()
 {
     QWidget *widget = mCurrentEditor;
     PExAbstractNode *fsc = mFileHandler->fileNode(widget);
@@ -652,6 +652,9 @@ void SearchDialog::autofillSearchField()
     ui->combo_search->setEditText(searchText);
     ui->combo_search->setFocus();
     ui->combo_search->lineEdit()->selectAll();
+
+    if (ui->combo_path->count() == 0)
+        ui->combo_path->setEditText(fsc->assignedProject()->workDir());
 }
 
 void SearchDialog::updateMatchLabel(int current)

@@ -4266,7 +4266,7 @@ void MainWindow::openSearchDialog()
            // e.g. needed for macOS to rasise search dialog when minimized
            mSearchDialog->raise();
            mSearchDialog->activateWindow();
-           mSearchDialog->autofillSearchField();
+           mSearchDialog->autofillSearchDialog();
        } else {
            if (mSearchWidgetPos.isNull()) {
                int margin = 25;

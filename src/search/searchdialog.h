@@ -56,7 +56,7 @@ public:
     void clearResultsView();
     void clearSearch();
 
-    void autofillSearchField();
+    void autofillSearchDialog();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
