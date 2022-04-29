@@ -110,6 +110,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->sbEngineExpireValue, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
 
+    connect(ui->cb_gdxDefaultSymbolView, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
@@ -193,6 +195,9 @@ void SettingsDialog::loadSettings()
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     ui->cbThemes->setCurrentIndex(mSettings->toInt(skEdAppearance));
     setThemeEditable(mSettings->toInt(skEdAppearance) >= mFixedThemeCount);
+
+    // GDX Viewer
+    ui->cb_gdxDefaultSymbolView->setCurrentIndex(mSettings->toInt(skGdxDefaultSymbolView));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -313,6 +318,9 @@ void SettingsDialog::saveSettings()
     mSettings->setInt(skEdAppearance, ui->cbThemes->currentIndex());
     mSettings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
+    // GDX Viewer
+    mSettings->setInt(skGdxDefaultSymbolView, ui->cb_gdxDefaultSymbolView->currentIndex());
+
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());
     ui->edUserGamsTypes->setText(suffs.join(", "));
@@ -370,12 +378,12 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
 
 void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
 {
-    emit editorFontChanged(value, ui->sb_fontsize->value());
+    emit editorFontChanged(ui->sb_fontsize->value(), value);
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int size)
 {
-    emit editorFontChanged(ui->fontComboBox->currentFont().family(), size);
+    emit editorFontChanged(size, ui->fontComboBox->currentFont().family());
 }
 
 void SettingsDialog::on_sb_tabsize_valueChanged(int size)
@@ -578,8 +586,7 @@ void SettingsDialog::on_btn_import_clicked()
     }
 
     emit editorLineWrappingChanged();
-    emit editorFontChanged(mSettings->toString(skEdFontFamily),
-                           mSettings->toInt(skEdFontSize));
+    emit editorFontChanged(mSettings->toInt(skEdFontSize), mSettings->toString(skEdFontFamily));
 #ifndef __APPLE__
     ViewHelper::setAppearance(); // update ui
 #endif

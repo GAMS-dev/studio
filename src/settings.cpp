@@ -288,6 +288,10 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEncodingMib, scSys, {"encodingMIBs"}, QString("106,0,4,17,2025"));
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
+    safelyAdd(res, skPinViewTabIndex, scSys, {"pinView", "tabIndex"}, -1);
+    safelyAdd(res, skPinViewSize, scSys, {"pinView", "size"}, QString("10,10"));
+    safelyAdd(res, skPinOrientation, scSys, {"pinView", "orientation"}, 1);
+    safelyAdd(res, skPinScollLock, scSys, {"pinView", "scrollLock"}, false);
     safelyAdd(res, skHistory, scSys, {"history"}, QJsonArray());
 
     // user model library directory
@@ -334,6 +338,9 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdCompleterCasing, scUser, {"editor","completerCasing"}, 0);
     safelyAdd(res, skEdFoldedDcoOnOpen, scUser, {"editor","foldedDcoOnOpen"}, false);
     safelyAdd(res, skEdSmartTooltipHelp, scUser, {"editor","smartTooltipHelp"}, true);
+
+    //GDX Viewer
+    safelyAdd(res, skGdxDefaultSymbolView, scUser, {"gdxViewer","gdxDefaultSymbolView"}, 0);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

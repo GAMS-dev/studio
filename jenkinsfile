@@ -14,18 +14,20 @@ def isDevelopmentArtifact() {
 }
 
 def NOTARIZATION_DEFAULT = !isDevelopmentArtifact()
+def CREATE_GITHUB_RELEASE_DEFAULT = !isDevelopmentArtifact()
 def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
 def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
-def GAMS_FOR_LINUX = "/opt/gams/gams38.1_linux_x64_64_sfx"
-def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/38/Resources"
-def GAMS_FOR_WINDOWS = "C:\\GAMS\\38"
+def GAMS_FOR_LINUX = "/opt/gams/gams39.0_linux_x64_64_sfx"
+def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/39/Resources"
+def GAMS_FOR_WINDOWS = "C:\\GAMS\\39"
 
 pipeline {
     agent none
     parameters {
-        booleanParam(name: "Notarize_DMG", defaultValue: "${NOTARIZATION_DEFAULT}", description: "Parameter to enable DMG notarization on macOS")
+        booleanParam(name: "Notarize_DMG", defaultValue: "${NOTARIZATION_DEFAULT}", description: "Parameter to enable DMG notarization on macOS.")
+        booleanParam(name: "CREATE_GITHUB_RELEASE", defaultValue: "${CREATE_GITHUB_RELEASE_DEFAULT}", description: "Parameter to skip the GitHub release deployment. This parameter will only affect release builds.")
     }
 
     options {
@@ -383,17 +385,25 @@ pipeline {
                 }
             }
         }
-        stage('Deploy to GitHub') {
+        stage('Copy Artifacts') {
             agent { label 'master' }
             when {
-                expression { return currentBuild.currentResult == "SUCCESS" }
-                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+                expression { return !isDevelopmentArtifact() }
             }
             steps {
                 sh '''
                     mkdir -p artifacts
                 '''
                 copyArtifacts filter: '*.AppImage, *.dmg, *.zip', fingerprintArtifacts: true, projectName: '${JOB_NAME}', selector: specific('${BUILD_NUMBER}'), target: 'artifacts'
+            }
+        }
+        stage('Deploy to GitHub') {
+            agent { label 'master' }
+            when {
+                expression { return currentBuild.currentResult == "SUCCESS" && params.CREATE_GITHUB_RELEASE }
+                tag pattern: "v\\d+\\.\\d+\\.\\d+.*", comparator: "REGEXP"
+            }
+            steps {
                 withCredentials([string(credentialsId: '18e8f0e0-f27a-4358-b70f-04acec1e9617', variable: 'GITHUB_TOKEN')]) {
                     sh '''#!/bin/bash -xe
                         ## get version information for artifact, tag name and description

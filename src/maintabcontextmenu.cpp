@@ -24,6 +24,8 @@ namespace gams {
 namespace studio {
 
 enum TabActions {
+    actSplitH,
+    actSplitV,
     actClose,
     actCloseAll,
     actCloseAllExceptVisible,
@@ -33,6 +35,16 @@ enum TabActions {
 
 MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
 {
+    setToolTipsVisible(true);
+    mActions.insert(actSplitH, addAction("Pin &right", this, [this]() {
+        emit openPinView(mTabIndex, Qt::Horizontal);
+    }));
+    mActions.value(actSplitH)->setToolTip("Pin edit to the right <b>Ctrl+Click</b>");
+    mActions.insert(actSplitV, addAction("Pin &below", this, [this]() {
+        emit openPinView(mTabIndex, Qt::Vertical);
+    }));
+    mActions.value(actSplitV)->setToolTip("Pin edit to the bottom <b>Shift+Ctrl+Click</b>");
+    addSeparator();
     mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::close));
     mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
     mActions.insert(actCloseAllExceptVisible, addAction("Close &except visible", mParent, &MainWindow::on_actionClose_All_Except_triggered));
@@ -66,9 +78,11 @@ void MainTabContextMenu::closeAllRight()
     }
 }
 
-void MainTabContextMenu::setTabIndex(int tab)
+void MainTabContextMenu::setTabIndex(int tab, bool canSplit)
 {
     mTabIndex = tab;
+    mActions.value(actSplitH)->setVisible(canSplit);
+    mActions.value(actSplitV)->setVisible(canSplit);
     mActions.value(actCloseAllExceptVisible)->setEnabled(mParent->mainTabs()->count() > 1);
     mActions.value(actCloseAllToLeft)->setEnabled(mTabIndex);
     mActions.value(actCloseAllToRight)->setEnabled(mTabIndex < mParent->mainTabs()->count()-1);

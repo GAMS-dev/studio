@@ -29,10 +29,12 @@
 #include "common.h"
 #include "valuefilter.h"
 #include "tableviewdomainmodel.h"
+#include "settings.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
 #include <QLabel>
+#include <QTimer>
 
 #include <numerics/doubleformatter.h>
 
@@ -51,6 +53,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbDomRight->hide();
     ui->laError->hide();
     ui->laError->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
+
+    mDefaultSymbolView = DefaultSymbolView(Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView));
 
     //create context menu
     QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
@@ -271,9 +275,6 @@ void GdxSymbolView::resetSortFilter()
             for (int i=0; i<GMS_VAL_MAX; i++)
                 mShowValColActions[i]->setChecked(true);
         }
-        ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
-        mSym->resetSortFilter();
-        mSqDefaults->setChecked(false);
         showListView();
         if (mTvModel) {
             ui->tvTableViewFilter->setModel(nullptr);
@@ -283,6 +284,13 @@ void GdxSymbolView::resetSortFilter()
             mTvModel = nullptr;
             ui->tvTableView->setModel(nullptr);
         }
+        ui->tvListView->horizontalHeader()->restoreState(mInitialHeaderState);
+        mSym->resetSortFilter();
+        mSqDefaults->setChecked(false);
+        mLVFirstInit = true;
+        mTVFirstInit = true;
+        mTVResizeOnInit = true;
+        showDefaultView();
     }
 }
 
@@ -297,7 +305,9 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
     mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+        if (mDefaultSymbolView == DefaultSymbolView::listView)
+            connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+        showDefaultView();
     }
     ui->tvListView->setModel(mSym);
 
@@ -544,40 +554,56 @@ void GdxSymbolView::showListView()
     ui->tbDomRight->hide();
     ui->tvListView->show();
     ui->pbToggleView->setText("Table View");
+    if (mLVFirstInit) {
+        autoResizeColumns();
+        mLVFirstInit = false;
+    }
 }
 
 void GdxSymbolView::showTableView()
 {
-    bool firstInit = !mTvModel;
-    if (firstInit) {
+    if (!mTvModel) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
         mTvModel->setTableView();
+        if (mDefaultSymbolView == DefaultSymbolView::tableView)
+            connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
         ui->tvTableView->setModel(mTvModel);
 
         mTvDomainModel = new TableViewDomainModel(mTvModel);
         ui->tvTableViewFilter->setModel(mTvDomainModel);
-        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
-        ui->tvTableViewFilter->setMaximumHeight(height);
-
-        ui->tbDomLeft->setMaximumHeight(height);
-        ui->tbDomRight->setMaximumHeight(height);
-        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
-        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
 
         ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
         ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-    }
+        QTimer::singleShot(0,this, [this](){
+            int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+            ui->tvTableViewFilter->setMaximumHeight(height);
+            ui->tbDomLeft->setMaximumHeight(height);
+            ui->tbDomRight->setMaximumHeight(height);
+            ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+            ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+            ui->tvTableViewFilter->show();
+        });
+    } else
+        ui->tvTableViewFilter->show();
     ui->pbToggleView->setText("List View");
-
     ui->tvListView->hide();
-
+    mTableView = true;
     ui->tvTableView->show();
-    ui->tvTableViewFilter->show();
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
-    mTableView = true;
-    if (firstInit)
+    if (mTVFirstInit) {
         autoResizeColumns();
+        mTVFirstInit = false;
+    }
+}
+
+void GdxSymbolView::showDefaultView()
+{
+    if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+        this->showTableView();
+    }
+    else
+        this->showListView();
 }
 
 void GdxSymbolView::toggleView()

@@ -61,6 +61,10 @@ enum SettingsKey {
     skProjects,
     skTabs,
     skHistory,
+    skPinViewTabIndex,
+    skPinViewSize,
+    skPinOrientation,
+    skPinScollLock,
 
     // settings of help page
     skHelpBookmarks,
@@ -102,6 +106,9 @@ enum SettingsKey {
     skEdCompleterCasing,
     skEdFoldedDcoOnOpen,
     skEdSmartTooltipHelp,
+
+    // GDX Viewer
+    skGdxDefaultSymbolView,
 
     // MIRO settings page
     skMiroInstallPath,

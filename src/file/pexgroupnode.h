@@ -89,6 +89,7 @@ class PExProjectNode : public PExGroupNode
 public:
     virtual ~PExProjectNode() override;
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
+    void setName(const QString& name) override;
     bool hasLogNode() const;
     PExLogNode* logNode();
     FileMeta *runnableGms() const;

@@ -34,14 +34,16 @@ FileMeta* SearchFileHandler::fileMeta(FileId fileId)
     return mMain->fileRepo()->fileMeta(fileId);
 }
 
-QList<FileMeta*> SearchFileHandler::fileMetas()
+QSet<FileMeta *> SearchFileHandler::fileMetas()
 {
-    return mMain->fileRepo()->fileMetas();
+    QList<FileMeta*> fileMetas = mMain->fileRepo()->fileMetas();
+    return QSet<FileMeta*>(fileMetas.begin(), fileMetas.end());
 }
 
-QList<FileMeta*> SearchFileHandler::openFiles()
+QSet<FileMeta*> SearchFileHandler::openFiles()
 {
-    return QList<FileMeta*>::fromVector(mMain->fileRepo()->openFiles());
+    QVector<FileMeta*> openFiles = mMain->fileRepo()->openFiles();
+    return QSet<FileMeta*>(openFiles.begin(), openFiles.end());
 }
 
 PExFileNode* SearchFileHandler::fileNode(NodeId nodeId)
@@ -54,9 +56,28 @@ PExFileNode* SearchFileHandler::fileNode(QWidget *widget)
     return mMain->projectRepo()->findFileNode(widget);
 }
 
-PExFileNode* SearchFileHandler::findFile(QString filepath)
+PExFileNode* SearchFileHandler::findFileNode(QString filepath)
 {
-    return mMain->projectRepo()->findFile(filepath);
+    return mMain->projectRepo()->findOrCreateFileNode(filepath);
+}
+
+PExProjectNode* SearchFileHandler::createProject(QString name, QString path)
+{
+    return mMain->projectRepo()->createProject(name, path, "");
+}
+
+FileMeta* SearchFileHandler::findOrCreateFile(QString filepath)
+{
+    return mMain->fileRepo()->findOrCreateFileMeta(filepath);
+}
+
+PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* knownProject) {
+    return mMain->openFileWithOption(fileName, knownProject);
+}
+
+QVector<PExProjectNode *> SearchFileHandler::projects()
+{
+    return mMain->projectRepo()->projects();
 }
 
 }

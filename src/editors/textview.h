@@ -67,6 +67,7 @@ public:
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results);
     void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
     LogParser *logParser() const;
@@ -77,6 +78,7 @@ public:
     void setLineMarker(int line);
     int firstErrorLine();
     void print(QPagedPaintDevice *printer);
+    void scrollSynchronize(int dx, int dy);
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
@@ -96,6 +98,7 @@ signals:
     void appendLines(const QStringList &lines, bool overwritePreviousLine);
     void switchLst(const QString &lstName);
     void registerGeneratedFile(const QString &fileName);
+    void scrolled(QWidget *widget, int dx, int dy);
 
 public slots:
     void updateExtraSelections();
@@ -144,6 +147,7 @@ private:
     bool *mStayAtTail = nullptr;
     bool mSliderStartedAtTail = false;
     int mSliderMouseStart = 0;
+    QPoint mScrollPos;
 
 private:
 

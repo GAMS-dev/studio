@@ -67,6 +67,7 @@ public:
 
     bool hasSearchSelection();
     void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     void updateSearchSelection();
     void findInSelection(QList<search::Result> &results);
     inline FileId fileId() {
@@ -74,14 +75,16 @@ public:
         FileId file = property("fileId").toInt(&ok);
         return ok ? file : FileId();
     }
-    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
-    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
+    virtual void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
+    virtual int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
+    virtual void scrollSynchronize(int dx, int dy);
 
 signals:
     void requestLstTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
+    void scrolled(QWidget *widget, int dx, int dy);
 
 public slots:
     virtual void updateExtraSelections();
@@ -139,6 +142,7 @@ private:
     const LineMarks* mMarks = nullptr;
     QPoint mClickPos;
     QPoint mTipPos;
+    QPoint mScrollPos; // to workaround buggy QPlainTextEdit::scrollContentsBy()
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
     bool mIsSearchSelectionActive = false;

@@ -110,6 +110,9 @@ public:
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
+    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope) override;
+    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options,
+                   bool selectionScope) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -121,6 +124,7 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     virtual bool showFolding() const;
@@ -169,7 +173,7 @@ private slots:
     void updateLineNumberAreaWidth(/*int newBlockCount*/);
     void recalcExtraSelections();
     void startCompleterTimer();
-    void checkAndStartCompleterTimer();
+    void updateCompleter();
     void updateLineNumberArea(const QRect &, int);
     void blockEditBlink();
     void checkBlockInsertion();

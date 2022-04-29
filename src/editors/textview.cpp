@@ -70,13 +70,18 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setLayout(lay);
     lay->addWidget(mEdit);
     setVerticalScrollBarPolicy(Qt::ScrollBarAlwaysOn);
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](){
+        if (int dy = verticalScrollBar()->value() - mScrollPos.y()) {
+            mScrollPos.setY(verticalScrollBar()->value());
+            emit scrolled(this, 0, dy);
+        }
+    });
 
     if (kind == MemoryText)
         connect(mEdit, &TextViewEdit::findClosestLstRef, this, &TextView::findClosestLstRef);
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
-//    connect(mEdit->verticalScrollBar(), &QScrollBar::valueChanged, this, &TextView::editScrollChanged);
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
@@ -85,12 +90,10 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit, &TextViewEdit::hasHRef, this, &TextView::hasHRef);
     connect(mEdit, &TextViewEdit::jumpToHRef, this, &TextView::jumpToHRef);
     connect(mEdit, &TextViewEdit::topLineMoved, this, &TextView::updateView);
-//    connect(mEdit, &TextViewEdit::recalcVisibleLines, this, &TextView::recalcVisibleLines);
     connect(mMapper, &AbstractTextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::blockCountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::updateVScrollZone);
     connect(mMapper, &AbstractTextMapper::selectionChanged, this, &TextView::selectionChanged);
-//    connect(mMapper, &AbstractTextMapper::contentChanged, this, &TextView::contentChanged);
     mEdit->verticalScrollBar()->installEventFilter(this);
     mEdit->installEventFilter(this);
 
@@ -141,6 +144,13 @@ void TextView::print(QPagedPaintDevice *printer)
     }
     QTextDocument document(text);
     document.print(printer);
+}
+
+void TextView::scrollSynchronize(int dx, int dy)
+{
+    mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->value() + dx);
+    mMapper->setVisibleTopLine(mMapper->visibleTopLine() + dy);
+    updateView();
 }
 
 TextView::TextKind TextView::kind() const
@@ -286,9 +296,16 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
     sw.findInFiles();
 }
 
-void TextView::clearSearchSelection() {
+void TextView::clearSearchSelection()
+{
     mEdit->clearSearchSelection();
     mMapper->clearSearchSelection();
+}
+
+void TextView::setSearchSelectionActive(bool active)
+{
+    mEdit->setSearchSelectionActive(active);
+    mMapper->setSearchSelectionActive(active);
 }
 
 void TextView::outerScrollAction(int action)

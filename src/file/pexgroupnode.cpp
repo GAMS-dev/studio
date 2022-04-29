@@ -224,7 +224,8 @@ PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta
 void PExProjectNode::setProcess(std::unique_ptr<AbstractProcess> process)
 {
     if (mGamsProcess == process) return;
-    mGamsProcess->disconnect();
+    if (mGamsProcess)
+        mGamsProcess->disconnect();
     mGamsProcess = std::move(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
 }
@@ -244,6 +245,19 @@ QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
     if (gamsProcessState() == QProcess::NotRunning)
         return Theme::icon(":/img/project", mode, alpha);
     return projectRepo()->runAnimateIcon(mode, alpha);
+}
+
+void PExProjectNode::setName(const QString &name)
+{
+    QString uniqueName = projectRepo()->uniqueNodeName(parentNode(), name, this);
+    PExGroupNode::setName(uniqueName);
+    if (mLogNode) {
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
+        QString logName = workDir()+"/"+uniqueName+"."+suffix;
+        mLogNode->file()->setLocation(logName);
+        if (mLogNode->file()->editors().size())
+            emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
+    }
 }
 
 bool PExProjectNode::hasLogNode() const
@@ -403,9 +417,7 @@ PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QFileInfo fi = !parameter("gms").isEmpty()
-                       ? parameter("gms") : QFileInfo(workDir()+"/"+name()+"."+suffix);
-        QString logName = fi.path()+"/"+fi.completeBaseName()+"."+suffix;
+        QString logName = workDir()+"/"+name()+"."+suffix;
         FileMeta* fm = fileRepo()->findOrCreateFileMeta(logName, &FileType::from(FileKind::Log));
         mLogNode = new PExLogNode(fm, this);
     }
@@ -684,7 +696,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     if (path.isEmpty()) path = workDir();
     else if (QDir(path).isRelative()) path = workDir() + '/' + path;
 
-    setLogLocation(cleanPath(path, filestem + "." + FileType::from(FileKind::Log).defaultSuffix()));
+    setLogLocation(cleanPath(path, name() + "." + FileType::from(FileKind::Log).defaultSuffix()));
 
     clearParameters();
     // set default lst name to revert deleted o parameter values
@@ -861,7 +873,7 @@ void PExProjectNode::addNodesForSpecialFiles()
     for (QString loc : mParameterHash.values()) {
 
         if (QFileInfo::exists(loc)) {
-            PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(mParameterHash.key(loc)));
+            PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
             if (runFile)
                 node->file()->setCodec(runFile->codec());
             else {

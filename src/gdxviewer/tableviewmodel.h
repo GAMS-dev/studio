@@ -72,6 +72,8 @@ public:
 public slots:
     void scrollHTriggered();
     void scrollVTriggered();
+signals:
+    void initFinished();
 
 private:
     void calcDefaultColumnsTableView();

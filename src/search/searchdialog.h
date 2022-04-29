@@ -21,6 +21,7 @@
 #define SEARCHDIALOG_H
 
 #include <QDialog>
+#include <QComboBox>
 
 #include "search.h"
 #include "abstractsearchfilehandler.h"
@@ -42,7 +43,7 @@ public:
     explicit SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget *parent = nullptr);
     ~SearchDialog();
 
-    void setCurrentEditor(QWidget *editor);
+    void editorChanged(QWidget *editor);
 
     QRegularExpression createRegex();
     bool regex();
@@ -55,12 +56,16 @@ public:
     void clearResultsView();
     void clearSearch();
 
-    void autofillSearchField();
+    void autofillSearchDialog();
 
     QList<Result> filteredResultList(QString file) const;
     Search* search();
 
     void updateClearButton();
+    QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
+
+    void setSearchStatus(Search::Status status, int hits = 0);
+    void jumpToResult(int matchNr);
 
 public slots:
     void on_searchNext();
@@ -68,7 +73,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate(int hits);
-    void updateNrMatches(int current = 0);
+    void updateMatchLabel(int current = 0);
     void updateComponentAvailability();
     void on_btn_clear_clicked();
 
@@ -76,13 +81,17 @@ private slots:
     void on_btn_FindAll_clicked();
     void on_btn_Replace_clicked();
     void on_btn_ReplaceAll_clicked();
-    void on_combo_scope_currentIndexChanged(int);
+    void on_combo_scope_currentIndexChanged(int scope);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
     void on_combo_search_currentTextChanged(const QString);
     void on_cb_caseSens_stateChanged(int);
-    void on_cb_wholeWords_stateChanged(int arg1);
-    void on_cb_regex_stateChanged(int arg1);
+    void on_cb_wholeWords_stateChanged(int);
+    void on_cb_regex_stateChanged(int);
+    void on_btn_browse_clicked();
+    void on_cb_subdirs_stateChanged(int);
+    void on_combo_path_currentTextChanged(const QString);
+    void on_combo_fileExcludePattern_currentTextChanged(const QString);
 
 signals:
     void showResults(gams::studio::search::SearchResultModel* results);
@@ -91,10 +100,12 @@ signals:
     void openHelpDocument(QString doc, QString anchor);
     void selectResult(int matchNr);
     void invalidateResultsView();
+    void extraSelectionsUpdated();
 
 protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
+    void closeEvent(QCloseEvent *event);
 
 private:
     void restoreSettings();
@@ -103,13 +114,17 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
-    void updateUi(bool searching);
-    void setSearchStatus(Search::Status status, int hits = 0);
+    void updateDialogState();
     void clearSelection();
-    void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     AbstractSearchFileHandler* fileHandler();
     QWidget* currentEditor();
     void findNextPrev(bool backwards);
+    void addEntryToComboBox(QComboBox* box);
+    void adjustHeight();
+    void setSearchedFiles(int files);
+    bool checkSearchTerm();
+    void checkRegex();
 
 private:
     Ui::SearchDialog *ui;
@@ -117,6 +132,7 @@ private:
     AbstractSearchFileHandler* mFileHandler = nullptr;
 
     Search mSearch;
+    int mFilesInScope;
 
     SearchResultModel* mSearchResultModel = nullptr;
 
@@ -125,6 +141,8 @@ private:
     bool mShowResults = true;
     bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
+    Search::Status mSearchStatus = Search::Status::Clear;
+    PExProjectNode* mCurrentSearchGroup = nullptr;
 };
 
 }

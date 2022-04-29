@@ -40,9 +40,9 @@ enum CodeCompleterType {
 
     ccDcoStrt   = 0x00000001, // DCO (starter and standalone)
     ccDcoEnd    = 0x00000002, // DCO (ender, e.g. $offText)
-    ccSubDcoA   = 0x00000004, // sub DCO of $abort
-    ccSubDcoC   = 0x00000008, // sub DCO of $call
-    ccSubDcoE   = 0x0000000C, // sub DCO of $eval (disjunct to A and C, can be combined, filter adapted)
+//    ccSubDcoA   = 0x00000004, // sub DCO of $abort
+//    ccSubDcoC   = 0x00000008, // sub DCO of $call
+//    ccSubDcoE   = 0x0000000C, // sub DCO of $eval (disjunct to A and C, can be combined, filter adapted)
 
     cc_Dco      = 0x0000000F, // all DCOs
     cc_SubDco   = 0x0000000C, // all sub DCOs
@@ -121,6 +121,9 @@ public:
     int typeFilter() const { return mTypeFilter; }
     void setFilterText(QString filterText);
     void setEmpty(bool isEmpty);
+
+protected:
+    bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
 };
 
 class CodeCompleter : public QListView
@@ -139,6 +142,10 @@ public:
     QString filterText() const;
     int typeFilter() const;
     QStringList splitTypes(int filter = -1);
+    bool isOpenSuppressed();
+    void suppressOpenBegin();
+    void suppressOpenStop();
+    void suppressNextOpenTrigger();
     void setDebugMode(bool debug);
 
 signals:
@@ -169,10 +176,12 @@ private:
     FilterCompleterModel *mFilterModel;
     QString mFilterText;
     QString mPreferredText;
+    int mSuppressOpen = 0;
     bool mDebug = false;
 
     static const QSet<int> cEnteringSyntax;
     static const QSet<int> cExecuteSyntax;
+    static const QSet<int> cBlockSyntax;
 };
 
 } // namespace studio

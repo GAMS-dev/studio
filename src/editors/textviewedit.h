@@ -39,7 +39,6 @@ public:
     void disconnectTimers() override;
     EditorType type() const override;
     int lineCount();
-
     void setLineMarked(const QVector<bool> &newLineMarked);
 
 signals:

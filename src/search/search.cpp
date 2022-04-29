@@ -22,6 +22,7 @@
 #include <QTextDocument>
 #include <QMessageBox>
 #include <QPushButton>
+#include <QFileDialog>
 #include "search.h"
 #include "searchdialog.h"
 #include "searchworker.h"
@@ -29,23 +30,22 @@
 #include "editors/abstractedit.h"
 #include "editors/textview.h"
 #include "viewhelper.h"
+#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-Search::Search(SearchDialog *sd) : mSearchDialog(sd)
+Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSearchDialog(sd), mFileHandler(fileHandler)
 {
     connect(this, &Search::invalidateResults, mSearchDialog, &SearchDialog::invalidateResultsView);
     connect(this, &Search::selectResult, mSearchDialog, &SearchDialog::selectResult);
 }
 
-void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards)
+void Search::setParameters(bool ignoreReadonly, bool searchBackwards)
 {
-    bool fileListChanged = mFiles != files;
-    mCacheAvailable = mCacheAvailable && !fileListChanged;
-    mFiles = files;
-    mRegex = regex;
+    mFiles = mSearchDialog->getFilesByScope(ignoreReadonly);
+    mRegex = mSearchDialog->createRegex();
     mOptions = QFlags<QTextDocument::FindFlag>();
 
     // this is needed for document->find as that is not using the regexes case sensitivity setting:
@@ -53,20 +53,31 @@ void Search::setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool
                      !mRegex.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption));
     mOptions.setFlag(QTextDocument::FindBackward, searchBackwards);
     mScope = mSearchDialog->selectedScope();
+    mSearchDialog->setSearchedFiles(mFiles.size());
 }
 
-void Search::start()
+void Search::start(bool ignoreReadonly, bool searchBackwards)
 {
-    if (mSearching || mRegex.pattern().isEmpty()) return;
+    if (mSearching) return;
+    // setup
     mResults.clear();
     mResultHash.clear();
+
     mSearching = true;
+    mSearchDialog->setSearchStatus(Search::CollectingFiles);
+    mSearchDialog->updateDialogState();
+
+    setParameters(ignoreReadonly, searchBackwards);
+    if (mRegex.pattern().isEmpty()) {
+        mSearchDialog->setSearchStatus(Search::Clear);
+        mSearchDialog->finalUpdate();
+        return;
+    }
 
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection();
         return;
-    } // else:
-
+    } // else
     QList<FileMeta*> unmodified;
     QList<FileMeta*> modified; // need to be treated differently
 
@@ -107,14 +118,11 @@ void Search::stop()
     mThread.requestInterruption();
 }
 
-void Search::resetResults()
+void Search::activeFileChanged()
 {
-    mFiles.clear();
-    mResults.clear();
-    mResultHash.clear();
-
-    if (mSearchDialog)
-        mSearchDialog->updateEditHighlighting();
+    if (!mFiles.contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))){
+        mCacheAvailable = false;
+    }
 }
 
 void Search::reset()
@@ -124,9 +132,25 @@ void Search::reset()
     invalidateCache();
     mOutsideOfList = false;
     mLastMatchInOpt = -1;
+    mSearchDialog->setSearchStatus(Status::Clear);
+
+    mFiles.clear();
+    mRegex = QRegularExpression("");
+    mOptions = QFlags<QTextDocument::FindFlag>();
+    mSearchDialog->setSearchedFiles(0);
 
     mThread.isInterruptionRequested();
     emit invalidateResults();
+}
+
+void Search::resetResults()
+{
+    mFiles.clear();
+    mResults.clear();
+    mResultHash.clear();
+
+    if (mSearchDialog)
+        mSearchDialog->updateEditHighlighting();
 }
 
 void Search::invalidateCache()
@@ -184,8 +208,8 @@ void Search::findNext(Direction direction)
 {
     if (!mCacheAvailable) {
         emit invalidateResults();
-        mSearchDialog->updateUi(true);
-        start(); // generate new cache
+        emit updateUI();
+        start(direction == Search::Backward); // generate new cache
     }
     selectNextMatch(direction);
 }
@@ -220,9 +244,11 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     int start = direction == Direction::Backward ? mResults.size()-1 : 0;
     int iterator = direction == Direction::Backward ? -1 : 1;
 
+    FileMeta* currentFm = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
+
     // allow jumping when we have results but not in the current file
     bool allowJumping = (mResults.size() > 0)
-            && !hasResultsForFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())->location());
+            && !hasResultsForFile(currentFm ? currentFm->location() : "");
 
     if (mSearchDialog->currentEditor()) {
         QString file = ViewHelper::location(mSearchDialog->currentEditor());
@@ -279,14 +305,7 @@ int Search::findNextEntryInCache(Search::Direction direction) {
 ///
 void Search::jumpToResult(int matchNr)
 {
-    if (matchNr > -1 && matchNr < mResults.size()) {
-        Result r = mResults.at(matchNr);
-
-        PExFileNode *node = mSearchDialog->fileHandler()->findFile(r.filepath());
-        if (!node) EXCEPT() << "File not found: " << r.filepath();
-
-        node->file()->jumpTo(r.parentGroup(), true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
-    }
+    mSearchDialog->jumpToResult(matchNr);
 }
 
 ///
@@ -308,7 +327,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         matchNr = NavigateOutsideCache(direction, firstLevel);
 
     // update ui
-    mSearchDialog->updateNrMatches(matchNr+1);
+    mSearchDialog->updateMatchLabel(matchNr+1);
     if (!mOutsideOfList || matchNr == -1)
         emit selectResult(matchNr);
 }
@@ -443,13 +462,18 @@ void Search::finished()
     for (const Result &r : qAsConst(mResults))
         mResultHash[r.filepath()].append(r);
 
-    mCacheAvailable = true;
+    mCacheAvailable = mResults.count() > 0;
     mSearchDialog->finalUpdate();
 
     if (mJumpQueued) {
         mJumpQueued = false;
         selectNextMatch();
     }
+}
+
+bool Search::hasCache() const
+{
+    return mCacheAvailable;
 }
 
 Search::Scope Search::scope() const
@@ -472,12 +496,12 @@ bool Search::hasSearchSelection()
     return false;
 }
 
-QRegularExpression Search::regex() const
+const QRegularExpression Search::regex() const
 {
     return mRegex;
 }
 
-bool Search::isRunning() const
+bool Search::isSearching() const
 {
     return mSearching;
 }
@@ -499,12 +523,14 @@ void Search::replaceNext(QString replacementText)
 
     edit->replaceNext(mRegex, replacementText, mSearchDialog->selectedScope() == Search::Selection);
 
-    start(); // refresh cache
+    start(true); // refresh cache
     selectNextMatch();
 }
 
 void Search::replaceAll(QString replacementText)
 {
+    setParameters(true);
+
     if (mRegex.pattern().isEmpty()) return;
 
     QList<FileMeta*> opened;
@@ -571,6 +597,7 @@ void Search::replaceAll(QString replacementText)
 
         mSearchDialog->setSearchStatus(Search::Replacing);
         QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
+        setParameters(true);
 
         for (FileMeta* fm : qAsConst(opened))
             hits += replaceOpened(fm, mRegex, replaceTerm);
@@ -580,7 +607,7 @@ void Search::replaceAll(QString replacementText)
 
         mSearchDialog->searchParameterChanged();
     } else if (msgBox.clickedButton() == preview) {
-        start();
+        start(true);
         return;
     } else if (msgBox.clickedButton() == cancel) {
         return;

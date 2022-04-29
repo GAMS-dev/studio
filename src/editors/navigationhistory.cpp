@@ -67,9 +67,9 @@ bool NavigationHistory::canGoBackward()
     return mStackPosition > 0;
 }
 
-void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
+void NavigationHistory::insertCursorItem(int line, int pos)
 {
-    if (ViewHelper::location(widget).isEmpty()) return; // do not insert empty path (e.g. welcome page)
+    if (ViewHelper::location(mCurrentEdit).isEmpty()) return; // do not insert empty path (e.g. welcome page)
 
     // remove oldest entry when limit is reached
     if (mHistory.size() >= MAX_SIZE) {
@@ -88,7 +88,7 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
         CursorHistoryItem lastItem = mHistory.at(mStackPosition);
 
         // do some filtering:
-        if (lastItem.tab == widget) {
+        if (lastItem.edit == mCurrentEdit) {
             // do not save identical
             if (lastItem.lineNr == line && lastItem.col == pos) return;
 
@@ -112,10 +112,11 @@ void NavigationHistory::insertCursorItem(QWidget *widget, int line, int pos)
         mStackPosition++;
 
     CursorHistoryItem chi;
-    chi.tab = widget;
+    chi.edit = mCurrentEdit;
+    chi.pinKind = mPinKind;
     chi.col = pos;
     chi.lineNr = line;
-    chi.filePath = ViewHelper::location(widget);
+    chi.filePath = ViewHelper::location(mCurrentEdit);
     mHistory.push(chi);
 }
 
@@ -126,29 +127,29 @@ void NavigationHistory::receiveCursorPosChange()
 {
     if (mStopRecord) return;
 
-    AbstractEdit *ae = ViewHelper::toCodeEdit(mCurrentTab);
-    TextView *tv = ViewHelper::toTextView(mCurrentTab);
+    AbstractEdit *ae = ViewHelper::toCodeEdit(mCurrentEdit);
+    TextView *tv = ViewHelper::toTextView(mCurrentEdit);
 
     if (ae)
-        insertCursorItem(mCurrentTab,
-                         ae->textCursor().blockNumber(),
+        insertCursorItem(ae->textCursor().blockNumber(),
                          ae->textCursor().positionInBlock());
     else if (tv)
-        insertCursorItem(mCurrentTab, tv->position().y(), tv->position().x());
+        insertCursorItem(tv->position().y(), tv->position().x());
     else
-        insertCursorItem(mCurrentTab);
+        insertCursorItem();
 
     emit historyChanged();
 }
 
-void NavigationHistory::setActiveTab(QWidget *newTab)
+void NavigationHistory::setCurrentEdit(QWidget *edit, PinKind pinKind)
 {
-    if (!newTab) return;
+    if (!edit) return;
 
-    AbstractEdit *ae = ViewHelper::toCodeEdit(newTab);
-    TextView *tv = ViewHelper::toTextView(newTab);
+    AbstractEdit *ae = ViewHelper::toCodeEdit(edit);
+    TextView *tv = ViewHelper::toTextView(edit);
 
-    mCurrentTab = newTab;
+    mCurrentEdit = edit;
+    mPinKind = pinKind;
 
     if (ae || tv) {
         mHasCursor = true;
@@ -162,14 +163,14 @@ void NavigationHistory::setActiveTab(QWidget *newTab)
     }
 }
 
-QWidget *NavigationHistory::currentTab() const
+QWidget *NavigationHistory::currentEdit() const
 {
-    return mCurrentTab;
+    return mCurrentEdit;
 }
 
 bool NavigationHistory::itemValid(CursorHistoryItem item)
 {
-    return item.tab != nullptr;
+    return item.edit != nullptr;
 }
 
 void NavigationHistory::stopRecord()

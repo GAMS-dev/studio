@@ -142,7 +142,8 @@ signals:
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void changed();
     void childrenChanged();
-    void updateRecentFile();
+    void logTabRenamed(QWidget *wid, const QString &newName);
+    void openRecentFile();
     void parentAssigned(const PExAbstractNode *node);
     void deselect(const QVector<QModelIndex> &declined);
     void select(const QVector<QModelIndex> &selected);
@@ -169,7 +170,7 @@ private:
     bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
-    QString uniqueNodeName(PExGroupNode *parentNode, const QString &name);
+    QString uniqueNodeName(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);
@@ -184,7 +185,6 @@ private:
     ProjectTreeView* mTreeView = nullptr;
     ProjectTreeModel* mTreeModel = nullptr;
     QHash<NodeId, PExAbstractNode*> mNodes;
-    QVector<PExAbstractNode*> mActiveStack;
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
     QVector<PExProjectNode*> mRunnigGroups;

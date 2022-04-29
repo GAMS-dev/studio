@@ -61,7 +61,7 @@ public:
 
     /// Sets the raw name of this node.
     /// \param name The raw name for this node.
-    void setName(const QString& name);
+    virtual void setName(const QString& name);
 
     /// The icon for this file type.
     /// \return The icon for this file type.

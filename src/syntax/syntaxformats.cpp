@@ -674,7 +674,7 @@ SyntaxSubDCO::SyntaxSubDCO(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxK
     mSubKinds << SyntaxKind::SubDCO << SyntaxKind::DcoBody;
 }
 
-SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind, int flavor, const QString &line, int index)
+SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
     int start = index;
@@ -690,7 +690,9 @@ SyntaxBlock SyntaxSubDCO::find(const gams::studio::syntax::SyntaxKind entryKind,
 
     for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {
         const QString &sub = subDCOs.at(i);
-        if (line.length() >= start+sub.length() && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0) {
+        if (line.length() >= start+sub.length()
+                && sub.compare(line.midRef(start, sub.length()), Qt::CaseInsensitive) == 0
+                && (line.length() == start+sub.length() || !line.at(start+sub.length()).isLetterOrNumber())) {
             SyntaxShift shift = (line.length() == start+sub.length()) ? SyntaxShift::skip : SyntaxShift::shift;
             return SyntaxBlock(this, flavor, index, start+sub.length(), shift);
         }
@@ -703,7 +705,7 @@ SyntaxBlock SyntaxSubDCO::validTail(const QString &line, int index, int flavor, 
     hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) ++end;
-    // TODO(JM) review: add silly additional condition, trying to calm down the compiler
+    // Add silly additional condition to calm down the compiler
     if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DcoBody);
     if (end > index) return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
     return SyntaxBlock(this);

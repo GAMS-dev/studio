@@ -17,18 +17,21 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "editors/abstractedit.h"
+#include "search/search.h"
+#include "search/searchlocator.h"
+#include "viewhelper.h"
+#include "logger.h"
+#include "keys.h"
+#include "theme.h"
+
 #include <QMimeData>
 #include <QTextBlock>
 #include <QScrollBar>
 #include <QToolTip>
 #include <QTextDocumentFragment>
-#include "editors/abstractedit.h"
-#include "search/search.h"
-#include "search/searchlocator.h"
-#include "logger.h"
-#include "keys.h"
-#include "theme.h"
 #include <QApplication>
+
 
 namespace gams {
 namespace studio {
@@ -45,6 +48,28 @@ AbstractEdit::AbstractEdit(QWidget *parent)
     mToolTipUpdater.setInterval(500);
     connect(&mToolTipUpdater, &QTimer::timeout, this, &AbstractEdit::internalToolTipUpdate);
     connect(this, &AbstractEdit::cursorPositionChanged, this, &AbstractEdit::ensureCursorVisible);
+
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() {
+        mScrollPos.setY(verticalScrollBar()->value());
+    });
+    connect(verticalScrollBar(), &QScrollBar::rangeChanged, this, [this]() {
+        mScrollPos.setX(horizontalScrollBar()->value());
+    });
+
+    connect(verticalScrollBar(), &QScrollBar::valueChanged, this, [this](){
+        if (int dy = verticalScrollBar()->value() - mScrollPos.y()) {
+            mScrollPos.setX(horizontalScrollBar()->value());
+            mScrollPos.setY(verticalScrollBar()->value());
+            emit scrolled(this, 0, dy);
+        }
+    });
+    connect(horizontalScrollBar(), &QScrollBar::valueChanged, this, [this](){
+        if (int dx = horizontalScrollBar()->value() - mScrollPos.x()) {
+            mScrollPos.setX(horizontalScrollBar()->value());
+            mScrollPos.setY(verticalScrollBar()->value());
+            emit scrolled(this, dx, 0);
+        }
+    });
 }
 
 AbstractEdit::~AbstractEdit()
@@ -322,13 +347,19 @@ bool AbstractEdit::hasSearchSelection()
 
 void AbstractEdit::clearSearchSelection()
 {
-    mIsSearchSelectionActive = false;
+    searchSelection = textCursor();
+    mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
+}
+
+void AbstractEdit::setSearchSelectionActive(bool active)
+{
+    // only set truely active if a selection exists
+    mIsSearchSelectionActive = active && !searchSelection.selection().isEmpty();
 }
 
 void AbstractEdit::updateSearchSelection()
 {
     if (!hasSearchSelection()) {
-        SearchLocator::search()->reset();
         searchSelection = textCursor();
         mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
     }
@@ -354,6 +385,7 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
 
     do {
         item = document()->find(SearchLocator::search()->regex(), qMax(startPos, item.position()), cacheOptions);
+
         if (item != lastItem) lastItem = item;
         else break; // mitigate endless loop
 
@@ -375,8 +407,7 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     if (selectionScope && hasSearchSelection()) {
         selection = searchSelection.selectedText();
         offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
-    } else clearSearchSelection();
-
+    }
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
         textCursor().insertText(replacementText);
@@ -395,7 +426,6 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     int to = 0;
 
     if (selectionScope) updateSearchSelection();
-    else clearSearchSelection();
 
     if (hasSearchSelection()) {
         from = qMin(searchSelection.position(), searchSelection.anchor());
@@ -424,6 +454,12 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
     tc.endEditBlock();
 
     return hits;
+}
+
+void AbstractEdit::scrollSynchronize(int dx, int dy)
+{
+    horizontalScrollBar()->setValue(horizontalScrollBar()->value() + dx);
+    verticalScrollBar()->setValue(verticalScrollBar()->value() + dy);
 }
 
 void AbstractEdit::internalExtraSelUpdate()

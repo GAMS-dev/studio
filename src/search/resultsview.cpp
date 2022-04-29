@@ -62,12 +62,8 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
     Result r = mResultList->at(selectedRow);
 
-    PExFileNode *node = mMain->projectRepo()->findOrCreateFileNode(r.filepath(),
-                                                                   mMain->projectRepo()->findProject(r.parentGroup()));
-    if (!node) EXCEPT() << "File not found: " << r.filepath();
+    mMain->searchDialog()->jumpToResult(selectedRow);
 
-    // jump to line
-    node->file()->jumpTo(r.parentGroup(), focus, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
     emit updateMatchLabel(selectedRow+1, mResultList->size());
     selectItem(selectedRow);
     if (!focus) setFocus(); // focus stays in results view

@@ -152,7 +152,7 @@ public:
             res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");
         res << "GAMS Include files (*.inc)"
         << "Option files (*.opt *.op* *.o*)"
-        << "GAMS Configuration files (*.yaml)"
+        << "GAMS Configuration file (gamsconfig.yaml)"
         << "Text files (*.txt)"
         << "External files (*.efi)"
         << "All files (*.*)";
@@ -170,7 +170,7 @@ public:
             res << allGams.arg("");
         res << "GAMS Include files (*.inc)"
         << "Option files (*.opt *.op* *.o*)"
-        << "GAMS Configuration files (*.yaml)"
+        << "GAMS Configuration file (gamsconfig.yaml)"
         << "GAMS Data eXchange (*.gdx)"
         << "Reference files (*.ref)"
         << "Text files (*.txt)"

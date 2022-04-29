@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exception.h"
+#include "file/filetype.h"
+#include "common.h"
 #include "commonpaths.h"
 #include "option/gamsuserconfig.h"
 #include "testgamsuserconfig.h"
@@ -27,6 +29,8 @@
 
 using gams::studio::CommonPaths;
 using gams::studio::option::GamsUserConfig;
+using gams::studio::FileType;
+using gams::studio::FileKind;
 
 void TestGamsUserConfig::initTestCase()
 {
@@ -37,6 +41,20 @@ void TestGamsUserConfig::initTestCase()
 void TestGamsUserConfig::testUserConfigDir()
 {
     qDebug() << QString("gamsUserConfigDir=[%1]").arg(CommonPaths::gamsUserConfigDir());
+}
+
+void TestGamsUserConfig::testFileType()
+{
+    // given
+    QString testFile = CommonPaths::defaultGamsUserConfigFile();
+    // when, then
+    QCOMPARE( &FileType::from(testFile), &FileType::from(FileKind::Guc));
+
+    // given
+    QFileInfo fi1(CommonPaths::gamsUserConfigDir(), "notAgamsconfig.yaml");
+    // when, then
+    QCOMPARE( &FileType::from(fi1.fileName()), &FileType::from(FileKind::None));
+
 }
 
 void TestGamsUserConfig::testReadEmptyDefaultGamsConfigFile()

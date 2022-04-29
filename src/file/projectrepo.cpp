@@ -310,7 +310,7 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
         QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
         if (!name.isEmpty() || !file.isEmpty()) {
             QString suf = child["type"].toString();
-            if (suf == "gms") suf = QFileInfo(name).suffix();
+            if (suf == "gms") suf = QFileInfo(name).fileName();
             FileType *ft = &FileType::from(suf);
             if (QFileInfo(file).exists()) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
@@ -399,16 +399,17 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     purgeGroup(oldParent);
 }
 
-QString ProjectRepo::uniqueNodeName(PExGroupNode *parentNode, const QString &name)
+QString ProjectRepo::uniqueNodeName(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node)
 {
     // Project name should be unique, append number in case
+    if (!parentNode) return name;
     QString res = name;
     int nr = 0;
     bool conflict = true;
     while (conflict) {
         conflict = false;
-        for (PExAbstractNode * node : parentNode->childNodes()) {
-            if (node->name() == res) {
+        for (PExAbstractNode * n : parentNode->childNodes()) {
+            if (n != node && n->name() == res) {
                 ++nr;
                 res = name + QString::number(nr);
                 conflict = true;
@@ -770,7 +771,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
                 closeNode(file);
         }
     }
-    emit updateRecentFile();
+    emit openRecentFile();
 }
 
 void ProjectRepo::reassignFiles(PExProjectNode *project)
@@ -780,7 +781,7 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
     for (PExFileNode *file: qAsConst(files)) {
         addToProject(project, file, true);
     }
-    emit updateRecentFile();
+    emit openRecentFile();
     project->setRunnableGms(runGms);
 }
 

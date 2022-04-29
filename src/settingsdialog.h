@@ -56,7 +56,7 @@ protected:
     void keyPressEvent(QKeyEvent *event) override;
 
 signals:
-    void editorFontChanged(const QString &fontFamily, int fontSize);
+    void editorFontChanged(int fontSize, const QString &fontFamily);
     void editorLineWrappingChanged();
     void themeChanged();
     void userGamsTypeChanged();

@@ -29,33 +29,39 @@ namespace studio {
 namespace search {
 
 class SearchDialog;
+class AbstractSearchFileHandler;
 class Search : public QObject
 {
     Q_OBJECT
 public:
     enum Scope {
-        ThisFile = 0,
-        ThisProject= 1,
-        Selection= 2,
-        OpenTabs = 3,
-        AllFiles = 4
+        Selection,
+        ThisFile,
+        ThisProject,
+        OpenTabs,
+        AllFiles,
+        Folder
     };
 
     enum Status {
-        Searching = 0,
-        NoResults = 1,
-        Clear = 2,
-        Replacing = 4
+        Searching,
+        NoResults,
+        Clear,
+        Replacing,
+        InvalidPath,
+        EmptySearchTerm,
+        CollectingFiles,
+        InvalidRegex,
+        Ok
     };
 
     enum Direction {
-        Forward = 0,
-        Backward = 1
+        Forward,
+        Backward
     };
-    Search(SearchDialog *sd);
+    Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
 
-    void setParameters(QSet<FileMeta*> files, QRegularExpression regex, bool searchBackwards = false);
-    void start();
+    void start(bool ignoreReadonly = false, bool searchBackwards = false);
     void stop();
 
     void findNext(Direction direction);
@@ -63,25 +69,29 @@ public:
     void replaceAll(QString replacementText);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
-    bool isRunning() const;
+    bool isSearching() const;
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
     const QFlags<QTextDocument::FindFlag> &options() const;
-    QRegularExpression regex() const;
+    const QRegularExpression regex() const;
     Search::Scope scope() const;
     bool hasSearchSelection();
     void reset();
     void invalidateCache();
     void resetResults();
+    void activeFileChanged();
+    bool hasCache() const;
 
 signals:
     void invalidateResults();
+    void updateUI();
     void selectResult(int matchNr);
 
 private:
     void findInDoc(FileMeta* fm);
     void findInSelection();
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
+    void setParameters(bool ignoreReadonly, bool searchBackwards = false);
 
     int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
@@ -107,10 +117,10 @@ private:
     QRegularExpression mRegex;
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;
-
+    AbstractSearchFileHandler* mFileHandler;
     FileId mSearchSelectionFile;
-
     QThread mThread;
+
     bool mSearching = false;
     bool mJumpQueued = false;
     bool mCacheAvailable = false;

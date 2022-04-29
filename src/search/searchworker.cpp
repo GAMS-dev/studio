@@ -54,7 +54,7 @@ void SearchWorker::findInFiles()
     bool cacheFull = false;
     NodeId projectGroup = mProject;
     for (FileMeta* fm : qAsConst(mFiles)) {
-        if (cacheFull) break;
+        if (cacheFull || thread()->isInterruptionRequested()) break;
 
         if (!mProject.isValid())
             projectGroup = ViewHelper::groupId(fm->topEditor());

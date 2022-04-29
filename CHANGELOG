@@ -1,3 +1,42 @@
+Version 1.10.1
+==================
+- added automatic deactivation of search selection when leaving "Selection" search scope
+- added feedback for empty search term in search dialog
+- added feedback for invalid regex in search dialog
+- added feedback for invalid path in search dialog
+- fixed search dialog not saving position when closing with the X button
+- added automatic clearing of search selection when changing scope
+- fixed layout and tab order of search dialog
+- added Search related group to project explorer when files where found that were unknown to Studio
+- fixed broken syntax in data statements with division
+- added completer handling for offEcho
+- changed behavior of completer: allow all keywords after opening a paired DCO and showing closing DCOs first
+- ensure unique project name and keep log name in sync with project name
+
+Version 1.10.0
+==================
+- added GDX Viewer tab to the settings dialog
+- added new setting to specify the default symbol view of the GDX Viewer
+- user model libraries have been moved to the first tab of the Model Library Explorer
+- fixed crash in search when current editor has no file associated
+- fixed search not being interruptable when searching many small files
+- added pin view: the main edit area can be split vertically or horizontally to show a second editor
+    - `Ctrl + Left Click` a Tab to open it in a vertical split
+    - `Ctrl + Shift + Left Click` a Tab to open it in a horizontal split
+- fixed crash in ModelLibrary dialog on ctrl-rightClick on entry
+- fixed white table headers in dark mode
+- fixed code completer activation issues
+- fixed completer allowed multiple DCO suffixes
+- configuration editor now displays only gamsconfig.yaml file
+- added new search scope: Folder
+    - this allows users to search a folder on disk without having to load the whole folder in studio first
+- search now respects open file behavior settings when jumping to results in unopened files
+- added input field for Folder path and a browse button in search dialog
+- added "include subdirectories" checkbox for folder scope
+- added file exclusion pattern input field and functionality
+- added info about number of files to search dialog
+- changed default position of search dialog to top right
+
 Version 1.9.6
 ==================
 - fixed a crash caused by set search options in Search Dialog

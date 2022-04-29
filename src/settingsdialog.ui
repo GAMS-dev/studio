@@ -563,6 +563,38 @@
        </item>
       </layout>
      </widget>
+     <widget class="QWidget" name="tab">
+      <attribute name="title">
+       <string>GDX Viewer</string>
+      </attribute>
+      <layout class="QFormLayout" name="formLayout">
+       <item row="0" column="0">
+        <layout class="QHBoxLayout" name="horizontalLayout">
+         <item>
+          <widget class="QLabel" name="label_5">
+           <property name="text">
+            <string>Default Symbol View:</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QComboBox" name="cb_gdxDefaultSymbolView">
+           <item>
+            <property name="text">
+             <string>List View</string>
+            </property>
+           </item>
+           <item>
+            <property name="text">
+             <string>Table View</string>
+            </property>
+           </item>
+          </widget>
+         </item>
+        </layout>
+       </item>
+      </layout>
+     </widget>
      <widget class="QWidget" name="tabColors">
       <attribute name="title">
        <string>Colors</string>

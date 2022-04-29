@@ -19,10 +19,12 @@
  */
 #include <QRegularExpression>
 #include <QRegularExpressionMatch>
+#include <QFileInfo>
 
 #include "filetype.h"
 #include "exception.h"
 #include "theme.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -48,6 +50,7 @@ QList<FileType*> FileType::mFileTypes {
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
 int FileType::mGmsFixedTypes = 0;
 QStringList FileType::mUserGamsTypes;
+QStringList FileType::mSolverNames;
 
 FileType::FileType(FileKind kind, QStringList suffix, QString description, bool autoReload)
     : mKind(kind), mSuffix(suffix), mDescription(description)
@@ -101,21 +104,43 @@ QString FileType::defaultSuffix() const
     return mSuffix.first();
 }
 
-FileType &FileType::from(QString suffix)
+FileType &FileType::from(const QString &fileName)
 {
-    for (FileType *ft: qAsConst(mFileTypes)) {
-        if (ft->mSuffix.contains(suffix, Qt::CaseInsensitive))
-            return *ft;
-    }
+     QFileInfo fi(fileName);
+     for (FileType *ft: qAsConst(mFileTypes)) {
+         if (ft->mKind == FileKind::Guc) {
+            if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive) &&
+                QString::compare("gamsconfig",fi.completeBaseName(), Qt::CaseInsensitive)==0 ) {
+               return *ft;
+            }
+         } else if (ft->mKind == FileKind::Opt) {
+                   if (mSolverNames.isEmpty()) {
+                       try {
+                          support::SolverConfigInfo solverInfo;
+                          mSolverNames.append( solverInfo.solverNames().values() );
+                       } catch (...) {
+                           // just make sure that there is no issue if GAMS is not found.
+                       }
+                   }
+                   if (mSolverNames.contains(fi.completeBaseName(), Qt::CaseInsensitive) || mSolverNames.isEmpty()) {
+                      if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
+                          return *ft;
+                      } else {
+                            QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
+                            QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
+                            QRegularExpressionMatch match = rx.match(fi.suffix(), 0, QRegularExpression::NormalMatch);
+                            if (match.hasMatch()) {
+                               return *ft;
+                            }
+                      }
+                   }
+         } else  if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
+                    return *ft;
+         }
+     }
 
-    QString pattern("[oO][pP][2-9]|[oO][1-9]\\d|[1-9]\\d\\d+");
-    QRegularExpression rx("\\A(?:" + pattern + ")\\z" );
-    QRegularExpressionMatch match = rx.match(suffix, 0, QRegularExpression::NormalMatch);
-    if (match.hasMatch())
-        return FileType::from(FileKind::Opt);
-
-    return *mNone;
-}
+     return *mNone;
+ }
 
 FileType& FileType::from(FileKind kind)
 {
