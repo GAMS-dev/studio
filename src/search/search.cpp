@@ -463,7 +463,6 @@ void Search::finished()
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = mResults.count() > 0;
-
     mSearchDialog->finalUpdate();
 
     if (mJumpQueued) {
