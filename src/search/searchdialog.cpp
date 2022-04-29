@@ -424,6 +424,7 @@ void SearchDialog::checkRegex()
     QRegularExpression regex(ui->combo_search->currentText());
     if (!regex.isValid())
         setSearchStatus(Search::InvalidRegex);
+    updateComponentAvailability();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
@@ -440,6 +441,7 @@ void SearchDialog::searchParameterChanged()
         setSearchStatus(Search::Clear);
         mSearch.reset();
     }
+    checkRegex();
 }
 
 void SearchDialog::on_cb_caseSens_stateChanged(int)
@@ -457,8 +459,12 @@ void SearchDialog::updateComponentAvailability()
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::txtRo);
 
+    QRegularExpression re(ui->combo_search->currentText());
+    bool validRegex = !regex() || re.isValid();
+
+    bool activateSearchButtons = activateSearch && validRegex;
     bool replacableFileInScope = allFiles || getFilesByScope(true).size() > 0;
-    bool activateReplace = allFiles || replacableFileInScope;
+    bool activateReplace = (allFiles || replacableFileInScope) && validRegex;
 
     // replace actions (!readonly):
     ui->txt_replace->setEnabled(activateReplace);
@@ -467,9 +473,9 @@ void SearchDialog::updateComponentAvailability()
 
     // search actions (!gdx || !lst):
     ui->combo_search->setEnabled(activateSearch);
-    ui->btn_FindAll->setEnabled(activateSearch);
-    ui->btn_forward->setEnabled(activateSearch);
-    ui->btn_back->setEnabled(activateSearch);
+    ui->btn_FindAll->setEnabled(activateSearchButtons);
+    ui->btn_forward->setEnabled(activateSearchButtons);
+    ui->btn_back->setEnabled(activateSearchButtons);
     ui->btn_clear->setEnabled(activateSearch);
 
     ui->cb_caseSens->setEnabled(activateSearch);
