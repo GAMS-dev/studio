@@ -765,7 +765,7 @@ void SearchDialog::jumpToResult(int matchNr)
     Result r = mSearch.results().at(matchNr);
 
     // create group for search results
-    if (r.parentGroup() == -1) {
+    if (r.parentGroup() == -1 && !Settings::settings()->toBool(skOpenInCurrent)) {
         QString name = "Search: " + ui->combo_search->currentText();
         bool found = false;
 
