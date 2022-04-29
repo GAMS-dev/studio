@@ -121,6 +121,9 @@ public:
     int typeFilter() const { return mTypeFilter; }
     void setFilterText(QString filterText);
     void setEmpty(bool isEmpty);
+
+protected:
+    bool lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const override;
 };
 
 class CodeCompleter : public QListView

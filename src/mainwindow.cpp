@@ -204,6 +204,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
     connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
+    connect(&mProjectRepo, &ProjectRepo::logTabRenamed, this, &MainWindow::logTabRenamed);
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
@@ -1752,6 +1753,13 @@ void MainWindow::fileEvent(const FileEvent &e)
         if (!mFileTimer.isActive())
             mFileTimer.start();
     }
+}
+
+void MainWindow::logTabRenamed(QWidget *wid, const QString &newName)
+{
+    int ind = ui->logTabs->indexOf(wid);
+    if (ind < 0) return;
+    ui->logTabs->setTabText(ind, newName);
 }
 
 void MainWindow::processFileEvents()
@@ -3335,9 +3343,6 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
     logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
-    int logIndex = ui->logTabs->indexOf(logNode->file()->editors().first());
-    if (logIndex >= 0)
-        ui->logTabs->setTabText(logIndex, logNode->name());
 
     groupProc->setGroupId(project->id());
     groupProc->setWorkingDirectory(workDir);

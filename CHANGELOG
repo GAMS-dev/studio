@@ -8,6 +8,10 @@ Version 1.10.1*
 - added automatic clearing of search selection when changing scope
 - fixed layout and tab order of search dialog
 - added Search related group to project explorer when files where found that were unknown to Studio
+- fixed broken syntax in data statements with division
+- added completer handling of offEcho
+- allow all keywords in completer after open a paired DCO and sort closing DCOs to the top
+- ensure unique project name and keep log name in sync with project name
 
 Version 1.10.0
 ==================
