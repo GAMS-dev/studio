@@ -49,7 +49,10 @@ public:
         Clear,
         Replacing,
         InvalidPath,
-        CollectingFiles
+        EmptySearchTerm,
+        CollectingFiles,
+        InvalidRegex,
+        Ok
     };
 
     enum Direction {

@@ -67,6 +67,7 @@ public:
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
     void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results);
     void clearSearchSelection();
+    void setSearchSelectionActive(bool active);
     TextKind textKind() const;
     void setLogParser(LogParser *logParser);
     LogParser *logParser() const;

@@ -41,7 +41,8 @@ public:
     virtual PExFileNode* findFileNode(QString filepath) = 0;
     virtual PExProjectNode* createProject(QString name, QString path) = 0;
     virtual FileMeta* findOrCreateFile(QString filepath) = 0;
-    virtual PExFileNode *openFile(QString fileName) = 0;
+    virtual PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) = 0;
+    virtual QVector<PExProjectNode*> projects() = 0;
 };
 
 }

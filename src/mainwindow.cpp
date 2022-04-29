@@ -3016,7 +3016,7 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFileWithOption(QString fileName, OpenGroupOption opt, PExProjectNode* knownProject)
+PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt)
 {
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
@@ -3083,7 +3083,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
     PExFileNode *fileNode = nullptr;
     for (const QString &fileName : files) {
         // detect if the file is already present at the scope
-        fileNode = openFileWithOption(fileName, opt);
+        fileNode = openFileWithOption(fileName, nullptr, opt);
         if (!firstNode) firstNode = fileNode;
     }
 
@@ -4271,9 +4271,8 @@ void MainWindow::openSearchDialog()
            // e.g. needed for macOS to rasise search dialog when minimized
            mSearchDialog->raise();
            mSearchDialog->activateWindow();
-           mSearchDialog->autofillSearchField();
+           mSearchDialog->autofillSearchDialog();
        } else {
-
            if (mSearchWidgetPos.isNull()) {
                int margin = 25;
 
@@ -4303,7 +4302,7 @@ void MainWindow::showResults(search::SearchResultModel* results)
 
     delete mResultsView;
     mResultsView = new search::ResultsView(results, this);
-    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateNrMatches, Qt::UniqueConnection);
+    connect(mResultsView, &search::ResultsView::updateMatchLabel, searchDialog(), &search::SearchDialog::updateMatchLabel, Qt::UniqueConnection);
     connect(mSearchDialog, &search::SearchDialog::selectResult, mResultsView, &search::ResultsView::selectItem);
 
     QString nr;
