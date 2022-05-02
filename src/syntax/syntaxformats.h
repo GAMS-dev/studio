@@ -49,6 +49,8 @@ enum class SyntaxKind {
     SystemCompileAttrib,
     SystemCompileAttribR,
     SystemRunAttrib,
+    DcoNameSuffix,
+    EmbeddedNameSuffix,
 
     CommentLine,
     CommentBlock,
@@ -292,14 +294,21 @@ private:
 
 };
 
-
-/// \brief Defines the syntax for a single comment line.
+/// \brief Defines the syntax for the remain of a DCO line.
 class SyntaxDcoBody: public SyntaxAbstract
 {
     QVector<QChar> mEolComChars;
 public:
     SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
     void setCommentChars(QVector<QChar> chars);
+    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
+};
+
+class SyntaxNameSuffix: public SyntaxAbstract
+{
+public:
+    SyntaxNameSuffix(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
@@ -315,7 +324,7 @@ private:
     QChar mCommentChar;
 };
 
- /// \brief Defines the syntax for a single comment line.
+/// \brief Defines the syntax for a single comment line.
 class SyntaxCommentEndline: public SyntaxAbstract
 {
     QString mCommentChars;

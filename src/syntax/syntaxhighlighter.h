@@ -52,8 +52,8 @@ public slots:
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
 
 private:
-    void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses,
-                         NestingImpact &nestingImpact);
+    void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData);
+    QString parseName(const QString &text, int start);
 
 private:
     struct CodeRelation {

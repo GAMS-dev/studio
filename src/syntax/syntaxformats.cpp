@@ -188,6 +188,7 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
         DEB() << "Initialization error in SyntaxDco. Unknown DCO(s): " << blockEndingDCOs.join(",");
     }
     // !!! Enter flavored names always in lowercase
+    // flavor-paired DCOs that count as parentheses (see SyntaxHighlighter::cFlavorChars)
     mFlavors.insert(QString("onText").toLower(), 1);
     mFlavors.insert(QString("offText").toLower(), 2);
     mFlavors.insert(QString("onEcho").toLower(), 3);
@@ -208,6 +209,7 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("endIf").toLower(), 12);
     mFlavors.insert(QString("onFold").toLower(), 13);
     mFlavors.insert(QString("offFold").toLower(), 14);
+    // additional flavors
     mFlavors.insert(QString("include").toLower(), 15);
     mFlavors.insert(QString("abort").toLower(), 16);
     mFlavors.insert(QString("call").toLower(), 17);
@@ -224,6 +226,7 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("continueEmbeddedCode").toLower(), 20);
     mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), 20);
     mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), 20);
+
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
@@ -708,6 +711,34 @@ SyntaxBlock SyntaxSubDCO::validTail(const QString &line, int index, int flavor, 
     // Add silly additional condition to calm down the compiler
     if (end >= index && end < line.length()-1) return SyntaxBlock(this, flavor, index, end, SyntaxKind::DcoBody);
     if (end > index) return SyntaxBlock(this, flavor, index, end, SyntaxShift::out);
+    return SyntaxBlock(this);
+}
+
+SyntaxNameSuffix::SyntaxNameSuffix(SyntaxKind kind, SharedSyntaxData *sharedData)
+    : SyntaxAbstract(kind, sharedData)
+{
+}
+
+SyntaxBlock SyntaxNameSuffix::find(const SyntaxKind entryKind, int flavor, const QString &line, int index)
+{
+    if (kind() == SyntaxKind::EmbeddedNameSuffix && entryKind != SyntaxKind::Embedded) return SyntaxBlock();
+
+    if(kind() == SyntaxKind::DcoNameSuffix && entryKind != SyntaxKind::IgnoredBlock)
+        return SyntaxBlock();
+
+    if (index+2 < line.length() || line.at(index) != '.') return SyntaxBlock();
+    int end = index + 1;
+    if (!line.at(end).isLetter()) return SyntaxBlock();
+    ++end;
+    while (end < line.length()) {
+        if (!line.at(end).isLetterOrNumber() && line.at(end) != '_') break;
+        ++end;
+    }
+    return SyntaxBlock(this, flavor, index, end, SyntaxShift::skip);
+}
+
+SyntaxBlock SyntaxNameSuffix::validTail(const QString&, int , int , bool&)
+{
     return SyntaxBlock(this);
 }
 

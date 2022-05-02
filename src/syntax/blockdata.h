@@ -24,25 +24,33 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-struct NestingImpact
-{
-    NestingImpact() {}
-    void addCloser() { --mImpact; if (mImpact<mMaxDepth) mMaxDepth = mImpact; }
-    void addOpener() { ++mImpact; }
-    int impact() const { return mImpact; }
-    int leftOpen() const { return mMaxDepth; }
-    int rightOpen() const { return mImpact - mMaxDepth; }
-private:
-    short mImpact = 0;
-    short mMaxDepth = 0;
-};
-
 struct ParenthesesPos
 {
     ParenthesesPos() : character(QChar()), relPos(-1) {}
     ParenthesesPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
     QChar character;
     int relPos;
+};
+
+struct NestingData
+{
+    NestingData();
+    void addOpener(QChar _character, int _relPos);
+    void addCloser(QChar _character, int _relPos);
+    int impact() const { return mImpact; }
+    int leftOpen() const { return mMaxDepth; }
+    int rightOpen() const { return mImpact - mMaxDepth; }
+    QVector<ParenthesesPos> parentheses() const { return mParentheses; }
+    bool inNamedBlock() { return !mNamedBlock.isEmpty(); }
+    QChar namedBlockType() { return mNamedBlockType; }
+    QString namedBlock() { return mNamedBlock; }
+    void setNamedBlock(QChar type, const QString &name) { mNamedBlockType = type; mNamedBlock = name; }
+private:
+    short mImpact = 0;
+    short mMaxDepth = 0;
+    QVector<ParenthesesPos> mParentheses;
+    QChar mNamedBlockType;
+    QString mNamedBlock;
 };
 
 class BlockData : public QTextBlockUserData
@@ -52,10 +60,10 @@ public:
     ~BlockData() override;
     static BlockData *fromTextBlock(QTextBlock block);
     QChar charForPos(int relPos);
-    bool isEmpty() {return mParentheses.isEmpty();}
+    bool isEmpty() {return mNestingData.parentheses().isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
-    void setParentheses(const QVector<ParenthesesPos> &parentheses, const NestingImpact &nestingImpact);
-    NestingImpact nestingImpact() const { return mNestingImpact; }
+    void setParentheses(const NestingData &nestingData);
+    NestingData nestingImpact() const { return mNestingData; }
     int &foldCount() { return mFoldCount; }
     bool isFolded() const { return mFoldCount; }
     void setFoldCount(int foldCount) { mFoldCount = foldCount; }
@@ -64,8 +72,7 @@ public:
 
 private:
     // if extending the data remember to enhance isEmpty()
-    QVector<ParenthesesPos> mParentheses;
-    NestingImpact mNestingImpact;
+    NestingData mNestingData;
     int mFoldCount = 0;
     int mVar = 0;
 };
