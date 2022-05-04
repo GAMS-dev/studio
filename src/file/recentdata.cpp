@@ -19,77 +19,108 @@
 #include "mainwindow.h"
 #include "settings.h"
 #include "viewhelper.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
 
-void RecentData::setEditor(QWidget *edit, MainWindow* window)
+RecentData::RecentData()
 {
-    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
-    } else {
-        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-            MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateStatusPos);
-            MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateStatusPos);
-            MainWindow::disconnect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateStatusLineCount);
-            MainWindow::disconnect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-        }
-        if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-            MainWindow::disconnect(tv, &TextView::selectionChanged, window, &MainWindow::updateStatusPos);
-            MainWindow::disconnect(tv, &TextView::blockCountChanged, window, &MainWindow::updateStatusLineCount);
-            MainWindow::disconnect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateStatusLoadAmount);
-            window->resetLoadAmount();
+}
+
+void RecentData::init(MainWindow *mainWindow)
+{
+    mMainWindow = mainWindow;
+    mEditFileId = -1;
+    mPath = Settings::settings()->toString(skDefaultWorkspace);
+}
+
+void RecentData::setEditor(QWidget *edit)
+{
+    if (!mMainWindow) EXCEPT() << "Warning: RecentData isn't initialized";
+
+    if (QWidget *lastEdit = editor()) {
+        if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(lastEdit)) {
+            MainWindow::disconnect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
+        } else {
+            if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(lastEdit)) {
+                MainWindow::disconnect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
+                MainWindow::disconnect(aEdit, &AbstractEdit::selectionChanged, mMainWindow, &MainWindow::updateStatusPos);
+                MainWindow::disconnect(aEdit, &AbstractEdit::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
+                MainWindow::disconnect(aEdit->document(), &QTextDocument::contentsChange, mMainWindow, &MainWindow::currentDocumentChanged);
+            }
+            if (TextView* tv = ViewHelper::toTextView(lastEdit)) {
+                MainWindow::disconnect(tv, &TextView::selectionChanged, mMainWindow, &MainWindow::updateStatusPos);
+                MainWindow::disconnect(tv, &TextView::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
+                MainWindow::disconnect(tv, &TextView::loadAmountChanged, mMainWindow, &MainWindow::updateStatusLoadAmount);
+                mMainWindow->resetLoadAmount();
+            }
         }
     }
 
-    mEditor = edit;
-    mProject = (mEditor ?  window->projectRepo()->asProject(ViewHelper::groupId(mEditor)) : nullptr);
+    mEditList.removeAll(edit);
+    mEditList << edit;
 
-    if (FileMeta *fm = window->fileRepo()->fileMeta(mEditor)) {
-        if (fm->kind() != FileKind::PrO)
-            mPersistentEditor = mEditor;
-    }
-    if (PExFileNode* node = window->projectRepo()->findFileNode(mEditor)) {
+    if (PExFileNode* node = mMainWindow->projectRepo()->findFileNode(edit)) {
         mEditFileId = node->file()->id();
         mPath = QFileInfo(node->location()).path();
     } else {
-        mEditFileId = ViewHelper::fileId(mEditor);
+        mEditFileId = ViewHelper::fileId(edit);
         if (!mEditFileId.isValid())
-            mEditor = nullptr;
+            edit = nullptr;
         mPath = Settings::settings()->toString(skDefaultWorkspace);
     }
 
-    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
+    if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+        MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
     } else {
-        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(mEditor)) {
-            MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, window, &MainWindow::updateStatusPos);
-            MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, window, &MainWindow::updateStatusPos);
-            MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, window, &MainWindow::updateStatusLineCount);
-            MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, window, &MainWindow::currentDocumentChanged);
-        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(mEditor)) {
-            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, window, &MainWindow::updateStatusLineCount );
+        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit)) {
+            MainWindow::connect(aEdit, &AbstractEdit::cursorPositionChanged, mMainWindow, &MainWindow::updateStatusPos);
+            MainWindow::connect(aEdit, &AbstractEdit::selectionChanged, mMainWindow, &MainWindow::updateStatusPos);
+            MainWindow::connect(aEdit, &AbstractEdit::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount);
+            MainWindow::connect(aEdit->document(), &QTextDocument::contentsChange, mMainWindow, &MainWindow::currentDocumentChanged);
+        } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+            MainWindow::connect(soEdit, &option::SolverOptionWidget::itemCountChanged, mMainWindow, &MainWindow::updateStatusLineCount );
         }
-        if (TextView* tv = ViewHelper::toTextView(mEditor)) {
-            MainWindow::connect(tv, &TextView::selectionChanged, window, &MainWindow::updateStatusPos, Qt::UniqueConnection);
-            MainWindow::connect(tv, &TextView::blockCountChanged, window, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
-            MainWindow::connect(tv, &TextView::loadAmountChanged, window, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
+        if (TextView* tv = ViewHelper::toTextView(edit)) {
+            MainWindow::connect(tv, &TextView::selectionChanged, mMainWindow, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::blockCountChanged, mMainWindow, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+            MainWindow::connect(tv, &TextView::loadAmountChanged, mMainWindow, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
         }
     }
-    window->updateStatusFile();
-    window->updateStatusLineCount();
-    window->updateStatusPos();
-    window->updateStatusMode();
-    window->updateStatusLoadAmount();
+    mMainWindow->updateStatusFile();
+    mMainWindow->updateStatusLineCount();
+    mMainWindow->updateStatusPos();
+    mMainWindow->updateStatusMode();
+    mMainWindow->updateStatusLoadAmount();
 }
 
-void RecentData::reset()
+void RecentData::removeEditor(QWidget *edit)
 {
-    mEditFileId = -1;
-    mPath = Settings::settings()->toString(skDefaultWorkspace);
-    mProject = nullptr;
-    mEditor = nullptr;
-    mPersistentEditor = nullptr;
+    bool lastRemoved = !mEditList.isEmpty() && mEditList.last() == edit;
+    mEditList.removeAll(edit);
+    if (lastRemoved)
+        setEditor(mEditList.size() > 0 ? mEditList.last() : nullptr);
+}
+
+QWidget *RecentData::editor() const
+{
+    return mEditList.isEmpty() ? nullptr : mEditList.last();
+}
+
+PExProjectNode *RecentData::project() const
+{
+    return (editor() ? mMainWindow->projectRepo()->asProject(ViewHelper::groupId(editor())) : nullptr);
+}
+
+QWidget *RecentData::persistentEditor() const
+{
+    for (int i = mEditList.size()-1; i >= 0; --i) {
+        if (FileMeta *fm = mMainWindow->fileRepo()->fileMeta(mEditList.at(i))) {
+            if (fm->kind() != FileKind::PrO) return mEditList.at(i);
+        }
+    }
+    return nullptr;
 }
 
 
