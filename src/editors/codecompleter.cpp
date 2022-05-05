@@ -1011,7 +1011,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         filter = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        filter = ((syntax.second == 16) ? ccDcoStrt | ccDeclT : ccDcoStrt) | ccSysSufC | ccCtConst; break;
+        filter = ccDcoStrt | ccSysSufC | ccCtConst | (syntax.second == syntax::flavorAbort ? ccDeclT : 0); break;
     case syntax::SyntaxKind::DeclarationSetType:
         filter = ccDcoStrt | ccDeclS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
@@ -1097,17 +1097,17 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredHead
                    || syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
             filter = cc_Start | ccDcoEnd;
-            subType = syntax.second == 3 ? 2 : 3;
+            subType = syntax.second == syntax::flavorEcho1 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = cc_Start | ccResEnd;
             } else {
                 filter = cc_Start | ccDcoEnd;
-                subType = (syntax.second == 19) ? 4 : 5;
+                subType = (syntax.second == syntax::flavorEmbed1) ? 4 : 5;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
             filter = filter & ccDcoStrt;
-    } else if (dcoFlavor > 15 ) {
+    } else if (dcoFlavor >= syntax::flavorAbort) {
         needDot = true;
         for (int i = start; i > 0; --i) {
             if (needDot && line.at(i) == '.') {
@@ -1120,7 +1120,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
                 }
             }
         }
-        if (dcoFlavor >= 16 && dcoFlavor <= 18 )
+        if (dcoFlavor >= syntax::flavorAbort && dcoFlavor <= syntax::flavorEval)
             filter = ccSysSufC | ccCtConst;
         else
             filter = filter & ~cc_Dco;

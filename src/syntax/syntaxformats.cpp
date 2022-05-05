@@ -188,44 +188,42 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
         DEB() << "Initialization error in SyntaxDco. Unknown DCO(s): " << blockEndingDCOs.join(",");
     }
     // !!! Enter flavored names always in lowercase
-    // flavor-paired DCOs that count as parentheses (see SyntaxHighlighter::cFlavorChars)
-    mFlavors.insert(QString("onText").toLower(), 1);
-    mFlavors.insert(QString("offText").toLower(), 2);
-    mFlavors.insert(QString("onEcho").toLower(), 3);
-    mFlavors.insert(QString("onEchoV").toLower(), 3);
-    mFlavors.insert(QString("onEchoS").toLower(), 3);
-    mFlavors.insert(QString("offEcho").toLower(), 4);
-    mFlavors.insert(QString("onPut").toLower(), 5);
-    mFlavors.insert(QString("onPutV").toLower(), 5);
-    mFlavors.insert(QString("onPutS").toLower(), 5);
-    mFlavors.insert(QString("offPut").toLower(), 6);
-    mFlavors.insert(QString("onExternalInput").toLower(), 7);
-    mFlavors.insert(QString("offExternalInput").toLower(), 8);
-    mFlavors.insert(QString("onExternalOutput").toLower(), 9);
-    mFlavors.insert(QString("offExternalOutput").toLower(), 10);
-    mFlavors.insert(QString("ifThen").toLower(), 11);
-    mFlavors.insert(QString("ifThenI").toLower(), 11);
-    mFlavors.insert(QString("ifThenE").toLower(), 11);
-    mFlavors.insert(QString("endIf").toLower(), 12);
-    mFlavors.insert(QString("onFold").toLower(), 13);
-    mFlavors.insert(QString("offFold").toLower(), 14);
-    // additional flavors
-    mFlavors.insert(QString("include").toLower(), 15);
-    mFlavors.insert(QString("abort").toLower(), 16);
-    mFlavors.insert(QString("call").toLower(), 17);
-    mFlavors.insert(QString("hiddenCall").toLower(), 17);
-    mFlavors.insert(QString("eval").toLower(), 18);
-    mFlavors.insert(QString("evalLocal").toLower(), 18);
-    mFlavors.insert(QString("evalGlobal").toLower(), 18);
-    mFlavors.insert(QString("onEmbeddedCode").toLower(), 19);
-    mFlavors.insert(QString("onEmbeddedCodeS").toLower(), 19);
-    mFlavors.insert(QString("onEmbeddedCodeV").toLower(), 19);
-    mFlavors.insert(QString("embeddedCode").toLower(), 20);
-    mFlavors.insert(QString("embeddedCodeS").toLower(), 20);
-    mFlavors.insert(QString("embeddedCodeV").toLower(), 20);
-    mFlavors.insert(QString("continueEmbeddedCode").toLower(), 20);
-    mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), 20);
-    mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), 20);
+    mFlavors.insert(QString("onText").toLower(), flavorText1);
+    mFlavors.insert(QString("offText").toLower(), flavorText0);
+    mFlavors.insert(QString("onEcho").toLower(), flavorEcho1);
+    mFlavors.insert(QString("onEchoV").toLower(), flavorEcho1);
+    mFlavors.insert(QString("onEchoS").toLower(), flavorEcho1);
+    mFlavors.insert(QString("offEcho").toLower(), flavorEcho0);
+    mFlavors.insert(QString("onPut").toLower(), flavorPut1);
+    mFlavors.insert(QString("onPutV").toLower(), flavorPut1);
+    mFlavors.insert(QString("onPutS").toLower(), flavorPut1);
+    mFlavors.insert(QString("offPut").toLower(), flavorPut0);
+    mFlavors.insert(QString("onExternalInput").toLower(), flavorExIn1);
+    mFlavors.insert(QString("offExternalInput").toLower(), flavorExIn0);
+    mFlavors.insert(QString("onExternalOutput").toLower(), flavorExOut1);
+    mFlavors.insert(QString("offExternalOutput").toLower(), flavorExOut0);
+    mFlavors.insert(QString("ifThen").toLower(), flavorIf1);
+    mFlavors.insert(QString("ifThenI").toLower(), flavorIf1);
+    mFlavors.insert(QString("ifThenE").toLower(), flavorIf1);
+    mFlavors.insert(QString("endIf").toLower(), flavorIf0);
+    mFlavors.insert(QString("onFold").toLower(), flavorFold1);
+    mFlavors.insert(QString("offFold").toLower(), flavorFold0);
+    mFlavors.insert(QString("include").toLower(), flavorInc);
+    mFlavors.insert(QString("abort").toLower(), flavorAbort);
+    mFlavors.insert(QString("call").toLower(), flavorCall);
+    mFlavors.insert(QString("hiddenCall").toLower(), flavorCall);
+    mFlavors.insert(QString("eval").toLower(), flavorEval);
+    mFlavors.insert(QString("evalLocal").toLower(), flavorEval);
+    mFlavors.insert(QString("evalGlobal").toLower(), flavorEval);
+    mFlavors.insert(QString("onEmbeddedCode").toLower(), flavorEmbed1);
+    mFlavors.insert(QString("onEmbeddedCodeS").toLower(), flavorEmbed1);
+    mFlavors.insert(QString("onEmbeddedCodeV").toLower(), flavorEmbed1);
+    mFlavors.insert(QString("embeddedCode").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("embeddedCodeS").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("embeddedCodeV").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("continueEmbeddedCode").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), flavorEmbed0);
 
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
@@ -316,7 +314,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, int flavor, const QStrin
 SyntaxBlock SyntaxDco::validTail(const QString &line, int index, int flavor, bool &hasContent)
 {
     int end = index;
-    if (flavor < 16 || flavor > 18)
+    if (flavor < flavorAbort || flavor > flavorEval)
         while (isWhitechar(line, end)) end++;
     hasContent = false;
     SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
@@ -684,11 +682,11 @@ SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, int flavor, const QSt
     if (start < line.length() && line.at(start) == '.') ++start;
 
     QStringList subDCOs;
-    if (flavor == 16)
+    if (flavor == flavorAbort)
         subDCOs << "noerror";
-    else if (flavor == 17)
+    else if (flavor == flavorCall)
         subDCOs = mSubDCOs;
-    else if (flavor == 18)
+    else if (flavor == flavorEval)
         subDCOs << "set";
 
     for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {

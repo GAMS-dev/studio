@@ -121,6 +121,29 @@ enum FlavorFlag {
     flavorExecDot = 4,
 };
 
+enum DcoFlavor {
+    flavorText1 = 1,
+    flavorText0 = 2,
+    flavorEcho1 = 3,
+    flavorEcho0 = 4,
+    flavorPut1 = 5,
+    flavorPut0 = 6,
+    flavorExIn1 = 7,
+    flavorExIn0 = 8,
+    flavorExOut1 = 9,
+    flavorExOut0 = 10,
+    flavorIf1 = 11,
+    flavorIf0 = 12,
+    flavorFold1 = 13,
+    flavorFold0 = 14,
+    flavorInc = 15,
+    flavorAbort = 16,
+    flavorCall = 17,
+    flavorEval = 18,
+    flavorEmbed1 = 19,
+    flavorEmbed0 = 20,
+};
+
 enum class SyntaxShift {
     shift,      ///> replace current-top-kind by this
     skip,       ///> skips this kind (keep current-top-kind)
