@@ -75,8 +75,10 @@ void SearchDialog::restoreSettings()
 }
 
 void SearchDialog::editorChanged(QWidget* editor) {
-    mCurrentEditor = editor;
-    mSearch.activeFileChanged();
+    if (mCurrentEditor != editor) {
+        mCurrentEditor = editor;
+        mSearch.activeFileChanged();
+    }
 }
 
 void SearchDialog::on_btn_Replace_clicked()
