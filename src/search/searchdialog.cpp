@@ -56,11 +56,11 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::closeEvent (QCloseEvent *event)
+void SearchDialog::closeEvent(QCloseEvent *event)
 {
-    emit setWidgetPosition(pos());
-    hide();
-    event->accept();
+    emit toggle();
+
+    event->ignore();
     QDialog::closeEvent(event);
 }
 
