@@ -358,7 +358,6 @@ void SearchDialog::on_btn_clear_clicked()
     }
     setSearchSelectionActive(false);
     mSearch.invalidateCache();
-    updateClearButton();
 }
 
 void SearchDialog::on_cb_wholeWords_stateChanged(int)
@@ -506,6 +505,7 @@ void SearchDialog::clearSelection()
         tv->edit()->setTextCursor(tc);
         tv->clearSearchSelection();
     }
+    updateClearButton();
 }
 
 void SearchDialog::setSearchSelectionActive(bool active)
@@ -516,6 +516,7 @@ void SearchDialog::setSearchSelectionActive(bool active)
         tv->setSearchSelectionActive(active);
 
     updateEditHighlighting();
+    updateClearButton();
 }
 
 void SearchDialog::clearSearch()
