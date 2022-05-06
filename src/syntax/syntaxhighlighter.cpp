@@ -165,9 +165,10 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     bool emptyLineKinds = true;
     TDEB(true, text)
 
+    SyntaxTune tune;
     NestingData nestingData;
     if (prevBlockData && nestingData.inNamedBlock())
-        nestingData.setNamedBlock(nestingData.namedBlockType(), nestingData.namedBlock());
+        nestingData.setUserSuffix(nestingData.userSuffixType(), nestingData.userSuffixName());
     while (index < text.length()) {
         CodeRelation codeRel = mCodes.at(cri);
         SyntaxAbstract* syntax = mKinds.value(codeRel.blockCode.kind());
@@ -179,7 +180,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, codeRel.blockCode.flavor(), stack);
         if (stack) emptyLineKinds = false;
-        int prevFlavor = tailBlock.isValid() ? tailBlock.flavor : codeRel.blockCode.flavor();
+        tune.flavor = tailBlock.isValid() ? tailBlock.flavor : codeRel.blockCode.flavor();
 
         // HOWTO(JM) For kinds redefined with a DCO:
         //   - add new Syntax to mKinds
@@ -189,7 +190,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         for (const SyntaxKind &nextKind: syntax->nextKinds(emptyLineKinds)) {
             SyntaxAbstract* testSyntax = mKinds.value(nextKind);
             if (testSyntax) {
-                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), prevFlavor, text, index);
+                SyntaxBlock testBlock = testSyntax->find(syntax->kind(), tune, text, index);
                 if (testBlock.isValid()) {
                     if (!nextBlock.isValid() || nextBlock.start > testBlock.start) {
                         nextBlock = testBlock;
@@ -216,7 +217,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                     if (tailBlock.syntax->kind() != SyntaxKind::Standard) {
                         setFormat(tailBlock.start, tailBlock.length(), tailBlock.syntax->charFormat());
                         TDEB(tailBlock.syntax, QString(tailBlock.start, ' ') + QString(tailBlock.length(), '.')
-                              + " " + tailBlock.syntax->name() + " flav_" + QString::number(prevFlavor)
+                              + " " + tailBlock.syntax->name() + " flav_" + QString::number(tune.flavor)
                               + "  (tail from " + syntax->name() + ")")
                         scanParentheses(text, tailBlock, syntax->kind(), nestingData);
                     }
@@ -273,7 +274,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (text.at(i) == '%') {
                 for (SyntaxAbstract* testSyntax : qAsConst(mPostSyntax)) {
                     if (testSyntax) {
-                        SyntaxBlock nextBlock = testSyntax->find(SyntaxKind::Standard, 0, text, i);
+                        SyntaxBlock nextBlock = testSyntax->find(SyntaxKind::Standard, SyntaxTune(), text, i);
                         if (nextBlock.isValid()) {
                             TDEB(nextBlock.syntax, QString(nextBlock.start, ' ') + QString(nextBlock.length(), '_')
                                   + " " + nextBlock.syntax->name())
@@ -384,7 +385,8 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
 
     if (kind == SyntaxKind::DcoNameSuffix || kind == SyntaxKind::EmbeddedNameSuffix) {
         namedBlock = text.mid(block.start, block.length()).toLower();
-        if (nestingData.inNamedBlock() && namedBlock != nestingData.namedBlock())
+        DEB() << "NAMED-BLOCK: " << namedBlock << "  flavor: " << block.flavor << "  pre: " << preKind;
+        if (nestingData.inNamedBlock() && namedBlock != nestingData.userSuffixName())
             namedBlock = QString();
     }
 

@@ -159,8 +159,15 @@ struct SyntaxTransition
     const SyntaxKind kind;
     const SyntaxShift shift;
 };
-
 typedef QList<SyntaxKind> SyntaxTransitions;
+
+/// SyntaxTune: Used to transport special tuning values from highlighter to each syntax and back
+struct SyntaxTune
+{
+    int flavor = 0;
+    QChar userSuffixType;
+    QString userSuffixName;
+};
 
 class SyntaxAbstract;
 class SyntaxCommentEndline;
@@ -185,6 +192,7 @@ struct SyntaxBlock
     bool error;
     SyntaxShift shift;
     SyntaxKind next;
+    QString suffixName;
     int length() { return end-start; }
     bool isValid() { return syntax && start<end; }
 };
@@ -219,7 +227,7 @@ public:
     Theme::ColorSlot colorSlot() const { return mColorSlot; }
 
     /// Finds the begin of this syntax
-    virtual SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) = 0;
+    virtual SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) = 0;
 
     /// Finds the end of valid trailing characters for this syntax
     virtual SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) = 0;
@@ -230,9 +238,6 @@ public:
     virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
     virtual QStringList docForLastRequest() const { return QStringList(); }
     int intSyntaxType() { return static_cast<int>(kind()); }
-
-    static int stateToInt(SyntaxKind _state);
-    static SyntaxKind intToState(int intState);
 
     static const QPair<QString, QString> systemEmpData;
 
@@ -287,7 +292,7 @@ class SyntaxStandard : public SyntaxAbstract
 {
 public:
     SyntaxStandard(SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -298,7 +303,7 @@ class SyntaxDco : public SyntaxAbstract
 {
 public:
     SyntaxDco(SharedSyntaxData* sharedData, QChar dcoChar = '$');
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 protected:
     QStringList docForLastRequest() const override;
@@ -324,7 +329,7 @@ class SyntaxDcoBody: public SyntaxAbstract
 public:
     SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
     void setCommentChars(QVector<QChar> chars);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -332,7 +337,7 @@ class SyntaxNameSuffix: public SyntaxAbstract
 {
 public:
     SyntaxNameSuffix(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -341,7 +346,7 @@ class SyntaxCommentLine: public SyntaxAbstract
 {
 public:
     SyntaxCommentLine(SharedSyntaxData* sharedData, QChar commentChar = '*');
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 private:
     QChar mCommentChar;
@@ -356,7 +361,7 @@ public:
     void setCommentChars(QString commentChars);
     QString commentChars() const { return mCommentChars; }
     bool check(const QString &line, int index) const;
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 protected:
 };
@@ -366,7 +371,7 @@ class SyntaxUniformBlock: public SyntaxAbstract
 {
 public:
     SyntaxUniformBlock(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -376,7 +381,7 @@ class SyntaxSubDCO: public SyntaxAbstract
     QStringList mSubDCOs;
 public:
     SyntaxSubDCO(SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -385,7 +390,7 @@ class SyntaxDelimiter: public SyntaxAbstract
     QChar mDelimiter;
 public:
     SyntaxDelimiter(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -394,7 +399,7 @@ class SyntaxFormula: public SyntaxAbstract
     QVector<QChar> mSpecialDynamicChars;
 public:
     SyntaxFormula(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
     void setSpecialDynamicChars(QVector<QChar> chars);
 };
@@ -404,7 +409,7 @@ class SyntaxQuoted : public SyntaxAbstract
     QString mDelimiters;
 public:
     SyntaxQuoted(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 
@@ -412,7 +417,7 @@ class SyntaxAssign : public SyntaxAbstract
 {
 public:
     SyntaxAssign(SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, int flavor, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };
 

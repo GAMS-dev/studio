@@ -41,16 +41,16 @@ struct NestingData
     int leftOpen() const { return mMaxDepth; }
     int rightOpen() const { return mImpact - mMaxDepth; }
     QVector<ParenthesesPos> parentheses() const { return mParentheses; }
-    bool inNamedBlock() { return !mNamedBlock.isEmpty(); }
-    QChar namedBlockType() { return mNamedBlockType; }
-    QString namedBlock() { return mNamedBlock; }
-    void setNamedBlock(QChar type, const QString &name) { mNamedBlockType = type; mNamedBlock = name; }
+    bool inNamedBlock() { return !mUserSuffixName.isEmpty(); }
+    QChar userSuffixType() { return mUserSuffixType; }
+    QString userSuffixName() { return mUserSuffixName; }
+    void setUserSuffix(QChar type, const QString &name) { mUserSuffixType = type; mUserSuffixName = name; }
 private:
     short mImpact = 0;
     short mMaxDepth = 0;
     QVector<ParenthesesPos> mParentheses;
-    QChar mNamedBlockType;
-    QString mNamedBlock;
+    QChar mUserSuffixType;
+    QString mUserSuffixName;
 };
 
 class BlockData : public QTextBlockUserData
@@ -63,7 +63,7 @@ public:
     bool isEmpty() {return mNestingData.parentheses().isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const NestingData &nestingData);
-    NestingData nestingImpact() const { return mNestingData; }
+    NestingData nesting() const { return mNestingData; }
     int &foldCount() { return mFoldCount; }
     bool isFolded() const { return mFoldCount; }
     void setFoldCount(int foldCount) { mFoldCount = foldCount; }

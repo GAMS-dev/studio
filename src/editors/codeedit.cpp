@@ -692,17 +692,17 @@ QTextBlock CodeEdit::findFoldStart(QTextBlock block) const
     int depth = 0;
     syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
     if (dat) {
-        if (dat->nestingImpact().rightOpen()) return block;
-        if (dat->nestingImpact().leftOpen())
-            depth = dat->nestingImpact().leftOpen() + 1;
+        if (dat->nesting().rightOpen()) return block;
+        if (dat->nesting().leftOpen())
+            depth = dat->nesting().leftOpen() + 1;
     }
     while (block.isValid() && count < 1000) {
         block = block.previous();
         ++count;
         syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
-        if (dat) depth += dat->nestingImpact().rightOpen();
+        if (dat) depth += dat->nesting().rightOpen();
         if (depth > 0) return block;
-        if (dat) depth += dat->nestingImpact().leftOpen();
+        if (dat) depth += dat->nesting().leftOpen();
     }
     return QTextBlock();
 }
