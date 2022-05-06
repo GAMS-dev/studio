@@ -159,6 +159,10 @@ void SearchDialog::updateDialogState()
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
     ui->label_4->setEnabled(!searching);
+    ui->combo_path->setEnabled(!searching);
+    ui->cb_subdirs->setEnabled(!searching);
+    ui->btn_browse->setEnabled(!searching);
+    ui->label_5->setEnabled(!searching);
 
     if (!searching) updateComponentAvailability();
 
