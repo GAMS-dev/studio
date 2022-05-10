@@ -93,6 +93,15 @@ int SyntaxAbstract::endOfParentheses(const QString &line, const int &start, cons
     return line.length();
 }
 
+bool SyntaxAbstract::validSuffixName(QChar inType, const QString &inName, QChar outType, const QString &outName)
+{
+    // enter a named suffix region
+    if (outType.isUpper()) return inName.isEmpty();
+
+    // exit a named suffix region
+    return inType.toLower() == outType && inName.compare(outName, Qt::CaseInsensitive) == 0;
+}
+
 
 SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(SyntaxKind::Standard, sharedData)
 {

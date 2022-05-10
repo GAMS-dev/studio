@@ -327,7 +327,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxTune tune, co
 SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
 {
     QList<QPair<QString, QString>> list;
-    mSubKinds << SyntaxKind::EmbeddedNameSuffix;
+//    mSubKinds << SyntaxKind::EmbeddedNameSuffix;
     if (kind == SyntaxKind::Embedded) {
         list = SyntaxData::embedded();
         mSubKinds << SyntaxKind::EmbeddedBody;
@@ -348,15 +348,17 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, SyntaxTune tune, co
     int iKey;
     end = findEnd(kind(), line, start, iKey, true);
     if (end > start) {
-//        if (end < )
-        SyntaxShift kindShift = SyntaxShift::in;
-        if (kind() == SyntaxKind::EmbeddedEnd) {
-            if (end+1 < line.length() && line.at(end) == '.')
-                kindShift = SyntaxShift::shift;
-            else
-                kindShift = SyntaxShift::out;
+        SyntaxShift kindShift = (kind() == SyntaxKind::EmbeddedEnd ? SyntaxShift::out : SyntaxShift::in);
+        QString suffix;
+        if (end+1 < line.length() && line.at(end) == '.' && line.at(end+1).isLetter()) {
+            int nameStart = ++end;
+            while (++end < line.length() && isKeywordChar(line.at(end)))
+                ;
+            suffix = line.mid(nameStart, end - nameStart);
         }
-        return SyntaxBlock(this, tune.flavor, start, end, false, kindShift, kind());
+        QChar inType = kind() == SyntaxKind::Embedded ? 'E' : 'e';
+        if (validSuffixName(tune.userSuffixType, tune.userSuffixName, inType, suffix))
+            return SyntaxBlock(this, tune.flavor, start, end, false, kindShift, kind(), inType, suffix);
     }
     return SyntaxBlock(this);
 }

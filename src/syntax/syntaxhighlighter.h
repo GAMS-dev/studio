@@ -53,7 +53,6 @@ public slots:
 
 private:
     void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData);
-    QString parseName(const QString &text, int start);
 
 private:
     struct CodeRelation {

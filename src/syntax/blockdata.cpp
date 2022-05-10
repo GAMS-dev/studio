@@ -26,6 +26,38 @@ NestingData::NestingData()
     mParentheses.reserve(20);
 }
 
+NestingData::NestingData(const NestingData &other) :
+    mImpact(other.mImpact),
+    mMaxDepth(other.mMaxDepth),
+    mParentheses(other.mParentheses),
+    mUserSuffixType(other.mUserSuffixType),
+    mUserSuffixName(other.mUserSuffixName)
+{}
+
+NestingData &NestingData::operator =(const NestingData &other)
+{
+    mImpact = other.mImpact;
+    mMaxDepth = other.mMaxDepth;
+    mParentheses = other.mParentheses;
+    mUserSuffixType = other.mUserSuffixType;
+    mUserSuffixName = other.mUserSuffixName;
+    return *this;
+}
+
+bool NestingData::operator !=(const NestingData &other) const
+{
+    return operator==(other);
+}
+
+bool NestingData::operator ==(const NestingData &other) const
+{
+    return  mImpact == other.mImpact &&
+            mMaxDepth == other.mMaxDepth &&
+            mParentheses == other.mParentheses &&
+            mUserSuffixType == other.mUserSuffixType &&
+            mUserSuffixName == other.mUserSuffixName;
+}
+
 void NestingData::addOpener(QChar _character, int _relPos)
 {
     mParentheses << ParenthesesPos(_character, _relPos);

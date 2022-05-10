@@ -28,6 +28,8 @@ struct ParenthesesPos
 {
     ParenthesesPos() : character(QChar()), relPos(-1) {}
     ParenthesesPos(QChar _character, int _relPos) : character(_character), relPos(_relPos) {}
+    bool operator !=(const ParenthesesPos &other) const { return character != other.character || relPos != other.relPos; }
+    bool operator ==(const ParenthesesPos &other) const { return character == other.character && relPos == other.relPos; }
     QChar character;
     int relPos;
 };
@@ -35,16 +37,23 @@ struct ParenthesesPos
 struct NestingData
 {
     NestingData();
+    NestingData(const NestingData &other);
+    NestingData &operator =(const NestingData &other);
+    bool operator !=(const NestingData &other) const;
+    bool operator ==(const NestingData &other) const;
     void addOpener(QChar _character, int _relPos);
     void addCloser(QChar _character, int _relPos);
     int impact() const { return mImpact; }
     int leftOpen() const { return mMaxDepth; }
     int rightOpen() const { return mImpact - mMaxDepth; }
     QVector<ParenthesesPos> parentheses() const { return mParentheses; }
-    bool inNamedBlock() { return !mUserSuffixName.isEmpty(); }
+    bool inNamedBlock() { return !mUserSuffixName.isNull(); }
     QChar userSuffixType() { return mUserSuffixType; }
     QString userSuffixName() { return mUserSuffixName; }
-    void setUserSuffix(QChar type, const QString &name) { mUserSuffixType = type; mUserSuffixName = name; }
+    void setUserSuffix(QChar type, const QString &name) {
+        mUserSuffixType = type;
+        mUserSuffixName = name;
+    }
 private:
     short mImpact = 0;
     short mMaxDepth = 0;
@@ -60,10 +69,9 @@ public:
     ~BlockData() override;
     static BlockData *fromTextBlock(QTextBlock block);
     QChar charForPos(int relPos);
-    bool isEmpty() {return mNestingData.parentheses().isEmpty();}
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const NestingData &nestingData);
-    NestingData nesting() const { return mNestingData; }
+    NestingData &nesting() { return mNestingData; }
     int &foldCount() { return mFoldCount; }
     bool isFolded() const { return mFoldCount; }
     void setFoldCount(int foldCount) { mFoldCount = foldCount; }

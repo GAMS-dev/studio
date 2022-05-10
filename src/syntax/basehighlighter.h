@@ -67,6 +67,7 @@ protected:
 
     void setCurrentBlockUserData(QTextBlockUserData *data);
     QTextBlockUserData *currentBlockUserData() const;
+    QTextBlockUserData *previousBlockUserData() const;
 
     QTextBlock currentBlock() const;
 

@@ -148,9 +148,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QVector<QPoint> postHighlights;
     postHighlights << QPoint(0, text.length()-1);
     QTextBlock textBlock = currentBlock();
-    BlockData *prevBlockData = nullptr;
-    if (currentBlock().previous().isValid())
-        prevBlockData = static_cast<BlockData*>(currentBlock().previous().userData());
+    BlockData *prevBlockData = static_cast<BlockData*>(previousBlockUserData());
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
 
@@ -167,8 +165,11 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
 
     SyntaxTune tune;
     NestingData nestingData;
-    if (prevBlockData && nestingData.inNamedBlock())
-        nestingData.setUserSuffix(nestingData.userSuffixType(), nestingData.userSuffixName());
+    if (prevBlockData && prevBlockData->nesting().inNamedBlock()) {
+        tune.userSuffixType = prevBlockData->nesting().userSuffixType();
+        tune.userSuffixName = prevBlockData->nesting().userSuffixName();
+        nestingData.setUserSuffix(tune.userSuffixType, tune.userSuffixName);
+    }
     while (index < text.length()) {
         CodeRelation codeRel = mCodes.at(cri);
         SyntaxAbstract* syntax = mKinds.value(codeRel.blockCode.kind());
@@ -243,6 +244,8 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (nextBlock.syntax->kind() == SyntaxKind::Semicolon) emptyLineKinds = true;
         }
         scanParentheses(text, nextBlock, syntax->kind(), nestingData);
+        if (!nextBlock.suffixName.isNull())
+            nestingData.setUserSuffix(nextBlock.suffixType, nextBlock.suffixName);
         index = nextBlock.end;
 
         cri = getCode(cri, nextBlock.shift, nextBlock, 0);
@@ -306,12 +309,10 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         if (!same) emit needUnfold(textBlock);
     }
     blockData->setParentheses(nestingData);
-    if (blockData && blockData->isEmpty()) {
-        textBlock.setUserData(nullptr);
-    } else
-        textBlock.setUserData(blockData);
+    textBlock.setUserData(blockData);
     setCurrentBlockState(purgeCode(cri));
-    TDEB(true, text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingData.impact()) + "]")
+    TDEB(true, text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingData.impact())
+         + " '" + nestingData.userSuffixName() + "']")
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
@@ -383,13 +384,6 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
     SyntaxKind postKind = block.next;
     QString namedBlock;
 
-    if (kind == SyntaxKind::DcoNameSuffix || kind == SyntaxKind::EmbeddedNameSuffix) {
-        namedBlock = text.mid(block.start, block.length()).toLower();
-        DEB() << "NAMED-BLOCK: " << namedBlock << "  flavor: " << block.flavor << "  pre: " << preKind;
-        if (nestingData.inNamedBlock() && namedBlock != nestingData.userSuffixName())
-            namedBlock = QString();
-    }
-
     bool inBlock = false;
     if (kind == SyntaxKind::Embedded) {
         nestingData.addOpener('E', start);
@@ -439,12 +433,6 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
         }
     }
     return;
-}
-
-QString SyntaxHighlighter::parseName(const QString &text, int start)
-{
-
-    return QString();
 }
 
 QColor backColor(int index) {

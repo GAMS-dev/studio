@@ -17,6 +17,7 @@
  */
 #include "basehighlighter.h"
 #include "logger.h"
+#include "blockdata.h"
 #include <QTimer>
 
 namespace gams {
@@ -112,9 +113,19 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 
     while (!mAborted && mCurrentBlock.isValid() && (forceHighlightOfNextBlock || !mDirtyBlocks.isEmpty())) {
         const int stateBeforeHighlight = mCurrentBlock.userState();
+        NestingData * nesting = nullptr;
+        if (stateBeforeHighlight & 0x40000000 && mCurrentBlock.userData())
+            nesting = new NestingData(static_cast<BlockData*>(mCurrentBlock.userData())->nesting());
 
         reformatCurrentBlock();
         forceHighlightOfNextBlock = (mCurrentBlock.userState() != stateBeforeHighlight);
+        if (nesting) {
+            if (!forceHighlightOfNextBlock)
+                forceHighlightOfNextBlock = nesting != &static_cast<BlockData*>(mCurrentBlock.userData())->nesting();
+            delete nesting;
+            nesting = nullptr;
+        }
+
         setClean(mCurrentBlock);
         if (!mTime.isNull() && QTime::currentTime().msecsSinceStartOfDay()-mTime.msecsSinceStartOfDay() > 50) {
             mCurrentBlock = mCurrentBlock.next();
@@ -224,6 +235,14 @@ QTextBlockUserData *BaseHighlighter::currentBlockUserData() const
 {
     if (mCurrentBlock.isValid()) return nullptr;
     return mCurrentBlock.userData();
+}
+
+QTextBlockUserData *BaseHighlighter::previousBlockUserData() const
+{
+    if (!mCurrentBlock.isValid()) return nullptr;
+    const QTextBlock previous = mCurrentBlock.previous();
+    if (!previous.isValid()) return nullptr;
+    return previous.userData();
 }
 
 QTextBlock BaseHighlighter::currentBlock() const

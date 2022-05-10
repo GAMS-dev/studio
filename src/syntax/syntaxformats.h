@@ -175,8 +175,10 @@ class SyntaxCommentEndline;
 struct SyntaxBlock
 {
     SyntaxBlock(SyntaxAbstract* _syntax = nullptr, int kindFlavor = 0, int _start = 0, int _end = 0
-            , bool _error = false , SyntaxShift _shift = SyntaxShift::shift, SyntaxKind _next = SyntaxKind::Standard)
+            , bool _error = false , SyntaxShift _shift = SyntaxShift::shift, SyntaxKind _next = SyntaxKind::Standard
+            , QChar _suffixType = QChar(), QString _suffixName = QString())
         : syntax(_syntax), flavor(kindFlavor), start(_start), end(_end), error(_error), shift(_shift), next(_next)
+        , suffixType(_suffixType), suffixName(_suffixName)
     { }
     SyntaxBlock(SyntaxAbstract* _syntax, int kindFlavor, int _start, int _end, SyntaxKind _next, bool _error = false)
         : syntax(_syntax), flavor(kindFlavor), start(_start), end(_end), error(_error), shift(SyntaxShift::in), next(_next)
@@ -192,6 +194,7 @@ struct SyntaxBlock
     bool error;
     SyntaxShift shift;
     SyntaxKind next;
+    QChar suffixType;
     QString suffixName;
     int length() { return end-start; }
     bool isValid() { return syntax && start<end; }
@@ -276,6 +279,7 @@ protected:
         const QChar& ch(line.at(index));
         return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
+    bool validSuffixName(QChar inType, const QString &inName, QChar outType, const QString &outName);
 
 protected:
     SyntaxKind mKind;
