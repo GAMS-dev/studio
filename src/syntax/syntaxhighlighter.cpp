@@ -69,8 +69,6 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxDcoBody(SyntaxKind::Title, d), Theme::Syntax_title);
     initKind(new SyntaxDcoBody(SyntaxKind::IgnoredHead, d), Theme::Syntax_dcoBody);
     initKind(new SyntaxSubDCO(d), Theme::Syntax_dco);
-    initKind(new SyntaxNameSuffix(SyntaxKind::DcoNameSuffix, d), Theme::Syntax_dco);
-    initKind(new SyntaxNameSuffix(SyntaxKind::EmbeddedNameSuffix, d), Theme::Syntax_keyword);
 
     initKind(new SyntaxFormula(SyntaxKind::Formula, d), Theme::Syntax_formula);
     initKind(new SyntaxFormula(SyntaxKind::PutFormula, d), Theme::Syntax_formula);

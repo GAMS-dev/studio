@@ -49,8 +49,6 @@ enum class SyntaxKind {
     SystemCompileAttrib,
     SystemCompileAttribR,
     SystemRunAttrib,
-    DcoNameSuffix,
-    EmbeddedNameSuffix,
 
     CommentLine,
     CommentBlock,
@@ -333,14 +331,6 @@ class SyntaxDcoBody: public SyntaxAbstract
 public:
     SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
     void setCommentChars(QVector<QChar> chars);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
-};
-
-class SyntaxNameSuffix: public SyntaxAbstract
-{
-public:
-    SyntaxNameSuffix(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, int flavor, bool &hasContent) override;
 };

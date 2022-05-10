@@ -707,35 +707,6 @@ SyntaxBlock SyntaxSubDCO::validTail(const QString &line, int index, int flavor, 
     return SyntaxBlock(this);
 }
 
-SyntaxNameSuffix::SyntaxNameSuffix(SyntaxKind kind, SharedSyntaxData *sharedData)
-    : SyntaxAbstract(kind, sharedData)
-{
-}
-
-SyntaxBlock SyntaxNameSuffix::find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index)
-{
-    QVector<SyntaxKind> validEntryKinds;
-    validEntryKinds << SyntaxKind::Embedded << SyntaxKind::EmbeddedEnd
-                    << SyntaxKind::IgnoredBlock << SyntaxKind::IgnoredHead;
-    if (!validEntryKinds.contains(entryKind)) return SyntaxBlock();
-
-    if (index+2 >= line.length() || line.at(index) != '.') return SyntaxBlock();
-    int end = index + 1;
-    if (!line.at(end).isLetter()) return SyntaxBlock();
-    ++end;
-    while (end < line.length()) {
-        if (!line.at(end).isLetterOrNumber() && line.at(end) != '_') break;
-        ++end;
-    }
-    SyntaxShift shift = (entryKind == SyntaxKind::EmbeddedEnd || tune.flavor % 2) ? SyntaxShift::out : SyntaxShift::skip;
-    return SyntaxBlock(this, tune.flavor, index, end, shift);
-}
-
-SyntaxBlock SyntaxNameSuffix::validTail(const QString&, int , int , bool&)
-{
-    return SyntaxBlock(this);
-}
-
 } // namespace syntax
 } // namespace studio
 } // namespace gams
