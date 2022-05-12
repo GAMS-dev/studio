@@ -47,19 +47,10 @@ struct NestingData
     int leftOpen() const { return mMaxDepth; }
     int rightOpen() const { return mImpact - mMaxDepth; }
     QVector<ParenthesesPos> parentheses() const { return mParentheses; }
-    bool inNamedBlock() { return !mUserSuffixName.isNull(); }
-    QChar userSuffixType() { return mUserSuffixType; }
-    QString userSuffixName() { return mUserSuffixName; }
-    void setUserSuffix(QChar type, const QString &name) {
-        mUserSuffixType = type;
-        mUserSuffixName = name;
-    }
 private:
     short mImpact = 0;
     short mMaxDepth = 0;
     QVector<ParenthesesPos> mParentheses;
-    QChar mUserSuffixType;
-    QString mUserSuffixName;
 };
 
 class BlockData : public QTextBlockUserData

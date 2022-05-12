@@ -56,7 +56,10 @@ public:
     int parser() const { return (mCode / b1 / b2 / b3) % b4; } // parser==0 is GAMS syntax, others like python may be added
     bool deepCheck() const { return (mCode / b1 / b2 / b3 / b4); } //
 
-    bool operator ==(BlockCode other) {
+    bool operator !=(BlockCode other) const {
+        return mCode != other.mCode;
+    }
+    bool operator ==(BlockCode other) const {
         return mCode == other.mCode;
     }
     void operator =(int _code) {

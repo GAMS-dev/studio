@@ -53,12 +53,12 @@ SyntaxKeywordBase::~SyntaxKeywordBase()
         delete mKeywords.take(mKeywords.begin().key());
 }
 
-SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxKeywordBase::validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent)
 {
     hasContent = false;
     int end = index;
     while (isWhitechar(line, end)) end++;
-    return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
+    return SyntaxBlock(this, tune, index, end, SyntaxShift::shift);
 }
 
 QStringList SyntaxKeywordBase::docForLastRequest() const
@@ -167,25 +167,26 @@ SyntaxBlock SyntaxDeclaration::find(const SyntaxKind entryKind, SyntaxTune tune,
         end = findEnd(entryKind, line, start, iKey);
         if (entryKind != SyntaxKind::DeclarationSetType)
             tune.flavor = tune.flavor | mFlavors.value(iKey);
-        if (end > start) return SyntaxBlock(this, tune.flavor, start, end, SyntaxShift::shift);
+        if (end > start) return SyntaxBlock(this, tune, start, end, SyntaxShift::shift);
 
         // search for invalid new declaration keyword
         end = findEnd(kind(), line, start, iKey);
-        if (end > start) return SyntaxBlock(this, tune.flavor, start, end, true, SyntaxShift::reset);
+        if (end > start) return SyntaxBlock(this, tune, start, end, true, SyntaxShift::reset);
 
         return SyntaxBlock(this);
     }
 
     end = findEnd(kind(), line, start, iKey);
     if (end > start) {
+        tune.flavor |= mFlavors.value(iKey);
         if (entryKind == SyntaxKind::Declaration) {
             if (tune.flavor & flavorPreTable && mFlavors.value(iKey) == flavorTable) {
                 tune.flavor -= flavorPreTable;
-                return SyntaxBlock(this, (tune.flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::shift, kind());
+                return SyntaxBlock(this, tune, start, end, false, SyntaxShift::shift, kind());
             }
-            return SyntaxBlock(this, (tune.flavor | mFlavors.value(iKey)), start, end, true, SyntaxShift::reset);
+            return SyntaxBlock(this, tune, start, end, true, SyntaxShift::reset);
         }
-        return SyntaxBlock(this, (tune.flavor | mFlavors.value(iKey)), start, end, false, SyntaxShift::in, kind());
+        return SyntaxBlock(this, tune, start, end, false, SyntaxShift::in, kind());
     }
     return SyntaxBlock(this);
 }
@@ -224,10 +225,10 @@ SyntaxBlock SyntaxPreDeclaration::find(const SyntaxKind entryKind, SyntaxTune tu
     if (end > start) {
         if (entryKind == SyntaxKind::DeclarationSetType || entryKind == SyntaxKind::DeclarationVariableType
                 || entryKind == SyntaxKind::Declaration)
-            return SyntaxBlock(this, tune.flavor, start, end, true, SyntaxShift::reset);
-        return SyntaxBlock(this, tune.flavor, start, end,  false, SyntaxShift::in, kind());
+            return SyntaxBlock(this, tune, start, end, true, SyntaxShift::reset);
+        return SyntaxBlock(this, tune, start, end,  false, SyntaxShift::in, kind());
     } else if (entryKind == kind()) {
-        return SyntaxBlock(this, tune.flavor, index, start, SyntaxShift::shift);
+        return SyntaxBlock(this, tune, index, start, SyntaxShift::shift);
     }
     return SyntaxBlock(this);
 }
@@ -279,14 +280,15 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxTune tune, co
     while (isWhitechar(line, start))
         ++start;
     if (entryKind == kind() && start > index) {
-        return SyntaxBlock(this, tune.flavor, index, start, false, SyntaxShift::shift);
+        return SyntaxBlock(this, tune, index, start, false, SyntaxShift::shift);
     }
     if (kind() == SyntaxKind::Execute && entryKind == kind() && (tune.flavor & flavorExecDot) == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
             while (isWhitechar(line, end))
                 ++end;
-            return SyntaxBlock(this, tune.flavor+flavorExecDot, index, end, false, SyntaxShift::shift);
+            tune.flavor += flavorExecDot;
+            return SyntaxBlock(this, tune, index, end, false, SyntaxShift::shift);
         }
         return SyntaxBlock(this);
     }
@@ -299,22 +301,24 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxTune tune, co
     if (end > start) {
         switch (kind()) {
         case SyntaxKind::Reserved:
-            return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::in, SyntaxKind::Formula);
+            return SyntaxBlock(this, tune, start, end, false, SyntaxShift::in, SyntaxKind::Formula);
         case SyntaxKind::Solve:
-            return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
+            return SyntaxBlock(this, tune, start, end, false, SyntaxShift::in, SyntaxKind::SolveBody);
         case SyntaxKind::Option:
-            return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
+            return SyntaxBlock(this, tune, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
         case SyntaxKind::Put:
-            return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
+            return SyntaxBlock(this, tune, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
         case SyntaxKind::Execute: {
             while (isWhitechar(line, end))
                 ++end;
             if (end == line.length() || line.at(end) != '_')
-                return SyntaxBlock(this, tune.flavor, start, end, SyntaxShift::shift);
+                return SyntaxBlock(this, tune, start, end, SyntaxShift::shift);
         }   break;
         case SyntaxKind::ExecuteKey: {
-            if (entryKind == SyntaxKind::Execute && tune.flavor & flavorExecDot)
-                return SyntaxBlock(this, tune.flavor - flavorExecDot, index, end, SyntaxShift::shift);
+            if (entryKind == SyntaxKind::Execute && tune.flavor & flavorExecDot) {
+                tune.flavor -= flavorExecDot;
+                return SyntaxBlock(this, tune, index, end, SyntaxShift::shift);
+            }
         }   break;
         default:
             break;
@@ -340,7 +344,6 @@ SyntaxEmbedded::SyntaxEmbedded(SyntaxKind kind, SharedSyntaxData *sharedData) : 
 SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    Q_UNUSED(tune)
     int start = index;
     while (isWhitechar(line, start))
         ++start;
@@ -349,16 +352,23 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, SyntaxTune tune, co
     end = findEnd(kind(), line, start, iKey, true);
     if (end > start) {
         SyntaxShift kindShift = (kind() == SyntaxKind::EmbeddedEnd ? SyntaxShift::out : SyntaxShift::in);
-        QString suffix;
+        QString suffix = tune.syntaxFlagValue(flagSuffixName);
+
+        QString suffixName;
         if (end+1 < line.length() && line.at(end) == '.' && line.at(end+1).isLetter()) {
             int nameStart = ++end;
             while (++end < line.length() && isKeywordChar(line.at(end)))
                 ;
-            suffix = line.mid(nameStart, end - nameStart);
+            suffixName = line.mid(nameStart, end - nameStart);
         }
         QChar inType = kind() == SyntaxKind::Embedded ? 'E' : 'e';
-        if (validSuffixName(tune.userSuffixType, tune.userSuffixName, inType, suffix))
-            return SyntaxBlock(this, tune.flavor, start, end, false, kindShift, kind(), inType, suffix);
+        if (convertAndCompareSuffix(suffix, inType, suffixName)) {
+            if (suffixName.isEmpty())
+                tune.removeSyntaxFlag(flagSuffixName);
+            else
+                tune.setSyntaxFlag(flagSuffixName, suffix);
+            return SyntaxBlock(this, tune, start, end, false, kindShift, kind());
+        }
     }
     return SyntaxBlock(this);
 }
@@ -372,13 +382,13 @@ SyntaxEmbeddedBody::SyntaxEmbeddedBody(SharedSyntaxData *sharedData)
 SyntaxBlock SyntaxEmbeddedBody::find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index)
 {
     Q_UNUSED(entryKind)
-    return SyntaxBlock(this, tune.flavor, index, line.length());
+    return SyntaxBlock(this, tune, index, line.length());
 }
 
-SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxEmbeddedBody::validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent)
 {
     Q_UNUSED(hasContent)
-    return SyntaxBlock(this, flavor, index, line.length());
+    return SyntaxBlock(this, tune, index, line.length());
 }
 
 SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) : SyntaxKeywordBase(kind, sharedData)
@@ -439,12 +449,12 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxTune tune, c
             ++end;
     }
     if (end > start) {
-        return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::shift, kind());
+        return SyntaxBlock(this, tune, start, end, false, SyntaxShift::shift, kind());
     }
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent)
 {
     if (kind() == SyntaxKind::ExecuteKey) {
         hasContent = false;
@@ -452,9 +462,9 @@ SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, int flavo
         while (isWhitechar(line, end)) end++;
         if (end < line.length() && line.at(end) == '.') ++end;
         while (isWhitechar(line, end)) end++;
-        return SyntaxBlock(this, flavor, index, end, SyntaxShift::shift);
+        return SyntaxBlock(this, tune, index, end, SyntaxShift::shift);
     }
-    return SyntaxKeywordBase::validTail(line, index, flavor, hasContent);
+    return SyntaxKeywordBase::validTail(line, index, tune, hasContent);
 }
 
 AssignmentSystemData::AssignmentSystemData(SharedSyntaxData *sharedData)
@@ -490,16 +500,16 @@ SyntaxBlock AssignmentSystemData::find(const SyntaxKind entryKind, SyntaxTune tu
     if (end > start) {
         if (tune.flavor & flavorBindLabel)
             tune.flavor -= flavorBindLabel;
-        return SyntaxBlock(this, tune.flavor, index, end, false, SyntaxShift::shift, kind());
+        return SyntaxBlock(this, tune, index, end, false, SyntaxShift::shift, kind());
     }
     return SyntaxBlock(this);
 }
 
-SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock AssignmentSystemData::validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent)
 {
     Q_UNUSED(line)
     Q_UNUSED(index)
-    Q_UNUSED(flavor)
+    Q_UNUSED(tune)
     Q_UNUSED(hasContent)
     return SyntaxBlock(this);
 }
@@ -561,16 +571,16 @@ SyntaxBlock SyntaxSimpleKeyword::find(const SyntaxKind entryKind, SyntaxTune tun
             --start;
             ++end;
         }
-        return SyntaxBlock(this, tune.flavor, start, end, false, SyntaxShift::skip);
+        return SyntaxBlock(this, tune, start, end, false, SyntaxShift::skip);
     }
     return SyntaxBlock(this);
 }
 
-SyntaxBlock SyntaxSimpleKeyword::validTail(const QString &line, int index, int flavor, bool &hasContent)
+SyntaxBlock SyntaxSimpleKeyword::validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent)
 {
     Q_UNUSED(line)
     Q_UNUSED(index)
-    Q_UNUSED(flavor)
+    Q_UNUSED(tune)
     Q_UNUSED(hasContent)
     return SyntaxBlock(this);
 }

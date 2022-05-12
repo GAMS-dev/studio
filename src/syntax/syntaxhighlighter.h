@@ -56,10 +56,13 @@ private:
 
 private:
     struct CodeRelation {
-        CodeRelation(BlockCode code, CodeRelationIndex prevCri) : blockCode(code), prevCodeRelIndex(prevCri) {}
+        CodeRelation(BlockCode code, SyntaxFlags sFlags, CodeRelationIndex prevCri)
+            : blockCode(code), syntaxFlags(sFlags), prevCodeRelIndex(prevCri) {}
         bool operator ==(const CodeRelation &other) {
-            return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex; }
+            return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex
+                    && syntaxFlags == other.syntaxFlags; }
         BlockCode blockCode;
+        SyntaxFlags syntaxFlags;
         CodeRelationIndex prevCodeRelIndex;
     };
 //    typedef QPair<KindIndex, CodeIndex> KindCodeX;
@@ -69,8 +72,8 @@ private:
     void initKind(int debug, SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
     void initKind(SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
 
-    int addCode(BlockCode code, CodeRelationIndex parentIndex);
-    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, int nest = 0);
+    int addCode(BlockCode code, SyntaxFlags synFlags, CodeRelationIndex parentIndex);
+    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, SyntaxFlags synFlags, int nest = 0);
     int purgeCode(CodeRelationIndex cri);
     QString codeDeb(CodeRelationIndex cri);
     void syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor);
