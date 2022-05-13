@@ -1,8 +1,8 @@
-Version 1.10.2  *
+Version 1.10.2
 ==================
 - fixed crash on closing a tab when project settings are active
-- ensure the right file gets the focus on starting Studio
 - fixed closing behavior of search dialog on Windows when using X button
+- ensure the right file gets the focus on starting Studio
 
 Version 1.10.1
 ==================
