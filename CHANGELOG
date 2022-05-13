@@ -2,6 +2,12 @@ Version 1.11.0  *
 ==================
 - added html format on copying text to clipboard
 
+Version 1.10.2
+==================
+- fixed crash on closing a tab when project settings are active
+- fixed closing behavior of search dialog on Windows when using X button
+- ensure the right file gets the focus on starting Studio
+
 Version 1.10.1
 ==================
 - added automatic deactivation of search selection when leaving "Selection" search scope

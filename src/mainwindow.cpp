@@ -176,6 +176,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->hide();
 #endif
 
+    mRecent.init(this);
     initToolBar();
     HeaderViewProxy *hProxy = HeaderViewProxy::instance();
     hProxy->setSepColor(palette().midlight().color());
@@ -274,6 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
+    connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -338,7 +340,7 @@ void MainWindow::watchProjectTree()
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
         // to actualize the project if changed
-        mRecent.setEditor(mRecent.editor(), this);
+        mRecent.setEditor(mRecent.editor());
         updateRunState();
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
@@ -2619,6 +2621,7 @@ void MainWindow::closePinView()
     QWidget *edit = mPinView->widget();
     if (edit) {
         mPinView->removeWidget();
+        mRecent.removeEditor(edit);
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) fm->removeEditor(edit);
         edit->deleteLater();
@@ -3453,7 +3456,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
-            mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget(), this);
+            mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget());
             if (FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor())) {
                 fm->editToTop(mRecent.editor());
                 ui->actionPin_Right->setEnabled(fm->isPinnable());
@@ -4126,10 +4129,10 @@ void MainWindow::closeFileEditors(const FileId fileId)
                PExProjectNode *project = mRecent.project()->assignedProject();
                project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
             }
-            mRecent.reset();
         }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
+        mRecent.removeEditor(edit);
         fm->removeEditor(edit);
         edit->deleteLater();
     }
@@ -4232,10 +4235,10 @@ void MainWindow::on_actionSettings_triggered()
 
 void MainWindow::on_actionSearch_triggered()
 {
-    openSearchDialog();
+    toggleSearchDialog();
 }
 
-void MainWindow::openSearchDialog()
+void MainWindow::toggleSearchDialog()
 {
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
@@ -4514,7 +4517,6 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
             }
         }
     }
-    if (ui->mainTabs->currentWidget() == mWp) mRecent.reset();
     QTimer::singleShot(0, this, SLOT(initAutoSave()));
     return true;
 }
