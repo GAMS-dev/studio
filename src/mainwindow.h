@@ -141,7 +141,7 @@ public:
     void ensureInScreen();
     void setExtendedEditorVisibility(bool visible);
     void resetLoadAmount();
-    void openSearchDialog();
+    void toggleSearchDialog();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr,
                  std::unique_ptr<AbstractProcess> process = nullptr);

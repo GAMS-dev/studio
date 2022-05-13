@@ -29,23 +29,23 @@ class MainWindow;
 class RecentData
 {
 public:
-    RecentData() { reset(); }
+    RecentData();
+    void init(MainWindow *mainWindow);
 
-    void reset();
-    void setEditor(QWidget* edit, MainWindow* window);
+    void setEditor(QWidget* edit);
+    void removeEditor(QWidget* edit);
 
-    QWidget* editor() const { return mEditor; }
-    PExProjectNode* project() const {return mProject; }
+    QWidget* editor() const;
+    PExProjectNode* project() const;
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
-    QWidget* persistentEditor() const { return mPersistentEditor; }
+    QWidget* persistentEditor() const;
 
 private:
-    QWidget* mEditor = nullptr;
+    MainWindow *mMainWindow = nullptr;
+    QVector<QWidget*> mEditList;
     FileId mEditFileId;
-    PExProjectNode* mProject = nullptr;
     QString mPath;
-    QWidget* mPersistentEditor = nullptr;
 };
 
 } // namespace studio
