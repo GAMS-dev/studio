@@ -61,14 +61,8 @@ protected:
     void setFormat(int start, int count, const QTextCharFormat &format);
     QTextCharFormat format(int pos) const;
 
-    int previousBlockState() const;
-    int currentBlockState() const;
-    void setCurrentBlockState(int newState);
-
-    void setCurrentBlockUserData(QTextBlockUserData *data);
-    QTextBlockUserData *currentBlockUserData() const;
-    QTextBlockUserData *previousBlockUserData() const;
-
+    int previousBlockCRIndex() const;
+    void setCurrentBlockCRIndex(int newState);
     QTextBlock currentBlock() const;
 
 private:

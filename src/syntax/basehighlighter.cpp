@@ -198,7 +198,7 @@ QTextCharFormat BaseHighlighter::format(int pos) const
     return mFormatChanges.at(pos);
 }
 
-int BaseHighlighter::previousBlockState() const
+int BaseHighlighter::previousBlockCRIndex() const
 {
     if (!mCurrentBlock.isValid()) return -1;
     const QTextBlock previous = mCurrentBlock.previous();
@@ -207,34 +207,9 @@ int BaseHighlighter::previousBlockState() const
     return previous.userState();
 }
 
-int BaseHighlighter::currentBlockState() const
-{
-    if (!mCurrentBlock.isValid()) return -1;
-    return mCurrentBlock.userState();
-}
-
-void BaseHighlighter::setCurrentBlockState(int newState)
+void BaseHighlighter::setCurrentBlockCRIndex(int newState)
 {
     if (mCurrentBlock.isValid()) mCurrentBlock.setUserState(newState);
-}
-
-void BaseHighlighter::setCurrentBlockUserData(QTextBlockUserData *data)
-{
-    if (mCurrentBlock.isValid()) mCurrentBlock.setUserData(data);
-}
-
-QTextBlockUserData *BaseHighlighter::currentBlockUserData() const
-{
-    if (mCurrentBlock.isValid()) return nullptr;
-    return mCurrentBlock.userData();
-}
-
-QTextBlockUserData *BaseHighlighter::previousBlockUserData() const
-{
-    if (!mCurrentBlock.isValid()) return nullptr;
-    const QTextBlock previous = mCurrentBlock.previous();
-    if (!previous.isValid()) return nullptr;
-    return previous.userData();
 }
 
 QTextBlock BaseHighlighter::currentBlock() const

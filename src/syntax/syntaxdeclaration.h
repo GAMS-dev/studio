@@ -74,7 +74,7 @@ public:
     ~SyntaxKeywordBase() override;
     SyntaxKeywordBase(SyntaxKind kind, SharedSyntaxData* sharedData)
         : SyntaxAbstract(kind, sharedData), mExtraKeywordChars("._") {}
-    SyntaxBlock validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent) override;
+    SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
     QStringList docForLastRequest() const override;
 
 protected:
@@ -95,14 +95,14 @@ class SyntaxDeclaration: public SyntaxKeywordBase
 {
 public:
     SyntaxDeclaration(SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
 };
 
 class SyntaxPreDeclaration: public SyntaxKeywordBase
 {
 public:
     SyntaxPreDeclaration(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
 };
 
 
@@ -110,15 +110,15 @@ class SyntaxReserved: public SyntaxKeywordBase
 {
 public:
     SyntaxReserved(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
 };
 
 class SyntaxSimpleKeyword: public SyntaxKeywordBase
 {
 public:
     SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
 
 class SyntaxSubsetKey: public SyntaxKeywordBase
@@ -126,31 +126,31 @@ class SyntaxSubsetKey: public SyntaxKeywordBase
     QVector<int> mOtherKey;
 public:
     SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
 
 class SyntaxEmbedded: public SyntaxKeywordBase
 {
 public:
     SyntaxEmbedded(SyntaxKind kind, SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
 };
 
 class SyntaxEmbeddedBody: public SyntaxAbstract
 {
 public:
     SyntaxEmbeddedBody(SharedSyntaxData* sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
 
 class AssignmentSystemData: public SyntaxKeywordBase
 {
 public:
     AssignmentSystemData(SharedSyntaxData *sharedData);
-    SyntaxBlock find(const SyntaxKind entryKind, SyntaxTune tune, const QString &line, int index) override;
-    SyntaxBlock validTail(const QString &line, int index, SyntaxTune tune, bool &hasContent) override;
+    SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
+    SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
 
 constexpr inline uint qHash(SyntaxKind key, uint seed = 0) noexcept { return uint(key) ^ seed; }
