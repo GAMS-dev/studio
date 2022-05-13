@@ -303,7 +303,7 @@ protected:
         const QChar& ch(line.at(index));
         return (ch.category()==QChar::Separator_Space || ch == '\t' || ch == '\n' || ch == '\r');
     }
-    bool convertAndCompareSuffix(QString &suffix, QChar outType, const QString &outName);
+    bool hasMatchingSuffix(QChar typeChar, SyntaxState &state, const QString &line, int &pos, QString &suffix);
 
 protected:
     SyntaxKind mKind;
@@ -312,6 +312,9 @@ protected:
     SyntaxTransitions mSubKinds;
     SyntaxTransitions mEmptyLineKinds;
     SharedSyntaxData *mSharedData = nullptr;
+
+private:
+    bool convertAndCompareSuffix(QString &suffix, QChar outType, const QString &outName);
 };
 
 

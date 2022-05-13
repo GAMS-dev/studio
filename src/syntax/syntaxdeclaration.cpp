@@ -353,20 +353,8 @@ SyntaxBlock SyntaxEmbedded::find(const SyntaxKind entryKind, SyntaxState state, 
     if (end > start) {
         SyntaxShift kindShift = (kind() == SyntaxKind::EmbeddedEnd ? SyntaxShift::out : SyntaxShift::in);
         QString suffix = state.syntaxFlagValue(flagSuffixName);
-
-        QString suffixName;
-        if (end+1 < line.length() && line.at(end) == '.' && line.at(end+1).isLetter()) {
-            int nameStart = ++end;
-            while (++end < line.length() && isKeywordChar(line.at(end)))
-                ;
-            suffixName = line.mid(nameStart, end - nameStart);
-        }
         QChar inType = kind() == SyntaxKind::Embedded ? 'E' : 'e';
-        if (convertAndCompareSuffix(suffix, inType, suffixName)) {
-            if (suffixName.isEmpty())
-                state.removeSyntaxFlag(flagSuffixName);
-            else
-                state.setSyntaxFlag(flagSuffixName, suffix);
+        if (hasMatchingSuffix(inType, state, line, end, suffix)) {
             return SyntaxBlock(this, state, start, end, false, kindShift, kind());
         }
     }

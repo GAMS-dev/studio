@@ -93,6 +93,24 @@ int SyntaxAbstract::endOfParentheses(const QString &line, const int &start, cons
     return line.length();
 }
 
+bool SyntaxAbstract::hasMatchingSuffix(QChar typeChar, SyntaxState &state, const QString &line, int &pos, QString &suffix)
+{
+    QString suffixName;
+    if (pos+1 < line.length() && line.at(pos) == '.' && line.at(pos+1).isLetter()) {
+        int nameStart = ++pos;
+        while (++pos < line.length() && isKeywordChar(line.at(pos)))
+            ;
+        suffixName = line.mid(nameStart, pos - nameStart);
+    }
+    if (!convertAndCompareSuffix(suffix, typeChar, suffixName)) return false;
+    if (typeChar.isLower())
+        state.removeSyntaxFlag(flagSuffixName);
+    else
+        state.setSyntaxFlag(flagSuffixName, suffix);
+    return true;
+
+}
+
 bool SyntaxAbstract::convertAndCompareSuffix(QString &suffix, QChar outType, const QString &outName)
 {
     // No suffix-block active
