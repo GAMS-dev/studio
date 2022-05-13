@@ -50,10 +50,10 @@ void TestBlockCode::testFile()
     QCOMPARE(bc.setFlavor(-1), false);
     QCOMPARE(bc.flavor(), 0);
 
-    QCOMPARE(bc.setDepth(511), true);
-    QCOMPARE(bc.depth(), 511);
-    QCOMPARE(bc.setDepth(512), false);
-    QCOMPARE(bc.depth(), 511);
+    QCOMPARE(bc.setDepth(1023), true);
+    QCOMPARE(bc.depth(), 1023);
+    QCOMPARE(bc.setDepth(1024), false);
+    QCOMPARE(bc.depth(), 1023);
     QCOMPARE(bc.setDepth(-1), false);
     QCOMPARE(bc.depth(), 0);
 
@@ -63,9 +63,6 @@ void TestBlockCode::testFile()
     QCOMPARE(bc.parser(), 7);
     QCOMPARE(bc.setParser(-1), false);
     QCOMPARE(bc.parser(), 0);
-
-    QCOMPARE(bc.setDeepCheck(true), true);
-    QCOMPARE(bc.setDeepCheck(false), true);
 
     QCOMPARE(bc.maxValue(), 0x7fffffff);
 }

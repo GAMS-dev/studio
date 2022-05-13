@@ -31,12 +31,11 @@ namespace syntax {
 class BlockCode
 {
     // in sum the bounds must not use more than 31 bits (to fit in positive integer)
-    static const int b1 = 512;      // [9 bits] kind bound
-    static const int b2 = 512;      // [9 bits] flavor (sub-kind) bound
-    static const int b3 = 512;      // [9 bits] nesting-depth bound (extended info if depth==511)
-    static const int b4 = 8;        // [3 bits] parser-type bound
-    static const int b5 = 2;        // [1 bit ] marks overflow (additionally compare BlockData changes)
-    // bits: 5444333333333222222222111111111
+    static const int b1 = 512;      // [ 9 bits] kind bound
+    static const int b2 = 512;      // [ 9 bits] flavor (sub-kind) bound
+    static const int b3 = 1024;     // [10 bits] nesting-depth bound (extended info if depth==1023)
+    static const int b4 = 8;        // [ 3 bits] parser-type bound
+    // bits: 4443333333333222222222111111111
 
     int mCode;
 public:
@@ -54,7 +53,6 @@ public:
     int depth() const { return (mCode / b1 / b2) % b3; }  // up to one element on the kind-stack may have nesting
     bool externDepth() const { return depth() == b3-1; }
     int parser() const { return (mCode / b1 / b2 / b3) % b4; } // parser==0 is GAMS syntax, others like python may be added
-    bool deepCheck() const { return (mCode / b1 / b2 / b3 / b4); } //
 
     bool operator !=(BlockCode other) const {
         return mCode != other.mCode;
@@ -85,15 +83,9 @@ public:
         mCode = mCode + ((val - parser()) * b1*b2*b3);
         return val == _parser;
     }
-    bool setDeepCheck(bool _check) {
-        int flag = b1*b2*b3*b4;
-        if (_check) mCode = mCode | flag;
-        else mCode = mCode & ~flag;
-        return deepCheck() == _check;
-    }
 
     static qint64 maxValue() {
-        return qint64(b1)*b2*b3*b4*b5 - 1;
+        return qint64(b1)*b2*b3*b4 - 1;
     }
 };
 

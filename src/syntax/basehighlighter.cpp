@@ -113,7 +113,7 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
     if (mTime.isNull()) mTime = QTime::currentTime();
 
     while (!mAborted && mCurrentBlock.isValid() && (forceHighlightOfNextBlock || !mDirtyBlocks.isEmpty())) {
-        int prevState(mCurrentBlock.userState());
+        const int prevState(mCurrentBlock.userState());
 
         reformatCurrentBlock();
 
