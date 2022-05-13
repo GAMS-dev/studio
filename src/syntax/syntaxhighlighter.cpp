@@ -146,7 +146,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     QVector<QPoint> postHighlights;
     postHighlights << QPoint(0, text.length()-1);
     QTextBlock textBlock = currentBlock();
-    BlockData *prevBlockData = static_cast<BlockData*>(previousBlockUserData());
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
 
@@ -172,7 +171,6 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         SyntaxTune tune;
         tune.flavor = codeRel.blockCode.flavor();
         tune.setSyntaxFlags(codeRel.syntaxFlags);
-        SyntaxFlags syntaxFlags = codeRel.syntaxFlags;
         bool stack = true;
          // detect end of valid trailing characters for current syntax
         SyntaxBlock tailBlock = syntax->validTail(text, index, tune, stack);
@@ -203,7 +201,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
             if (!tailBlock.isValid()) {
                 // no valid characters found, mark error
                 index = text.length();
-                cri = getCode(cri, SyntaxShift::reset, tailBlock, syntaxFlags);
+                cri = getCode(cri, SyntaxShift::reset, tailBlock, tailBlock.tune.syntaxFlags());
                 continue;
             }
             nextBlock = tailBlock;
@@ -219,7 +217,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
                               + "  (tail from " + syntax->name() + ")")
                         scanParentheses(text, tailBlock, syntax->kind(), nestingData);
                     }
-                    cri = getCode(cri, tailBlock.shift, tailBlock, syntaxFlags, 0);
+                    cri = getCode(cri, tailBlock.shift, tailBlock, tailBlock.tune.syntaxFlags(), 0);
                 }
             }
         }
@@ -242,7 +240,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
         }
         scanParentheses(text, nextBlock, syntax->kind(), nestingData);
         index = nextBlock.end;
-        cri = getCode(cri, nextBlock.shift, nextBlock, syntaxFlags, 0);
+        cri = getCode(cri, nextBlock.shift, nextBlock, nextBlock.tune.syntaxFlags(), 0);
 
         if (scanBlock) {
             QMap<int, QPair<int, int> >::Iterator it = mScannedBlockSyntax.insert(nextBlock.end,
