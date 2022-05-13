@@ -169,6 +169,10 @@ typedef QSharedPointer<SyntaxFlagData> SyntaxFlags;
 class SyntaxTune
 {
     SyntaxFlags mSyntaxFlags;
+    void clone() {
+        SyntaxFlags copy = mSyntaxFlags;
+        mSyntaxFlags = SyntaxFlags(copy.isNull() ? new SyntaxFlagData() : new SyntaxFlagData(*copy.get()));
+    }
 public:
     int flavor = 0;
     SyntaxFlags syntaxFlags() { return mSyntaxFlags; }
@@ -178,14 +182,17 @@ public:
         return mSyntaxFlags->value(flag);
     }
     void setSyntaxFlag(SyntaxFlag flag, QString value) {
-        if (mSyntaxFlags.isNull()) mSyntaxFlags = SyntaxFlags(new SyntaxFlagData());
+        clone();
         mSyntaxFlags->insert(flag, value);
     }
     void removeSyntaxFlag(SyntaxFlag flag) {
         if (!mSyntaxFlags.isNull()) {
+            if (mSyntaxFlags->size() == 1 && mSyntaxFlags->contains(flag)) {
+                mSyntaxFlags = nullptr;
+                return;
+            }
+            clone();
             mSyntaxFlags->remove(flag);
-            if (mSyntaxFlags->isEmpty())
-                mSyntaxFlags = SyntaxFlags();
         }
     }
 };

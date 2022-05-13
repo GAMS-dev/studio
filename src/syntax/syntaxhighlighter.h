@@ -58,9 +58,18 @@ private:
     struct CodeRelation {
         CodeRelation(BlockCode code, SyntaxFlags sFlags, CodeRelationIndex prevCri)
             : blockCode(code), syntaxFlags(sFlags), prevCodeRelIndex(prevCri) {}
-        bool operator ==(const CodeRelation &other) {
+        bool operator ==(const CodeRelation &other) const {
             return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex
-                    && syntaxFlags == other.syntaxFlags; }
+                    && (syntaxFlags == other.syntaxFlags || equalFlags(other.syntaxFlags)); }
+        bool equalFlags(const SyntaxFlags &other) const {
+            if (syntaxFlags.isNull() || other.isNull() || syntaxFlags->size() != other->size()) return false;
+            SyntaxFlagData::const_iterator iter;
+            for (iter = syntaxFlags->constBegin(); iter != syntaxFlags->constEnd() ; ++iter) {
+                if (!other->contains(iter.key()) || iter.value() != other->value(iter.key()))
+                    return false;
+            }
+            return true;
+        }
         BlockCode blockCode;
         SyntaxFlags syntaxFlags;
         CodeRelationIndex prevCodeRelIndex;
