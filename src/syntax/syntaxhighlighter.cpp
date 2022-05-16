@@ -304,7 +304,9 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     blockData->setParentheses(nestingData);
     textBlock.setUserData(blockData);
     setCurrentBlockCRIndex(purgeCode(cri));
-    TDEB(true, text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingData.impact()) + "]")
+
+    TDEB(true, text + "      _" + codeDeb(cri) + " [nesting " + QString::number(nestingData.impact()) + "]"
+         + (mCodes.at(cri).syntaxFlags.isNull() ? "" : " @" + mCodes.at(cri).syntaxFlags->value(flagSuffixName)))
 }
 
 void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
@@ -365,7 +367,6 @@ const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
 
 const QString SyntaxHighlighter::cValidParentheses("{[(}])/");
 const QString SyntaxHighlighter::cSpecialBlocks("\"\'\"\'"); // ("[\"\']\"\'");
-const QString SyntaxHighlighter::cFlavorChars("TtCcPpIiOoFfUu");
 
 void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData)
 {

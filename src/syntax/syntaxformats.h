@@ -134,6 +134,7 @@ enum DcoFlavor {
     flavorIf0 = 12,
     flavorFold1 = 13,
     flavorFold0 = 14,
+
     flavorInc = 15,
     flavorAbort = 16,
     flavorCall = 17,
@@ -141,6 +142,7 @@ enum DcoFlavor {
     flavorEmbed1 = 19,
     flavorEmbed0 = 20,
 };
+const QString cFlavorChars("TtCcPpIiOoFfUu");
 
 enum class SyntaxShift {
     shift,      ///> replace current-top-kind by this

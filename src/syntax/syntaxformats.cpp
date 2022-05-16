@@ -98,7 +98,7 @@ bool SyntaxAbstract::hasMatchingSuffix(QChar typeChar, SyntaxState &state, const
     QString suffixName;
     if (pos+1 < line.length() && line.at(pos) == '.' && line.at(pos+1).isLetter()) {
         int nameStart = ++pos;
-        while (++pos < line.length() && isKeywordChar(line.at(pos)))
+        while (++pos < line.length() && isKeywordChar(line.at(pos), QString("_")))
             ;
         suffixName = line.mid(nameStart, pos - nameStart);
     }
@@ -280,19 +280,27 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
     if (!match.hasMatch()) return SyntaxBlock(this);
     SyntaxState outState = state;
     outState.flavor = mFlavors.value(match.captured(2).toLower(), 0);
+    QChar flavChar = (outState.flavor >= flavorEcho1 && outState.flavor <= flavorPut0)
+            ? cFlavorChars.at(outState.flavor-1) : QChar();
     mLastEndIKey = mEndDCOlow.indexOf(match.captured(2).toLower());
+    int end = match.capturedEnd(2);
     if (entryKind == SyntaxKind::CommentBlock) {
         if (mLastEndIKey == 0)
             return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::IgnoredBlock || entryKind == SyntaxKind::IgnoredHead) {
-        if (state.flavor == 3 && match.captured(2).compare("offecho", Qt::CaseInsensitive) == 0)
-            return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
-        if (state.flavor == 5 && mLastEndIKey == 1)
-            return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+        QString suffix = state.syntaxFlagValue(flagSuffixName);
+        if (state.flavor == flavorEcho1 && outState.flavor == flavorEcho0) {
+            if (hasMatchingSuffix(flavChar, outState, line, end, suffix))
+                return SyntaxBlock(this, outState, match.capturedStart(1), end, SyntaxShift::out);
+        }
+        if (state.flavor == flavorPut1 && mLastEndIKey == 1)
+            if (hasMatchingSuffix(flavChar, outState, line, end, suffix))
+                return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
-        if (mLastEndIKey > 1)
+        QString suffix = state.syntaxFlagValue(flagSuffixName);
+        if (mLastEndIKey > 1 && hasMatchingSuffix(flavChar, outState, line, end, suffix))
             return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSharedData->commentEndLine()) {
@@ -320,15 +328,20 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
     SyntaxKind next = mSpecialKinds.value(match.captured(2).toLower(), SyntaxKind::DcoBody);
     mLastIKey = mDCOlow.indexOf(match.captured(2).toLower());
     if (mLastIKey >= 0) {
+        if (!flavChar.isNull()) {
+            QString suffix = state.syntaxFlagValue(flagSuffixName);
+            if (!hasMatchingSuffix(flavChar, outState, line, end, suffix))
+                return SyntaxBlock(this);
+        }
         bool atEnd = match.capturedEnd(0) >= line.length();
         if (next == SyntaxKind::IgnoredHead && atEnd)
             next = SyntaxKind::IgnoredBlock;
         bool isMultiLine = next == SyntaxKind::CommentBlock || next == SyntaxKind::IgnoredBlock
                 || next == SyntaxKind::EmbeddedBody;
         SyntaxShift shift = (atEnd && !isMultiLine) ? SyntaxShift::skip : SyntaxShift::in;
-        return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), false, shift, next);
+        return SyntaxBlock(this, outState, match.capturedStart(1), end, false, shift, next);
     } else {
-        return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), next, true);
+        return SyntaxBlock(this, outState, match.capturedStart(1), end, next, true);
     }
 }
 

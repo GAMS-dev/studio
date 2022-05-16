@@ -105,7 +105,6 @@ private:
     static const QVector<SyntaxKind> cInvalidParenthesesSyntax;
     static const QString cValidParentheses;
     static const QString cSpecialBlocks;
-    static const QString cFlavorChars;
 };
 
 } // namespace syntax
