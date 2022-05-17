@@ -296,7 +296,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
         }
         if (state.flavor == flavorPut1 && mLastEndIKey == 1)
             if (hasMatchingSuffix(flavChar, outState, line, end, suffix))
-                return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+                return SyntaxBlock(this, outState, match.capturedStart(1), end, SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
         QString suffix = state.syntaxFlagValue(flagSuffixName);
