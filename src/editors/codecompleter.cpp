@@ -312,6 +312,7 @@ void CodeCompleterModel::initData()
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
+    mTempDataStart = mData.size();
 }
 
 void CodeCompleterModel::addDynamicData()
@@ -386,25 +387,43 @@ void CodeCompleterModel::setActiveNameSuffix(QString suffix)
     if (mLastNameSuffix == suffix) return;
     if (mType.value(mData.size()) == ccSufName)
         mType.remove(mData.size());
+    QList<int> removedDescriptions;
     while (mData.size() > mTempDataStart) {
+        beginRemoveRows(QModelIndex(), mTempDataStart, mTempDataStart);
         mData.removeAt(mTempDataStart);
-        mDescription.removeAt(mTempDataStart);
+        if (!removedDescriptions.contains(mDescriptIndex.at(mTempDataStart)))
+            removedDescriptions << mDescriptIndex.at(mTempDataStart);
+        mDescriptIndex.removeAt(mTempDataStart);
+        endRemoveRows();
+    }
+    for (const int &i : qAsConst(removedDescriptions)) {
+        mDescription.removeAt(i);
     }
     mLastNameSuffix = suffix;
+    QString suffName = suffix.right(suffix.length()-1);
     if (suffix.length() < 2) return;
 
     QStringList addData;
-    QStringList addDescript;
+    int lastAddedDescIndex = -1;
+
     for (int i = 0; i < mData.length(); ++i) {
-        if (suffix.at(0) == 'e') {
-            if (mData.at(i).compare("$offEcho", Qt::CaseInsensitive)) {
-                addData << mData.at(i) + '.' + suffix.right(suffix.length()-1);
-                addDescript << mDescription.at(i);
+        if (suffix.at(0) == 'c') {
+            if (mData.at(i).compare("$offEcho", Qt::CaseInsensitive) == 0) {
+                addData << mData.at(i) + '.' + suffName;
+                if (lastAddedDescIndex != i) {
+                    mDescription << mDescription.at(i) + " (name: " +suffName+ ")";
+                    lastAddedDescIndex = i;
+                }
+                mDescriptIndex << mDescription.size() - 1;
             }
         }
     }
+    beginInsertRows(QModelIndex(), mData.size(), mData.size() + addData.size() - 1);
+    for (int i = 0; i < addData.size(); ++i) {
+        mData << addData.at(i);
+    }
     mType.insert(mData.length(), ccSufName);
-
+    endInsertRows();
 }
 
 bool CodeCompleterModel::hasActiveNameSuffix()
@@ -433,11 +452,12 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     }
     if (type == ccDcoEnd) {
         switch (mSubType) {
-        case 1: if (!text.toLower().startsWith("$offtext")) return false; break;
-        case 2: if (!text.toLower().startsWith("$offecho")) return false; break;
-        case 3: if (!text.toLower().startsWith("$offput")) return false; break;
-        case 4: if (!text.toLower().startsWith("$offembeddedcode")) return false; break;
-        case 5: if (!text.toLower().startsWith("$endembeddedcode") && !text.toLower().startsWith("$pauseembeddedcode"))
+        case 1: if (!text.startsWith("$offtext", Qt::CaseInsensitive)) return false; break;
+        case 2: if (!text.startsWith("$offecho", Qt::CaseInsensitive)) return false; break;
+        case 3: if (!text.startsWith("$offput", Qt::CaseInsensitive)) return false; break;
+        case 4: if (!text.startsWith("$offembeddedcode", Qt::CaseInsensitive)) return false; break;
+        case 5: if (!text.startsWith("$endembeddedcode", Qt::CaseInsensitive) &&
+                    !text.startsWith("$pauseembeddedcode", Qt::CaseInsensitive))
                 return false;
             break;
         default: ;
