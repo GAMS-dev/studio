@@ -348,6 +348,35 @@ void CodeCompleterModel::addDynamicData()
     mTempDataStart = mData.size();
 }
 
+void CodeCompleterModel::removeTempData(CodeCompleterType type)
+{
+    QPoint range = mTempDataIndicees.value(type, QPoint(-1,-1));
+    if (range.x() < 0 || range.y() < 0) return;
+    if (mData.size() <= range.x() || mData.size() <= range.y()) return;
+
+    QList<int> removedDescriptions;
+    beginRemoveRows(QModelIndex(), range.x(), range.y());
+
+    for (int i = range.y(); i >= range.x(); --i) { // backwards!
+        mData.removeAt(i);
+        if (!removedDescriptions.contains(mDescriptIndex.at(i)))
+            removedDescriptions << mDescriptIndex.at(i);
+        mDescriptIndex.removeAt(i);
+    }
+    for (const int &i : qAsConst(removedDescriptions)) {
+        mDescription.removeAt(i);
+    }
+    QMap<int, CodeCompleterType> addType;
+    QMap<int, CodeCompleterType>::iterator it = mType.find(range.y());
+    it = mType.erase(it);
+    while (it != mType.end()) {
+        addType.insert(it.key() - range.y() + range.x(), it.value());
+        it = mType.erase(it);
+    }
+    mType.insert(addType);
+    endRemoveRows();
+}
+
 void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
 {
     bool isDynamic = (mCasing == caseDynamic);
@@ -385,20 +414,8 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
 void CodeCompleterModel::setActiveNameSuffix(QString suffix)
 {
     if (mLastNameSuffix == suffix) return;
-    if (mType.value(mData.size()) == ccSufName)
-        mType.remove(mData.size());
-    QList<int> removedDescriptions;
-    while (mData.size() > mTempDataStart) {
-        beginRemoveRows(QModelIndex(), mTempDataStart, mTempDataStart);
-        mData.removeAt(mTempDataStart);
-        if (!removedDescriptions.contains(mDescriptIndex.at(mTempDataStart)))
-            removedDescriptions << mDescriptIndex.at(mTempDataStart);
-        mDescriptIndex.removeAt(mTempDataStart);
-        endRemoveRows();
-    }
-    for (const int &i : qAsConst(removedDescriptions)) {
-        mDescription.removeAt(i);
-    }
+    removeTempData(ccSufName);
+
     mLastNameSuffix = suffix;
     QString suffName = suffix.right(suffix.length()-1);
     if (suffix.length() < 2) return;

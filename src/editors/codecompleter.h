@@ -86,6 +86,7 @@ private:
     QStringList mDescription;
     QList<int> mDescriptIndex;
     QMap<int, CodeCompleterType> mType;
+    QMap<CodeCompleterType, QPoint> mTempDataIndicees;
     CodeCompleterCasing mCasing;
     int mDollarGroupRow = -1;
     int mPercentGroupRow = -1;
