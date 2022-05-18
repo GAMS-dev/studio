@@ -21,6 +21,8 @@
 #define SYNTAXFORMATS_H
 
 #include "theme.h"
+#include "syntaxcommon.h"
+
 #include <QTextCharFormat>
 #include <QHash>
 #include <QStringList>
@@ -161,9 +163,6 @@ struct SyntaxTransition
 };
 typedef QList<SyntaxKind> SyntaxTransitions;
 
-enum SyntaxFlag {
-    flagSuffixName,
-};
 typedef QHash<SyntaxFlag, QString> SyntaxFlagData;
 typedef QSharedPointer<SyntaxFlagData> SyntaxFlags;
 
@@ -445,7 +444,6 @@ public:
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
-
 
 
 } // namespace syntax

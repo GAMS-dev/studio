@@ -230,6 +230,7 @@ void FileMeta::refreshType()
                     disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
                     disconnect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
                     disconnect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+                    disconnect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
                     disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
                 }
             }
@@ -245,6 +246,7 @@ void FileMeta::refreshType()
                     connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
                     connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
                     connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+                    connect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
                     connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
                 }
             }
@@ -517,6 +519,7 @@ void FileMeta::addEditor(QWidget *edit)
             connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
             connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
             connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+            connect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
             connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
         }
 
@@ -604,8 +607,9 @@ void FileMeta::removeEditor(QWidget *edit)
     if (scEdit && mHighlighter) {
         scEdit->setCompleter(nullptr);
         disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
-        connect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
-        connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+        disconnect(scEdit, &CodeEdit::scanSyntax, mHighlighter, &syntax::SyntaxHighlighter::scanSyntax);
+        disconnect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
+        disconnect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
         disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
     }
 }

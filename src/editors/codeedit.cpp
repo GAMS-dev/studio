@@ -1376,6 +1376,7 @@ void CodeEdit::showCompleter()
         if (mCompleter->codeEdit()) mCompleter->disconnect();
         mCompleter->setCodeEdit(this);
         connect(mCompleter, &CodeCompleter::scanSyntax, this, &CodeEdit::scanSyntax);
+        connect(mCompleter, &CodeCompleter::syntaxFlagData, this, &CodeEdit::syntaxFlagData);
         mCompleter->ShowIfData();
     }
 }

@@ -345,6 +345,13 @@ void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &synt
     }
 }
 
+void SyntaxHighlighter::syntaxFlagData(QTextBlock block, SyntaxFlag flag, QString &value)
+{
+    SyntaxFlagData *data = mCodes.at(block.userState()).syntaxFlags.get();
+    if (!data) return;
+    value = data->value(flag);
+}
+
 const QVector<SyntaxKind> SyntaxHighlighter::cInvalidParenthesesSyntax = {
     SyntaxKind::Dco,
     SyntaxKind::DcoBody,

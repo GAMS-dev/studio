@@ -50,6 +50,7 @@ public slots:
     void syntaxKind(int position, int &intKind, int &flavor);
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
+    void syntaxFlagData(QTextBlock block, SyntaxFlag flag, QString &value);
 
 private:
     void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData);

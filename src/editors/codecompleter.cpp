@@ -344,6 +344,7 @@ void CodeCompleterModel::addDynamicData()
     mData = data;
     mDescriptIndex = descriptIndex;
     mType = iType;
+    mTempDataStart = mData.size();
 }
 
 void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
@@ -380,6 +381,37 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+void CodeCompleterModel::setActiveNameSuffix(QString suffix)
+{
+    if (mLastNameSuffix == suffix) return;
+    if (mType.value(mData.size()) == ccSufName)
+        mType.remove(mData.size());
+    while (mData.size() > mTempDataStart) {
+        mData.removeAt(mTempDataStart);
+        mDescription.removeAt(mTempDataStart);
+    }
+    mLastNameSuffix = suffix;
+    if (suffix.length() < 2) return;
+
+    QStringList addData;
+    QStringList addDescript;
+    for (int i = 0; i < mData.length(); ++i) {
+        if (suffix.at(0) == 'e') {
+            if (mData.at(i).compare("$offEcho", Qt::CaseInsensitive)) {
+                addData << mData.at(i) + '.' + suffix.right(suffix.length()-1);
+                addDescript << mDescription.at(i);
+            }
+        }
+    }
+    mType.insert(mData.length(), ccSufName);
+
+}
+
+bool CodeCompleterModel::hasActiveNameSuffix()
+{
+    return mLastNameSuffix.length() > 1;
+}
+
 
 // ----------- Filter ---------------
 
@@ -392,6 +424,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
+    if (type & ccSufName) return true;
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
     if (type & cc_SubDco || type & ccExec) {
@@ -400,11 +433,13 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     }
     if (type == ccDcoEnd) {
         switch (mSubType) {
-        case 1: if (text.toLower() != "$offtext") return false; break;
-        case 2: if (text.toLower() != "$offecho") return false; break;
-        case 3: if (text.toLower() != "$offput") return false; break;
-        case 4: if (text.toLower() != "$offembeddedcode") return false; break;
-        case 5: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
+        case 1: if (!text.toLower().startsWith("$offtext")) return false; break;
+        case 2: if (!text.toLower().startsWith("$offecho")) return false; break;
+        case 3: if (!text.toLower().startsWith("$offput")) return false; break;
+        case 4: if (!text.toLower().startsWith("$offembeddedcode")) return false; break;
+        case 5: if (!text.toLower().startsWith("$endembeddedcode") && !text.toLower().startsWith("$pauseembeddedcode"))
+                return false;
+            break;
         default: ;
         }
     }
@@ -456,6 +491,9 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
 bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
+    if ((pat & ccSufName) && pat != ccSufName) {
+        return source_left.data(Qt::UserRole).toInt() == ccSufName;
+    }
     if ((pat & ccDcoEnd) && pat != ccDcoEnd) {
         return source_left.data(Qt::UserRole).toInt() == ccDcoEnd;
     }
@@ -628,6 +666,9 @@ const QSet<int> CodeCompleter::cBlockSyntax {
 
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
 {
+    QString suffixName;
+    emit syntaxFlagData(block, syntax::flagSuffixName, suffixName);
+    mModel->setActiveNameSuffix(suffixName);
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
     emit scanSyntax(block, blockSyntax);
@@ -1142,6 +1183,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         if (SysLogLocator::systemLog())
             SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
     }
+    if (mModel->hasActiveNameSuffix())
+        filter |= ccSufName;
     mFilterModel->setTypeFilter(filter, subType, needDot);
 }
 
