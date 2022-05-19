@@ -1,4 +1,8 @@
-Version 1.10.2  *
+Version 1.10.3
+==================
+- fixed bug in search that allowed opening files without a group
+
+Version 1.10.2
 ==================
 - fixed crash on closing a tab when project settings are active
 - ensure the right file gets the focus on starting Studio

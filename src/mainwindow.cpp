@@ -338,7 +338,7 @@ void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
-        // to actualize the project if changed
+        // to update the project if changed
         mRecent.setEditor(mRecent.editor());
         updateRunState();
     });

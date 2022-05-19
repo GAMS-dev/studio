@@ -776,18 +776,16 @@ void SearchDialog::jumpToResult(int matchNr)
     // create group for search results
     if (r.parentGroup() == -1 && !Settings::settings()->toBool(skOpenInCurrent)) {
         QString name = "Search: " + ui->combo_search->currentText();
-        bool found = false;
 
-        // find project
+        // find existing search group
         QVector<PExProjectNode*> projects = mFileHandler->projects();
         for (PExGroupNode* g : qAsConst(projects)) {
             if (g->name() == name) {
                 mCurrentSearchGroup = g->toProject();
-                found = true;
                 break;
-            }
+            } else mCurrentSearchGroup = nullptr;
         }
-        if (!found) {
+        if (!mCurrentSearchGroup) {
             QFileInfo dir(r.filepath());
             mCurrentSearchGroup = mFileHandler->createProject(name, dir.absolutePath());
         }
