@@ -1,6 +1,6 @@
 Version 1.10.3  *
 ==================
-- support name-suffix for pairs echo, put, and embeddedCode
+- support name-tag for pairs echo, put, and embeddedCode
 
 Version 1.10.2
 ==================
