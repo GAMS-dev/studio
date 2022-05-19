@@ -92,6 +92,7 @@ private:
     int mPercentGroupRow = -1;
     int mTempDataStart = -1;
     QString mLastNameSuffix;
+    QMap<QChar, QStringList> mNameSuffixAssignments;
     Q_OBJECT
 public:
     CodeCompleterModel(QObject *parent = nullptr);
@@ -108,6 +109,7 @@ public:
 private:
     void initData();
     void addDynamicData();
+    void removeTempData(CodeCompleterType type);
 };
 
 class FilterCompleterModel : public QSortFilterProxyModel

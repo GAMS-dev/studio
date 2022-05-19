@@ -46,6 +46,12 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
 
 void CodeCompleterModel::initData()
 {
+    mNameSuffixAssignments.clear();
+    mNameSuffixAssignments.insert('c', {"$offEcho"});
+    mNameSuffixAssignments.insert('p', {"$offPut"});
+    mNameSuffixAssignments.insert('m', {"$offEmbeddedCode"});
+    mNameSuffixAssignments.insert('e', {"endEmbeddedCode", "pauseEmbeddedCode"});
+
     mData.clear();
     mDescription.clear();
     mDescriptIndex.clear();
@@ -353,6 +359,7 @@ void CodeCompleterModel::removeTempData(CodeCompleterType type)
     QPoint range = mTempDataIndicees.value(type, QPoint(-1,-1));
     if (range.x() < 0 || range.y() < 0) return;
     if (mData.size() <= range.x() || mData.size() <= range.y()) return;
+    mTempDataIndicees.remove(type);
 
     QList<int> removedDescriptions;
     beginRemoveRows(QModelIndex(), range.x(), range.y());
@@ -419,22 +426,25 @@ void CodeCompleterModel::setActiveNameSuffix(QString suffix)
     mLastNameSuffix = suffix;
     QString suffName = suffix.right(suffix.length()-1);
     if (suffix.length() < 2) return;
+    QStringList suffAssigns = mNameSuffixAssignments.value(suffix.at(0));
+    if (suffAssigns.isEmpty()) return;
 
     QStringList addData;
     int lastAddedDescIndex = -1;
-
     for (int i = 0; i < mData.length(); ++i) {
-        if (suffix.at(0) == 'c') {
-            if (mData.at(i).compare("$offEcho", Qt::CaseInsensitive) == 0) {
+        for (const QString &keyword: suffAssigns) {
+            if (mData.at(i).compare(keyword, Qt::CaseInsensitive) == 0) {
                 addData << mData.at(i) + '.' + suffName;
                 if (lastAddedDescIndex != i) {
-                    mDescription << mDescription.at(i) + " (name: " +suffName+ ")";
+                    mDescription << mDescription.at(mDescriptIndex.at(i)) + " (name: " +suffName+ ")";
                     lastAddedDescIndex = i;
                 }
                 mDescriptIndex << mDescription.size() - 1;
+                break;
             }
         }
     }
+    mTempDataIndicees.insert(ccSufName, QPoint(mData.size(), mData.size() + addData.size() - 1));
     beginInsertRows(QModelIndex(), mData.size(), mData.size() + addData.size() - 1);
     for (int i = 0; i < addData.size(); ++i) {
         mData << addData.at(i);
@@ -460,7 +470,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
-    if (type & ccSufName) return true;
+    if (type & ccSufName) return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
     if (type & cc_SubDco || type & ccExec) {

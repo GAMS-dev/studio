@@ -238,12 +238,9 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("onEmbeddedCode").toLower(), flavorEmbed1);
     mFlavors.insert(QString("onEmbeddedCodeS").toLower(), flavorEmbed1);
     mFlavors.insert(QString("onEmbeddedCodeV").toLower(), flavorEmbed1);
-    mFlavors.insert(QString("embeddedCode").toLower(), flavorEmbed0);
-    mFlavors.insert(QString("embeddedCodeS").toLower(), flavorEmbed0);
-    mFlavors.insert(QString("embeddedCodeV").toLower(), flavorEmbed0);
-    mFlavors.insert(QString("continueEmbeddedCode").toLower(), flavorEmbed0);
-    mFlavors.insert(QString("continueEmbeddedCodeS").toLower(), flavorEmbed0);
-    mFlavors.insert(QString("continueEmbeddedCodeV").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("offEmbeddedCode").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("offEmbeddedCodeS").toLower(), flavorEmbed0);
+    mFlavors.insert(QString("offEmbeddedCodeV").toLower(), flavorEmbed0);
 
     // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
@@ -254,9 +251,9 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mSpecialKinds.insert(QString("onPut").toLower(), SyntaxKind::IgnoredBlock);
     mSpecialKinds.insert(QString("onPutV").toLower(), SyntaxKind::IgnoredBlock);
     mSpecialKinds.insert(QString("onPutS").toLower(), SyntaxKind::IgnoredBlock);
-    mSpecialKinds.insert(QString("embeddedCode").toLower(), SyntaxKind::EmbeddedBody);
-    mSpecialKinds.insert(QString("embeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
-    mSpecialKinds.insert(QString("embeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
+//    mSpecialKinds.insert(QString("embeddedCode").toLower(), SyntaxKind::EmbeddedBody);
+//    mSpecialKinds.insert(QString("embeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
+//    mSpecialKinds.insert(QString("embeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("continueEmbeddedCode").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("continueEmbeddedCodeS").toLower(), SyntaxKind::EmbeddedBody);
     mSpecialKinds.insert(QString("continueEmbeddedCodeV").toLower(), SyntaxKind::EmbeddedBody);
@@ -281,7 +278,8 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
     SyntaxState outState = state;
     outState.flavor = mFlavors.value(match.captured(2).toLower(), 0);
     QChar flavChar = (outState.flavor >= flavorEcho1 && outState.flavor <= flavorPut0)
-            ? cFlavorChars.at(outState.flavor-1) : QChar();
+                     ? cFlavorChars.at(outState.flavor-1)
+                     : outState.flavor == flavorEmbed1 ? 'M' : outState.flavor == flavorEmbed0? 'm' : QChar();
     mLastEndIKey = mEndDCOlow.indexOf(match.captured(2).toLower());
     int end = match.capturedEnd(2);
     if (entryKind == SyntaxKind::CommentBlock) {
@@ -301,7 +299,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
     } else if (entryKind == SyntaxKind::EmbeddedBody) {
         QString suffix = state.syntaxFlagValue(flagSuffixName);
         if (mLastEndIKey > 1 && hasMatchingSuffix(flavChar, outState, line, end, suffix))
-            return SyntaxBlock(this, outState, match.capturedStart(1), match.capturedEnd(0), SyntaxShift::out);
+            return SyntaxBlock(this, outState, match.capturedStart(1), end, SyntaxShift::out);
         return SyntaxBlock(this);
     } else if (mSharedData->commentEndLine()) {
         if (match.captured(2).startsWith("oneolcom", Qt::CaseInsensitive)) {
