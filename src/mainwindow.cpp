@@ -275,6 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, mSearchDialog, &search::SearchDialog::filesChanged);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 

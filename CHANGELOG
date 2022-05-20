@@ -1,6 +1,8 @@
 Version 1.10.3
 ==================
 - fixed bug in search that allowed opening files without a group
+- fixed search not reacting to changes in project file list
+- fixed search not always adding new files to correct search group
 
 Version 1.10.2
 ==================

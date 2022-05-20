@@ -76,6 +76,7 @@ public slots:
     void updateMatchLabel(int current = 0);
     void updateComponentAvailability();
     void on_btn_clear_clicked();
+    void filesChanged();
 
 private slots:
     void on_btn_FindAll_clicked();

@@ -363,6 +363,12 @@ void SearchDialog::on_btn_clear_clicked()
     updateClearButton();
 }
 
+void SearchDialog::filesChanged()
+{
+    if (mSearch.scope() == Search::Scope::ThisProject)
+        mSearch.invalidateCache();
+}
+
 void SearchDialog::on_cb_wholeWords_stateChanged(int)
 {
     searchParameterChanged();
@@ -430,8 +436,6 @@ void SearchDialog::checkRegex()
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
     searchParameterChanged();
-    mCurrentSearchGroup = nullptr;
-
     checkRegex();
 }
 
@@ -439,6 +443,7 @@ void SearchDialog::searchParameterChanged()
 {
     if (!mSuppressParameterChangedEvent) {
         setSearchStatus(Search::Clear);
+        mCurrentSearchGroup = nullptr;
         mSearch.reset();
     }
     checkRegex();
