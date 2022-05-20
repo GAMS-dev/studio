@@ -33,26 +33,30 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
     int i = cur.positionInBlock();
     while (block.isValid()) {
         int end = (block == lastBlock) ? lastEnd : block.length();
-        for (const QTextLayout::FormatRange &range : block.layout()->formats()) {
-            if (range.start > i) continue;
-            int to = qMin(range.start + range.length, end);
-            if (to <= i) continue;
+        if (block.layout()->formats().isEmpty()) {
+            res.append("<span> </span>");
+        } else {
+            for (const QTextLayout::FormatRange &range : block.layout()->formats()) {
+                if (range.start > i) continue;
+                int to = qMin(range.start + range.length, end);
+                if (to <= i) continue;
 
-            res.append(QString("<span style=\"color: %1;\">").arg(range.format.foreground().color().name()).toUtf8());
-            if (range.format.fontWeight() == QFont::Bold)
-                res.append("<strong>");
-            if (range.format.fontItalic())
-                res.append("<em>");
+                res.append(QString("<span style=\"color: %1;\">").arg(range.format.foreground().color().name()).toUtf8());
+                if (range.format.fontWeight() == QFont::Bold)
+                    res.append("<strong>");
+                if (range.format.fontItalic())
+                    res.append("<em>");
 
-            res.append(block.text().mid(i, to-i).toHtmlEscaped().toUtf8());
+                res.append(block.text().mid(i, to-i).toHtmlEscaped().toUtf8());
 
-            if (range.format.fontItalic())
-                res.append("</em>");
-            if (range.format.fontWeight() == QFont::Bold)
-                res.append("</strong>");
-            res.append("</span>");
-            i = to;
-            if (to >= end) break;
+                if (range.format.fontItalic())
+                    res.append("</em>");
+                if (range.format.fontWeight() == QFont::Bold)
+                    res.append("</strong>");
+                res.append("</span>");
+                i = to;
+                if (to >= end) break;
+            }
         }
         if (block == lastBlock) {
             block = QTextBlock();
@@ -63,6 +67,7 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
         i = 0;
     }
     res.append("</div></div><!--EndFragment-->\n</body>\n</html>");
+    DEB() << res;
     return res;
 }
 
