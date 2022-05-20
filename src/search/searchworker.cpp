@@ -85,8 +85,7 @@ void SearchWorker::findInFiles()
                     if (allowInsert(lineCounter, match.capturedStart())) {
                         mMatches->append(Result(lineCounter, match.capturedStart(),
                                                 match.capturedLength(), file.fileName(),
-                                                projectGroup,
-                                                line.trimmed()));
+                                                projectGroup, line));
                     }
                 }
 

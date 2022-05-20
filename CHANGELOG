@@ -1,3 +1,7 @@
+Version 1.10.3 *
+==================
+- improved trimming behavior of search results
+
 Version 1.10.2
 ==================
 - fixed crash on closing a tab when project settings are active
