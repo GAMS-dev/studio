@@ -1,4 +1,4 @@
-Version 1.10.3
+Version 1.10.3 *
 ==================
 - fixed bug in search that allowed opening files without a group
 - fixed search not reacting to changes in project file list
@@ -7,6 +7,7 @@ Version 1.10.3
 Version 1.10.2
 ==================
 - fixed crash on closing a tab when project settings are active
+- fixed closing behavior of search dialog on Windows when using X button
 - ensure the right file gets the focus on starting Studio
 
 Version 1.10.1

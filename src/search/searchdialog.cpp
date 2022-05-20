@@ -56,11 +56,11 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::closeEvent (QCloseEvent *event)
+void SearchDialog::closeEvent(QCloseEvent *event)
 {
-    emit setWidgetPosition(pos());
-    hide();
-    event->accept();
+    emit toggle();
+
+    event->ignore();
     QDialog::closeEvent(event);
 }
 
@@ -161,6 +161,10 @@ void SearchDialog::updateDialogState()
     ui->label_2->setEnabled(!searching);
     ui->label_3->setEnabled(!searching);
     ui->label_4->setEnabled(!searching);
+    ui->combo_path->setEnabled(!searching);
+    ui->cb_subdirs->setEnabled(!searching);
+    ui->btn_browse->setEnabled(!searching);
+    ui->label_5->setEnabled(!searching);
 
     if (!searching) updateComponentAvailability();
 
@@ -360,7 +364,6 @@ void SearchDialog::on_btn_clear_clicked()
     }
     setSearchSelectionActive(false);
     mSearch.invalidateCache();
-    updateClearButton();
 }
 
 void SearchDialog::filesChanged()
@@ -513,6 +516,7 @@ void SearchDialog::clearSelection()
         tv->edit()->setTextCursor(tc);
         tv->clearSearchSelection();
     }
+    updateClearButton();
 }
 
 void SearchDialog::setSearchSelectionActive(bool active)
@@ -523,6 +527,7 @@ void SearchDialog::setSearchSelectionActive(bool active)
         tv->setSearchSelectionActive(active);
 
     updateEditHighlighting();
+    updateClearButton();
 }
 
 void SearchDialog::clearSearch()

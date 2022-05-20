@@ -102,6 +102,7 @@ signals:
     void selectResult(int matchNr);
     void invalidateResultsView();
     void extraSelectionsUpdated();
+    void toggle();
 
 protected:
     void showEvent(QShowEvent *event);
