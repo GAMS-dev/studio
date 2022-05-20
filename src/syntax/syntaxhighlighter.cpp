@@ -347,6 +347,7 @@ void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &synt
 
 void SyntaxHighlighter::syntaxFlagData(QTextBlock block, SyntaxFlag flag, QString &value)
 {
+    if (block.userState() < 0) return;
     SyntaxFlagData *data = mCodes.at(block.userState()).syntaxFlags.get();
     if (!data) return;
     value = data->value(flag);
