@@ -46,7 +46,7 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
             }
         }
         if (block.text().isEmpty() && i < end) {
-            res.append("<span> </span>");
+            res.append("<br>");
         } else {
             while (i < end) {
                 if (range && range->start <= i) {
