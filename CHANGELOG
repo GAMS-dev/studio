@@ -1,6 +1,7 @@
 Version 1.10.3  *
 ==================
 - support name-tag for pairs echo, put, and embeddedCode
+- Fixed GAMS Engine not adding files in subfolders from *.efi-file
 
 Version 1.10.2
 ==================
