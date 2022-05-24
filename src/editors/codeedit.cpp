@@ -2840,6 +2840,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
     }
     cursor.endEditBlock();
     setTextCursor(cursor);
+    mCompleter->suppressNextOpenTrigger();
 }
 
 } // namespace studio
