@@ -46,6 +46,12 @@ CodeCompleterModel::CodeCompleterModel(QObject *parent): QAbstractListModel(pare
 
 void CodeCompleterModel::initData()
 {
+    mNameSuffixAssignments.clear();
+    mNameSuffixAssignments.insert('c', {"$offEcho"});
+    mNameSuffixAssignments.insert('p', {"$offPut"});
+    mNameSuffixAssignments.insert('m', {"$offEmbeddedCode"});
+    mNameSuffixAssignments.insert('e', {"endEmbeddedCode", "pauseEmbeddedCode"});
+
     mData.clear();
     mDescription.clear();
     mDescriptIndex.clear();
@@ -312,6 +318,7 @@ void CodeCompleterModel::initData()
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
+    mTempDataStart = mData.size();
 }
 
 void CodeCompleterModel::addDynamicData()
@@ -344,6 +351,37 @@ void CodeCompleterModel::addDynamicData()
     mData = data;
     mDescriptIndex = descriptIndex;
     mType = iType;
+    mTempDataStart = mData.size();
+}
+
+void CodeCompleterModel::removeTempData(CodeCompleterType type)
+{
+    QPoint range = mTempDataIndicees.value(type, QPoint(-1,-1));
+    if (range.x() < 0 || range.y() < 0) return;
+    if (mData.size() <= range.x() || mData.size() <= range.y()) return;
+    mTempDataIndicees.remove(type);
+
+    QList<int> removedDescriptions;
+    beginRemoveRows(QModelIndex(), range.x(), range.y());
+
+    for (int i = range.y(); i >= range.x(); --i) { // backwards!
+        mData.removeAt(i);
+        if (!removedDescriptions.contains(mDescriptIndex.at(i)))
+            removedDescriptions << mDescriptIndex.at(i);
+        mDescriptIndex.removeAt(i);
+    }
+    for (const int &i : qAsConst(removedDescriptions)) {
+        mDescription.removeAt(i);
+    }
+    QMap<int, CodeCompleterType> addType;
+    QMap<int, CodeCompleterType>::iterator it = mType.find(range.y());
+    it = mType.erase(it);
+    while (it != mType.end()) {
+        addType.insert(it.key() - range.y() + range.x(), it.value());
+        it = mType.erase(it);
+    }
+    mType.insert(addType);
+    endRemoveRows();
 }
 
 void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
@@ -380,6 +418,46 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
+void CodeCompleterModel::setActiveNameSuffix(QString suffix)
+{
+    if (mLastNameSuffix == suffix) return;
+    removeTempData(ccSufName);
+
+    mLastNameSuffix = suffix;
+    QString suffName = suffix.right(suffix.length()-1);
+    if (suffix.length() < 2) return;
+    QStringList suffAssigns = mNameSuffixAssignments.value(suffix.at(0));
+    if (suffAssigns.isEmpty()) return;
+
+    QStringList addData;
+    int lastAddedDescIndex = -1;
+    for (int i = 0; i < mData.length(); ++i) {
+        for (const QString &keyword: suffAssigns) {
+            if (mData.at(i).compare(keyword, Qt::CaseInsensitive) == 0) {
+                addData << mData.at(i) + '.' + suffName;
+                if (lastAddedDescIndex != i) {
+                    mDescription << mDescription.at(mDescriptIndex.at(i)) + " (name: " +suffName+ ")";
+                    lastAddedDescIndex = i;
+                }
+                mDescriptIndex << mDescription.size() - 1;
+                break;
+            }
+        }
+    }
+    mTempDataIndicees.insert(ccSufName, QPoint(mData.size(), mData.size() + addData.size() - 1));
+    beginInsertRows(QModelIndex(), mData.size(), mData.size() + addData.size() - 1);
+    for (int i = 0; i < addData.size(); ++i) {
+        mData << addData.at(i);
+    }
+    mType.insert(mData.length(), ccSufName);
+    endInsertRows();
+}
+
+bool CodeCompleterModel::hasActiveNameSuffix()
+{
+    return mLastNameSuffix.length() > 1;
+}
+
 
 // ----------- Filter ---------------
 
@@ -392,6 +470,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
 {
     QModelIndex index = sourceModel()->index(sourceRow, 0, sourceParent);
     int type = sourceModel()->data(index, Qt::UserRole).toInt();
+    if (type & ccSufName) return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
     if (type & cc_SubDco || type & ccExec) {
@@ -400,11 +479,14 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     }
     if (type == ccDcoEnd) {
         switch (mSubType) {
-        case 1: if (text.toLower() != "$offtext") return false; break;
-        case 2: if (text.toLower() != "$offecho") return false; break;
-        case 3: if (text.toLower() != "$offput") return false; break;
-        case 4: if (text.toLower() != "$offembeddedcode") return false; break;
-        case 5: if (text.toLower() != "$endembeddedcode" && text.toLower() != "$pauseembeddedcode") return false; break;
+        case 1: if (!text.startsWith("$offtext", Qt::CaseInsensitive)) return false; break;
+        case 2: if (!text.startsWith("$offecho", Qt::CaseInsensitive)) return false; break;
+        case 3: if (!text.startsWith("$offput", Qt::CaseInsensitive)) return false; break;
+        case 4: if (!text.startsWith("$offembeddedcode", Qt::CaseInsensitive)) return false; break;
+        case 5: if (!text.startsWith("$endembeddedcode", Qt::CaseInsensitive) &&
+                    !text.startsWith("$pauseembeddedcode", Qt::CaseInsensitive))
+                return false;
+            break;
         default: ;
         }
     }
@@ -456,6 +538,9 @@ void FilterCompleterModel::setTypeFilter(int completerTypeFilter, int subType, b
 bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModelIndex &source_right) const
 {
     int pat = source_left.data(Qt::UserRole).toInt() | source_right.data(Qt::UserRole).toInt();
+    if ((pat & ccSufName) && pat != ccSufName) {
+        return source_left.data(Qt::UserRole).toInt() == ccSufName;
+    }
     if ((pat & ccDcoEnd) && pat != ccDcoEnd) {
         return source_left.data(Qt::UserRole).toInt() == ccDcoEnd;
     }
@@ -628,6 +713,9 @@ const QSet<int> CodeCompleter::cBlockSyntax {
 
 QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
 {
+    QString suffixName;
+    emit syntaxFlagData(block, syntax::flagSuffixName, suffixName);
+    mModel->setActiveNameSuffix(suffixName);
     QPair<int, int> res(0, 0);
     QMap<int, QPair<int, int>> blockSyntax;
     emit scanSyntax(block, blockSyntax);
@@ -1011,7 +1099,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         filter = cc_None; break;
 
     case syntax::SyntaxKind::Declaration:  // [set parameter variable equation] allows table
-        filter = ((syntax.second == 16) ? ccDcoStrt | ccDeclT : ccDcoStrt) | ccSysSufC | ccCtConst; break;
+        filter = ccDcoStrt | ccSysSufC | ccCtConst | (syntax.second == syntax::flavorAbort ? ccDeclT : 0); break;
     case syntax::SyntaxKind::DeclarationSetType:
         filter = ccDcoStrt | ccDeclS; break;
     case syntax::SyntaxKind::DeclarationVariableType:
@@ -1097,17 +1185,17 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredHead
                    || syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
             filter = cc_Start | ccDcoEnd;
-            subType = syntax.second == 3 ? 2 : 3;
+            subType = syntax.second == syntax::flavorEcho1 ? 2 : 3;
         } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = cc_Start | ccResEnd;
             } else {
                 filter = cc_Start | ccDcoEnd;
-                subType = (syntax.second == 19) ? 4 : 5;
+                subType = (syntax.second == syntax::flavorEmbed1) ? 4 : 5;
             }
         } else if (!mFilterModel->test(filter, cc_Dco))
             filter = filter & ccDcoStrt;
-    } else if (dcoFlavor > 15 ) {
+    } else if (dcoFlavor >= syntax::flavorAbort) {
         needDot = true;
         for (int i = start; i > 0; --i) {
             if (needDot && line.at(i) == '.') {
@@ -1120,7 +1208,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
                 }
             }
         }
-        if (dcoFlavor >= 16 && dcoFlavor <= 18 )
+        if (dcoFlavor >= syntax::flavorAbort && dcoFlavor <= syntax::flavorEval)
             filter = ccSysSufC | ccCtConst;
         else
             filter = filter & ~cc_Dco;
@@ -1142,6 +1230,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         if (SysLogLocator::systemLog())
             SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
     }
+    if (mModel->hasActiveNameSuffix())
+        filter |= ccSufName;
     mFilterModel->setTypeFilter(filter, subType, needDot);
 }
 
