@@ -49,6 +49,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 {
     ui->setupUi(this);
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
+    mPrevFontHeight = fontMetrics().height();
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -82,6 +83,19 @@ GdxViewer::~GdxViewer()
     delete mState;
     delete mGdxMutex;
     delete ui;
+}
+
+bool GdxViewer::event(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
+        for (int i = 0; i < ui->tvSymbols->horizontalHeader()->count(); ++i) {
+            ui->tvSymbols->horizontalHeader()->resizeSection(i, qRound(ui->tvSymbols->horizontalHeader()->sectionSize(i) * scale));
+        }
+        mPrevFontHeight = fontMetrics().height();
+    }
+    return QWidget::event(event);
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
@@ -208,6 +222,28 @@ void GdxViewer::invalidate()
         setEnabled(false);
         releaseFile();
     }
+}
+
+void GdxViewer::zoomIn(int range)
+{
+    zoomInF(range);
+}
+
+void GdxViewer::zoomOut(int range)
+{
+    zoomInF(-range);
+}
+
+void GdxViewer::zoomInF(qreal range)
+{
+    if (range == 0.)
+        return;
+    QFont f = font();
+    const qreal newSize = f.pointSizeF() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSizeF(newSize);
+    setFont(f);
 }
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)

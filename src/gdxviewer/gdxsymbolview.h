@@ -48,7 +48,7 @@ class GdxSymbolView : public QWidget
 
 public:
     explicit GdxSymbolView(QWidget *parent = nullptr);
-    ~GdxSymbolView();
+    ~GdxSymbolView() override;
 
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
@@ -59,6 +59,8 @@ public:
     void applyFilters(GdxSymbolViewState* symViewState);
     void saveState(GdxSymbolViewState* symViewState);
     void saveFilters(GdxSymbolViewState* symViewState);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    bool event(QEvent *event) override;
 
 public slots:
     void enableControls();
@@ -87,6 +89,7 @@ private:
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;
     QMenu *mColumnFilterMenu = nullptr;
+    int mPrevFontHeight;
 
     void showListView();
     void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());

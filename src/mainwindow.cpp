@@ -2883,8 +2883,10 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     if (e == Hotkey::Print)
         on_actionPrint_triggered();
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+        updateTableFonts(font().pixelSize());
+    }
 
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
@@ -4392,6 +4394,9 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fon
                     }
                 } else if (fontGroup == fgTable) {
                     // TODO(JM) handle non-fixed fonts (GDX, REF, etc.)
+                    if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
+                        gdx->setFont(f);
+                    }
                 }
             }
         }
@@ -4441,6 +4446,11 @@ void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)
 {
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
+}
+
+void MainWindow::updateTableFonts(int fontSize)
+{
+    setGroupFontSize(fgTable, fontSize);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -4688,6 +4698,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
     {
         // reset all editors
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+        updateTableFonts(font().pixelSize());
     }
 }
 
@@ -4733,6 +4744,12 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
         int pix = ae->fontInfo().pixelSize();
         ae->zoomIn(range);
         if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
+    } else {
+        QWidget *wid = QApplication::focusWidget();
+        while (wid && !ViewHelper::toGdxViewer(wid))
+            wid = wid->parentWidget();
+        if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
+            gdx->zoomIn(range);
     }
 }
 

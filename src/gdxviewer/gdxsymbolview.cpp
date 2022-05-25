@@ -35,6 +35,7 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
+#include <QDebug>
 
 
 #include <numerics/doubleformatter.h>
@@ -48,6 +49,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);
+    mPrevFontHeight = fontMetrics().height();
+
     ui->tvTableView->hide();
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
@@ -196,6 +199,35 @@ GdxSymbolView::~GdxSymbolView()
     if (mTvModel)
         delete mTvModel;
     delete ui;
+}
+
+bool GdxSymbolView::event(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
+        for (int i = 0; i < ui->tvListView->horizontalHeader()->count(); ++i) {
+            ui->tvListView->horizontalHeader()->resizeSection(i, qRound(ui->tvListView->horizontalHeader()->sectionSize(i) * scale));
+        }
+        if (mTvModel) {
+            ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+            int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+            ui->tvTableViewFilter->setMaximumHeight(height);
+            ui->tbDomLeft->setMaximumHeight(height);
+            ui->tbDomRight->setMaximumHeight(height);
+            ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+            ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+            for (int i = 0; i < ui->tvTableView->horizontalHeader()->count(); ++i) {
+                ui->tvTableView->horizontalHeader()->resizeSection(i, qRound(ui->tvTableView->horizontalHeader()->sectionSize(i) * scale));
+            }
+            for (int i = 0; i < ui->tvTableViewFilter->horizontalHeader()->count(); ++i) {
+                ui->tvTableViewFilter->horizontalHeader()->resizeSection(i, qRound(ui->tvTableViewFilter->horizontalHeader()->sectionSize(i) * scale));
+            }
+        }
+        mPrevFontHeight = fontMetrics().height();
+
+    }
+    return QWidget::event(event);
 }
 
 void GdxSymbolView::showFilter(QPoint p)

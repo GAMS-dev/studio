@@ -405,6 +405,7 @@ protected:
 
 private slots:
     void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
+    void updateTableFonts(int fontSize = 0);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);

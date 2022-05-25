@@ -50,7 +50,7 @@ class GdxViewer : public QWidget
 
 public:
     GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
-    ~GdxViewer();
+    ~GdxViewer() override;
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
     int reload(QTextCodec* codec, bool quiet = false);
@@ -60,6 +60,9 @@ public:
     void selectSearchField();
     void releaseFile();
     void invalidate();
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+    bool event(QEvent *event) override;
 
 private slots:
     void hideUniverseSymbol();
@@ -73,6 +76,7 @@ private:
     void freeSymbols();
     bool isFocusedWidget(QWidget *wid);
     bool mIsInitialized = false;
+    void zoomInF(qreal range);
 
     static int errorCallback(int count, const char *message);
 
@@ -84,11 +88,11 @@ private:
     void applySelectedSymbol();
 
     Ui::GdxViewer *ui;
-
     QString mGdxFile;
     QString mSystemDirectory;
-
+    bool mIsInitialized = false;
     bool mHasChanged = false;
+    int mPrevFontHeight;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
