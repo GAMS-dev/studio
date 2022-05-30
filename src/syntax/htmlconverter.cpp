@@ -17,6 +17,8 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
     QString backColor;
 #ifndef __APPLE__
     backColor = QString("background-color: %1;").arg(background.name());
+#else
+    Q_UNUSED(background)
 #endif
     res.append(QString("<html><body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
                        "font-family: Consolas, 'Courier New', monospace;font-weight: normal;"
@@ -33,26 +35,56 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
     int i = cur.positionInBlock();
     while (block.isValid()) {
         int end = (block == lastBlock) ? lastEnd : block.length();
-        for (const QTextLayout::FormatRange &range : block.layout()->formats()) {
-            if (range.start > i) continue;
-            int to = qMin(range.start + range.length, end);
-            if (to <= i) continue;
+        const QTextLayout::FormatRange *range = nullptr;
+        int ri = -1;
+        while (block.layout()->formats().size() > ri+1) {
+            ++ri;
+            range = &block.layout()->formats().at(ri);
+            if (range->start + range->length >= i) break;
+            if (ri+1 == block.layout()->formats().size()) {
+                range = nullptr;
+                ri = -1;
+                break;
+            }
+        }
+        if (block.text().isEmpty() && i < end) {
+            res.append("<br>");
+        } else {
+            while (i < end) {
+                if (range && range->start <= i) {
+                    int to = qMin(range->start + range->length, end);
+                    res.append(QString("<span style=\"color: %1;\">").arg(range->format.foreground().color().name()).toUtf8());
+                    if (range->format.fontWeight() == QFont::Bold)
+                        res.append("<strong>");
+                    if (range->format.fontItalic())
+                        res.append("<em>");
 
-            res.append(QString("<span style=\"color: %1;\">").arg(range.format.foreground().color().name()).toUtf8());
-            if (range.format.fontWeight() == QFont::Bold)
-                res.append("<strong>");
-            if (range.format.fontItalic())
-                res.append("<em>");
+                    res.append(block.text().mid(i, to-i).toHtmlEscaped().toUtf8());
 
-            res.append(block.text().mid(i, to-i).toHtmlEscaped().toUtf8());
-
-            if (range.format.fontItalic())
-                res.append("</em>");
-            if (range.format.fontWeight() == QFont::Bold)
-                res.append("</strong>");
-            res.append("</span>");
-            i = to;
-            if (to >= end) break;
+                    if (range->format.fontItalic())
+                        res.append("</em>");
+                    if (range->format.fontWeight() == QFont::Bold)
+                        res.append("</strong>");
+                    res.append("</span>");
+                    i = to;
+                    if (ri >= 0) {
+                        if (ri+1 < block.layout()->formats().size()) {
+                            range = &block.layout()->formats().at(++ri);
+                        } else {
+                            ri = -1;
+                            range = nullptr;
+                        }
+                    }
+                    if (to >= end) break;
+                } else {
+                    int to = (range ? range->start : end);
+                    res.append(QString("<span style=\"color: %1;\">").arg(block.blockFormat().foreground().color().name()).toUtf8());
+                    res.append(block.text().mid(i, to-i).toHtmlEscaped().toUtf8());
+                    res.append("</span>");
+                    i = to;
+                    if (to >= end) break;
+                }
+            }
         }
         if (block == lastBlock) {
             block = QTextBlock();
