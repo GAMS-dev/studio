@@ -190,7 +190,7 @@ public slots:
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
-    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
+    void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
 
@@ -404,8 +404,8 @@ protected:
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
-    void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
-    void updateTableFonts(int fontSize = 0);
+    void updateFixedFonts(qreal fontSize = 0, QString fontFamily = QString());
+    void updateTableFonts(qreal fontSize = 0);
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
@@ -451,7 +451,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
-    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), int pointSize = 0);
+    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), qreal pointSize = 0);
     bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
@@ -473,7 +473,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
-    QHash<FontGroup, int> mGroupFontSize;
+    QHash<FontGroup, qreal> mGroupFontSize;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
@@ -517,6 +517,7 @@ private:
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
     QString mNeosMail;
+    qreal mTableFontSize = 8.;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

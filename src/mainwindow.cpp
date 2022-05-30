@@ -401,6 +401,7 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
 
+    mTableFontSize = font().pointSizeF();
     QFont f(ui->menuBar->font());
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->centralWidget->setFont(f);
@@ -2885,7 +2886,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(font().pixelSize());
+        updateTableFonts(mTableFontSize);
     }
 
     // escape is the close button for focussed widgets
@@ -4371,7 +4372,7 @@ void MainWindow::invalidateResultsView()
     if (resultsView()) resultsView()->setOutdated();
 }
 
-void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily)
+void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily)
 {
 //    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
     mGroupFontSize.insert(fontGroup, fontSize);
@@ -4447,13 +4448,13 @@ void MainWindow::extraSelectionsUpdated()
         tv->updateExtraSelections();
 }
 
-void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)
+void MainWindow::updateFixedFonts(qreal fontSize, QString fontFamily)
 {
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
 }
 
-void MainWindow::updateTableFonts(int fontSize)
+void MainWindow::updateTableFonts(qreal fontSize)
 {
     setGroupFontSize(fgTable, fontSize);
 }
@@ -4703,7 +4704,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
     {
         // reset all editors
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(font().pixelSize());
+        updateTableFonts(mTableFontSize);
     }
 }
 
@@ -5112,17 +5113,20 @@ void MainWindow::deleteScratchDirs(const QString &path)
     }
 }
 
-QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, int pointSize)
+QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, qreal pointSize)
 {
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
-        if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
-        return QFont(fontFamily, pointSize);
+        if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
+        QFont font(fontFamily);
+        font.setPointSizeF(pointSize);
+        return font;
     }
     if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
-    if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
-    if (!pointSize) pointSize = Settings::settings()->toInt(skEdFontSize);
-    QFont font(fontFamily, pointSize);
+    if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
+    if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
+    QFont font(fontFamily);
+    font.setPointSizeF(pointSize);
     font.setHintingPreference(QFont::PreferNoHinting);
     return font;
 }
