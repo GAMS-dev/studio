@@ -225,7 +225,6 @@ bool GdxSymbolView::event(QEvent *event)
             }
         }
         mPrevFontHeight = fontMetrics().height();
-
     }
     return QWidget::event(event);
 }

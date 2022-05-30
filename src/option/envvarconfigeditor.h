@@ -42,7 +42,7 @@ class EnvVarConfigEditor : public QWidget
 
 public:
     explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItems, QWidget *parent = nullptr);
-    ~EnvVarConfigEditor();
+    ~EnvVarConfigEditor() override;
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -58,6 +58,9 @@ public slots:
     bool isModified() const;
 
     QList<EnvVarConfigItem *> envVarConfigItems();
+
+protected:
+    bool event(QEvent *event) override;
 
 private slots:
     void init(const QList<EnvVarConfigItem *> &initItems);
@@ -92,6 +95,7 @@ private:
     EnvVarTableModel* mEnvVarTableModel;
     EnvVarCfgCompleterDelegate* mCompleter;
     bool mModified;
+    int mPrevFontHeight;
 
     QMenu mContextMenu;
     QToolBar* mToolBar;

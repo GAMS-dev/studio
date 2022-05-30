@@ -33,6 +33,7 @@ EnvVarConfigEditor::EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItem
     mModified(false)
 {
     ui->setupUi(this);
+    mPrevFontHeight = fontMetrics().height();
     init(initItems);
 }
 
@@ -185,6 +186,19 @@ bool EnvVarConfigEditor::isModified() const
 QList<EnvVarConfigItem *> EnvVarConfigEditor::envVarConfigItems()
 {
     return mEnvVarTableModel->envVarConfigItems();
+}
+
+bool EnvVarConfigEditor::event(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
+        for (int i = 0; i < ui->EnvVarConfigTableView->horizontalHeader()->count(); ++i) {
+            ui->EnvVarConfigTableView->horizontalHeader()->resizeSection(i, qRound(ui->EnvVarConfigTableView->horizontalHeader()->sectionSize(i) * scale));
+        }
+        mPrevFontHeight = fontMetrics().height();
+    }
+    return QWidget::event(event);
 }
 
 void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)

@@ -4396,6 +4396,12 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fon
                     // TODO(JM) handle non-fixed fonts (GDX, REF, etc.)
                     if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
                         gdx->setFont(f);
+                    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(edit)) {
+                        sow->setFont(f);
+                    } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(edit)) {
+                        guc->setFont(f);
+                    } else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(edit)) {
+                        ref->setFont(f);
                     }
                 }
             }
@@ -4746,10 +4752,17 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
         if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
     } else {
         QWidget *wid = QApplication::focusWidget();
-        while (wid && !ViewHelper::toGdxViewer(wid))
+        while (wid && !ViewHelper::toGdxViewer(wid) && !ViewHelper::toSolverOptionEdit(wid)
+               && !ViewHelper::toGamsConfigEditor(wid))
             wid = wid->parentWidget();
         if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
             gdx->zoomIn(range);
+        else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
+            sow->zoomIn(range);
+        else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(wid))
+            guc->zoomIn(range);
+        else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(wid))
+            ref->zoomIn(range);
     }
 }
 

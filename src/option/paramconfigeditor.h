@@ -45,7 +45,7 @@ class ParamConfigEditor : public QWidget
 
 public:
     explicit ParamConfigEditor(const QList<ConfigItem *> &initParams, QWidget *parent = nullptr);
-    ~ParamConfigEditor();
+    ~ParamConfigEditor() override;
 
     bool isInFocus(QWidget* focusWidget) const;
 
@@ -64,6 +64,9 @@ public slots:
     bool isModified() const;
 
     QList<ConfigItem *> parameterConfigItems();
+
+protected:
+    bool event(QEvent *event) override;
 
 private slots:
     void init(const QList<ConfigItem *> &initParams);
@@ -126,6 +129,7 @@ private:
     OptionCompleterDelegate* mOptionCompleter;
 
     bool mModified;
+    int mPrevFontHeight;
 };
 
 }

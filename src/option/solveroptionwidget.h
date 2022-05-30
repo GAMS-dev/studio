@@ -48,7 +48,7 @@ class SolverOptionWidget : public QWidget
 public:
     explicit SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
                                 FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
-    ~SolverOptionWidget();
+    ~SolverOptionWidget() override;
 
     FileId fileId() const;
 
@@ -69,6 +69,9 @@ public:
     void setFileChangedExtern(bool value);
 
     void toggleCommentOption();
+
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -101,6 +104,10 @@ public slots:
 
     void completeEditingOption(QWidget *editor, QAbstractItemDelegate::EndEditHint hint = QStyledItemDelegate::NoHint);
 
+protected:
+    void wheelEvent(QWheelEvent *event) override;
+    bool event(QEvent *event) override;
+
 private slots:
     void showOptionDefinition(bool selectRow = true);
     void showOptionRecurrence();
@@ -120,6 +127,7 @@ private:
     QList<int> getRecurrentOption(const QModelIndex &index);
     QString getOptionTableEntry(int row);
     bool isEditing();
+    void zoomInF(qreal range);
 
     Ui::SolverOptionWidget *ui;
     FileId mFileId;
@@ -135,6 +143,7 @@ private:
     bool mModified;
     OptionTokenizer* mOptionTokenizer;
     OptionCompleterDelegate* mOptionCompleter;
+    int mPrevFontHeight;
 
     void refreshOptionTableModel(bool hideAllComments);
 

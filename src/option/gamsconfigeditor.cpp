@@ -125,6 +125,16 @@ QString GamsConfigEditor::getSelectedParameterName(QWidget *widget) const
     return "";
 }
 
+void GamsConfigEditor::zoomIn(int range)
+{
+    zoomInF(range);
+}
+
+void GamsConfigEditor::zoomOut(int range)
+{
+    zoomInF(-range);
+}
+
 bool GamsConfigEditor::saveConfigFile(const QString &location)
 {
     return saveAs(location);
@@ -193,6 +203,36 @@ void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+void GamsConfigEditor::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        const int delta = event->angleDelta().y();
+        if (delta < 0) {
+            int pix = fontInfo().pixelSize();
+            zoomOut();
+            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
+        } else if (delta > 0) {
+            int pix = fontInfo().pixelSize();
+            zoomIn();
+            if (pix == fontInfo().pixelSize()) zoomOut();
+        }
+        return;
+    }
+    QWidget::wheelEvent(event);
+}
+
+void GamsConfigEditor::zoomInF(qreal range)
+{
+    if (range == 0.)
+        return;
+    QFont f = font();
+    const qreal newSize = f.pointSizeF() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSizeF(newSize);
+    setFont(f);
 }
 
 void GamsConfigEditor::setFileChangedExtern(bool value)

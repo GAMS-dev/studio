@@ -60,7 +60,6 @@ public:
     void saveState(GdxSymbolViewState* symViewState);
     void saveFilters(GdxSymbolViewState* symViewState);
     bool eventFilter(QObject *watched, QEvent *event) override;
-    bool event(QEvent *event) override;
 
 public slots:
     void enableControls();
@@ -71,6 +70,9 @@ public slots:
     void autoResizeColumns();
     void autoResizeTableViewColumns(bool force=false);
     void adjustDomainScrollbar();
+
+protected:
+    bool event(QEvent *event) override;
 
 private slots:
     void showContextMenu(QPoint p);

@@ -71,6 +71,9 @@ public:
     void on_reloadGamsUserConfigFile(QTextCodec* codec);
     QString getSelectedParameterName(QWidget* widget) const;
 
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+
 signals:
     void modificationChanged(bool modifiedState);
 
@@ -84,7 +87,8 @@ public slots:
     void deSelectAll();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
+    void wheelEvent(QWheelEvent *event) override;
 
 private:
     Ui::GamsConfigEditor *ui;
@@ -99,6 +103,10 @@ private:
     GamsUserConfig* mGuc;
     ParamConfigEditor* mParamConfigEditor;
     EnvVarConfigEditor* mEnvVarConfigEditor;
+
+private:
+    void zoomInF(qreal range);
+
 };
 
 

@@ -62,10 +62,10 @@ public:
     void invalidate();
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
-    bool event(QEvent *event) override;
 
 protected:
     void wheelEvent(QWheelEvent *event) override;
+    bool event(QEvent *event) override;
 
 private slots:
     void hideUniverseSymbol();

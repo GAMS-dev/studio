@@ -47,7 +47,7 @@ class SymbolReferenceWidget : public QWidget
 
 public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
-    ~SymbolReferenceWidget();
+    ~SymbolReferenceWidget() override;
     void selectSearchField() const;
 
     bool isModelLoaded() const;
@@ -64,6 +64,9 @@ public slots:
     void resizeColumnToContents();
     void showContextMenu(QPoint p);
 
+protected:
+    bool event(QEvent *event) override;
+
 private:
     Ui::SymbolReferenceWidget *ui;
     QMenu mContextMenu;
@@ -78,6 +81,7 @@ private:
 
     SymbolId mCurrentSymbolID = -1;
     QString mCurrentSymbolSelection = "";
+    int mPrevFontHeight;
 };
 
 } // namespace reference

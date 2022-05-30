@@ -22,6 +22,7 @@
 #include <QTabBar>
 #include <QTextStream>
 #include <QStackedWidget>
+#include <QWheelEvent>
 
 #include "referenceviewer.h"
 #include "ui_referenceviewer.h"
@@ -110,6 +111,34 @@ void ReferenceViewer::updateStyle()
     ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
 }
 
+void ReferenceViewer::zoomIn(int range)
+{
+    zoomInF(range);
+}
+
+void ReferenceViewer::zoomOut(int range)
+{
+    zoomInF(-range);
+}
+
+void ReferenceViewer::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        const int delta = event->angleDelta().y();
+        if (delta < 0) {
+            int pix = fontInfo().pixelSize();
+            zoomOut();
+            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
+        } else if (delta > 0) {
+            int pix = fontInfo().pixelSize();
+            zoomIn();
+            if (pix == fontInfo().pixelSize()) zoomOut();
+        }
+        return;
+    }
+    QWidget::wheelEvent(event);
+}
+
 void ReferenceViewer::selectSearchField() const
 {
     SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
@@ -172,6 +201,18 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setCurrentIndex(0);
     }
     ui->tabWidget->setEnabled(status);
+}
+
+void ReferenceViewer::zoomInF(qreal range)
+{
+    if (range == 0.)
+        return;
+    QFont f = font();
+    const qreal newSize = f.pointSizeF() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSizeF(newSize);
+    setFont(f);
 }
 
 } // namespace reference

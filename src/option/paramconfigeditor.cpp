@@ -41,6 +41,7 @@ ParamConfigEditor::ParamConfigEditor(const QList<ConfigItem *> &initParams,  QWi
     mModified(false)
 {
     ui->setupUi(this);
+    mPrevFontHeight = fontMetrics().height();
     init(initParams);
 }
 
@@ -519,6 +520,23 @@ QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
         itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
     }
     return itemList;
+}
+
+bool ParamConfigEditor::event(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+//        ui->ParamCfgDefTreeView->header()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
+        for (int i = 0; i < ui->ParamCfgTableView->horizontalHeader()->count(); ++i) {
+            ui->ParamCfgTableView->horizontalHeader()->resizeSection(i, qRound(ui->ParamCfgTableView->horizontalHeader()->sectionSize(i) * scale));
+        }
+        for (int i = 0; i < ui->ParamCfgDefTreeView->header()->count(); ++i) {
+            ui->ParamCfgDefTreeView->header()->resizeSection(i, qRound(ui->ParamCfgDefTreeView->header()->sectionSize(i) * scale));
+        }
+        mPrevFontHeight = fontMetrics().height();
+    }
+    return QWidget::event(event);
 }
 
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
