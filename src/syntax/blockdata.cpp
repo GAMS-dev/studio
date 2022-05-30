@@ -21,8 +21,49 @@ namespace gams {
 namespace studio {
 namespace syntax {
 
-BlockData::~BlockData()
-{ }
+NestingData::NestingData()
+{
+    mParentheses.reserve(20);
+}
+
+NestingData::NestingData(const NestingData &other) :
+    mImpact(other.mImpact),
+    mMaxDepth(other.mMaxDepth),
+    mParentheses(other.mParentheses)
+{}
+
+NestingData &NestingData::operator =(const NestingData &other)
+{
+    mImpact = other.mImpact;
+    mMaxDepth = other.mMaxDepth;
+    mParentheses = other.mParentheses;
+    return *this;
+}
+
+bool NestingData::operator !=(const NestingData &other) const
+{
+    return operator==(other);
+}
+
+bool NestingData::operator ==(const NestingData &other) const
+{
+    return  mImpact == other.mImpact &&
+            mMaxDepth == other.mMaxDepth &&
+            mParentheses == other.mParentheses;
+}
+
+void NestingData::addOpener(QChar _character, int _relPos)
+{
+    mParentheses << ParenthesesPos(_character, _relPos);
+    ++mImpact;
+}
+
+void NestingData::addCloser(QChar _character, int _relPos)
+{
+    mParentheses << ParenthesesPos(_character, _relPos);
+    --mImpact;
+    if (mImpact<mMaxDepth) mMaxDepth = mImpact;
+}
 
 BlockData *BlockData::fromTextBlock(QTextBlock block)
 {
@@ -30,11 +71,14 @@ BlockData *BlockData::fromTextBlock(QTextBlock block)
                                                  : nullptr;
 }
 
+BlockData::~BlockData()
+{ }
+
 QChar BlockData::charForPos(int relPos)
 {
-    for (int i = mParentheses.count()-1; i >= 0; --i) {
-        if (mParentheses.at(i).relPos == relPos || mParentheses.at(i).relPos-1 == relPos) {
-            return mParentheses.at(i).character;
+    for (int i = mNestingData.parentheses().count()-1; i >= 0; --i) {
+        if (mNestingData.parentheses().at(i).relPos == relPos || mNestingData.parentheses().at(i).relPos-1 == relPos) {
+            return mNestingData.parentheses().at(i).character;
         }
     }
     return QChar();
@@ -42,13 +86,12 @@ QChar BlockData::charForPos(int relPos)
 
 QVector<ParenthesesPos> BlockData::parentheses() const
 {
-    return mParentheses;
+    return mNestingData.parentheses();
 }
 
-void BlockData::setParentheses(const QVector<ParenthesesPos> &parentheses, const NestingImpact &nestingImpact)
+void BlockData::setParentheses(const NestingData &nestingData)
 {
-    mParentheses = parentheses;
-    mNestingImpact = nestingImpact;
+    mNestingData = nestingData;
 }
 
 

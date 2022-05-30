@@ -18,6 +18,8 @@
 #ifndef GAMS_STUDIO_SYNTAX_CODECOMPLETER_H
 #define GAMS_STUDIO_SYNTAX_CODECOMPLETER_H
 
+#include "syntax/syntaxcommon.h"
+
 #include <QListView>
 #include <QAbstractListModel>
 #include <QSortFilterProxyModel>
@@ -67,6 +69,8 @@ enum CodeCompleterType {
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
 
+    ccSufName   = 0x01000000, // temporary suffix name
+
     cc_Start    = 0x00007FE1, // all starting keywords
 
     cc_All      = 0x7FFFFFFF
@@ -82,9 +86,13 @@ private:
     QStringList mDescription;
     QList<int> mDescriptIndex;
     QMap<int, CodeCompleterType> mType;
+    QMap<CodeCompleterType, QPoint> mTempDataIndicees;
     CodeCompleterCasing mCasing;
     int mDollarGroupRow = -1;
     int mPercentGroupRow = -1;
+    int mTempDataStart = -1;
+    QString mLastNameSuffix;
+    QMap<QChar, QStringList> mNameSuffixAssignments;
     Q_OBJECT
 public:
     CodeCompleterModel(QObject *parent = nullptr);
@@ -95,10 +103,13 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int dollarGroupRow() { return mDollarGroupRow; }
     int percentGroupRow() { return mPercentGroupRow; }
+    void setActiveNameSuffix(QString suffix);
+    bool hasActiveNameSuffix();
 
 private:
     void initData();
     void addDynamicData();
+    void removeTempData(CodeCompleterType type);
 };
 
 class FilterCompleterModel : public QSortFilterProxyModel
@@ -150,6 +161,7 @@ public:
 
 signals:
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = 0);
+    void syntaxFlagData(QTextBlock block, syntax::SyntaxFlag flag, QString &value);
 
 public slots:
     void setVisible(bool visible) override;

@@ -491,6 +491,7 @@ HEADERS += \
     syntax/blockcode.h \
     syntax/blockdata.h \
     syntax/htmlconverter.h \
+    syntax/syntaxcommon.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \

@@ -50,17 +50,29 @@ public slots:
     void syntaxKind(int position, int &intKind, int &flavor);
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
+    void syntaxFlagData(QTextBlock block, SyntaxFlag flag, QString &value);
 
 private:
-    void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, QVector<ParenthesesPos> &parentheses,
-                         NestingImpact &nestingImpact);
+    void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData);
 
 private:
     struct CodeRelation {
-        CodeRelation(BlockCode code, CodeRelationIndex prevCri) : blockCode(code), prevCodeRelIndex(prevCri) {}
-        bool operator ==(const CodeRelation &other) {
-            return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex; }
+        CodeRelation(BlockCode code, SyntaxFlags sFlags, CodeRelationIndex prevCri)
+            : blockCode(code), syntaxFlags(sFlags), prevCodeRelIndex(prevCri) {}
+        bool operator ==(const CodeRelation &other) const {
+            return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex
+                    && (syntaxFlags == other.syntaxFlags || equalFlags(other.syntaxFlags)); }
+        bool equalFlags(const SyntaxFlags &other) const {
+            if (syntaxFlags.isNull() || other.isNull() || syntaxFlags->size() != other->size()) return false;
+            SyntaxFlagData::const_iterator iter;
+            for (iter = syntaxFlags->constBegin(); iter != syntaxFlags->constEnd() ; ++iter) {
+                if (!other->contains(iter.key()) || iter.value() != other->value(iter.key()))
+                    return false;
+            }
+            return true;
+        }
         BlockCode blockCode;
+        SyntaxFlags syntaxFlags;
         CodeRelationIndex prevCodeRelIndex;
     };
 //    typedef QPair<KindIndex, CodeIndex> KindCodeX;
@@ -70,8 +82,8 @@ private:
     void initKind(int debug, SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
     void initKind(SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
 
-    int addCode(BlockCode code, CodeRelationIndex parentIndex);
-    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, int nest = 0);
+    int addCode(BlockCode code, SyntaxFlags synFlags, CodeRelationIndex parentIndex);
+    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, SyntaxFlags synFlags, int nest = 0);
     int purgeCode(CodeRelationIndex cri);
     QString codeDeb(CodeRelationIndex cri);
     void syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor);
@@ -94,7 +106,6 @@ private:
     static const QVector<SyntaxKind> cInvalidParenthesesSyntax;
     static const QString cValidParentheses;
     static const QString cSpecialBlocks;
-    static const QString cFlavorChars;
 };
 
 } // namespace syntax
