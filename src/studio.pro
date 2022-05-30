@@ -489,6 +489,7 @@ HEADERS += \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
     syntax/blockdata.h \
+    syntax/syntaxcommon.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \
     syntax/syntaxhighlighter.h \

@@ -1,3 +1,8 @@
+Version 1.10.3
+==================
+- support name-tag for pairs `echo`, `put`, and `embeddedCode`
+- fixed GAMS Engine not adding files in subfolders from *.efi-file
+
 Version 1.10.2
 ==================
 - fixed crash on closing a tab when project settings are active

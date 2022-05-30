@@ -27,6 +27,7 @@
 #include "editors/abstractedit.h"
 #include "syntax/textmark.h"
 #include "syntax/blockdata.h"
+#include "syntax/syntaxcommon.h"
 
 class QPaintEvent;
 class QResizeEvent;
@@ -150,6 +151,7 @@ signals:
     void requestSyntaxKind(int position, int &intKind, int &flavor);
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
     void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
+    void syntaxFlagData(QTextBlock block, syntax::SyntaxFlag flag, QString &value);
     void searchFindNextPressed();
     void searchFindPrevPressed();
     void requestAdvancedActions(QList<QAction*>* actions);
