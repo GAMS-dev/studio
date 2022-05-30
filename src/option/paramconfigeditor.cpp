@@ -525,8 +525,9 @@ QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
 bool ParamConfigEditor::event(QEvent *event)
 {
     if (event->type() == QEvent::FontChange) {
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
         ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-//        ui->ParamCfgDefTreeView->header()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
         qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
         for (int i = 0; i < ui->ParamCfgTableView->horizontalHeader()->count(); ++i) {
             ui->ParamCfgTableView->horizontalHeader()->resizeSection(i, qRound(ui->ParamCfgTableView->horizontalHeader()->sectionSize(i) * scale));
