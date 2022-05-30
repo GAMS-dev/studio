@@ -4373,40 +4373,39 @@ void MainWindow::invalidateResultsView()
 
 void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily)
 {
-    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
-        mGroupFontSize.insert(fontGroup, fontSize);
-        QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
-        if (fontGroup == fgLog) {
-            for (QWidget* log: openLogs()) {
-                if (ViewHelper::toTextView(log))
-                    ViewHelper::toTextView(log)->edit()->setFont(f);
-                else
-                    log->setFont(f);
-            }
-            mSyslog->setFont(f);
-        } else {
-            for (QWidget* edit: openEditors()) {
-                if (fontGroup == fgText) {
-                    if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
-                        ae->setFont(f);
-                    } else if (TextView *tv = ViewHelper::toTextView(edit)) {
-                        tv->edit()->setFont(f);
-                    }
-                } else if (fontGroup == fgTable) {
-                    // TODO(JM) handle non-fixed fonts (GDX, REF, etc.)
-                    if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
-                        gdx->setFont(f);
-                    } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(edit)) {
-                        sow->setFont(f);
-                    } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(edit)) {
-                        guc->setFont(f);
-                    } else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(edit)) {
-                        ref->setFont(f);
-                    }
+//    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
+    mGroupFontSize.insert(fontGroup, fontSize);
+    QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
+    if (fontGroup == fgLog) {
+        for (QWidget* log: openLogs()) {
+            if (ViewHelper::toTextView(log))
+                ViewHelper::toTextView(log)->edit()->setFont(f);
+            else
+                log->setFont(f);
+        }
+        mSyslog->setFont(f);
+    } else {
+        for (QWidget* edit: openEditors()) {
+            if (fontGroup == fgText) {
+                if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
+                    ae->setFont(f);
+                } else if (TextView *tv = ViewHelper::toTextView(edit)) {
+                    tv->edit()->setFont(f);
+                }
+            } else if (fontGroup == fgTable) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
+                    gdx->setFont(f);
+                } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(edit)) {
+                    sow->setFont(f);
+                } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(edit)) {
+                    guc->setFont(f);
+                } else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(edit)) {
+                    ref->setFont(f);
                 }
             }
         }
     }
+//    }
 }
 
 void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)

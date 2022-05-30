@@ -502,8 +502,8 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
 
+    edit->installEventFilter(this);
     if (aEdit) {
-        edit->installEventFilter(this);
         if (!mDocument)
             linkDocument(aEdit->document());
         else
@@ -528,7 +528,6 @@ void FileMeta::addEditor(QWidget *edit)
     }
 
     if (TextView* tv = ViewHelper::toTextView(edit)) {
-        tv->edit()->installEventFilter(this);
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);

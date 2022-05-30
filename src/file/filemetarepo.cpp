@@ -366,7 +366,6 @@ void FileMetaRepo::checkMissing()
 
 void FileMetaRepo::fontChanged(FileMeta *fileMeta, QFont f)
 {
-    if (fileMeta->fontGroup() != FontGroup::fgText) return;
     emit setGroupFontSize(fileMeta->fontGroup(), f.pointSize());
 }
 
