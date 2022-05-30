@@ -64,6 +64,9 @@ public:
     void zoomOut(int range = 1);
     bool event(QEvent *event) override;
 
+protected:
+    void wheelEvent(QWheelEvent *event) override;
+
 private slots:
     void hideUniverseSymbol();
     void toggleSearchColumns(bool checked);

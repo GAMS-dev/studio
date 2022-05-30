@@ -35,6 +35,7 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 #include <QApplication>
+#include <QWheelEvent>
 
 namespace gams {
 namespace studio {
@@ -96,6 +97,24 @@ bool GdxViewer::event(QEvent *event)
         mPrevFontHeight = fontMetrics().height();
     }
     return QWidget::event(event);
+}
+
+void GdxViewer::wheelEvent(QWheelEvent *event)
+{
+    if (event->modifiers() & Qt::ControlModifier) {
+        const int delta = event->angleDelta().y();
+        if (delta < 0) {
+            int pix = fontInfo().pixelSize();
+            zoomOut();
+            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
+        } else if (delta > 0) {
+            int pix = fontInfo().pixelSize();
+            zoomIn();
+            if (pix == fontInfo().pixelSize()) zoomOut();
+        }
+        return;
+    }
+    QWidget::wheelEvent(event);
 }
 
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
