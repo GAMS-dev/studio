@@ -17,6 +17,8 @@ QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
     QString backColor;
 #ifndef __APPLE__
     backColor = QString("background-color: %1;").arg(background.name());
+#else
+    Q_UNUSED(background)
 #endif
     res.append(QString("<html><body>\n<!--StartFragment--><div style=\"color: #d4d4d4;"
                        "font-family: Consolas, 'Courier New', monospace;font-weight: normal;"
