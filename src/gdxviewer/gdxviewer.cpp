@@ -77,6 +77,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 GdxViewer::~GdxViewer()
 {
     freeSymbols();
+    delete mState;
     delete mGdxMutex;
     delete ui;
 }
@@ -150,6 +151,7 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
         }
         return initError;
+        applyState();
     }
     return 0;
 }
@@ -195,6 +197,7 @@ void GdxViewer::releaseFile()
 void GdxViewer::invalidate()
 {
     if (isEnabled()) {
+        saveState();
         setEnabled(false);
         releaseFile();
     }
@@ -203,6 +206,7 @@ void GdxViewer::invalidate()
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
     selectedSymbol->loadData();
+    QTimer::singleShot(0,this, [this, selectedSymbol](){applySymbolState(selectedSymbol);});
 }
 
 void GdxViewer::copySelectionToClipboard()
@@ -342,6 +346,51 @@ int GdxViewer::errorCallback(int count, const char *message)
     logger->append(message, LogMsgType::Error);
     return 0;
 }
+
+void GdxViewer::saveState()
+{
+    if (mState != NULL)
+        delete mState;
+    mState = new GdxViewerState();
+    mState->setSymbolTableFilter(ui->lineEdit->text());
+    mState->setAllColumnsChecked(ui->cbToggleSearch->isChecked());
+    for (GdxSymbolView* symView : mSymbolViews) {
+        if (symView != NULL && symView->sym()->isLoaded()) {
+            GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
+            symView->saveState(symViewState);
+        }
+    }
+}
+
+void GdxViewer::applyState()
+{
+    ui->lineEdit->setText(mState->symbolTableFilter());
+    ui->cbToggleSearch->setChecked(mState->allColumnsChecked());
+}
+
+void GdxViewer::applySymbolState(GdxSymbol *sym)
+{
+    QString name = sym->name();
+    if (mState) {
+        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
+        if (symViewState) {
+            GdxSymbolView* symView = symbolViewByName(name);
+            symView->applyState(symViewState);
+            mState->deleteSymbolViewState(name);
+        }
+    }
+}
+
+GdxSymbolView *GdxViewer::symbolViewByName(QString name)
+{
+    for (GdxSymbolView* symView : mSymbolViews) {
+        if (symView != NULL) {
+            if (symView->sym()->name() == name)
+                return symView;
+        }
+    }
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

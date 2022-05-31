@@ -639,6 +639,24 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
     return false;
 }
 
+void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
+{
+    if (symViewState->tableView())
+        showTableView();
+    else
+        showListView();
+
+    mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
+}
+
+void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
+{
+    symViewState->setSqueezeTrailingZeroes(mSqZeroes->isChecked());
+    symViewState->setDim(mSym->dim());
+    symViewState->setType(mSym->type());
+    symViewState->setTableView(mTableView);
+}
+
 void GdxSymbolView::enableControls()
 {
     if (mSym->hasInvalidUel()) {

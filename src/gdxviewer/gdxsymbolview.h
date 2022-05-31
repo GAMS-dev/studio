@@ -28,6 +28,7 @@
 #include <QSpinBox>
 #include <QComboBox>
 #include "gdxsymboltable.h"
+#include "gdxsymbolviewstate.h"
 #include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
 
@@ -119,6 +120,8 @@ private:
     // QObject interface
 public:
     bool eventFilter(QObject *watched, QEvent *event);
+    void applyState(GdxSymbolViewState* symViewState);
+    void saveState(GdxSymbolViewState* symViewState);
 };
 
 
