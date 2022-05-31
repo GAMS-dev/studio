@@ -477,11 +477,13 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
                     syncEdits << wid;
             }
         }
-        for (QWidget *wid : syncEdits) {
-            if (!wid->font().isCopyOf(*f))
-                wid->setFont(*f);
+        if (f) {
+            for (QWidget *wid : syncEdits) {
+                if (!wid->font().isCopyOf(*f))
+                    wid->setFont(*f);
+            }
+            emit fontChanged(this, *f);
         }
-        if (f) emit fontChanged(this, *f);
     }
     return QObject::eventFilter(sender, event);
 }
