@@ -829,6 +829,7 @@ QString EngineProcess::modelName() const
 
 bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
 {
+    int listSize = list.size();
     QFile file(efiFile);
     if (!file.exists()) return false;
     if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
@@ -852,7 +853,7 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
         }
     }
     file.close();
-    return true;
+    return list.size() > listSize;
 }
 
 void EngineProcess::setSelectedInstance(const QString &selectedInstance)
