@@ -792,7 +792,7 @@ void EngineProcess::startPacking2()
     QString baseName = modelName();
     params << "-8"<< baseName+"/"+baseName+".zip";
     if (!addFilenames(mOutPath+".efi", params)) {
-        setProcState(Proc3Queued);
+        pack2Completed(0, QProcess::ExitStatus::NormalExit);
         return;
     }
 
