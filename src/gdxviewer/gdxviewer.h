@@ -20,11 +20,11 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
-#include <QWidget>
 #include <QVector>
 #include <QItemSelection>
 #include <QTextCodec>
 
+#include "abstractview.h"
 #include "gdxcc.h"
 #include "common.h"
 #include "gdxviewerstate.h"
@@ -44,7 +44,7 @@ class GdxSymbol;
 class GdxSymbolTableModel;
 class GdxSymbolView;
 
-class GdxViewer : public QWidget
+class GdxViewer : public AbstractView
 {
     Q_OBJECT
 

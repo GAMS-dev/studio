@@ -42,7 +42,7 @@ namespace studio {
 namespace gdxviewer {
 
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
-    : QWidget(parent),
+    : AbstractView(parent),
       ui(new Ui::GdxViewer),
       mGdxFile(gdxFile),
       mSystemDirectory(systemDirectory),
