@@ -485,8 +485,6 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
             emit newStdChannelData("\nGAMS terminated with exit code " +code+ "\n");
-            completed(-1);
-            return;
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
@@ -792,7 +790,7 @@ void EngineProcess::startPacking2()
     QString baseName = modelName();
     params << "-8"<< baseName+"/"+baseName+".zip";
     if (!addFilenames(mOutPath+".efi", params)) {
-        setProcState(Proc3Queued);
+        pack2Completed(0, QProcess::ExitStatus::NormalExit);
         return;
     }
 
@@ -829,6 +827,7 @@ QString EngineProcess::modelName() const
 
 bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
 {
+    int listSize = list.size();
     QFile file(efiFile);
     if (!file.exists()) return false;
     if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
@@ -852,7 +851,7 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
         }
     }
     file.close();
-    return true;
+    return list.size() > listSize;
 }
 
 void EngineProcess::setSelectedInstance(const QString &selectedInstance)
