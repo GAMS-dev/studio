@@ -138,6 +138,16 @@ void GdxSymbolTable::createSortIndex()
     }
 }
 
+int GdxSymbolTable::getUelCount() const
+{
+    return mUelCount;
+}
+
+int GdxSymbolTable::label2Uel(QString label)
+{
+    return mLabel2Uel.value(label, -1);
+}
+
 int GdxSymbolTable::symbolCount() const
 {
     return mSymbolCount;
@@ -162,7 +172,9 @@ void GdxSymbolTable::loadUel2Label()
     int map;
     for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
-        mUel2Label.append(mCodec->toUnicode(label));
+        QString l = mCodec->toUnicode(label);
+        mUel2Label.append(l);
+        mLabel2Uel[l] = i;
     }
 }
 

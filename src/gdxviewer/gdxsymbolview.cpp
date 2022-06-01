@@ -641,6 +641,8 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 
 void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 {
+    applyFilters(symViewState);
+
     if (symViewState->tableView())
         showTableView();
     else
@@ -649,12 +651,44 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
 }
 
+void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
+{
+    // apply uel filters
+    for (int i=0; i<mSym->dim(); i++) {
+        if (!symViewState->uncheckedLabels().at(i).empty()) {
+            mSym->setFilterActive(i);
+            for (QString l : symViewState->uncheckedLabels().at(i)) {
+                int uel = mGdxSymbolTable->label2Uel(l);
+                if (uel != -1)
+                    mSym->showUelInColumn().at(i)[uel] = false;
+            }
+        }
+    }
+    mSym->filterRows();
+}
+
 void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 {
+    saveFilters(symViewState);
     symViewState->setSqueezeTrailingZeroes(mSqZeroes->isChecked());
     symViewState->setDim(mSym->dim());
     symViewState->setType(mSym->type());
     symViewState->setTableView(mTableView);
+}
+
+void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
+{
+    // save uel filters
+    QVector<QStringList> uncheckedLabels;
+    for (int i=0; i<mSym->dim(); i++) {
+        QStringList labels;
+        for (int u : *mSym->uelsInColumn().at(i)) {
+            if (!mSym->showUelInColumn().at(i)[u])
+                labels.append(mGdxSymbolTable->uel2Label(u));
+        }
+        uncheckedLabels.append(labels);
+    }
+    symViewState->setUncheckedLabels(uncheckedLabels);
 }
 
 void GdxSymbolView::enableControls()

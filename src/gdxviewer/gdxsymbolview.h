@@ -121,7 +121,9 @@ private:
 public:
     bool eventFilter(QObject *watched, QEvent *event);
     void applyState(GdxSymbolViewState* symViewState);
+    void applyFilters(GdxSymbolViewState* symViewState);
     void saveState(GdxSymbolViewState* symViewState);
+    void saveFilters(GdxSymbolViewState* symViewState);
 };
 
 

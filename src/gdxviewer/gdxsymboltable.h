@@ -53,6 +53,10 @@ public:
 
     QTextCodec *codec() const;
 
+    int getUelCount() const;
+
+    int label2Uel(QString label);
+
 private:
     QStringList mHeaderText;
     QString typeAsString(int type) const;
@@ -67,6 +71,7 @@ private:
 
     QList<GdxSymbol*> mGdxSymbols;
     QStringList mUel2Label;
+    QMap<QString, int> mLabel2Uel;
     QStringList mStrPool;
 
     std::vector<int> mLabelCompIdx;

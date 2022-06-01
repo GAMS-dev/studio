@@ -25,11 +25,16 @@ public:
     bool tableView() const;
     void setTableView(bool tableView);
 
+    QVector<QStringList> uncheckedLabels() const;
+
+    void setUncheckedLabels(const QVector<QStringList> &uncheckedLabels);
+
 private:
     bool mSqueezeTrailingZeroes;
     int mDim;
     int mType;
     bool mTableView;
+    QVector<QStringList> mUncheckedLabels;
 };
 
 } // namespace gdxviewer

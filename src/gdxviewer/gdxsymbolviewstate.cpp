@@ -49,6 +49,17 @@ void GdxSymbolViewState::setTableView(bool tableView)
     mTableView = tableView;
 }
 
+QVector<QStringList> GdxSymbolViewState::uncheckedLabels() const
+{
+    return mUncheckedLabels;
+}
+
+void GdxSymbolViewState::setUncheckedLabels(const QVector<QStringList> &uncheckedLabels)
+{
+    mUncheckedLabels = uncheckedLabels;
+}
+
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
