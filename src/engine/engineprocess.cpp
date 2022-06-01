@@ -485,8 +485,6 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
             emit newStdChannelData("\nGAMS terminated with exit code " +code+ "\n");
-            completed(-1);
-            return;
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
