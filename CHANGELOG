@@ -1,7 +1,7 @@
 Version 1.10.3  *
 ==================
 - fixed GAMS Engine pauses processing when no *.efi-file is present
-- always get Engine results if present
+- fixed problem receiving results from Engine when there is an execution error
 
 Version 1.10.3
 ==================
