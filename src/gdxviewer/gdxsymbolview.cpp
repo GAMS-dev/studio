@@ -36,6 +36,7 @@
 #include <QLabel>
 #include <QTimer>
 
+
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -648,7 +649,11 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     else
         showListView();
 
+    mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
+    mRestoreSqZeros = symViewState->restoreSqZeros();
+    mPrecision->setValue(symViewState->numericalPrecision());
+    mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
@@ -687,7 +692,12 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
 void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 {
     saveFilters(symViewState);
+    symViewState->setSqDefaults(mSqDefaults->isChecked());
     symViewState->setSqueezeTrailingZeroes(mSqZeroes->isChecked());
+    symViewState->setRestoreSqZeros(mRestoreSqZeros);
+    symViewState->setNumericalPrecision(mPrecision->value());
+    symViewState->setValFormatIndex(mValFormat->currentIndex());
+
     symViewState->setDim(mSym->dim());
     symViewState->setType(mSym->type());
     symViewState->setTableView(mTableView);

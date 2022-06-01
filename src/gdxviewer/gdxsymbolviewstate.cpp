@@ -159,6 +159,46 @@ void GdxSymbolViewState::setShowAcronym(const QVector<bool> &showAcronym)
     mShowAcronym = showAcronym;
 }
 
+int GdxSymbolViewState::numericalPrecision() const
+{
+    return mNumericalPrecision;
+}
+
+void GdxSymbolViewState::setNumericalPrecision(int numericalPrecision)
+{
+    mNumericalPrecision = numericalPrecision;
+}
+
+bool GdxSymbolViewState::restoreSqZeros() const
+{
+    return mRestoreSqZeros;
+}
+
+void GdxSymbolViewState::setRestoreSqZeros(bool restoreSqZeros)
+{
+    mRestoreSqZeros = restoreSqZeros;
+}
+
+int GdxSymbolViewState::valFormatIndex() const
+{
+    return mValFormatIndex;
+}
+
+void GdxSymbolViewState::setValFormatIndex(int valFormatIndex)
+{
+    mValFormatIndex = valFormatIndex;
+}
+
+bool GdxSymbolViewState::sqDefaults() const
+{
+    return mSqDefaults;
+}
+
+void GdxSymbolViewState::setSqDefaults(bool sqDefaults)
+{
+    mSqDefaults = sqDefaults;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

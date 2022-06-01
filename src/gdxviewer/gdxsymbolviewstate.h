@@ -59,8 +59,24 @@ public:
     QVector<bool> showAcronym() const;
     void setShowAcronym(const QVector<bool> &showAcronym);
 
+    int numericalPrecision() const;
+    void setNumericalPrecision(int numericalPrecision);
+
+    bool restoreSqZeros() const;
+    void setRestoreSqZeros(bool restoreSqZeros);
+
+    int valFormatIndex() const;
+    void setValFormatIndex(int valFormatIndex);
+
+    bool sqDefaults() const;
+    void setSqDefaults(bool sqDefaults);
+
 private:
+    bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
+    bool mRestoreSqZeros;
+    int mNumericalPrecision;
+    int mValFormatIndex;
     int mDim;
     int mType;
     bool mTableView;

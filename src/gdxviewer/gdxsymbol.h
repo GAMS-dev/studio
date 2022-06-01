@@ -103,6 +103,7 @@ public:
 
     int numericalColumnCount() const;
 
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();
@@ -166,8 +167,6 @@ private:
     std::vector<ColumnFilter*> mColumnFilters;
     std::vector<ValueFilter*> mValueFilters;
     int mNumericalColumnCount;
-
-    void applyState();
 };
 
 } // namespace gdxviewer
