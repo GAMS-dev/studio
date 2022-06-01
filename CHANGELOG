@@ -1,3 +1,8 @@
+Version 1.10.4
+==================
+- fixed GAMS Engine pauses processing when no *.efi-file is present
+- fixed problem receiving results from GAMS Engine when there is an execution error
+
 Version 1.10.3
 ==================
 - support name-tag for pairs `echo`, `put`, and `embeddedCode`
