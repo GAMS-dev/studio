@@ -101,6 +101,8 @@ public:
 
     static const QList<QString> superScript;
 
+    int numericalColumnCount() const;
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();

@@ -436,6 +436,11 @@ void GdxSymbol::initNumericalBounds()
     }
 }
 
+int GdxSymbol::numericalColumnCount() const
+{
+    return mNumericalColumnCount;
+}
+
 bool GdxSymbol::hasInvalidUel() const
 {
     return mHasInvalidUel;
