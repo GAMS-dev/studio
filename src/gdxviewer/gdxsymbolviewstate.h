@@ -75,11 +75,11 @@ private:
     bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
     bool mRestoreSqZeros;
+    bool mTableView;
     int mNumericalPrecision;
     int mValFormatIndex;
     int mDim;
     int mType;
-    bool mTableView;
 
     // column filters
     QVector<QStringList> mUncheckedLabels;

@@ -662,7 +662,7 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
     for (int i=0; i<mSym->dim(); i++) {
         if (!symViewState->uncheckedLabels().at(i).empty()) {
             mSym->setFilterActive(i);
-            for (QString l : symViewState->uncheckedLabels().at(i)) {
+            for (const QString &l : symViewState->uncheckedLabels().at(i)) {
                 int uel = mGdxSymbolTable->label2Uel(l);
                 if (uel != -1)
                     mSym->showUelInColumn().at(i)[uel] = false;
@@ -674,15 +674,15 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
     for (int i=0; i<mSym->numericalColumnCount(); i++) {
         if (symViewState->valFilterActive().at(i)) {
             mSym->setFilterActive(mSym->dim()+i);
-            mSym->valueFilter(i)->setCurrentMin(symViewState->currentMin()[i]);
-            mSym->valueFilter(i)->setCurrentMax(symViewState->currentMax()[i]);
-            mSym->valueFilter(i)->setExclude(symViewState->exclude()[i]);
-            mSym->valueFilter(i)->setShowEps(symViewState->showEps()[i]);
-            mSym->valueFilter(i)->setShowPInf(symViewState->showPInf()[i]);
-            mSym->valueFilter(i)->setShowMInf(symViewState->showMInf()[i]);
-            mSym->valueFilter(i)->setShowNA(symViewState->showNA()[i]);
-            mSym->valueFilter(i)->setShowUndef(symViewState->showUndef()[i]);
-            mSym->valueFilter(i)->setShowAcronym(symViewState->showAcronym()[i]);
+            mSym->valueFilter(i)->setCurrentMin(symViewState->currentMin().at(i));
+            mSym->valueFilter(i)->setCurrentMax(symViewState->currentMax().at(i));
+            mSym->valueFilter(i)->setExclude(symViewState->exclude().at(i));
+            mSym->valueFilter(i)->setShowEps(symViewState->showEps().at(i));
+            mSym->valueFilter(i)->setShowPInf(symViewState->showPInf().at(i));
+            mSym->valueFilter(i)->setShowMInf(symViewState->showMInf().at(i));
+            mSym->valueFilter(i)->setShowNA(symViewState->showNA().at(i));
+            mSym->valueFilter(i)->setShowUndef(symViewState->showUndef().at(i));
+            mSym->valueFilter(i)->setShowAcronym(symViewState->showAcronym().at(i));
         }
     }
 
@@ -732,7 +732,7 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
     QVector<bool> showUndef(colCount);
     QVector<bool> showAcronym(colCount);
 
-    for(int i=0; i<colCount; i++) {
+    for (int i=0; i<colCount; i++) {
         ValueFilter* vf = mSym->valueFilter(i);
         if (mSym->filterActive(mSym->dim()+i)) {
             valFilterActive[i] = true;

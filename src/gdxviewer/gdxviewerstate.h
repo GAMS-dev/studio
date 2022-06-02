@@ -16,19 +16,15 @@ public:
     GdxViewerState();
     ~GdxViewerState();
 
-    QString symbolTableFilter() const;
-    void setSymbolTableFilter(const QString &symbolTableFilter);
-
-    bool allColumnsChecked() const;
-    void setAllColumnsChecked(bool allColumnsChecked);
-
     GdxSymbolViewState* symbolViewState(QString name) const;
     GdxSymbolViewState* addSymbolViewState(QString name);
     void deleteSymbolViewState(QString name);
 
+    QByteArray symbolTableHeaderState() const;
+    void setSymbolTableHeaderState(const QByteArray &symbolTableHeaderState);
+
 private:
-    QString mSymbolTableFilter;
-    bool mAllColumnsChecked;
+    QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
 };
 

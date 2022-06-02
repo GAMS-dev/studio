@@ -150,8 +150,8 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
             mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
         }
-        return initError;
         applyState();
+        return initError;
     }
     return 0;
 }
@@ -352,9 +352,8 @@ void GdxViewer::saveState()
     if (mState != NULL)
         delete mState;
     mState = new GdxViewerState();
-    mState->setSymbolTableFilter(ui->lineEdit->text());
-    mState->setAllColumnsChecked(ui->cbToggleSearch->isChecked());
-    for (GdxSymbolView* symView : mSymbolViews) {
+    mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
+    for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView != NULL && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
@@ -364,8 +363,7 @@ void GdxViewer::saveState()
 
 void GdxViewer::applyState()
 {
-    ui->lineEdit->setText(mState->symbolTableFilter());
-    ui->cbToggleSearch->setChecked(mState->allColumnsChecked());
+    ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
 }
 
 void GdxViewer::applySymbolState(GdxSymbol *sym)
@@ -383,12 +381,13 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
 
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
-    for (GdxSymbolView* symView : mSymbolViews) {
+    for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView != NULL) {
             if (symView->sym()->name() == name)
                 return symView;
         }
     }
+    return nullptr;
 }
 
 

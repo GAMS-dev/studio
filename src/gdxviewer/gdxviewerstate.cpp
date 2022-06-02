@@ -16,26 +16,6 @@ GdxViewerState::~GdxViewerState()
     }
 }
 
-QString GdxViewerState::symbolTableFilter() const
-{
-    return mSymbolTableFilter;
-}
-
-void GdxViewerState::setSymbolTableFilter(const QString &symbolTableFilter)
-{
-    mSymbolTableFilter = symbolTableFilter;
-}
-
-bool GdxViewerState::allColumnsChecked() const
-{
-    return mAllColumnsChecked;
-}
-
-void GdxViewerState::setAllColumnsChecked(bool allColumnsChecked)
-{
-    mAllColumnsChecked = allColumnsChecked;
-}
-
 GdxSymbolViewState* GdxViewerState::symbolViewState(QString name) const
 {
     if (mSymbolViewState.contains(name))
@@ -54,6 +34,16 @@ void GdxViewerState::deleteSymbolViewState(QString name)
 {
     delete mSymbolViewState[name];
     mSymbolViewState.remove(name);
+}
+
+QByteArray GdxViewerState::symbolTableHeaderState() const
+{
+    return mSymbolTableHeaderState;
+}
+
+void GdxViewerState::setSymbolTableHeaderState(const QByteArray &symbolTableHeaderState)
+{
+    mSymbolTableHeaderState = symbolTableHeaderState;
 }
 
 } // namespace gdxviewer
