@@ -783,6 +783,11 @@ void SearchDialog::jumpToResult(int matchNr)
 
     Result r = mSearch.results().at(matchNr);
 
+    if (r.parentGroup() == -1) {
+        PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
+        if (fn) r.setParentGroup(fn->parentNode()->id());
+    }
+
     // create group for search results
     if (r.parentGroup() == -1 && !Settings::settings()->toBool(skOpenInCurrent)) {
         QString name = "Search: " + ui->combo_search->currentText();
