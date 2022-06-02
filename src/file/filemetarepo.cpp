@@ -54,7 +54,9 @@ FileMeta *FileMetaRepo::fileMeta(const QString &location) const
 FileMeta *FileMetaRepo::fileMeta(QWidget* const &editor) const
 {
     if (!editor) return nullptr;
-    return fileMeta(editor->property("location").toString());
+    if (editor->property("location").isValid())
+        return fileMeta(editor->property("location").toString());
+    else return nullptr;
 }
 
 const QList<FileMeta *> FileMetaRepo::fileMetas() const
