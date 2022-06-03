@@ -1,10 +1,20 @@
-Version 1.10.3 *
+Version 1.10.5 *
 ==================
 - fixed bug in search that allowed opening files without a group
 - fixed search not reacting to changes in project file list
 - fixed search not always adding new files to correct search group
 - fixed behavior for opening files via search when file had no editor yet
 - fixed potential crash when closing Studio while search dialog is open
+
+Version 1.10.4
+==================
+- fixed GAMS Engine pauses processing when no *.efi-file is present
+- fixed problem receiving results from GAMS Engine when there is an execution error
+
+Version 1.10.3
+==================
+- support name-tag for pairs `echo`, `put`, and `embeddedCode`
+- fixed GAMS Engine not adding files in subfolders from *.efi-file
 
 Version 1.10.2
 ==================

@@ -156,6 +156,7 @@ enum ProcState {
     ProcIdle,
     Proc1Compile,
     Proc2Pack,
+    Proc2Pack2,
     Proc3Queued,
     Proc4Monitor,
     Proc5GetResult,

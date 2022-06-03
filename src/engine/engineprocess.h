@@ -117,6 +117,7 @@ private slots:
     void pollStatus();
     void compileCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void packCompleted(int exitCode, QProcess::ExitStatus exitStatus);
+    void pack2Completed(int exitCode, QProcess::ExitStatus exitStatus);
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
@@ -129,9 +130,10 @@ private:
     QStringList remoteParameters() const;
     QByteArray convertReferences(const QByteArray &data);
     void startPacking();
+    void startPacking2();
     void startUnpacking();
     QString modelName() const;
-    void addFilenames(QString efiFile, QStringList &list);
+    bool addFilenames(const QString &efiFile, QStringList &list);
 
     EngineManager *mManager;
     QString mHost;

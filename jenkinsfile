@@ -19,7 +19,7 @@ def QT_FOR_LINUX = "/opt/Qt/5.15.2/bin"
 def QT_FOR_MACOS = "/Users/distrib/Qt/5.15.2/clang_64/bin"
 def QT_FOR_WINDOWS = "C:\\Qt\\5.15.2\\msvc2019_64\\bin"
 
-def GAMS_FOR_LINUX = "/opt/gams/gams39.0_linux_x64_64_sfx"
+def GAMS_FOR_LINUX = "/opt/gams/gams39.1_linux_x64_64_sfx"
 def GAMS_FOR_MACOS = "/Library/Frameworks/GAMS.framework/Versions/39/Resources"
 def GAMS_FOR_WINDOWS = "C:\\GAMS\\39"
 
