@@ -783,8 +783,8 @@ void SearchDialog::jumpToResult(int matchNr)
 
     Result r = mSearch.results().at(matchNr);
 
+    PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
     if (r.parentGroup() == -1) {
-        PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
         if (fn) r.setParentGroup(fn->parentNode()->id());
     }
 
@@ -806,11 +806,13 @@ void SearchDialog::jumpToResult(int matchNr)
         }
     }
 
-    PExFileNode* node = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
-    if (!node) EXCEPT() << "File not found: " << r.filepath();
+    if (!fn) {
+        fn = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
+        if (!fn) EXCEPT() << "File not found: " << r.filepath();
+    }
+    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : fn->assignedProject()->id();
+    fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 
-    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
-    node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 }
 
 void SearchDialog::setSearchedFiles(int files)
