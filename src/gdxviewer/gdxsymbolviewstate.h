@@ -72,6 +72,9 @@ public:
     QVector<ValueFilterState> valueFilterState() const;
     void setValueFilterState(const QVector<ValueFilterState> &valueFilterState);
 
+    QVector<bool> getShowAttributes() const;
+    void setShowAttributes(const QVector<bool> &value);
+
 private:
     bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
@@ -82,6 +85,8 @@ private:
     int mValFormatIndex;
     int mDim;
     int mType;
+
+    QVector<bool> showAttributes;
 
     // table view state
     int mTvColDim;

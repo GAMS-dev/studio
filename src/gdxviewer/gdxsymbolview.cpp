@@ -652,6 +652,12 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mRestoreSqZeros = symViewState->restoreSqZeros();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
+
+    if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
+        for (int i=0; i< GMS_VAL_MAX; i++)
+            mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
+    }
+
     ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
     if (symViewState->tableViewLoaded()) {
         showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
@@ -708,6 +714,11 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setType(mSym->type());
     symViewState->setTableViewActive(mTableView);
     symViewState->setListViewHeaderState(ui->tvListView->horizontalHeader()->saveState());
+
+    QVector<bool> showAttributes;
+    for (QCheckBox* cb : mShowValColActions)
+        showAttributes.append(cb->isChecked());
+    symViewState->setShowAttributes(showAttributes);
 
     symViewState->setTableViewLoaded(mTvModel != nullptr);
     if (symViewState->tableViewLoaded()) {

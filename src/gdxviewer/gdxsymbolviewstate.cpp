@@ -159,6 +159,16 @@ void GdxSymbolViewState::setValueFilterState(const QVector<ValueFilterState> &va
     mValueFilterState = valueFilterState;
 }
 
+QVector<bool> GdxSymbolViewState::getShowAttributes() const
+{
+    return showAttributes;
+}
+
+void GdxSymbolViewState::setShowAttributes(const QVector<bool> &value)
+{
+    showAttributes = value;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio
