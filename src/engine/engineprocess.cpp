@@ -192,10 +192,25 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
 
 void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
+    mSubProc->deleteLater();
+    mSubProc = nullptr;
     if (exitCode || exitStatus == QProcess::CrashExit) {
         emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
         completed(exitCode);
     } else if (mProcState == Proc2Pack) {
+        setProcState(Proc2Pack2);
+        startPacking2();
+    }
+}
+
+void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus)
+{
+    mSubProc->deleteLater();
+    mSubProc = nullptr;
+    if (exitCode || exitStatus == QProcess::CrashExit) {
+        emit newStdChannelData("\nErrors while packing2. exitCode: " + QString::number(exitCode).toUtf8());
+        completed(exitCode);
+    } else if (mProcState == Proc2Pack2) {
         QString modlName = modelName();
         QString zip = mOutPath + QDir::separator() + modlName + ".zip";
 
@@ -204,8 +219,6 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
         mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance);
         setProcState(Proc3Queued);
     }
-    mSubProc->deleteLater();
-    mSubProc = nullptr;
 }
 
 void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
@@ -472,8 +485,6 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
         if (gamsExitCode) {
             QByteArray code = QString::number(gamsExitCode).toLatin1();
             emit newStdChannelData("\nGAMS terminated with exit code " +code+ "\n");
-            completed(-1);
-            return;
         }
         setProcState(Proc5GetResult);
         mManager->getOutputFile();
@@ -737,8 +748,8 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
 
 void EngineProcess::startPacking()
 {
+    // moves created (necessary) files into zip transfer file
     GmszipProcess *subProc = new GmszipProcess(this);
-//    connect(subProc, &GmszipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
     connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), this, &EngineProcess::packCompleted);
     connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
@@ -769,7 +780,28 @@ void EngineProcess::startPacking()
     subProc->setWorkingDirectory(mOutPath);
     QStringList params;
     params << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00";
-    addFilenames(mOutPath+".efi", params);
+    subProc->setParameters(params);
+    subProc->execute();
+}
+
+void EngineProcess::startPacking2()
+{
+    QStringList params;
+    QString baseName = modelName();
+    params << "-8"<< baseName+"/"+baseName+".zip";
+    if (!addFilenames(mOutPath+".efi", params)) {
+        pack2Completed(0, QProcess::ExitStatus::NormalExit);
+        return;
+    }
+
+    // copies additional files (from *.efi) into zip transfer file
+    GmszipProcess *subProc = new GmszipProcess(this);
+    connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmszipProcess::finished), this, &EngineProcess::pack2Completed);
+    connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
+    connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
+
+    mSubProc = subProc;
+    subProc->setWorkingDirectory(workingDirectory());
     subProc->setParameters(params);
     subProc->execute();
 }
@@ -793,33 +825,33 @@ QString EngineProcess::modelName() const
     return QFileInfo(mOutPath).fileName();
 }
 
-void EngineProcess::addFilenames(QString efiFile, QStringList &list)
+bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
 {
+    int listSize = list.size();
     QFile file(efiFile);
-    if (!file.exists()) return;
+    if (!file.exists()) return false;
     if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
         emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
-        return;
+        return false;
     }
     QTextStream in(&file);
-    QString path = QFileInfo(efiFile).path();
+    QString path = QFileInfo(file).path();
     while (!in.atEnd()) {
         QString line = in.readLine().trimmed();
         if (line.isEmpty())
             continue;
         QFileInfo fi(line);
-        if (fi.isAbsolute() && fi.exists()) {
-            list << line;
+        if (fi.isAbsolute()) {
+            if (fi.exists())
+                list << line;
         } else if (QFile::exists(path+"/"+line)) {
-            if (QFile::exists(path+'/'+modelName()+'/'+line))
-                QFile::remove(path+'/'+modelName()+'/'+line);
-            QFile::copy(path+"/"+line, path+'/'+modelName()+'/'+line);
             list << line;
         } else {
             emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
         }
     }
     file.close();
+    return list.size() > listSize;
 }
 
 void EngineProcess::setSelectedInstance(const QString &selectedInstance)

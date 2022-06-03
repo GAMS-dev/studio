@@ -20,6 +20,7 @@
 #include <QtWidgets>
 #include <QPalette>
 #include <QDir>
+#include <QMimeData>
 
 #include "editors/codeedit.h"
 #include "codecompleter.h"
@@ -34,6 +35,7 @@
 #include "search/searchlocator.h"
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
+#include "syntax/htmlconverter.h"
 
 namespace gams {
 namespace studio {
@@ -276,7 +278,8 @@ void CodeEdit::cutSelection()
         mBlockEdit->selectionToClipboard();
         mBlockEdit->replaceBlockText(QStringList()<<QString());
     } else {
-        cut();
+        copySelection();
+        textCursor().removeSelectedText();
     }
 }
 
@@ -285,7 +288,11 @@ void CodeEdit::copySelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->selectionToClipboard();
     } else {
-        copy();
+        QMimeData *dat = new QMimeData();
+        dat->setData(QLatin1String("text/html"), HtmlConverter::toHtml(textCursor(), Theme::instance()->color(Theme::Edit_background)));
+        const QTextDocumentFragment fragment(textCursor());
+        dat->setText(fragment.toPlainText());
+        QGuiApplication::clipboard()->setMimeData(dat);
     }
 }
 
@@ -692,17 +699,17 @@ QTextBlock CodeEdit::findFoldStart(QTextBlock block) const
     int depth = 0;
     syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
     if (dat) {
-        if (dat->nestingImpact().rightOpen()) return block;
-        if (dat->nestingImpact().leftOpen())
-            depth = dat->nestingImpact().leftOpen() + 1;
+        if (dat->nesting().rightOpen()) return block;
+        if (dat->nesting().leftOpen())
+            depth = dat->nesting().leftOpen() + 1;
     }
     while (block.isValid() && count < 1000) {
         block = block.previous();
         ++count;
         syntax::BlockData *dat = syntax::BlockData::fromTextBlock(block);
-        if (dat) depth += dat->nestingImpact().rightOpen();
+        if (dat) depth += dat->nesting().rightOpen();
         if (depth > 0) return block;
-        if (dat) depth += dat->nestingImpact().leftOpen();
+        if (dat) depth += dat->nesting().leftOpen();
     }
     return QTextBlock();
 }
@@ -1114,18 +1121,18 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             act->disconnect();
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-copy") {
+            menu->removeAction(act);
+            act->disconnect();
+            act->setEnabled(true);
+            connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
+            menu->insertAction(lastAct, act);
         } else if (hasBlockSelection) {
             if (act->objectName() == "edit-cut") {
                 menu->removeAction(act);
                 act->disconnect();
                 act->setEnabled(true);
                 connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
-                menu->insertAction(lastAct, act);
-            } else if (act->objectName() == "edit-copy") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
                 menu->insertAction(lastAct, act);
             } else if (act->objectName() == "edit-delete") {
                 menu->removeAction(act);
@@ -1376,6 +1383,7 @@ void CodeEdit::showCompleter()
         if (mCompleter->codeEdit()) mCompleter->disconnect();
         mCompleter->setCodeEdit(this);
         connect(mCompleter, &CodeCompleter::scanSyntax, this, &CodeEdit::scanSyntax);
+        connect(mCompleter, &CodeCompleter::syntaxFlagData, this, &CodeEdit::syntaxFlagData);
         mCompleter->ShowIfData();
     }
 }
@@ -2839,6 +2847,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
     }
     cursor.endEditBlock();
     setTextCursor(cursor);
+    mCompleter->suppressNextOpenTrigger();
 }
 
 } // namespace studio

@@ -31,10 +31,11 @@ namespace syntax {
 class BlockCode
 {
     // in sum the bounds must not use more than 31 bits (to fit in positive integer)
-    static const int b1 = 1024;     // [10 bits] kind bound
-    static const int b2 = 1024;     // [10 bits] flavor (sub-kind) bound
-    static const int b3 = 512;      // [ 9 bits] nesting-depth bound (extended info if depth==511)
-    static const int b4 = 4;        // [ 2 bits] parser-type bound
+    static const int b1 = 512;      // [ 9 bits] kind bound
+    static const int b2 = 512;      // [ 9 bits] flavor (sub-kind) bound
+    static const int b3 = 1024;     // [10 bits] nesting-depth bound (extended info if depth==1023)
+    static const int b4 = 8;        // [ 3 bits] parser-type bound
+    // bits: 4443333333333222222222111111111
 
     int mCode;
 public:
@@ -51,9 +52,12 @@ public:
     int flavor() const { return (mCode / b1) % b2; }      // the flavor allows to separate kinds that differ slightly
     int depth() const { return (mCode / b1 / b2) % b3; }  // up to one element on the kind-stack may have nesting
     bool externDepth() const { return depth() == b3-1; }
-    int parser() const { return (mCode / b1 / b2 / b3); } // parser==0 is GAMS syntax, others like python may be added
+    int parser() const { return (mCode / b1 / b2 / b3) % b4; } // parser==0 is GAMS syntax, others like python may be added
 
-    bool operator ==(BlockCode other) {
+    bool operator !=(BlockCode other) const {
+        return mCode != other.mCode;
+    }
+    bool operator ==(BlockCode other) const {
         return mCode == other.mCode;
     }
     void operator =(int _code) {
@@ -78,6 +82,10 @@ public:
         int val = qBound(0, _parser, b4-1);
         mCode = mCode + ((val - parser()) * b1*b2*b3);
         return val == _parser;
+    }
+
+    static qint64 maxValue() {
+        return qint64(b1)*b2*b3*b4 - 1;
     }
 };
 
