@@ -51,6 +51,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     ui->setupUi(this);
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
     mPrevFontHeight = fontMetrics().height();
+    columnsRegister(ui->tvSymbols->horizontalHeader());
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -90,11 +91,7 @@ bool GdxViewer::event(QEvent *event)
 {
     if (event->type() == QEvent::FontChange) {
         ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->tvSymbols->horizontalHeader()->count(); ++i) {
-            ui->tvSymbols->horizontalHeader()->resizeSection(i, qRound(ui->tvSymbols->horizontalHeader()->sectionSize(i) * scale));
-        }
-        mPrevFontHeight = fontMetrics().height();
+        columnsUpdateScale();
     }
     return QWidget::event(event);
 }
@@ -103,15 +100,9 @@ void GdxViewer::wheelEvent(QWheelEvent *event)
 {
     if (event->modifiers() & Qt::ControlModifier) {
         const int delta = event->angleDelta().y();
-        if (delta < 0) {
-            int pix = fontInfo().pixelSize();
-            zoomOut();
-            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
-        } else if (delta > 0) {
-            int pix = fontInfo().pixelSize();
-            zoomIn();
-            if (pix == fontInfo().pixelSize()) zoomOut();
-        }
+        if (delta)
+            emit zoomRequest(delta / qAbs(delta));
+        event->accept();
         return;
     }
     QWidget::wheelEvent(event);
@@ -141,6 +132,9 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         // create new GdxSymbolView if the symbol is selected for the first time
         if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
+            for (QHeaderView *header : symView->headers()) {
+                columnsRegister(header);
+            }
             mSymbolViews.replace(selectedIdx, symView);
 
             if (mState && mState->symbolViewStates().contains(selectedSymbol->name()))

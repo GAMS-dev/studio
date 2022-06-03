@@ -113,7 +113,7 @@ signals:
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void fontChanged(FileMeta *fileMeta, QFont f);
+    void fontChangeRequest(FileMeta *fileMeta, QFont f);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;
@@ -123,6 +123,7 @@ private slots:
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
     void updateMarks();
+    void zoomRequest(qreal delta);
 
 private:
     struct Data {

@@ -4,6 +4,8 @@
 #include <QWidget>
 #include <QHeaderView>
 
+#include "common.h"
+
 namespace gams {
 namespace studio {
 
@@ -14,23 +16,28 @@ public:
     AbstractView(QWidget* parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
     ~AbstractView() override;
 
-protected:
+signals:
+    void zoomRequest(int delta);
+
+protected slots:
     void columnsRegister(QHeaderView *header);
+
+protected:
     void columnsResetAll();
-    QList<qreal> columnWidths(QHeaderView *header, qreal scale = 0.0);
-    void setScale(qreal scale);
+    void columnsUpdateScale();
+    qreal columnsCurrentScale() const;
+    void wheelEvent(QWheelEvent *e) override;
+    bool event(QEvent *event) override;
+
 
 private slots:
     void columnsUnregister(QObject *object);
 
 private:
-    void storeColumnWidths();
-
-private:
     typedef QList<qreal> ColumnWidths;
     typedef QHash<QHeaderView*, ColumnWidths> HeadersData;
     HeadersData mHeaders;
-    qreal mBaseScale = 1.0;
+    qreal mBaseScale = -1.0;
 };
 
 } // namespace studio

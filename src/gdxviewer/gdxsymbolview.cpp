@@ -205,10 +205,6 @@ bool GdxSymbolView::event(QEvent *event)
 {
     if (event->type() == QEvent::FontChange) {
         ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->tvListView->horizontalHeader()->count(); ++i) {
-            ui->tvListView->horizontalHeader()->resizeSection(i, qRound(ui->tvListView->horizontalHeader()->sectionSize(i) * scale));
-        }
         if (mTvModel) {
             ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
             int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
@@ -217,12 +213,6 @@ bool GdxSymbolView::event(QEvent *event)
             ui->tbDomRight->setMaximumHeight(height);
             ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
             ui->tbDomRight->setIconSize(QSize(height/2, height/2));
-            for (int i = 0; i < ui->tvTableView->horizontalHeader()->count(); ++i) {
-                ui->tvTableView->horizontalHeader()->resizeSection(i, qRound(ui->tvTableView->horizontalHeader()->sectionSize(i) * scale));
-            }
-            for (int i = 0; i < ui->tvTableViewFilter->horizontalHeader()->count(); ++i) {
-                ui->tvTableViewFilter->horizontalHeader()->resizeSection(i, qRound(ui->tvTableViewFilter->horizontalHeader()->sectionSize(i) * scale));
-            }
         }
         mPrevFontHeight = fontMetrics().height();
     }
@@ -850,6 +840,13 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
         valueFilterState.append(vfState);
     }
     symViewState->setValueFilterState(valueFilterState);
+}
+
+QList<QHeaderView *> GdxSymbolView::headers()
+{
+    return QList<QHeaderView*>() << ui->tvListView->horizontalHeader()
+                                 << ui->tvTableView->horizontalHeader()
+                                 << ui->tvTableViewFilter->horizontalHeader();
 }
 
 void GdxSymbolView::enableControls()

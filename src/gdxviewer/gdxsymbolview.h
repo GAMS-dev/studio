@@ -60,6 +60,7 @@ public:
     void saveState(GdxSymbolViewState* symViewState);
     void saveFilters(GdxSymbolViewState* symViewState);
     bool eventFilter(QObject *watched, QEvent *event) override;
+    QList<QHeaderView*> headers();
 
 public slots:
     void enableControls();

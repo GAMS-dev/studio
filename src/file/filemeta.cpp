@@ -379,6 +379,17 @@ void FileMeta::updateMarks()
     mDirtyLines.clear();
 }
 
+void FileMeta::zoomRequest(qreal delta)
+{
+    if (!mEditors.size()) return;
+    QFont f = mEditors.first()->font();
+    if (delta == 0.) return;
+    const qreal newSize = f.pointSizeF() + delta;
+    if (newSize <= 0) return;
+    f.setPointSizeF(newSize);
+    emit fontChangeRequest(this, f);
+}
+
 void FileMeta::reload()
 {
     if (kind() != FileKind::PrO)
@@ -482,7 +493,6 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
                 if (!wid->font().isCopyOf(*f))
                     wid->setFont(*f);
             }
-            emit fontChanged(this, *f);
         }
     }
     return QObject::eventFilter(sender, event);
@@ -513,6 +523,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(aEdit, &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         connect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
@@ -533,6 +544,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
             connect(lxi, &lxiviewer::LxiViewer::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         else
@@ -547,6 +559,9 @@ void FileMeta::addEditor(QWidget *edit)
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+    if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
+        connect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
     }
 
     if (mEditors.size() == 1) emit documentOpened();
@@ -584,6 +599,7 @@ void FileMeta::removeEditor(QWidget *edit)
         }
         disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(aEdit, &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
     }
 
@@ -592,6 +608,7 @@ void FileMeta::removeEditor(QWidget *edit)
         tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
     } if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
        disconnect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
@@ -599,6 +616,9 @@ void FileMeta::removeEditor(QWidget *edit)
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+    if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
+        disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
     }
 
     if (mEditors.isEmpty()) {

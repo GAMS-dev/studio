@@ -114,6 +114,9 @@ public:
             return static_cast<TextView*>(w->parentWidget());
         return nullptr;
     }
+    inline static AbstractView* toAbstractView(QWidget* w) {
+        return (editorType(w) >= EditorType::gdx) ? static_cast<AbstractView*>(w) : nullptr;
+    }
     inline static gdxviewer::GdxViewer* toGdxViewer(QWidget* w) {
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
     }

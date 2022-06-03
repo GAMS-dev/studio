@@ -85,6 +85,7 @@ signals:
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
     void scrolled(QWidget *widget, int dx, int dy);
+    void zoomRequest(int delta);
 
 public slots:
     virtual void updateExtraSelections();

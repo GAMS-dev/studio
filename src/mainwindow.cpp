@@ -4375,7 +4375,6 @@ void MainWindow::invalidateResultsView()
 void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily)
 {
 //    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
-    mGroupFontSize.insert(fontGroup, fontSize);
     QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
     if (fontGroup == fgLog) {
         for (QWidget* log: openLogs()) {
@@ -4392,6 +4391,8 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
                     ae->setFont(f);
                 } else if (TextView *tv = ViewHelper::toTextView(edit)) {
                     tv->edit()->setFont(f);
+                    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
+                        lxi->setFont(f);
                 }
             } else if (fontGroup == fgTable) {
                 if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
@@ -5118,16 +5119,16 @@ QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, qreal p
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
         if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
-        QFont font(fontFamily);
-        font.setPointSizeF(pointSize);
-        return font;
+        if (pointSize < 0.01) pointSize = font().pointSizeF();
+    } else {
+        if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
+        if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
+        if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     }
-    if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
-    if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
-    if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     QFont font(fontFamily);
     font.setPointSizeF(pointSize);
     font.setHintingPreference(QFont::PreferNoHinting);
+    mGroupFontSize.insert(fGroup, pointSize);
     return font;
 }
 

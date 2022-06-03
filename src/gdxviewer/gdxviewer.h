@@ -95,7 +95,6 @@ private:
     QString mSystemDirectory;
     bool mIsInitialized = false;
     bool mHasChanged = false;
-    int mPrevFontHeight;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
