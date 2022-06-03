@@ -4,6 +4,7 @@ Version 1.10.3 *
 - fixed search not reacting to changes in project file list
 - fixed search not always adding new files to correct search group
 - fixed behavior for opening files via search when file had no editor yet
+- fixed potential crash when closing Studio while search dialog is open
 
 Version 1.10.2
 ==================
