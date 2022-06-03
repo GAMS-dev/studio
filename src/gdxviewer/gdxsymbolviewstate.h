@@ -22,8 +22,8 @@ public:
     int type() const;
     void setType(int type);
 
-    bool tableView() const;
-    void setTableView(bool tableView);
+    bool tableViewActive() const;
+    void setTableViewActive(bool tableViewActive);
 
     QVector<QStringList> uncheckedLabels() const;
 
@@ -71,15 +71,35 @@ public:
     bool sqDefaults() const;
     void setSqDefaults(bool sqDefaults);
 
+    QByteArray listViewHeaderState() const;
+    void setListViewHeaderState(const QByteArray &listViewHeaderState);
+
+    QByteArray tableViewFilterHeaderState() const;
+    void setTableViewFilterHeaderState(const QByteArray &tableViewFilterHeaderState);
+
+    bool tableViewLoaded() const;
+    void setTableViewLoaded(bool tableViewLoaded);
+
+    int tvColDim() const;
+    void setTvColDim(int tvColDim);
+
+    QVector<int> tvDimOrder() const;
+    void setTvDimOrder(const QVector<int> &tvDimOrder);
+
 private:
     bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
     bool mRestoreSqZeros;
-    bool mTableView;
+    bool mTableViewActive;
+    bool mTableViewLoaded = false;
     int mNumericalPrecision;
     int mValFormatIndex;
     int mDim;
     int mType;
+
+    // table view state
+    int mTvColDim;
+    QVector<int> mTvDimOrder;
 
     // column filters
     QVector<QStringList> mUncheckedLabels;
@@ -95,6 +115,9 @@ private:
     QVector<bool> mShowMInf;
     QVector<bool> mShowEps;
     QVector<bool> mShowAcronym;
+
+    QByteArray mListViewHeaderState;
+    QByteArray mTableViewFilterHeaderState;
 };
 
 } // namespace gdxviewer

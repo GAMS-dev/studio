@@ -55,6 +55,10 @@ public:
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
+    void applyState(GdxSymbolViewState* symViewState);
+    void applyFilters(GdxSymbolViewState* symViewState);
+    void saveState(GdxSymbolViewState* symViewState);
+    void saveFilters(GdxSymbolViewState* symViewState);
 
 public slots:
     void enableControls();
@@ -85,7 +89,7 @@ private:
     QMenu *mColumnFilterMenu = nullptr;
 
     void showListView();
-    void showTableView();
+    void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());
     void showDefaultView();
     void toggleView();
 
@@ -120,10 +124,6 @@ private:
     // QObject interface
 public:
     bool eventFilter(QObject *watched, QEvent *event);
-    void applyState(GdxSymbolViewState* symViewState);
-    void applyFilters(GdxSymbolViewState* symViewState);
-    void saveState(GdxSymbolViewState* symViewState);
-    void saveFilters(GdxSymbolViewState* symViewState);
 };
 
 

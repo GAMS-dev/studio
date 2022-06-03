@@ -561,11 +561,11 @@ void GdxSymbolView::showListView()
     }
 }
 
-void GdxSymbolView::showTableView()
+void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
 {
     if (!mTvModel) {
         mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
-        mTvModel->setTableView();
+        mTvModel->setTableView(colDim, tvDimOrder);
         if (mDefaultSymbolView == DefaultSymbolView::tableView)
             connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
         ui->tvTableView->setModel(mTvModel);
@@ -584,8 +584,11 @@ void GdxSymbolView::showTableView()
             ui->tbDomRight->setIconSize(QSize(height/2, height/2));
             ui->tvTableViewFilter->show();
         });
-    } else
+    } else {
+        if (colDim != mTvModel->tvColDim() || tvDimOrder != mTvModel->tvDimOrder())
+            mTvModel->setTableView(colDim, tvDimOrder);
         ui->tvTableViewFilter->show();
+    }
     ui->pbToggleView->setText("List View");
     ui->tvListView->hide();
     mTableView = true;
@@ -644,16 +647,18 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 {
     applyFilters(symViewState);
 
-    if (symViewState->tableView())
-        showTableView();
-    else
-        showListView();
-
     mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
     mRestoreSqZeros = symViewState->restoreSqZeros();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
+    ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
+    if (symViewState->tableViewLoaded()) {
+        showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
+        ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
+    }
+    if (!symViewState->tableViewActive())
+        showListView();
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
@@ -700,7 +705,15 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 
     symViewState->setDim(mSym->dim());
     symViewState->setType(mSym->type());
-    symViewState->setTableView(mTableView);
+    symViewState->setTableViewActive(mTableView);
+    symViewState->setListViewHeaderState(ui->tvListView->horizontalHeader()->saveState());
+
+    symViewState->setTableViewLoaded(mTvModel != nullptr);
+    if (symViewState->tableViewLoaded()) {
+        symViewState->setTvColDim(mTvModel->tvColDim());
+        symViewState->setTvDimOrder(mTvModel->tvDimOrder());
+        symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());
+    }
 }
 
 void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)

@@ -373,7 +373,8 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
         GdxSymbolViewState* symViewState = mState->symbolViewState(name);
         if (symViewState) {
             GdxSymbolView* symView = symbolViewByName(name);
-            symView->applyState(symViewState);
+            if (symView->sym()->dim() == symViewState->dim() && symView->sym()->type() == symViewState->type())
+                symView->applyState(symViewState);
             mState->deleteSymbolViewState(name);
         }
     }

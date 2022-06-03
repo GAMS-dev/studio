@@ -46,6 +46,7 @@ void GdxViewerState::setSymbolTableHeaderState(const QByteArray &symbolTableHead
     mSymbolTableHeaderState = symbolTableHeaderState;
 }
 
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams

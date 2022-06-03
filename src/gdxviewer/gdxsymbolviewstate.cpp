@@ -39,14 +39,14 @@ void GdxSymbolViewState::setType(int type)
     mType = type;
 }
 
-bool GdxSymbolViewState::tableView() const
+bool GdxSymbolViewState::tableViewActive() const
 {
-    return mTableView;
+    return mTableViewActive;
 }
 
-void GdxSymbolViewState::setTableView(bool tableView)
+void GdxSymbolViewState::setTableViewActive(bool tableViewActive)
 {
-    mTableView = tableView;
+    mTableViewActive = tableViewActive;
 }
 
 QVector<QStringList> GdxSymbolViewState::uncheckedLabels() const
@@ -197,6 +197,56 @@ bool GdxSymbolViewState::sqDefaults() const
 void GdxSymbolViewState::setSqDefaults(bool sqDefaults)
 {
     mSqDefaults = sqDefaults;
+}
+
+QByteArray GdxSymbolViewState::listViewHeaderState() const
+{
+    return mListViewHeaderState;
+}
+
+void GdxSymbolViewState::setListViewHeaderState(const QByteArray &listViewHeaderState)
+{
+    mListViewHeaderState = listViewHeaderState;
+}
+
+QByteArray GdxSymbolViewState::tableViewFilterHeaderState() const
+{
+    return mTableViewFilterHeaderState;
+}
+
+void GdxSymbolViewState::setTableViewFilterHeaderState(const QByteArray &tableViewFilterHeaderState)
+{
+    mTableViewFilterHeaderState = tableViewFilterHeaderState;
+}
+
+bool GdxSymbolViewState::tableViewLoaded() const
+{
+    return mTableViewLoaded;
+}
+
+void GdxSymbolViewState::setTableViewLoaded(bool tableViewLoaded)
+{
+    mTableViewLoaded = tableViewLoaded;
+}
+
+int GdxSymbolViewState::tvColDim() const
+{
+    return mTvColDim;
+}
+
+void GdxSymbolViewState::setTvColDim(int tvColDim)
+{
+    mTvColDim = tvColDim;
+}
+
+QVector<int> GdxSymbolViewState::tvDimOrder() const
+{
+    return mTvDimOrder;
+}
+
+void GdxSymbolViewState::setTvDimOrder(const QVector<int> &tvDimOrder)
+{
+    mTvDimOrder = tvDimOrder;
 }
 
 
