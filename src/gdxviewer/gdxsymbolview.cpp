@@ -677,17 +677,18 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
 
     // apply value filters
     for (int i=0; i<mSym->numericalColumnCount(); i++) {
-        if (symViewState->valFilterActive().at(i)) {
+        ValueFilterState vfState = symViewState->valueFilterState().at(i);
+        if (vfState.active) {
             mSym->setFilterActive(mSym->dim()+i);
-            mSym->valueFilter(i)->setCurrentMin(symViewState->currentMin().at(i));
-            mSym->valueFilter(i)->setCurrentMax(symViewState->currentMax().at(i));
-            mSym->valueFilter(i)->setExclude(symViewState->exclude().at(i));
-            mSym->valueFilter(i)->setShowEps(symViewState->showEps().at(i));
-            mSym->valueFilter(i)->setShowPInf(symViewState->showPInf().at(i));
-            mSym->valueFilter(i)->setShowMInf(symViewState->showMInf().at(i));
-            mSym->valueFilter(i)->setShowNA(symViewState->showNA().at(i));
-            mSym->valueFilter(i)->setShowUndef(symViewState->showUndef().at(i));
-            mSym->valueFilter(i)->setShowAcronym(symViewState->showAcronym().at(i));
+            mSym->valueFilter(i)->setCurrentMin(vfState.min);
+            mSym->valueFilter(i)->setCurrentMax(vfState.max);
+            mSym->valueFilter(i)->setExclude(vfState.exclude);
+            mSym->valueFilter(i)->setShowEps(vfState.showEps);
+            mSym->valueFilter(i)->setShowPInf(vfState.showPInf);
+            mSym->valueFilter(i)->setShowMInf(vfState.showMInf);
+            mSym->valueFilter(i)->setShowNA(vfState.showNA);
+            mSym->valueFilter(i)->setShowUndef(vfState.showUndef);
+            mSym->valueFilter(i)->setShowAcronym(vfState.showAcronym);
         }
     }
 
@@ -734,43 +735,27 @@ void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
 
     // save value filters
     int colCount = mSym->numericalColumnCount();
-    QVector<bool> valFilterActive(colCount);
-    QVector<double> currentMin(colCount);
-    QVector<double> currentMax(colCount);
-    QVector<bool> exclude(colCount);
-    QVector<bool> showEps(colCount);
-    QVector<bool> showPInf(colCount);
-    QVector<bool> showMInf(colCount);
-    QVector<bool> showNA(colCount);
-    QVector<bool> showUndef(colCount);
-    QVector<bool> showAcronym(colCount);
 
+    QVector<ValueFilterState> valueFilterState;
+    ValueFilterState vfState;
     for (int i=0; i<colCount; i++) {
         ValueFilter* vf = mSym->valueFilter(i);
         if (mSym->filterActive(mSym->dim()+i)) {
-            valFilterActive[i] = true;
-            currentMin[i] = vf->currentMin();
-            currentMax[i] = vf->currentMax();
-            showEps[i] = vf->showEps();
-            showPInf[i] = vf->showPInf();
-            showMInf[i] = vf->showMInf();
-            showNA[i] = vf->showNA();
-            showUndef[i] = vf->showUndef();
-            showAcronym[i] = vf->showAcronym();
-            exclude[i] = vf->exclude();
+            vfState.active = true;
+            vfState.min = vf->currentMin();
+            vfState.max = vf->currentMax();
+            vfState.showEps = vf->showEps();
+            vfState.showPInf = vf->showPInf();
+            vfState.showMInf = vf->showMInf();
+            vfState.showNA = vf->showNA();
+            vfState.showUndef = vf->showUndef();
+            vfState.showAcronym = vf->showAcronym();
+            vfState.exclude = vf->exclude();
         } else
-            valFilterActive[i] = false;
+            vfState.active = false;
+        valueFilterState.append(vfState);
     }
-    symViewState->setValFilterActive(valFilterActive);
-    symViewState->setCurrentMin(currentMin);
-    symViewState->setCurrentMax(currentMax);
-    symViewState->setShowEps(showEps);
-    symViewState->setShowPInf(showPInf);
-    symViewState->setShowMInf(showMInf);
-    symViewState->setShowNA(showNA);
-    symViewState->setShowUndef(showUndef);
-    symViewState->setShowAcronym(showAcronym);
-    symViewState->setExclude(exclude);
+    symViewState->setValueFilterState(valueFilterState);
 }
 
 void GdxSymbolView::enableControls()

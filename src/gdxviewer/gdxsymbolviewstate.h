@@ -8,6 +8,19 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+struct ValueFilterState {
+    bool active = false;
+    double min;
+    double max;
+    bool exclude;
+    bool showUndef;
+    bool showNA;
+    bool showPInf;
+    bool showMInf;
+    bool showEps;
+    bool showAcronym;
+};
+
 class GdxSymbolViewState
 {
 public:
@@ -28,36 +41,6 @@ public:
     QVector<QStringList> uncheckedLabels() const;
 
     void setUncheckedLabels(const QVector<QStringList> &uncheckedLabels);
-
-    QVector<double> currentMin() const;
-    void setCurrentMin(const QVector<double> &currentMin);
-
-    QVector<double> currentMax() const;
-    void setCurrentMax(const QVector<double> &currentMax);
-
-    QVector<bool> valFilterActive() const;
-    void setValFilterActive(const QVector<bool> &valFilterActive);
-
-    QVector<bool> exclude() const;
-    void setExclude(const QVector<bool> &exclude);
-
-    QVector<bool> showUndef() const;
-    void setShowUndef(const QVector<bool> &showUndef);
-
-    QVector<bool> showNA() const;
-    void setShowNA(const QVector<bool> &showNA);
-
-    QVector<bool> showPInf() const;
-    void setShowPInf(const QVector<bool> &showPInf);
-
-    QVector<bool> showMInf() const;
-    void setShowMInf(const QVector<bool> &showMInf);
-
-    QVector<bool> showEps() const;
-    void setShowEps(const QVector<bool> &showEps);
-
-    QVector<bool> showAcronym() const;
-    void setShowAcronym(const QVector<bool> &showAcronym);
 
     int numericalPrecision() const;
     void setNumericalPrecision(int numericalPrecision);
@@ -86,6 +69,9 @@ public:
     QVector<int> tvDimOrder() const;
     void setTvDimOrder(const QVector<int> &tvDimOrder);
 
+    QVector<ValueFilterState> valueFilterState() const;
+    void setValueFilterState(const QVector<ValueFilterState> &valueFilterState);
+
 private:
     bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
@@ -105,16 +91,7 @@ private:
     QVector<QStringList> mUncheckedLabels;
 
     // value filters
-    QVector<bool> mValFilterActive;
-    QVector<double> mCurrentMin;
-    QVector<double> mCurrentMax;
-    QVector<bool> mExclude;
-    QVector<bool> mShowUndef;
-    QVector<bool> mShowNA;
-    QVector<bool> mShowPInf;
-    QVector<bool> mShowMInf;
-    QVector<bool> mShowEps;
-    QVector<bool> mShowAcronym;
+    QVector<ValueFilterState> mValueFilterState;
 
     QByteArray mListViewHeaderState;
     QByteArray mTableViewFilterHeaderState;
