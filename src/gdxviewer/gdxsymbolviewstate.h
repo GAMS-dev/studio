@@ -75,6 +75,9 @@ public:
     QVector<bool> getShowAttributes() const;
     void setShowAttributes(const QVector<bool> &value);
 
+    QByteArray getTableViewHeaderState() const;
+    void setTableViewHeaderState(const QByteArray &tableViewHeaderState);
+
 private:
     bool mSqDefaults;
     bool mSqueezeTrailingZeroes;
@@ -99,6 +102,7 @@ private:
     QVector<ValueFilterState> mValueFilterState;
 
     QByteArray mListViewHeaderState;
+    QByteArray mTableViewHeaderState;
     QByteArray mTableViewFilterHeaderState;
 };
 

@@ -647,6 +647,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 {
     applyFilters(symViewState);
 
+    ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
     mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
     mRestoreSqZeros = symViewState->restoreSqZeros();
@@ -658,9 +659,9 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
             mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
     }
 
-    ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
     if (symViewState->tableViewLoaded()) {
         showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
+        ui->tvTableView->horizontalHeader()->restoreState(symViewState->getTableViewHeaderState());
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
     }
     if (!symViewState->tableViewActive())
@@ -724,6 +725,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     if (symViewState->tableViewLoaded()) {
         symViewState->setTvColDim(mTvModel->tvColDim());
         symViewState->setTvDimOrder(mTvModel->tvDimOrder());
+        symViewState->setTableViewHeaderState(ui->tvTableView->horizontalHeader()->saveState());
         symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());
     }
 }

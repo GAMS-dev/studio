@@ -169,6 +169,16 @@ void GdxSymbolViewState::setShowAttributes(const QVector<bool> &value)
     showAttributes = value;
 }
 
+QByteArray GdxSymbolViewState::getTableViewHeaderState() const
+{
+    return mTableViewHeaderState;
+}
+
+void GdxSymbolViewState::setTableViewHeaderState(const QByteArray &tableViewHeaderState)
+{
+    mTableViewHeaderState = tableViewHeaderState;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio
