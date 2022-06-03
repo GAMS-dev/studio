@@ -5,6 +5,7 @@ Version 1.10.5 *
 - fixed search not always adding new files to correct search group
 - fixed behavior for opening files via search when file had no editor yet
 - fixed potential crash when closing Studio while search dialog is open
+- added automatic update of results list when still open from last search
 
 Version 1.10.4
 ==================

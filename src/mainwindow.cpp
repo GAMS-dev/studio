@@ -4561,11 +4561,6 @@ search::ResultsView *MainWindow::resultsView() const
     return mResultsView;
 }
 
-void MainWindow::setResultsView(search::ResultsView *resultsView)
-{
-    mResultsView = resultsView;
-}
-
 void MainWindow::on_actionGo_To_triggered()
 {
     if (!currentEdit()) return;

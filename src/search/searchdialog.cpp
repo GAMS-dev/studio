@@ -37,8 +37,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this, fileHandler)
+SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent) :
+    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mFileHandler(fileHandler), mSearch(this, fileHandler)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -127,7 +127,7 @@ void SearchDialog::finalUpdate()
     setSearchStatus(Search::Ok, mSearch.results().size());
     updateDialogState();
 
-    if (mShowResults && mSearch.results().size() > 0) {
+    if ((mShowResults && mSearch.results().size() > 0) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         emit showResults(mSearchResultModel);
