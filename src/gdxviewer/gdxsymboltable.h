@@ -46,6 +46,7 @@ public:
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QList<GdxSymbol *> gdxSymbols() const;
+    GdxSymbol* getSymbolByName(QString name) const;
     QString uel2Label(int uel);
     std::vector<int> labelCompIdx();
     int symbolCount() const;
@@ -70,6 +71,7 @@ private:
     void reportIoError(int errNr, QString message);
 
     QList<GdxSymbol*> mGdxSymbols;
+    QMap<QString, GdxSymbol*> mGdxSymbolByName;
     QStringList mUel2Label;
     QMap<QString, int> mLabel2Uel;
     QStringList mStrPool;

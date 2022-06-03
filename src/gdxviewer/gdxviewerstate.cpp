@@ -26,14 +26,17 @@ GdxSymbolViewState* GdxViewerState::symbolViewState(QString name) const
 
 GdxSymbolViewState* GdxViewerState::addSymbolViewState(QString name)
 {
+    deleteSymbolViewState(name);
     mSymbolViewState[name] = new GdxSymbolViewState();
     return mSymbolViewState[name];
 }
 
 void GdxViewerState::deleteSymbolViewState(QString name)
 {
-    delete mSymbolViewState[name];
-    mSymbolViewState.remove(name);
+    if (mSymbolViewState.contains(name)) {
+        delete mSymbolViewState[name];
+        mSymbolViewState.remove(name);
+    }
 }
 
 QByteArray GdxViewerState::symbolTableHeaderState() const
@@ -44,6 +47,11 @@ QByteArray GdxViewerState::symbolTableHeaderState() const
 void GdxViewerState::setSymbolTableHeaderState(const QByteArray &symbolTableHeaderState)
 {
     mSymbolTableHeaderState = symbolTableHeaderState;
+}
+
+QMap<QString, GdxSymbolViewState *> GdxViewerState::symbolViewStates() const
+{
+    return mSymbolViewState;
 }
 
 

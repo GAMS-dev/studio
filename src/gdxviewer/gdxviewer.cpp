@@ -349,10 +349,18 @@ int GdxViewer::errorCallback(int count, const char *message)
 
 void GdxViewer::saveState()
 {
-    if (mState != NULL)
-        delete mState;
-    mState = new GdxViewerState();
+    if (mState == NULL)
+        mState = new GdxViewerState();
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
+
+    // delete symbols that do not exists anymore or differ in dimension or type
+    for (QString name : mState->symbolViewStates().keys()) {
+        GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
+        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
+        if (!sym || sym->dim() != symViewState->dim() || sym->type() != symViewState->type())
+            mState->deleteSymbolViewState(name);
+    }
+
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView != NULL && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());

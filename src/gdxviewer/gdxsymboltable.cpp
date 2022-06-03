@@ -48,8 +48,10 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* co
 
 GdxSymbolTable::~GdxSymbolTable()
 {
-    for(auto gdxSymbol : mGdxSymbols)
+    for(auto gdxSymbol : mGdxSymbols) {
+        mGdxSymbolByName.remove(gdxSymbol->name());
         delete gdxSymbol;
+    }
 }
 
 QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
@@ -118,8 +120,11 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
 void GdxSymbolTable::loadGDXSymbols()
 {
     QMutexLocker locker(mGdxMutex);
-    for(int i=0; i<mSymbolCount+1; i++)
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, this));
+    for(int i=0; i<mSymbolCount+1; i++) {
+        GdxSymbol* sym = new GdxSymbol(mGdx, mGdxMutex, i, this);
+        mGdxSymbols.append(sym);
+        mGdxSymbolByName[sym->name()] = sym;
+    }
     locker.unlock();
 }
 
@@ -224,6 +229,14 @@ QString GdxSymbolTable::uel2Label(int uel)
 QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
 {
     return mGdxSymbols;
+}
+
+GdxSymbol *GdxSymbolTable::getSymbolByName(QString name) const
+{
+    if (mGdxSymbolByName.contains(name))
+        return mGdxSymbolByName[name];
+    else
+        return nullptr;
 }
 
 QString GdxSymbolTable::typeAsString(int type) const

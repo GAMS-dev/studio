@@ -23,6 +23,8 @@ public:
     QByteArray symbolTableHeaderState() const;
     void setSymbolTableHeaderState(const QByteArray &symbolTableHeaderState);
 
+    QMap<QString, GdxSymbolViewState *> symbolViewStates() const;
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
