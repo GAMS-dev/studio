@@ -51,7 +51,7 @@ public:
     ~GdxSymbolView();
 
     GdxSymbol *sym() const;
-    void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
+    void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
@@ -90,7 +90,7 @@ private:
 
     void showListView();
     void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());
-    void showDefaultView();
+    void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
 
     void selectAll();

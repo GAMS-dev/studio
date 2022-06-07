@@ -300,7 +300,7 @@ GdxSymbol *GdxSymbolView::sym() const
     return mSym;
 }
 
-void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
+void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable, GdxSymbolViewState* symViewState)
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
@@ -308,7 +308,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
         if (mDefaultSymbolView == DefaultSymbolView::listView)
             connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
-        showDefaultView();
+        showDefaultView(symViewState);
     }
     ui->tvListView->setModel(mSym);
 
@@ -585,7 +585,7 @@ void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
             ui->tvTableViewFilter->show();
         });
     } else {
-        if (colDim != mTvModel->tvColDim() || tvDimOrder != mTvModel->tvDimOrder())
+        if (colDim != -1)
             mTvModel->setTableView(colDim, tvDimOrder);
         ui->tvTableViewFilter->show();
     }
@@ -601,13 +601,20 @@ void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
     }
 }
 
-void GdxSymbolView::showDefaultView()
+void GdxSymbolView::showDefaultView(GdxSymbolViewState* symViewState)
 {
-    if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
-        this->showTableView();
+    if (symViewState) {
+        if (symViewState->tableViewActive())
+            this->showTableView();
+        else
+            this->showListView();
+    } else {
+        if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+            this->showTableView();
+        }
+        else
+            this->showListView();
     }
-    else
-        this->showListView();
 }
 
 void GdxSymbolView::toggleView()
