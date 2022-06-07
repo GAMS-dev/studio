@@ -90,6 +90,7 @@ private:
 
     void showListView();
     void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());
+    void initTableViewModel(int colDim, QVector<int> tvDimOrder);
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
 

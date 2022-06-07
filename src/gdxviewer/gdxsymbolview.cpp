@@ -563,28 +563,9 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
 {
-    if (!mTvModel) {
-        mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
-        mTvModel->setTableView(colDim, tvDimOrder);
-        if (mDefaultSymbolView == DefaultSymbolView::tableView)
-            connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
-        ui->tvTableView->setModel(mTvModel);
-
-        mTvDomainModel = new TableViewDomainModel(mTvModel);
-        ui->tvTableViewFilter->setModel(mTvDomainModel);
-
-        ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
-        ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-        QTimer::singleShot(0,this, [this](){
-            int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
-            ui->tvTableViewFilter->setMaximumHeight(height);
-            ui->tbDomLeft->setMaximumHeight(height);
-            ui->tbDomRight->setMaximumHeight(height);
-            ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
-            ui->tbDomRight->setIconSize(QSize(height/2, height/2));
-            ui->tvTableViewFilter->show();
-        });
-    } else {
+    if (!mTvModel)
+        initTableViewModel(colDim, tvDimOrder);
+    else {
         if (colDim != -1)
             mTvModel->setTableView(colDim, tvDimOrder);
         ui->tvTableViewFilter->show();
@@ -601,19 +582,43 @@ void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
     }
 }
 
+void GdxSymbolView::initTableViewModel(int colDim, QVector<int> tvDimOrder)
+{
+    mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+    mTvModel->setTableView(colDim, tvDimOrder);
+    if (mDefaultSymbolView == DefaultSymbolView::tableView)
+        connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
+    ui->tvTableView->setModel(mTvModel);
+
+    mTvDomainModel = new TableViewDomainModel(mTvModel);
+    ui->tvTableViewFilter->setModel(mTvDomainModel);
+
+    ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
+    ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
+    QTimer::singleShot(0,this, [this](){
+        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+        ui->tvTableViewFilter->setMaximumHeight(height);
+        ui->tbDomLeft->setMaximumHeight(height);
+        ui->tbDomRight->setMaximumHeight(height);
+        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+        ui->tvTableViewFilter->show();
+    });
+}
+
 void GdxSymbolView::showDefaultView(GdxSymbolViewState* symViewState)
 {
     if (symViewState) {
         if (symViewState->tableViewActive())
-            this->showTableView();
+            showTableView();
         else
-            this->showListView();
+            showListView();
     } else {
         if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
-            this->showTableView();
+            showTableView();
         }
         else
-            this->showListView();
+            showListView();
     }
 }
 
@@ -667,12 +672,12 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     }
 
     if (symViewState->tableViewLoaded()) {
-        showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
+        initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
         ui->tvTableView->horizontalHeader()->restoreState(symViewState->getTableViewHeaderState());
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
+        mTVFirstInit = false;
     }
-    if (!symViewState->tableViewActive())
-        showListView();
+    mLVFirstInit = false;
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
