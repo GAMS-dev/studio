@@ -33,13 +33,13 @@ namespace gdxviewer {
 
 class GdxSymbol;
 
-class GdxSymbolTable : public QAbstractTableModel
+class GdxSymbolTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent = nullptr);
-    ~GdxSymbolTable() override;
+    explicit GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent = nullptr);
+    ~GdxSymbolTableModel() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

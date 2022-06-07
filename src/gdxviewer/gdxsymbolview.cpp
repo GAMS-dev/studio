@@ -300,7 +300,7 @@ GdxSymbol *GdxSymbolView::sym() const
     return mSym;
 }
 
-void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable, GdxSymbolViewState* symViewState)
+void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState)
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;

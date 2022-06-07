@@ -27,7 +27,7 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QComboBox>
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 #include "gdxsymbolviewstate.h"
 #include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
@@ -51,7 +51,7 @@ public:
     ~GdxSymbolView();
 
     GdxSymbol *sym() const;
-    void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable, GdxSymbolViewState* symViewState=nullptr);
+    void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
@@ -103,7 +103,7 @@ private:
     QSpinBox* mPrecision = nullptr;
     QComboBox* mValFormat = nullptr;
 
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
+    GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     bool mTableView = false;
 
     int mTVResizePrecision = 500;

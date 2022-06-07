@@ -41,7 +41,7 @@ class GdxViewer;
 }
 
 class GdxSymbol;
-class GdxSymbolTable;
+class GdxSymbolTableModel;
 class GdxSymbolView;
 
 class GdxViewer : public QWidget
@@ -87,7 +87,7 @@ private:
 
     bool mHasChanged = false;
 
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
+    GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
 
     gdxHandle_t mGdx;

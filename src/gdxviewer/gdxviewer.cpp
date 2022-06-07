@@ -20,7 +20,7 @@
 #include "gdxviewer.h"
 #include "ui_gdxviewer.h"
 #include "gdxsymbol.h"
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 #include "gdxsymbolview.h"
 #include "common.h"
 #include "logger.h"
@@ -263,7 +263,7 @@ int GdxViewer::init(bool quiet)
     ui->splitter->widget(0)->hide();
     ui->splitter->widget(1)->hide();
 
-    mGdxSymbolTable = new GdxSymbolTable(mGdx, mGdxMutex, mCodec);
+    mGdxSymbolTable = new GdxSymbolTableModel(mGdx, mGdxMutex, mCodec);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);

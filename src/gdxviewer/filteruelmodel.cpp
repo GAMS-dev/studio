@@ -19,7 +19,7 @@
  */
 #include "filteruelmodel.h"
 #include "gdxsymbol.h"
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 
 #include <QTime>
 

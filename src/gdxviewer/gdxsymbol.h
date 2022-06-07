@@ -33,7 +33,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-class GdxSymbolTable;
+class GdxSymbolTableModel;
 class TableViewModel;
 class ColumnFilter;
 class ValueFilter;
@@ -46,7 +46,7 @@ class GdxSymbol : public QAbstractTableModel
 
 public:
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
-                       GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
+                       GdxSymbolTableModel* gdxSymbolTable, QObject *parent = nullptr);
     ~GdxSymbol() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -70,7 +70,7 @@ public:
     int sortColumn() const;
     Qt::SortOrder sortOrder() const;
     void resetSortFilter();
-    GdxSymbolTable *gdxSymbolTable() const;
+    GdxSymbolTableModel *gdxSymbolTable() const;
     std::vector<std::vector<int> *> uelsInColumn() const;
     std::vector<bool *> showUelInColumn() const;
     void setShowUelInColumn(const std::vector<bool *> &showUelInColumn);
@@ -136,7 +136,7 @@ private:
     std::vector<double> mMinDouble;
     std::vector<double> mMaxDouble;
 
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
+    GdxSymbolTableModel* mGdxSymbolTable = nullptr;
 
     bool mIsLoaded = false;
     int mLoadedRecCount = 0;
