@@ -26,8 +26,8 @@ class GdxSymbolViewState
 public:
     GdxSymbolViewState();
 
-    bool squeezeTrailingZeroes() const;
-    void setSqueezeTrailingZeroes(bool squeezeTrailingZeroes);
+    bool sqTrailingZeroes() const;
+    void setSqTrailingZeroes(bool squeezeTrailingZeroes);
 
     int dim() const;
     void setDim(int dim);
@@ -45,8 +45,8 @@ public:
     int numericalPrecision() const;
     void setNumericalPrecision(int numericalPrecision);
 
-    bool restoreSqZeros() const;
-    void setRestoreSqZeros(bool restoreSqZeros);
+    bool restoreSqZeroes() const;
+    void setRestoreSqZeroes(bool restoreSqZeroes);
 
     int valFormatIndex() const;
     void setValFormatIndex(int valFormatIndex);
@@ -80,8 +80,8 @@ public:
 
 private:
     bool mSqDefaults;
-    bool mSqueezeTrailingZeroes;
-    bool mRestoreSqZeros;
+    bool mSqTrailingZeroes;
+    bool mRestoreSqZeroes;
     bool mTableViewActive;
     bool mTableViewLoaded = false;
     int mNumericalPrecision;

@@ -446,15 +446,15 @@ void GdxSymbolView::updateNumericalPrecision()
     }
     if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
         if (mSqZeroes->isChecked())
-            mRestoreSqZeros = true;
+            mRestoreSqZeroes = true;
         mSqZeroes->setChecked(false);
         mSqZeroes->setEnabled(false);
     }
     else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
         mSqZeroes->setEnabled(true);
-        if (mRestoreSqZeros) {
+        if (mRestoreSqZeroes) {
             mSqZeroes->setChecked(true);
-            mRestoreSqZeros = false;
+            mRestoreSqZeroes = false;
         }
     }
     if (mTvModel)
@@ -661,8 +661,8 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 
     ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
     mSqDefaults->setChecked(symViewState->sqDefaults());
-    mSqZeroes->setChecked(symViewState->squeezeTrailingZeroes());
-    mRestoreSqZeros = symViewState->restoreSqZeros();
+    mSqZeroes->setChecked(symViewState->sqTrailingZeroes());
+    mRestoreSqZeroes = symViewState->restoreSqZeroes();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
@@ -718,8 +718,8 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 {
     saveFilters(symViewState);
     symViewState->setSqDefaults(mSqDefaults->isChecked());
-    symViewState->setSqueezeTrailingZeroes(mSqZeroes->isChecked());
-    symViewState->setRestoreSqZeros(mRestoreSqZeros);
+    symViewState->setSqTrailingZeroes(mSqZeroes->isChecked());
+    symViewState->setRestoreSqZeroes(mRestoreSqZeroes);
     symViewState->setNumericalPrecision(mPrecision->value());
     symViewState->setValFormatIndex(mValFormat->currentIndex());
 

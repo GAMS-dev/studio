@@ -9,14 +9,14 @@ GdxSymbolViewState::GdxSymbolViewState()
 
 }
 
-bool GdxSymbolViewState::squeezeTrailingZeroes() const
+bool GdxSymbolViewState::sqTrailingZeroes() const
 {
-    return mSqueezeTrailingZeroes;
+    return mSqTrailingZeroes;
 }
 
-void GdxSymbolViewState::setSqueezeTrailingZeroes(bool squeezeTrailingZeroes)
+void GdxSymbolViewState::setSqTrailingZeroes(bool sqTrailingZeroes)
 {
-    mSqueezeTrailingZeroes = squeezeTrailingZeroes;
+    mSqTrailingZeroes = sqTrailingZeroes;
 }
 
 int GdxSymbolViewState::dim() const
@@ -69,14 +69,14 @@ void GdxSymbolViewState::setNumericalPrecision(int numericalPrecision)
     mNumericalPrecision = numericalPrecision;
 }
 
-bool GdxSymbolViewState::restoreSqZeros() const
+bool GdxSymbolViewState::restoreSqZeroes() const
 {
-    return mRestoreSqZeros;
+    return mRestoreSqZeroes;
 }
 
-void GdxSymbolViewState::setRestoreSqZeros(bool restoreSqZeros)
+void GdxSymbolViewState::setRestoreSqZeroes(bool restoreSqZeroes)
 {
-    mRestoreSqZeros = restoreSqZeros;
+    mRestoreSqZeroes = restoreSqZeroes;
 }
 
 int GdxSymbolViewState::valFormatIndex() const
