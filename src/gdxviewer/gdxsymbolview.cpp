@@ -665,11 +665,6 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
-    if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
-        for (int i=0; i< GMS_VAL_MAX; i++)
-            mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
-    }
-
     if (symViewState->tableViewLoaded()) {
         initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
         ui->tvTableView->horizontalHeader()->restoreState(symViewState->getTableViewHeaderState());
@@ -677,6 +672,10 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         mTVFirstInit = false;
     }
     mLVFirstInit = false;
+    if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
+        for (int i=0; i< GMS_VAL_MAX; i++)
+            mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
+    }
 }
 
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
