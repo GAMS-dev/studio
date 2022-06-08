@@ -15,4 +15,3 @@ Please test the MR on
 - [ ] GAMS documentation
 - [ ] Profiling
 - [ ] Unit Tests
-- [ ] UI Tests

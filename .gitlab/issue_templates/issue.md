@@ -9,4 +9,3 @@ t.b.d.
 - [ ] Update GAMS documentation
 - [ ] Profiling
 - [ ] Unit Tests
-- [ ] UI Tests
