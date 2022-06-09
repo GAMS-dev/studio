@@ -146,6 +146,7 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
         if (!initError) {
             mHasChanged = false;
             setEnabled(true);
+            applyState();
             //QMessageBox msgBox;
             //msgBox.setWindowTitle("GDX File Reloaded");
             //msgBox.setText("GDX file has been modified and was reloaded.");
@@ -157,7 +158,6 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
             mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
         }
-        applyState();
         return initError;
     }
     return 0;
