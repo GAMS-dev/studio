@@ -34,6 +34,7 @@
 #include <QMessageBox>
 #include <QClipboard>
 #include <QSortFilterProxyModel>
+#include <QApplication>
 
 namespace gams {
 namespace studio {
@@ -47,6 +48,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
       mCodec(codec)
 {
     ui->setupUi(this);
+    connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -343,6 +345,24 @@ void GdxViewer::toggleSearchColumns(bool checked)
         mSymbolTableProxyModel->setFilterKeyColumn(1);
 }
 
+void GdxViewer::applySelectedSymbolOnFocus(QWidget *old, QWidget *now)
+{
+    Q_UNUSED(old)
+    if (isFocusedWidget(now))
+        applySelectedSymbol();
+
+}
+
+bool GdxViewer::isFocusedWidget(QWidget *wid)
+{
+    while (wid) {
+        wid = wid->parentWidget();
+        if (wid == this)
+            return true;
+    }
+    return false;
+}
+
 int GdxViewer::errorCallback(int count, const char *message)
 {
     Q_UNUSED(count)
@@ -356,6 +376,13 @@ void GdxViewer::saveState()
 {
     if (mState == NULL)
         mState = new GdxViewerState();
+
+    QModelIndexList indexList = ui->tvSymbols->selectionModel()->selectedIndexes();
+    if (!indexList.isEmpty()) {
+        QModelIndex index = ui->tvSymbols->selectionModel()->selectedIndexes().at(1);
+        QString name =ui->tvSymbols->model()->data(index).toString();
+        mState->setSelectedSymbol(name);
+    }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
 
     // delete symbols that do not exists anymore or differ in dimension or type
@@ -377,6 +404,8 @@ void GdxViewer::saveState()
 void GdxViewer::applyState()
 {
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
+    if (this->isVisible())
+        applySelectedSymbol();
 }
 
 void GdxViewer::applySymbolState(GdxSymbol *sym)
@@ -393,11 +422,30 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
     }
 }
 
+void GdxViewer::applySelectedSymbol()
+{
+    if (!mState)
+        return;
+    QString name = mState->selectedSymbol();
+    if (!name.isEmpty()) {
+        mState->setSelectedSymbol("");
+        for (int r=0; r<ui->tvSymbols->model()->rowCount(); r++) {
+            QModelIndex index = ui->tvSymbols->model()->index(r, 1);
+            if (index.data().toString().toLower() == name.toLower()) {
+                GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
+                if (mState->symbolViewState(name) && mState->symbolViewState(name)->dim() == sym->dim() && mState->symbolViewState(name)->type() == sym->type())
+                    ui->tvSymbols->selectRow(r);
+                break;
+            }
+        }
+    }
+}
+
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView != NULL) {
-            if (symView->sym()->name() == name)
+            if (symView->sym()->name().toLower() == name.toLower())
                 return symView;
         }
     }

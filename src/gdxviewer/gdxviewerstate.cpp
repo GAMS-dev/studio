@@ -54,6 +54,16 @@ QMap<QString, GdxSymbolViewState *> GdxViewerState::symbolViewStates() const
     return mSymbolViewState;
 }
 
+QString GdxViewerState::selectedSymbol() const
+{
+    return mSelectedSymbol;
+}
+
+void GdxViewerState::setSelectedSymbol(const QString &selectedSymbol)
+{
+    mSelectedSymbol = selectedSymbol;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

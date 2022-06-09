@@ -64,12 +64,14 @@ public:
 private slots:
     void hideUniverseSymbol();
     void toggleSearchColumns(bool checked);
+    void applySelectedSymbolOnFocus(QWidget *old, QWidget *now);
 
 private:
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();
     int init(bool quiet = false);
     void freeSymbols();
+    bool isFocusedWidget(QWidget *wid);
     bool mIsInitialized = false;
 
     static int errorCallback(int count, const char *message);
@@ -79,6 +81,7 @@ private:
     void saveState();
     void applyState();
     void applySymbolState(GdxSymbol* symbol);
+    void applySelectedSymbol();
 
     Ui::GdxViewer *ui;
 

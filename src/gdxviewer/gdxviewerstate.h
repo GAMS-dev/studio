@@ -25,9 +25,13 @@ public:
 
     QMap<QString, GdxSymbolViewState *> symbolViewStates() const;
 
+    QString selectedSymbol() const;
+    void setSelectedSymbol(const QString &selectedSymbol);
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
+    QString mSelectedSymbol = "";
 };
 
 } // namespace gdxviewer

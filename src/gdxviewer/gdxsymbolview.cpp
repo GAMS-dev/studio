@@ -567,12 +567,12 @@ void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
     else {
         if (colDim != -1)
             mTvModel->setTableView(colDim, tvDimOrder);
-        ui->tvTableViewFilter->show();
     }
     ui->pbToggleView->setText("List View");
     ui->tvListView->hide();
     mTableView = true;
     ui->tvTableView->show();
+    QTimer::singleShot(0,this, [this](){ ui->tvTableViewFilter->show(); });
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
     if (mTVFirstInit) {
@@ -601,7 +601,6 @@ void GdxSymbolView::initTableViewModel(int colDim, QVector<int> tvDimOrder)
         ui->tbDomRight->setMaximumHeight(height);
         ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
         ui->tbDomRight->setIconSize(QSize(height/2, height/2));
-        ui->tvTableViewFilter->show();
     });
 }
 
