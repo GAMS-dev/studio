@@ -608,7 +608,7 @@ void GdxSymbolView::showDefaultView(GdxSymbolViewState* symViewState)
 {
     if (symViewState) {
         if (symViewState->tableViewActive())
-            showTableView();
+            showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
         else
             showListView();
     } else {
@@ -665,7 +665,6 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
     if (symViewState->tableViewLoaded()) {
-        initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
         ui->tvTableView->horizontalHeader()->restoreState(symViewState->getTableViewHeaderState());
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         mTVFirstInit = false;
