@@ -49,7 +49,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui(new Ui::GdxSymbolView)
 {
     ui->setupUi(this);
-    mPrevFontHeight = fontMetrics().height();
 
     ui->tvTableView->hide();
     ui->tvTableViewFilter->hide();
@@ -204,9 +203,7 @@ GdxSymbolView::~GdxSymbolView()
 bool GdxSymbolView::event(QEvent *event)
 {
     if (event->type() == QEvent::FontChange) {
-        ui->tvListView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
         if (mTvModel) {
-            ui->tvTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
             int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
             ui->tvTableViewFilter->setMaximumHeight(height);
             ui->tbDomLeft->setMaximumHeight(height);
@@ -214,7 +211,6 @@ bool GdxSymbolView::event(QEvent *event)
             ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
             ui->tbDomRight->setIconSize(QSize(height/2, height/2));
         }
-        mPrevFontHeight = fontMetrics().height();
     }
     return QWidget::event(event);
 }
@@ -846,7 +842,9 @@ QList<QHeaderView *> GdxSymbolView::headers()
 {
     return QList<QHeaderView*>() << ui->tvListView->horizontalHeader()
                                  << ui->tvTableView->horizontalHeader()
-                                 << ui->tvTableViewFilter->horizontalHeader();
+                                 << ui->tvTableViewFilter->horizontalHeader()
+                                 << ui->tvListView->verticalHeader()
+                                 << ui->tvTableView->verticalHeader();
 }
 
 void GdxSymbolView::enableControls()

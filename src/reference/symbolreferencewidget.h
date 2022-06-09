@@ -49,7 +49,7 @@ public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
     ~SymbolReferenceWidget() override;
     void selectSearchField() const;
-
+    QList<QHeaderView*> headers();
     bool isModelLoaded() const;
 
 public slots:
@@ -63,9 +63,6 @@ public slots:
     void updateSymbolSelection();
     void resizeColumnToContents();
     void showContextMenu(QPoint p);
-
-protected:
-    bool event(QEvent *event) override;
 
 private:
     Ui::SymbolReferenceWidget *ui;
@@ -81,7 +78,6 @@ private:
 
     SymbolId mCurrentSymbolID = -1;
     QString mCurrentSymbolSelection = "";
-    int mPrevFontHeight;
 };
 
 } // namespace reference

@@ -42,7 +42,7 @@ namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
                                        FileId id, QTextCodec* codec, QWidget *parent) :
-          QWidget(parent),
+          AbstractView(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
           mLocation(optionFilePath),
@@ -50,7 +50,6 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
           mCodec(codec)
 {
     ui->setupUi(this);
-    mPrevFontHeight = fontMetrics().height();
     setFocusProxy(ui->solverOptionTableView);
     addActions();
 
@@ -116,6 +115,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     }
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
+    headerRegister(ui->solverOptionTableView->horizontalHeader());
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -169,6 +169,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
+    headerRegister(ui->solverOptionTreeView->header());
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({75, 25}));
@@ -915,16 +916,6 @@ void SolverOptionWidget::toggleCommentOption()
     }
 }
 
-void SolverOptionWidget::zoomIn(int range)
-{
-    zoomInF(range);
-}
-
-void SolverOptionWidget::zoomOut(int range)
-{
-    zoomInF(-range);
-}
-
 void SolverOptionWidget::selectAllOptions()
 {
     if (isViewCompact()) return;
@@ -960,40 +951,6 @@ void SolverOptionWidget::completeEditingOption(QWidget *editor, QAbstractItemDel
     Q_UNUSED(editor)
     Q_UNUSED(hint)
     showOptionDefinition(false);
-}
-
-void SolverOptionWidget::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        const int delta = event->angleDelta().y();
-        if (delta < 0) {
-            int pix = fontInfo().pixelSize();
-            zoomOut();
-            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
-        } else if (delta > 0) {
-            int pix = fontInfo().pixelSize();
-            zoomIn();
-            if (pix == fontInfo().pixelSize()) zoomOut();
-        }
-        return;
-    }
-    QWidget::wheelEvent(event);
-}
-
-bool SolverOptionWidget::event(QEvent *event)
-{
-    if (event->type() == QEvent::FontChange) {
-        ui->solverOptionTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->solverOptionTableView->horizontalHeader()->count(); ++i) {
-            ui->solverOptionTableView->horizontalHeader()->resizeSection(i, qRound(ui->solverOptionTableView->horizontalHeader()->sectionSize(i) * scale));
-        }
-        for (int i = 0; i < ui->solverOptionTreeView->header()->count(); ++i) {
-            ui->solverOptionTreeView->header()->resizeSection(i, qRound(ui->solverOptionTreeView->header()->sectionSize(i) * scale));
-        }
-        mPrevFontHeight = fontMetrics().height();
-    }
-    return QWidget::event(event);
 }
 
 void SolverOptionWidget::selectAnOption()
@@ -1337,18 +1294,6 @@ QString SolverOptionWidget::getOptionTableEntry(int row)
 bool SolverOptionWidget::isEditing()
 {
     return (mOptionCompleter->lastEditor() && !mOptionCompleter->isLastEditorClosed());
-}
-
-void SolverOptionWidget::zoomInF(qreal range)
-{
-    if (range == 0.)
-        return;
-    QFont f = font();
-    const qreal newSize = f.pointSizeF() + range;
-    if (newSize <= 0)
-        return;
-    f.setPointSizeF(newSize);
-    setFont(f);
 }
 
 void SolverOptionWidget::refreshOptionTableModel(bool hideAllComments)

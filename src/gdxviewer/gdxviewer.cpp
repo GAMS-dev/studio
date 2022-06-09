@@ -52,6 +52,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
     mPrevFontHeight = fontMetrics().height();
     columnsRegister(ui->tvSymbols->horizontalHeader());
+    headerRegister(ui->tvSymbols->horizontalHeader());
+    headerRegister(ui->tvSymbols->verticalHeader());
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -87,27 +89,6 @@ GdxViewer::~GdxViewer()
     delete ui;
 }
 
-bool GdxViewer::event(QEvent *event)
-{
-    if (event->type() == QEvent::FontChange) {
-        ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        columnsUpdateScale();
-    }
-    return QWidget::event(event);
-}
-
-void GdxViewer::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        const int delta = event->angleDelta().y();
-        if (delta)
-            emit zoomRequest(delta / qAbs(delta));
-        event->accept();
-        return;
-    }
-    QWidget::wheelEvent(event);
-}
-
 void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
 {
     if (selected.indexes().size() > 0) {
@@ -133,7 +114,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
             for (QHeaderView *header : symView->headers()) {
-                columnsRegister(header);
+                headerRegister(header);
             }
             mSymbolViews.replace(selectedIdx, symView);
 
@@ -235,28 +216,6 @@ void GdxViewer::invalidate()
         setEnabled(false);
         releaseFile();
     }
-}
-
-void GdxViewer::zoomIn(int range)
-{
-    zoomInF(range);
-}
-
-void GdxViewer::zoomOut(int range)
-{
-    zoomInF(-range);
-}
-
-void GdxViewer::zoomInF(qreal range)
-{
-    if (range == 0.)
-        return;
-    QFont f = font();
-    const qreal newSize = f.pointSizeF() + range;
-    if (newSize <= 0)
-        return;
-    f.setPointSizeF(newSize);
-    setFont(f);
 }
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)

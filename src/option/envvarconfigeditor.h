@@ -27,6 +27,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QToolBar>
+#include <QHeaderView>
 
 namespace gams {
 namespace studio {
@@ -43,6 +44,7 @@ class EnvVarConfigEditor : public QWidget
 public:
     explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItems, QWidget *parent = nullptr);
     ~EnvVarConfigEditor() override;
+    QList<QHeaderView*> headers();
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -58,9 +60,6 @@ public slots:
     bool isModified() const;
 
     QList<EnvVarConfigItem *> envVarConfigItems();
-
-protected:
-    bool event(QEvent *event) override;
 
 private slots:
     void init(const QList<EnvVarConfigItem *> &initItems);

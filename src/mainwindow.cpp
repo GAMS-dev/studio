@@ -401,7 +401,6 @@ void MainWindow::adjustFonts()
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
 
-    mTableFontSize = font().pointSizeF();
     QFont f(ui->menuBar->font());
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     ui->centralWidget->setFont(f);
@@ -2886,7 +2885,7 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(mTableFontSize);
+        updateTableFonts(mInitialTableFontSize);
     }
 
     // escape is the close button for focussed widgets
@@ -4375,6 +4374,10 @@ void MainWindow::invalidateResultsView()
 void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily)
 {
 //    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
+    if (fontGroup == fgTable && mInitialTableFontSize < 0) {
+        mInitialTableFontSize = ui->mainTabs->font().pointSizeF();
+        if (fontSize < 0) fontSize = mInitialTableFontSize;
+    }
     QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
     if (fontGroup == fgLog) {
         for (QWidget* log: openLogs()) {
@@ -4395,15 +4398,8 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
                         lxi->setFont(f);
                 }
             } else if (fontGroup == fgTable) {
-                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
-                    gdx->setFont(f);
-                } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(edit)) {
-                    sow->setFont(f);
-                } else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(edit)) {
-                    guc->setFont(f);
-                } else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(edit)) {
-                    ref->setFont(f);
-                }
+                if (AbstractView *av = ViewHelper::toAbstractView(edit))
+                    av->setFont(f);
             }
         }
     }
@@ -4705,7 +4701,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
     {
         // reset all editors
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(mTableFontSize);
+        updateTableFonts(mInitialTableFontSize);
     }
 }
 
@@ -4753,11 +4749,11 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
         if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
     } else {
         QWidget *wid = QApplication::focusWidget();
-        while (wid && !ViewHelper::toGdxViewer(wid) && !ViewHelper::toSolverOptionEdit(wid)
+        while (wid && !ViewHelper::toAbstractView(wid) && !ViewHelper::toSolverOptionEdit(wid)
                && !ViewHelper::toGamsConfigEditor(wid))
             wid = wid->parentWidget();
-        if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid))
-            gdx->zoomIn(range);
+        if (AbstractView *av = ViewHelper::toAbstractView(wid))
+            av->zoomIn(range);
         else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
             sow->zoomIn(range);
         else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(wid))
@@ -5127,7 +5123,8 @@ QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, qreal p
     }
     QFont font(fontFamily);
     font.setPointSizeF(pointSize);
-    font.setHintingPreference(QFont::PreferNoHinting);
+    if (fGroup != FontGroup::fgTable)
+        font.setHintingPreference(QFont::PreferNoHinting);
     mGroupFontSize.insert(fGroup, pointSize);
     return font;
 }

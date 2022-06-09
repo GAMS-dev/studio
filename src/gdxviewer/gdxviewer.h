@@ -60,12 +60,6 @@ public:
     void selectSearchField();
     void releaseFile();
     void invalidate();
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-
-protected:
-    void wheelEvent(QWheelEvent *event) override;
-    bool event(QEvent *event) override;
 
 private slots:
     void hideUniverseSymbol();

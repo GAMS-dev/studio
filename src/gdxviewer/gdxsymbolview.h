@@ -92,7 +92,6 @@ private:
     QMenu mContextMenuLV;
     QMenu mContextMenuTV;
     QMenu *mColumnFilterMenu = nullptr;
-    int mPrevFontHeight;
 
     void showListView();
     void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());

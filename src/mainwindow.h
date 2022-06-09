@@ -517,7 +517,7 @@ private:
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
     QString mNeosMail;
-    qreal mTableFontSize = 8.;
+    qreal mInitialTableFontSize = -1.0;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

@@ -22,6 +22,7 @@
 
 #include <QWidget>
 
+#include "abstractview.h"
 #include "common.h"
 #include "gamsuserconfig.h"
 #include "envvarconfigeditor.h"
@@ -54,14 +55,14 @@ static const QList<QString> ConfigEditorName = {
     "Undefined",
 };
 
-class GamsConfigEditor : public QWidget
+class GamsConfigEditor : public AbstractView
 {
     Q_OBJECT
 
 public:
     explicit GamsConfigEditor(QString fileName, QString optionFilePath,
                                FileId id, QWidget *parent = nullptr);
-    ~GamsConfigEditor();
+    ~GamsConfigEditor() override;
 
     FileId fileId() const;
 
@@ -88,7 +89,6 @@ public slots:
 
 protected:
     void keyPressEvent(QKeyEvent *event) override;
-    void wheelEvent(QWheelEvent *event) override;
 
 private:
     Ui::GamsConfigEditor *ui;

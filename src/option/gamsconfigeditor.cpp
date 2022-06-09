@@ -32,7 +32,7 @@ namespace option {
 
 GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
                                    FileId id, QWidget *parent) :
-    QWidget(parent),
+    AbstractView(parent),
     ui(new Ui::GamsConfigEditor),
     mFileId(id),
     mLocation(optionFilePath),
@@ -54,6 +54,11 @@ GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
     ui->GamsCfgTabWidget->setCurrentIndex(int(ConfigEditorType::commandLineParameter));
 
     setFocusProxy(ui->GamsCfgTabWidget);
+    QList<QHeaderView*> headers;
+    headers << mParamConfigEditor->headers() << mEnvVarConfigEditor->headers();
+    for (QHeaderView *header : headers) {
+        headerRegister(header);
+    }
 }
 
 GamsConfigEditor::~GamsConfigEditor()
@@ -203,24 +208,6 @@ void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
-}
-
-void GamsConfigEditor::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        const int delta = event->angleDelta().y();
-        if (delta < 0) {
-            int pix = fontInfo().pixelSize();
-            zoomOut();
-            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
-        } else if (delta > 0) {
-            int pix = fontInfo().pixelSize();
-            zoomIn();
-            if (pix == fontInfo().pixelSize()) zoomOut();
-        }
-        return;
-    }
-    QWidget::wheelEvent(event);
 }
 
 void GamsConfigEditor::zoomInF(qreal range)

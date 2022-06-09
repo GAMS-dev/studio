@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QClipboard>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -41,7 +42,6 @@ ParamConfigEditor::ParamConfigEditor(const QList<ConfigItem *> &initParams,  QWi
     mModified(false)
 {
     ui->setupUi(this);
-    mPrevFontHeight = fontMetrics().height();
     init(initParams);
 }
 
@@ -162,6 +162,11 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 
     connect(this, &ParamConfigEditor::modificationChanged, this, &ParamConfigEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
+
+    QTimer::singleShot(0, this, [this]() {
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
+    });
 }
 
 void ParamConfigEditor::initActions()
@@ -193,6 +198,13 @@ void ParamConfigEditor::initActions()
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
 {
     return (focusWidget==ui->ParamCfgTableView || focusWidget==ui->ParamCfgDefTreeView);
+}
+
+QList<QHeaderView *> ParamConfigEditor::headers()
+{
+    return QList<QHeaderView *>() << ui->ParamCfgTableView->horizontalHeader()
+                                  << ui->ParamCfgDefTreeView->header()
+                                  << ui->ParamCfgTableView->verticalHeader();
 }
 
 QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const
@@ -520,24 +532,6 @@ QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
         itemList.append( new ConfigItem(item->key, item->value, item->minVersion, item->maxVersion) );
     }
     return itemList;
-}
-
-bool ParamConfigEditor::event(QEvent *event)
-{
-    if (event->type() == QEvent::FontChange) {
-        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
-        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
-        ui->ParamCfgTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->ParamCfgTableView->horizontalHeader()->count(); ++i) {
-            ui->ParamCfgTableView->horizontalHeader()->resizeSection(i, qRound(ui->ParamCfgTableView->horizontalHeader()->sectionSize(i) * scale));
-        }
-        for (int i = 0; i < ui->ParamCfgDefTreeView->header()->count(); ++i) {
-            ui->ParamCfgDefTreeView->header()->resizeSection(i, qRound(ui->ParamCfgDefTreeView->header()->sectionSize(i) * scale));
-        }
-        mPrevFontHeight = fontMetrics().height();
-    }
-    return QWidget::event(event);
 }
 
 void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)

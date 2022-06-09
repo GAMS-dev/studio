@@ -37,7 +37,7 @@ namespace studio {
 namespace reference {
 
 ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent) :
-    QWidget(parent),
+    AbstractView(parent),
     ui(new Ui::ReferenceViewer),
     mCodec(codec),
     mReference(new Reference(referenceFile, codec))
@@ -54,38 +54,51 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
                     LogMsgType::Error);
     }
 
+    QList<QHeaderView*> headers;
+
     SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this);
     ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg( problemLoaded ? "?" : QString::number(mReference->size())) );
+    headers << allSymbolsRefWidget->headers();
 
     SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Set, this);
     ui->tabWidget->addTab(setRefWidget, QString("Set (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Set).size())) );
+    headers << setRefWidget->headers();
 
     SymbolReferenceWidget* acronymRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Acronym, this);
     ui->tabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Acronym).size())) );
+    headers << acronymRefWidget->headers();
 
     SymbolReferenceWidget* varRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Variable, this);
     ui->tabWidget->addTab(varRefWidget, QString("Variable (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Variable).size()) ));
+    headers << varRefWidget->headers();
 
     SymbolReferenceWidget* parRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Parameter, this);
     ui->tabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Parameter).size())) );
+    headers << parRefWidget->headers();
 
     SymbolReferenceWidget* equRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Equation, this);
     ui->tabWidget->addTab(equRefWidget, QString("Equation (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Equation).size())) );
+    headers << equRefWidget->headers();
 
     SymbolReferenceWidget* modelRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Model, this);
     ui->tabWidget->addTab(modelRefWidget, QString("Model (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Model).size())) );
+    headers << modelRefWidget->headers();
 
     SymbolReferenceWidget* fileRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::File, this);
     ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::File).size())) );
+    headers << fileRefWidget->headers();
 
     SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this);
     ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Funct).size())) );
+    headers << functRefWidget->headers();
 
     SymbolReferenceWidget* unusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unused, this);
     ui->tabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Unused).size())) );
+    headers << unusedRefWidget->headers();
 
     SymbolReferenceWidget* fileusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::FileUsed, this);
     ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getFileUsed().size())) );
+    headers << fileusedRefWidget->headers();
 
     ui->tabWidget->setCurrentIndex(0);
     if (!problemLoaded) {
@@ -95,6 +108,10 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
         ui->tabWidget->setEnabled(false);
     }
     setFocusProxy(ui->tabWidget);
+
+    for (QHeaderView *header : headers) {
+        headerRegister(header);
+    }
 
     connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
     connect(mReference.data(), &Reference::loadFinished, this, &ReferenceViewer::updateView);
@@ -109,34 +126,6 @@ void ReferenceViewer::updateStyle()
 {
     mRefTabStyle.reset(new ReferenceTabStyle(QApplication::style()->objectName()));
     ui->tabWidget->tabBar()->setStyle(mRefTabStyle.data());
-}
-
-void ReferenceViewer::zoomIn(int range)
-{
-    zoomInF(range);
-}
-
-void ReferenceViewer::zoomOut(int range)
-{
-    zoomInF(-range);
-}
-
-void ReferenceViewer::wheelEvent(QWheelEvent *event)
-{
-    if (event->modifiers() & Qt::ControlModifier) {
-        const int delta = event->angleDelta().y();
-        if (delta < 0) {
-            int pix = fontInfo().pixelSize();
-            zoomOut();
-            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
-        } else if (delta > 0) {
-            int pix = fontInfo().pixelSize();
-            zoomIn();
-            if (pix == fontInfo().pixelSize()) zoomOut();
-        }
-        return;
-    }
-    QWidget::wheelEvent(event);
 }
 
 void ReferenceViewer::selectSearchField() const
@@ -201,18 +190,6 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setCurrentIndex(0);
     }
     ui->tabWidget->setEnabled(status);
-}
-
-void ReferenceViewer::zoomInF(qreal range)
-{
-    if (range == 0.)
-        return;
-    QFont f = font();
-    const qreal newSize = f.pointSizeF() + range;
-    if (newSize <= 0)
-        return;
-    f.setPointSizeF(newSize);
-    setFont(f);
 }
 
 } // namespace reference

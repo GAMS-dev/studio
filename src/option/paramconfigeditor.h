@@ -28,6 +28,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QToolBar>
+#include <QHeaderView>
 
 namespace gams {
 namespace studio {
@@ -48,6 +49,7 @@ public:
     ~ParamConfigEditor() override;
 
     bool isInFocus(QWidget* focusWidget) const;
+    QList<QHeaderView*> headers();
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -64,9 +66,6 @@ public slots:
     bool isModified() const;
 
     QList<ConfigItem *> parameterConfigItems();
-
-protected:
-    bool event(QEvent *event) override;
 
 private slots:
     void init(const QList<ConfigItem *> &initParams);
@@ -129,7 +128,6 @@ private:
     OptionCompleterDelegate* mOptionCompleter;
 
     bool mModified;
-    int mPrevFontHeight;
 };
 
 }

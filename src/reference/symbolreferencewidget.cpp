@@ -34,7 +34,6 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     mReferenceViewer(parent)
 {
     ui->setupUi(this);
-    mPrevFontHeight = fontMetrics().height();
     ui->symbolReferenceSplitter->setSizes(QList<int>({2500,1500}));
 
     mSymbolTableModel = new SymbolTableModel(mType, this);
@@ -103,6 +102,13 @@ SymbolReferenceWidget::~SymbolReferenceWidget()
 void SymbolReferenceWidget::selectSearchField() const
 {
     ui->symbolSearchLineEdit->setFocus();
+}
+
+QList<QHeaderView *> SymbolReferenceWidget::headers()
+{
+    return QList<QHeaderView *>() << ui->symbolView->horizontalHeader()
+                                  << ui->referenceView->header()
+                                  << ui->symbolView->verticalHeader();
 }
 
 bool SymbolReferenceWidget::isModelLoaded() const
@@ -234,22 +240,6 @@ void SymbolReferenceWidget::showContextMenu(QPoint p)
         }
         m.exec(ui->symbolView->viewport()->mapToGlobal(p));
     }
-}
-
-bool SymbolReferenceWidget::event(QEvent *event)
-{
-    if (event->type() == QEvent::FontChange) {
-        ui->symbolView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->symbolView->horizontalHeader()->count(); ++i) {
-            ui->symbolView->horizontalHeader()->resizeSection(i, qRound(ui->symbolView->horizontalHeader()->sectionSize(i) * scale));
-        }
-        for (int i = 0; i < ui->referenceView->header()->count(); ++i) {
-            ui->referenceView->header()->resizeSection(i, qRound(ui->referenceView->header()->sectionSize(i) * scale));
-        }
-        mPrevFontHeight = fontMetrics().height();
-    }
-    return QWidget::event(event);
 }
 
 } // namespace reference

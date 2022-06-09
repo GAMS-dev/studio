@@ -23,6 +23,8 @@
 #include "ui_envvarconfigeditor.h"
 #include "theme.h"
 
+#include <QTimer>
+
 namespace gams {
 namespace studio {
 namespace option {
@@ -33,7 +35,6 @@ EnvVarConfigEditor::EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItem
     mModified(false)
 {
     ui->setupUi(this);
-    mPrevFontHeight = fontMetrics().height();
     init(initItems);
 }
 
@@ -42,6 +43,12 @@ EnvVarConfigEditor::~EnvVarConfigEditor()
     delete ui;
     if (mEnvVarTableModel)
         delete mEnvVarTableModel;
+}
+
+QList<QHeaderView *> EnvVarConfigEditor::headers()
+{
+    return QList<QHeaderView *>() << ui->EnvVarConfigTableView->horizontalHeader()
+                                  << ui->EnvVarConfigTableView->verticalHeader();
 }
 
 void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
@@ -188,26 +195,6 @@ QList<EnvVarConfigItem *> EnvVarConfigEditor::envVarConfigItems()
     return mEnvVarTableModel->envVarConfigItems();
 }
 
-bool EnvVarConfigEditor::event(QEvent *event)
-{
-    if (event->type() == QEvent::FontChange) {
-        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
-        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
-        ui->EnvVarConfigTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-        qreal scale = qreal(fontMetrics().height()) / qreal(mPrevFontHeight);
-        for (int i = 0; i < ui->EnvVarConfigTableView->horizontalHeader()->count(); ++i) {
-            ui->EnvVarConfigTableView->horizontalHeader()->resizeSection(i, qRound(ui->EnvVarConfigTableView->horizontalHeader()->sectionSize(i) * scale));
-        }
-        ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_KEY);
-        ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PARAM_VALUE);
-        ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MIN_VERSION);
-        ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_MAX_VERSION);
-        ui->EnvVarConfigTableView->resizeColumnToContents(EnvVarTableModel::COLUMN_PATH_VAR);
-        mPrevFontHeight = fontMetrics().height();
-    }
-    return QWidget::event(event);
-}
-
 void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 {
     initActions();
@@ -271,6 +258,10 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     connect(this, &EnvVarConfigEditor::modificationChanged, this, &EnvVarConfigEditor::setModified, Qt::UniqueConnection);
 
+    QTimer::singleShot(0, this, [this]() {
+        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
+        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
+    });
 }
 
 void EnvVarConfigEditor::initActions()

@@ -27,6 +27,7 @@
 #include <QTabWidget>
 #include "common.h"
 #include "reference.h"
+#include "abstractview.h"
 
 namespace Ui {
 class ReferenceViewer;
@@ -38,7 +39,7 @@ namespace reference {
 
 class Reference;
 class ReferenceTabStyle;
-class ReferenceViewer : public QWidget
+class ReferenceViewer : public AbstractView
 {
     Q_OBJECT
 
@@ -47,22 +48,14 @@ public:
     ~ReferenceViewer() override;
     void selectSearchField() const;
     void updateStyle();
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
 
 signals:
     void jumpTo(ReferenceItem item);
-
-protected:
-    void wheelEvent(QWheelEvent *event) override;
 
 public slots:
     void on_referenceFileChanged(QTextCodec* codec);
     void on_tabBarClicked(int index);
     void updateView(bool status);
-
-private:
-    void zoomInF(qreal range);
 
 private:
     Ui::ReferenceViewer *ui;
