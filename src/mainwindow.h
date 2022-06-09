@@ -451,7 +451,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
-    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), qreal pointSize = 0);
+    QFont getEditorFont(FontGroup fGroup, QString fontFamily = QString(), qreal pointSize = 0);
     bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);

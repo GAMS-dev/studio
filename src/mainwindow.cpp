@@ -288,7 +288,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(createEditorFont(fgLog));
+    mSyslog->setFont(getEditorFont(fgLog));
     on_actionShow_System_Log_triggered();
 
     mNavigationHistory = new NavigationHistory(this);
@@ -3297,7 +3297,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
         logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-        wid->setFont(createEditorFont(fgLog));
+        wid->setFont(getEditorFont(fgLog));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
@@ -3777,7 +3777,7 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
             logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-            wid->setFont(createEditorFont(fgLog));
+            wid->setFont(getEditorFont(fgLog));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
                                                                           : AbstractEdit::NoWrap);
@@ -3917,6 +3917,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
             fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
+            edit->setFont(getEditorFont(fileMeta->fontGroup()));
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3963,14 +3964,14 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
-        tv->setFont(createEditorFont(fgText));
+        tv->setFont(getEditorFont(fgText));
         connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
         connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
     }
     if (ViewHelper::toCodeEdit(edit)) {
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        ae->setFont(createEditorFont(fgText));
+        ae->setFont(getEditorFont(fgText));
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
@@ -4357,7 +4358,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     closePinView();
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
-    newWid->setFont(createEditorFont(fm->fontGroup()));
+    newWid->setFont(getEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
     mPinView->setFontGroup(fm->fontGroup());
     mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
@@ -4378,13 +4379,10 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
         mInitialTableFontSize = ui->mainTabs->font().pointSizeF();
         if (fontSize < 0) fontSize = mInitialTableFontSize;
     }
-    QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
+    QFont f = getEditorFont(fontGroup, fontFamily, fontSize);
     if (fontGroup == fgLog) {
         for (QWidget* log: openLogs()) {
-            if (ViewHelper::toTextView(log))
-                ViewHelper::toTextView(log)->edit()->setFont(f);
-            else
-                log->setFont(f);
+            log->setFont(f);
         }
         mSyslog->setFont(f);
     } else {
@@ -4392,10 +4390,10 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
             if (fontGroup == fgText) {
                 if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
                     ae->setFont(f);
+                } else if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit)) {
+                    lxi->setFont(f);
                 } else if (TextView *tv = ViewHelper::toTextView(edit)) {
                     tv->edit()->setFont(f);
-                    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
-                        lxi->setFont(f);
                 }
             } else if (fontGroup == fgTable) {
                 if (AbstractView *av = ViewHelper::toAbstractView(edit))
@@ -5110,7 +5108,7 @@ void MainWindow::deleteScratchDirs(const QString &path)
     }
 }
 
-QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, qreal pointSize)
+QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal pointSize)
 {
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
