@@ -644,6 +644,11 @@ void GdxSymbolView::resetValFormat()
         mValFormat->setCurrentIndex(index);
 }
 
+QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
+{
+    return mPendingUncheckedLabels;
+}
+
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
     Q_UNUSED(watched)
@@ -679,15 +684,23 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
 void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
 {
     // apply uel filters
+    mPendingUncheckedLabels.resize(mSym->dim());
     for (int i=0; i<mSym->dim(); i++) {
+        bool filterActive = false;
         if (!symViewState->uncheckedLabels().at(i).empty()) {
-            mSym->setFilterActive(i);
             for (const QString &l : symViewState->uncheckedLabels().at(i)) {
                 int uel = mGdxSymbolTable->label2Uel(l);
-                if (uel != -1)
+                if (uel != -1) {
+                    bool labelExistsInColumn = mSym->showUelInColumn().at(i)[uel];
+                    if (!labelExistsInColumn)
+                        mPendingUncheckedLabels[i].append(l);
+                    filterActive = filterActive || labelExistsInColumn;
                     mSym->showUelInColumn().at(i)[uel] = false;
+                } else
+                    mPendingUncheckedLabels[i].append(l);
             }
         }
+        mSym->setFilterActive(i, filterActive);
     }
 
     // apply value filters

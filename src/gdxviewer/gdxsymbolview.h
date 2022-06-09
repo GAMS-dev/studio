@@ -122,9 +122,15 @@ private:
 
     DefaultSymbolView mDefaultSymbolView;
 
+    // in case of unchecked filter labels in a restored state that could not be applied because the labels have been removed
+    // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
+    // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
+    QVector<QStringList> mPendingUncheckedLabels;
+
     // QObject interface
 public:
     bool eventFilter(QObject *watched, QEvent *event);
+    QVector<QStringList> pendingUncheckedLabels() const;
 };
 
 

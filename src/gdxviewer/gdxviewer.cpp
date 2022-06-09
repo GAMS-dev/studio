@@ -385,7 +385,7 @@ void GdxViewer::saveState()
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
 
-    // delete symbols that do not exists anymore or differ in dimension or type
+    // delete symbols that do not exist anymore or differ in dimension or type
     for (QString name : mState->symbolViewStates().keys()) {
         GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
         GdxSymbolViewState* symViewState = mState->symbolViewState(name);
@@ -397,6 +397,18 @@ void GdxViewer::saveState()
         if (symView != NULL && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
+
+            // merge pending unchecked labels into uncheck labels
+            if (!symView->pendingUncheckedLabels().empty()) {
+                QVector<QStringList> uncheckedLabels = symViewState->uncheckedLabels();
+                for(int i=0; i<symView->sym()->dim(); i++) {
+                    for (const QString &l : symView->pendingUncheckedLabels().at(i)) {
+                        if (!uncheckedLabels[i].contains(l))
+                            uncheckedLabels[i].append(l);
+                    }
+                }
+                symViewState->setUncheckedLabels(uncheckedLabels);
+            }
         }
     }
 }
