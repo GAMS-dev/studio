@@ -1,6 +1,7 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEWSTATE_H
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEWSTATE_H
 
+#include <QSet>
 #include <QStringList>
 
 
@@ -38,9 +39,9 @@ public:
     bool tableViewActive() const;
     void setTableViewActive(bool tableViewActive);
 
-    QVector<QStringList> uncheckedLabels() const;
+    QVector<QSet<QString>> uncheckedLabels() const;
 
-    void setUncheckedLabels(const QVector<QStringList> &uncheckedLabels);
+    void setUncheckedLabels(const QVector<QSet<QString>> &uncheckedLabels);
 
     int numericalPrecision() const;
     void setNumericalPrecision(int numericalPrecision);
@@ -96,7 +97,7 @@ private:
     QVector<int> mTvDimOrder;
 
     // column filters
-    QVector<QStringList> mUncheckedLabels;
+    QVector<QSet<QString>> mUncheckedLabels;
 
     // value filters
     QVector<ValueFilterState> mValueFilterState;

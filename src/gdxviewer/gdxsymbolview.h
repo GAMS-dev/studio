@@ -23,6 +23,7 @@
 #include <QFrame>
 #include <QMenu>
 #include <QVector>
+#include <QSet>
 #include <QAction>
 #include <QCheckBox>
 #include <QSpinBox>
@@ -125,12 +126,12 @@ private:
     // in case of unchecked filter labels in a restored state that could not be applied because the labels have been removed
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
-    QVector<QStringList> mPendingUncheckedLabels;
+    QVector<QSet<QString>> mPendingUncheckedLabels;
 
     // QObject interface
 public:
     bool eventFilter(QObject *watched, QEvent *event);
-    QVector<QStringList> pendingUncheckedLabels() const;
+    QVector<QSet<QString>> pendingUncheckedLabels() const;
 };
 
 

@@ -644,7 +644,7 @@ void GdxSymbolView::resetValFormat()
         mValFormat->setCurrentIndex(index);
 }
 
-QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
+QVector<QSet<QString>> GdxSymbolView::pendingUncheckedLabels() const
 {
     return mPendingUncheckedLabels;
 }
@@ -693,11 +693,11 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
                 if (uel != -1) {
                     bool labelExistsInColumn = mSym->showUelInColumn().at(i)[uel];
                     if (!labelExistsInColumn)
-                        mPendingUncheckedLabels[i].append(l);
+                        mPendingUncheckedLabels[i].insert(l);
                     filterActive = filterActive || labelExistsInColumn;
                     mSym->showUelInColumn().at(i)[uel] = false;
                 } else
-                    mPendingUncheckedLabels[i].append(l);
+                    mPendingUncheckedLabels[i].insert(l);
             }
         }
         mSym->setFilterActive(i, filterActive);
@@ -754,13 +754,13 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
 {
     // save uel filters
-    QVector<QStringList> uncheckedLabels;
+    QVector<QSet<QString>> uncheckedLabels;
     for (int i=0; i<mSym->dim(); i++) {
-        QStringList labels;
+        QSet<QString> labels;
         if (mSym->filterActive(i)) {
             for (int u : *mSym->uelsInColumn().at(i)) {
                 if (!mSym->showUelInColumn().at(i)[u])
-                    labels.append(mGdxSymbolTable->uel2Label(u));
+                    labels.insert(mGdxSymbolTable->uel2Label(u));
             }
         }
         uncheckedLabels.append(labels);
