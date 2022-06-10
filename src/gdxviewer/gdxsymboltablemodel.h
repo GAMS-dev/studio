@@ -73,7 +73,6 @@ private:
     QList<GdxSymbol*> mGdxSymbols;
     QMap<QString, GdxSymbol*> mGdxSymbolByName;
     QStringList mUel2Label;
-    QMap<QString, int> mLabel2Uel;
     QStringList mStrPool;
 
     std::vector<int> mLabelCompIdx;

@@ -150,7 +150,12 @@ int GdxSymbolTableModel::getUelCount() const
 
 int GdxSymbolTableModel::label2Uel(QString label)
 {
-    return mLabel2Uel.value(label, -1);
+    int uelNr = -1;
+    int uelMap = -1;
+    if (gdxUMFindUEL(mGdx, label.toLocal8Bit(), &uelNr, &uelMap))
+        return uelNr;
+    else
+        return -1;
 }
 
 int GdxSymbolTableModel::symbolCount() const
@@ -179,7 +184,6 @@ void GdxSymbolTableModel::loadUel2Label()
         gdxUMUelGet(mGdx, i, label, &map);
         QString l = mCodec->toUnicode(label);
         mUel2Label.append(l);
-        mLabel2Uel[l] = i;
     }
 }
 
