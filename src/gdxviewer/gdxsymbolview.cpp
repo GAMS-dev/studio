@@ -291,6 +291,7 @@ void GdxSymbolView::resetSortFilter()
         mLVFirstInit = true;
         mTVFirstInit = true;
         mTVResizeOnInit = true;
+        mPendingUncheckedLabels.clear();
         showDefaultView();
     }
 }
