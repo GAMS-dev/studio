@@ -40,6 +40,7 @@ public:
 protected:
     void paintSection(QPainter *painter, const QRect &rect, int logicalIndex) const override;
     void mousePressEvent(QMouseEvent * event) override;
+    bool event(QEvent * event) override;
 
 private:
     bool pointFilterIconCollision(QPoint p);
