@@ -4737,6 +4737,9 @@ void MainWindow::on_actionZoom_In_triggered()
 void MainWindow::zoomWidget(QWidget *widget, int range)
 {
     FontGroup fg;
+    while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
+           && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget))
+        widget = widget->parentWidget();
     FileMeta *fm = mFileMetaRepo.fileMeta(widget);
     if (fm)
         fg = fm->fontGroup();
