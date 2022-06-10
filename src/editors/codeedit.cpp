@@ -1028,17 +1028,6 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
-void CodeEdit::wheelEvent(QWheelEvent *e) {
-    if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->angleDelta().y();
-        if (delta)
-            emit zoomRequest(delta / qAbs(delta));
-        e->accept();
-        return;
-    }
-    AbstractEdit::wheelEvent(e);
-}
-
 void CodeEdit::paintEvent(QPaintEvent* e)
 {
     AbstractEdit::paintEvent(e);

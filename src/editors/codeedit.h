@@ -122,7 +122,6 @@ protected:
     void mouseMoveEvent(QMouseEvent *e) override;
     void mousePressEvent(QMouseEvent *e) override;
     void dragEnterEvent(QDragEnterEvent *e) override;
-    void wheelEvent(QWheelEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
 

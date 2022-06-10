@@ -79,6 +79,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui->tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
+    headerRegister(ui->tvSymbols->horizontalHeader());
 }
 
 GdxViewer::~GdxViewer()

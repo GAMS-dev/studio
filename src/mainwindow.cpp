@@ -289,6 +289,9 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(getEditorFont(fgLog));
+    connect(mSyslog, &AbstractEdit::zoomRequest, this, [this](int delta){
+        zoomWidget(mSyslog, delta);
+    });
     on_actionShow_System_Log_triggered();
 
     mNavigationHistory = new NavigationHistory(this);
@@ -3917,7 +3920,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
             fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
-            edit->setFont(getEditorFont(fileMeta->fontGroup()));
+            QTimer::singleShot(0, this, [this, edit, fileMeta](){
+                edit->setFont(getEditorFont(fileMeta->fontGroup()));
+            });
+
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3976,8 +3982,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    }
-    if (fileMeta->kind() == FileKind::Ref) {
+    } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
     }
@@ -4731,34 +4736,16 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::zoomWidget(QWidget *widget, int range)
 {
-    if (lxiviewer::LxiViewer *lv = ViewHelper::toLxiViewer(widget)) {
-        int pix = lv->fontInfo().pixelSize();
-        lv->textView()->zoomIn(range);
-        if (pix == lv->fontInfo().pixelSize() && lv->fontInfo().pointSize() > 1) lv->textView()->zoomIn(range);
+    FontGroup fg;
+    FileMeta *fm = mFileMetaRepo.fileMeta(widget);
+    if (fm)
+        fg = fm->fontGroup();
+    else if (widget == mSyslog)
+        fg = fgLog;
+    else return;
 
-    } else if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-        int pix = tv->fontInfo().pixelSize();
-        tv->zoomIn(range);
-        if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn(range);
-
-    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomIn(range);
-        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
-    } else {
-        QWidget *wid = QApplication::focusWidget();
-        while (wid && !ViewHelper::toAbstractView(wid) && !ViewHelper::toSolverOptionEdit(wid)
-               && !ViewHelper::toGamsConfigEditor(wid))
-            wid = wid->parentWidget();
-        if (AbstractView *av = ViewHelper::toAbstractView(wid))
-            av->zoomIn(range);
-        else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(wid))
-            sow->zoomIn(range);
-        else if (option::GamsConfigEditor *guc = ViewHelper::toGamsConfigEditor(wid))
-            guc->zoomIn(range);
-        else if (reference::ReferenceViewer *ref = ViewHelper::toReferenceViewer(wid))
-            ref->zoomIn(range);
-    }
+    qreal fontSize = widget->font().pointSizeF() + range;
+    setGroupFontSize(fg, fontSize);
 }
 
 void MainWindow::convertLowerUpper(bool toUpper)

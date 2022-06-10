@@ -604,6 +604,18 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
     if (validLink) jumpToCurrentLink(e->pos());
 }
 
+void AbstractEdit::wheelEvent(QWheelEvent *e)
+{
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->angleDelta().y();
+        if (delta)
+            emit zoomRequest(delta / qAbs(delta));
+        e->accept();
+        return;
+    }
+    QPlainTextEdit::wheelEvent(e);
+}
+
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 {
     Q_UNUSED(dirtyLines)
