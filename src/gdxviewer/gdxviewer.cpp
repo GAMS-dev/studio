@@ -80,6 +80,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     ui->tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
     headerRegister(ui->tvSymbols->horizontalHeader());
+    headerRegister(ui->tvSymbols->verticalHeader());
 }
 
 GdxViewer::~GdxViewer()

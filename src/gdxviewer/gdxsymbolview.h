@@ -109,6 +109,8 @@ private:
     QCheckBox* mSqZeroes = nullptr;
     QSpinBox* mPrecision = nullptr;
     QComboBox* mValFormat = nullptr;
+    QWidget *mPreferencesWidget = nullptr;
+    QWidget *mVisibleValColWidget = nullptr;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     bool mTableView = false;

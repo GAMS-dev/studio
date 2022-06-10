@@ -101,8 +101,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
     QVBoxLayout* vLayout = new QVBoxLayout();
-    QWidget* widget = new QWidget();
-    widget->setAutoFillBackground(true);
+    mPreferencesWidget = new QWidget();
+    mPreferencesWidget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
     vLayout->addWidget(mSqDefaults);
     mSqDefaults->setEnabled(false);
@@ -138,8 +138,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
-    widget->setLayout(vLayout);
-    preferences->setDefaultWidget(widget);
+    mPreferencesWidget->setLayout(vLayout);
+    preferences->setDefaultWidget(mPreferencesWidget);
     ui->tbPreferences->addAction(preferences);
 
     //create header for list view
@@ -203,6 +203,8 @@ GdxSymbolView::~GdxSymbolView()
 bool GdxSymbolView::event(QEvent *event)
 {
     if (event->type() == QEvent::FontChange) {
+        if (mPreferencesWidget) mPreferencesWidget->setFont(font());
+        if (mVisibleValColWidget) mVisibleValColWidget->setFont(font());
         if (mTvModel) {
             int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
             ui->tvTableViewFilter->setMaximumHeight(height);
@@ -233,6 +235,7 @@ void GdxSymbolView::showFilter(QPoint p)
         else
             filter = mSym->valueFilter(column-mSym->dim());
         mColumnFilterMenu->addAction(filter);
+        mColumnFilterMenu->setFont(font());
         mColumnFilterMenu->popup(tableView->mapToGlobal(p));
     }
 }
@@ -336,11 +339,12 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
         QVector<QString> valColNames;
         valColNames<< "Level" << "Marginal" << "Lower Bound" << "Upper Bound" << "Scale";
         QWidgetAction *checkableAction = new QWidgetAction(ui->tbVisibleValCols);
-        QWidget *widget = new QWidget();
-        widget->setAutoFillBackground(true);
+        mVisibleValColWidget = new QWidget();
+        mVisibleValColWidget->setFont(font());
+        mVisibleValColWidget->setAutoFillBackground(true);
         QVBoxLayout *layout = new QVBoxLayout();
-        widget->setLayout(layout);
-        checkableAction->setDefaultWidget(widget);
+        mVisibleValColWidget->setLayout(layout);
+        checkableAction->setDefaultWidget(mVisibleValColWidget);
         QCheckBox *cb;
         for(int i=0; i<GMS_VAL_MAX; i++) {
             cb = new QCheckBox(valColNames[i]);
@@ -508,10 +512,13 @@ void GdxSymbolView::tvFilterScrollRight()
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
-    if (mTableView)
+    if (mTableView) {
+        mContextMenuTV.setFont(font());
         mContextMenuTV.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
-    else
+    } else {
+        mContextMenuLV.setFont(font());
         mContextMenuLV.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
+    }
 }
 
 void GdxSymbolView::autoResizeColumns()
