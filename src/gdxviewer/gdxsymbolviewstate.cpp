@@ -49,12 +49,12 @@ void GdxSymbolViewState::setTableViewActive(bool tableViewActive)
     mTableViewActive = tableViewActive;
 }
 
-QVector<QSet<QString>> GdxSymbolViewState::uncheckedLabels() const
+QVector<QStringList> GdxSymbolViewState::uncheckedLabels() const
 {
     return mUncheckedLabels;
 }
 
-void GdxSymbolViewState::setUncheckedLabels(const QVector<QSet<QString>> &uncheckedLabels)
+void GdxSymbolViewState::setUncheckedLabels(const QVector<QStringList> &uncheckedLabels)
 {
     mUncheckedLabels = uncheckedLabels;
 }
