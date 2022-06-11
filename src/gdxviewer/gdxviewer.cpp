@@ -445,6 +445,11 @@ void GdxViewer::applySelectedSymbol()
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
                 GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
+                if (sym->type() == GMS_DT_ALIAS) {
+                    int idx = sym->subType();
+                    sym = mGdxSymbolTable->gdxSymbols().at(idx);
+                    name = sym->name();
+                }
                 if (mState->symbolViewState(name) && mState->symbolViewState(name)->dim() == sym->dim() && mState->symbolViewState(name)->type() == sym->type())
                     ui->tvSymbols->selectRow(r);
                 break;
