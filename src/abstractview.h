@@ -34,12 +34,12 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     bool event(QEvent *event) override;
     bool eventFilter(QObject *watched, QEvent *event) override;
+    void zoomInF(qreal range);
 
 private slots:
     void headerUnregister(QObject *object);
 
 private:
-    void zoomInF(qreal range);
     void headerUpdate(HeadersData::iterator &it);
 
 private:

@@ -4705,6 +4705,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
         // reset all editors
         updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
         updateTableFonts(mInitialTableFontSize);
+        mWp->zoomReset();
     }
 }
 
@@ -4738,14 +4739,24 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
 {
     FontGroup fg;
     while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
-           && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget))
+           && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
+           && widget != mSyslog && widget != mWp && widget != centralWidget())
         widget = widget->parentWidget();
+    if (widget == centralWidget()) {
+        if (ui->mainTabs->currentWidget() == mWp)
+            mWp->zoomRequest(range);
+        return;
+    }
     FileMeta *fm = mFileMetaRepo.fileMeta(widget);
     if (fm)
         fg = fm->fontGroup();
     else if (widget == mSyslog)
         fg = fgLog;
-    else return;
+    else if (widget == mWp) {
+        mWp->zoomRequest(range);
+        return;
+    } else
+        return;
 
     qreal fontSize = widget->font().pointSizeF() + range;
     setGroupFontSize(fg, fontSize);

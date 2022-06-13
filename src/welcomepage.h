@@ -20,7 +20,7 @@
 #ifndef WELCOMEPAGE_H
 #define WELCOMEPAGE_H
 
-#include <QWidget>
+#include "abstractview.h"
 
 #include "common.h"
 
@@ -36,13 +36,13 @@ namespace studio {
 struct HistoryData;
 class MainWindow;
 
-class WelcomePage : public QWidget
+class WelcomePage : public AbstractView
 {
     Q_OBJECT
 public:
     explicit WelcomePage(MainWindow *parent = nullptr);
-    ~WelcomePage();
-    bool event(QEvent *event);
+    ~WelcomePage() override;
+    void zoomReset();
 
 signals:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEdit = false,
@@ -59,10 +59,12 @@ public slots:
 
 private slots:
     void linkActivated(const QString &link);
+    void handleZoom(int delta);
 
 protected:
-    void showEvent(QShowEvent *event);
-    void hideEvent(QHideEvent *event);
+    bool event(QEvent *event) override;
+    void showEvent(QShowEvent *event) override;
+    void hideEvent(QHideEvent *event) override;
     void setupIcons();
 
 private:
