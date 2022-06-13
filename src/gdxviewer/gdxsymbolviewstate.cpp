@@ -169,14 +169,14 @@ void GdxSymbolViewState::setShowAttributes(const QVector<bool> &value)
     showAttributes = value;
 }
 
-QByteArray GdxSymbolViewState::getTableViewHeaderState() const
+QVector<int> GdxSymbolViewState::getTableViewColumnWidths() const
 {
-    return mTableViewHeaderState;
+    return mTableViewColumnWidths;
 }
 
-void GdxSymbolViewState::setTableViewHeaderState(const QByteArray &tableViewHeaderState)
+void GdxSymbolViewState::setTableViewColumnWidths(const QVector<int> &tableViewColumnWidths)
 {
-    mTableViewHeaderState = tableViewHeaderState;
+    mTableViewColumnWidths = tableViewColumnWidths;
 }
 
 

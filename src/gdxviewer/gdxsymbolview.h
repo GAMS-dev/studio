@@ -96,6 +96,8 @@ private:
 
     void selectAll();
     void resetValFormat();
+    void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
+    void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
 
     QVector<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;

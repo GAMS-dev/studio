@@ -645,6 +645,23 @@ void GdxSymbolView::resetValFormat()
         mValFormat->setCurrentIndex(index);
 }
 
+void GdxSymbolView::saveTableViewHeaderState(GdxSymbolViewState* symViewState)
+{
+    QVector<int> widths;
+    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++)
+        widths.append(ui->tvTableView->horizontalHeader()->sectionSize(col));
+    symViewState->setTableViewColumnWidths(widths);
+}
+
+void GdxSymbolView::restoreTableViewHeaderState(GdxSymbolViewState* symViewState)
+{
+    QVector<int> widths = symViewState->getTableViewColumnWidths();
+    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
+        if (col < widths.size())
+            ui->tvTableView->horizontalHeader()->resizeSection(col, widths[col]);
+    }
+}
+
 QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
 {
     return mPendingUncheckedLabels;
@@ -671,7 +688,9 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
     if (symViewState->tableViewLoaded()) {
-        ui->tvTableView->horizontalHeader()->restoreState(symViewState->getTableViewHeaderState());
+        if (!symViewState->tableViewActive())
+            initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
+        restoreTableViewHeaderState(symViewState);
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         mTVFirstInit = false;
     }
@@ -756,8 +775,8 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     if (symViewState->tableViewLoaded()) {
         symViewState->setTvColDim(mTvModel->tvColDim());
         symViewState->setTvDimOrder(mTvModel->tvDimOrder());
-        symViewState->setTableViewHeaderState(ui->tvTableView->horizontalHeader()->saveState());
         symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());
+        saveTableViewHeaderState(symViewState);
     }
 }
 
