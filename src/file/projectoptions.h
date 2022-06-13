@@ -18,6 +18,7 @@
 #ifndef GAMS_STUDIO_PROJECTOPTIONS_H
 #define GAMS_STUDIO_PROJECTOPTIONS_H
 
+#include "abstractview.h"
 #include <QFrame>
 #include <QLineEdit>
 #include "common.h"
@@ -57,7 +58,7 @@ private:
 };
 
 
-class ProjectOptions : public QFrame
+class ProjectOptions : public AbstractView
 {
     Q_OBJECT
 

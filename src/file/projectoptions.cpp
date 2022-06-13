@@ -83,7 +83,7 @@ void ProjectData::projectChanged(NodeId id)
 
 
 ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
-    QFrame(parent),
+    AbstractView(parent),
     ui(new Ui::ProjectOptions)
 {
     ui->setupUi(this);
