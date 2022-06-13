@@ -648,8 +648,12 @@ void GdxSymbolView::resetValFormat()
 void GdxSymbolView::saveTableViewHeaderState(GdxSymbolViewState* symViewState)
 {
     QVector<int> widths;
-    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++)
-        widths.append(ui->tvTableView->horizontalHeader()->sectionSize(col));
+    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
+        if (ui->tvTableView->horizontalHeader()->isSectionHidden(col))
+            widths.append(-1);
+        else
+            widths.append(ui->tvTableView->horizontalHeader()->sectionSize(col));
+    }
     symViewState->setTableViewColumnWidths(widths);
 }
 
@@ -657,8 +661,10 @@ void GdxSymbolView::restoreTableViewHeaderState(GdxSymbolViewState* symViewState
 {
     QVector<int> widths = symViewState->getTableViewColumnWidths();
     for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
-        if (col < widths.size())
-            ui->tvTableView->horizontalHeader()->resizeSection(col, widths[col]);
+        if (col < widths.size()) {
+            if (widths.at(col) != -1)
+                ui->tvTableView->horizontalHeader()->resizeSection(col, widths.at(col));
+        }
     }
 }
 
