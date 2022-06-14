@@ -67,7 +67,7 @@ public slots:
     void showFilter(QPoint p);
     void freeFilterMenu();
     void autoResizeColumns();
-    void autoResizeTableViewColumns();
+    void autoResizeTableViewColumns(bool force=false);
     void adjustDomainScrollbar();
 
 private slots:

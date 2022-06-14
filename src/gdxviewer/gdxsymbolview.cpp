@@ -507,9 +507,9 @@ void GdxSymbolView::autoResizeColumns()
         ui->tvListView->resizeColumnsToContents();
 }
 
-void GdxSymbolView::autoResizeTableViewColumns()
+void GdxSymbolView::autoResizeTableViewColumns(bool force)
 {
-    if (mTableView) {
+    if (mTableView || force) {
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
         for (int i=0; i<mTVResizeColNr; i++)
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
@@ -694,8 +694,10 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
     if (symViewState->tableViewLoaded()) {
-        if (!symViewState->tableViewActive())
+        if (!symViewState->tableViewActive()) {
             initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
+            autoResizeTableViewColumns(true);
+        }
         restoreTableViewHeaderState(symViewState);
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         mTVFirstInit = false;
