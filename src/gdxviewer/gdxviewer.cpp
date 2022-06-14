@@ -163,7 +163,7 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             //msgBox.exec();
         }
         if (mSymbolTableProxyModel) {
-            mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
+            setFilter(ui->lineEdit->text());
             mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
         }
         return initError;
@@ -290,7 +290,9 @@ int GdxViewer::init(bool quiet)
     ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    connect(ui->lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(ui->lineEdit, &QLineEdit::textChanged, this, [this](const QString &text) {
+        setFilter(text);
+    });
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
     connect(ui->cbToggleSearch, &QCheckBox::toggled, this, &GdxViewer::toggleSearchColumns);
@@ -331,6 +333,16 @@ void GdxViewer::freeSymbols()
     }
     mSymbolViews.clear();
     mIsInitialized = false;
+}
+
+void GdxViewer::setFilter(const QString &text)
+{
+    QString filter = text.isEmpty() ? text : '^'+QRegExp::escape(text)+'$';
+    filter.replace("\\*", ".*");
+    filter.replace("\\?", ".");
+    QRegExp rex(filter);
+    rex.setCaseSensitivity(Qt::CaseInsensitive);
+    mSymbolTableProxyModel->setFilterRegExp(rex);
 }
 
 void GdxViewer::hideUniverseSymbol()
