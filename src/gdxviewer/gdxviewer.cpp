@@ -382,6 +382,8 @@ void GdxViewer::saveState()
         QModelIndex index = ui->tvSymbols->selectionModel()->selectedIndexes().at(1);
         QString name =ui->tvSymbols->model()->data(index).toString();
         mState->setSelectedSymbol(name);
+        mState->setSelectedSymbolIsAlias(mGdxSymbolTable->getSymbolByName(name)->type() == GMS_DT_ALIAS);
+
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
 
@@ -445,12 +447,9 @@ void GdxViewer::applySelectedSymbol()
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
                 GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
-                if (sym->type() == GMS_DT_ALIAS) {
-                    int idx = sym->subType();
-                    sym = mGdxSymbolTable->gdxSymbols().at(idx);
-                    name = sym->name();
-                }
                 if (mState->symbolViewState(name) && mState->symbolViewState(name)->dim() == sym->dim() && mState->symbolViewState(name)->type() == sym->type())
+                    ui->tvSymbols->selectRow(r);
+                else if (mState->selectedSymbolIsAlias())
                     ui->tvSymbols->selectRow(r);
                 break;
             }

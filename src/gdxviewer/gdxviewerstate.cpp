@@ -64,6 +64,16 @@ void GdxViewerState::setSelectedSymbol(const QString &selectedSymbol)
     mSelectedSymbol = selectedSymbol;
 }
 
+bool GdxViewerState::selectedSymbolIsAlias() const
+{
+    return mSelectedSymbolIsAlias;
+}
+
+void GdxViewerState::setSelectedSymbolIsAlias(bool selectedSymbolIsAlias)
+{
+    mSelectedSymbolIsAlias = selectedSymbolIsAlias;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

@@ -28,10 +28,14 @@ public:
     QString selectedSymbol() const;
     void setSelectedSymbol(const QString &selectedSymbol);
 
+    bool selectedSymbolIsAlias() const;
+    void setSelectedSymbolIsAlias(bool selectedSymbolIsAlias);
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
     QString mSelectedSymbol = "";
+    bool mSelectedSymbolIsAlias = false;
 };
 
 } // namespace gdxviewer

@@ -760,16 +760,8 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setNumericalPrecision(mPrecision->value());
     symViewState->setValFormatIndex(mValFormat->currentIndex());
 
-    if (mSym->type() == GMS_DT_ALIAS) {
-        int idx = mSym->subType();
-        GdxSymbol* aliasedSymbol = mGdxSymbolTable->gdxSymbols().at(idx);
-        symViewState->setDim(aliasedSymbol->dim());
-        symViewState->setType(aliasedSymbol->type());
-    } else {
-        symViewState->setDim(mSym->dim());
-        symViewState->setType(mSym->type());
-    }
-
+    symViewState->setDim(mSym->dim());
+    symViewState->setType(mSym->type());
 
     symViewState->setTableViewActive(mTableView);
     symViewState->setListViewHeaderState(ui->tvListView->horizontalHeader()->saveState());
