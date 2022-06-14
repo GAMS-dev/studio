@@ -406,6 +406,7 @@ void MainWindow::adjustFonts()
 
     QFont f(ui->menuBar->font());
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
+    mTableFontSizeDif = f.pointSizeF() - Settings::settings()->toInt(skEdFontSize);
     ui->centralWidget->setFont(f);
     ui->splitter->setFont(f);
     ui->dockProjectView->setFont(f);
@@ -2887,8 +2888,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         on_actionPrint_triggered();
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
-        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(mInitialTableFontSize);
+        updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+        mWp->zoomReset();
     }
 
     // escape is the close button for focussed widgets
@@ -3970,14 +3971,12 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
-        tv->setFont(getEditorFont(fgText));
         connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
         connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
     }
     if (ViewHelper::toCodeEdit(edit)) {
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        ae->setFont(getEditorFont(fgText));
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
@@ -4214,7 +4213,7 @@ void MainWindow::on_actionSettings_triggered()
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);
         });
-        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
+        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
@@ -4381,7 +4380,7 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
 {
 //    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
     if (fontGroup == fgTable && mInitialTableFontSize < 0) {
-        mInitialTableFontSize = ui->mainTabs->font().pointSizeF();
+        mInitialTableFontSize = ui->centralWidget->font().pointSizeF();
         if (fontSize < 0) fontSize = mInitialTableFontSize;
     }
     QFont f = getEditorFont(fontGroup, fontFamily, fontSize);
@@ -4396,7 +4395,7 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
                 if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
                     ae->setFont(f);
                 } else if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit)) {
-                    lxi->setFont(f);
+                    lxi->textView()->setFont(f);
                 } else if (TextView *tv = ViewHelper::toTextView(edit)) {
                     tv->edit()->setFont(f);
                 }
@@ -4448,15 +4447,11 @@ void MainWindow::extraSelectionsUpdated()
         tv->updateExtraSelections();
 }
 
-void MainWindow::updateFixedFonts(qreal fontSize, QString fontFamily)
+void MainWindow::updateFonts(qreal fontSize, QString fontFamily)
 {
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
-}
-
-void MainWindow::updateTableFonts(qreal fontSize)
-{
-    setGroupFontSize(fgTable, fontSize);
+    setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -4703,8 +4698,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
 #endif
     {
         // reset all editors
-        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        updateTableFonts(mInitialTableFontSize);
+        updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
         mWp->zoomReset();
     }
 }
@@ -4742,6 +4736,8 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
            && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
            && widget != mSyslog && widget != mWp && widget != centralWidget())
         widget = widget->parentWidget();
+    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
+        widget = lxi;
     if (widget == centralWidget()) {
         if (ui->mainTabs->currentWidget() == mWp)
             mWp->zoomRequest(range);
@@ -5114,7 +5110,7 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
         if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
-        if (pointSize < 0.01) pointSize = font().pointSizeF();
+        if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize) + mTableFontSizeDif;
     } else {
         if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
         if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);

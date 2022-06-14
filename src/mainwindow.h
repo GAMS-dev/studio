@@ -404,8 +404,7 @@ protected:
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
-    void updateFixedFonts(qreal fontSize = 0, QString fontFamily = QString());
-    void updateTableFonts(qreal fontSize = 0);
+    void updateFonts(qreal fontSize = 0, QString fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
@@ -518,6 +517,7 @@ private:
     bool mNeosNoDialog = false;
     QString mNeosMail;
     qreal mInitialTableFontSize = -1.0;
+    qreal mTableFontSizeDif = 0.0;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;
