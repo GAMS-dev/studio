@@ -166,9 +166,11 @@ SOURCES += \
     gdxviewer/filteruelmodel.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    gdxviewer/gdxsymboltable.cpp \
+    gdxviewer/gdxsymboltablemodel.cpp \
     gdxviewer/gdxsymbolview.cpp \
+    gdxviewer/gdxsymbolviewstate.cpp \
     gdxviewer/gdxviewer.cpp \
+    gdxviewer/gdxviewerstate.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
@@ -385,9 +387,11 @@ HEADERS += \
     gdxviewer/filteruelmodel.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymbolheaderview.h \
-    gdxviewer/gdxsymboltable.h \
+    gdxviewer/gdxsymboltablemodel.h \
     gdxviewer/gdxsymbolview.h \
+    gdxviewer/gdxsymbolviewstate.h \
     gdxviewer/gdxviewer.h \
+    gdxviewer/gdxviewerstate.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \

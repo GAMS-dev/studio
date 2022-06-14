@@ -36,6 +36,7 @@
 #include <QLabel>
 #include <QTimer>
 
+
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -290,6 +291,7 @@ void GdxSymbolView::resetSortFilter()
         mLVFirstInit = true;
         mTVFirstInit = true;
         mTVResizeOnInit = true;
+        mPendingUncheckedLabels.clear();
         showDefaultView();
     }
 }
@@ -299,15 +301,14 @@ GdxSymbol *GdxSymbolView::sym() const
     return mSym;
 }
 
-void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable)
+void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState)
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
     if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
         connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-        if (mDefaultSymbolView == DefaultSymbolView::listView)
-            connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
-        showDefaultView();
+        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+        showDefaultView(symViewState);
     }
     ui->tvListView->setModel(mSym);
 
@@ -445,15 +446,15 @@ void GdxSymbolView::updateNumericalPrecision()
     }
     if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
         if (mSqZeroes->isChecked())
-            mRestoreSqZeros = true;
+            mRestoreSqZeroes = true;
         mSqZeroes->setChecked(false);
         mSqZeroes->setEnabled(false);
     }
     else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
         mSqZeroes->setEnabled(true);
-        if (mRestoreSqZeros) {
+        if (mRestoreSqZeroes) {
             mSqZeroes->setChecked(true);
-            mRestoreSqZeros = false;
+            mRestoreSqZeroes = false;
         }
     }
     if (mTvModel)
@@ -506,9 +507,9 @@ void GdxSymbolView::autoResizeColumns()
         ui->tvListView->resizeColumnsToContents();
 }
 
-void GdxSymbolView::autoResizeTableViewColumns()
+void GdxSymbolView::autoResizeTableViewColumns(bool force)
 {
-    if (mTableView) {
+    if (mTableView || force) {
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
         for (int i=0; i<mTVResizeColNr; i++)
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
@@ -560,35 +561,19 @@ void GdxSymbolView::showListView()
     }
 }
 
-void GdxSymbolView::showTableView()
+void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
 {
-    if (!mTvModel) {
-        mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
-        mTvModel->setTableView();
-        if (mDefaultSymbolView == DefaultSymbolView::tableView)
-            connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
-        ui->tvTableView->setModel(mTvModel);
-
-        mTvDomainModel = new TableViewDomainModel(mTvModel);
-        ui->tvTableViewFilter->setModel(mTvDomainModel);
-
-        ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
-        ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
-        QTimer::singleShot(0,this, [this](){
-            int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
-            ui->tvTableViewFilter->setMaximumHeight(height);
-            ui->tbDomLeft->setMaximumHeight(height);
-            ui->tbDomRight->setMaximumHeight(height);
-            ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
-            ui->tbDomRight->setIconSize(QSize(height/2, height/2));
-            ui->tvTableViewFilter->show();
-        });
-    } else
-        ui->tvTableViewFilter->show();
+    if (!mTvModel)
+        initTableViewModel(colDim, tvDimOrder);
+    else {
+        if (colDim != -1)
+            mTvModel->setTableView(colDim, tvDimOrder);
+    }
     ui->pbToggleView->setText("List View");
     ui->tvListView->hide();
     mTableView = true;
     ui->tvTableView->show();
+    QTimer::singleShot(0,this, [this](){ ui->tvTableViewFilter->show(); });
     ui->tbDomLeft->show();
     ui->tbDomRight->show();
     if (mTVFirstInit) {
@@ -597,13 +582,43 @@ void GdxSymbolView::showTableView()
     }
 }
 
-void GdxSymbolView::showDefaultView()
+void GdxSymbolView::initTableViewModel(int colDim, QVector<int> tvDimOrder)
 {
-    if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
-        this->showTableView();
+    mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
+    mTvModel->setTableView(colDim, tvDimOrder);
+    if (mDefaultSymbolView == DefaultSymbolView::tableView)
+        connect(mTvModel, &TableViewModel::initFinished, this, [this](){ if(mTVResizeOnInit) { autoResizeColumns(); mTVResizeOnInit=false;}} );
+    ui->tvTableView->setModel(mTvModel);
+
+    mTvDomainModel = new TableViewDomainModel(mTvModel);
+    ui->tvTableViewFilter->setModel(mTvDomainModel);
+
+    ui->tbDomLeft->setIcon(Theme::icon(":/%1/triangle-left"));
+    ui->tbDomRight->setIcon(Theme::icon(":/%1/triangle-right"));
+    QTimer::singleShot(0,this, [this](){
+        int height = ui->tvTableViewFilter->horizontalHeader()->height()+2;
+        ui->tvTableViewFilter->setMaximumHeight(height);
+        ui->tbDomLeft->setMaximumHeight(height);
+        ui->tbDomRight->setMaximumHeight(height);
+        ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
+        ui->tbDomRight->setIconSize(QSize(height/2, height/2));
+    });
+}
+
+void GdxSymbolView::showDefaultView(GdxSymbolViewState* symViewState)
+{
+    if (symViewState) {
+        if (symViewState->tableViewActive())
+            showTableView(symViewState->tvColDim(), symViewState->tvDimOrder());
+        else
+            showListView();
+    } else {
+        if (mSym->dim() > 1 && DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView)) {
+            showTableView();
+        }
+        else
+            showListView();
     }
-    else
-        this->showListView();
 }
 
 void GdxSymbolView::toggleView()
@@ -630,6 +645,34 @@ void GdxSymbolView::resetValFormat()
         mValFormat->setCurrentIndex(index);
 }
 
+void GdxSymbolView::saveTableViewHeaderState(GdxSymbolViewState* symViewState)
+{
+    QVector<int> widths;
+    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
+        if (ui->tvTableView->horizontalHeader()->isSectionHidden(col))
+            widths.append(-1);
+        else
+            widths.append(ui->tvTableView->horizontalHeader()->sectionSize(col));
+    }
+    symViewState->setTableViewColumnWidths(widths);
+}
+
+void GdxSymbolView::restoreTableViewHeaderState(GdxSymbolViewState* symViewState)
+{
+    QVector<int> widths = symViewState->getTableViewColumnWidths();
+    for(int col=0; col<ui->tvTableView->horizontalHeader()->count(); col++) {
+        if (col < widths.size()) {
+            if (widths.at(col) != -1)
+                ui->tvTableView->horizontalHeader()->resizeSection(col, widths.at(col));
+        }
+    }
+}
+
+QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
+{
+    return mPendingUncheckedLabels;
+}
+
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
     Q_UNUSED(watched)
@@ -637,6 +680,145 @@ bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
         this->adjustDomainScrollbar();
     }
     return false;
+}
+
+void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
+{
+    applyFilters(symViewState);
+
+    ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
+    mSqDefaults->setChecked(symViewState->sqDefaults());
+    mSqZeroes->setChecked(symViewState->sqTrailingZeroes());
+    mRestoreSqZeroes = symViewState->restoreSqZeroes();
+    mPrecision->setValue(symViewState->numericalPrecision());
+    mValFormat->setCurrentIndex(symViewState->valFormatIndex());
+
+    if (symViewState->tableViewLoaded()) {
+        if (!symViewState->tableViewActive()) {
+            initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
+            autoResizeTableViewColumns(true);
+        }
+        restoreTableViewHeaderState(symViewState);
+        ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
+        mTVFirstInit = false;
+    }
+    mLVFirstInit = false;
+    if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
+        for (int i=0; i< GMS_VAL_MAX; i++)
+            mShowValColActions.at(i)->setChecked(symViewState->getShowAttributes().at(i));
+    }
+}
+
+void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
+{
+    // apply uel filters
+    mPendingUncheckedLabels.resize(mSym->dim());
+    for (int i=0; i<mSym->dim(); i++) {
+        bool filterActive = false;
+        if (!symViewState->uncheckedLabels().at(i).empty()) {
+            for (const QString &l : symViewState->uncheckedLabels().at(i)) {
+                int uel = mGdxSymbolTable->label2Uel(l);
+                if (uel != -1) {
+                    bool labelExistsInColumn = mSym->showUelInColumn().at(i)[uel];
+                    if (!labelExistsInColumn)
+                        mPendingUncheckedLabels[i].append(l);
+                    filterActive = filterActive || labelExistsInColumn;
+                    mSym->showUelInColumn().at(i)[uel] = false;
+                } else
+                    mPendingUncheckedLabels[i].append(l);
+            }
+        }
+        mSym->setFilterActive(i, filterActive);
+    }
+
+    // apply value filters
+    for (int i=0; i<mSym->numericalColumnCount(); i++) {
+        ValueFilterState vfState = symViewState->valueFilterState().at(i);
+        if (vfState.active) {
+            mSym->setFilterActive(mSym->dim()+i);
+            mSym->valueFilter(i)->setCurrentMin(vfState.min);
+            mSym->valueFilter(i)->setCurrentMax(vfState.max);
+            mSym->valueFilter(i)->setExclude(vfState.exclude);
+            mSym->valueFilter(i)->setShowEps(vfState.showEps);
+            mSym->valueFilter(i)->setShowPInf(vfState.showPInf);
+            mSym->valueFilter(i)->setShowMInf(vfState.showMInf);
+            mSym->valueFilter(i)->setShowNA(vfState.showNA);
+            mSym->valueFilter(i)->setShowUndef(vfState.showUndef);
+            mSym->valueFilter(i)->setShowAcronym(vfState.showAcronym);
+        }
+    }
+
+    mSym->filterRows();
+}
+
+void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
+{
+    saveFilters(symViewState);
+    symViewState->setSqDefaults(mSqDefaults->isChecked());
+    symViewState->setSqTrailingZeroes(mSqZeroes->isChecked());
+    symViewState->setRestoreSqZeroes(mRestoreSqZeroes);
+    symViewState->setNumericalPrecision(mPrecision->value());
+    symViewState->setValFormatIndex(mValFormat->currentIndex());
+
+    symViewState->setDim(mSym->dim());
+    symViewState->setType(mSym->type());
+
+    symViewState->setTableViewActive(mTableView);
+    symViewState->setListViewHeaderState(ui->tvListView->horizontalHeader()->saveState());
+
+    QVector<bool> showAttributes;
+    for (QCheckBox* cb : mShowValColActions)
+        showAttributes.append(cb->isChecked());
+    symViewState->setShowAttributes(showAttributes);
+
+    symViewState->setTableViewLoaded(mTvModel != nullptr);
+    if (symViewState->tableViewLoaded()) {
+        symViewState->setTvColDim(mTvModel->tvColDim());
+        symViewState->setTvDimOrder(mTvModel->tvDimOrder());
+        symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());
+        saveTableViewHeaderState(symViewState);
+    }
+}
+
+void GdxSymbolView::saveFilters(GdxSymbolViewState *symViewState)
+{
+    // save uel filters
+    QVector<QStringList> uncheckedLabels;
+    for (int i=0; i<mSym->dim(); i++) {
+        QStringList labels;
+        if (mSym->filterActive(i)) {
+            for (int u : *mSym->uelsInColumn().at(i)) {
+                if (!mSym->showUelInColumn().at(i)[u])
+                    labels.append(mGdxSymbolTable->uel2Label(u));
+            }
+        }
+        uncheckedLabels.append(labels);
+    }
+    symViewState->setUncheckedLabels(uncheckedLabels);
+
+    // save value filters
+    int colCount = mSym->numericalColumnCount();
+
+    QVector<ValueFilterState> valueFilterState;
+    ValueFilterState vfState;
+    for (int i=0; i<colCount; i++) {
+        ValueFilter* vf = mSym->valueFilter(i);
+        if (mSym->filterActive(mSym->dim()+i)) {
+            vfState.active = true;
+            vfState.min = vf->currentMin();
+            vfState.max = vf->currentMax();
+            vfState.showEps = vf->showEps();
+            vfState.showPInf = vf->showPInf();
+            vfState.showMInf = vf->showMInf();
+            vfState.showNA = vf->showNA();
+            vfState.showUndef = vf->showUndef();
+            vfState.showAcronym = vf->showAcronym();
+            vfState.exclude = vf->exclude();
+        } else
+            vfState.active = false;
+        valueFilterState.append(vfState);
+    }
+    symViewState->setValueFilterState(valueFilterState);
 }
 
 void GdxSymbolView::enableControls()
