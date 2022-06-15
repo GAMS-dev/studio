@@ -21,9 +21,9 @@
 #define PARAMETEREDITOR_H
 
 #include <QDockWidget>
-#include <QWidget>
 #include <QMenu>
 
+#include "abstractview.h"
 #include "option.h"
 #include "commandline.h"
 #include "optiontokenizer.h"
@@ -63,7 +63,7 @@ public:
     QString on_runAction(RunActionState state);
     void on_interruptAction();
     void on_stopAction();
-
+    AbstractView *dockChild();
 
     OptionTokenizer *getOptionTokenizer() const;
     bool isAParameterEditorFocused(QWidget* focusWidget) const;
@@ -134,6 +134,7 @@ private:
 
     Ui::ParameterEditor *ui;
     QDockWidget *mExtendedEditor = nullptr;
+    AbstractView *mDockChild = nullptr;
     bool mHasSSL = false;
 
     QAction* actionRun;

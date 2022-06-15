@@ -153,7 +153,6 @@ public:
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
 #endif
-    option::ParameterEditor *gamsParameterEditor() const;
 
     search::ResultsView *resultsView() const;
     void setResultsView(search::ResultsView *resultsView);
@@ -410,7 +409,7 @@ private slots:
     void openProject(const QString gspFile);
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
-    void exportProjectDialog(PExProjectNode *project);
+    void exportProjectDialog(gams::studio::PExProjectNode *project);
     void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();

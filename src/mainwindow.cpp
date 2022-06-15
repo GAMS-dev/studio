@@ -289,7 +289,7 @@ MainWindow::MainWindow(QWidget *parent)
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
     mSyslog->setFont(getEditorFont(fgLog));
-    connect(mSyslog, &AbstractEdit::zoomRequest, this, [this](int delta){
+    connect(mSyslog, &AbstractEdit::zoomRequest, this, [this](int delta) {
         zoomWidget(mSyslog, delta);
     });
     on_actionShow_System_Log_triggered();
@@ -403,8 +403,8 @@ void MainWindow::adjustFonts()
 {
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
-
     QFont f(ui->menuBar->font());
+
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
     mTableFontSizeDif = f.pointSizeF() - Settings::settings()->toInt(skEdFontSize);
     ui->centralWidget->setFont(f);
@@ -412,6 +412,8 @@ void MainWindow::adjustFonts()
     ui->dockProjectView->setFont(f);
     ui->dockProcessLog->setFont(f);
     ui->dockHelpView->setFont(f);
+    mGamsParameterEditor->dockChild()->setFont(f);
+
     f.setPointSizeF(f.pointSizeF() * fontFactorStatusbar);
     ui->statusBar->setFont(f);
 }
@@ -471,6 +473,9 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
+    connect(mGamsParameterEditor->dockChild(), &AbstractView::zoomRequest, this, [this](int delta) {
+        zoomWidget(mGamsParameterEditor->dockChild(), delta);
+    });
 }
 
 void MainWindow::updateToolbar(QWidget* current)
@@ -2889,7 +2894,6 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
         updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        mWp->zoomReset();
     }
 
     // escape is the close button for focussed widgets
@@ -3216,11 +3220,6 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     } else {
         dw->hide();
     }
-}
-
-option::ParameterEditor *MainWindow::gamsParameterEditor() const
-{
-    return mGamsParameterEditor;
 }
 
 void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process)
@@ -4404,6 +4403,9 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
                     av->setFont(f);
             }
         }
+        if (fontGroup == fgTable) {
+            mGamsParameterEditor->dockChild()->setFont(f);
+        }
     }
 //    }
 }
@@ -4452,6 +4454,7 @@ void MainWindow::updateFonts(qreal fontSize, QString fontFamily)
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
+    mWp->zoomReset();
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -4699,7 +4702,6 @@ void MainWindow::on_actionReset_Zoom_triggered()
     {
         // reset all editors
         updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
-        mWp->zoomReset();
     }
 }
 
@@ -4734,13 +4736,14 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
     FontGroup fg;
     while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
            && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
-           && widget != mSyslog && widget != mWp && widget != centralWidget())
+           && widget != mSyslog && widget != mWp && widget != centralWidget()
+           && widget != mGamsParameterEditor->dockChild())
         widget = widget->parentWidget();
     if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
         widget = lxi;
     if (widget == centralWidget()) {
         if (ui->mainTabs->currentWidget() == mWp)
-            mWp->zoomRequest(range);
+            emit mWp->zoomRequest(range);
         return;
     }
     FileMeta *fm = mFileMetaRepo.fileMeta(widget);
@@ -4748,8 +4751,10 @@ void MainWindow::zoomWidget(QWidget *widget, int range)
         fg = fm->fontGroup();
     else if (widget == mSyslog)
         fg = fgLog;
+    else if (widget == mGamsParameterEditor->dockChild())
+        fg = fgTable;
     else if (widget == mWp) {
-        mWp->zoomRequest(range);
+        emit mWp->zoomRequest(range);
         return;
     } else
         return;
