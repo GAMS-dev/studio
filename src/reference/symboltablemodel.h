@@ -91,8 +91,8 @@ private:
     SortType getSortTypeOf(int column) const;
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;
-    bool isFilteredActive(SymbolReferenceItem* item, int column, const QString& pattern);
-    bool isLocationFilteredActive(int idx, const QString& pattern);
+    bool isFilteredActive(SymbolReferenceItem* item, int column, const QRegExp &regExp);
+    bool isLocationFilteredActive(int idx, const QRegExp &regExp);
     void filterRows();
     void resetSizeAndIndices();
 

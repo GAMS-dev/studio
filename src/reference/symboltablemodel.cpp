@@ -533,17 +533,15 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
     }
 }
 
-bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QString &pattern)
+bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QRegExp &regExp)
 {
-    QRegExp rx(pattern);
-    rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (mType == SymbolDataType::SymbolType::FileUsed) {
         return false;
     } else {
         ColumnType type = getColumnTypeOf(column);
         switch(type) {
-        case columnId: return (rx.indexIn(QString::number( item->id() )) <= -1);
-        case columnName: return (rx.indexIn(item->name()) <= -1);
+        case columnId: return (!regExp.exactMatch(QString::number(item->id())));
+        case columnName: return (!regExp.exactMatch(item->name()));
         default: // search every column
             QStringList strList = {
                 QString::number( item->id() ),
@@ -553,17 +551,15 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
                 getDomainStr( item->domain() ),
                 item->explanatoryText()
             };
-            return (rx.indexIn(strList.join(" ")) <= -1);
+            return (regExp.indexIn(strList.join(" ")) <= -1);
         }
     }
 }
 
-bool SymbolTableModel::isLocationFilteredActive(int idx, const QString &pattern)
+bool SymbolTableModel::isLocationFilteredActive(int idx, const QRegExp &regExp)
 {
-    QRegExp rx(pattern);
-    rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        return (rx.indexIn( mReference->getFileUsed().at(idx)) <= -1);
+        return (!regExp.exactMatch(mReference->getFileUsed().at(idx)));
     } else {
         return false;
     }
@@ -591,12 +587,18 @@ void SymbolTableModel::filterRows()
         return;
     }
 
+    QString filter = '^'+QRegExp::escape(mFilteredPattern)+'$';
+    filter.replace("\\*", ".*");
+    filter.replace("\\?", ".");
+    QRegExp regExp(filter);
+    regExp.setCaseSensitivity(Qt::CaseInsensitive);
+
     // there is a filter
     if (mType == SymbolDataType::SymbolType::FileUsed) {
         QStringList items = mReference->getFileUsed();
         size = static_cast<size_t>(items.size());
         for(size_t rec=0; rec<size; rec++) {
-            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(static_cast<int>(rec), mFilteredPattern);
+            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(static_cast<int>(rec), regExp);
         }
 
         size_t filteredRecordSize = 0;
@@ -623,7 +625,7 @@ void SymbolTableModel::filterRows()
         size = static_cast<size_t>(items.size());
         for(size_t rec=0; rec<size; rec++) {
             int idx = static_cast<int>(mSortIdxMap[rec]);
-            mFilterActive[mSortIdxMap[rec]] = isFilteredActive(items.at(idx), mFilteredKeyColumn, mFilteredPattern);
+            mFilterActive[mSortIdxMap[rec]] = isFilteredActive(items.at(idx), mFilteredKeyColumn, regExp);
         }
 
         size_t filteredRecordSize = 0;
