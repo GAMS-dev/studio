@@ -2,6 +2,7 @@ Version 1.11.0  *
 ==================
 - added html format on copying text to clipboard
 - improved trimming behavior of search results
+- adjusted wording in search results table header
 
 Version 1.10.4
 ==================
