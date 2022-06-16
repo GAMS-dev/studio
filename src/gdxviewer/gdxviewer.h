@@ -72,7 +72,6 @@ private:
     int init(bool quiet = false);
     void freeSymbols();
     bool isFocusedWidget(QWidget *wid);
-    bool mIsInitialized = false;
     void zoomInF(qreal range);
 
     static int errorCallback(int count, const char *message);

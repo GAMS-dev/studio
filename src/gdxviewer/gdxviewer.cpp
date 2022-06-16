@@ -50,8 +50,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 {
     ui->setupUi(this);
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
-    mPrevFontHeight = fontMetrics().height();
-    columnsRegister(ui->tvSymbols->horizontalHeader());
     headerRegister(ui->tvSymbols->horizontalHeader());
     headerRegister(ui->tvSymbols->verticalHeader());
 
@@ -384,7 +382,7 @@ int GdxViewer::errorCallback(int count, const char *message)
 
 void GdxViewer::saveState()
 {
-    if (mState == NULL)
+    if (!mState)
         mState = new GdxViewerState();
 
     QModelIndexList indexList = ui->tvSymbols->selectionModel()->selectedIndexes();
@@ -406,7 +404,7 @@ void GdxViewer::saveState()
     }
 
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
-        if (symView != NULL && symView->sym()->isLoaded()) {
+        if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
 
@@ -470,10 +468,8 @@ void GdxViewer::applySelectedSymbol()
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
-        if (symView != NULL) {
-            if (symView->sym()->name().toLower() == name.toLower())
-                return symView;
-        }
+        if (symView && symView->sym()->name().toLower() == name.toLower())
+            return symView;
     }
     return nullptr;
 }

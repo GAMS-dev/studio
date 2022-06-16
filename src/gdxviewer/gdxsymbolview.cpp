@@ -699,11 +699,10 @@ QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const
 
 bool GdxSymbolView::eventFilter(QObject *watched, QEvent *event)
 {
-    Q_UNUSED(watched)
     if (event->type() == QEvent::Resize) {
         this->adjustDomainScrollbar();
     }
-    return false;
+    return QWidget::eventFilter(watched, event);
 }
 
 void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)

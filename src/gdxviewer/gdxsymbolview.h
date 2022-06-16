@@ -51,6 +51,7 @@ public:
     explicit GdxSymbolView(QWidget *parent = nullptr);
     ~GdxSymbolView() override;
 
+    QVector<QStringList> pendingUncheckedLabels() const;
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
@@ -112,9 +113,8 @@ private:
     QComboBox* mValFormat = nullptr;
     QWidget *mPreferencesWidget = nullptr;
     QWidget *mVisibleValColWidget = nullptr;
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
-
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
+
     bool mTableView = false;
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
@@ -136,11 +136,6 @@ private:
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
     QVector<QStringList> mPendingUncheckedLabels;
-
-    // QObject interface
-public:
-    bool eventFilter(QObject *watched, QEvent *event);
-    QVector<QStringList> pendingUncheckedLabels() const;
 };
 
 
