@@ -27,6 +27,7 @@
 
 #include "gdxcc.h"
 #include "common.h"
+#include "gdxviewerstate.h"
 
 class QMutex;
 class QSortFilterProxyModel;
@@ -40,7 +41,7 @@ class GdxViewer;
 }
 
 class GdxSymbol;
-class GdxSymbolTable;
+class GdxSymbolTableModel;
 class GdxSymbolView;
 
 class GdxViewer : public QWidget
@@ -63,17 +64,25 @@ public:
 private slots:
     void hideUniverseSymbol();
     void toggleSearchColumns(bool checked);
+    void applySelectedSymbolOnFocus(QWidget *old, QWidget *now);
 
 private:
     void loadSymbol(GdxSymbol* selectedSymbol);
     void copySelectionToClipboard();
     int init(bool quiet = false);
     void freeSymbols();
+    bool isFocusedWidget(QWidget *wid);
     bool mIsInitialized = false;
 
     static int errorCallback(int count, const char *message);
 
 private:
+    GdxSymbolView *symbolViewByName(QString name);
+    void saveState();
+    void applyState();
+    void applySymbolState(GdxSymbol* symbol);
+    void applySelectedSymbol();
+
     Ui::GdxViewer *ui;
 
     QString mGdxFile;
@@ -81,7 +90,7 @@ private:
 
     bool mHasChanged = false;
 
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
+    GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     QSortFilterProxyModel* mSymbolTableProxyModel = nullptr;
 
     gdxHandle_t mGdx;
@@ -90,6 +99,8 @@ private:
     QVector<GdxSymbolView*> mSymbolViews;
 
     QTextCodec *mCodec;
+
+    GdxViewerState* mState = nullptr;
 };
 
 } // namespace gdxviewer

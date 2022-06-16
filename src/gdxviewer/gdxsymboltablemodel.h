@@ -33,25 +33,30 @@ namespace gdxviewer {
 
 class GdxSymbol;
 
-class GdxSymbolTable : public QAbstractTableModel
+class GdxSymbolTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 
 public:
-    explicit GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent = nullptr);
-    ~GdxSymbolTable() override;
+    explicit GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent = nullptr);
+    ~GdxSymbolTableModel() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
     int columnCount(const QModelIndex &parent = QModelIndex()) const override;
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     QList<GdxSymbol *> gdxSymbols() const;
+    GdxSymbol* getSymbolByName(QString name) const;
     QString uel2Label(int uel);
     std::vector<int> labelCompIdx();
     int symbolCount() const;
     QString getElementText(int textNr);
 
     QTextCodec *codec() const;
+
+    int getUelCount() const;
+
+    int label2Uel(QString label);
 
 private:
     QStringList mHeaderText;
@@ -66,6 +71,7 @@ private:
     void reportIoError(int errNr, QString message);
 
     QList<GdxSymbol*> mGdxSymbols;
+    QMap<QString, GdxSymbol*> mGdxSymbolByName;
     QStringList mUel2Label;
     QStringList mStrPool;
 
