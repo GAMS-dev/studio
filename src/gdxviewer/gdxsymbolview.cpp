@@ -213,9 +213,6 @@ bool GdxSymbolView::event(QEvent *event)
             ui->tbDomLeft->setIconSize(QSize(height/2, height/2));
             ui->tbDomRight->setIconSize(QSize(height/2, height/2));
         }
-        if (mTableView) {
-            ui->tvTableView->verticalHeader()->reset();
-        }
     }
     return QWidget::event(event);
 }

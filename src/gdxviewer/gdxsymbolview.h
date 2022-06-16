@@ -41,6 +41,7 @@ class GdxSymbolView;
 }
 
 class GdxSymbol;
+class NestedHeaderView;
 
 class GdxSymbolView : public QWidget
 {
@@ -111,10 +112,10 @@ private:
     QComboBox* mValFormat = nullptr;
     QWidget *mPreferencesWidget = nullptr;
     QWidget *mVisibleValColWidget = nullptr;
+    GdxSymbolTable* mGdxSymbolTable = nullptr;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
     bool mTableView = false;
-
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
 
