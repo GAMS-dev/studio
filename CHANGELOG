@@ -2,8 +2,10 @@ Version 1.11.0  *
 ==================
 - added html format on copying text to clipboard
 - GDX Viewer saves/restores its state(e.g. filters, sorting, ...) when data has to be reloaded from file.
-- fixed auto resize of columns not triggered for 1-dimensional symbols in case of table view being selected as default view in GDX Viewer.
+- fixed auto resize of columns not triggered for 1-dimensional symbols in case of table view being selected as default view in GDX Viewer
 - added zoom for editors/viewers with proportional fonts (GDX-viewer and option-editor)
+- improved trimming behavior of search results
+- adjusted wording in search results table header
 
 Version 1.10.4
 ==================

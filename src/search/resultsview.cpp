@@ -25,6 +25,7 @@
 #include "common.h"
 #include "keys.h"
 #include "mainwindow.h"
+#include "searchresultviewitemdelegate.h"
 
 namespace gams {
 namespace studio {
@@ -37,7 +38,6 @@ ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-    ui->tableView->setTextElideMode(Qt::ElideLeft);
 
     ui->tableView->setModel(mResultList);
 
@@ -45,6 +45,8 @@ ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
     palette.setColor(QPalette::Highlight, ui->tableView->palette().highlight().color());
     palette.setColor(QPalette::HighlightedText, ui->tableView->palette().highlightedText().color());
     ui->tableView->setPalette(palette);
+
+    ui->tableView->setItemDelegateForColumn(2, new SearchResultViewItemDelegate(this));
 }
 
 ResultsView::~ResultsView()

@@ -41,6 +41,8 @@ public:
     bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
 
 private:
+    static const int MAX_CONTEXT_LENGTH = 60;
+
     int mLineNr;
     int mColNr;
     int mLength;

@@ -257,6 +257,7 @@ SOURCES += \
     search/searchfilehandler.cpp \
     search/searchlocator.cpp \
     search/searchresultmodel.cpp \
+    search/searchresultviewitemdelegate.cpp \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
@@ -480,6 +481,7 @@ HEADERS += \
     search/searchfilehandler.h \
     search/searchlocator.h \
     search/searchresultmodel.h \
+    search/searchresultviewitemdelegate.h \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
