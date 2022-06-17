@@ -32,6 +32,7 @@
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
 #include "help/helpdata.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -782,6 +783,10 @@ void SearchDialog::jumpToResult(int matchNr)
     if (!(matchNr > -1 && matchNr < mSearch.results().size())) return;
 
     Result r = mSearch.results().at(matchNr);
+    if (!QFileInfo::exists(r.filepath())) {
+        SysLogLocator::systemLog()->append("File not found: " + r.filepath(), LogMsgType::Error);
+        return;
+    }
 
     PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
     if (r.parentGroup() == -1) {
@@ -810,6 +815,7 @@ void SearchDialog::jumpToResult(int matchNr)
         fn = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
         if (!fn) EXCEPT() << "File not found: " << r.filepath();
     }
+
     NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : fn->assignedProject()->id();
     fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 
