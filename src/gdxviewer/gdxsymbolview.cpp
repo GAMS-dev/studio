@@ -35,7 +35,6 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
-#include <QDebug>
 
 
 #include <numerics/doubleformatter.h>
