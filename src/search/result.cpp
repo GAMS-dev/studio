@@ -59,6 +59,10 @@ NodeId Result::parentGroup() const
     return mParent;
 }
 
+void Result::setParentGroup(NodeId parent) {
+    mParent = parent;
+}
+
 }
 }
 }

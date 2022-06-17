@@ -37,8 +37,8 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, QWidget* parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mFileHandler(fileHandler), mSearch(this, fileHandler)
+SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent) :
+    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mFileHandler(fileHandler), mSearch(this, fileHandler)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -127,7 +127,7 @@ void SearchDialog::finalUpdate()
     setSearchStatus(Search::Ok, mSearch.results().size());
     updateDialogState();
 
-    if (mShowResults && mSearch.results().size() > 0) {
+    if ((mShowResults && mSearch.results().size() > 0) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         emit showResults(mSearchResultModel);
@@ -366,6 +366,12 @@ void SearchDialog::on_btn_clear_clicked()
     mSearch.invalidateCache();
 }
 
+void SearchDialog::filesChanged()
+{
+    if (mSearch.scope() == Search::Scope::ThisProject)
+        mSearch.invalidateCache();
+}
+
 void SearchDialog::on_cb_wholeWords_stateChanged(int)
 {
     searchParameterChanged();
@@ -433,8 +439,6 @@ void SearchDialog::checkRegex()
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
 {
     searchParameterChanged();
-    mCurrentSearchGroup = nullptr;
-
     checkRegex();
 }
 
@@ -442,6 +446,7 @@ void SearchDialog::searchParameterChanged()
 {
     if (!mSuppressParameterChangedEvent) {
         setSearchStatus(Search::Clear);
+        mCurrentSearchGroup = nullptr;
         mSearch.reset();
     }
     checkRegex();
@@ -778,31 +783,36 @@ void SearchDialog::jumpToResult(int matchNr)
 
     Result r = mSearch.results().at(matchNr);
 
+    PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
+    if (r.parentGroup() == -1) {
+        if (fn) r.setParentGroup(fn->parentNode()->id());
+    }
+
     // create group for search results
     if (r.parentGroup() == -1 && !Settings::settings()->toBool(skOpenInCurrent)) {
         QString name = "Search: " + ui->combo_search->currentText();
-        bool found = false;
 
-        // find project
+        // find existing search group
         QVector<PExProjectNode*> projects = mFileHandler->projects();
         for (PExGroupNode* g : qAsConst(projects)) {
             if (g->name() == name) {
                 mCurrentSearchGroup = g->toProject();
-                found = true;
                 break;
-            }
+            } else mCurrentSearchGroup = nullptr;
         }
-        if (!found) {
+        if (!mCurrentSearchGroup) {
             QFileInfo dir(r.filepath());
             mCurrentSearchGroup = mFileHandler->createProject(name, dir.absolutePath());
         }
     }
 
-    PExFileNode* node = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
-    if (!node) EXCEPT() << "File not found: " << r.filepath();
+    if (!fn) {
+        fn = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
+        if (!fn) EXCEPT() << "File not found: " << r.filepath();
+    }
+    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : fn->assignedProject()->id();
+    fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 
-    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : node->assignedProject()->id();
-    node->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 }
 
 void SearchDialog::setSearchedFiles(int files)

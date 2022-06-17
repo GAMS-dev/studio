@@ -276,6 +276,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, mSearchDialog, &search::SearchDialog::filesChanged);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -339,7 +340,7 @@ void MainWindow::watchProjectTree()
 {
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
-        // to actualize the project if changed
+        // to update the project if changed
         mRecent.setEditor(mRecent.editor());
         updateRunState();
     });
@@ -4274,7 +4275,6 @@ void MainWindow::toggleSearchDialog()
            // e.g. needed for macOS to rasise search dialog when minimized
            mSearchDialog->raise();
            mSearchDialog->activateWindow();
-           mSearchDialog->autofillSearchDialog();
        } else {
            if (mSearchWidgetPos.isNull()) {
                int margin = 25;
@@ -4559,11 +4559,6 @@ void MainWindow::goToLine(int result)
 search::ResultsView *MainWindow::resultsView() const
 {
     return mResultsView;
-}
-
-void MainWindow::setResultsView(search::ResultsView *resultsView)
-{
-    mResultsView = resultsView;
 }
 
 void MainWindow::on_actionGo_To_triggered()

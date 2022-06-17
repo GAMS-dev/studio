@@ -156,7 +156,6 @@ public:
     option::ParameterEditor *gamsParameterEditor() const;
 
     search::ResultsView *resultsView() const;
-    void setResultsView(search::ResultsView *resultsView);
     void invalidateResultsView();
 
 signals:
