@@ -53,6 +53,7 @@ protected:
     void dragLeaveEvent(QDragLeaveEvent *event) override;
     void leaveEvent(QEvent *event) override;
     QSize sectionSizeFromContents(int logicalIndex) const override;
+    bool event(QEvent *e) override;
 
 private:
     int pointToDimension(QPoint p);
@@ -60,6 +61,7 @@ private:
     void bindScrollMechanism();
     void decideAcceptDragEvent(QDragMoveEvent* event);
     int toGlobalDim(int localDim, int orientation);
+    void updateSectionWidths();
 
     TableViewModel* sym() const;
     QPoint mMousePos = QPoint(-1,-1);

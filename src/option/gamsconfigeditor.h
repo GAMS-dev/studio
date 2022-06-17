@@ -22,6 +22,7 @@
 
 #include <QWidget>
 
+#include "abstractview.h"
 #include "common.h"
 #include "gamsuserconfig.h"
 #include "envvarconfigeditor.h"
@@ -54,14 +55,14 @@ static const QList<QString> ConfigEditorName = {
     "Undefined",
 };
 
-class GamsConfigEditor : public QWidget
+class GamsConfigEditor : public AbstractView
 {
     Q_OBJECT
 
 public:
     explicit GamsConfigEditor(QString fileName, QString optionFilePath,
                                FileId id, QWidget *parent = nullptr);
-    ~GamsConfigEditor();
+    ~GamsConfigEditor() override;
 
     FileId fileId() const;
 
@@ -70,6 +71,9 @@ public:
 
     void on_reloadGamsUserConfigFile(QTextCodec* codec);
     QString getSelectedParameterName(QWidget* widget) const;
+
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -84,7 +88,7 @@ public slots:
     void deSelectAll();
 
 protected:
-    void keyPressEvent(QKeyEvent *event);
+    void keyPressEvent(QKeyEvent *event) override;
 
 private:
     Ui::GamsConfigEditor *ui;
@@ -99,6 +103,10 @@ private:
     GamsUserConfig* mGuc;
     ParamConfigEditor* mParamConfigEditor;
     EnvVarConfigEditor* mEnvVarConfigEditor;
+
+private:
+    void zoomInF(qreal range);
+
 };
 
 

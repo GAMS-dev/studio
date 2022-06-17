@@ -27,6 +27,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QToolBar>
+#include <QHeaderView>
 
 namespace gams {
 namespace studio {
@@ -42,7 +43,8 @@ class EnvVarConfigEditor : public QWidget
 
 public:
     explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItems, QWidget *parent = nullptr);
-    ~EnvVarConfigEditor();
+    ~EnvVarConfigEditor() override;
+    QList<QHeaderView*> headers();
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -92,6 +94,7 @@ private:
     EnvVarTableModel* mEnvVarTableModel;
     EnvVarCfgCompleterDelegate* mCompleter;
     bool mModified;
+    int mPrevFontHeight;
 
     QMenu mContextMenu;
     QToolBar* mToolBar;

@@ -85,6 +85,7 @@ signals:
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
     void cloneBookmarkMenu(QMenu *menu);
     void scrolled(QWidget *widget, int dx, int dy);
+    void zoomRequest(int delta);
 
 public slots:
     virtual void updateExtraSelections();
@@ -109,6 +110,7 @@ protected:
     void mousePressEvent(QMouseEvent *e) override;
     void mouseMoveEvent(QMouseEvent *e) override;
     void mouseReleaseEvent(QMouseEvent *e) override;
+    void wheelEvent(QWheelEvent *e) override;
     const QList<TextMark *> marksAtMouse() const;
 
     inline NodeId groupId() const {

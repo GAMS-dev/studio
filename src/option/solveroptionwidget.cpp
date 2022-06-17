@@ -42,7 +42,7 @@ namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
                                        FileId id, QTextCodec* codec, QWidget *parent) :
-          QWidget(parent),
+          AbstractView(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
           mLocation(optionFilePath),
@@ -115,6 +115,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     }
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
+    headerRegister(ui->solverOptionTableView->horizontalHeader());
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -168,6 +169,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
+    headerRegister(ui->solverOptionTreeView->header());
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({75, 25}));

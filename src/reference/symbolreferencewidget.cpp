@@ -104,6 +104,13 @@ void SymbolReferenceWidget::selectSearchField() const
     ui->symbolSearchLineEdit->setFocus();
 }
 
+QList<QHeaderView *> SymbolReferenceWidget::headers()
+{
+    return QList<QHeaderView *>() << ui->symbolView->horizontalHeader()
+                                  << ui->referenceView->header()
+                                  << ui->symbolView->verticalHeader();
+}
+
 bool SymbolReferenceWidget::isModelLoaded() const
 {
     return mSymbolTableModel->isModelLoaded();

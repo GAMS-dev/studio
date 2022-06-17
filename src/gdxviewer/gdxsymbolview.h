@@ -41,6 +41,7 @@ class GdxSymbolView;
 }
 
 class GdxSymbol;
+class NestedHeaderView;
 
 class GdxSymbolView : public QWidget
 {
@@ -48,8 +49,9 @@ class GdxSymbolView : public QWidget
 
 public:
     explicit GdxSymbolView(QWidget *parent = nullptr);
-    ~GdxSymbolView();
+    ~GdxSymbolView() override;
 
+    QVector<QStringList> pendingUncheckedLabels() const;
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
@@ -59,6 +61,8 @@ public:
     void applyFilters(GdxSymbolViewState* symViewState);
     void saveState(GdxSymbolViewState* symViewState);
     void saveFilters(GdxSymbolViewState* symViewState);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    QList<QHeaderView*> headers();
 
 public slots:
     void enableControls();
@@ -69,6 +73,9 @@ public slots:
     void autoResizeColumns();
     void autoResizeTableViewColumns(bool force=false);
     void adjustDomainScrollbar();
+
+protected:
+    bool event(QEvent *event) override;
 
 private slots:
     void showContextMenu(QPoint p);
@@ -104,10 +111,11 @@ private:
     QCheckBox* mSqZeroes = nullptr;
     QSpinBox* mPrecision = nullptr;
     QComboBox* mValFormat = nullptr;
-
+    QWidget *mPreferencesWidget = nullptr;
+    QWidget *mVisibleValColWidget = nullptr;
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;
-    bool mTableView = false;
 
+    bool mTableView = false;
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
 
@@ -128,11 +136,6 @@ private:
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
     QVector<QStringList> mPendingUncheckedLabels;
-
-    // QObject interface
-public:
-    bool eventFilter(QObject *watched, QEvent *event);
-    QVector<QStringList> pendingUncheckedLabels() const;
 };
 
 

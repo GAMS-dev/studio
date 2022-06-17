@@ -28,6 +28,7 @@
 #include <QWidget>
 #include <QMenu>
 #include <QToolBar>
+#include <QHeaderView>
 
 namespace gams {
 namespace studio {
@@ -45,9 +46,10 @@ class ParamConfigEditor : public QWidget
 
 public:
     explicit ParamConfigEditor(const QList<ConfigItem *> &initParams, QWidget *parent = nullptr);
-    ~ParamConfigEditor();
+    ~ParamConfigEditor() override;
 
     bool isInFocus(QWidget* focusWidget) const;
+    QList<QHeaderView*> headers();
 
 signals:
     void modificationChanged(bool modifiedState);

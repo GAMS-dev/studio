@@ -30,6 +30,7 @@
 #include <QMessageBox>
 #include <QMenu>
 #include <QClipboard>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -161,6 +162,11 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 
     connect(this, &ParamConfigEditor::modificationChanged, this, &ParamConfigEditor::setModified, Qt::UniqueConnection);
     emit mParameterTableModel->configParamModelChanged(optionItem);
+
+    QTimer::singleShot(0, this, [this]() {
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
+        ui->ParamCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
+    });
 }
 
 void ParamConfigEditor::initActions()
@@ -192,6 +198,13 @@ void ParamConfigEditor::initActions()
 bool ParamConfigEditor::isInFocus(QWidget *focusWidget) const
 {
     return (focusWidget==ui->ParamCfgTableView || focusWidget==ui->ParamCfgDefTreeView);
+}
+
+QList<QHeaderView *> ParamConfigEditor::headers()
+{
+    return QList<QHeaderView *>() << ui->ParamCfgTableView->horizontalHeader()
+                                  << ui->ParamCfgDefTreeView->header()
+                                  << ui->ParamCfgTableView->verticalHeader();
 }
 
 QString ParamConfigEditor::getSelectedParameterName(QWidget *widget) const

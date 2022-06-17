@@ -1028,24 +1028,6 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
-void CodeEdit::wheelEvent(QWheelEvent *e) {
-    if (e->modifiers() & Qt::ControlModifier) {
-        const int delta = e->angleDelta().y();
-        if (delta < 0) {
-            int pix = fontInfo().pixelSize();
-            zoomOut();
-            if (pix == fontInfo().pixelSize() && fontInfo().pointSize() > 1) zoomIn();
-        } else if (delta > 0) {
-            int pix = fontInfo().pixelSize();
-            zoomIn();
-            if (pix == fontInfo().pixelSize()) zoomOut();
-        }
-        updateTabSize();
-        return;
-    }
-    AbstractEdit::wheelEvent(e);
-}
-
 void CodeEdit::paintEvent(QPaintEvent* e)
 {
     AbstractEdit::paintEvent(e);

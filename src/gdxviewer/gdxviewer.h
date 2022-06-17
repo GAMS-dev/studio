@@ -20,11 +20,11 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 #define GAMS_STUDIO_GDXVIEWER_GDXVIEWER_H
 
-#include <QWidget>
 #include <QVector>
 #include <QItemSelection>
 #include <QTextCodec>
 
+#include "abstractview.h"
 #include "gdxcc.h"
 #include "common.h"
 #include "gdxviewerstate.h"
@@ -44,13 +44,13 @@ class GdxSymbol;
 class GdxSymbolTableModel;
 class GdxSymbolView;
 
-class GdxViewer : public QWidget
+class GdxViewer : public AbstractView
 {
     Q_OBJECT
 
 public:
     GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
-    ~GdxViewer();
+    ~GdxViewer() override;
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
     int reload(QTextCodec* codec, bool quiet = false);
@@ -72,7 +72,7 @@ private:
     int init(bool quiet = false);
     void freeSymbols();
     bool isFocusedWidget(QWidget *wid);
-    bool mIsInitialized = false;
+    void zoomInF(qreal range);
 
     static int errorCallback(int count, const char *message);
 
@@ -84,10 +84,9 @@ private:
     void applySelectedSymbol();
 
     Ui::GdxViewer *ui;
-
     QString mGdxFile;
     QString mSystemDirectory;
-
+    bool mIsInitialized = false;
     bool mHasChanged = false;
 
     GdxSymbolTableModel* mGdxSymbolTable = nullptr;

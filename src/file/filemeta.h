@@ -79,7 +79,7 @@ public:
     void setModified(bool modified=true);
     bool isPinnable();
 
-    QWidget *createEdit(QWidget *widget, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
+    QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
     void addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
     QWidgetList editors() const;
     QWidget* topEditor() const;
@@ -113,7 +113,7 @@ signals:
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void fontChanged(FileMeta *fileMeta, QFont f);
+    void fontChangeRequest(FileMeta *fileMeta, QFont f);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;
@@ -123,6 +123,7 @@ private slots:
     void contentsChange(int from, int charsRemoved, int charsAdded);
     void blockCountChanged(int newBlockCount);
     void updateMarks();
+    void zoomRequest(qreal delta);
 
 private:
     struct Data {

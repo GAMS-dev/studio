@@ -116,7 +116,6 @@ enum FontGroup {
 
 enum class EditorType {
     undefined = 0,
-    pro,
     source,
     log,
     syslog,
@@ -128,6 +127,7 @@ enum class EditorType {
     ref,
     opt,
     gucfg,
+    pro,
 };
 Q_ENUM_NS(EditorType)
 
