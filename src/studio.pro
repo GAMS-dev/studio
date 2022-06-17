@@ -72,6 +72,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    abstractview.cpp \
     application.cpp \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
@@ -288,6 +289,7 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
+    abstractview.h \
     application.h \
     autosavehandler.h \
     colors/palettemanager.h \

@@ -51,34 +51,7 @@ void NestedHeaderView::setModel(QAbstractItemModel *model)
 void NestedHeaderView::reset()
 {
     if (this->model()) {
-        int borderWidth = 10;
-        QFont fnt = font();
-        fnt.setBold(true);
-        QFontMetrics fm(fnt);
-        int dimension = dim();
-        sectionWidth.clear();
-        if (orientation() == Qt::Vertical) {
-            sectionWidth.resize(dimension);
-            for (int i=0; i<dimension; i++) {
-                QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
-                for (QString label : labelsInRows.at(i))
-                    sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.horizontalAdvance(label)));
-            }
-            for (int i=0; i<dimension; i++)
-                sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
-        } else {
-            QMap<QString, int> labelWidth;
-            sectionWidth.resize(this->model()->columnCount());
-            for (int i=0; i<this->model()->columnCount(); i++) {
-                for (QString label : model()->headerData(i, Qt::Horizontal).toStringList()) {
-                    if (!labelWidth.contains(label))
-                        labelWidth.insert(label, fm.horizontalAdvance(label));
-                    sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));
-                }
-            }
-            for (int i=0; i<this->model()->columnCount(); i++)
-                sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
-        }
+        updateSectionWidths();
     }
     QHeaderView::reset();
 }
@@ -294,6 +267,39 @@ int NestedHeaderView::toGlobalDim(int localDim, int orientation)
         return localDim;
 }
 
+void NestedHeaderView::updateSectionWidths()
+{
+    if (!sym()) return;
+    int borderWidth = 10;
+    QFont fnt = font();
+    fnt.setBold(true);
+    QFontMetrics fm(fnt);
+    int dimension = dim();
+    sectionWidth.clear();
+    if (orientation() == Qt::Vertical) {
+        sectionWidth.resize(dimension);
+        for (int i=0; i<dimension; i++) {
+            QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
+            for (QString label : labelsInRows.at(i))
+                sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.horizontalAdvance(label)));
+        }
+        for (int i=0; i<dimension; i++)
+            sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
+    } else {
+        QMap<QString, int> labelWidth;
+        sectionWidth.resize(this->model()->columnCount());
+        for (int i=0; i<this->model()->columnCount(); i++) {
+            for (QString label : model()->headerData(i, Qt::Horizontal).toStringList()) {
+                if (!labelWidth.contains(label))
+                    labelWidth.insert(label, fm.horizontalAdvance(label));
+                sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));
+            }
+        }
+        for (int i=0; i<this->model()->columnCount(); i++)
+            sectionWidth.replace(i, sectionWidth.at(i) + borderWidth);
+    }
+}
+
 void NestedHeaderView::dropEvent(QDropEvent *event)
 {
     dimIdxStart = toGlobalDim(dimIdxStart, dragOrientationStart);
@@ -458,6 +464,16 @@ QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
         s.setWidth(sectionWidth.at(logicalIndex));
         return s;
     }
+}
+
+bool NestedHeaderView::event(QEvent *e)
+{
+    if (e->type() == QEvent::FontChange) {
+        if (orientation() == Qt::Vertical) {
+            updateSectionWidths();
+        }
+    }
+    return QHeaderView::event(e);
 }
 
 

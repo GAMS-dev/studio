@@ -32,7 +32,7 @@ namespace option {
 
 GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
                                    FileId id, QWidget *parent) :
-    QWidget(parent),
+    AbstractView(parent),
     ui(new Ui::GamsConfigEditor),
     mFileId(id),
     mLocation(optionFilePath),
@@ -54,6 +54,11 @@ GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
     ui->GamsCfgTabWidget->setCurrentIndex(int(ConfigEditorType::commandLineParameter));
 
     setFocusProxy(ui->GamsCfgTabWidget);
+    QList<QHeaderView*> headers;
+    headers << mParamConfigEditor->headers() << mEnvVarConfigEditor->headers();
+    for (QHeaderView *header : headers) {
+        headerRegister(header);
+    }
 }
 
 GamsConfigEditor::~GamsConfigEditor()
@@ -125,6 +130,16 @@ QString GamsConfigEditor::getSelectedParameterName(QWidget *widget) const
     return "";
 }
 
+void GamsConfigEditor::zoomIn(int range)
+{
+    zoomInF(range);
+}
+
+void GamsConfigEditor::zoomOut(int range)
+{
+    zoomInF(-range);
+}
+
 bool GamsConfigEditor::saveConfigFile(const QString &location)
 {
     return saveAs(location);
@@ -193,6 +208,18 @@ void GamsConfigEditor::keyPressEvent(QKeyEvent *event)
     }
 
     QWidget::keyPressEvent(event);
+}
+
+void GamsConfigEditor::zoomInF(qreal range)
+{
+    if (range == 0.)
+        return;
+    QFont f = font();
+    const qreal newSize = f.pointSizeF() + range;
+    if (newSize <= 0)
+        return;
+    f.setPointSizeF(newSize);
+    setFont(f);
 }
 
 void GamsConfigEditor::setFileChangedExtern(bool value)

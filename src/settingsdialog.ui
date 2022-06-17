@@ -36,7 +36,7 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>0</number>
+      <number>1</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
@@ -399,6 +399,9 @@
           </item>
           <item row="3" column="2">
            <widget class="QSpinBox" name="sb_fontsize">
+            <property name="toolTip">
+             <string>&lt;p&gt;Font size of text editors monospace font&lt;br&gt;The proportional font size of other editors like GDX-Viewer is changed accordingly&lt;/p&gt;</string>
+            </property>
             <property name="minimum">
              <number>5</number>
             </property>
@@ -750,8 +753,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">

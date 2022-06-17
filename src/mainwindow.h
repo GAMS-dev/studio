@@ -153,7 +153,6 @@ public:
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;
 #endif
-    option::ParameterEditor *gamsParameterEditor() const;
 
     search::ResultsView *resultsView() const;
     void setResultsView(search::ResultsView *resultsView);
@@ -190,7 +189,7 @@ public slots:
     void showResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
-    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
+    void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
 
@@ -404,13 +403,13 @@ protected:
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
-    void updateFixedFonts(int fontSize = 0, QString fontFamily = QString());
+    void updateFonts(qreal fontSize = 0, QString fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
     void importProjectDialog();
-    void exportProjectDialog(PExProjectNode *project);
+    void exportProjectDialog(gams::studio::PExProjectNode *project);
     void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();
@@ -450,7 +449,7 @@ private:
     void initToolBar();
     void updateToolbar(QWidget* current);
     void deleteScratchDirs(const QString& path);
-    QFont createEditorFont(FontGroup fGroup, QString fontFamily = QString(), int pointSize = 0);
+    QFont getEditorFont(FontGroup fGroup, QString fontFamily = QString(), qreal pointSize = 0);
     bool isMiroAvailable(bool printError = true);
     bool validMiroPrerequisites();
     void restoreCursorPosition(CursorHistoryItem item);
@@ -472,7 +471,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
-    QHash<FontGroup, int> mGroupFontSize;
+    QHash<FontGroup, qreal> mGroupFontSize;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
@@ -516,6 +515,8 @@ private:
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
     QString mNeosMail;
+    qreal mInitialTableFontSize = -1.0;
+    qreal mTableFontSizeDif = 0.0;
 
     bool mWidgetStates[4];
     QScopedPointer<gdxdiffdialog::GdxDiffDialog> mGdxDiffDialog;

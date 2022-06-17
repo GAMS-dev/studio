@@ -37,9 +37,9 @@ namespace option {
 
 ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos,
                                  QAction *aRunEngine, QAction *aInterrupt, QAction *aStop, MainWindow *parent):
-    ui(new Ui::ParameterEditor), actionRun(aRun), actionRun_with_GDX_Creation(aRunGDX), actionCompile(aCompile),
-    actionCompile_with_GDX_Creation(aCompileGDX), actionRunNeos(aRunNeos), actionRunEngine(aRunEngine),
-    actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
+    QWidget(parent), ui(new Ui::ParameterEditor), actionRun(aRun), actionRun_with_GDX_Creation(aRunGDX),
+    actionCompile(aCompile), actionCompile_with_GDX_Creation(aCompileGDX), actionRunNeos(aRunNeos),
+    actionRunEngine(aRunEngine), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
     ui->setupUi(this);
 
@@ -52,7 +52,6 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 
     setFocusPolicy(Qt::StrongFocus);
 
-    ui->gamsParameterEditor->hide();
     connect(ui->gamsParameterCommandLine, &CommandLine::parameterRunChanged, main, &MainWindow::parameterRunChanged, Qt::UniqueConnection);
     connect(ui->gamsParameterCommandLine, &QComboBox::editTextChanged, ui->gamsParameterCommandLine, &CommandLine::validateChangedParameter, Qt::UniqueConnection);
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
@@ -144,7 +143,14 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
     mExtendedEditor->setObjectName("gamsArguments");
-    mExtendedEditor->setWidget(ui->gamsParameterEditor);
+
+    mDockChild = new AbstractView(mExtendedEditor);
+    mExtendedEditor->setWidget(mDockChild);
+    QVBoxLayout *lay = new QVBoxLayout(mDockChild);
+    lay->addWidget(ui->gamsParameterEditor);
+    lay->setContentsMargins(0,0,0,0);
+    mDockChild->setLayout(lay);
+
     mExtendedEditor->setFeatures(QDockWidget::NoDockWidgetFeatures);
     mExtendedEditor->setTitleBarWidget(new QWidget(this));
     main->addDockWidget(Qt::TopDockWidgetArea, mExtendedEditor);
@@ -227,6 +233,11 @@ void ParameterEditor::on_stopAction()
     ui->gamsInterruptToolButton->setDefaultAction( actionStop );
 }
 
+AbstractView *ParameterEditor::dockChild()
+{
+    return mDockChild;
+}
+
 void ParameterEditor::updateParameterTableModel(QLineEdit *lineEdit, const QString &commandLineStr)
 {
     Q_UNUSED(lineEdit)
@@ -237,7 +248,7 @@ void ParameterEditor::updateParameterTableModel(QLineEdit *lineEdit, const QStri
 
 void ParameterEditor::updateCommandLineStr(const QList<OptionItem> &optionItems)
 {
-    if (ui->gamsParameterEditor->isHidden())
+    if (mDockChild->isHidden())
        return;
 
     emit commandLineChanged(ui->gamsParameterCommandLine->lineEdit(), optionItems);
@@ -344,7 +355,7 @@ void ParameterEditor::updateRunState(bool isRunnable, bool isRunning)
     setRunActionsEnabled(activate);
     setInterruptActionsEnabled(isRunnable && isRunning);
 
-    ui->gamsParameterEditor->setEnabled(activate);
+    mDockChild->setEnabled(activate);
     ui->gamsParameterCommandLine->setEnabled(activate && !isEditorExtended());
 }
 

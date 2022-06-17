@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include "abstractview.h"
 #include "welcomepage.h"
 #include "commonpaths.h"
 #include "settings.h"
@@ -30,7 +31,7 @@ namespace gams {
 namespace studio {
 
 WelcomePage::WelcomePage(MainWindow *parent)
-    : QWidget(parent), ui(new Ui::WelcomePage), mMain(parent)
+    : AbstractView(parent), ui(new Ui::WelcomePage), mMain(parent)
 {
     ui->setupUi(this);
     historyChanged();
@@ -52,6 +53,7 @@ WelcomePage::WelcomePage(MainWindow *parent)
     connect(this, &WelcomePage::relayActionWp, parent, &MainWindow::receiveAction);
     connect(this, &WelcomePage::relayModLibLoad, parent, &MainWindow::receiveModLibLoad);
     connect(this, &WelcomePage::relayDocOpen, parent, &MainWindow::receiveOpenDoc);
+    connect(this, &WelcomePage::zoomRequest, this, &WelcomePage::handleZoom);
 }
 
 void WelcomePage::historyChanged()
@@ -93,6 +95,12 @@ WelcomePage::~WelcomePage()
     delete ui;
 }
 
+void WelcomePage::zoomReset()
+{
+    if (!parentWidget()) return;
+    setFont(parentWidget()->font());
+}
+
 bool WelcomePage::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
@@ -103,7 +111,7 @@ bool WelcomePage::event(QEvent *event)
             w->setPalette(p);
 
     }
-    return QWidget::event(event);
+    return AbstractView::event(event);
 }
 
 void WelcomePage::on_relayAction(QString action)
@@ -124,6 +132,11 @@ void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
 void WelcomePage::linkActivated(const QString &link)
 {
     emit openFilePath(link);
+}
+
+void WelcomePage::handleZoom(int delta)
+{
+    zoomInF(delta);
 }
 
 void WelcomePage::showEvent(QShowEvent *event)

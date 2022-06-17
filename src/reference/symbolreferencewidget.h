@@ -47,9 +47,9 @@ class SymbolReferenceWidget : public QWidget
 
 public:
     explicit SymbolReferenceWidget(Reference* ref, SymbolDataType::SymbolType type, ReferenceViewer *parent = nullptr);
-    ~SymbolReferenceWidget();
+    ~SymbolReferenceWidget() override;
     void selectSearchField() const;
-
+    QList<QHeaderView*> headers();
     bool isModelLoaded() const;
 
 public slots:

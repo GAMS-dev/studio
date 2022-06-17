@@ -23,6 +23,8 @@
 #include "ui_envvarconfigeditor.h"
 #include "theme.h"
 
+#include <QTimer>
+
 namespace gams {
 namespace studio {
 namespace option {
@@ -41,6 +43,12 @@ EnvVarConfigEditor::~EnvVarConfigEditor()
     delete ui;
     if (mEnvVarTableModel)
         delete mEnvVarTableModel;
+}
+
+QList<QHeaderView *> EnvVarConfigEditor::headers()
+{
+    return QList<QHeaderView *>() << ui->EnvVarConfigTableView->horizontalHeader()
+                                  << ui->EnvVarConfigTableView->verticalHeader();
 }
 
 void EnvVarConfigEditor::parameterItemCommitted(QWidget *editor)
@@ -250,6 +258,10 @@ void EnvVarConfigEditor::init(const QList<EnvVarConfigItem *> &initItems)
 
     connect(this, &EnvVarConfigEditor::modificationChanged, this, &EnvVarConfigEditor::setModified, Qt::UniqueConnection);
 
+    QTimer::singleShot(0, this, [this]() {
+        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_KEY, QHeaderView::Interactive);
+        ui->EnvVarConfigTableView->horizontalHeader()->setSectionResizeMode(EnvVarTableModel::COLUMN_PARAM_VALUE, QHeaderView::Interactive);
+    });
 }
 
 void EnvVarConfigEditor::initActions()

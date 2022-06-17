@@ -67,7 +67,7 @@ public:
 signals:
     void fileEvent(FileEvent &e);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily = QString());
+    void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
 
 public slots:
@@ -80,7 +80,7 @@ private slots:
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();
-    void fontChanged(FileMeta *fileMeta, QFont f);
+    void fontChangeRequest(FileMeta *fileMeta, QFont f);
 
 private:
     void addFileMeta(FileMeta* fileMeta);

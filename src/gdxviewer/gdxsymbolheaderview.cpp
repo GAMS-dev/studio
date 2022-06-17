@@ -38,9 +38,9 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, GdxSymbolH
     mFilterIconY.resize(maxColumns);
 
     int h = sectionSizeFromContents(0).height();
-    mFilterIconWidth  = h*ICON_SCALE_FACTOR;
-    mFilterIconMarginLeft = h*ICON_MARGIN_LEFT;
-    mFilterIconMarginBottom = h*ICON_MARGIN_BOTTOM;
+    mFilterIconWidth  = qRound(h * ICON_SCALE_FACTOR);
+    mFilterIconMarginLeft = qRound(h*ICON_MARGIN_LEFT);
+    mFilterIconMarginBottom = qRound(h*ICON_MARGIN_BOTTOM);
 
     this->setTextElideMode(Qt::ElideRight);
 }
@@ -118,6 +118,17 @@ void GdxSymbolHeaderView::mousePressEvent(QMouseEvent *event)
         this->customContextMenuRequested(event->pos());
     else
         QHeaderView::mousePressEvent(event);
+}
+
+bool GdxSymbolHeaderView::event(QEvent *event)
+{
+    if (event->type() == QEvent::FontChange) {
+        int h = sectionSizeFromContents(0).height();
+        mFilterIconWidth  = qRound(h * ICON_SCALE_FACTOR);
+        mFilterIconMarginLeft = qRound(h*ICON_MARGIN_LEFT);
+        mFilterIconMarginBottom = qRound(h*ICON_MARGIN_BOTTOM);
+    }
+    return QHeaderView::event(event);
 }
 
 bool GdxSymbolHeaderView::pointFilterIconCollision(QPoint p)

@@ -35,13 +35,14 @@
 #include <QClipboard>
 #include <QSortFilterProxyModel>
 #include <QApplication>
+#include <QWheelEvent>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
-    : QWidget(parent),
+    : AbstractView(parent),
       ui(new Ui::GdxViewer),
       mGdxFile(gdxFile),
       mSystemDirectory(systemDirectory),
@@ -49,6 +50,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 {
     ui->setupUi(this);
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
+    headerRegister(ui->tvSymbols->horizontalHeader());
+    headerRegister(ui->tvSymbols->verticalHeader());
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -74,6 +77,8 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui->tvSymbols->addAction(cpAction);
     connect(cpAction, &QAction::triggered, this, &GdxViewer::copySelectionToClipboard);
+    headerRegister(ui->tvSymbols->horizontalHeader());
+    headerRegister(ui->tvSymbols->verticalHeader());
 }
 
 GdxViewer::~GdxViewer()
@@ -108,6 +113,9 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         // create new GdxSymbolView if the symbol is selected for the first time
         if (!mSymbolViews.at(selectedIdx)) {
             GdxSymbolView* symView = new GdxSymbolView();
+            for (QHeaderView *header : symView->headers()) {
+                headerRegister(header);
+            }
             mSymbolViews.replace(selectedIdx, symView);
 
             if (mState && mState->symbolViewStates().contains(selectedSymbol->name()))
@@ -374,7 +382,7 @@ int GdxViewer::errorCallback(int count, const char *message)
 
 void GdxViewer::saveState()
 {
-    if (mState == NULL)
+    if (!mState)
         mState = new GdxViewerState();
 
     QModelIndexList indexList = ui->tvSymbols->selectionModel()->selectedIndexes();
@@ -396,7 +404,7 @@ void GdxViewer::saveState()
     }
 
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
-        if (symView != NULL && symView->sym()->isLoaded()) {
+        if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
 
@@ -460,10 +468,8 @@ void GdxViewer::applySelectedSymbol()
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
-        if (symView != NULL) {
-            if (symView->sym()->name().toLower() == name.toLower())
-                return symView;
-        }
+        if (symView && symView->sym()->name().toLower() == name.toLower())
+            return symView;
     }
     return nullptr;
 }

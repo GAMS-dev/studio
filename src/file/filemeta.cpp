@@ -379,6 +379,17 @@ void FileMeta::updateMarks()
     mDirtyLines.clear();
 }
 
+void FileMeta::zoomRequest(qreal delta)
+{
+    if (!mEditors.size()) return;
+    QFont f = mEditors.first()->font();
+    if (delta == 0.) return;
+    const qreal newSize = f.pointSizeF() + delta;
+    if (newSize <= 0) return;
+    f.setPointSizeF(newSize);
+    emit fontChangeRequest(this, f);
+}
+
 void FileMeta::reload()
 {
     if (kind() != FileKind::PrO)
@@ -477,11 +488,12 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
                     syncEdits << wid;
             }
         }
-        for (QWidget *wid : syncEdits) {
-            if (!wid->font().isCopyOf(*f))
-                wid->setFont(*f);
+        if (f) {
+            for (QWidget *wid : syncEdits) {
+                if (!wid->font().isCopyOf(*f))
+                    wid->setFont(*f);
+            }
         }
-        if (f) emit fontChanged(this, *f);
     }
     return QObject::eventFilter(sender, event);
 }
@@ -502,8 +514,8 @@ void FileMeta::addEditor(QWidget *edit)
     ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
 
+    edit->installEventFilter(this);
     if (aEdit) {
-        edit->installEventFilter(this);
         if (!mDocument)
             linkDocument(aEdit->document());
         else
@@ -511,6 +523,7 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(aEdit, &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         connect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
@@ -528,10 +541,10 @@ void FileMeta::addEditor(QWidget *edit)
     }
 
     if (TextView* tv = ViewHelper::toTextView(edit)) {
-        tv->edit()->installEventFilter(this);
         connect(tv->edit(), &AbstractEdit::requestLstTexts, mFileRepo->projectRepo(), &ProjectRepo::errorTexts);
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        connect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
             connect(lxi, &lxiviewer::LxiViewer::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         else
@@ -546,6 +559,9 @@ void FileMeta::addEditor(QWidget *edit)
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+    if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
+        connect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
     }
 
     if (mEditors.size() == 1) emit documentOpened();
@@ -583,6 +599,7 @@ void FileMeta::removeEditor(QWidget *edit)
         }
         disconnect(aEdit, &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(aEdit, &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
     }
 
@@ -591,6 +608,7 @@ void FileMeta::removeEditor(QWidget *edit)
         tv->edit()->disconnectTimers();
         disconnect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
+        disconnect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
     } if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
        disconnect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
@@ -598,6 +616,9 @@ void FileMeta::removeEditor(QWidget *edit)
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    }
+    if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
+        disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
     }
 
     if (mEditors.isEmpty()) {
@@ -1014,7 +1035,7 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int codecMib, bool forcedAsTextEdit)
+QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int codecMib, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
@@ -1029,17 +1050,17 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
         } else {
             sharedData = new project::ProjectData(project);
         }
-        project::ProjectOptions *prop = new project::ProjectOptions(sharedData, widget);
+        project::ProjectOptions *prop = new project::ProjectOptions(sharedData, parent);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, widget));
+        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent));
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, widget));
+        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, parent));
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
         connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);
         connect(parser, &LogParser::setErrorText, project, &PExProjectNode::setErrorText);
-        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, widget), EditorType::log);
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::MemoryText, parent), EditorType::log);
         tView->setDebugMode(mFileRepo->debugMode());
         connect(tView, &TextView::hasHRef, project, &PExProjectNode::hasHRef);
         connect(tView, &TextView::jumpToHRef, project, &PExProjectNode::jumpToHRef);
@@ -1051,28 +1072,28 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
         res = tView;
     } else if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
         EditorType type = kind() == FileKind::TxtRO ? EditorType::txtRo : EditorType::lxiLstChild;
-        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, widget), type);
+        TextView* tView = ViewHelper::initEditorType(new TextView(TextView::FileText, parent), type);
         tView->setDebugMode(mFileRepo->debugMode());
         res = tView;
         tView->loadFile(location(), codecMib, true);
         if (kind() == FileKind::Lst)
-            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), widget));
+            res = ViewHelper::initEditorType(new lxiviewer::LxiViewer(tView, location(), parent));
     } else if (kind() == FileKind::Guc && !forcedAsTextEdit) {
             // Guc Editor ignore other encoding scheme than UTF-8
             mCodec = QTextCodec::codecForName("utf-8");
             res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
-                                                                         id(), widget));
+                                                                         id(), parent));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;
         QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
         if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
-                                                                             id(), mCodec, widget));
+                                                                             id(), mCodec, parent));
         } else if ( QFileInfo(CommonPaths::systemDir(),QString("opt%1.def").arg(fileInfo.baseName().toLower())).exists() &&
                     QString::compare(fileInfo.baseName().toLower(),"gams", Qt::CaseInsensitive)!=0 ) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), QString("opt%1.def").arg(fileInfo.baseName().toLower()),
-                                                                             id(), mCodec, widget));
+                                                                             id(), mCodec, parent));
         } else {
             SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
             forcedAsTextEdit = true;
@@ -1084,7 +1105,7 @@ QWidget* FileMeta::createEdit(QWidget *widget, PExProjectNode *project, int code
     if (forcedAsTextEdit) {
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
-        codeEdit = new CodeEdit(widget);
+        codeEdit = new CodeEdit(parent);
         edit = (kind() == FileKind::Txt || kind() == FileKind::Efi) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                                                     : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth
