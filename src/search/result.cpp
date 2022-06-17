@@ -32,8 +32,8 @@ Result::Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent
     int lengthBeforeTrim = context.length();
     mContext = mContext.trimmed();
 
-    if (left + MAX_CONTEXT_LENGTH < lengthBeforeTrim) mContext.append("[...]");
-    if (left > 0) mContext.prepend("[...]");
+    if (left + MAX_CONTEXT_LENGTH < lengthBeforeTrim) mContext.append("...");
+    if (left > 0) mContext.prepend("...");
 }
 
 int Result::lineNr() const
