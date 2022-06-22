@@ -74,7 +74,6 @@ private:
     bool isFocusedWidget(QWidget *wid);
     void zoomInF(qreal range);
     void setFilter(const QString &text);
-    bool mIsInitialized = false;
 
     static int errorCallback(int count, const char *message);
 
