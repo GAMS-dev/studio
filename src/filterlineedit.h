@@ -25,9 +25,9 @@ private:
     void updateRegExp();
 
 private:
-    QAction *mExactAction = nullptr;
-    QAction *mLooseAction = nullptr;
-    QAction *mClearAction = nullptr;
+    QToolButton *mExactButton = nullptr;
+    QToolButton *mClearButton = nullptr;
+    bool mExact = false;
     QRegExp mRegExp;
 };
 

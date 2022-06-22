@@ -1,8 +1,11 @@
 #include "filterlineedit.h"
 #include "theme.h"
+#include "logger.h"
 #include <QAction>
 #include <QToolButton>
 #include <QPainter>
+#include <QHBoxLayout>
+#include <QSpacerItem>
 
 namespace gams {
 namespace studio {
@@ -24,34 +27,39 @@ const QRegExp &FilterLineEdit::regExp() const
 
 void FilterLineEdit::setExactMatch(bool exact)
 {
-    mExactAction->setVisible(exact);
-    mLooseAction->setVisible(!exact);
+    mExact = exact;
+    if (mExactButton)
+        mExactButton->setIcon(mExact ? Theme::instance()->icon(":/img/tlock")
+                                     : Theme::instance()->icon(":/img/tlock-open"));
     updateRegExp();
 }
 
 void FilterLineEdit::init()
 {
-    QToolButton *button;
+    QHBoxLayout *lay = new QHBoxLayout(this);
+    lay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::MinimumExpanding));
+    lay->setContentsMargins(0,0,0,0);
+    lay->setSpacing(0);
 
-    mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
-    mExactAction = addAction(Theme::instance()->icon(":/img/tlock", false), QLineEdit::TrailingPosition);
-    mExactAction->setToolTip("<p style=\"white-space: nowrap;\"><b>Exact match</b> - accepts only entries that match exactly the term<br><i>Click to switch to <b>Contain</b></i></p>");
-    button = qobject_cast<QToolButton *>(mExactAction->associatedWidgets().at(1));
-    if (button) button->setCursor(Qt::PointingHandCursor);
-    connect(mExactAction, &QAction::triggered, this, [this](){ setExactMatch(false); });
+    mClearButton = new QToolButton(this);
+    mClearButton->setIconSize(QSize(height()/2,height()/2));
+    mClearButton->setContentsMargins(0,0,0,0);
+    mClearButton->setStyleSheet("border:none;background:yellow;");
+    mClearButton->setIcon(Theme::instance()->icon(":/img/tremove"));
+    mClearButton->setCursor(Qt::PointingHandCursor);
+    connect(mClearButton, &QToolButton::clicked, this, [this](){ clear(); });
+    lay->addWidget(mClearButton);
 
-    mLooseAction = addAction(Theme::instance()->icon(":/img/tlock-open", false), QLineEdit::TrailingPosition);
-    mLooseAction->setToolTip("<p style=\"white-space: nowrap;\"><b>Contain</b> - accepts all entries that contain the term<br><i>Click to switch to <b>Exact match</b></i></p>");
-    button = qobject_cast<QToolButton *>(mLooseAction->associatedWidgets().at(1));
-    if (button) button->setCursor(Qt::PointingHandCursor);
-    connect(mLooseAction, &QAction::triggered, this, [this](){ setExactMatch(true); });
+    mExactButton = new QToolButton(this);
+    mClearButton->setIconSize(QSize(height()/2,height()/2));
+    mExactButton->setContentsMargins(0,0,0,0);
+    mExactButton->setStyleSheet("border:none;background:cyan;");
+    mExactButton->setIcon(Theme::instance()->icon(":/img/tlock-open"));
+    mExactButton->setCursor(Qt::PointingHandCursor);
+    connect(mExactButton, &QToolButton::clicked, this, [this](){ setExactMatch(!mExact); });
+    lay->addWidget(mExactButton);
 
-    setClearButtonEnabled(false);
-    mClearAction = addAction(Theme::instance()->icon(":/img/tremove", false), QLineEdit::TrailingPosition);
-    mClearAction->setVisible(false);
-    button = qobject_cast<QToolButton *>(mClearAction->associatedWidgets().at(1));
-    if (button) button->setCursor(Qt::PointingHandCursor);
-    connect(mClearAction, &QAction::triggered, this, [this](){ clear(); });
+    setLayout(lay);
 
     connect(this, &FilterLineEdit::textChanged, this, [this](){ updateRegExp(); });
     setExactMatch(false);
@@ -59,12 +67,13 @@ void FilterLineEdit::init()
 
 void FilterLineEdit::updateRegExp()
 {
-    mClearAction->setVisible(!text().isEmpty());
-    QString filter = text().isEmpty() ? QString() : mExactAction->isVisible() ? '^'+QRegExp::escape(text())+'$'
-                                                                              : QRegExp::escape(text());
+    mClearButton->setVisible(!text().isEmpty());
+    QString filter = text().isEmpty() ? QString() : mExact ? '^'+QRegExp::escape(text())+'$'
+                                                           : QRegExp::escape(text());
     filter.replace("\\*", ".*");
     filter.replace("\\?", ".");
     mRegExp = QRegExp(filter);
+    mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     emit regExpChanged(mRegExp);
 }
 
