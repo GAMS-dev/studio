@@ -20,7 +20,7 @@
 #include "symbolreferencewidget.h"
 #include "ui_symbolreferencewidget.h"
 #include "sortedfileheaderview.h"
-
+#include "filterlineedit.h"
 #include "logger.h"
 
 namespace gams {
@@ -74,7 +74,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolView, &QTableView::customContextMenuRequested, this, &SymbolReferenceWidget::showContextMenu);
     connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
-    connect(ui->allColumnToggleSearch, &QCheckBox::toggled, mSymbolTableModel, &SymbolTableModel::toggleSearchColumns);
+    connect(ui->symbolSearchLineEdit, &FilterLineEdit::columnScopeChanged, mSymbolTableModel, [this](){
+        mSymbolTableModel->toggleSearchColumns(ui->symbolSearchLineEdit->allColumns());
+    } );
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );

@@ -22,7 +22,7 @@ signals:
 private:
     void init();
     void updateRegExp();
-    QToolButton *createButton(const QStringList &iconPaths);
+    QToolButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
     int nextButtonState(QToolButton *button, int forceState = -1);
     int buttonState(QToolButton *button);
 
