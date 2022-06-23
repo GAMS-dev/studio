@@ -3115,7 +3115,7 @@ int MainWindow::pinViewTabIndex()
     return ui->mainTabs->indexOf(wid);
 }
 
-void MainWindow::openFiles(QStringList files, bool forceNew)
+void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt)
 {
     if (files.size() == 0) return;
     if (mOpenPermission == opNone) {
@@ -3141,7 +3141,10 @@ void MainWindow::openFiles(QStringList files, bool forceNew)
     QFileInfo firstFile(files.first());
 
     // create project
-    PExProjectNode *project = nullptr;
+    if (opt == ogNone)
+        opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
+    PExProjectNode *curProject = mRecent.project();
+    PExProjectNode *project = (opt == ogCurrentGroup) ? curProject : nullptr;
     for (const QString &item: files) {
         if (QFileInfo::exists(item)) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
