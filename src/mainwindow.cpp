@@ -1354,6 +1354,25 @@ void MainWindow::on_actionOpenAlternative_triggered()
     openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
 }
 
+void MainWindow::on_actionOpen_Folder_triggered()
+{
+    const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(),
+                                                                QFileDialog::ShowDirsOnly);
+    if (folder.isEmpty()) return;
+
+    QDir dir(folder);
+    QDirIterator dirIter(dir, QDirIterator::Subdirectories);
+
+    PExProjectNode *project = projectRepo()->createProject(dir.dirName(), folder, "");
+
+    while (dirIter.hasNext()) {
+        QFileInfo f(dirIter.next());
+
+        if (f.isFile())
+            projectRepo()->findOrCreateFileNode(f.absoluteFilePath(), project);
+    }
+}
+
 void MainWindow::on_actionSave_triggered()
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(mRecent.editFileId());

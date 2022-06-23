@@ -8,6 +8,7 @@ Version 1.11.0  *
 - adjusted wording in search results table header
 - improved and unified filter line edits for tables and trees to support regular expressions and exact matches
 - added invert selection to GDX column filter and to the GDX attributes
+- added Open Folder to add all files in a folder to Studio
 
 Version 1.10.5
 ==================
