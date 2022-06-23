@@ -25,13 +25,9 @@ const QRegExp &FilterLineEdit::regExp() const
     return mRegExp;
 }
 
-void FilterLineEdit::setExactMatch(bool exact)
+bool FilterLineEdit::allColumns()
 {
-    mExact = exact;
-    if (mExactButton)
-        mExactButton->setIcon(mExact ? Theme::instance()->icon(":/img/tlock")
-                                     : Theme::instance()->icon(":/img/tlock-open"));
-    updateRegExp();
+    return buttonState(mAllColButton);
 }
 
 void FilterLineEdit::init()
@@ -41,40 +37,78 @@ void FilterLineEdit::init()
     lay->setContentsMargins(0,0,0,0);
     lay->setSpacing(0);
 
-    mClearButton = new QToolButton(this);
-    mClearButton->setIconSize(QSize(height()/2,height()/2));
-    mClearButton->setContentsMargins(0,0,0,0);
-    mClearButton->setStyleSheet("border:none;background:yellow;");
-    mClearButton->setIcon(Theme::instance()->icon(":/img/tremove"));
-    mClearButton->setCursor(Qt::PointingHandCursor);
+    mClearButton = createButton(QStringList() << ":/img/tremove");
     connect(mClearButton, &QToolButton::clicked, this, [this](){ clear(); });
     lay->addWidget(mClearButton);
 
-    mExactButton = new QToolButton(this);
-    mClearButton->setIconSize(QSize(height()/2,height()/2));
-    mExactButton->setContentsMargins(0,0,0,0);
-    mExactButton->setStyleSheet("border:none;background:cyan;");
-    mExactButton->setIcon(Theme::instance()->icon(":/img/tlock-open"));
-    mExactButton->setCursor(Qt::PointingHandCursor);
-    connect(mExactButton, &QToolButton::clicked, this, [this](){ setExactMatch(!mExact); });
+    mExactButton = createButton(QStringList() << ":/img/tlock-open" << ":/img/tlock");
+    connect(mExactButton, &QToolButton::clicked, this, [this](){ nextButtonState(mExactButton); });
     lay->addWidget(mExactButton);
 
-    setLayout(lay);
+    mRegExButton = createButton(QStringList() << ":/img/trex-off" << ":/img/trex-on");
+    connect(mRegExButton, &QToolButton::clicked, this, [this](){ nextButtonState(mRegExButton); });
+    lay->addWidget(mRegExButton);
 
+    mAllColButton = createButton(QStringList() << ":/img/tcol-one" << ":/img/tcol-all");
+    connect(mAllColButton, &QToolButton::clicked, this, [this](){
+        nextButtonState(mAllColButton);
+        emit columnScopeChanged();
+    });
+    lay->addWidget(mAllColButton);
+
+    setLayout(lay);
     connect(this, &FilterLineEdit::textChanged, this, [this](){ updateRegExp(); });
-    setExactMatch(false);
 }
 
 void FilterLineEdit::updateRegExp()
 {
     mClearButton->setVisible(!text().isEmpty());
-    QString filter = text().isEmpty() ? QString() : mExact ? '^'+QRegExp::escape(text())+'$'
-                                                           : QRegExp::escape(text());
+    QString rawText = buttonState(mRegExButton) ? text() : QRegExp::escape(text());
+    QString filter = text().isEmpty() ? QString() : buttonState(mExactButton) ? '^' + rawText + '$'
+                                                                              : rawText;
     filter.replace("\\*", ".*");
     filter.replace("\\?", ".");
     mRegExp = QRegExp(filter);
     mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
     emit regExpChanged(mRegExp);
+}
+
+QToolButton *FilterLineEdit::createButton(const QStringList &iconPaths)
+{
+    if (iconPaths.isEmpty()) return nullptr;
+    QToolButton *button = new QToolButton(this);
+    button->setIconSize(QSize(height()/2,height()/2));
+    button->setContentsMargins(0,0,0,0);
+    button->setStyleSheet("border:none;background:yellow;");
+    button->setIcon(Theme::instance()->icon(iconPaths.at(0)));
+    button->setCursor(Qt::PointingHandCursor);
+    button->setProperty("icons", iconPaths);
+    return button;
+}
+
+int FilterLineEdit::nextButtonState(QToolButton *button, int forceState)
+{
+    bool ok;
+    int state = button->property("state").toInt(&ok);
+    if (!ok) state = 0;
+    QStringList icons = button->property("icons").toStringList();
+    if (icons.isEmpty()) return -1;
+    if (forceState < 0)
+        state = (state+1) % icons.size();
+    else
+        state = forceState % icons.size();
+    button->setIcon(Theme::instance()->icon(icons.at(state)));
+    if (icons.size() > 1) button->setProperty("state", state);
+    updateRegExp();
+    return state;
+}
+
+int FilterLineEdit::buttonState(QToolButton *button)
+{
+    bool ok;
+    int state = button->property("state").toInt(&ok);
+    if (!ok) state = 0;
+    return state;
 }
 
 } // namespace studio

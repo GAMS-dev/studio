@@ -48,10 +48,14 @@
         <file alias="square-red">square-red.svg</file>
         <file alias="square-red-yellow">square-red-yellow.svg</file>
         <file alias="square-yellow">square-yellow.svg</file>
+        <file alias="tcol-all">tlock.svg</file>
+        <file alias="tcol-one">tlock.svg</file>
         <file alias="tlock">tlock.svg</file>
         <file alias="tlock-open">tlock-open.svg</file>
         <file alias="tremove">tremove.svg</file>
-    </qresource>
+        <file alias="trex-off">tlock.svg</file>
+        <file alias="trex-on">tlock.svg</file>
+</qresource>
     <qresource prefix="/solid">
         <file alias="backward">solid/arrow-left.svg</file>
         <file alias="book">solid/book.svg</file>

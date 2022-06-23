@@ -13,21 +13,24 @@ public:
     explicit FilterLineEdit(QWidget *parent = nullptr);
     explicit FilterLineEdit(const QString &contents, QWidget *parent = nullptr);
     const QRegExp &regExp() const;
+    bool allColumns();
 
 signals:
     void regExpChanged(const QRegExp &regExp);
-
-public slots:
-    void setExactMatch(bool exact);
+    void columnScopeChanged();
 
 private:
     void init();
     void updateRegExp();
+    QToolButton *createButton(const QStringList &iconPaths);
+    int nextButtonState(QToolButton *button, int forceState = -1);
+    int buttonState(QToolButton *button);
 
 private:
-    QToolButton *mExactButton = nullptr;
     QToolButton *mClearButton = nullptr;
-    bool mExact = false;
+    QToolButton *mExactButton = nullptr;
+    QToolButton *mRegExButton = nullptr;
+    QToolButton *mAllColButton = nullptr;
     QRegExp mRegExp;
 };
 

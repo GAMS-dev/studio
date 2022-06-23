@@ -63,7 +63,7 @@ public:
 
 private slots:
     void hideUniverseSymbol();
-    void toggleSearchColumns(bool checked);
+    void columnScopeChanged();
     void applySelectedSymbolOnFocus(QWidget *old, QWidget *now);
 
 private:
