@@ -58,7 +58,7 @@ PExFileNode* SearchFileHandler::fileNode(QWidget *widget)
 
 PExFileNode* SearchFileHandler::findFileNode(QString filepath)
 {
-    return mMain->projectRepo()->findOrCreateFileNode(filepath);
+    return mMain->projectRepo()->findFile(filepath);
 }
 
 PExProjectNode* SearchFileHandler::createProject(QString name, QString path)

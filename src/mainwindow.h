@@ -102,7 +102,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, bool forceNew);
+    void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
     PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
     void watchProjectTree();
 
@@ -155,7 +155,6 @@ public:
 #endif
 
     search::ResultsView *resultsView() const;
-    void setResultsView(search::ResultsView *resultsView);
     void invalidateResultsView();
 
 signals:

@@ -32,13 +32,16 @@ class Result
     friend class SearchResultList;
 public:
     explicit Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context = "");
+
+    bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
+
     int lineNr() const;
     int colNr() const;
     QString filepath() const;
     QString context() const;
     int length() const;
     NodeId parentGroup() const;
-    bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
+    void setParentGroup(NodeId parent);
 
 private:
     static const int MAX_CONTEXT_LENGTH = 60;
