@@ -1,4 +1,4 @@
-Version 1.10.5 *
+Version 1.10.5
 ==================
 - fixed bug in search that allowed opening files without a group
 - fixed search not reacting to changes in project file list
