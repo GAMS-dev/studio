@@ -1364,13 +1364,29 @@ void MainWindow::on_actionOpen_Folder_triggered()
     QDirIterator dirIter(dir, QDirIterator::Subdirectories);
 
     PExProjectNode *project = projectRepo()->createProject(dir.dirName(), folder, "");
+    QSet<QString> allFiles;
 
     while (dirIter.hasNext()) {
         QFileInfo f(dirIter.next());
 
         if (f.isFile())
-            projectRepo()->findOrCreateFileNode(f.absoluteFilePath(), project);
+            allFiles.insert(f.absoluteFilePath());
     }
+
+    if (allFiles.count() > 999) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Warning");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText("You are about to add " + QString::number(allFiles.count()) + " files to Studio. This operation can take a long time to complete.\n"
+                                  + "Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::No) return; // abort
+    }
+
+    foreach(QString file, allFiles)
+        projectRepo()->findOrCreateFileNode(file, project);
 }
 
 void MainWindow::on_actionSave_triggered()
