@@ -55,6 +55,8 @@
         <file alias="tremove">tremove.svg</file>
         <file alias="trex-off">trex-off.svg</file>
         <file alias="trex-on">trex-on.svg</file>
+        <file alias="tpart">tpart.svg</file>
+        <file alias="twhole">twhole.svg</file>
 </qresource>
     <qresource prefix="/solid">
         <file alias="backward">solid/arrow-left.svg</file>

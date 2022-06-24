@@ -41,7 +41,7 @@ void FilterLineEdit::init()
     connect(mClearButton, &QToolButton::clicked, this, [this](){ clear(); });
     lay->addWidget(mClearButton);
 
-    mExactButton = createButton(QStringList() << ":/img/tlock-open" << ":/img/tlock",
+    mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
                                 QStringList() << "Only allow exact matches" << "Allow substring matches");
     connect(mExactButton, &QToolButton::clicked, this, [this](){ nextButtonState(mExactButton); });
     lay->addWidget(mExactButton);
