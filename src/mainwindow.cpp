@@ -1363,9 +1363,7 @@ void MainWindow::on_actionOpen_Folder_triggered()
     QDir dir(folder);
     QDirIterator dirIter(dir, QDirIterator::Subdirectories);
 
-    PExProjectNode *project = projectRepo()->createProject(dir.dirName(), folder, "");
     QSet<QString> allFiles;
-
     while (dirIter.hasNext()) {
         QFileInfo f(dirIter.next());
 
@@ -1377,13 +1375,21 @@ void MainWindow::on_actionOpen_Folder_triggered()
         QMessageBox msgBox(this);
         msgBox.setText("Warning");
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText("You are about to add " + QString::number(allFiles.count()) + " files to Studio. This operation can take a long time to complete.\n"
-                                  + "Do you want to continue?");
+        msgBox.setText("You are about to add " + QString::number(allFiles.count())
+                       + " files to Studio. This operation can take a long time to complete.\n"
+                       + "Do you want to continue?");
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::No);
 
         if (msgBox.exec() == QMessageBox::No) return; // abort
     }
+
+    PExProjectNode *project = nullptr;
+
+    if (!Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project())
+        project = projectRepo()->createProject(dir.dirName(), folder, "");
+    else
+        project = mRecent.project();
 
     foreach(QString file, allFiles)
         projectRepo()->findOrCreateFileNode(file, project);
