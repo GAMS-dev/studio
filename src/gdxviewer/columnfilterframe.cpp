@@ -35,11 +35,12 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
       mModel(new FilterUelModel(symbol, column, this))
 {
     ui.setupUi(this);
+    ui.leSearch->hideColumnButton(false);
 
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
-    connect(ui.leSearch, &QLineEdit::textChanged, this, &ColumnFilterFrame::filterLabels);
+    connect(ui.leSearch, &FilterLineEdit::regExpChanged, this, &ColumnFilterFrame::filterLabels);
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
     connect(mModel, &FilterUelModel::dataChanged, this, &ColumnFilterFrame::listDataHasChanged);
 
@@ -101,10 +102,8 @@ void ColumnFilterFrame::deselectAll()
 
 void ColumnFilterFrame::filterLabels()
 {
-    QString filterString = ui.leSearch->text();
-    if(filterString.isEmpty())
-        filterString = "*";
-    mModel->filterLabels(filterString);
+    QRegExp regExp = ui.leSearch->regExp();
+    mModel->filterLabels(regExp);
 }
 
 void ColumnFilterFrame::toggleHideUnselected(bool checked)

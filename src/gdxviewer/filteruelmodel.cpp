@@ -98,16 +98,13 @@ bool *FilterUelModel::checked() const
     return mChecked;
 }
 
-void FilterUelModel::filterLabels(QString filterString)
+void FilterUelModel::filterLabels(QRegExp regExp)
 {
     bool checkedOld, checkedNew;
-    QRegExp regExp(filterString);
-    regExp.setCaseSensitivity(Qt::CaseInsensitive);
-    regExp.setPatternSyntax(QRegExp::Wildcard);
     for(size_t idx=0; idx<mUels->size(); idx++) {
         int uel = mUels->at(idx);
         checkedOld = mChecked[idx];
-        if(regExp.exactMatch(mSymbol->gdxSymbolTable()->uel2Label(uel)))
+        if(regExp.indexIn(mSymbol->gdxSymbolTable()->uel2Label(uel)) >= 0)
             checkedNew = true;
         else
             checkedNew = false;
