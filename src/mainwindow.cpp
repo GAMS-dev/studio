@@ -1358,9 +1358,14 @@ void MainWindow::on_actionOpen_Folder_triggered()
 {
     const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(),
                                                                 QFileDialog::ShowDirsOnly);
-    if (folder.isEmpty()) return;
+    openFolder(folder);
+}
 
-    QDir dir(folder);
+void MainWindow::openFolder(QString path)
+{
+    if (path.isEmpty()) return;
+
+    QDir dir(path);
     QDirIterator dirIter(dir, QDirIterator::Subdirectories);
 
     QSet<QString> allFiles;
@@ -1371,7 +1376,7 @@ void MainWindow::on_actionOpen_Folder_triggered()
             allFiles.insert(f.absoluteFilePath());
     }
 
-    if (allFiles.count() > 999) {
+    if (allFiles.count() > 99) {
         QMessageBox msgBox(this);
         msgBox.setText("Warning");
         msgBox.setIcon(QMessageBox::Warning);
@@ -1387,7 +1392,7 @@ void MainWindow::on_actionOpen_Folder_triggered()
     PExProjectNode *project = nullptr;
 
     if (!Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project())
-        project = projectRepo()->createProject(dir.dirName(), folder, "");
+        project = projectRepo()->createProject(dir.dirName(), path, "");
     else
         project = mRecent.project();
 
@@ -3019,7 +3024,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
-    if (e->mimeData()->hasUrls() && FileMeta::hasExistingFile(e->mimeData()->urls())) {
+    if (e->mimeData()->hasUrls() && (FileMeta::hasExistingFile(e->mimeData()->urls())
+                                    || FileMeta::hasExistingFolder(e->mimeData()->urls()))) {
         e->setDropAction(Qt::CopyAction);
         e->accept();
     } else {
@@ -3197,7 +3203,10 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = (opt == ogCurrentGroup) ? curProject : nullptr;
     for (const QString &item: files) {
-        if (QFileInfo::exists(item)) {
+        QDir d(item);
+        QFileInfo f(item);
+
+        if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
@@ -3208,6 +3217,8 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
             QApplication::processEvents(QEventLoop::AllEvents, 1);
+        } else if (d.exists()) {
+            openFolder(item);
         } else {
             filesNotFound.append(item);
         }

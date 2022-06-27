@@ -104,6 +104,7 @@ public:
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
     PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
+    void openFolder(QString path);
     void watchProjectTree();
 
     bool outputViewVisibility();
