@@ -540,8 +540,8 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
     } else {
         ColumnType type = getColumnTypeOf(column);
         switch(type) {
-        case columnId: return (!regExp.exactMatch(QString::number(item->id())));
-        case columnName: return (!regExp.exactMatch(item->name()));
+        case columnId: return (regExp.indexIn(QString::number(item->id())) < 0);
+        case columnName: return (regExp.indexIn(item->name()) < 0);
         default: // search every column
             QStringList strList = {
                 QString::number( item->id() ),
@@ -551,7 +551,12 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
                 getDomainStr( item->domain() ),
                 item->explanatoryText()
             };
-            return (regExp.indexIn(strList.join(" ")) <= -1);
+            return (regExp.indexIn(strList.join(" ")) < 0);
+
+            // TODO(JM): Is matching across bounds intentional?  - Alternative:
+//            for (const QString &val: strList)
+//                if (regExp.indexIn(val) >= 0) return false;
+//            return true;
         }
     }
 }
@@ -559,7 +564,7 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
 bool SymbolTableModel::isLocationFilteredActive(int idx, const QRegExp &regExp)
 {
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        return (!regExp.exactMatch(mReference->getFileUsed().at(idx)));
+        return (regExp.indexIn(mReference->getFileUsed().at(idx)) < 0);
     } else {
         return false;
     }
