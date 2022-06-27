@@ -48,7 +48,7 @@ void FilterLineEdit::init()
     lay->addWidget(mClearButton);
 
     mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
-                                QStringList() << "Only allow exact matches" << "Allow substring matches");
+                                QStringList() << "Allow substring matches" << "Only allow exact matches");
     connect(mExactButton, &QToolButton::clicked, this, [this](){ nextButtonState(mExactButton); });
     lay->addWidget(mExactButton);
 
@@ -118,7 +118,7 @@ int FilterLineEdit::nextButtonState(QToolButton *button, int forceState)
     else
         state = forceState % icons.size();
     button->setIcon(Theme::instance()->icon(icons.at(state)));
-    button->setToolTip(tips.at(state));
+    button->setToolTip("<p style=\"white-space: nowrap;\">"+tips.at(state)+"</p>");
     if (icons.size() > 1) button->setProperty("state", state);
     updateRegExp();
     return state;
