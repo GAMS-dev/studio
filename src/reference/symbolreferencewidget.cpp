@@ -57,8 +57,8 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     if (mType != SymbolDataType::SymbolType::FileUsed) {
         ui->symbolView->sortByColumn(1, Qt::AscendingOrder);
         ui->symbolView->setSortingEnabled(true);
-    }
-    else {
+        ui->symbolSearchLineEdit->setKeyColumn(1);
+    } else {
         ui->symbolView->setHorizontalHeader(new SortedFileHeaderView(Qt::Horizontal, ui->symbolView));
         if (HeaderViewProxy::platformShouldDrawBorder())
             ui->symbolView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
@@ -74,9 +74,9 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolView, &QTableView::customContextMenuRequested, this, &SymbolReferenceWidget::showContextMenu);
     connect(ui->symbolSearchLineEdit, &FilterLineEdit::regExpChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
-    connect(ui->symbolSearchLineEdit, &FilterLineEdit::columnScopeChanged, mSymbolTableModel, [this](){
+    connect(ui->symbolSearchLineEdit, &FilterLineEdit::columnScopeChanged, mSymbolTableModel, [this]() {
         mSymbolTableModel->toggleSearchColumns(ui->symbolSearchLineEdit->effectiveKeyColumn() < 0);
-    } );
+    });
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
     ui->referenceView->setModel( mReferenceTreeModel );

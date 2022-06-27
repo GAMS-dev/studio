@@ -41,11 +41,6 @@ void FilterLineEdit::setKeyColumn(int column)
     }
 }
 
-int FilterLineEdit::keyColumn()
-{
-    return mKeyColumn;
-}
-
 int FilterLineEdit::effectiveKeyColumn()
 {
     return buttonState(mAllColButton) ? -1 : mKeyColumn;

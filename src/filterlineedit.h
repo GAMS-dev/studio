@@ -15,7 +15,6 @@ public:
     const QRegExp &regExp() const;
     void hideColumnButton(bool allColumns);
     void setKeyColumn(int column);
-    int keyColumn();
     int effectiveKeyColumn();
 
 signals:
