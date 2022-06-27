@@ -1376,12 +1376,12 @@ void MainWindow::openFolder(QString path)
             allFiles.insert(f.absoluteFilePath());
     }
 
-    if (allFiles.count() > 99) {
+    if (allFiles.count() > 499) {
         QMessageBox msgBox(this);
         msgBox.setText("Warning");
         msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText("You are about to add " + QString::number(allFiles.count())
-                       + " files to Studio. This operation can take a long time to complete.\n"
+        msgBox.setText(path + " contains " + QString::number(allFiles.count())
+                       + " files. Adding that many files can take a long time to complete.\n"
                        + "Do you want to continue?");
         msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
         msgBox.setDefaultButton(QMessageBox::No);
@@ -3046,7 +3046,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         activateWindow();
         QMessageBox msgBox;
         msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                       " files at once. Depending on the file sizes this may take a long time.");
+                       " files or folders at once. This may take a long time.");
         msgBox.setInformativeText("Do you want to continue?");
         msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
         answer = msgBox.exec();
