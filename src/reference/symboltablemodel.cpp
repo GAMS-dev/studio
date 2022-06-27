@@ -368,7 +368,7 @@ void SymbolTableModel::toggleSearchColumns(bool checked)
     emit symbolSelectionToBeUpdated();
 }
 
-void SymbolTableModel::setFilterPattern(const QString &pattern)
+void SymbolTableModel::setFilterPattern(const QRegExp &pattern)
 {
     mFilteredPattern = pattern;
     filterRows();
@@ -587,18 +587,12 @@ void SymbolTableModel::filterRows()
         return;
     }
 
-    QString filter = '^'+QRegExp::escape(mFilteredPattern)+'$';
-    filter.replace("\\*", ".*");
-    filter.replace("\\?", ".");
-    QRegExp regExp(filter);
-    regExp.setCaseSensitivity(Qt::CaseInsensitive);
-
     // there is a filter
     if (mType == SymbolDataType::SymbolType::FileUsed) {
         QStringList items = mReference->getFileUsed();
         size = static_cast<size_t>(items.size());
         for(size_t rec=0; rec<size; rec++) {
-            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(static_cast<int>(rec), regExp);
+            mFilterActive[mSortIdxMap[rec]] = isLocationFilteredActive(static_cast<int>(rec), mFilteredPattern);
         }
 
         size_t filteredRecordSize = 0;
@@ -625,7 +619,7 @@ void SymbolTableModel::filterRows()
         size = static_cast<size_t>(items.size());
         for(size_t rec=0; rec<size; rec++) {
             int idx = static_cast<int>(mSortIdxMap[rec]);
-            mFilterActive[mSortIdxMap[rec]] = isFilteredActive(items.at(idx), mFilteredKeyColumn, regExp);
+            mFilterActive[mSortIdxMap[rec]] = isFilteredActive(items.at(idx), mFilteredKeyColumn, mFilteredPattern);
         }
 
         size_t filteredRecordSize = 0;
@@ -678,7 +672,7 @@ void SymbolTableModel::resetSizeAndIndices()
     }
 
     mFilteredRecordSize = size;
-    mFilteredPattern = "";
+    mFilteredPattern = QRegExp();
 }
 
 } // namespace reference

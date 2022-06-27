@@ -59,7 +59,6 @@ public:
     int getSortedIndexOf(const SymbolId id) const;
     int getSortedIndexOf(const QString &name) const;
     void toggleSearchColumns(bool checked);
-    void setFilterPattern(const QString& pattern);
     int getLastSectionIndex();
 
     static const int COLUMN_SYMBOL_ID = 0;
@@ -71,6 +70,7 @@ signals:
 
 public slots:
     void sortFileUsed(FileUsedSortOrder order =  FileUsedSortOrder::OriginalOrder);
+    void setFilterPattern(const QRegExp &pattern);
 
 private:
     enum SortType {
@@ -106,7 +106,7 @@ private:
     Reference* mReference = nullptr;
 
     int mFilteredKeyColumn = -1;
-    QString mFilteredPattern = "";
+    QRegExp mFilteredPattern;
     int mCurrentSortedColumn = 0;
     Qt::SortOrder mCurrentAscendingSort = Qt::AscendingOrder;
 

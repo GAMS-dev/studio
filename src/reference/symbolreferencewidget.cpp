@@ -73,7 +73,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(ui->symbolView, &QAbstractItemView::doubleClicked, this, &SymbolReferenceWidget::jumpToFile);
     connect(ui->symbolView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SymbolReferenceWidget::updateSelectedSymbol);
     connect(ui->symbolView, &QTableView::customContextMenuRequested, this, &SymbolReferenceWidget::showContextMenu);
-    connect(ui->symbolSearchLineEdit, &QLineEdit::textChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
+    connect(ui->symbolSearchLineEdit, &FilterLineEdit::regExpChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
     connect(ui->symbolSearchLineEdit, &FilterLineEdit::columnScopeChanged, mSymbolTableModel, [this](){
         mSymbolTableModel->toggleSearchColumns(ui->symbolSearchLineEdit->allColumns());
     } );
