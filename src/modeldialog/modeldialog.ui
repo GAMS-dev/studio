@@ -17,29 +17,12 @@
    <item>
     <layout class="QHBoxLayout" name="horizontalLayout">
      <item>
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Search:</string>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QLineEdit" name="lineEdit">
+      <widget class="gams::studio::FilterLineEdit" name="lineEdit">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search simultaneously in all tabs using &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; syntax.&lt;/p&gt;&lt;p&gt;Checking/unchecking the &lt;span style=&quot; font-weight:600;&quot;&gt;Regular Expression &lt;/span&gt;checkbox toggles the used search format between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;regular expression&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
-       <property name="clearButtonEnabled">
-        <bool>true</bool>
-       </property>
-      </widget>
-     </item>
-     <item>
-      <widget class="QCheckBox" name="cbRegEx">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Toggles between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and&lt;span style=&quot; font-weight:600;&quot;&gt; regular expression&lt;/span&gt; syntax&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Regular Expression</string>
+       <property name="placeholderText">
+        <string>Filter ...</string>
        </property>
       </widget>
      </item>
@@ -113,6 +96,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>gams::studio::FilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filterlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

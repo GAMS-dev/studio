@@ -29,23 +29,45 @@ void FilterLineEdit::hideColumnButton(bool allColumns)
 {
     nextButtonState(mAllColButton, allColumns ? 1 : 0);
     mAllColButton->setVisible(false);
+    updateTextMargins();
 }
 
-bool FilterLineEdit::allColumns()
+void FilterLineEdit::setKeyColumn(int column)
 {
-    return buttonState(mAllColButton);
+    if (mKeyColumn != column) {
+        mKeyColumn = column;
+        mAllColButton->setVisible(true);
+        emit columnScopeChanged();
+    }
+}
+
+int FilterLineEdit::keyColumn()
+{
+    return mKeyColumn;
+}
+
+int FilterLineEdit::effectiveKeyColumn()
+{
+    return buttonState(mAllColButton) ? -1 : mKeyColumn;
+}
+
+void FilterLineEdit::resizeEvent(QResizeEvent *event)
+{
+    QLineEdit::resizeEvent(event);
+    updateTextMargins();
 }
 
 void FilterLineEdit::init()
 {
     QHBoxLayout *lay = new QHBoxLayout(this);
-    lay->addSpacerItem(new QSpacerItem(10,10,QSizePolicy::MinimumExpanding));
+    lay->addSpacerItem(new QSpacerItem(10, 10, QSizePolicy::MinimumExpanding));
     lay->setContentsMargins(0,0,3,0);
     lay->setSpacing(0);
 
     mClearButton = createButton(QStringList() << ":/img/tremove", QStringList() << "Clear");
     connect(mClearButton, &QToolButton::clicked, this, [this](){ clear(); });
     lay->addWidget(mClearButton);
+    mClearButton->setVisible(false);
 
     mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
                                 QStringList() << "Allow substring matches" << "Only allow exact matches");
@@ -59,20 +81,25 @@ void FilterLineEdit::init()
 
     mAllColButton = createButton(QStringList() << ":/img/tcol-one" << ":/img/tcol-all",
                                  QStringList() << "Search in key column only" << "Search in all columns");
-    connect(mAllColButton, &QToolButton::clicked, this, [this](){
+    connect(mAllColButton, &QToolButton::clicked, this, [this]() {
         nextButtonState(mAllColButton);
         emit columnScopeChanged();
     });
     lay->addWidget(mAllColButton);
+    mAllColButton->setVisible(false);
 
     setLayout(lay);
     connect(this, &FilterLineEdit::textChanged, this, [this](){ updateRegExp(); });
     updateRegExp();
+    updateTextMargins();
 }
 
 void FilterLineEdit::updateRegExp()
 {
-    mClearButton->setVisible(!text().isEmpty());
+    if (mClearButton->isVisible() == text().isEmpty()) {
+        mClearButton->setVisible(!text().isEmpty());
+        updateTextMargins();
+    }
     QString rawText = buttonState(mRegExButton) ? text() : QRegExp::escape(text());
     QString filter = text().isEmpty() ? QString() : buttonState(mExactButton) ? '^' + rawText + '$'
                                                                               : rawText;
@@ -130,6 +157,14 @@ int FilterLineEdit::buttonState(QToolButton *button)
     int state = button->property("state").toInt(&ok);
     if (!ok) state = 0;
     return state;
+}
+
+void FilterLineEdit::updateTextMargins()
+{
+    int visiButtons = 2 + (mClearButton->isVisible() ? 1 : 0) + (mAllColButton->isVisible() ? 1 : 0);
+    int rightMargin = mExactButton->sizeHint().width() * visiButtons;
+    if (textMargins().right() != rightMargin)
+        setTextMargins(0, 0, mExactButton->sizeHint().width() * visiButtons, 0);
 }
 
 } // namespace studio

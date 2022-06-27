@@ -164,7 +164,6 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
         }
         if (mSymbolTableProxyModel) {
             mSymbolTableProxyModel->setFilterRegExp(ui->lineEdit->regExp());
-            mSymbolTableProxyModel->setFilterKeyColumn(ui->lineEdit->allColumns() ? -1 : 1);
         }
         return initError;
     }
@@ -296,6 +295,7 @@ int GdxViewer::init(bool quiet)
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
     connect(ui->lineEdit, &FilterLineEdit::columnScopeChanged, this, &GdxViewer::columnScopeChanged);
+    ui->lineEdit->setKeyColumn(1);
 
     ui->splitter->widget(0)->show();
     ui->splitter->widget(1)->show();
@@ -349,10 +349,7 @@ void GdxViewer::hideUniverseSymbol()
 
 void GdxViewer::columnScopeChanged()
 {
-    if (ui->lineEdit->allColumns())
-        mSymbolTableProxyModel->setFilterKeyColumn(-1);
-    else
-        mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterKeyColumn(ui->lineEdit->effectiveKeyColumn());
 }
 
 void GdxViewer::applySelectedSymbolOnFocus(QWidget *old, QWidget *now)

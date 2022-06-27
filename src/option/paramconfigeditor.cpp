@@ -120,7 +120,6 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    ui->paramCfgDefSearch->hideColumnButton(true);
     connect(ui->paramCfgDefSearch, &FilterLineEdit::regExpChanged, proxymodel, [this, proxymodel]() {
         proxymodel->setFilterRegExp(ui->paramCfgDefSearch->regExp());
     });

@@ -148,7 +148,6 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    ui->solverOptionSearch->hideColumnButton(true);
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->solverOptionTreeView->header()->setStyle(HeaderViewProxy::instance());

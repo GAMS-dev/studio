@@ -35,7 +35,6 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
       mModel(new FilterUelModel(symbol, column, this))
 {
     ui.setupUi(this);
-    ui.leSearch->hideColumnButton(false);
 
     connect(ui.pbApply, &QPushButton::clicked, this, &ColumnFilterFrame::apply);
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);

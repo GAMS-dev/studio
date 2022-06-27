@@ -75,7 +75,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
     connect(ui->symbolView, &QTableView::customContextMenuRequested, this, &SymbolReferenceWidget::showContextMenu);
     connect(ui->symbolSearchLineEdit, &FilterLineEdit::regExpChanged, mSymbolTableModel, &SymbolTableModel::setFilterPattern);
     connect(ui->symbolSearchLineEdit, &FilterLineEdit::columnScopeChanged, mSymbolTableModel, [this](){
-        mSymbolTableModel->toggleSearchColumns(ui->symbolSearchLineEdit->allColumns());
+        mSymbolTableModel->toggleSearchColumns(ui->symbolSearchLineEdit->effectiveKeyColumn() < 0);
     } );
 
     mReferenceTreeModel =  new ReferenceTreeModel(mReference, this);
