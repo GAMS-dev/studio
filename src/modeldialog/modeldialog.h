@@ -41,7 +41,7 @@ class ModelDialog : public QDialog
 public:
     explicit ModelDialog(QWidget *parent = nullptr);
     explicit ModelDialog(QString userLibPath, QWidget* parent = nullptr);
-    ~ModelDialog();
+    ~ModelDialog() override;
     LibraryItem *selectedLibraryItem() const;
     QTableView* tableAt(int i);
 

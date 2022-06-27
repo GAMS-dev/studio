@@ -51,6 +51,9 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
       mUserLibPath(userLibPath)
 {
     ui->setupUi(this);
+    ui->lineEdit->setKeyColumn(2);
+    ui->lineEdit->setAllColumnActive(true);
+
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (!mUserLibPath.isEmpty())
@@ -184,13 +187,12 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     proxyModel = new QSortFilterProxyModel(this);
-//    proxyModel->setFilterKeyColumn(-1);
+    proxyModel->setFilterKeyColumn(-1);
     proxyModel->setSourceModel(new LibraryModel(items, this));
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->lineEdit, &FilterLineEdit::columnScopeChanged, this, [this, proxyModel]() {
         proxyModel->setFilterKeyColumn(ui->lineEdit->effectiveKeyColumn());
     });
-    ui->lineEdit->setKeyColumn(2);
 
     tableViewList.append(tableView);
     proxyModelList.append(proxyModel);

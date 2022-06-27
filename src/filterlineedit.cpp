@@ -25,11 +25,9 @@ const QRegExp &FilterLineEdit::regExp() const
     return mRegExp;
 }
 
-void FilterLineEdit::hideColumnButton(bool allColumns)
+void FilterLineEdit::setAllColumnActive(bool active)
 {
-    nextButtonState(mAllColButton, allColumns ? 1 : 0);
-    mAllColButton->setVisible(false);
-    updateTextMargins();
+    nextButtonState(mAllColButton, (active ? 1 : 0) );
 }
 
 void FilterLineEdit::setKeyColumn(int column)
