@@ -113,8 +113,10 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     proxymodel->setSourceModel( optdefmodel );
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
-    connect(ui->gamsParameterSearch, &QLineEdit::textChanged,
-            proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp));
+    ui->gamsParameterSearch->hideColumnButton(true);
+    connect(ui->gamsParameterSearch, &FilterLineEdit::regExpChanged, proxymodel, [this, proxymodel]() {
+        proxymodel->setFilterRegExp(ui->gamsParameterSearch->regExp());
+    });
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->gamsParameterTreeView->header()->setStyle(HeaderViewProxy::instance());

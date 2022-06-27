@@ -155,7 +155,7 @@
          <widget class="QComboBox" name="solverOptionGroup"/>
         </item>
         <item>
-         <widget class="QLineEdit" name="solverOptionSearch">
+         <widget class="gams::studio::FilterLineEdit" name="solverOptionSearch">
           <property name="placeholderText">
            <string>Search Option...</string>
           </property>
@@ -209,6 +209,13 @@
    </item>
   </layout>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>gams::studio::FilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filterlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources/>
  <connections/>
 </ui>

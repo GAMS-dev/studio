@@ -13,6 +13,7 @@ public:
     explicit FilterLineEdit(QWidget *parent = nullptr);
     explicit FilterLineEdit(const QString &contents, QWidget *parent = nullptr);
     const QRegExp &regExp() const;
+    void hideColumnButton(bool allColumns);
     bool allColumns();
 
 signals:

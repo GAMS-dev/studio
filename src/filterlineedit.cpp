@@ -25,6 +25,12 @@ const QRegExp &FilterLineEdit::regExp() const
     return mRegExp;
 }
 
+void FilterLineEdit::hideColumnButton(bool allColumns)
+{
+    nextButtonState(mAllColButton, allColumns ? 1 : 0);
+    mAllColButton->setVisible(false);
+}
+
 bool FilterLineEdit::allColumns()
 {
     return buttonState(mAllColButton);
