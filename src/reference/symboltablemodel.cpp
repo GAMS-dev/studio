@@ -551,12 +551,9 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
                 getDomainStr( item->domain() ),
                 item->explanatoryText()
             };
-            return (regExp.indexIn(strList.join(" ")) < 0);
-
-            // TODO(JM): Is matching across bounds intentional?  - Alternative:
-//            for (const QString &val: strList)
-//                if (regExp.indexIn(val) >= 0) return false;
-//            return true;
+            for (const QString &val: strList)
+                if (regExp.indexIn(val) >= 0) return false;
+            return true;
         }
     }
 }
