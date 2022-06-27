@@ -14,7 +14,7 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
 
     QStyleOptionViewItem opt = option;
     initStyleOption(&opt, index);
-    int padding = 3;
+    int padding = 0;
 
     painter->save();
     painter->setClipRect(opt.rect);
@@ -23,10 +23,4 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
                       opt.fontMetrics.elidedText(opt.text, Qt::ElideRight,
                                                  opt.rect.width()));
     painter->restore();
-
-    opt.rect = option.rect;
-    opt.textElideMode = Qt::ElideNone;
-    opt.text = "";
-
-    QApplication::style()->drawControl(QStyle::CE_ItemViewItem, &opt, painter);
 }
