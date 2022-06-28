@@ -1,9 +1,7 @@
 #include "filterlineedit.h"
 #include "theme.h"
 #include "logger.h"
-#include <QAction>
 #include <QToolButton>
-#include <QPainter>
 #include <QHBoxLayout>
 #include <QSpacerItem>
 
@@ -25,9 +23,9 @@ const QRegExp &FilterLineEdit::regExp() const
     return mRegExp;
 }
 
-void FilterLineEdit::setAllColumnActive(bool active)
+void FilterLineEdit::setOptionState(FilterLineEditFlag option, int state)
 {
-    nextButtonState(mAllColButton, (active ? 1 : 0) );
+    nextButtonState(button(option), state);
 }
 
 void FilterLineEdit::setKeyColumn(int column)
@@ -37,6 +35,15 @@ void FilterLineEdit::setKeyColumn(int column)
         mAllColButton->setVisible(true);
         emit columnScopeChanged();
     }
+}
+
+void FilterLineEdit::hideOptions(FilterLineEditFlags options)
+{
+    if (options.testFlag(foClear)) mCanClear = false;
+    if (options.testFlag(foExact)) mExactButton->setVisible(false);
+    if (options.testFlag(foRegEx)) mRegExButton->setVisible(false);
+    if (options.testFlag(foColumn)) mAllColButton->setVisible(false);
+    updateRegExp();
 }
 
 int FilterLineEdit::effectiveKeyColumn()
@@ -127,6 +134,7 @@ QToolButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QS
 
 int FilterLineEdit::nextButtonState(QToolButton *button, int forceState)
 {
+    if (!button) return -1;
     bool ok;
     int state = button->property("state").toInt(&ok);
     if (!ok) state = 0;
@@ -158,6 +166,17 @@ void FilterLineEdit::updateTextMargins()
     int rightMargin = mExactButton->sizeHint().width() * visiButtons;
     if (textMargins().right() != rightMargin)
         setTextMargins(0, 0, mExactButton->sizeHint().width() * visiButtons, 0);
+}
+
+QToolButton *FilterLineEdit::button(FilterLineEditFlag option)
+{
+    switch (option) {
+    case foClear: return mClearButton;
+    case foExact: return mExactButton;
+    case foRegEx: return mRegExButton;
+    case foColumn: return mAllColButton;
+    default: return nullptr;
+    }
 }
 
 } // namespace studio

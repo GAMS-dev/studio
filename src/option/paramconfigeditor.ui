@@ -91,7 +91,7 @@
        <item>
         <widget class="gams::studio::FilterLineEdit" name="paramCfgDefSearch">
          <property name="placeholderText">
-          <string>Search Parameter...</string>
+          <string>Filter Parameter...</string>
          </property>
         </widget>
        </item>

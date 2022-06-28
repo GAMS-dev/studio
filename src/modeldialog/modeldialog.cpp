@@ -52,7 +52,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
 {
     ui->setupUi(this);
     ui->lineEdit->setKeyColumn(2);
-    ui->lineEdit->setAllColumnActive(true);
+    ui->lineEdit->setOptionState(FilterLineEdit::foColumn, 1);
 
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 

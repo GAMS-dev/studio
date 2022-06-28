@@ -19,7 +19,7 @@
      <item>
       <widget class="gams::studio::FilterLineEdit" name="lineEdit">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Search simultaneously in all tabs using &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; syntax.&lt;/p&gt;&lt;p&gt;Checking/unchecking the &lt;span style=&quot; font-weight:600;&quot;&gt;Regular Expression &lt;/span&gt;checkbox toggles the used search format between &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; and &lt;span style=&quot; font-weight:600;&quot;&gt;regular expression&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Search simultaneously in all tabs&lt;/p&gt;</string>
        </property>
        <property name="placeholderText">
         <string>Filter ...</string>

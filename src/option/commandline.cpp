@@ -20,6 +20,8 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include "commandline.h"
+#include "theme.h"
+#include "filterlineedit.h"
 
 namespace gams {
 namespace studio {
@@ -33,7 +35,10 @@ CommandLine::CommandLine(QWidget* parent) :
     setCurrentIndex(-1);
     setSizePolicy(QSizePolicy::Expanding, QSizePolicy::Preferred);
     setInsertPolicy(QComboBox::InsertAtTop);
-    lineEdit()->setClearButtonEnabled(true);
+//    lineEdit()->setClearButtonEnabled(true);
+    FilterLineEdit *ed = new FilterLineEdit(this);
+    setLineEdit(ed);
+    ed->hideOptions(FilterLineEdit::FilterLineEditFlags(FilterLineEdit::foExact | FilterLineEdit::foRegEx));
     mParameterString = "";
     mCurrentIndex = -1;
 }
