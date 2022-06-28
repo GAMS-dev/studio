@@ -1391,10 +1391,10 @@ void MainWindow::openFolder(QString path, PExProjectNode *project)
     }
 
     if (!project) {
-        if (!Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project())
-            project = projectRepo()->createProject(dir.dirName(), path, "");
-        else
+        if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
             project = mRecent.project();
+        else
+            project = projectRepo()->createProject(dir.dirName(), path, "");
     }
 
     foreach(QString file, allFiles)
