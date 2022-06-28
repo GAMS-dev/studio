@@ -1,7 +1,6 @@
 #include "filterlineedit.h"
 #include "theme.h"
 #include "logger.h"
-#include <QPushButton>
 #include <QHBoxLayout>
 #include <QSpacerItem>
 

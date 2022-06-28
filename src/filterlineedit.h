@@ -2,9 +2,7 @@
 #define GAMS_STUDIO_FILTERLINEEDIT_H
 
 #include <QLineEdit>
-#include <QAbstractButton>
 #include <QPushButton>
-#include <QToolButton>
 
 namespace gams {
 namespace studio {
