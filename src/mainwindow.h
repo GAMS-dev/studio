@@ -104,7 +104,6 @@ public:
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
     PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
-    void openFolder(QString path);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -165,6 +164,7 @@ signals:
 public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);

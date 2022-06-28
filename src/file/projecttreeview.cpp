@@ -106,7 +106,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
     } else {
         selectionModel()->clearSelection();
-        for (QModelIndex idx: newSelection) {
+        for (QModelIndex idx: qAsConst(newSelection)) {
             selectionModel()->select(idx, QItemSelectionModel::Select);
         }
     }
@@ -127,7 +127,8 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         QModelIndex ind = indexAt(event->pos());
         if (!event->keyboardModifiers().testFlag(Qt::ControlModifier) && isIntern) {
             event->setDropAction(Qt::MoveAction);
-        } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())) {
+        } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())
+                            || FileMeta::hasExistingFolder(event->mimeData()->urls())) {
             event->setDropAction(Qt::CopyAction);
         } else {
             event->ignore();

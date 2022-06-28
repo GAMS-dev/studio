@@ -198,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
+    connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -1361,7 +1362,7 @@ void MainWindow::on_actionOpen_Folder_triggered()
     openFolder(folder);
 }
 
-void MainWindow::openFolder(QString path)
+void MainWindow::openFolder(QString path, PExProjectNode *project)
 {
     if (path.isEmpty()) return;
 
@@ -1389,12 +1390,12 @@ void MainWindow::openFolder(QString path)
         if (msgBox.exec() == QMessageBox::No) return; // abort
     }
 
-    PExProjectNode *project = nullptr;
-
-    if (!Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project())
-        project = projectRepo()->createProject(dir.dirName(), path, "");
-    else
-        project = mRecent.project();
+    if (!project) {
+        if (!Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project())
+            project = projectRepo()->createProject(dir.dirName(), path, "");
+        else
+            project = mRecent.project();
+    }
 
     foreach(QString file, allFiles)
         projectRepo()->findOrCreateFileNode(file, project);
