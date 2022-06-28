@@ -730,12 +730,8 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         PExAbstractNode *aNode = node(idx);
         project = aNode->assignedProject();
     } else {
-        if (Settings::settings()->toBool(skOpenInCurrent)) {
-            project = nullptr;
-        } else {
-            QFileInfo firstFile(files.first());
-            project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
-        }
+        QFileInfo firstFile(files.first());
+        project = createProject(firstFile.completeBaseName(), files.first(), "");
     }
 
     QStringList filesNotFound;

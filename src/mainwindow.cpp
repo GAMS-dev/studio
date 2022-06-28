@@ -3196,13 +3196,22 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
-    QFileInfo firstFile(files.first());
 
     // create project
+//<<<<<<< HEAD // TODO (RG) please resolve the conflict
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
-    PExProjectNode *curProject = mRecent.project();
-    PExProjectNode *project = (opt == ogCurrentGroup) ? curProject : nullptr;
+    PExProjectNode *project = (opt == ogCurrentGroup) ? mRecent.project() : nullptr;
+//=======
+//    PExProjectNode *project = nullptr;
+//
+//    if (forceNew || !Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project()) {
+//        QFileInfo firstFile(files.first());
+//        project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+//
+//    } else project = mRecent.project();
+//
+//>>>>>>> implemented changes requested in #2047:
     for (const QString &item: files) {
         QDir d(item);
         QFileInfo f(item);
@@ -3211,15 +3220,13 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
-                if (!project)
-                    project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
             QApplication::processEvents(QEventLoop::AllEvents, 1);
         } else if (d.exists()) {
-            openFolder(item);
+            openFolder(item, project);
         } else {
             filesNotFound.append(item);
         }
