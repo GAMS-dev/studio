@@ -1,7 +1,7 @@
 #include "filterlineedit.h"
 #include "theme.h"
 #include "logger.h"
-#include <QToolButton>
+#include <QPushButton>
 #include <QHBoxLayout>
 #include <QSpacerItem>
 
@@ -65,23 +65,23 @@ void FilterLineEdit::init()
     lay->setSpacing(0);
 
     mClearButton = createButton(QStringList() << ":/img/tremove", QStringList() << "Clear");
-    connect(mClearButton, &QToolButton::clicked, this, [this](){ clear(); });
+    connect(mClearButton, &QAbstractButton::clicked, this, [this](){ clear(); });
     lay->addWidget(mClearButton);
     mClearButton->setVisible(false);
 
     mExactButton = createButton(QStringList() << ":/img/tpart" << ":/img/twhole",
                                 QStringList() << "Allow substring matches" << "Only allow exact matches");
-    connect(mExactButton, &QToolButton::clicked, this, [this](){ nextButtonState(mExactButton); });
+    connect(mExactButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mExactButton); });
     lay->addWidget(mExactButton);
 
     mRegExButton = createButton(QStringList() << ":/img/trex-off" << ":/img/trex-on",
                                 QStringList() << "Wildcard matching" << "Regular expression matching");
-    connect(mRegExButton, &QToolButton::clicked, this, [this](){ nextButtonState(mRegExButton); });
+    connect(mRegExButton, &QAbstractButton::clicked, this, [this](){ nextButtonState(mRegExButton); });
     lay->addWidget(mRegExButton);
 
     mAllColButton = createButton(QStringList() << ":/img/tcol-one" << ":/img/tcol-all",
                                  QStringList() << "Search in key column only" << "Search in all columns");
-    connect(mAllColButton, &QToolButton::clicked, this, [this]() {
+    connect(mAllColButton, &QAbstractButton::clicked, this, [this]() {
         nextButtonState(mAllColButton);
         emit columnScopeChanged();
     });
@@ -110,7 +110,7 @@ void FilterLineEdit::updateRegExp()
     emit regExpChanged(mRegExp);
 }
 
-QToolButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QStringList &toolTips)
+QAbstractButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QStringList &toolTips)
 {
     if (iconPaths.isEmpty()) {
         DEB() << "At least one icon needed";
@@ -120,10 +120,10 @@ QToolButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QS
         DEB() << "Count of icons and tool tips differ";
         return nullptr;
     }
-    QToolButton *button = new QToolButton(this);
+    MiniButton *button = new MiniButton(this);
     button->setIconSize(QSize(height()/2,height()/2));
     button->setContentsMargins(0,0,0,0);
-    button->setStyleSheet("border:none;");
+    button->setFlat(true);
     button->setCursor(Qt::PointingHandCursor);
     button->setIcon(Theme::instance()->icon(iconPaths.at(0)));
     button->setToolTip(toolTips.at(0));
@@ -132,7 +132,7 @@ QToolButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QS
     return button;
 }
 
-int FilterLineEdit::nextButtonState(QToolButton *button, int forceState)
+int FilterLineEdit::nextButtonState(QAbstractButton *button, int forceState)
 {
     if (!button) return -1;
     bool ok;
@@ -152,7 +152,7 @@ int FilterLineEdit::nextButtonState(QToolButton *button, int forceState)
     return state;
 }
 
-int FilterLineEdit::buttonState(QToolButton *button)
+int FilterLineEdit::buttonState(QAbstractButton *button)
 {
     bool ok;
     int state = button->property("state").toInt(&ok);
@@ -168,7 +168,7 @@ void FilterLineEdit::updateTextMargins()
         setTextMargins(0, 0, mExactButton->sizeHint().width() * visiButtons, 0);
 }
 
-QToolButton *FilterLineEdit::button(FilterLineEditFlag option)
+QAbstractButton *FilterLineEdit::button(FilterLineEditFlag option)
 {
     switch (option) {
     case foClear: return mClearButton;
@@ -178,6 +178,16 @@ QToolButton *FilterLineEdit::button(FilterLineEditFlag option)
     default: return nullptr;
     }
 }
+
+QSize MiniButton::sizeHint() const
+{
+    return iconSize() + QSize(2,3);
+}
+
+//void MiniButton::paintEvent(QPaintEvent *event)
+//{
+//    QAbstractButton::paintEvent(event);
+//}
 
 } // namespace studio
 } // namespace gams

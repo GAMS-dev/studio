@@ -2,10 +2,22 @@
 #define GAMS_STUDIO_FILTERLINEEDIT_H
 
 #include <QLineEdit>
+#include <QAbstractButton>
+#include <QPushButton>
+#include <QToolButton>
 
 namespace gams {
 namespace studio {
 
+
+class MiniButton : public QPushButton
+{
+    Q_OBJECT
+public:
+    MiniButton(QWidget *parent = nullptr): QPushButton(parent) {}
+    virtual ~MiniButton() override {}
+    QSize sizeHint() const override;
+};
 
 
 class FilterLineEdit : public QLineEdit
@@ -41,17 +53,17 @@ protected:
 private:
     void init();
     void updateRegExp();
-    QToolButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
-    int nextButtonState(QToolButton *button, int forceState = -1);
-    int buttonState(QToolButton *button);
+    QAbstractButton *createButton(const QStringList &iconPaths, const QStringList &toolTips);
+    int nextButtonState(QAbstractButton *button, int forceState = -1);
+    int buttonState(QAbstractButton *button);
     void updateTextMargins();
-    QToolButton *button(FilterLineEditFlag option);
+    QAbstractButton *button(FilterLineEditFlag option);
 
 private:
-    QToolButton *mClearButton = nullptr;
-    QToolButton *mExactButton = nullptr;
-    QToolButton *mRegExButton = nullptr;
-    QToolButton *mAllColButton = nullptr;
+    QAbstractButton *mClearButton = nullptr;
+    QAbstractButton *mExactButton = nullptr;
+    QAbstractButton *mRegExButton = nullptr;
+    QAbstractButton *mAllColButton = nullptr;
     QRegExp mRegExp;
     bool mCanClear = true;
     int mKeyColumn = -1;
