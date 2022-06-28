@@ -156,8 +156,11 @@
         </item>
         <item>
          <widget class="gams::studio::FilterLineEdit" name="solverOptionSearch">
+          <property name="toolTip">
+           <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter the options tree&lt;/p&gt;</string>
+          </property>
           <property name="placeholderText">
-           <string>Search Option...</string>
+           <string>Filter Options ...</string>
           </property>
          </widget>
         </item>

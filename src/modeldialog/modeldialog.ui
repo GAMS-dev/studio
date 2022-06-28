@@ -19,10 +19,10 @@
      <item>
       <widget class="gams::studio::FilterLineEdit" name="lineEdit">
        <property name="toolTip">
-        <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Search simultaneously in all tabs&lt;/p&gt;</string>
+        <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter simultaneously all tabs&lt;/p&gt;</string>
        </property>
        <property name="placeholderText">
-        <string>Filter ...</string>
+        <string>Filter model tabs ...</string>
        </property>
       </widget>
      </item>

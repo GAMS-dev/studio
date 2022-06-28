@@ -20,7 +20,7 @@
    <item>
     <widget class="gams::studio::FilterLineEdit" name="leSearch">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Apply a filter string using &lt;span style=&quot; font-weight:600;&quot;&gt;wildcard&lt;/span&gt; syntax.&lt;/p&gt;&lt;p&gt;The content filter string is automatically applied to the list of labels. Matching labels will be checked while unmatching labels will be unchecked.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;p style=&quot;white-space: nowrap;&quot;&gt;Apply a filter string&lt;/p&gt;&lt;p&gt;The content filter string is automatically applied to the list of labels. Matching labels will be checked while unmatching labels will be unchecked.&lt;/p&gt;&lt;/html&gt;</string>
      </property>
      <property name="inputMask">
       <string/>

@@ -90,8 +90,11 @@
        </property>
        <item>
         <widget class="gams::studio::FilterLineEdit" name="paramCfgDefSearch">
+         <property name="toolTip">
+          <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter the parameters tree&lt;/p&gt;</string>
+         </property>
          <property name="placeholderText">
-          <string>Filter Parameter...</string>
+          <string>Filter Parameters ...</string>
          </property>
         </widget>
        </item>

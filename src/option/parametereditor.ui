@@ -181,8 +181,11 @@
           </property>
           <item>
            <widget class="gams::studio::FilterLineEdit" name="gamsParameterSearch">
+            <property name="toolTip">
+             <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter the parameters tree&lt;/p&gt;</string>
+            </property>
             <property name="placeholderText">
-             <string>Search Parameter...</string>
+             <string>Filter Parameters ...</string>
             </property>
            </widget>
           </item>
