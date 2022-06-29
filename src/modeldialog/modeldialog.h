@@ -53,7 +53,6 @@ public slots:
 
 private slots:
     void on_pbDescription_clicked();
-    void on_cbRegEx_toggled(bool checked);
     void applyFilter(const QRegExp &filterString, int proxyModelIndex);
     void jumpToNonEmptyTab();
 

@@ -250,13 +250,6 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.exec();
 }
 
-void ModelDialog::on_cbRegEx_toggled(bool checked)
-{
-    Q_UNUSED(checked)
-    // trigger update
-    emit ui->lineEdit->textChanged(ui->lineEdit->text());
-}
-
 void ModelDialog::applyFilter(const QRegExp &filterString, int proxyModelIndex)
 {
     proxyModelList[proxyModelIndex]->setFilterRegExp(filterString);
