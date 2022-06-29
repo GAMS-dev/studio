@@ -45,10 +45,13 @@ protected:
 private slots:
     void apply();
     void selectAll();
+    void invert();
     void deselectAll();
     void filterLabels();
     void toggleHideUnselected(bool checked);
     void listDataHasChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+
+    void on_pushButton_clicked();
 
 private:
     Ui::ColumnFilterFrame ui;

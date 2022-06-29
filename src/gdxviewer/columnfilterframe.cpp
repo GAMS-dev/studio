@@ -40,6 +40,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbSelectAll, &QPushButton::clicked, this, &ColumnFilterFrame::selectAll);
     connect(ui.pbDeselectAll, &QPushButton::clicked, this, &ColumnFilterFrame::deselectAll);
     connect(ui.leSearch, &FilterLineEdit::regExpChanged, this, &ColumnFilterFrame::filterLabels);
+    connect(ui.pbInvert, &QPushButton::clicked, this, &ColumnFilterFrame::invert);
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
     connect(mModel, &FilterUelModel::dataChanged, this, &ColumnFilterFrame::listDataHasChanged);
 
@@ -99,6 +100,14 @@ void ColumnFilterFrame::deselectAll()
         mModel->setData(mModel->index(row,0), false, Qt::CheckStateRole);
 }
 
+void ColumnFilterFrame::invert()
+{
+    for(int row=0; row<mModel->rowCount(); row++) {
+        QModelIndex index = mModel->index(row,0);
+        mModel->setData(index, !mModel->data(index, Qt::CheckStateRole).toBool(), Qt::CheckStateRole);
+    }
+}
+
 void ColumnFilterFrame::filterLabels()
 {
     QRegExp regExp = ui.leSearch->regExp();
@@ -122,6 +131,12 @@ void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QMo
         for(int row=topLeft.row(); row<=bottomRight.row(); row++)
             ui.lvLabels->setRowHidden(row, !mModel->checked()[row]);
     }
+}
+
+
+void ColumnFilterFrame::on_pushButton_clicked()
+{
+
 }
 
 } // namespace gdxviewer
