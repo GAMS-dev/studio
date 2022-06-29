@@ -349,6 +349,13 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
             connect(cb, &QCheckBox::toggled, [this]() {toggleColumnHidden();});
             mShowValColActions.append(cb);
         }
+        QPushButton *invert = new QPushButton("Invert Selection", mVisibleValColWidget);
+        invert->setFlat(true);
+        connect(invert, &QPushButton::clicked, this, [this]() {
+            for (QCheckBox *cb : qAsConst(mShowValColActions))
+                cb->setChecked(!cb->isChecked());
+        });
+        layout->addWidget(invert);
         ui->tbVisibleValCols->addAction(checkableAction);
     }
 
