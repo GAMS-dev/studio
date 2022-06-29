@@ -200,8 +200,9 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu, Qt::UniqueConnection);
         connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 
-        connect(ui->solverOptionSearch, &QLineEdit::textChanged,
-                proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp), Qt::UniqueConnection);
+        connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, [this, proxymodel]() {
+            proxymodel->setFilterRegExp(ui->solverOptionSearch->regExp());
+        });
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
         connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);

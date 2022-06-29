@@ -163,8 +163,7 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet)
             //msgBox.exec();
         }
         if (mSymbolTableProxyModel) {
-            mSymbolTableProxyModel->setFilterWildcard(ui->lineEdit->text());
-            mSymbolTableProxyModel->setFilterKeyColumn(ui->cbToggleSearch->isChecked() ? -1 : 1);
+            mSymbolTableProxyModel->setFilterRegExp(ui->lineEdit->regExp());
         }
         return initError;
     }
@@ -290,10 +289,13 @@ int GdxViewer::init(bool quiet)
     ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    connect(ui->lineEdit, &QLineEdit::textChanged, mSymbolTableProxyModel, &QSortFilterProxyModel::setFilterWildcard);
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &regExp) {
+        mSymbolTableProxyModel->setFilterRegExp(regExp);
+    });
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);
-    connect(ui->cbToggleSearch, &QCheckBox::toggled, this, &GdxViewer::toggleSearchColumns);
+    connect(ui->lineEdit, &FilterLineEdit::columnScopeChanged, this, &GdxViewer::columnScopeChanged);
+    ui->lineEdit->setKeyColumn(1);
 
     ui->splitter->widget(0)->show();
     ui->splitter->widget(1)->show();
@@ -345,12 +347,9 @@ void GdxViewer::hideUniverseSymbol()
     }
 }
 
-void GdxViewer::toggleSearchColumns(bool checked)
+void GdxViewer::columnScopeChanged()
 {
-    if (checked)
-        mSymbolTableProxyModel->setFilterKeyColumn(-1);
-    else
-        mSymbolTableProxyModel->setFilterKeyColumn(1);
+    mSymbolTableProxyModel->setFilterKeyColumn(ui->lineEdit->effectiveKeyColumn());
 }
 
 void GdxViewer::applySelectedSymbolOnFocus(QWidget *old, QWidget *now)

@@ -51,6 +51,9 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
       mUserLibPath(userLibPath)
 {
     ui->setupUi(this);
+    ui->lineEdit->setKeyColumn(2);
+    ui->lineEdit->setOptionState(FilterLineEdit::foColumn, 1);
+
     this->setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     if (!mUserLibPath.isEmpty())
@@ -92,7 +95,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
         }
     }
 
-    connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::clearSelections);
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::clearSelections);
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
 
@@ -105,9 +108,11 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     }
 
     // bind filter mechanism to textChanged
-    for (int i=0; i<proxyModelList.size(); i++)
-        connect(ui->lineEdit, &QLineEdit::textChanged, this, [this, i]( const QString &value ) { this->applyFilter(value, i); });
-    connect(ui->lineEdit, &QLineEdit::textChanged, this, &ModelDialog::jumpToNonEmptyTab);
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &value) {
+        for (int i=0; i<proxyModelList.size(); i++)
+            applyFilter(value, i);
+    });
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, &ModelDialog::jumpToNonEmptyTab);
 }
 
 ModelDialog::~ModelDialog()
@@ -185,6 +190,9 @@ void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
     proxyModel->setFilterKeyColumn(-1);
     proxyModel->setSourceModel(new LibraryModel(items, this));
     proxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+    connect(ui->lineEdit, &FilterLineEdit::columnScopeChanged, this, [this, proxyModel]() {
+        proxyModel->setFilterKeyColumn(ui->lineEdit->effectiveKeyColumn());
+    });
 
     tableViewList.append(tableView);
     proxyModelList.append(proxyModel);
@@ -242,19 +250,9 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.exec();
 }
 
-void ModelDialog::on_cbRegEx_toggled(bool checked)
+void ModelDialog::applyFilter(const QRegExp &filterString, int proxyModelIndex)
 {
-    Q_UNUSED(checked)
-    // trigger update
-    emit ui->lineEdit->textChanged(ui->lineEdit->text());
-}
-
-void ModelDialog::applyFilter(QString filterString, int proxyModelIndex)
-{
-    if (ui->cbRegEx->isChecked())
-        proxyModelList[proxyModelIndex]->setFilterRegExp(filterString);
-    else
-        proxyModelList[proxyModelIndex]->setFilterWildcard(filterString);
+    proxyModelList[proxyModelIndex]->setFilterRegExp(filterString);
     this->changeHeader(proxyModelIndex);
 }
 

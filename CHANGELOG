@@ -6,6 +6,7 @@ Version 1.11.0  *
 - added zoom for editors/viewers with proportional fonts (GDX-viewer and option-editor)
 - improved trimming behavior of search results
 - adjusted wording in search results table header
+- improved and unified filter line edits for tables and trees to support regular expressions and exact matches
 
 Version 1.10.5
 ==================

@@ -17,6 +17,7 @@
         <file alias="folder-open">folder-open.svg</file>
         <file alias="folder-open-run">folder-open-run.svg</file>
         <file alias="gams">gamslogo.svg</file>
+        <file alias="gams-config-file">gamscfg.svg</file>
         <file alias="gams-w">gams-w.svg</file>
         <file alias="gams-w-run">gams-w-run.svg</file>
         <file alias="gams-w24">gams-w24.svg</file>
@@ -46,9 +47,17 @@
         <file alias="square-gray-yellow">square-gray-yellow.svg</file>
         <file alias="square-red">square-red.svg</file>
         <file alias="square-red-yellow">square-red-yellow.svg</file>
-        <file alias="gams-config-file">gamscfg.svg</file>
         <file alias="square-yellow">square-yellow.svg</file>
-    </qresource>
+        <file alias="tcol-all">tcol-all.svg</file>
+        <file alias="tcol-one">tcol-one.svg</file>
+        <file alias="tlock">tlock.svg</file>
+        <file alias="tlock-open">tlock-open.svg</file>
+        <file alias="tremove">tremove.svg</file>
+        <file alias="trex-off">trex-off.svg</file>
+        <file alias="trex-on">trex-on.svg</file>
+        <file alias="tpart">tpart.svg</file>
+        <file alias="twhole">twhole.svg</file>
+</qresource>
     <qresource prefix="/solid">
         <file alias="backward">solid/arrow-left.svg</file>
         <file alias="book">solid/book.svg</file>

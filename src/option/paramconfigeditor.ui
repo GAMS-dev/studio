@@ -27,11 +27,11 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="QSplitter" name="ParamCfgSplitter">
+    <widget class="QSplitter" name="paramCfgSplitter">
      <property name="orientation">
       <enum>Qt::Horizontal</enum>
      </property>
-     <widget class="QWidget" name="ParamCfgOWidget" native="true">
+     <widget class="QWidget" name="paramCfgOWidget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_9">
        <property name="spacing">
         <number>2</number>
@@ -49,7 +49,7 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QWidget" name="ParamCfgCtrl" native="true">
+        <widget class="QWidget" name="paramCfgCtrl" native="true">
          <layout class="QHBoxLayout" name="horizontalLayout">
           <property name="leftMargin">
            <number>0</number>
@@ -67,11 +67,11 @@
         </widget>
        </item>
        <item>
-        <widget class="QTableView" name="ParamCfgTableView"/>
+        <widget class="QTableView" name="paramCfgTableView"/>
        </item>
       </layout>
      </widget>
-     <widget class="QWidget" name="ParamCfgWidget" native="true">
+     <widget class="QWidget" name="paramCfgWidget" native="true">
       <layout class="QVBoxLayout" name="verticalLayout_2">
        <property name="spacing">
         <number>2</number>
@@ -89,14 +89,17 @@
         <number>0</number>
        </property>
        <item>
-        <widget class="QLineEdit" name="ParamCfgDefSearch">
+        <widget class="gams::studio::FilterLineEdit" name="paramCfgDefSearch">
+         <property name="toolTip">
+          <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter the parameters tree&lt;/p&gt;</string>
+         </property>
          <property name="placeholderText">
-          <string>Search Parameter...</string>
+          <string>Filter Parameters ...</string>
          </property>
         </widget>
        </item>
        <item>
-        <widget class="QTreeView" name="ParamCfgDefTreeView"/>
+        <widget class="QTreeView" name="paramCfgDefTreeView"/>
        </item>
       </layout>
      </widget>
@@ -243,6 +246,13 @@
    </property>
   </action>
  </widget>
+ <customwidgets>
+  <customwidget>
+   <class>gams::studio::FilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filterlineedit.h</header>
+  </customwidget>
+ </customwidgets>
  <resources>
   <include location="../../icons/icons.qrc"/>
  </resources>

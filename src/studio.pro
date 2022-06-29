@@ -159,6 +159,7 @@ SOURCES += \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
+    filterlineedit.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -382,6 +383,7 @@ HEADERS += \
     file/recentdata.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
+    filterlineedit.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \

@@ -180,9 +180,12 @@
            <number>0</number>
           </property>
           <item>
-           <widget class="QLineEdit" name="gamsParameterSearch">
+           <widget class="gams::studio::FilterLineEdit" name="gamsParameterSearch">
+            <property name="toolTip">
+             <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;Filter the parameters tree&lt;/p&gt;</string>
+            </property>
             <property name="placeholderText">
-             <string>Search Parameter...</string>
+             <string>Filter Parameters ...</string>
             </property>
            </widget>
           </item>
@@ -199,6 +202,11 @@
   </layout>
  </widget>
  <customwidgets>
+  <customwidget>
+   <class>gams::studio::FilterLineEdit</class>
+   <extends>QLineEdit</extends>
+   <header>filterlineedit.h</header>
+  </customwidget>
   <customwidget>
    <class>gams::studio::option::CommandLine</class>
    <extends>QComboBox</extends>
