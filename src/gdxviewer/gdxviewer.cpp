@@ -424,6 +424,7 @@ void GdxViewer::saveState()
 
 void GdxViewer::applyState()
 {
+    if (!mState) return;
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
     if (this->isVisible())
         applySelectedSymbol();

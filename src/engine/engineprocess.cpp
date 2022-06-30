@@ -22,6 +22,8 @@
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
 #include "process/gmszipprocess.h"
+#include "file/filetype.h"
+
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
@@ -229,6 +231,7 @@ void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatu
     if (gms.exists()) gms.remove();
     QFile g00(mOutPath+'/'+modelName()+".g00");
     if (g00.exists()) g00.remove();
+    handleResultFiles();
 
     setProcState(ProcIdle);
     completed(exitCode);
@@ -323,6 +326,8 @@ void EngineProcess::setParameters(const QStringList &parameters)
             mOutPath = mOutPath.mid(1, mOutPath.length()-2);
         int i = mOutPath.lastIndexOf('.');
         if (i >= 0) mOutPath = mOutPath.left(i);
+        QFileInfo fi(mOutPath);
+        mWorkPath = QDir::toNativeSeparators(fi.path());
     } else {
         mOutPath = QString();
     }
@@ -460,9 +465,9 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
     mQueuedTimer.start();
     mManager->setToken(token);
     emit newStdChannelData(QString("\n--- GAMS Engine at %1\n").arg(mManager->url().toString()).toUtf8());
-    QString newLstEntry("--- switch LOG to .%1%2%1%2.lst[LS2:\"%3\"]\nTOKEN: %4\n\n");
-    QString lstPath = mOutPath+"/"+modelName()+".lst";
-    emit newStdChannelData(newLstEntry.arg(QDir::separator(), modelName(), lstPath, token).toUtf8());
+    QString newLstEntry("--- switch LOG to %1-server.lst[LS2:\"%2\"]\nTOKEN: %3\n\n");
+    QString lstPath = mWorkPath+"/"+modelName()+"-server.lst";
+    emit newStdChannelData(newLstEntry.arg(modelName(), lstPath, token).toUtf8());
     // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
     pollStatus();
@@ -728,7 +733,7 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
         else iLT = 0;
         ++iCount;
         if (!mRemoteWorkDir.isEmpty() && iRP == mRemoteWorkDir.size()) {
-            res.append(mOutPath.toUtf8());
+            res.append(mWorkPath.toUtf8());
             res.append(QDir::separator().toLatin1());
             iRP = 0;
             iLT = 0;
@@ -818,6 +823,82 @@ void EngineProcess::startUnpacking()
     subProc->setWorkingDirectory(mOutPath);
     subProc->setParameters(QStringList() << "-o" << "solver-output.zip");
     subProc->execute();
+}
+
+void EngineProcess::handleResultFiles()
+{
+    QString model = modelName();
+    QDir srcDir(QDir::fromNativeSeparators(mOutPath), "");
+    QDir destDir(srcDir);
+    destDir.cdUp();
+    mkDirsAndMoveFiles(srcDir, destDir, true);
+}
+
+void EngineProcess::mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, bool inBase)
+{
+    moveFiles(srcDir, destDir, inBase);
+
+    for (QFileInfo fi : srcDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+        QString subDir = fi.fileName();
+        destDir.mkdir(subDir);
+        QDir destSub = QDir(destDir.filePath(subDir));
+        if (destSub.exists()) {
+            QDir srcSub = QDir(fi.filePath());
+            if (!srcSub.exists()) {
+                emit newStdChannelData("\n*** Can't find directory: "+fi.filePath().toUtf8()+"_\n");
+            }
+            mkDirsAndMoveFiles(srcSub, destSub);
+        } else {
+            emit newStdChannelData("\n*** Can't create directory: "+destSub.path().toUtf8()+"_\n");
+        }
+    }
+}
+
+void EngineProcess::moveFiles(const QDir &srcDir, const QDir &destDir, bool inBase)
+{
+    for (QFileInfo fi : srcDir.entryInfoList(QDir::Files)) {
+        QFile file(fi.filePath());
+        QString destFileName;
+        Qt::CaseSensitivity cs = FileType::fsCaseSense();
+        if (inBase && (fi.fileName().compare("solver.log", cs) == 0)) {
+            destFileName = modelName() + '-' + fi.fileName();
+        } else if (inBase && (fi.fileName().compare("solver-output.zip", cs) == 0 ||
+                  (fi.completeBaseName().compare(modelName(), cs) == 0 && fi.suffix().compare("zip", cs) == 0))) {
+            QFile delFil(fi.filePath());
+            delFil.remove();
+            continue;
+        } else if (inBase && fi.completeBaseName().compare(modelName(), cs) == 0 &&
+                   (fi.suffix().compare("lst", cs) == 0 || fi.suffix().compare("lxi", cs) == 0)) {
+            destFileName = modelName() + "-server" + '.' + fi.suffix();
+        } else {
+            destFileName = fi.fileName();
+        }
+        QFile destFile(destDir.filePath(destFileName));
+        if (fi.suffix().compare("gdx", cs) == 0)
+            emit releaseGdxFile(destFile.fileName());
+
+        QFile bk(destFile.fileName()+"_");
+        if (destFile.exists()) {
+            if (bk.exists()) {
+                if (!bk.remove()) {
+                    emit newStdChannelData("\n*** Can't remove backup file: "+bk.fileName().toUtf8()+"\n");
+                    continue;
+                }
+            }
+            QFile destFileCurrent(destDir.filePath(destFileName));
+            if (!destFileCurrent.rename(bk.fileName())) {
+                emit newStdChannelData("\n*** Can't rename file: "+destFileCurrent.fileName().toUtf8()+" to "+bk.fileName().toUtf8()+"\n");
+                continue;
+            }
+        }
+        if (!file.rename(destFile.fileName())) {
+            emit newStdChannelData("\n*** Can't move file: "+file.fileName().toUtf8()+" to "+destFile.fileName().toUtf8()+'\n');
+            continue;
+        }
+        if (bk.exists()) bk.remove();
+        if (fi.suffix().compare("gdx", cs) == 0)
+            emit reloadGdxFile(destFile.fileName());
+    }
 }
 
 QString EngineProcess::modelName() const
