@@ -104,6 +104,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mPreferencesWidget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
     vLayout->addWidget(mSqDefaults);
+    vLayout->setContentsMargins(6,6,6,6);
     mSqDefaults->setEnabled(false);
     mSqZeroes = new QCheckBox("Squeeze Trailing Zeroes", this);
     mSqZeroes->setChecked(true);
@@ -339,6 +340,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
         mVisibleValColWidget->setFont(font());
         mVisibleValColWidget->setAutoFillBackground(true);
         QVBoxLayout *layout = new QVBoxLayout();
+        layout->setContentsMargins(6,6,6,6);
         mVisibleValColWidget->setLayout(layout);
         checkableAction->setDefaultWidget(mVisibleValColWidget);
         QCheckBox *cb;
@@ -349,6 +351,12 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
             connect(cb, &QCheckBox::toggled, [this]() {toggleColumnHidden();});
             mShowValColActions.append(cb);
         }
+        QPushButton *invert = new QPushButton("  Invert Selection  ", mVisibleValColWidget);
+        connect(invert, &QPushButton::clicked, this, [this]() {
+            for (QCheckBox *cb : qAsConst(mShowValColActions))
+                cb->setChecked(!cb->isChecked());
+        });
+        layout->addWidget(invert);
         ui->tbVisibleValCols->addAction(checkableAction);
     }
 

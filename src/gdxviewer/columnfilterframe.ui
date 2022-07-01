@@ -59,6 +59,13 @@
       </widget>
      </item>
      <item>
+      <widget class="QPushButton" name="pbInvert">
+       <property name="text">
+        <string>Invert</string>
+       </property>
+      </widget>
+     </item>
+     <item>
       <widget class="QPushButton" name="pbDeselectAll">
        <property name="toolTip">
         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Deselect all labels&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
