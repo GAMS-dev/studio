@@ -9,6 +9,7 @@ Version 1.11.0
 - improved and unified filter line edits for tables and trees to support regular expressions and exact matches
 - adjusted wording in search results table header
 - GDX Viewer saves/restores its state(e.g. filters, sorting, ...) when data has to be reloaded from file
+- moved resulting files from an GAMS Engine run to the working directory
 
 Version 1.10.5
 ==================
