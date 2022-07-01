@@ -133,12 +133,6 @@ void ColumnFilterFrame::listDataHasChanged(const QModelIndex &topLeft, const QMo
     }
 }
 
-
-void ColumnFilterFrame::on_pushButton_clicked()
-{
-
-}
-
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
