@@ -21,6 +21,7 @@
 #include "process.h"
 #include <QTimer>
 #include <QElapsedTimer>
+#include <QFileInfo>
 
 class QNetworkReply;
 class QSslError;
@@ -156,6 +157,7 @@ private:
     bool mInParameterBlock = false;
     bool mStoredIgnoreSslState = false;
     QElapsedTimer mQueuedTimer;
+    QList<QFileInfo> mProtectedFiles;
 
     QString mJobNumber;
     QString mJobPassword;

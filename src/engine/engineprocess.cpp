@@ -856,47 +856,55 @@ void EngineProcess::mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, 
 
 void EngineProcess::moveFiles(const QDir &srcDir, const QDir &destDir, bool inBase)
 {
-    for (QFileInfo fi : srcDir.entryInfoList(QDir::Files)) {
-        QFile file(fi.filePath());
+    for (QFileInfo srcFi : srcDir.entryInfoList(QDir::Files)) {
+        QFile srcFile(srcFi.filePath());
         QString destFileName;
         Qt::CaseSensitivity cs = FileType::fsCaseSense();
-        if (inBase && (fi.fileName().compare("solver.log", cs) == 0)) {
-            destFileName = modelName() + '-' + fi.fileName();
-        } else if (inBase && (fi.fileName().compare("solver-output.zip", cs) == 0 ||
-                  (fi.completeBaseName().compare(modelName(), cs) == 0 && fi.suffix().compare("zip", cs) == 0))) {
-            QFile delFil(fi.filePath());
+        if (inBase && (srcFi.fileName().compare("solver.log", cs) == 0)) {
+            destFileName = modelName() + '-' + srcFi.fileName();
+        } else if (inBase && (srcFi.fileName().compare("solver-output.zip", cs) == 0 ||
+                  (srcFi.completeBaseName().compare(modelName(), cs) == 0 && srcFi.suffix().compare("zip", cs) == 0))) {
+            QFile delFil(srcFi.filePath());
             delFil.remove();
             continue;
-        } else if (inBase && fi.completeBaseName().compare(modelName(), cs) == 0 &&
-                   (fi.suffix().compare("lst", cs) == 0 || fi.suffix().compare("lxi", cs) == 0)) {
-            destFileName = modelName() + "-server" + '.' + fi.suffix();
+        } else if (inBase && srcFi.completeBaseName().compare(modelName(), cs) == 0 &&
+                   (srcFi.suffix().compare("lst", cs) == 0 || srcFi.suffix().compare("lxi", cs) == 0)) {
+            destFileName = modelName() + "-server" + '.' + srcFi.suffix();
         } else {
-            destFileName = fi.fileName();
+            destFileName = srcFi.fileName();
         }
         QFile destFile(destDir.filePath(destFileName));
-        if (fi.suffix().compare("gdx", cs) == 0)
+        if (srcFi.suffix().compare("gdx", cs) == 0)
             emit releaseGdxFile(destFile.fileName());
 
         QFile bk(destFile.fileName()+"_");
         if (destFile.exists()) {
+            QFileInfo destFi(destFile);
+            if (mProtectedFiles.contains(destFi)) {
+                emit newStdChannelData("*** Skip updating "+destFile.fileName().toUtf8()+"\n");
+                srcFile.remove();
+                continue;
+            }
             if (bk.exists()) {
                 if (!bk.remove()) {
-                    emit newStdChannelData("\n*** Can't remove backup file: "+bk.fileName().toUtf8()+"\n");
+                    emit newStdChannelData("*** Can't remove backup file: "+bk.fileName().toUtf8()+"\n");
                     continue;
                 }
             }
             QFile destFileCurrent(destDir.filePath(destFileName));
             if (!destFileCurrent.rename(bk.fileName())) {
-                emit newStdChannelData("\n*** Can't rename file: "+destFileCurrent.fileName().toUtf8()+" to "+bk.fileName().toUtf8()+"\n");
+                emit newStdChannelData("*** Can't rename file: "+destFileCurrent.fileName().toUtf8()+" to "+bk.fileName().toUtf8()+"\n");
                 continue;
             }
         }
-        if (!file.rename(destFile.fileName())) {
-            emit newStdChannelData("\n*** Can't move file: "+file.fileName().toUtf8()+" to "+destFile.fileName().toUtf8()+'\n');
+        if (!srcFile.rename(destFile.fileName())) {
+            emit newStdChannelData("*** Can't move file: "+srcFile.fileName().toUtf8()+" to "+destFile.fileName().toUtf8()+'\n');
             continue;
+        } else {
+            emit newStdChannelData("*** Local file updated: "+destFile.fileName().toUtf8()+"\n");
         }
         if (bk.exists()) bk.remove();
-        if (fi.suffix().compare("gdx", cs) == 0)
+        if (srcFi.suffix().compare("gdx", cs) == 0)
             emit reloadGdxFile(destFile.fileName());
     }
 }
@@ -915,6 +923,7 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
         emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
         return false;
     }
+    mProtectedFiles.clear();
     QTextStream in(&file);
     QString path = QFileInfo(file).path();
     while (!in.atEnd()) {
@@ -923,10 +932,13 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
             continue;
         QFileInfo fi(line);
         if (fi.isAbsolute()) {
-            if (fi.exists())
+            if (fi.exists()) {
                 list << line;
+                mProtectedFiles << fi;
+            }
         } else if (QFile::exists(path+"/"+line)) {
             list << line;
+            mProtectedFiles << QFileInfo(path+"/"+line);
         } else {
             emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
         }
