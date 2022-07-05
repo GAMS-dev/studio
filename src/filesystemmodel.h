@@ -27,7 +27,7 @@
 
 namespace gams {
 namespace studio {
-namespace miro {
+namespace fs {
 
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
@@ -49,8 +49,7 @@ public:
     FileSystemModel(QObject *parent = nullptr);
 
     QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex &idx, const QVariant &value,
-                 int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &idx, const QVariant &value, int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     void selectAll();

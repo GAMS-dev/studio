@@ -17,68 +17,60 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef MIRODEPLOYDIALOG_H
-#define MIRODEPLOYDIALOG_H
+#ifndef FILESYSTEMWIDGET_H
+#define FILESYSTEMWIDGET_H
 
-#include <QDialog>
-
-#include "mirodeployprocess.h"
-#include "mirocommon.h"
+#include <QGroupBox>
 
 namespace gams {
 namespace studio {
-namespace miro {
+namespace fs {
 
 namespace Ui {
-class MiroDeployDialog;
+class FileSystemWidget;
 }
 
-class MiroDeployDialog : public QDialog
+class FileSystemModel;
+class FilteredFileSystemModel;
+
+class FileSystemWidget : public QGroupBox
 {
     Q_OBJECT
-
 public:
-    MiroDeployDialog(QWidget *parent = nullptr);
-
-    MiroTargetEnvironment targetEnvironment();
-
-    void setDefaults();
-
+    FileSystemWidget(QWidget *parent = nullptr);
+    void clear();
     QString assemblyFileName() const;
-
     void setAssemblyFileName(const QString &file);
-
-    void setModelName(const QString &modelName);
-
+    bool validAssemblyFile() const;
     QStringList selectedFiles();
     void setSelectedFiles(const QStringList &files);
-
     void setWorkingDirectory(const QString &workingDirectory);
+    QString workingDirectory() const;
 
 signals:
-    void deploy(bool test, MiroDeployMode mode);
-    void newAssemblyFileData();
-
-protected:
-    void showEvent(QShowEvent *event) override;
+    void createButtonClicked();
 
 private slots:
-    void createButtonClicked();
-    void updateTestDeployButtons();
-
-    void on_testBaseButton_clicked();
-    void on_deployButton_clicked();
-
-private:
-    bool isDataContractAvailable();
+    void on_createButton_clicked();
+    void on_selectAllButton_clicked();
+    void on_clearButton_clicked();
+    void updateButtons();
 
 private:
-    Ui::MiroDeployDialog *ui;
-    QString mModelName;
+    void setupViewModel();
+
+private:
+    Ui::FileSystemWidget *ui;
+    QString mModelAssemblyFile;
+    bool mValidAssemblyFile;
+    QString mWorkingDirectory;
+
+    FileSystemModel *mFileSystemModel;
+    FilteredFileSystemModel *mFilterModel;
 };
 
 }
 }
 }
 
-#endif // MIRODEPLOYDIALOG_H
+#endif // FILESYSTEMWIDGET_H
