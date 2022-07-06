@@ -3198,20 +3198,9 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
     QList<PExFileNode*> gmsFiles;
 
     // create project
-//<<<<<<< HEAD // TODO (RG) please resolve the conflict
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
     PExProjectNode *project = (opt == ogCurrentGroup) ? mRecent.project() : nullptr;
-//=======
-//    PExProjectNode *project = nullptr;
-//
-//    if (forceNew || !Settings::settings()->toBool(skOpenInCurrent) || !mRecent.project()) {
-//        QFileInfo firstFile(files.first());
-//        project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
-//
-//    } else project = mRecent.project();
-//
-//>>>>>>> implemented changes requested in #2047:
     for (const QString &item: files) {
         QDir d(item);
         QFileInfo f(item);
