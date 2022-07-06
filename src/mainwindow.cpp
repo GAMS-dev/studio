@@ -198,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
+    connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -1352,6 +1353,52 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionOpenAlternative_triggered()
 {
     openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
+}
+
+void MainWindow::on_actionOpen_Folder_triggered()
+{
+    const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(),
+                                                                QFileDialog::ShowDirsOnly);
+    openFolder(folder);
+}
+
+void MainWindow::openFolder(QString path, PExProjectNode *project)
+{
+    if (path.isEmpty()) return;
+
+    QDir dir(path);
+    QDirIterator dirIter(dir, QDirIterator::Subdirectories);
+
+    QSet<QString> allFiles;
+    while (dirIter.hasNext()) {
+        QFileInfo f(dirIter.next());
+
+        if (f.isFile())
+            allFiles.insert(f.absoluteFilePath());
+    }
+
+    if (allFiles.count() > 499) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Warning");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(path + " contains " + QString::number(allFiles.count())
+                       + " files. Adding that many files can take a long time to complete.\n"
+                       + "Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::No) return; // abort
+    }
+
+    if (!project) {
+        if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
+            project = mRecent.project();
+        else
+            project = projectRepo()->createProject(dir.dirName(), path, "");
+    }
+
+    foreach(QString file, allFiles)
+        projectRepo()->findOrCreateFileNode(file, project);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -2978,7 +3025,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
-    if (e->mimeData()->hasUrls() && FileMeta::hasExistingFile(e->mimeData()->urls())) {
+    if (e->mimeData()->hasUrls() && (FileMeta::hasExistingFile(e->mimeData()->urls())
+                                    || FileMeta::hasExistingFolder(e->mimeData()->urls()))) {
         e->setDropAction(Qt::CopyAction);
         e->accept();
     } else {
@@ -2999,7 +3047,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         activateWindow();
         QMessageBox msgBox;
         msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                       " files at once. Depending on the file sizes this may take a long time.");
+                       " files or folders at once. This may take a long time.");
         msgBox.setInformativeText("Do you want to continue?");
         msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
         answer = msgBox.exec();
@@ -3148,25 +3196,26 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
-    QFileInfo firstFile(files.first());
 
     // create project
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
-    PExProjectNode *curProject = mRecent.project();
-    PExProjectNode *project = (opt == ogCurrentGroup) ? curProject : nullptr;
+    PExProjectNode *project = (opt == ogCurrentGroup) ? mRecent.project() : nullptr;
     for (const QString &item: files) {
-        if (QFileInfo::exists(item)) {
+        QDir d(item);
+        QFileInfo f(item);
+
+        if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
-                if (!project)
-                    project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
             QApplication::processEvents(QEventLoop::AllEvents, 1);
+        } else if (d.exists()) {
+            openFolder(item, project);
         } else {
             filesNotFound.append(item);
         }

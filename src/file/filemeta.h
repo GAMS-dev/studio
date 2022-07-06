@@ -100,6 +100,7 @@ public:
     void setLocation(QString location);
 
     static bool hasExistingFile(QList<QUrl> urls);
+    static bool hasExistingFolder(QList<QUrl> urls);
     static QStringList pathList(QList<QUrl> urls);
     void invalidate();
 

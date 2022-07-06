@@ -90,13 +90,28 @@ bool FileMeta::hasExistingFile(QList<QUrl> urls)
     return false;
 }
 
+bool FileMeta::hasExistingFolder(QList<QUrl> urls) {
+    for (const QUrl &url : urls) {
+        if (url.isEmpty()) continue;
+        QDir d(url.toLocalFile());
+        if (d.exists()) return true;
+    }
+    return false;
+}
+
 QStringList FileMeta::pathList(QList<QUrl> urls)
 {
     QStringList res;
     for (const QUrl &url : urls) {
         if (url.isEmpty()) continue;
+
         QFileInfo fi(url.toLocalFile());
-        if (fi.isFile() && fi.exists()) res << url.toLocalFile();
+        if (fi.isFile() && fi.exists())
+            res << url.toLocalFile();
+
+        QDir d(url.toLocalFile());
+        if (d.exists())
+            res << url.toLocalFile();
     }
     return res;
 }
