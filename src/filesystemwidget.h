@@ -21,6 +21,7 @@
 #define FILESYSTEMWIDGET_H
 
 #include <QGroupBox>
+#include <QStyledItemDelegate>
 
 namespace gams {
 namespace studio {
@@ -32,6 +33,13 @@ class FileSystemWidget;
 
 class FileSystemModel;
 class FilteredFileSystemModel;
+
+class FileSystemItemDelegate: public QStyledItemDelegate
+{
+public:
+    FileSystemItemDelegate(QObject *parent = nullptr);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+};
 
 class FileSystemWidget : public QGroupBox
 {
@@ -46,9 +54,14 @@ public:
     void setSelectedFiles(const QStringList &files);
     void setWorkingDirectory(const QString &workingDirectory);
     QString workingDirectory() const;
+    bool showProtection() const;
+    void setShowProtection(bool showProtection);
 
 signals:
     void createButtonClicked();
+
+protected:
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
 private slots:
     void on_createButton_clicked();
@@ -64,9 +77,11 @@ private:
     QString mModelAssemblyFile;
     bool mValidAssemblyFile;
     QString mWorkingDirectory;
+    bool mShowProtection = false;
 
     FileSystemModel *mFileSystemModel;
     FilteredFileSystemModel *mFilterModel;
+    FileSystemItemDelegate *mDelegate;
 };
 
 }

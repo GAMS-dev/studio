@@ -19,6 +19,7 @@
  */
 #include "filesystemmodel.h"
 #include "logger.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -68,7 +69,6 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
     if (role == Qt::CheckStateRole && idx.column() == 0) {
         updateChildDirInfo(idx);
         auto file = rootDirectory().relativeFilePath(filePath(idx));
-        // TODO(JM) dirs need to be checkable even if the directory isn't loaded yet (they load after expanding)
         if (value.toBool()) {
             mCheckedFiles.insert(file);
             if (isDir(idx))
@@ -83,7 +83,7 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
         return true;
     }
-    return  QFileSystemModel::setData(idx, value, role);
+    return QFileSystemModel::setData(idx, value, role);
 }
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
@@ -196,6 +196,8 @@ void FileSystemModel::updateChildDirInfo(const QModelIndex &idx)
         for (int row = 0; row < rowCount(idx); ++row) {
             QModelIndex cIdx = index(row, 0, idx);
             mCheckedFiles << subPath(cIdx);
+            if (isDir(cIdx))
+                updateChildDirInfo(cIdx);
             emit dataChanged(cIdx, cIdx, QVector<int>() << Qt::CheckStateRole);
         }
     }

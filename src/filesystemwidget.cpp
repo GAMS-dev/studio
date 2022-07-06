@@ -23,10 +23,13 @@
 #include "theme.h"
 
 #include <QMessageBox>
+#include <QMouseEvent>
 
 namespace gams {
 namespace studio {
 namespace fs {
+
+const int CanDownloadRole = Qt::UserRole + 5;
 
 FileSystemWidget::FileSystemWidget(QWidget *parent)
     : QGroupBox(parent)
@@ -35,12 +38,14 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     , mFilterModel(new FilteredFileSystemModel(this))
 {
     ui->setupUi(this);
-
+    mDelegate = new FileSystemItemDelegate(this);
     mFilterModel->setSourceModel(mFileSystemModel);
     auto oldModel = ui->directoryView->selectionModel();
     ui->directoryView->setModel(mFilterModel);
     connect(mFileSystemModel, &FileSystemModel::dataChanged, this, &FileSystemWidget::updateButtons);
+    ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
+    setShowProtection(true);
 }
 
 void FileSystemWidget::clear()
@@ -102,6 +107,34 @@ QString FileSystemWidget::workingDirectory() const
     return mWorkingDirectory;
 }
 
+bool FileSystemWidget::showProtection() const
+{
+    return mShowProtection;
+}
+
+void FileSystemWidget::setShowProtection(bool showProtection)
+{
+    mShowProtection = showProtection;
+    ui->directoryView->setItemDelegate(showProtection ? mDelegate : nullptr);
+}
+
+bool FileSystemWidget::eventFilter(QObject *watched, QEvent *event)
+{
+    Q_UNUSED(watched)
+    if (event->type() == QEvent::MouseButtonRelease) {
+        QMouseEvent *me = static_cast<QMouseEvent*>(event);
+        QModelIndex ind = ui->directoryView->indexAt(me->pos());
+        if (me->button() == Qt::LeftButton && showProtection()) {
+            QRect rect = ui->directoryView->visualRect(ind);
+            if (rect.isValid() && me->pos().x() > rect.right() - rect.height()) {
+                mFileSystemModel->setData(ind, !mFileSystemModel->data(ind).toBool(), CanDownloadRole);
+                return true;
+            }
+        }
+    }
+    return false;
+}
+
 void FileSystemWidget::on_createButton_clicked()
 {
     emit createButtonClicked();
@@ -134,6 +167,36 @@ void FileSystemWidget::setupViewModel()
     mFileSystemModel->setRootPath(mWorkingDirectory);
     auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
     ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+}
+
+FileSystemItemDelegate::FileSystemItemDelegate(QObject *parent): QStyledItemDelegate(parent)
+{}
+
+void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    if (!index.isValid()) return;
+    QStyleOptionViewItem opt(option);
+    opt.state.setFlag(QStyle::State_Selected, false);
+    opt.textElideMode = Qt::ElideMiddle;
+    opt.palette.setColor(QPalette::Highlight, Qt::transparent);
+    bool isFile = true;
+    QRect btRect = opt.rect;
+    if (isFile) {
+        btRect.setLeft(opt.rect.right() - opt.rect.height());
+        btRect = btRect.marginsRemoved(QMargins(2,2,2,2));
+        opt.rect.setRight(opt.rect.right() - opt.rect.height());
+    }
+    QStyledItemDelegate::paint(painter, opt, index);
+    if (isFile) {
+        bool act = false;
+        if (index.row() == 4)
+            act = false;
+        if (opt.state.testFlag(QStyle::State_MouseOver))
+            act = true;
+        QIcon icon = index.model()->data(index, CanDownloadRole).toBool() ? Theme::icon(":/%1/triangle-down")
+                                                                          : Theme::icon(":/%1/triangle-left");
+        Theme::icon(":/%1/triangle-down").paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
+    }
 }
 
 }
