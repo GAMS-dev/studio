@@ -30,15 +30,15 @@ namespace studio {
 namespace fs {
 
 enum FileSystemRole {
-    CanDownloadRole = Qt::UserRole + 5
+    WriteBackRole = Qt::UserRole + 5
 };
 
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
     Q_OBJECT
-
 public:
     FilteredFileSystemModel(QObject *parent = nullptr);
+    bool isDir(const QModelIndex &index) const;
 
 protected:
     bool filterAcceptsColumn(int source_column,
@@ -77,7 +77,7 @@ private:
 
 private:
     QMap<QString,int> mDirChilds;
-    QMap<QString,int> mDoDownload;
+    QMap<QString,int> mWriteBack;
     QSet<QString> mCheckedFiles;
 };
 

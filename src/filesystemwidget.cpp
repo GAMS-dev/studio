@@ -25,6 +25,8 @@
 
 #include <QMessageBox>
 #include <QMouseEvent>
+#include <QToolTip>
+#include <QCursor>
 
 namespace gams {
 namespace studio {
@@ -44,7 +46,6 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     connect(mFileSystemModel, &FileSystemModel::dataChanged, this, &FileSystemWidget::updateButtons);
     ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
-//    setShowProtection(true);
 }
 
 void FileSystemWidget::clear()
@@ -120,14 +121,28 @@ void FileSystemWidget::setShowProtection(bool showProtection)
 bool FileSystemWidget::eventFilter(QObject *watched, QEvent *event)
 {
     Q_UNUSED(watched)
-    if (event->type() == QEvent::MouseButtonRelease) {
+    if (event->type() == QEvent::ToolTip) {
+        QPoint pos = ui->directoryView->viewport()->mapFromGlobal(QCursor::pos());
+        QModelIndex ind = ui->directoryView->indexAt(pos);
+        QRect rect = ui->directoryView->visualRect(ind);
+        QModelIndex sInd = mFilterModel->mapToSource(ind);
+        bool invisible = (mFileSystemModel->data(sInd, Qt::CheckStateRole).toInt() != Qt::Checked);
+        if (!rect.isValid() || pos.x() <= rect.right() - rect.height() || invisible) {
+            setToolTip("");
+        } else if (mFileSystemModel->data(sInd, WriteBackRole).toBool())
+            setToolTip("<p style='white-space:pre'><b>Write back</b> the file from server replacing the local file</p>");
+        else
+            setToolTip("<p style='white-space:pre'><b>Only send</b> the file to the server keeping the local file unchanged</p>");
+
+    } else if (event->type() == QEvent::MouseButtonRelease) {
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
         QModelIndex ind = ui->directoryView->indexAt(me->pos());
+        QRect rect = ui->directoryView->visualRect(ind);
         if (me->button() == Qt::LeftButton && showProtection()) {
-            QRect rect = ui->directoryView->visualRect(ind);
             if (rect.isValid() && me->pos().x() > rect.right() - rect.height()) {
                 QModelIndex sInd = mFilterModel->mapToSource(ind);
-                mFileSystemModel->setData(sInd, !mFileSystemModel->data(sInd, CanDownloadRole).toBool(), CanDownloadRole);
+                if (mFileSystemModel->data(sInd, Qt::CheckStateRole).toInt() == Qt::Checked)
+                    mFileSystemModel->setData(sInd, !mFileSystemModel->data(sInd, WriteBackRole).toBool(), WriteBackRole);
                 return true;
             }
         }
@@ -175,11 +190,12 @@ FileSystemItemDelegate::FileSystemItemDelegate(QObject *parent): QStyledItemDele
 void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     if (!index.isValid()) return;
+    const FilteredFileSystemModel *model = static_cast<const FilteredFileSystemModel*>(index.model());
     QStyleOptionViewItem opt(option);
     opt.state.setFlag(QStyle::State_Selected, false);
     opt.textElideMode = Qt::ElideMiddle;
     opt.palette.setColor(QPalette::Highlight, Qt::transparent);
-    bool isFile = true;
+    bool isFile = (model->data(index, Qt::CheckStateRole).toInt() == Qt::Checked) && !model->isDir(index);
     QRect btRect = opt.rect;
     if (isFile) {
         btRect.setLeft(opt.rect.right() - opt.rect.height());
@@ -193,9 +209,9 @@ void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
             act = false;
         if (opt.state.testFlag(QStyle::State_MouseOver))
             act = true;
-        QIcon icon = index.model()->data(index, CanDownloadRole).toBool() ? Theme::icon(":/%1/triangle-down")
-                                                                          : Theme::icon(":/%1/triangle-left");
-        Theme::icon(":/%1/triangle-down").paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
+        QIcon icon = model->data(index, WriteBackRole).toBool() ? Theme::icon(":/solid/out-in")
+                                                                  : Theme::icon(":/solid/out");
+        icon.paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
     }
 }
 

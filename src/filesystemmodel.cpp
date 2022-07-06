@@ -29,6 +29,11 @@ FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
     : QSortFilterProxyModel(parent)
 {}
 
+bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
+{
+    return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));
+}
+
 bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
 {
     Q_UNUSED(source_parent)
@@ -60,10 +65,10 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
         } else {
             return Qt::Unchecked;
         }
-    } else if (role == CanDownloadRole) {
+    } else if (role == WriteBackRole) {
         auto path = rootDirectory().relativeFilePath(filePath(idx));
-        if (mDoDownload.contains(path))
-            return mDoDownload.value(path);
+        if (mWriteBack.contains(path))
+            return mWriteBack.value(path);
     }
     return QFileSystemModel::data(idx, role);
 }
@@ -88,10 +93,10 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
         return true;
     }
 
-    if (role == CanDownloadRole && idx.column() == 0) {
+    if (role == WriteBackRole && idx.column() == 0) {
         auto file = rootDirectory().relativeFilePath(filePath(idx));
-        mDoDownload.insert(file, value.toBool());
-        emit dataChanged(idx, idx, QVector<int>() << CanDownloadRole);
+        mWriteBack.insert(file, value.toBool());
+        emit dataChanged(idx, idx, QVector<int>() << WriteBackRole);
         return true;
     }
     return QFileSystemModel::setData(idx, value, role);
