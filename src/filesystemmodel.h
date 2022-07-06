@@ -29,6 +29,10 @@ namespace gams {
 namespace studio {
 namespace fs {
 
+enum FileSystemRole {
+    CanDownloadRole = Qt::UserRole + 5
+};
+
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
     Q_OBJECT
@@ -44,7 +48,6 @@ protected:
 class FileSystemModel : public QFileSystemModel
 {
     Q_OBJECT
-
 public:
     FileSystemModel(QObject *parent = nullptr);
 
@@ -74,6 +77,7 @@ private:
 
 private:
     QMap<QString,int> mDirChilds;
+    QMap<QString,int> mDoDownload;
     QSet<QString> mCheckedFiles;
 };
 

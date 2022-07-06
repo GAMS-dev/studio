@@ -930,15 +930,22 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
         QString line = in.readLine().trimmed();
         if (line.isEmpty())
             continue;
+
+        bool writeBack = false;
+        if (line.endsWith(" >wb") || line.endsWith(" > wb")) {
+            int cut = line.endsWith(" >wb") ? 4 : 5;
+            line = line.left(line.length() - cut);
+            writeBack = true;
+        }
         QFileInfo fi(line);
         if (fi.isAbsolute()) {
             if (fi.exists()) {
                 list << line;
-                mProtectedFiles << fi;
+                if (!writeBack) mProtectedFiles << fi;
             }
         } else if (QFile::exists(path+"/"+line)) {
             list << line;
-            mProtectedFiles << QFileInfo(path+"/"+line);
+            if (!writeBack) mProtectedFiles << QFileInfo(path+"/"+line);
         } else {
             emit newStdChannelData("*** Can't add file: "+line.toUtf8()+'\n');
         }

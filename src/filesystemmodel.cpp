@@ -60,6 +60,10 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
         } else {
             return Qt::Unchecked;
         }
+    } else if (role == CanDownloadRole) {
+        auto path = rootDirectory().relativeFilePath(filePath(idx));
+        if (mDoDownload.contains(path))
+            return mDoDownload.value(path);
     }
     return QFileSystemModel::data(idx, role);
 }
@@ -81,6 +85,13 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
             removeParentSelection(idx.parent());
         }
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        return true;
+    }
+
+    if (role == CanDownloadRole && idx.column() == 0) {
+        auto file = rootDirectory().relativeFilePath(filePath(idx));
+        mDoDownload.insert(file, value.toBool());
+        emit dataChanged(idx, idx, QVector<int>() << CanDownloadRole);
         return true;
     }
     return QFileSystemModel::setData(idx, value, role);

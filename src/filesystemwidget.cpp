@@ -21,6 +21,7 @@
 #include "ui_filesystemwidget.h"
 #include "filesystemmodel.h"
 #include "theme.h"
+#include "logger.h"
 
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -28,8 +29,6 @@
 namespace gams {
 namespace studio {
 namespace fs {
-
-const int CanDownloadRole = Qt::UserRole + 5;
 
 FileSystemWidget::FileSystemWidget(QWidget *parent)
     : QGroupBox(parent)
@@ -45,7 +44,7 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     connect(mFileSystemModel, &FileSystemModel::dataChanged, this, &FileSystemWidget::updateButtons);
     ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
-    setShowProtection(true);
+//    setShowProtection(true);
 }
 
 void FileSystemWidget::clear()
@@ -127,7 +126,8 @@ bool FileSystemWidget::eventFilter(QObject *watched, QEvent *event)
         if (me->button() == Qt::LeftButton && showProtection()) {
             QRect rect = ui->directoryView->visualRect(ind);
             if (rect.isValid() && me->pos().x() > rect.right() - rect.height()) {
-                mFileSystemModel->setData(ind, !mFileSystemModel->data(ind).toBool(), CanDownloadRole);
+                QModelIndex sInd = mFilterModel->mapToSource(ind);
+                mFileSystemModel->setData(sInd, !mFileSystemModel->data(sInd, CanDownloadRole).toBool(), CanDownloadRole);
                 return true;
             }
         }
