@@ -852,6 +852,11 @@ void EngineProcess::mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, 
             emit newStdChannelData("\n*** Can't create directory: "+destSub.path().toUtf8()+"_\n");
         }
     }
+    if (srcDir.isEmpty()) {
+        QDir parDir(srcDir.path());
+        parDir.cdUp();
+        parDir.rmdir(srcDir.dirName());
+    }
 }
 
 void EngineProcess::moveFiles(const QDir &srcDir, const QDir &destDir, bool inBase)
