@@ -10,6 +10,7 @@ Version 1.11.0
 - adjusted wording in search results table header
 - GDX Viewer saves/restores its state(e.g. filters, sorting, ...) when data has to be reloaded from file
 - moved resulting files from an GAMS Engine run to the working directory
+- fixed selection issues in the MIRO deployment dialog
 
 Version 1.10.5
 ==================
