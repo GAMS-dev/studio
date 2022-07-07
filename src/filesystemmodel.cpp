@@ -111,8 +111,13 @@ void FileSystemModel::selectAll()
 {
     auto entries = rootDirectory().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     for (auto entry: entries) {
-        auto idx = index(rootDirectory().absoluteFilePath(entry));
-        setData(idx, true, Qt::CheckStateRole);
+        QFileInfo fi = rootDirectory().absoluteFilePath(entry);
+        QModelIndex idx = index(fi.filePath());
+        if (isDir(idx))
+            updateChildSelection(idx);
+        else
+            mCheckedFiles.insert(entry);
+        emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
     }
 }
 

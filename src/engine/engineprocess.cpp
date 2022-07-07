@@ -932,9 +932,8 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
             continue;
 
         bool writeBack = false;
-        if (line.endsWith(" >wb") || line.endsWith(" > wb")) {
-            int cut = line.endsWith(" >wb") ? 4 : 5;
-            line = line.left(line.length() - cut);
+        if (line.endsWith(" <")) {
+            line = line.left(line.length() - 1).trimmed();
             writeBack = true;
         }
         QFileInfo fi(line);
