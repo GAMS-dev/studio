@@ -159,8 +159,6 @@ SOURCES += \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
-    filesystemmodel.cpp \
-    filesystemwidget.cpp \
     filterlineedit.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
@@ -193,6 +191,7 @@ SOURCES += \
     maintabcontextmenu.cpp \
     mainwindow.cpp \
     miro/abstractmiroprocess.cpp \
+    miro/filesystemmodel.cpp \
     miro/mirocommon.cpp \
     miro/mirodeploydialog.cpp \
     miro/mirodeployprocess.cpp \
@@ -384,8 +383,6 @@ HEADERS += \
     file/recentdata.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
-    filesystemmodel.h \
-    filesystemwidget.h \
     filterlineedit.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
@@ -417,6 +414,7 @@ HEADERS += \
     maintabcontextmenu.h \
     mainwindow.h \
     miro/abstractmiroprocess.h \
+    miro/filesystemmodel.h \
     miro/mirocommon.h \
     miro/mirodeploydialog.h \
     miro/mirodeployprocess.h \
@@ -527,7 +525,6 @@ FORMS += \
     engine/enginestartdialog.ui \
     file/pathrequest.ui \
     file/projectoptions.ui \
-    filesystemwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
     gdxviewer/gdxsymbolview.ui \

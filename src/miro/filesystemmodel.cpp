@@ -18,23 +18,19 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "filesystemmodel.h"
-#include "logger.h"
-#include "theme.h"
 
 namespace gams {
 namespace studio {
-namespace fs {
+namespace miro {
 
 FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
     : QSortFilterProxyModel(parent)
-{}
-
-bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
 {
-    return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));
+
 }
 
-bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
+bool FilteredFileSystemModel::filterAcceptsColumn(int source_column,
+                                                  const QModelIndex &source_parent) const
 {
     Q_UNUSED(source_parent)
     return source_column == 0;
@@ -43,7 +39,8 @@ bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QMode
 FileSystemModel::FileSystemModel(QObject *parent)
     : QFileSystemModel(parent)
 {
-    connect(this, &QFileSystemModel::directoryLoaded, this, &FileSystemModel::newDirectoryData);
+    connect(this, &QFileSystemModel::directoryLoaded,
+            this, &FileSystemModel::newDirectoryData);
 }
 
 QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
@@ -65,10 +62,6 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
         } else {
             return Qt::Unchecked;
         }
-    } else if (role == WriteBackRole) {
-        auto path = rootDirectory().relativeFilePath(filePath(idx));
-        if (mWriteBack.contains(path))
-            return mWriteBack.value(path);
     }
     return QFileSystemModel::data(idx, role);
 }
@@ -92,14 +85,7 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
         return true;
     }
-
-    if (role == WriteBackRole && idx.column() == 0) {
-        auto file = rootDirectory().relativeFilePath(filePath(idx));
-        mWriteBack.insert(file, value.toBool());
-        emit dataChanged(idx, idx, QVector<int>() << WriteBackRole);
-        return true;
-    }
-    return QFileSystemModel::setData(idx, value, role);
+    return  QFileSystemModel::setData(idx, value, role);
 }
 
 Qt::ItemFlags FileSystemModel::flags(const QModelIndex &index) const
@@ -111,13 +97,8 @@ void FileSystemModel::selectAll()
 {
     auto entries = rootDirectory().entryList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     for (auto entry: entries) {
-        QFileInfo fi = rootDirectory().absoluteFilePath(entry);
-        QModelIndex idx = index(fi.filePath());
-        if (isDir(idx))
-            updateChildSelection(idx);
-        else
-            mCheckedFiles.insert(entry);
-        emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        auto idx = index(rootDirectory().absoluteFilePath(entry));
+        setData(idx, true, Qt::CheckStateRole);
     }
 }
 
@@ -135,7 +116,7 @@ QStringList FileSystemModel::selectedFiles()
         QFileInfo fileInfo(rootDirectory(), file);
         if (fileInfo.isFile()) {
             selection << file;
-        } else if (fileInfo.isDir()) {
+        } else if (fileInfo.isDir()){
             QDir dir(rootDirectory().absoluteFilePath(file));
             if (dir.isEmpty())
                 selection << file;
@@ -155,9 +136,9 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
 
 void FileSystemModel::newDirectoryData(const QString &path)
 {
-    QModelIndex idx = index(path);
-    if (idx.isValid())
-        updateChildDirInfo(idx);
+    auto checked = rootDirectory().relativeFilePath(path);
+    if (mCheckedFiles.contains(checked))
+        setData(index(path), true, Qt::CheckStateRole);
 }
 
 int FileSystemModel::checkedChilds(const QString &path) const
@@ -181,7 +162,7 @@ int FileSystemModel::checkedChilds(const QString &path) const
 int FileSystemModel::directroyCheckState(const QString &path) const
 {
     if (!mDirChilds.contains(path))
-        return mCheckedFiles.contains(path) ? 2 : 0;
+        return 0;
 
     int childs = mDirChilds[path];
     int checked = checkedChilds(path);
@@ -213,15 +194,6 @@ void FileSystemModel::updateChildDirInfo(const QModelIndex &idx)
         fetchMore(idx);
     auto path = subPath(idx);
     mDirChilds[path] = rowCount(idx);
-    if (mCheckedFiles.contains(path)) {
-        for (int row = 0; row < rowCount(idx); ++row) {
-            QModelIndex cIdx = index(row, 0, idx);
-            mCheckedFiles << subPath(cIdx);
-            if (isDir(cIdx))
-                updateChildDirInfo(cIdx);
-            emit dataChanged(cIdx, cIdx, QVector<int>() << Qt::CheckStateRole);
-        }
-    }
 }
 
 void FileSystemModel::updateParentDirInfo(const QModelIndex &parent)

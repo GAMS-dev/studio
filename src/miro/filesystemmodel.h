@@ -27,18 +27,14 @@
 
 namespace gams {
 namespace studio {
-namespace fs {
-
-enum FileSystemRole {
-    WriteBackRole = Qt::UserRole + 5
-};
+namespace miro {
 
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
     Q_OBJECT
+
 public:
     FilteredFileSystemModel(QObject *parent = nullptr);
-    bool isDir(const QModelIndex &index) const;
 
 protected:
     bool filterAcceptsColumn(int source_column,
@@ -48,11 +44,13 @@ protected:
 class FileSystemModel : public QFileSystemModel
 {
     Q_OBJECT
+
 public:
     FileSystemModel(QObject *parent = nullptr);
 
     QVariant data(const QModelIndex &idx, int role = Qt::DisplayRole) const override;
-    bool setData(const QModelIndex &idx, const QVariant &value, int role = Qt::EditRole) override;
+    bool setData(const QModelIndex &idx, const QVariant &value,
+                 int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
     void selectAll();
@@ -77,7 +75,6 @@ private:
 
 private:
     QMap<QString,int> mDirChilds;
-    QMap<QString,int> mWriteBack;
     QSet<QString> mCheckedFiles;
 };
 
