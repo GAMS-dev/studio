@@ -144,8 +144,9 @@ private:
     QString mHost;
     QString mNamespace;
     QString mAuthToken;
-    QString mOutPath;
     QString mWorkPath;
+    QString mOutPath;
+    QString mModelName;
     QString mEngineVersion;
     QString mGamsVersion;
     bool mInKubernetes = false;
