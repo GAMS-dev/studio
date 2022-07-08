@@ -366,10 +366,9 @@ void FileMetaRepo::checkMissing()
     }
 }
 
-void FileMetaRepo::fontChanged(FileMeta *fileMeta, QFont f)
+void FileMetaRepo::fontChangeRequest(FileMeta *fileMeta, QFont f)
 {
-    if (fileMeta->fontGroup() != FontGroup::fgText) return;
-    emit setGroupFontSize(fileMeta->fontGroup(), f.pointSize());
+    emit setGroupFontSize(fileMeta->fontGroup(), f.pointSizeF());
 }
 
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
@@ -389,7 +388,7 @@ FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownTy
     if (!res) {
         res = new FileMeta(this, mNextFileId++, location, knownType);
         connect(res, &FileMeta::editableFileSizeCheck, this, &FileMetaRepo::editableFileSizeCheck);
-        connect(res, &FileMeta::fontChanged, this, &FileMetaRepo::fontChanged);
+        connect(res, &FileMeta::fontChangeRequest, this, &FileMetaRepo::fontChangeRequest);
         addFileMeta(res);
         if (mAutoReloadLater.contains(location)) {
             mAutoReloadLater.removeAll(location);

@@ -368,7 +368,7 @@ void SymbolTableModel::toggleSearchColumns(bool checked)
     emit symbolSelectionToBeUpdated();
 }
 
-void SymbolTableModel::setFilterPattern(const QString &pattern)
+void SymbolTableModel::setFilterPattern(const QRegExp &pattern)
 {
     mFilteredPattern = pattern;
     filterRows();
@@ -533,17 +533,15 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
     }
 }
 
-bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QString &pattern)
+bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QRegExp &regExp)
 {
-    QRegExp rx(pattern);
-    rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (mType == SymbolDataType::SymbolType::FileUsed) {
         return false;
     } else {
         ColumnType type = getColumnTypeOf(column);
         switch(type) {
-        case columnId: return (rx.indexIn(QString::number( item->id() )) <= -1);
-        case columnName: return (rx.indexIn(item->name()) <= -1);
+        case columnId: return (regExp.indexIn(QString::number(item->id())) < 0);
+        case columnName: return (regExp.indexIn(item->name()) < 0);
         default: // search every column
             QStringList strList = {
                 QString::number( item->id() ),
@@ -553,17 +551,17 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
                 getDomainStr( item->domain() ),
                 item->explanatoryText()
             };
-            return (rx.indexIn(strList.join(" ")) <= -1);
+            for (const QString &val: strList)
+                if (regExp.indexIn(val) >= 0) return false;
+            return true;
         }
     }
 }
 
-bool SymbolTableModel::isLocationFilteredActive(int idx, const QString &pattern)
+bool SymbolTableModel::isLocationFilteredActive(int idx, const QRegExp &regExp)
 {
-    QRegExp rx(pattern);
-    rx.setCaseSensitivity(Qt::CaseInsensitive);
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        return (rx.indexIn( mReference->getFileUsed().at(idx)) <= -1);
+        return (regExp.indexIn(mReference->getFileUsed().at(idx)) < 0);
     } else {
         return false;
     }
@@ -676,7 +674,7 @@ void SymbolTableModel::resetSizeAndIndices()
     }
 
     mFilteredRecordSize = size;
-    mFilteredPattern = "";
+    mFilteredPattern = QRegExp();
 }
 
 } // namespace reference

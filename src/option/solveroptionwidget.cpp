@@ -42,7 +42,7 @@ namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
                                        FileId id, QTextCodec* codec, QWidget *parent) :
-          QWidget(parent),
+          AbstractView(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
           mLocation(optionFilePath),
@@ -115,6 +115,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     }
     ui->solverOptionTableView->horizontalHeader()->setStretchLastSection(true);
     ui->solverOptionTableView->horizontalHeader()->setHighlightSections(false);
+    headerRegister(ui->solverOptionTableView->horizontalHeader());
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
@@ -168,6 +169,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     if (!mOptionTokenizer->getOption()->isSynonymDefined())
         ui->solverOptionTreeView->setColumnHidden( 1, true);
     ui->solverOptionTreeView->setColumnHidden(OptionDefinitionModel::COLUMN_ENTRY_NUMBER, true);
+    headerRegister(ui->solverOptionTreeView->header());
 
     ui->solverOptionHSplitter->setSizes(QList<int>({25, 75}));
     ui->solverOptionVSplitter->setSizes(QList<int>({75, 25}));
@@ -198,8 +200,9 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu, Qt::UniqueConnection);
         connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 
-        connect(ui->solverOptionSearch, &QLineEdit::textChanged,
-                proxymodel, static_cast<void(QSortFilterProxyModel::*)(const QString &)>(&QSortFilterProxyModel::setFilterRegExp), Qt::UniqueConnection);
+        connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, [this, proxymodel]() {
+            proxymodel->setFilterRegExp(ui->solverOptionSearch->regExp());
+        });
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
         connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);

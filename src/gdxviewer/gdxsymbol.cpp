@@ -19,7 +19,7 @@
  */
 #include "gdxsymbol.h"
 #include "exception.h"
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 #include "nestedheaderview.h"
 #include "columnfilter.h"
 #include "valuefilter.h"
@@ -57,7 +57,7 @@ const QList<QString> GdxSymbol::superScript = QList<QString>({
                                          QString(u8"\u00B2\u2070"),
                                      });
 
-GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTable* gdxSymbolTable, QObject *parent)
+GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
 {
     loadMetaData();
@@ -341,7 +341,7 @@ void GdxSymbol::calcUelsInColumn()
     }
 }
 
-GdxSymbolTable *GdxSymbol::gdxSymbolTable() const
+GdxSymbolTableModel *GdxSymbol::gdxSymbolTable() const
 {
     return mGdxSymbolTable;
 }
@@ -434,6 +434,11 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
         }
     }
+}
+
+int GdxSymbol::numericalColumnCount() const
+{
+    return mNumericalColumnCount;
 }
 
 bool GdxSymbol::hasInvalidUel() const

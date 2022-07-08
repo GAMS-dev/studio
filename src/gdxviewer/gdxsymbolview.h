@@ -27,7 +27,8 @@
 #include <QCheckBox>
 #include <QSpinBox>
 #include <QComboBox>
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
+#include "gdxsymbolviewstate.h"
 #include "tableviewdomainmodel.h"
 #include "tableviewmodel.h"
 
@@ -40,6 +41,7 @@ class GdxSymbolView;
 }
 
 class GdxSymbol;
+class NestedHeaderView;
 
 class GdxSymbolView : public QWidget
 {
@@ -47,13 +49,20 @@ class GdxSymbolView : public QWidget
 
 public:
     explicit GdxSymbolView(QWidget *parent = nullptr);
-    ~GdxSymbolView();
+    ~GdxSymbolView() override;
 
+    QVector<QStringList> pendingUncheckedLabels() const;
     GdxSymbol *sym() const;
-    void setSym(GdxSymbol *sym, GdxSymbolTable* symbolTable);
+    void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
+    void applyState(GdxSymbolViewState* symViewState);
+    void applyFilters(GdxSymbolViewState* symViewState);
+    void saveState(GdxSymbolViewState* symViewState);
+    void saveFilters(GdxSymbolViewState* symViewState);
+    bool eventFilter(QObject *watched, QEvent *event) override;
+    QList<QHeaderView*> headers();
 
 public slots:
     void enableControls();
@@ -62,8 +71,11 @@ public slots:
     void showFilter(QPoint p);
     void freeFilterMenu();
     void autoResizeColumns();
-    void autoResizeTableViewColumns();
+    void autoResizeTableViewColumns(bool force=false);
     void adjustDomainScrollbar();
+
+protected:
+    bool event(QEvent *event) override;
 
 private slots:
     void showContextMenu(QPoint p);
@@ -84,27 +96,31 @@ private:
     QMenu *mColumnFilterMenu = nullptr;
 
     void showListView();
-    void showTableView();
-    void showDefaultView();
+    void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());
+    void initTableViewModel(int colDim, QVector<int> tvDimOrder);
+    void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
 
     void selectAll();
     void resetValFormat();
+    void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
+    void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
 
     QVector<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;
     QCheckBox* mSqZeroes = nullptr;
     QSpinBox* mPrecision = nullptr;
     QComboBox* mValFormat = nullptr;
+    QWidget *mPreferencesWidget = nullptr;
+    QWidget *mVisibleValColWidget = nullptr;
+    GdxSymbolTableModel* mGdxSymbolTable = nullptr;
 
-    GdxSymbolTable* mGdxSymbolTable = nullptr;
     bool mTableView = false;
-
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
 
     int mDefaultPrecision = 6;
-    bool mRestoreSqZeros = false;
+    bool mRestoreSqZeroes = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
 
     int mTvFilterSection=0;
@@ -116,9 +132,10 @@ private:
 
     DefaultSymbolView mDefaultSymbolView;
 
-    // QObject interface
-public:
-    bool eventFilter(QObject *watched, QEvent *event);
+    // in case of unchecked filter labels in a restored state that could not be applied because the labels have been removed
+    // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
+    // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
+    QVector<QStringList> mPendingUncheckedLabels;
 };
 
 

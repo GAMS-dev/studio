@@ -90,7 +90,7 @@ QVariant SearchResultModel::headerData(int section, Qt::Orientation orientation,
             case 0:
                 return QString("Filename");
             case 1:
-                return QString("LineNr");
+                return QString("Line");
             case 2:
                 return QString("Context");
             }

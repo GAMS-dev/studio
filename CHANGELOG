@@ -1,3 +1,16 @@
+Version 1.11.0
+==================
+- added HTML format on copying text to clipboard
+- added invert selection for GDX column filter and for the GDX attributes
+- added Open Folder to add all files in a folder to Studio
+- added zoom for editors/viewers with proportional fonts (GDX-viewer and option-editor)
+- fixed auto resize of columns not triggered for 1-dimensional symbols in case of table view being selected as default view in GDX Viewer
+- improved trimming behavior of search results
+- improved and unified filter line edits for tables and trees to support regular expressions and exact matches
+- adjusted wording in search results table header
+- moved resulting files from an GAMS Engine run to the working directory
+- GDX Viewer saves/restores its state(e.g. filters, sorting, ...) when data has to be reloaded from file
+
 Version 1.10.5
 ==================
 - fixed bug in search that allowed opening files without a group

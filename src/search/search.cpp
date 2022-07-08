@@ -198,7 +198,7 @@ void Search::findInDoc(FileMeta* fm)
         if (!item.isNull()) {
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                    item.selectedText().length(), fm->location(),
-                                   ViewHelper::groupId(mSearchDialog->currentEditor()), item.block().text().trimmed()));
+                                   ViewHelper::groupId(mSearchDialog->currentEditor()), item.block().text()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());

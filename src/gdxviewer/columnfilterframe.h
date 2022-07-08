@@ -45,6 +45,7 @@ protected:
 private slots:
     void apply();
     void selectAll();
+    void invert();
     void deselectAll();
     void filterLabels();
     void toggleHideUnselected(bool checked);

@@ -72,6 +72,7 @@ DEFINES += QT_DEPRECATED_WARNINGS
 #DEFINES += QT_DISABLE_DEPRECATED_BEFORE=0x060000    # disables all the APIs deprecated before Qt 6.0.0
 
 SOURCES += \
+    abstractview.cpp \
     application.cpp \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
@@ -158,6 +159,7 @@ SOURCES += \
     file/recentdata.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
+    filterlineedit.cpp \
     gdxdiffdialog/filepathlineedit.cpp \
     gdxdiffdialog/gdxdiffdialog.cpp \
     gdxdiffdialog/gdxdiffprocess.cpp \
@@ -166,9 +168,11 @@ SOURCES += \
     gdxviewer/filteruelmodel.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
-    gdxviewer/gdxsymboltable.cpp \
+    gdxviewer/gdxsymboltablemodel.cpp \
     gdxviewer/gdxsymbolview.cpp \
+    gdxviewer/gdxsymbolviewstate.cpp \
     gdxviewer/gdxviewer.cpp \
+    gdxviewer/gdxviewerstate.cpp \
     gdxviewer/nestedheaderview.cpp \
     gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
@@ -254,6 +258,7 @@ SOURCES += \
     search/searchfilehandler.cpp \
     search/searchlocator.cpp \
     search/searchresultmodel.cpp \
+    search/searchresultviewitemdelegate.cpp \
     search/searchworker.cpp \
     settings.cpp \
     settingsdialog.cpp \
@@ -268,6 +273,7 @@ SOURCES += \
     svgengine.cpp \
     syntax/basehighlighter.cpp \
     syntax/blockdata.cpp \
+    syntax/htmlconverter.cpp \
     syntax/syntaxdeclaration.cpp \
     syntax/syntaxformats.cpp \
     syntax/syntaxhighlighter.cpp \
@@ -285,6 +291,7 @@ SOURCES += \
     wplabel.cpp
 
 HEADERS += \
+    abstractview.h \
     application.h \
     autosavehandler.h \
     colors/palettemanager.h \
@@ -376,6 +383,7 @@ HEADERS += \
     file/recentdata.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
+    filterlineedit.h \
     gdxdiffdialog/filepathlineedit.h \
     gdxdiffdialog/gdxdiffdialog.h \
     gdxdiffdialog/gdxdiffprocess.h \
@@ -384,9 +392,11 @@ HEADERS += \
     gdxviewer/filteruelmodel.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymbolheaderview.h \
-    gdxviewer/gdxsymboltable.h \
+    gdxviewer/gdxsymboltablemodel.h \
     gdxviewer/gdxsymbolview.h \
+    gdxviewer/gdxsymbolviewstate.h \
     gdxviewer/gdxviewer.h \
+    gdxviewer/gdxviewerstate.h \
     gdxviewer/nestedheaderview.h \
     gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
@@ -473,6 +483,7 @@ HEADERS += \
     search/searchfilehandler.h \
     search/searchlocator.h \
     search/searchresultmodel.h \
+    search/searchresultviewitemdelegate.h \
     search/searchworker.h \
     settings.h \
     settingsdialog.h \
@@ -489,6 +500,7 @@ HEADERS += \
     syntax/basehighlighter.h \
     syntax/blockcode.h \
     syntax/blockdata.h \
+    syntax/htmlconverter.h \
     syntax/syntaxcommon.h \
     syntax/syntaxdeclaration.h \
     syntax/syntaxformats.h \

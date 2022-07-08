@@ -392,7 +392,7 @@ void AbstractEdit::findInSelection(QList<Result> &results) {
         if (!item.isNull() && item.position() <= endPos) {
             results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                           item.selectedText().length(), property("location").toString(),
-                                          groupId(), item.block().text().trimmed()));
+                                          groupId(), item.block().text()));
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
@@ -602,6 +602,18 @@ void AbstractEdit::mouseReleaseEvent(QMouseEvent *e)
     bool validLink = (type() != CodeEditor || e->pos().x() < 0 || e->modifiers() & Qt::ControlModifier) && validClick;
     setLinkClickPos(QPoint());
     if (validLink) jumpToCurrentLink(e->pos());
+}
+
+void AbstractEdit::wheelEvent(QWheelEvent *e)
+{
+    if (e->modifiers() & Qt::ControlModifier) {
+        const int delta = e->angleDelta().y();
+        if (delta)
+            emit zoomRequest(delta / qAbs(delta));
+        e->accept();
+        return;
+    }
+    QPlainTextEdit::wheelEvent(e);
 }
 
 void AbstractEdit::marksChanged(const QSet<int> dirtyLines)

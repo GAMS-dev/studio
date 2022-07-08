@@ -731,15 +731,17 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project = aNode->assignedProject();
     } else {
         QFileInfo firstFile(files.first());
-        project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
+        project = createProject(firstFile.completeBaseName(), firstFile.absolutePath(), files.first());
     }
-    if (!project) return;
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
     QList<NodeId> newIds;
     for (const QString &item: qAsConst(files)) {
-        if (QFileInfo::exists(item)) {
+        QFileInfo f(item);
+        QDir d(item);
+
+        if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 emit openProject(item);
                 continue;
@@ -748,6 +750,8 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             if (knownIds.contains(file->id())) knownIds.removeAll(file->id());
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
+        } else if (d.exists()) {
+            emit openFolder(item, project);
         } else {
             filesNotFound << item;
         }

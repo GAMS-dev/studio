@@ -50,7 +50,7 @@ bool AddOptionHeaderView::event(QEvent *event)
 
         return true;
     }
-    return QWidget::event(event);
+    return QHeaderView::event(event);
 }
 
 void AddOptionHeaderView::mousePressEvent(QMouseEvent* event)

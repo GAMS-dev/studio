@@ -109,6 +109,7 @@
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenAlternative"/>
+    <addaction name="actionOpen_Folder"/>
     <addaction name="separator"/>
     <addaction name="actionRestore_Recently_Closed_Tab"/>
     <addaction name="separator"/>
@@ -1546,6 +1547,14 @@
    <property name="toolTip">
     <string>Pin edit below
 (Shift+Ctrl+Click on a tab)</string>
+   </property>
+  </action>
+  <action name="actionOpen_Folder">
+   <property name="text">
+    <string>Open Folder</string>
+   </property>
+   <property name="toolTip">
+    <string>Opens and adds a folder to Studio</string>
    </property>
   </action>
  </widget>

@@ -44,6 +44,8 @@ public:
     void setParentGroup(NodeId parent);
 
 private:
+    static const int MAX_CONTEXT_LENGTH = 60;
+
     int mLineNr;
     int mColNr;
     int mLength;

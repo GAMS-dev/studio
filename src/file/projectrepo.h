@@ -140,6 +140,7 @@ signals:
     void openProject(const QString &gspFile);
     void openFile(FileMeta* fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFolder(QString path, PExProjectNode* project);
     void changed();
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);

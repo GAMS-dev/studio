@@ -27,6 +27,7 @@
 #include <QTabWidget>
 #include "common.h"
 #include "reference.h"
+#include "abstractview.h"
 
 namespace Ui {
 class ReferenceViewer;
@@ -38,7 +39,7 @@ namespace reference {
 
 class Reference;
 class ReferenceTabStyle;
-class ReferenceViewer : public QWidget
+class ReferenceViewer : public AbstractView
 {
     Q_OBJECT
 
@@ -58,9 +59,7 @@ public slots:
 
 private:
     Ui::ReferenceViewer *ui;
-
     QTextCodec *mCodec;
-
     QScopedPointer<Reference> mReference;
     QScopedPointer<ReferenceTabStyle> mRefTabStyle;
 };

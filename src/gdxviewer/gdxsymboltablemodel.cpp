@@ -17,7 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 #include "gdxsymbol.h"
 #include "exception.h"
 
@@ -28,7 +28,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent)
+GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mCodec(codec)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
@@ -46,13 +46,15 @@ GdxSymbolTable::GdxSymbolTable(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* co
     loadGDXSymbols();
 }
 
-GdxSymbolTable::~GdxSymbolTable()
+GdxSymbolTableModel::~GdxSymbolTableModel()
 {
-    for(auto gdxSymbol : mGdxSymbols)
+    for(auto gdxSymbol : mGdxSymbols) {
+        mGdxSymbolByName.remove(gdxSymbol->name());
         delete gdxSymbol;
+    }
 }
 
-QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, int role) const
+QVariant GdxSymbolTableModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
     if (role == Qt::DisplayRole) {
         if (orientation == Qt::Horizontal)
@@ -68,21 +70,21 @@ QVariant GdxSymbolTable::headerData(int section, Qt::Orientation orientation, in
     return QVariant();
 }
 
-int GdxSymbolTable::rowCount(const QModelIndex &parent) const
+int GdxSymbolTableModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mGdxSymbols.size();
 }
 
-int GdxSymbolTable::columnCount(const QModelIndex &parent) const
+int GdxSymbolTableModel::columnCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
     return mHeaderText.size();
 }
 
-QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
+QVariant GdxSymbolTableModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
@@ -115,15 +117,18 @@ QVariant GdxSymbolTable::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-void GdxSymbolTable::loadGDXSymbols()
+void GdxSymbolTableModel::loadGDXSymbols()
 {
     QMutexLocker locker(mGdxMutex);
-    for(int i=0; i<mSymbolCount+1; i++)
-        mGdxSymbols.append(new GdxSymbol(mGdx, mGdxMutex, i, this));
+    for(int i=0; i<mSymbolCount+1; i++) {
+        GdxSymbol* sym = new GdxSymbol(mGdx, mGdxMutex, i, this);
+        mGdxSymbols.append(sym);
+        mGdxSymbolByName[sym->name()] = sym;
+    }
     locker.unlock();
 }
 
-void GdxSymbolTable::createSortIndex()
+void GdxSymbolTableModel::createSortIndex()
 {
     QList<QPair<QString, int>> l;
     for(int uel=0; uel<=mUelCount; uel++)
@@ -138,12 +143,27 @@ void GdxSymbolTable::createSortIndex()
     }
 }
 
-int GdxSymbolTable::symbolCount() const
+int GdxSymbolTableModel::getUelCount() const
+{
+    return mUelCount;
+}
+
+int GdxSymbolTableModel::label2Uel(QString label)
+{
+    int uelNr = -1;
+    int uelMap = -1;
+    if (gdxUMFindUEL(mGdx, label.toLocal8Bit(), &uelNr, &uelMap))
+        return uelNr;
+    else
+        return -1;
+}
+
+int GdxSymbolTableModel::symbolCount() const
 {
     return mSymbolCount;
 }
 
-QString GdxSymbolTable::getElementText(int textNr)
+QString GdxSymbolTableModel::getElementText(int textNr)
 {
     if (textNr <= 0)
         return QString("Y");
@@ -156,17 +176,18 @@ QString GdxSymbolTable::getElementText(int textNr)
     }
 }
 
-void GdxSymbolTable::loadUel2Label()
+void GdxSymbolTableModel::loadUel2Label()
 {
     char label[GMS_UEL_IDENT_SIZE];
     int map;
     for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
-        mUel2Label.append(mCodec->toUnicode(label));
+        QString l = mCodec->toUnicode(label);
+        mUel2Label.append(l);
     }
 }
 
-void GdxSymbolTable::loadStringPool()
+void GdxSymbolTableModel::loadStringPool()
 {
     mStrPool.append("Y");
     int strNr = 1;
@@ -179,17 +200,17 @@ void GdxSymbolTable::loadStringPool()
     }
 }
 
-void GdxSymbolTable::reportIoError(int errNr, QString message)
+void GdxSymbolTableModel::reportIoError(int errNr, QString message)
 {
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-QTextCodec *GdxSymbolTable::codec() const
+QTextCodec *GdxSymbolTableModel::codec() const
 {
     return mCodec;
 }
 
-std::vector<int> GdxSymbolTable::labelCompIdx()
+std::vector<int> GdxSymbolTableModel::labelCompIdx()
 {
     if (!mIsSortIndexCreated) {
         this->createSortIndex();
@@ -198,7 +219,7 @@ std::vector<int> GdxSymbolTable::labelCompIdx()
     return mLabelCompIdx;
 }
 
-QString GdxSymbolTable::uel2Label(int uel)
+QString GdxSymbolTableModel::uel2Label(int uel)
 {
     if (uel < 0 || uel >= mUel2Label.size()) {
         char label[GMS_UEL_IDENT_SIZE];
@@ -209,12 +230,20 @@ QString GdxSymbolTable::uel2Label(int uel)
     return this->mUel2Label.at(uel);
 }
 
-QList<GdxSymbol *> GdxSymbolTable::gdxSymbols() const
+QList<GdxSymbol *> GdxSymbolTableModel::gdxSymbols() const
 {
     return mGdxSymbols;
 }
 
-QString GdxSymbolTable::typeAsString(int type) const
+GdxSymbol *GdxSymbolTableModel::getSymbolByName(QString name) const
+{
+    if (mGdxSymbolByName.contains(name))
+        return mGdxSymbolByName[name];
+    else
+        return nullptr;
+}
+
+QString GdxSymbolTableModel::typeAsString(int type) const
 {
     switch(type) {
         case GMS_DT_SET: return "Set";

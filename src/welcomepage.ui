@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>1180</width>
-    <height>1114</height>
+    <height>571</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -120,16 +120,11 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="font">
-            <font>
-             <pointsize>16</pointsize>
-            </font>
-           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Last Files</string>
+            <string>&lt;h2&gt;Last Files&lt;/h2&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -168,8 +163,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>458</width>
-              <height>1009</height>
+              <width>479</width>
+              <height>478</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -233,16 +228,11 @@
          </property>
          <item>
           <widget class="QLabel" name="label_gettingstarted">
-           <property name="font">
-            <font>
-             <pointsize>16</pointsize>
-            </font>
-           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Getting Started</string>
+            <string>&lt;h2&gt;Getting Started&lt;/h2&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>
@@ -290,8 +280,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>457</width>
-              <height>1009</height>
+              <width>478</width>
+              <height>478</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -562,16 +552,11 @@
              <verstretch>0</verstretch>
             </sizepolicy>
            </property>
-           <property name="font">
-            <font>
-             <pointsize>16</pointsize>
-            </font>
-           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
            <property name="text">
-            <string>Further Help</string>
+            <string>&lt;h2&gt;Further Help&lt;/h2&gt;</string>
            </property>
            <property name="alignment">
             <set>Qt::AlignCenter</set>

@@ -198,6 +198,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
+    connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -289,7 +290,10 @@ MainWindow::MainWindow(QWidget *parent)
 
     mSyslog = new SystemLogEdit(this);
     ViewHelper::initEditorType(mSyslog, EditorType::syslog);
-    mSyslog->setFont(createEditorFont(fgLog));
+    mSyslog->setFont(getEditorFont(fgLog));
+    connect(mSyslog, &AbstractEdit::zoomRequest, this, [this](int delta) {
+        zoomWidget(mSyslog, delta);
+    });
     on_actionShow_System_Log_triggered();
 
     mNavigationHistory = new NavigationHistory(this);
@@ -401,14 +405,17 @@ void MainWindow::adjustFonts()
 {
     const qreal fontFactor = 0.95;
     const qreal fontFactorStatusbar = 0.85;
-
     QFont f(ui->menuBar->font());
+
     f.setPointSizeF(ui->menuBar->font().pointSizeF() * fontFactor);
+    mTableFontSizeDif = f.pointSizeF() - Settings::settings()->toInt(skEdFontSize);
     ui->centralWidget->setFont(f);
     ui->splitter->setFont(f);
     ui->dockProjectView->setFont(f);
     ui->dockProcessLog->setFont(f);
     ui->dockHelpView->setFont(f);
+    mGamsParameterEditor->dockChild()->setFont(f);
+
     f.setPointSizeF(f.pointSizeF() * fontFactorStatusbar);
     ui->statusBar->setFont(f);
 }
@@ -468,6 +475,9 @@ void MainWindow::initToolBar()
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
     ui->toolBar->insertWidget(ui->actionToggle_Extended_Parameter_Editor, mGamsParameterEditor);
     ui->toolBar->insertSeparator(ui->actionProject_View);
+    connect(mGamsParameterEditor->dockChild(), &AbstractView::zoomRequest, this, [this](int delta) {
+        zoomWidget(mGamsParameterEditor->dockChild(), delta);
+    });
 }
 
 void MainWindow::updateToolbar(QWidget* current)
@@ -1343,6 +1353,52 @@ void MainWindow::on_actionOpen_triggered()
 void MainWindow::on_actionOpenAlternative_triggered()
 {
     openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
+}
+
+void MainWindow::on_actionOpen_Folder_triggered()
+{
+    const QString folder = QFileDialog::getExistingDirectory(this, "Open Folder", currentPath(),
+                                                                QFileDialog::ShowDirsOnly);
+    openFolder(folder);
+}
+
+void MainWindow::openFolder(QString path, PExProjectNode *project)
+{
+    if (path.isEmpty()) return;
+
+    QDir dir(path);
+    QDirIterator dirIter(dir, QDirIterator::Subdirectories);
+
+    QSet<QString> allFiles;
+    while (dirIter.hasNext()) {
+        QFileInfo f(dirIter.next());
+
+        if (f.isFile())
+            allFiles.insert(f.absoluteFilePath());
+    }
+
+    if (allFiles.count() > 499) {
+        QMessageBox msgBox(this);
+        msgBox.setText("Warning");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(path + " contains " + QString::number(allFiles.count())
+                       + " files. Adding that many files can take a long time to complete.\n"
+                       + "Do you want to continue?");
+        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
+        msgBox.setDefaultButton(QMessageBox::No);
+
+        if (msgBox.exec() == QMessageBox::No) return; // abort
+    }
+
+    if (!project) {
+        if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
+            project = mRecent.project();
+        else
+            project = projectRepo()->createProject(dir.dirName(), path, "");
+    }
+
+    foreach(QString file, allFiles)
+        projectRepo()->findOrCreateFileNode(file, project);
 }
 
 void MainWindow::on_actionSave_triggered()
@@ -2884,8 +2940,9 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     if (e == Hotkey::Print)
         on_actionPrint_triggered();
 
-    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0))
-        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+    if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
+        updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+    }
 
     // escape is the close button for focussed widgets
     if (e->key() == Qt::Key_Escape) {
@@ -2968,7 +3025,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
 
 void MainWindow::dragEnterEvent(QDragEnterEvent* e)
 {
-    if (e->mimeData()->hasUrls() && FileMeta::hasExistingFile(e->mimeData()->urls())) {
+    if (e->mimeData()->hasUrls() && (FileMeta::hasExistingFile(e->mimeData()->urls())
+                                    || FileMeta::hasExistingFolder(e->mimeData()->urls()))) {
         e->setDropAction(Qt::CopyAction);
         e->accept();
     } else {
@@ -2989,7 +3047,7 @@ void MainWindow::dropEvent(QDropEvent* e)
         activateWindow();
         QMessageBox msgBox;
         msgBox.setText("You are trying to open " + QString::number(pathList.size()) +
-                       " files at once. Depending on the file sizes this may take a long time.");
+                       " files or folders at once. This may take a long time.");
         msgBox.setInformativeText("Do you want to continue?");
         msgBox.setStandardButtons(QMessageBox::Open | QMessageBox::Cancel);
         answer = msgBox.exec();
@@ -3138,25 +3196,26 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
 
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
-    QFileInfo firstFile(files.first());
 
     // create project
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
-    PExProjectNode *curProject = mRecent.project();
-    PExProjectNode *project = (opt == ogCurrentGroup) ? curProject : nullptr;
+    PExProjectNode *project = (opt == ogCurrentGroup) ? mRecent.project() : nullptr;
     for (const QString &item: files) {
-        if (QFileInfo::exists(item)) {
+        QDir d(item);
+        QFileInfo f(item);
+
+        if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
                 openProject(item);
             } else {
-                if (!project)
-                    project = mProjectRepo.createProject(firstFile.completeBaseName(), firstFile.absolutePath(), "");
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
             QApplication::processEvents(QEventLoop::AllEvents, 1);
+        } else if (d.exists()) {
+            openFolder(item, project);
         } else {
             filesNotFound.append(item);
         }
@@ -3214,11 +3273,6 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     } else {
         dw->hide();
     }
-}
-
-option::ParameterEditor *MainWindow::gamsParameterEditor() const
-{
-    return mGamsParameterEditor;
 }
 
 void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process)
@@ -3299,7 +3353,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     if (!logNode->file()->isOpen()) {
         QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
         logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-        wid->setFont(createEditorFont(fgLog));
+        wid->setFont(getEditorFont(fgLog));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
@@ -3688,6 +3742,26 @@ void MainWindow::showEngineStartDialog()
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
         updateAndSaveSettings();
     });
+    connect(proc, &engine::EngineProcess::releaseGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->invalidate();
+                }
+            }
+        }
+    });
+    connect(proc, &engine::EngineProcess::reloadGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->reload(fm->codec());
+                }
+            }
+        }
+    });
 
     dialog->setModal(true);
     dialog->setProcess(proc);
@@ -3779,7 +3853,7 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
         if (!logNode->file()->isOpen()) {
             QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
             logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-            wid->setFont(createEditorFont(fgLog));
+            wid->setFont(getEditorFont(fgLog));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
                                                                           : AbstractEdit::NoWrap);
@@ -3919,6 +3993,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
             fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
+            QTimer::singleShot(0, this, [this, edit, fileMeta](){
+                edit->setFont(getEditorFont(fileMeta->fontGroup()));
+            });
+
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -3965,20 +4043,17 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         ce->addAction(ui->actionRun);
     }
     if (TextView *tv = ViewHelper::toTextView(edit)) {
-        tv->setFont(createEditorFont(fgText));
         connect(tv, &TextView::searchFindNextPressed, mSearchDialog, &search::SearchDialog::on_searchNext);
         connect(tv, &TextView::searchFindPrevPressed, mSearchDialog, &search::SearchDialog::on_searchPrev);
 
     }
     if (ViewHelper::toCodeEdit(edit)) {
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        ae->setFont(createEditorFont(fgText));
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    }
-    if (fileMeta->kind() == FileKind::Ref) {
+    } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
     }
@@ -4210,7 +4285,7 @@ void MainWindow::on_actionSettings_triggered()
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);
         });
-        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFixedFonts);
+        connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
         connect(mSettingsDialog, &SettingsDialog::editorTabSizeChanged, this, &MainWindow::updateTabSize);
         connect(mSettingsDialog, &SettingsDialog::reactivateEngineDialog, this, [this]() {
@@ -4358,7 +4433,7 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     closePinView();
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
-    newWid->setFont(createEditorFont(fm->fontGroup()));
+    newWid->setFont(getEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
     mPinView->setFontGroup(fm->fontGroup());
     mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
@@ -4372,33 +4447,39 @@ void MainWindow::invalidateResultsView()
     if (resultsView()) resultsView()->setOutdated();
 }
 
-void MainWindow::setGroupFontSize(FontGroup fontGroup, int fontSize, QString fontFamily)
+void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily)
 {
-    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
-        mGroupFontSize.insert(fontGroup, fontSize);
-        QFont f = createEditorFont(fontGroup, fontFamily, fontSize);
-        if (fontGroup == fgLog) {
-            for (QWidget* log: openLogs()) {
-                if (ViewHelper::toTextView(log))
-                    ViewHelper::toTextView(log)->edit()->setFont(f);
-                else
-                    log->setFont(f);
-            }
-            mSyslog->setFont(f);
-        } else {
-            for (QWidget* edit: openEditors()) {
-                if (fontGroup == fgText) {
-                    if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
-                        ae->setFont(f);
-                    } else if (TextView *tv = ViewHelper::toTextView(edit)) {
-                        tv->edit()->setFont(f);
-                    }
-                } else if (fontGroup == fgTable) {
-                    // TODO(JM) handle non-fixed fonts (GDX, REF, etc.)
+//    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
+    if (fontGroup == fgTable && mInitialTableFontSize < 0) {
+        mInitialTableFontSize = ui->centralWidget->font().pointSizeF();
+        if (fontSize < 0) fontSize = mInitialTableFontSize;
+    }
+    QFont f = getEditorFont(fontGroup, fontFamily, fontSize);
+    if (fontGroup == fgLog) {
+        for (QWidget* log: openLogs()) {
+            log->setFont(f);
+        }
+        mSyslog->setFont(f);
+    } else {
+        for (QWidget* edit: openEditors()) {
+            if (fontGroup == fgText) {
+                if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
+                    ae->setFont(f);
+                } else if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit)) {
+                    lxi->textView()->setFont(f);
+                } else if (TextView *tv = ViewHelper::toTextView(edit)) {
+                    tv->edit()->setFont(f);
                 }
+            } else if (fontGroup == fgTable) {
+                if (AbstractView *av = ViewHelper::toAbstractView(edit))
+                    av->setFont(f);
             }
         }
+        if (fontGroup == fgTable) {
+            mGamsParameterEditor->dockChild()->setFont(f);
+        }
     }
+//    }
 }
 
 void MainWindow::scrollSynchronize(QWidget *sendingEdit, int dx, int dy)
@@ -4440,10 +4521,12 @@ void MainWindow::extraSelectionsUpdated()
         tv->updateExtraSelections();
 }
 
-void MainWindow::updateFixedFonts(int fontSize, QString fontFamily)
+void MainWindow::updateFonts(qreal fontSize, QString fontFamily)
 {
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
+    setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
+    mWp->zoomReset();
 }
 
 void MainWindow::updateEditorLineWrapping()
@@ -4685,7 +4768,7 @@ void MainWindow::on_actionReset_Zoom_triggered()
 #endif
     {
         // reset all editors
-        updateFixedFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
+        updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
     }
 }
 
@@ -4717,21 +4800,34 @@ void MainWindow::on_actionZoom_In_triggered()
 
 void MainWindow::zoomWidget(QWidget *widget, int range)
 {
-    if (lxiviewer::LxiViewer *lv = ViewHelper::toLxiViewer(widget)) {
-        int pix = lv->fontInfo().pixelSize();
-        lv->textView()->zoomIn(range);
-        if (pix == lv->fontInfo().pixelSize() && lv->fontInfo().pointSize() > 1) lv->textView()->zoomIn(range);
-
-    } else if (TextView *tv = ViewHelper::toTextView(QApplication::focusWidget())) {
-        int pix = tv->fontInfo().pixelSize();
-        tv->zoomIn(range);
-        if (pix == tv->fontInfo().pixelSize() && tv->fontInfo().pointSize() > 1) tv->zoomIn(range);
-
-    } else if (AbstractEdit *ae = ViewHelper::toAbstractEdit(QApplication::focusWidget())) {
-        int pix = ae->fontInfo().pixelSize();
-        ae->zoomIn(range);
-        if (pix == ae->fontInfo().pixelSize() && ae->fontInfo().pointSize() > 1) ae->zoomIn(range);
+    FontGroup fg;
+    while (widget && !ViewHelper::toAbstractView(widget) && !ViewHelper::toLxiViewer(widget)
+           && !ViewHelper::toTextView(widget) && !ViewHelper::toAbstractEdit(widget)
+           && widget != mSyslog && widget != mWp && widget != centralWidget()
+           && widget != mGamsParameterEditor->dockChild())
+        widget = widget->parentWidget();
+    if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(widget))
+        widget = lxi;
+    if (widget == centralWidget()) {
+        if (ui->mainTabs->currentWidget() == mWp)
+            emit mWp->zoomRequest(range);
+        return;
     }
+    FileMeta *fm = mFileMetaRepo.fileMeta(widget);
+    if (fm)
+        fg = fm->fontGroup();
+    else if (widget == mSyslog)
+        fg = fgLog;
+    else if (widget == mGamsParameterEditor->dockChild())
+        fg = fgTable;
+    else if (widget == mWp) {
+        emit mWp->zoomRequest(range);
+        return;
+    } else
+        return;
+
+    qreal fontSize = widget->font().pointSizeF() + range;
+    setGroupFontSize(fg, fontSize);
 }
 
 void MainWindow::convertLowerUpper(bool toUpper)
@@ -5081,18 +5177,22 @@ void MainWindow::deleteScratchDirs(const QString &path)
     }
 }
 
-QFont MainWindow::createEditorFont(FontGroup fGroup, QString fontFamily, int pointSize)
+QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal pointSize)
 {
     if (fGroup == FontGroup::fgTable) {
         if (fontFamily.isEmpty()) fontFamily = font().family();
-        if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
-        return QFont(fontFamily, pointSize);
+        if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
+        if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize) + mTableFontSizeDif;
+    } else {
+        if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
+        if (pointSize < 0.01) pointSize = mGroupFontSize.value(fGroup);
+        if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     }
-    if (fontFamily.isEmpty()) fontFamily = Settings::settings()->toString(skEdFontFamily);
-    if (!pointSize) pointSize = mGroupFontSize.value(fGroup);
-    if (!pointSize) pointSize = Settings::settings()->toInt(skEdFontSize);
-    QFont font(fontFamily, pointSize);
-    font.setHintingPreference(QFont::PreferNoHinting);
+    QFont font(fontFamily);
+    font.setPointSizeF(pointSize);
+    if (fGroup != FontGroup::fgTable)
+        font.setHintingPreference(QFont::PreferNoHinting);
+    mGroupFontSize.insert(fGroup, pointSize);
     return font;
 }
 

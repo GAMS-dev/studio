@@ -20,7 +20,7 @@
 
 #include <QAbstractTableModel>
 #include "gdxsymbol.h"
-#include "gdxsymboltable.h"
+#include "gdxsymboltablemodel.h"
 
 namespace gams {
 namespace studio {
@@ -31,7 +31,7 @@ class TableViewModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, QObject *parent = nullptr);
+    explicit TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTable, QObject *parent = nullptr);
     ~TableViewModel();
 
     // Header:
@@ -84,7 +84,7 @@ private:
     void initTableView(int nrColDim, QVector<int> dimOrder);
 
     GdxSymbol* mSym;
-    GdxSymbolTable* mGdxSymbolTable;
+    GdxSymbolTableModel* mGdxSymbolTable;
 
     int mTvColDim;
     QVector<int> mTvDimOrder;

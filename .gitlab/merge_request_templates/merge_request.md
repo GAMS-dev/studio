@@ -13,5 +13,5 @@ Please test the MR on
 - [ ] Code
 - [ ] CHANGELOG
 - [ ] GAMS documentation
+- [ ] Profiling
 - [ ] Unit Tests
-- [ ] UI Tests

@@ -55,6 +55,9 @@
      <property name="textElideMode">
       <enum>Qt::ElideLeft</enum>
      </property>
+     <property name="horizontalScrollMode">
+      <enum>QAbstractItemView::ScrollPerPixel</enum>
+     </property>
      <property name="sortingEnabled">
       <bool>false</bool>
      </property>

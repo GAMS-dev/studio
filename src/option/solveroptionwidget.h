@@ -24,6 +24,7 @@
 #include <QWidget>
 #include <QStyledItemDelegate>
 
+#include "abstractview.h"
 #include "common.h"
 #include "optioncompleterdelegate.h"
 #include "solveroptiontablemodel.h"
@@ -41,14 +42,14 @@ class SolverOptionWidget;
 
 class OptionTokenizer;
 
-class SolverOptionWidget : public QWidget
+class SolverOptionWidget : public AbstractView
 {
     Q_OBJECT
 
 public:
     explicit SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
                                 FileId id, QTextCodec* mCodec, QWidget *parent = nullptr);
-    ~SolverOptionWidget();
+    ~SolverOptionWidget() override;
 
     FileId fileId() const;
 

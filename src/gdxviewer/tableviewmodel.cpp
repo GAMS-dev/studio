@@ -21,7 +21,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTable* gdxSymbolTable, QObject *parent)
+TableViewModel::TableViewModel(GdxSymbol* sym, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
     : QAbstractTableModel(parent), mSym(sym), mGdxSymbolTable(gdxSymbolTable)
 {
     mTvColDim = 1;

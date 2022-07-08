@@ -24,9 +24,16 @@ namespace studio {
 namespace search {
 
 Result::Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context) :
-    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mContext(context), mParent(parent)
+    mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mParent(parent)
 {
-    mContext.truncate(40);
+    int left = qMax(0, colNr - MAX_CONTEXT_LENGTH/2 + length/2);
+
+    mContext = context.mid(left, MAX_CONTEXT_LENGTH);
+    int lengthBeforeTrim = context.length();
+    mContext = mContext.trimmed();
+
+    if (left + MAX_CONTEXT_LENGTH < lengthBeforeTrim) mContext.append("...");
+    if (left > 0) mContext.prepend("...");
 }
 
 int Result::lineNr() const
