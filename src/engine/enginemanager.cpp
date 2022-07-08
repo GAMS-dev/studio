@@ -350,7 +350,6 @@ void EngineManager::listNamespaces()
 
 void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance)
 {
-    DEB() << "INSTANCE " << instance;
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
     model.setFileName(zipFile);

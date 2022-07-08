@@ -73,19 +73,17 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
         auto file = rootDirectory().relativeFilePath(filePath(idx));
         if (value.toBool()) {
             mCheckedFiles.insert(file);
-            emit dataChanged(idx, idx);
             if (isDir(idx))
                 updateChildSelection(idx);
             addParentSelection(idx.parent());
-            return true;
         } else {
             mCheckedFiles.erase(mCheckedFiles.find(file));
-            emit dataChanged(idx, idx);
             if (isDir(idx))
                 updateChildSelection(idx, true);
             removeParentSelection(idx.parent());
-            return true;
         }
+        emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        return true;
     }
     return  QFileSystemModel::setData(idx, value, role);
 }

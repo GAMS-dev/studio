@@ -89,6 +89,8 @@
         <file alias="minus">solid/minus.svg</file>
         <file alias="move-down">solid/move-down.svg</file>
         <file alias="move-up">solid/move-up.svg</file>
+        <file alias="out">solid/out.svg</file>
+        <file alias="out-in">solid/out-in.svg</file>
         <file alias="output">solid/comment-alt-lines.svg</file>
         <file alias="paste">solid/paste.svg</file>
         <file alias="pen">solid/pen-alt.svg</file>

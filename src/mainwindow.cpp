@@ -3742,6 +3742,26 @@ void MainWindow::showEngineStartDialog()
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
         updateAndSaveSettings();
     });
+    connect(proc, &engine::EngineProcess::releaseGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->invalidate();
+                }
+            }
+        }
+    });
+    connect(proc, &engine::EngineProcess::reloadGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->reload(fm->codec());
+                }
+            }
+        }
+    });
 
     dialog->setModal(true);
     dialog->setProcess(proc);

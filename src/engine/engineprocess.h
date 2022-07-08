@@ -21,9 +21,11 @@
 #include "process.h"
 #include <QTimer>
 #include <QElapsedTimer>
+#include <QFileInfo>
 
 class QNetworkReply;
 class QSslError;
+class QDir;
 
 namespace gams {
 namespace studio {
@@ -79,8 +81,6 @@ public:
     void setForceGdx(bool forceGdx);
     void abortRequests();
 
-
-
 signals:
     void authorized(const QString &token);
     void authorizeError(const QString &error);
@@ -98,6 +98,8 @@ signals:
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void sslSelfSigned(int sslError);
     void allPendingRequestsCompleted();
+    void releaseGdxFile(const QString &gdxFilePath);
+    void reloadGdxFile(const QString &gdxFilePath);
 
 protected slots:
     void completed(int exitCode) override;
@@ -132,15 +134,19 @@ private:
     void startPacking();
     void startPacking2();
     void startUnpacking();
+    void handleResultFiles();
+    void mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, bool inBase = false);
+    void moveFiles(const QDir &srcDir, const QDir &destDir, bool inBase = false);
     QString modelName() const;
     bool addFilenames(const QString &efiFile, QStringList &list);
 
     EngineManager *mManager;
     QString mHost;
-    QString mBasePath;
     QString mNamespace;
     QString mAuthToken;
+    QString mWorkPath;
     QString mOutPath;
+    QString mModelName;
     QString mEngineVersion;
     QString mGamsVersion;
     bool mInKubernetes = false;
@@ -152,6 +158,7 @@ private:
     bool mInParameterBlock = false;
     bool mStoredIgnoreSslState = false;
     QElapsedTimer mQueuedTimer;
+    QList<QFileInfo> mProtectedFiles;
 
     QString mJobNumber;
     QString mJobPassword;
