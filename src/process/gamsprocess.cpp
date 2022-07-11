@@ -81,7 +81,7 @@ QString GamsProcess::aboutGAMS()
 {
     QProcess process;
     QString tempDir = QStandardPaths::writableLocation(QStandardPaths::TempLocation);
-    QStringList args({"/??", "lo=3", "curdir=\"" + tempDir + "\""});
+    QStringList args({"/??", "lo=3", "procTreeMemMonitor=0", "curdir=\"" + tempDir + "\""});
     QString appPath = nativeAppPath();
     if (appPath.isEmpty())
         return QString();
