@@ -1,3 +1,7 @@
+Version 1.11.1  *
+==================
+- fixed parameter procTreeMemMonitor in GAMS configuration influences license dialog output
+
 Version 1.11.0
 ==================
 - added HTML format on copying text to clipboard
