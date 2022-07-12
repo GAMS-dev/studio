@@ -34,6 +34,7 @@
 #include "settings.h"
 #include <QFileInfo>
 #include <QDir>
+#include <QDesktopServices>
 
 namespace gams {
 namespace studio {
@@ -300,7 +301,7 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
 
 QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create)
 {
-    const QStringList tags {"LST","LS2","INC","LIB","SYS"};
+    const QStringList tags {"LST","LS2","INC","LIB","SYS","DIR"};
     QString res;
 
     bool exist = false;
@@ -348,6 +349,12 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
                         }
                     }
                 }
+
+            } else if (iCode == 5) { // DIR
+                QString path = parts.first().toString();
+                if (path.startsWith("\"") && path.endsWith("\""))
+                    path = path.mid(1, path.length()-2);
+                return path;
 
             } else if (iCode == 4) { // SYS
                 QString sysDir;
@@ -549,8 +556,11 @@ void PExProjectNode::jumpToHRef(const QString &href)
     PExFileNode *node;
     int line;
     int column;
-    resolveHRef(href, node, line, column, true);
+    QString file = resolveHRef(href, node, line, column, true);
     if (node) node->file()->jumpTo(node->projectId(), true, line-1, column);
+    else if (href.startsWith("DIR:")) {
+        QDesktopServices::openUrl(QUrl::fromLocalFile(file));
+    }
 }
 
 void PExProjectNode::createMarks(const LogParser::MarkData &marks)
