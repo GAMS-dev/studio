@@ -53,6 +53,7 @@ public:
                  int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
+    void parseFolders();
     void selectAll();
     void clearSelection();
     QStringList selectedFiles();
@@ -63,8 +64,8 @@ private slots:
 
 private:
     int checkedChilds(const QString &path) const;
-    int directroyCheckState(const QString &path) const;
-    int subdirectoryCheckState(const QString &path) const;
+    Qt::CheckState directroyCheckState(const QString &path) const;
+    Qt::CheckState subdirectoryCheckState(const QString &path) const;
     void updateChildDirInfo(const QModelIndex &idx);
     void updateParentDirInfo(const QModelIndex &parent);
     void updateChildSelection(const QModelIndex &idx, bool remove = false);
