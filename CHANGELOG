@@ -1,6 +1,7 @@
 Version 1.11.1  *
 ==================
 - fixed parameter procTreeMemMonitor in GAMS configuration influences license dialog output
+- added link to open the directory after a MIRO deployment
 
 Version 1.11.0
 ==================
