@@ -175,6 +175,7 @@ void MiroDeployDialog::setupViewModel()
         return;
 
     mFileSystemModel->setRootPath(mWorkingDirectory);
+    mFileSystemModel->parseFolders();
     auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
     ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
