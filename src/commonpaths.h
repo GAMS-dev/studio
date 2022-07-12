@@ -81,6 +81,8 @@ public:
     static void setGamsStandardPaths(QStringList gamsPaths, StandardPathType pathType);
     static QStringList gamsStandardPaths(StandardPathType pathType = StandardPathAll);
 
+    static QString gamsConnectSchemaDir();
+
     ///
     /// \brief Get the absolut file path.
     /// \param filePath File to get the absolute path for.
@@ -136,6 +138,7 @@ private:
     static const QString LicenseFile;
     static const QString UserLicensePath;
     static const QString GamsConfigPath;
+    static const QString GamsConnectSchemaDir;
 };
 
 }

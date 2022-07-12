@@ -79,6 +79,11 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     confirmdialog.cpp \
+    connect/connect.cpp \
+    connect/connectagent.cpp \
+    connect/connectdata.cpp \
+    connect/connecterror.cpp \
+    connect/connectschema.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codecompleter.cpp \
@@ -340,6 +345,11 @@ HEADERS += \
     common.h \
     commonpaths.h \
     confirmdialog.h \
+    connect/connect.h \
+    connect/connectagent.h \
+    connect/connectdata.h \
+    connect/connecterror.h \
+    connect/connectschema.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \

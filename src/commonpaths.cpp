@@ -36,9 +36,11 @@ namespace studio {
 #if defined(__APPLE__)
     const QString CommonPaths::DocumentationDir = "../../../Resources/docs";
     const QString CommonPaths::ModlibsPrefixPath = "../../../Resources/";
+    const QString CommonPaths::GamsConnectSchemaDir = "../../../Resources/apifiles/Python/gams/gams_connect/agents/schema";
 #else
     const QString CommonPaths::DocumentationDir = "docs";
     const QString CommonPaths::ModlibsPrefixPath = "";
+    const QString CommonPaths::GamsConnectSchemaDir = "apifiles/Python/gams/gams_connect/agents/schema";
 #endif
 
 QString CommonPaths::SystemDir = QString();
@@ -186,6 +188,11 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
             if (!res.contains(path)) res << path;
         return res; }
     }
+}
+
+QString CommonPaths::gamsConnectSchemaDir()
+{
+    return GamsConnectSchemaDir;
 }
 
 QString CommonPaths::defaultWorkingDir()
