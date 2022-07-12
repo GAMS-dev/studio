@@ -177,6 +177,11 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
+            } else if (line.midRef(posB+1,4) == "DIR:") {
+                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
+                mbState.marks.setMark(line.mid(start, posB-start));
+                ++posB;
+
                 // TIT
             } else if (line.midRef(posB+1,4) == "TIT:") {
                 return QString();
