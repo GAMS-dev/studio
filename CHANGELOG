@@ -4,6 +4,7 @@ Version 1.11.1  *
 - added link to open the directory after a MIRO deployment
 - fixed focus and auto-fill when re-triggering search dialog while it's already open
 - fixed base path of folders added via drag'n'drop in empty Project Explorer area
+- fixed error in restoring selection of MIRO deployment dialog
 
 Version 1.11.0
 ==================
