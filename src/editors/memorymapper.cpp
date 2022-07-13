@@ -64,9 +64,6 @@ void MemoryMapper::updateTheme()
     mBaseFormat[fileLink].setForeground(Theme::color(Theme::Mark_fileFg));
     mBaseFormat[fileLink].setUnderlineColor(Theme::color(Theme::Mark_fileFg));
     mBaseFormat[fileLink].setUnderlineStyle(QTextCharFormat::SingleUnderline);
-    mBaseFormat[dirLink].setForeground(Theme::color(Theme::Mark_fileFg));
-    mBaseFormat[dirLink].setUnderlineColor(Theme::color(Theme::Mark_fileFg));
-    mBaseFormat[dirLink].setUnderlineStyle(QTextCharFormat::SingleUnderline);
 }
 
 MemoryMapper::~MemoryMapper()
@@ -762,7 +759,7 @@ QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineForm
                 } else if (mbState.marks.hRef.startsWith("LST:") || mbState.marks.hRef.startsWith("LS2:")) {
                     formats << LineFormat(4, line.length(), mBaseFormat.at(lstLink), mbState.marks.hRef);
                 } else if (mbState.marks.hRef.startsWith("DIR:")) {
-                    formats << LineFormat(4, line.length(), mBaseFormat.at(lstLink), mbState.marks.hRef);
+                    formats << LineFormat(4, line.length(), mBaseFormat.at(fileLink), mbState.marks.hRef);
                 }
             } else if (hasError) {
                 formats << LineFormat(0, line.length(),mBaseFormat.at(error));
