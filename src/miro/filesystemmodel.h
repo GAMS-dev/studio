@@ -43,8 +43,13 @@ protected:
 
 class FileSystemModel : public QFileSystemModel
 {
-    Q_OBJECT
+    struct DirState {
+        DirState(int _childCount) : childCount(_childCount) {}
+        int childCount = 0;
+        int checkState = -1; // Qt::CheckState plus invalid state (-1)
+    };
 
+    Q_OBJECT
 public:
     FileSystemModel(QObject *parent = nullptr);
 
@@ -66,11 +71,12 @@ private:
     int checkedChilds(const QString &path) const;
     Qt::CheckState directroyCheckState(const QString &path) const;
     Qt::CheckState subdirectoryCheckState(const QString &path) const;
-    void updateChildDirInfo(const QModelIndex &idx);
+    void updateDirInfo(const QModelIndex &idx);
     void updateParentDirInfo(const QModelIndex &parent);
     void updateChildSelection(const QModelIndex &idx, bool remove = false);
     void addParentSelection(const QModelIndex &idx);
     void removeParentSelection(const QModelIndex &idx);
+    void selectAllFiles(const QDir &dir);
     QString subPath(const QModelIndex &idx) const;
     QString subPath(const QString &path) const;
 

@@ -123,6 +123,8 @@ void MiroDeployDialog::on_createButton_clicked()
 void MiroDeployDialog::on_selectAllButton_clicked()
 {
     mFileSystemModel->selectAll();
+    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::on_clearButton_clicked()
