@@ -2,6 +2,7 @@ Version 1.11.1  *
 ==================
 - fixed parameter procTreeMemMonitor in GAMS configuration influences license dialog output
 - added link to open the directory after a MIRO deployment
+- fixed focus and auto-fill when re-triggering search dialog while it's already open
 
 Version 1.11.0
 ==================
