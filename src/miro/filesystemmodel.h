@@ -68,7 +68,7 @@ private slots:
     void newDirectoryData(const QString &path);
 
 private:
-    int checkedChilds(const QString &path) const;
+    int checkedChildren(const QString &path) const;
     Qt::CheckState directroyCheckState(const QString &path) const;
     Qt::CheckState subdirectoryCheckState(const QString &path) const;
     void updateDirInfo(const QModelIndex &idx);
@@ -81,7 +81,7 @@ private:
     QString subPath(const QString &path) const;
 
 private:
-    QMap<QString,int> mDirChilds;
+    QMap<QString,int> mDirChildren;
     QSet<QString> mCheckedFiles;
 };
 
