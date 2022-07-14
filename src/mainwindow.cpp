@@ -4319,60 +4319,66 @@ void MainWindow::on_actionSearch_triggered()
 
 void MainWindow::toggleSearchDialog()
 {
+    // help view
     if (ui->dockHelpView->isAncestorOf(QApplication::focusWidget()) ||
         ui->dockHelpView->isAncestorOf(QApplication::activeWindow())) {
 #ifdef QWEBENGINE
         mHelpWidget->on_searchHelp();
 #endif
+    // parameter editor
     } else if (mGamsParameterEditor->isAParameterEditorFocused(QApplication::focusWidget()) ||
                mGamsParameterEditor->isAParameterEditorFocused(QApplication::activeWindow())) {
                 mGamsParameterEditor->selectSearchField();
     } else {
-       PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
-       if (fn) {
-           if (fn->file()->kind() == FileKind::Gdx) {
-               gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
-               gdx->selectSearchField();
-               return;
-           }
-           if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
-               refViewer->selectSearchField();
-               return;
-           }
-           if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
-               sow->selectSearchField();
-               return;
-           }
-       }
+        //  other alternative editors
+        PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
+        if (fn) {
+            if (fn->file()->kind() == FileKind::Gdx) {
+                gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
+                gdx->selectSearchField();
+                return;
+            }
+            if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(mRecent.editor())) {
+                refViewer->selectSearchField();
+                return;
+            }
+            if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
+                sow->selectSearchField();
+                return;
+            }
+        }
 
-       // e.g. needed for KDE to raise the search dialog when minimized
-       if (mSearchDialog->isMinimized())
-           mSearchDialog->setWindowState(Qt::WindowMaximized);
-       // toggle visibility
-       if (mSearchDialog->isVisible()) {
-           // e.g. needed for macOS to rasise search dialog when minimized
-           mSearchDialog->raise();
-           mSearchDialog->activateWindow();
-       } else {
-           if (mSearchWidgetPos.isNull()) {
-               int margin = 25;
+        // e.g. needed for KDE to raise the search dialog when minimized
+        if (mSearchDialog->isMinimized()) {
+            mSearchDialog->setWindowState(Qt::WindowMaximized);
+            mSearchDialog->autofillSearchDialog();
+        }
+        // toggle visibility
+        if (mSearchDialog->isVisible()) {
+            // e.g. needed for macOS to rasise search dialog when minimized
+            mSearchDialog->raise();
+            mSearchDialog->activateWindow();
+            mSearchDialog->autofillSearchDialog();
+        } else {
+            if (mSearchWidgetPos.isNull()) { // first time opening
+                int margin = 25;
 
-               int wDiff = frameGeometry().width() - geometry().width();
-               int hDiff = frameGeometry().height() - geometry().height();
+                int wDiff = frameGeometry().width() - geometry().width();
+                int hDiff = frameGeometry().height() - geometry().height();
 
-               int wSize = mSearchDialog->width() + wDiff;
-               int hSize = mSearchDialog->height() + hDiff;
+                int wSize = mSearchDialog->width() + wDiff;
+                int hSize = mSearchDialog->height() + hDiff;
 
-               QPoint p(qMin(pos().x() + (width() - margin),
-                             QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                QPoint p(qMin(pos().x() + (width() - margin),
+                            QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
                         qMin(pos().y() + hDiff + margin,
-                             QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
+                            QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
                        );
-               mSearchWidgetPos = p;
-           }
+                mSearchWidgetPos = p;
+            }
 
-           mSearchDialog->show();
-           mSearchDialog->move(mSearchWidgetPos);
+            mSearchDialog->show();
+            mSearchDialog->move(mSearchWidgetPos);
        }
     }
 }
