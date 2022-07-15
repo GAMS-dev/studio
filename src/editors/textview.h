@@ -65,7 +65,7 @@ public:
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
     bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
-    void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results);
+    void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results, bool showResults);
     void clearSearchSelection();
     void setSearchSelectionActive(bool active);
     TextKind textKind() const;

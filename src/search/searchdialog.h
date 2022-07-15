@@ -78,6 +78,7 @@ public slots:
     void updateComponentAvailability();
     void on_btn_clear_clicked();
     void filesChanged();
+    void relaySearchResults(bool showResults, QList<Result>* results);
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -96,7 +97,6 @@ private slots:
     void on_combo_fileExcludePattern_currentTextChanged(const QString);
 
 signals:
-    void showResults(gams::studio::search::SearchResultModel* results);
     void closeResults();
     void setWidgetPosition(const QPoint& searchWidgetPos);
     void openHelpDocument(QString doc, QString anchor);
@@ -104,6 +104,7 @@ signals:
     void invalidateResultsView();
     void extraSelectionsUpdated();
     void toggle();
+    void updateResults(gams::studio::search::SearchResultModel* resultModel);
 
 protected:
     void showEvent(QShowEvent *event);
@@ -142,7 +143,6 @@ private:
 
     TextView *mSplitSearchView = nullptr;
     QTextDocument::FindFlags mSplitSearchFlags;
-    bool mShowResults = true;
     bool mSuppressParameterChangedEvent = false;
     int mSearchAnimation = 0;
     Search::Status mSearchStatus = Search::Status::Clear;

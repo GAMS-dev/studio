@@ -270,7 +270,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
             &search::SearchDialog::updateComponentAvailability);
 
-    connect(mSearchDialog, &search::SearchDialog::showResults, this, &MainWindow::showResults);
+    connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
@@ -4381,7 +4381,7 @@ void MainWindow::toggleSearchDialog()
     }
 }
 
-void MainWindow::showResults(search::SearchResultModel* results)
+void MainWindow::updateResults(search::SearchResultModel* results)
 {
     int index = ui->logTabs->indexOf(resultsView()); // did widget exist before?
 

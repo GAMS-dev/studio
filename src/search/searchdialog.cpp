@@ -87,8 +87,7 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!checkSearchTerm()) return;
     insertHistory();
 
-    mShowResults = false;
-    mSearch.start(true);
+    mSearch.start(true, false, false);
     mSearch.replaceNext(ui->txt_replace->text());
 }
 
@@ -99,7 +98,6 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
     clearResultsView();
     insertHistory();
 
-    mShowResults = true;
     mSearch.replaceAll(ui->txt_replace->text());
 }
 
@@ -111,8 +109,7 @@ void SearchDialog::on_btn_FindAll_clicked()
         clearResultsView();
         insertHistory();
 
-        mShowResults = true;
-        mSearch.start();
+        mSearch.start(false, false, true);
     } else {
         mSearch.stop();
     }
@@ -127,14 +124,15 @@ void SearchDialog::finalUpdate()
 {
     setSearchStatus(Search::Ok, mSearch.results().size());
     updateDialogState();
+    updateEditHighlighting();
+}
 
-    if ((mShowResults && mSearch.results().size() > 0) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
+void SearchDialog::relaySearchResults(bool showResults, QList<Result> *results) {
+    if ((showResults && results->size() > 0) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
         if (mSearchResultModel) delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
-        emit showResults(mSearchResultModel);
+        emit updateResults(mSearchResultModel);
     }
-
-    updateEditHighlighting();
 }
 
 void SearchDialog::updateDialogState()
@@ -349,8 +347,6 @@ void SearchDialog::on_btn_forward_clicked()
 
 void SearchDialog::findNextPrev(bool backwards) {
     if (!checkSearchTerm()) return;
-
-    mShowResults = false;
 
     insertHistory();
     mSearch.findNext(backwards ? Search::Backward : Search::Forward);
