@@ -365,7 +365,8 @@ void AbstractEdit::updateSearchSelection()
     }
 }
 
-void AbstractEdit::findInSelection(QList<Result> &results) {
+void AbstractEdit::findInSelection(QList<Result> &results, bool showResults)
+{
     int startPos;
     int endPos;
     QTextCursor item;

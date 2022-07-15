@@ -186,7 +186,7 @@ public slots:
     void updateCursorHistoryAvailability();
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);
-    void showResults(search::SearchResultModel* results);
+    void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());

@@ -56,7 +56,7 @@ void Search::setParameters(bool ignoreReadonly, bool searchBackwards)
     mSearchDialog->setSearchedFiles(mFiles.size());
 }
 
-void Search::start(bool ignoreReadonly, bool searchBackwards)
+void Search::start(bool ignoreReadonly, bool searchBackwards, bool showResults)
 {
     if (mSearching) return;
     // setup
@@ -75,7 +75,7 @@ void Search::start(bool ignoreReadonly, bool searchBackwards)
     }
 
     if (mSearchDialog->selectedScope() == Scope::Selection) {
-        findInSelection();
+        findInSelection(showResults);
         return;
     } // else
     QList<FileMeta*> unmodified;
@@ -98,13 +98,14 @@ void Search::start(bool ignoreReadonly, bool searchBackwards)
     }
     // start background task first
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? ViewHelper::groupId(currentFile->topEditor()) : NodeId();
-    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode);
+    SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode, showResults);
     sw->moveToThread(&mThread);
 
     connect(&mThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
     connect(&mThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
     connect(&mThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
     connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
+    connect(sw, &SearchWorker::showResults, mSearchDialog, &SearchDialog::relaySearchResults, Qt::UniqueConnection);
 
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
@@ -159,14 +160,14 @@ void Search::invalidateCache()
     mCacheAvailable = false;
 }
 
-void Search::findInSelection()
+void Search::findInSelection(bool showResults)
 {
     if (AbstractEdit* ae = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
         checkFileChanged(ae->fileId());
-        ae->findInSelection(mResults);
+        ae->findInSelection(mResults, showResults);
     } else if (TextView* tv = ViewHelper::toTextView(mSearchDialog->currentEditor())) {
         checkFileChanged(tv->edit()->fileId());
-        tv->findInSelection(mRegex, mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile), &mResults);
+        tv->findInSelection(mRegex, mSearchDialog->fileHandler()->fileMeta(mSearchSelectionFile), &mResults, showResults);
     }
     mSearchDialog->updateClearButton();
 
@@ -209,7 +210,7 @@ void Search::findNext(Direction direction)
     if (!mCacheAvailable) {
         emit invalidateResults();
         emit updateUI();
-        start(direction == Search::Backward); // generate new cache
+        start(false, direction == Search::Backward, false); // generate new cache
     }
     selectNextMatch(direction);
 }
@@ -523,7 +524,7 @@ void Search::replaceNext(QString replacementText)
 
     edit->replaceNext(mRegex, replacementText, mSearchDialog->selectedScope() == Search::Selection);
 
-    start(true); // refresh cache
+    start(true, false, false); // refresh cache
     selectNextMatch();
 }
 
@@ -607,7 +608,7 @@ void Search::replaceAll(QString replacementText)
 
         mSearchDialog->searchParameterChanged();
     } else if (msgBox.clickedButton() == preview) {
-        start(true);
+        start(true, false, true);
         return;
     } else if (msgBox.clickedButton() == cancel) {
         return;

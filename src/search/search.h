@@ -61,7 +61,7 @@ public:
     };
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
 
-    void start(bool ignoreReadonly = false, bool searchBackwards = false);
+    void start(bool ignoreReadonly, bool searchBackwards, bool showResults);
     void stop();
 
     void findNext(Direction direction);
@@ -89,7 +89,7 @@ signals:
 
 private:
     void findInDoc(FileMeta* fm);
-    void findInSelection();
+    void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
     void setParameters(bool ignoreReadonly, bool searchBackwards = false);
 

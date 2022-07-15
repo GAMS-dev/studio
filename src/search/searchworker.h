@@ -38,14 +38,14 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list);
-    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project);
+    SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
+    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project, bool showResults);
     ~SearchWorker();
     void findInFiles();
 
 signals:
     void update(int hits);
-    void resultReady();
+    void showResults(bool showResults, QList<gams::studio::search::Result> *results);
 
 private:
     QList<FileMeta*> mFiles;
@@ -54,9 +54,10 @@ private:
     QPoint mFrom = QPoint(0,0);
     QPoint mTo = QPoint(0,0);
     NodeId mProject;
+    bool mFindInSelection = true;
+    bool mShowResults = false;
 
     bool allowInsert(int line, int col);
-    bool mFindInSelection = true;
 };
 
 }

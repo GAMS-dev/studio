@@ -69,7 +69,7 @@ public:
     void clearSearchSelection();
     void setSearchSelectionActive(bool active);
     void updateSearchSelection();
-    void findInSelection(QList<search::Result> &results);
+    void findInSelection(QList<search::Result> &results, bool showResults);
     inline FileId fileId() {
         bool ok;
         FileId file = property("fileId").toInt(&ok);
