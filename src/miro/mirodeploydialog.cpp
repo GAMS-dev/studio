@@ -96,6 +96,8 @@ QStringList MiroDeployDialog::selectedFiles()
 void MiroDeployDialog::setSelectedFiles(const QStringList &files)
 {
     mFileSystemModel->setSelectedFiles(files);
+    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)

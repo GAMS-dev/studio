@@ -135,11 +135,11 @@ QStringList FileSystemModel::selectedFiles()
 
 void FileSystemModel::setSelectedFiles(const QStringList &files)
 {
-    for (const QString &file: files) {
-        QModelIndex idx = index(rootDirectory().absoluteFilePath(file));
-        if (idx.isValid())
-            setData(idx, true, Qt::CheckStateRole);
+    beginResetModel();
+    for (const QString &file : files) {
+        mCheckedFiles << file;
     }
+    endResetModel();
 }
 
 void FileSystemModel::newDirectoryData(const QString &path)
