@@ -268,7 +268,7 @@ MainWindow::MainWindow(QWidget *parent)
     search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
     mSearchDialog = new search::SearchDialog(sfh, this);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
-            &search::SearchDialog::updateComponentAvailability);
+            &search::SearchDialog::updateDialogState);
 
     connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
@@ -1682,8 +1682,7 @@ void MainWindow::activeTabChanged(int index)
 
     loadCommandLines(oldNode, node);
     updateRunState();
-    searchDialog()->updateComponentAvailability();
-    searchDialog()->updateClearButton();
+    searchDialog()->updateDialogState();
     updateToolbar(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
@@ -2263,7 +2262,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     } else if (ret == QMessageBox::Cancel) {
         // do nothing
     }
-    mSearchDialog->updateComponentAvailability();
+    searchDialog()->updateDialogState();
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)

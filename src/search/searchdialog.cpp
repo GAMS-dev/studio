@@ -141,8 +141,8 @@ void SearchDialog::updateDialogState()
 
     if (searching)
         ui->btn_FindAll->setText("Abort");
-    else
-        ui->btn_FindAll->setText("Find All");
+    else ui->btn_FindAll->setText("Find All");
+    updateClearButton();
 
     // deactivate actions while search is ongoing
     ui->btn_Replace->setEnabled(!searching);
@@ -270,7 +270,7 @@ void SearchDialog::showEvent(QShowEvent *event)
 
     if (!mSearch.isSearching()) {
         autofillSearchDialog();
-        updateComponentAvailability();
+        updateDialogState();
     }
 }
 
@@ -324,7 +324,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 void SearchDialog::on_combo_scope_currentIndexChanged(int scope)
 {
     searchParameterChanged();
-    updateComponentAvailability();
+    updateDialogState();
 
     setSearchSelectionActive(scope == Search::Selection);
 
@@ -430,7 +430,7 @@ void SearchDialog::checkRegex()
     QRegularExpression re(ui->combo_search->currentText());
     if (regex() && !re.isValid())
         setSearchStatus(Search::InvalidRegex);
-    updateComponentAvailability();
+    updateDialogState();
 }
 
 void SearchDialog::on_combo_search_currentTextChanged(const QString)
