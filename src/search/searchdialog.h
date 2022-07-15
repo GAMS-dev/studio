@@ -62,7 +62,6 @@ public:
     QList<Result> filteredResultList(QString file) const;
     Search* search();
 
-    void updateClearButton();
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
     void setSearchStatus(Search::Status status, int hits = 0);
@@ -75,10 +74,10 @@ public slots:
     void finalUpdate();
     void intermediateUpdate(int hits);
     void updateMatchLabel(int current = 0);
-    void updateComponentAvailability();
     void on_btn_clear_clicked();
     void filesChanged();
     void relaySearchResults(bool showResults, QList<Result>* results);
+    void updateDialogState();
 
 private slots:
     void on_btn_FindAll_clicked();
@@ -118,7 +117,6 @@ private:
     void insertHistory();
     void searchParameterChanged();
     void updateEditHighlighting();
-    void updateDialogState();
     void clearSelection();
     void setSearchSelectionActive(bool active);
     AbstractSearchFileHandler* fileHandler();
@@ -129,6 +127,8 @@ private:
     void setSearchedFiles(int files);
     bool checkSearchTerm();
     void checkRegex();
+    void updateComponentAvailability();
+    void updateClearButton();
 
 private:
     Ui::SearchDialog *ui;
