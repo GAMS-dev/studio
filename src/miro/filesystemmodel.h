@@ -24,6 +24,7 @@
 #include <QFileSystemModel>
 #include <QSortFilterProxyModel>
 #include <QSet>
+#include <QTimer>
 
 namespace gams {
 namespace studio {
@@ -44,7 +45,7 @@ protected:
 class FileSystemModel : public QFileSystemModel
 {
     struct DirState {
-        DirState(int _childCount) : childCount(_childCount) {}
+        DirState() {}
         int childCount = 0;
         int checkState = -1; // Qt::CheckState plus invalid state (-1)
     };
@@ -58,30 +59,30 @@ public:
                  int role = Qt::EditRole) override;
     Qt::ItemFlags flags(const QModelIndex &index) const override;
 
-    void parseFolders();
     void selectAll();
     void clearSelection();
     QStringList selectedFiles();
     void setSelectedFiles(const QStringList &files);
+    void setRootDir(const QDir &dir);
 
 private slots:
     void newDirectoryData(const QString &path);
+    void updateDirCheckStates();
 
 private:
-    int checkedChildren(const QString &path) const;
-    Qt::CheckState directroyCheckState(const QString &path) const;
-    Qt::CheckState subdirectoryCheckState(const QString &path) const;
-    void updateDirInfo(const QModelIndex &idx);
-    void updateParentDirInfo(const QModelIndex &parent);
-    void updateChildSelection(const QModelIndex &idx, bool remove = false);
-    void addParentSelection(const QModelIndex &idx);
-    void removeParentSelection(const QModelIndex &idx);
+    Qt::CheckState dirCheckState(const QString &file, bool isConst = true) const;
+    void updateDirInfo(const QModelIndex &idx) const;
+    void invalidateDirState(const QModelIndex &par);
+    void invalidateDirStates();
+
+    void setChildSelection(const QModelIndex &idx, bool remove);
     void selectAllFiles(const QDir &dir);
     QString subPath(const QModelIndex &idx) const;
     QString subPath(const QString &path) const;
 
 private:
-    QMap<QString,int> mDirChildren;
+    QTimer mUpdateTimer;
+    mutable QMap<QString,DirState> mDirs;
     QSet<QString> mCheckedFiles;
 };
 

@@ -96,8 +96,8 @@ QStringList MiroDeployDialog::selectedFiles()
 void MiroDeployDialog::setSelectedFiles(const QStringList &files)
 {
     mFileSystemModel->setSelectedFiles(files);
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
@@ -125,15 +125,15 @@ void MiroDeployDialog::on_createButton_clicked()
 void MiroDeployDialog::on_selectAllButton_clicked()
 {
     mFileSystemModel->selectAll();
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::on_clearButton_clicked()
 {
     mFileSystemModel->clearSelection();
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::on_testBaseButton_clicked()
@@ -178,8 +178,7 @@ void MiroDeployDialog::setupViewModel()
     if (mWorkingDirectory.isEmpty())
         return;
 
-    mFileSystemModel->setRootPath(mWorkingDirectory);
-    mFileSystemModel->parseFolders();
+    mFileSystemModel->setRootDir(mWorkingDirectory);
     auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
     ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
