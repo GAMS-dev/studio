@@ -2,14 +2,19 @@
 <ui version="4.0">
  <class>gams::studio::fs::FileSystemWidget</class>
  <widget class="QGroupBox" name="gams::studio::fs::FileSystemWidget">
+  <property name="geometry">
+   <rect>
+    <x>0</x>
+    <y>0</y>
+    <width>305</width>
+    <height>275</height>
+   </rect>
+  </property>
   <property name="font">
    <font>
     <weight>75</weight>
     <bold>true</bold>
    </font>
-  </property>
-  <property name="title" stdset="0">
-   <string>Assembly File</string>
   </property>
   <layout class="QVBoxLayout" name="verticalLayout_4">
    <item>

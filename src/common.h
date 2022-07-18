@@ -127,6 +127,7 @@ enum class EditorType {
     ref,
     opt,
     gucfg,
+    efi,
     pro,
 };
 Q_ENUM_NS(EditorType)

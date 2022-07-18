@@ -119,11 +119,16 @@ void FileSystemModel::clearSelection()
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
 }
 
-QStringList FileSystemModel::selectedFiles()
+QStringList FileSystemModel::selectedFiles(bool addWriteBackState)
 {
     QStringList selection;
-    for (auto file: mCheckedFiles) {
+    for (auto file: mCheckedFiles)
         selection << file;
+    if (addWriteBackState) {
+        for (int i = 0; i < selection.count(); ++i) {
+            if (mWriteBack.value(selection.at(i)))
+                selection[i] = selection.at(i) + " <";
+        }
     }
     selection.sort();
     return selection;
@@ -132,8 +137,14 @@ QStringList FileSystemModel::selectedFiles()
 void FileSystemModel::setSelectedFiles(const QStringList &files)
 {
     mCheckedFiles.clear();
-    for (const QString &file : files)
-        mCheckedFiles << file;
+    mWriteBack.clear();
+    for (const QString &file : files) {
+        if (file.endsWith(" <")) {
+            mCheckedFiles << file.left(file.length()-2);
+            mWriteBack.insert(file.left(file.length()-2), true);
+        } else
+            mCheckedFiles << file;
+    }
     invalidateDirStates();
 }
 

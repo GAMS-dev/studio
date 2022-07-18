@@ -66,7 +66,7 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
 QStringList FileSystemWidget::selectedFiles()
 {
     if (mFileSystemModel)
-        return mFileSystemModel->selectedFiles();
+        return mFileSystemModel->selectedFiles(mShowProtection);
     return QStringList();
 }
 
@@ -92,6 +92,7 @@ void FileSystemWidget::setWorkingDirectory(const QString &workingDirectory)
 void FileSystemWidget::setShowProtection(bool showProtection)
 {
     mShowProtection = showProtection;
+    ui->createButton->setText(showProtection ? "Save" : "Create");
     ui->directoryView->setItemDelegate(showProtection ? mDelegate : nullptr);
 }
 
@@ -181,14 +182,9 @@ void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
     }
     QStyledItemDelegate::paint(painter, opt, index);
     if (isFile) {
-        bool act = false;
-        if (index.row() == 4)
-            act = false;
-        if (opt.state.testFlag(QStyle::State_MouseOver))
-            act = true;
-        QIcon icon = model->data(index, WriteBackRole).toBool() ? Theme::icon(":/solid/out-in")
-                                                                  : Theme::icon(":/solid/out");
-        icon.paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
+        bool writeBack = model->data(index, WriteBackRole).toBool();
+        QIcon icon = writeBack ? Theme::icon(":/solid/out-in") : Theme::icon(":/solid/out");
+        icon.paint(painter, btRect, Qt::AlignCenter, writeBack ? QIcon::Normal : QIcon::Disabled);
     }
 }
 
