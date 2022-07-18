@@ -28,6 +28,7 @@
 #include "option/gamsconfigeditor.h"
 #include "option/solveroptionwidget.h"
 #include "reference/referenceviewer.h"
+#include "engine/efieditor.h"
 #include <QWidget>
 
 namespace gams {
@@ -93,6 +94,10 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::gucfg));
         return w;
     }
+    inline static efi::EfiEditor* initEditorType(efi::EfiEditor * w) {
+        if(w) w->setProperty("EditorType", int(EditorType::efi));
+        return w;
+    }
 
     inline static EditorType editorType(QWidget* w) {
         if (!w) return EditorType::undefined;
@@ -148,6 +153,9 @@ public:
     }
     inline static option::GamsConfigEditor* toGamsConfigEditor(QWidget* w) {
         return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
+    }
+    inline static efi::EfiEditor* toEfiEditor(QWidget* w) {
+        return (editorType(w) == EditorType::efi) ? static_cast<efi::EfiEditor*>(w) : nullptr;
     }
 
     static QStringList dialogProjectFilter() {

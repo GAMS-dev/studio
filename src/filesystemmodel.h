@@ -43,7 +43,7 @@ public:
 
     void selectAll();
     void clearSelection();
-    QStringList selectedFiles();
+    QStringList selectedFiles(bool addWriteBackState = false);
     void setSelectedFiles(const QStringList &files);
     bool hasSelection();
     void setRootDir(const QDir &dir);
@@ -66,8 +66,8 @@ private:
 
 private:
     QTimer mUpdateTimer;
-    mutable QMap<QString,DirState> mDirs;
-    QMap<QString,int> mWriteBack;
+    mutable QMap<QString, DirState> mDirs;
+    QMap<QString, bool> mWriteBack;
     QSet<QString> mCheckedFiles;
 };
 

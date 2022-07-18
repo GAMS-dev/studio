@@ -713,6 +713,13 @@ void FileMeta::load(int codecMib, bool init)
         if (!textOptEditor)
             return;
     }
+    if (kind() == FileKind::Efi) {
+        for (QWidget *wid : qAsConst(mEditors)) {
+            if (efi::EfiEditor *ee = ViewHelper::toEfiEditor(wid)) {
+                ee->load(location());
+            }
+        }
+    }
 
     QFile file(location());
     bool canOpen = true;
@@ -1113,6 +1120,11 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             SysLogLocator::systemLog()->append(QString("Cannot find  solver option definition file for %1. Open %1 in text editor.").arg(fileInfo.fileName()), LogMsgType::Error);
             forcedAsTextEdit = true;
         }
+    } else if (kind() == FileKind::Efi && !forcedAsTextEdit) {
+        efi::EfiEditor *ee = ViewHelper::initEditorType(new efi::EfiEditor(parent));
+        ee->setWorkingDir(project->workDir());
+        ee->load(location());
+        res = ee;
     } else {
         forcedAsTextEdit = true;
     }

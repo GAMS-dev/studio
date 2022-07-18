@@ -135,6 +135,7 @@ SOURCES += \
     engine/client/OAIUser.cpp \
     engine/client/OAIUser_group_member.cpp \
     engine/client/OAIUser_groups.cpp \
+    engine/efieditor.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
     engine/enginestartdialog.cpp \
@@ -359,6 +360,7 @@ HEADERS += \
     engine/client/OAIUser.h \
     engine/client/OAIUser_group_member.h \
     engine/client/OAIUser_groups.h \
+    engine/efieditor.h \
     engine/enginemanager.h \
     engine/engineprocess.h \
     engine/enginestartdialog.h \
@@ -524,6 +526,7 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     encodingsdialog.ui \
+    engine/efieditor.ui \
     engine/enginestartdialog.ui \
     file/pathrequest.ui \
     file/projectoptions.ui \

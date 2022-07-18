@@ -34,6 +34,7 @@ MiroDeployDialog::MiroDeployDialog(QWidget *parent)
     , ui(new Ui::MiroDeployDialog)
 {
     ui->setupUi(this);
+    ui->fsWidget->setTitle("Assembly File");
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
     updateTestDeployButtons();
     connect(ui->fsWidget, &gams::studio::fs::FileSystemWidget::createClicked, this, &MiroDeployDialog::createClicked);
