@@ -32,9 +32,6 @@
    <item>
     <widget class="gams::studio::fs::FileSystemWidget" name="fsWidget" native="true"/>
    </item>
-   <item>
-    <widget class="gams::studio::CodeEdit" name="textEdit" native="true"/>
-   </item>
   </layout>
  </widget>
  <customwidgets>
@@ -42,12 +39,6 @@
    <class>gams::studio::fs::FileSystemWidget</class>
    <extends>QWidget</extends>
    <header location="global">filesystemwidget.h</header>
-   <container>1</container>
-  </customwidget>
-  <customwidget>
-   <class location="global">gams::studio::CodeEdit</class>
-   <extends>QWidget</extends>
-   <header>../editors/codeedit.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

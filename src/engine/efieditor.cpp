@@ -1,5 +1,7 @@
 #include "efieditor.h"
 #include "ui_efieditor.h"
+#include <QFile>
+#include <QTextStream>
 
 namespace gams {
 namespace studio {
@@ -10,7 +12,6 @@ EfiEditor::EfiEditor(QWidget *parent) :
     ui(new Ui::EfiEditor)
 {
     ui->setupUi(this);
-    ui->textEdit->setVisible(false);
     ui->fsWidget->setShowProtection(true);
     connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::writeFile);
 }
