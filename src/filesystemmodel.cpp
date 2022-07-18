@@ -1,32 +1,15 @@
-/*
- * This file is part of the GAMS Studio project.
- *
- * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
- *
- * This program is free software: you can redistribute it and/or modify
- * it under the terms of the GNU General Public License as published by
- * the Free Software Foundation, either version 3 of the License, or
- * (at your option) any later version.
- *
- * This program is distributed in the hope that it will be useful,
- * but WITHOUT ANY WARRANTY; without even the implied warranty of
- * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
- * GNU General Public License for more details.
- *
- * You should have received a copy of the GNU General Public License
- * along with this program. If not, see <http://www.gnu.org/licenses/>.
- */
 #include "filesystemmodel.h"
+#include "file/filetype.h"
 #include "logger.h"
 
 namespace gams {
 namespace studio {
-namespace miro {
+namespace fs {
 
-FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
-    : QSortFilterProxyModel(parent)
-{}
+bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
+{
+    return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));
+}
 
 bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
 {
@@ -49,11 +32,15 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
         return QVariant();
 
     if (role == Qt::CheckStateRole) {
-        QString relPath = rootDirectory().relativeFilePath(filePath(idx));
+        QString path = filePath(idx);
         if (isDir(idx))
-            return dirCheckState(filePath(idx));
+            return dirCheckState(path);
         else
-            return mCheckedFiles.contains(relPath) ? Qt::Checked : Qt::Unchecked;
+            return mCheckedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
+    } else if (role == WriteBackRole) {
+        auto path = rootDirectory().relativeFilePath(filePath(idx));
+        if (mWriteBack.contains(path))
+            return mWriteBack.value(path);
     }
     return QFileSystemModel::data(idx, role);
 }
@@ -71,6 +58,11 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
             mCheckedFiles.insert(file);
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
         invalidateDirState(idx.parent());
+        return true;
+    } else if (role == WriteBackRole && idx.column() == 0) {
+        auto file = rootDirectory().relativeFilePath(filePath(idx));
+        mWriteBack.insert(file, value.toBool());
+        emit dataChanged(idx, idx, QVector<int>() << WriteBackRole);
         return true;
     }
     return  QFileSystemModel::setData(idx, value, role);
@@ -145,13 +137,9 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
     invalidateDirStates();
 }
 
-void FileSystemModel::setRootDir(const QDir &dir)
+bool FileSystemModel::hasSelection()
 {
-    setRootPath(dir.path());
-    QDirIterator it(dir.path(), QDir::Dirs | QDir::NoDotAndDotDot, QDirIterator::Subdirectories);
-    while (it.hasNext()) {
-        updateDirInfo(index(it.next()));
-    }
+    return !mCheckedFiles.isEmpty();
 }
 
 void FileSystemModel::newDirectoryData(const QString &path)
@@ -160,13 +148,28 @@ void FileSystemModel::newDirectoryData(const QString &path)
     updateDirInfo(index(path));
 }
 
-Qt::CheckState FileSystemModel::dirCheckState(const QString &file, bool isConst) const
+void FileSystemModel::updateDirCheckStates()
 {
-    QDir dir(file);
+    QStringList dirs;
+    QMap<QString,DirState>::ConstIterator it = mDirs.constBegin();
+    while (it != mDirs.constEnd()) {
+        if (it.value().checkState < 0) dirs << it.key();
+        ++it;
+    }
+    dirs.sort();
+    while (!dirs.isEmpty()) {
+        QString path = dirs.takeLast();
+        mDirs[subPath(path)].checkState = dirCheckState(rootDirectory().absoluteFilePath(path), false);
+    }
+}
+
+int FileSystemModel::dirCheckState(const QString &path, bool isConst) const
+{
+    QDir dir(path);
     int flag = 0;
     QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     if (fiList.isEmpty())
-        return mCheckedFiles.contains(rootDirectory().relativeFilePath(file)) ? Qt::Checked : Qt::Unchecked;
+        return mCheckedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
 
     for (const QFileInfo &info : fiList) {
         QString relPath = rootDirectory().relativeFilePath(info.filePath());
@@ -219,21 +222,6 @@ void FileSystemModel::invalidateDirStates()
     mUpdateTimer.start();
 }
 
-void FileSystemModel::updateDirCheckStates()
-{
-    QStringList dirs;
-    QMap<QString,DirState>::ConstIterator it = mDirs.constBegin();
-    while (it != mDirs.constEnd()) {
-        if (it.value().checkState < 0) dirs << it.key();
-        ++it;
-    }
-    dirs.sort();
-    while (!dirs.isEmpty()) {
-        QString path = dirs.takeLast();
-        mDirs[subPath(path)].checkState = dirCheckState(rootDirectory().absoluteFilePath(path), false);
-    }
-}
-
 void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
 {
     QDir dir(filePath(idx));
@@ -276,6 +264,6 @@ QString FileSystemModel::subPath(const QString &path) const
     return QString(path).remove(0, rootDirectory().canonicalPath().size()+1);
 }
 
-}
-}
-}
+} // namespace fs
+} // namespace studio
+} // namespace gams
