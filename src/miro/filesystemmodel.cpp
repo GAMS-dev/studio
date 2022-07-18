@@ -154,7 +154,11 @@ Qt::CheckState FileSystemModel::dirCheckState(const QString &file, bool isConst)
 {
     QDir dir(file);
     int flag = 0;
-    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+    QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    if (fiList.isEmpty())
+        return mCheckedFiles.contains(rootDirectory().relativeFilePath(file)) ? Qt::Checked : Qt::Unchecked;
+
+    for (const QFileInfo &info : fiList) {
         QString relPath = rootDirectory().relativeFilePath(info.filePath());
         if (info.isDir()) {
             if (!mDirs.contains(relPath) && !isConst) {
