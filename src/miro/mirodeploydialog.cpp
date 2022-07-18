@@ -20,10 +20,10 @@
 #include "mirodeploydialog.h"
 #include "ui_mirodeploydialog.h"
 #include "mirocommon.h"
-#include "filesystemmodel.h"
 #include "theme.h"
 
 #include <QMessageBox>
+#include <QFileInfo>
 
 namespace gams {
 namespace studio {
@@ -32,18 +32,11 @@ namespace miro {
 MiroDeployDialog::MiroDeployDialog(QWidget *parent)
     : QDialog(parent)
     , ui(new Ui::MiroDeployDialog)
-    , mFileSystemModel(new FileSystemModel(this))
-    , mFilterModel(new FilteredFileSystemModel(this))
 {
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
-
-    mFilterModel->setSourceModel(mFileSystemModel);
-    auto oldModel = ui->directoryView->selectionModel();
-    ui->directoryView->setModel(mFilterModel);
-    delete oldModel;
-
     updateTestDeployButtons();
+    connect(ui->fsWidget, &gams::studio::fs::FileSystemWidget::createClicked, this, &MiroDeployDialog::createClicked);
 }
 
 MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
@@ -57,7 +50,7 @@ MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
 
 void MiroDeployDialog::setDefaults()
 {
-    mFileSystemModel->clearSelection();
+    ui->fsWidget->clearSelection();
     ui->targetEnvBox->setCurrentIndex(0);
 }
 
@@ -66,17 +59,9 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
     QFileInfo fi(mModelAssemblyFile);
     mValidAssemblyFile = fi.exists();
     if (fi.exists()) {
-        auto palette = ui->assemblyFileLabel->palette();
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Theme::color(Theme::Normal_Green));
-        ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText("File " + fi.fileName() + " found.");
+        ui->fsWidget->setInfo("File " + fi.fileName() + " found.", true);
     } else {
-        auto palette = ui->assemblyFileLabel->palette();
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Theme::color(Theme::Normal_Red));
-        ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText("No file " + fi.fileName() + " found!");
+        ui->fsWidget->setInfo("No file " + fi.fileName() + " found!", true);
     }
     updateTestDeployButtons();
 }
@@ -88,22 +73,18 @@ void MiroDeployDialog::setModelName(const QString &modelName) {
 
 QStringList MiroDeployDialog::selectedFiles()
 {
-    if (mFileSystemModel)
-        return mFileSystemModel->selectedFiles();
-    return QStringList();
+    return ui->fsWidget->selectedFiles();
 }
 
 void MiroDeployDialog::setSelectedFiles(const QStringList &files)
 {
-    mFileSystemModel->setSelectedFiles(files);
-//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
+    ui->fsWidget->setSelectedFiles(files);
 }
 
 void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)
 {
-    mWorkingDirectory = workingDirectory;
-    setupViewModel();
+    ui->fsWidget->setWorkingDirectory(workingDirectory);
+    ui->fsWidget->setupViewModel();
 }
 
 void MiroDeployDialog::showEvent(QShowEvent *event)
@@ -112,7 +93,7 @@ void MiroDeployDialog::showEvent(QShowEvent *event)
     QDialog::showEvent(event);
 }
 
-void MiroDeployDialog::on_createButton_clicked()
+void MiroDeployDialog::createClicked()
 {
     if (selectedFiles().isEmpty())
         QMessageBox::critical(this, "No deployment files!",
@@ -120,20 +101,6 @@ void MiroDeployDialog::on_createButton_clicked()
     else
         emit newAssemblyFileData();
     updateTestDeployButtons();
-}
-
-void MiroDeployDialog::on_selectAllButton_clicked()
-{
-    mFileSystemModel->selectAll();
-//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
-}
-
-void MiroDeployDialog::on_clearButton_clicked()
-{
-    mFileSystemModel->clearSelection();
-//    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-//    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 void MiroDeployDialog::on_testBaseButton_clicked()
@@ -154,7 +121,7 @@ void MiroDeployDialog::updateTestDeployButtons()
 
 bool MiroDeployDialog::isDataContractAvailable()
 {
-    QString path = mWorkingDirectory + "/" +
+    QString path = ui->fsWidget->workingDirectory() + "/" +
                    MiroCommon::confDirectory(mModelName) + "/" +
                    MiroCommon::dataContractFileName(mModelName);
 
@@ -171,16 +138,6 @@ bool MiroDeployDialog::isDataContractAvailable()
     ui->errorLabel->setText("It looks like the data contract is missing: " + path +
                             "\n\nPlease run MIRO first before executing any MIRO deploy step.");
     return false;
-}
-
-void MiroDeployDialog::setupViewModel()
-{
-    if (mWorkingDirectory.isEmpty())
-        return;
-
-    mFileSystemModel->setRootDir(mWorkingDirectory);
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 }
