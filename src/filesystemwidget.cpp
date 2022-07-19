@@ -102,6 +102,11 @@ void FileSystemWidget::setCreateVisible(bool visible)
     ui->createButton->setVisible(visible);
 }
 
+int FileSystemWidget::selectionCount()
+{
+    return mFileSystemModel->selectionCount();
+}
+
 void FileSystemWidget::clearSelection()
 {
     mFileSystemModel->clearSelection();

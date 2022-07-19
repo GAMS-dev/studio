@@ -57,6 +57,7 @@ public:
     bool showProtection() const { return mShowProtection; }
     void setShowProtection(bool showProtection);
     void setCreateVisible(bool visible);
+    int selectionCount();
 
 signals:
     void createClicked();
