@@ -574,6 +574,9 @@ void FileMeta::addEditor(QWidget *edit)
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
+        connect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
+//        connect(efi, &efi::EfiEditor::requestSave, this, &FileMeta::);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         connect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -631,6 +634,8 @@ void FileMeta::removeEditor(QWidget *edit)
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
+        disconnect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -795,6 +800,10 @@ void FileMeta::save(const QString &newLocation)
         option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
         if (gucEditor) gucEditor->saveConfigFile(location);
 
+    } else if (kind() == FileKind::Efi) {
+        efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
+        if (efi) efi->save(location);
+
     } else { // no document, e.g. lst
         QFile old(mLocation);
         if (file.exists()) QFile::remove(file.fileName());
@@ -932,6 +941,11 @@ bool FileMeta::isModified() const
             option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor(wid);
             if (gucEditor)
                 return gucEditor->isModified();
+        }
+    } else if (kind() == FileKind::Efi) {
+        for (QWidget *wid: mEditors) {
+            if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(wid))
+                return efi->isModified();
         }
     }
     return false;

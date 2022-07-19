@@ -56,9 +56,11 @@ public:
     void setupViewModel();
     bool showProtection() const { return mShowProtection; }
     void setShowProtection(bool showProtection);
+    void setCreateVisible(bool visible);
 
 signals:
     void createClicked();
+    void selectionCountChanged(int count);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

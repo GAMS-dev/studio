@@ -4048,7 +4048,8 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc) {
+    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt
+               || fileMeta->kind() == FileKind::Guc|| fileMeta->kind() == FileKind::Efi) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
