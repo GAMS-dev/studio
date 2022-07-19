@@ -43,6 +43,7 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     connect(mFileSystemModel, &FileSystemModel::dataChanged, this, &FileSystemWidget::updateButtons);
     ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
+    connect(mFileSystemModel, &FileSystemModel::selectionCountChanged, this, &FileSystemWidget::selectionCountChanged);
 }
 
 void FileSystemWidget::setInfo(const QString &message, bool valid) {
@@ -94,6 +95,11 @@ void FileSystemWidget::setShowProtection(bool showProtection)
     mShowProtection = showProtection;
     ui->createButton->setText(showProtection ? "Save" : "Create");
     ui->directoryView->setItemDelegate(showProtection ? mDelegate : nullptr);
+}
+
+void FileSystemWidget::setCreateVisible(bool visible)
+{
+    ui->createButton->setVisible(visible);
 }
 
 void FileSystemWidget::clearSelection()

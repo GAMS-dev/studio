@@ -30,7 +30,7 @@
     <number>0</number>
    </property>
    <item>
-    <widget class="gams::studio::fs::FileSystemWidget" name="fsWidget" native="true"/>
+    <widget class="gams::studio::fs::FileSystemWidget" name="fsWidget"/>
    </item>
   </layout>
  </widget>

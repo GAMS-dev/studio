@@ -8,12 +8,19 @@ namespace studio {
 namespace efi {
 
 EfiEditor::EfiEditor(QWidget *parent) :
-    QWidget(parent),
+    AbstractView(parent),
     ui(new Ui::EfiEditor)
 {
     ui->setupUi(this);
     ui->fsWidget->setShowProtection(true);
-    connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::writeFile);
+    ui->fsWidget->setCreateVisible(false);
+    connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::requestSave);
+    connect(ui->fsWidget, &fs::FileSystemWidget::selectionCountChanged, this, [this](int count) {
+        setModified(true);
+        updateInfoText(QString(count ? "- selected %1 file%2" : "- no selection")
+                       .arg(count).arg(count > 1 ? "s" : ""), true);
+    });
+    setModified(false);
 }
 
 EfiEditor::~EfiEditor()
@@ -24,10 +31,13 @@ EfiEditor::~EfiEditor()
 void EfiEditor::setWorkingDir(const QString &workDir)
 {
     ui->fsWidget->setWorkingDirectory(workDir);
+    updateInfoText(mFileName.isEmpty() ? " - no filename assigned" : "", !mFileName.isEmpty());
 }
 
 void EfiEditor::load(const QString &fileName)
 {
+    if (ui->fsWidget->workingDirectory().isEmpty())
+        return;
     mFileName = fileName;
     QFile file(fileName);
     QStringList entries;
@@ -40,27 +50,46 @@ void EfiEditor::load(const QString &fileName)
             if (!line.trimmed().isEmpty())
                 entries << line;
         }
-        ui->fsWidget->setInfo(entries.isEmpty() ? "'%1' is empty" : "'%1' is loaded", true);
         ui->fsWidget->setSelectedFiles(entries);
         file.close();
     } else {
-        if (file.exists())
-            ui->fsWidget->setInfo("Can't load '%1'", false);
-        else
-            ui->fsWidget->setInfo("'%1' doesn't exist", true);
+        updateInfoText(QString(file.exists() ? "- Can't load '%1'" : "- '%1' doesn't exist").arg(fileName), file.exists());
     }
+    setModified(false);
 }
 
-void EfiEditor::writeFile()
+bool EfiEditor::isModified()
 {
-    QFile file(mFileName);
+    return mModified;
+}
+
+void EfiEditor::save(const QString &fileName)
+{
+    QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
         for (const QString &line : ui->fsWidget->selectedFiles()) {
             file.write(line.toUtf8());
             file.write("\n");
         }
         file.close();
+        mFileName = fileName;
+        mModified = false;
     }
+}
+
+void EfiEditor::updateInfoText(QString extraText, bool valid)
+{
+    if (ui->fsWidget->workingDirectory().isEmpty())
+        ui->fsWidget->setInfo("No working directory", false);
+    else
+        ui->fsWidget->setInfo(QString("%1   %2").arg(ui->fsWidget->workingDirectory(), extraText), valid);
+}
+
+void EfiEditor::setModified(bool modified)
+{
+    if (modified == mModified) return;
+    mModified = modified;
+    emit modificationChanged(mModified);
 }
 
 } // namespace efi

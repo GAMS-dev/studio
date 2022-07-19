@@ -48,6 +48,9 @@ public:
     bool hasSelection();
     void setRootDir(const QDir &dir);
 
+signals:
+    void selectionCountChanged(int count);
+
 private slots:
     void newDirectoryData(const QString &path);
     void updateDirCheckStates();
@@ -68,7 +71,7 @@ private:
     QTimer mUpdateTimer;
     mutable QMap<QString, DirState> mDirs;
     QMap<QString, bool> mWriteBack;
-    QSet<QString> mCheckedFiles;
+    QSet<QString> mSelectedFiles;
 };
 
 } // namespace fs
