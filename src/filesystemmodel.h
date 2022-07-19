@@ -47,6 +47,7 @@ public:
     void setSelectedFiles(const QStringList &files);
     bool hasSelection();
     void setRootDir(const QDir &dir);
+    int selectionCount();
 
 signals:
     void selectionCountChanged(int count);

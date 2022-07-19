@@ -21,12 +21,14 @@ public:
     void load(const QString &fileName);
     void save(const QString &fileName);
     bool isModified();
+    void setWarnText(const QString &text);
 
 signals:
     void modificationChanged(bool modiState);
     void requestSave();
 
 private slots:
+    void updateSelCount();
 
 private:
     void updateInfoText(QString extraText, bool valid);

@@ -150,6 +150,11 @@ bool FileSystemModel::hasSelection()
     return !mSelectedFiles.isEmpty();
 }
 
+int FileSystemModel::selectionCount()
+{
+    return mSelectedFiles.count();
+}
+
 void FileSystemModel::newDirectoryData(const QString &path)
 {
     QString relPath = rootDirectory().relativeFilePath(path);

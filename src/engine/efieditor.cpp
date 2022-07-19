@@ -15,11 +15,7 @@ EfiEditor::EfiEditor(QWidget *parent) :
     ui->fsWidget->setShowProtection(true);
     ui->fsWidget->setCreateVisible(false);
     connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::requestSave);
-    connect(ui->fsWidget, &fs::FileSystemWidget::selectionCountChanged, this, [this](int count) {
-        setModified(true);
-        updateInfoText(QString(count ? "- selected %1 file%2" : "- no selection")
-                       .arg(count).arg(count > 1 ? "s" : ""), true);
-    });
+    connect(ui->fsWidget, &fs::FileSystemWidget::selectionCountChanged, this, &EfiEditor::updateSelCount);
     setModified(false);
 }
 
@@ -61,6 +57,23 @@ void EfiEditor::load(const QString &fileName)
 bool EfiEditor::isModified()
 {
     return mModified;
+}
+
+void EfiEditor::setWarnText(const QString &text)
+{
+    if (text.isEmpty())
+        updateSelCount();
+    else
+        updateInfoText(text, false);
+}
+
+void EfiEditor::updateSelCount()
+{
+    setModified(true);
+    int count = ui->fsWidget->selectionCount();
+    updateInfoText(QString(count ? "- selected %1 file%2" : "- no selection")
+                   .arg(count).arg(count > 1 ? "s" : ""), true);
+
 }
 
 void EfiEditor::save(const QString &fileName)

@@ -802,7 +802,19 @@ void FileMeta::save(const QString &newLocation)
 
     } else if (kind() == FileKind::Efi) {
         efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
-        if (efi) efi->save(location);
+        if (efi) {
+            PExProjectNode *project = mFileRepo->projectRepo()->asProject(ViewHelper::groupId(efi));
+            QString text;
+            if (project) {
+                QFileInfo gmsFi(project->runnableGms()->location());
+                QFileInfo thisFi(location);
+                if (gmsFi.completeBaseName().compare(thisFi.completeBaseName(), FileType::fsCaseSense()) != 0) {
+                    text = "Warning: only " + gmsFi.completeBaseName() + ".efi is used for " + thisFi.completeBaseName();
+                }
+            }
+            efi->setWarnText(text);
+            efi->save(location);
+        }
 
     } else { // no document, e.g. lst
         QFile old(mLocation);
