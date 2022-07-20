@@ -228,15 +228,15 @@ void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
 {
     QDir dir(filePath(idx));
     QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
-    QModelIndex startIdx = QModelIndex();
-    QModelIndex subIdx = QModelIndex();
     if (fiList.isEmpty()) {
-        subIdx = index(dir.path());
-        startIdx = subIdx;
         if (remove) mCheckedFiles.remove(rootDirectory().relativeFilePath(dir.path()));
         else mCheckedFiles.insert(rootDirectory().relativeFilePath(dir.path()));
         return;
-    } else for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+    }
+
+    QModelIndex startIdx = QModelIndex();
+    QModelIndex subIdx = QModelIndex();
+    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
         subIdx = index(info.filePath());
         if (!startIdx.isValid()) startIdx = subIdx;
         QString relPath = rootDirectory().relativeFilePath(info.filePath());
