@@ -57,8 +57,8 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
         else
             mSelectedFiles.insert(file);
         emit selectionCountChanged(mSelectedFiles.count());
-        invalidateDirState(idx.parent());
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        invalidateDirState(idx.parent());
         return true;
     } else if (role == WriteBackRole && idx.column() == 0) {
         auto file = rootDirectory().relativeFilePath(filePath(idx));
@@ -237,29 +237,34 @@ void FileSystemModel::invalidateDirStates()
 
 void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
 {
-    while (canFetchMore(idx))
-        fetchMore(idx);
+    QDir dir(filePath(idx));
+    QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    if (fiList.isEmpty()) {
+        if (remove) mSelectedFiles.remove(rootDirectory().relativeFilePath(dir.path()));
+        else mSelectedFiles.insert(rootDirectory().relativeFilePath(dir.path()));
+        return;
+    }
 
-    int mSelCount = mSelectedFiles.count();
     QModelIndex startIdx = QModelIndex();
     QModelIndex subIdx = QModelIndex();
-    for (int r = 0; r < rowCount(idx); ++r) {
-        subIdx = index(r, 0, idx);
-        if (r == 0) startIdx = subIdx;
-
-        QString idxPath = rootDirectory().relativeFilePath(filePath(subIdx));
-        if (isDir(subIdx)) {
+    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+        subIdx = index(info.filePath());
+        if (!startIdx.isValid()) startIdx = subIdx;
+        QString relPath = rootDirectory().relativeFilePath(info.filePath());
+        if (info.isDir()) {
             updateDirInfo(subIdx);
-            mDirs[idxPath].checkState = remove ? Qt::Unchecked : Qt::Checked;
+            mDirs[relPath].checkState = remove ? Qt::Unchecked : Qt::Checked;
             setChildSelection(subIdx, remove);
         } else if (remove)
-            mSelectedFiles.remove(idxPath);
+            mSelectedFiles.remove(relPath);
         else
-            mSelectedFiles.insert(idxPath);
+            mSelectedFiles.insert(relPath);
     }
-    if (mSelCount != mSelectedFiles.count())
-        emit selectionCountChanged(mSelectedFiles.count());
-    emit dataChanged(startIdx, subIdx, QVector<int>() << Qt::CheckStateRole);
+    updateDirInfo(idx);
+    mDirs[rootDirectory().relativeFilePath(dir.path())].checkState = remove ? Qt::Unchecked : Qt::Checked;
+
+    if (startIdx.isValid())
+        emit dataChanged(startIdx, subIdx, QVector<int>() << Qt::CheckStateRole);
 }
 
 QString FileSystemModel::subPath(const QModelIndex &idx) const
