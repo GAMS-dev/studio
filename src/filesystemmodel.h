@@ -51,6 +51,7 @@ public:
 
 signals:
     void selectionCountChanged(int count);
+    void missingFiles(QStringList files);
 
 private slots:
     void newDirectoryData(const QString &path);

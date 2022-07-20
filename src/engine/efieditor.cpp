@@ -16,7 +16,7 @@ EfiEditor::EfiEditor(QWidget *parent) :
     ui->fsWidget->setCreateVisible(false);
     connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::requestSave);
     connect(ui->fsWidget, &fs::FileSystemWidget::selectionCountChanged, this, &EfiEditor::updateSelCount);
-    setModified(false);
+    mModified = false;
 }
 
 EfiEditor::~EfiEditor()
@@ -51,6 +51,7 @@ void EfiEditor::load(const QString &fileName)
     } else {
         updateInfoText(QString(file.exists() ? "- Can't load '%1'" : "- '%1' doesn't exist").arg(fileName), file.exists());
     }
+    mModified = false;
     setModified(false);
 }
 
@@ -79,14 +80,15 @@ void EfiEditor::updateSelCount()
 void EfiEditor::save(const QString &fileName)
 {
     QFile file(fileName);
-    if (file.open(QFile::WriteOnly | QFile::Text | QFile::Truncate)) {
+    if (file.open(QFile::WriteOnly | QFile::Text)) {
         for (const QString &line : ui->fsWidget->selectedFiles()) {
             file.write(line.toUtf8());
             file.write("\n");
         }
         file.close();
         mFileName = fileName;
-        mModified = false;
+        ui->fsWidget->clearMissingFiles();
+        setModified(false);
     }
 }
 
@@ -100,6 +102,7 @@ void EfiEditor::updateInfoText(QString extraText, bool valid)
 
 void EfiEditor::setModified(bool modified)
 {
+    if (!ui->fsWidget->missingFiles().isEmpty()) modified = true;
     if (modified == mModified) return;
     mModified = modified;
     emit modificationChanged(mModified);

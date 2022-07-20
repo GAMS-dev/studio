@@ -58,6 +58,8 @@ public:
     void setShowProtection(bool showProtection);
     void setCreateVisible(bool visible);
     int selectionCount();
+    void clearMissingFiles();
+    QStringList missingFiles() { return mMissingFiles; }
 
 signals:
     void createClicked();
@@ -77,6 +79,7 @@ private:
     bool mValidAssemblyFile;
     QString mWorkingDirectory;
     bool mShowProtection = false;
+    QStringList mMissingFiles;
 
     FileSystemModel *mFileSystemModel;
     FilteredFileSystemModel *mFilterModel;

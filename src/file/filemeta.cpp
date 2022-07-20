@@ -576,7 +576,6 @@ void FileMeta::addEditor(QWidget *edit)
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
         connect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
-//        connect(efi, &efi::EfiEditor::requestSave, this, &FileMeta::);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         connect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -719,11 +718,15 @@ void FileMeta::load(int codecMib, bool init)
             return;
     }
     if (kind() == FileKind::Efi) {
+        bool textOptEditor = true;
         for (QWidget *wid : qAsConst(mEditors)) {
             if (efi::EfiEditor *ee = ViewHelper::toEfiEditor(wid)) {
+                textOptEditor = false;
                 ee->load(location());
             }
         }
+        if (!textOptEditor)
+            return;
     }
 
     QFile file(location());

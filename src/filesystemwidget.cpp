@@ -44,24 +44,30 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
     connect(mFileSystemModel, &FileSystemModel::selectionCountChanged, this, &FileSystemWidget::selectionCountChanged);
+    connect(mFileSystemModel, &FileSystemModel::missingFiles, this, [this](QStringList files) {
+        mMissingFiles = files;
+        emit selectionCountChanged(mFileSystemModel->selectionCount());
+    });
 }
 
 void FileSystemWidget::setInfo(const QString &message, bool valid) {
+    QString extraText;
+    QString toolTip;
+    if (!mMissingFiles.isEmpty()) {
+        extraText = QString(" (%1 files missing)").arg(mMissingFiles.count());
+        toolTip = "Missing files:\n" + mMissingFiles.join("\n");
+    }
+    auto palette = ui->assemblyFileLabel->palette();
     if (valid) {
-        auto palette = ui->assemblyFileLabel->palette();
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Theme::color(Theme::Normal_Green));
-        ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText(message);
+        palette.setColor(ui->assemblyFileLabel->foregroundRole(), Theme::color(Theme::Normal_Green));
         ui->createButton->setText("Save Changes");
     } else {
-        auto palette = ui->assemblyFileLabel->palette();
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(),
-                         Theme::color(Theme::Normal_Red));
-        ui->assemblyFileLabel->setPalette(palette);
-        ui->assemblyFileLabel->setText(message);
+        palette.setColor(ui->assemblyFileLabel->foregroundRole(), Theme::color(Theme::Normal_Red));
         ui->createButton->setText("Create");
     }
+    ui->assemblyFileLabel->setPalette(palette);
+    ui->assemblyFileLabel->setText(message + extraText);
+    ui->assemblyFileLabel->setToolTip(toolTip);
 }
 
 QStringList FileSystemWidget::selectedFiles()
@@ -107,6 +113,11 @@ int FileSystemWidget::selectionCount()
     return mFileSystemModel->selectionCount();
 }
 
+void FileSystemWidget::clearMissingFiles()
+{
+    mMissingFiles.clear();
+}
+
 void FileSystemWidget::clearSelection()
 {
     mFileSystemModel->clearSelection();
@@ -115,6 +126,7 @@ void FileSystemWidget::clearSelection()
 void FileSystemWidget::on_createButton_clicked()
 {
     emit createClicked();
+    mMissingFiles.clear();
     ui->createButton->setEnabled(false);
 }
 
