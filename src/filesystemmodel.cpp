@@ -151,6 +151,15 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
         } else
             mSelectedFiles << file;
     }
+    QStringList missFiles;
+    for (const QString &file : mSelectedFiles) {
+        if (!QFileInfo::exists(rootDirectory().absoluteFilePath(file)))
+            missFiles << file;
+    }
+    for (const QString &file: missFiles) {
+        mSelectedFiles.remove(file);
+    }
+    if (missFiles.count()) emit missingFiles(missFiles);
     invalidateDirStates();
     emit selectionCountChanged(mSelectedFiles.count());
 }
