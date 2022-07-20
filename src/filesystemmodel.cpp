@@ -110,8 +110,18 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
 
 void FileSystemModel::clearSelection()
 {
+    QSet<QModelIndex> indices;
+    for (const QString &file : mSelectedFiles) {
+        QModelIndex mi = index(rootDirectory().absoluteFilePath(file));
+        while (mi.isValid()) {
+            indices << mi;
+            mi = mi.parent();
+        }
+    }
     mSelectedFiles.clear();
     invalidateDirStates();
+    for (const QModelIndex &idx : indices)
+        emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
     emit selectionCountChanged(mSelectedFiles.count());
 }
 
