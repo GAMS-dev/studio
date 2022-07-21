@@ -1282,8 +1282,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
                                                             path,
                                                             ViewHelper::dialogFileFilterUserCreated().join(";;"), nullptr, QFileDialog::DontConfirmOverwrite)
                              : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
-                                                            path,
-                                                            tr(QString("%1 option file (%1*);;All files (*)").arg(solverName).toLatin1()),
+                                                            path, ViewHelper::dialogOptFileFilter(solverName),
                                                             nullptr, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
@@ -1424,8 +1423,7 @@ void MainWindow::on_actionSave_As_triggered()
     while (choice < 1) {
         QStringList filters;
         if (fileMeta->kind() == FileKind::Opt) {
-            filters << tr( QString("%1 option files (%1*)").arg(fi.baseName()).toLatin1() );
-            filters << tr("All files (*)");
+            filters << ViewHelper::dialogOptFileFilter(fi.baseName());
             filePath = QFileDialog::getSaveFileName(this, "Save file as...",
                                                     filePath, filters.join(";;"),
                                                     &filters.first(),

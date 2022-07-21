@@ -21,7 +21,7 @@
 
 void TestDialogFileFilter::testUserCreatedTypes()
 {
-    QStringList userFileTypes = {"*.gms", "*.txt", "*.opt", "*.op*", "*.o*", "*.*"};
+    QStringList userFileTypes = {"*.gms", "*.txt", "*.opt", "*.op*", "*.o*", allFilesFilter};
 
     for (QString t : userFileTypes) {
         QVERIFY2(ViewHelper::dialogFileFilterUserCreated().filter(t).size() > 0,
@@ -31,7 +31,7 @@ void TestDialogFileFilter::testUserCreatedTypes()
 
 void TestDialogFileFilter::testAllFileTypes()
 {
-    QStringList gamsFileTypes = {".gms", ".txt", ".opt", ".op*", ".o*", "*.*", "*.gdx", "*.log", "*.lst", "*.ref", "*.dmp"};
+    QStringList gamsFileTypes = {".gms", ".txt", ".opt", ".op*", ".o*", allFilesFilter, "*.gdx", "*.log", "*.lst", "*.ref", "*.dmp"};
     for (QString t : gamsFileTypes) {
         QVERIFY2(ViewHelper::dialogFileFilterAll().filter(t).size() > 0,
                  QString("%1 not part of Dialog File Filter for GAMS created files.").arg(t).toStdString().c_str());
