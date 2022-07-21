@@ -86,8 +86,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput1_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             mRecentPath,
-                                                            tr("GDX file (*.gdx);;"
-                                                               "All files (*.*)"));
+                                                            ViewHelper::dialogGdxFilter());
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
         setInput1(filePath);
@@ -98,8 +97,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Choose GDX File...",
                                                             mRecentPath,
-                                                            tr("GDX file (*.gdx);;"
-                                                               "All files (*.*)"));
+                                                            ViewHelper::dialogGdxFilter());
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
         setInput2(filePath);
@@ -109,10 +107,11 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbInput2_clicked()
 void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbDiff_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Choose GDX File...",
-                                                            QDir::cleanPath(mRecentPath + QDir::separator() + defaultDiffFile) ,
-                                                            tr("GDX file (*.gdx);;"
-                                                               "All files (*.*)"), nullptr,
-                                                    QFileDialog::DontConfirmOverwrite);
+                                                            QDir::cleanPath(mRecentPath +
+                                                                QDir::separator() + defaultDiffFile),
+                                                                ViewHelper::dialogGdxFilter(),
+                                                            nullptr,
+                                                            QFileDialog::DontConfirmOverwrite);
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
         ui->leDiff->setText(QDir::toNativeSeparators(filePath));

@@ -559,8 +559,7 @@ void SettingsDialog::on_btn_export_clicked()
     QString filePath = QFileDialog::getSaveFileName(this, "Export Settings",
                                                     mSettings->toString(skDefaultWorkspace)
                                                     + "/studiosettings.gus",
-                                                    tr("GAMS user settings (*.gus);;"
-                                                       "All files (*.*)"));
+                                                    ViewHelper::dialogSettingsFileFilter());
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty()) filePath += ".gus";
 
@@ -571,8 +570,7 @@ void SettingsDialog::on_btn_import_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Import Settings",
                                                     mSettings->toString(skDefaultWorkspace),
-                                                    tr("GAMS user settings (*.gus);;"
-                                                       "All files (*.*)"));
+                                                    ViewHelper::dialogSettingsFileFilter());
     if (filePath == "") return;
 
     QMessageBox msgBox;

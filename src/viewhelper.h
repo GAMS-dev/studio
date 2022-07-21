@@ -33,6 +33,13 @@
 namespace gams {
 namespace studio {
 
+#ifdef _WIN32
+    static const QString allFilesFilter = "*.*";
+#else
+    // using *.* would exclude all files without extension
+    static const QString allFilesFilter = "*";
+#endif
+
 class ViewHelper
 {
     ViewHelper();
@@ -148,6 +155,24 @@ public:
         return res;
     }
 
+    static const QString dialogGdxFilter() {
+        QString res("GDX file (*.gdx);;");
+        res.append("All files (" + allFilesFilter + ")");
+        return res;
+    }
+
+    static const QString dialogOptFileFilter(QString solverName) {
+        QString res("%1 option file (%1*);;All files (" + allFilesFilter + ")");
+        res = res.arg(solverName);
+        return res;
+    }
+
+    static const QString dialogSettingsFileFilter() {
+        QString res("GAMS user settings (*.gus);;");
+        res.append("All files (" + allFilesFilter + ")");
+        return res;
+    }
+
     static QStringList dialogFileFilterUserCreated() {
         QStringList res("GAMS source (*.gms)");
         QStringList userTypes = FileType::userGamsTypes();
@@ -158,7 +183,7 @@ public:
         << "GAMS Configuration file (gamsconfig.yaml)"
         << "Text files (*.txt)"
         << "External files (*.efi)"
-        << "All files (*.*)";
+        << "All files (" + allFilesFilter + ")";
         return res;
     }
 
@@ -178,7 +203,7 @@ public:
         << "Reference files (*.ref)"
         << "Text files (*.txt)"
         << "External files (*.efi)"
-        << "All files (*.*)";
+        << "All files (" + allFilesFilter + ")";
         return res;
     }
 
@@ -186,7 +211,6 @@ public:
 
     static void setAppearance(int appearance = -1);
     static void changeAppearance(int appearance = -1);
-
 };
 
 } // namespace studio

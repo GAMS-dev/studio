@@ -5,6 +5,7 @@ Version 1.11.1  *
 - fixed focus and auto-fill when re-triggering search dialog while it's already open
 - fixed base path of folders added via drag'n'drop in empty Project Explorer area
 - fixed error in restoring selection of MIRO deployment dialog
+- fixed file filter for all files not showing files without extension on linux and macOS
 
 Version 1.11.0
 ==================
