@@ -88,7 +88,7 @@ void Search::start(bool ignoreReadonly, bool searchBackwards, bool showResults)
             continue;
 
         // sort files by modified, current file first
-        if (fm->isModified()) {
+        if (fm->isModified() && fm->document()) {
             if (fm == currentFile) modified.insert(0, fm);
             else modified << fm;
         } else {
