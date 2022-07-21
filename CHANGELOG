@@ -1,11 +1,11 @@
-Version 1.11.1  *
+Version 1.11.1
 ==================
-- fixed parameter procTreeMemMonitor in GAMS configuration influences license dialog output
-- added link to open the directory after a MIRO deployment
+- fixed parameter procTreeMemMonitor in GAMS configuration influencing license dialog output
+- added link to MIRO output that opens directory in file explorer
 - fixed focus and auto-fill when re-triggering search dialog while it's already open
 - fixed base path of folders added via drag'n'drop in empty Project Explorer area
 - fixed error in restoring selection of MIRO deployment dialog
-- fixed file filter for all files not showing files without extension on linux and macOS
+- fixed "All Files" filter not showing files without extension on linux and macOS
 - fixed inconsistencies in search dialog when switching files while search is running
 
 Version 1.11.0
