@@ -68,7 +68,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actOpen, addAction("&Open File", this, &ProjectContextMenu::onOpenFile));
     mActions.insert(actOpenAsText, addAction("&Open File As Text", this, &ProjectContextMenu::onOpenFileAsText));
     mActions.insert(actReOpen, addAction("&Reopen File using Editor", this, &ProjectContextMenu::onReOpenFile));
-    mActions.insert(actReOpenAsText, addAction("Reopen File as Text", this, &ProjectContextMenu::onReOpenSolverOptionFileAsText));
+    mActions.insert(actReOpenAsText, addAction("Reopen File as Text", this, &ProjectContextMenu::onReOpenFileAsText));
 
     mActions.insert(actSep1, addSeparator());
 
@@ -165,22 +165,27 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isOpenable = fileNode && !fileNode->file()->isOpen();
     bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
     bool isGucFile = fileNode && fileNode->file()->kind() == FileKind::Guc;
+    bool isEfiFile = fileNode && fileNode->file()->kind() == FileKind::Efi;
     bool isOpenableAsText = isOpenable && (isOptFile || isGucFile);
     bool isOpenWithSolverOptionEditor = false;
     bool isOpenWithGamsUserConfigEditor = false;
+    bool isOpenWithEfiEditor = false;
     if (fileNode) {
         for (QWidget *e : fileNode->file()->editors()) {
             if (ViewHelper::toSolverOptionEdit(e))
                 isOpenWithSolverOptionEditor = true;
             else if (ViewHelper::toGamsConfigEditor(e))
-                    isOpenWithGamsUserConfigEditor = true;
+                isOpenWithGamsUserConfigEditor = true;
+            else if (ViewHelper::toEfiEditor(e))
+                isOpenWithEfiEditor = true;
         }
     }
-    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor);
+    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor || isOpenWithEfiEditor);
 
     bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
     bool isReOpenableWithGamsUserConfigEditor = isOpen && isGucFile && !isOpenWithGamsUserConfigEditor;
-    bool isReOpenable = isReOpenableWithSolverOptionEditor || isReOpenableWithGamsUserConfigEditor;
+    bool isReOpenableWithEfiEditor = isOpen && isEfiFile && !isOpenWithEfiEditor;
+    bool isReOpenable = isReOpenableWithSolverOptionEditor || isReOpenableWithGamsUserConfigEditor || isReOpenableWithEfiEditor;
 
     // opening GDX diff is only possible for one or two selected GDX files
     bool isOpenableWithGdxDiff = false;
@@ -213,8 +218,10 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     if (isReOpenableWithGamsUserConfigEditor)
         mActions[actReOpen]->setText( "&Reopen File using Gams User Configuration Editor" );
-    else
+    else if (isReOpenableWithSolverOptionEditor)
         mActions[actReOpen]->setText( "&Reopen File using Solver Option Editor" );
+    else
+        mActions[actReOpen]->setText( "&Reopen File using EFI Editor" );
     mActions[actReOpen]->setEnabled(isReOpenable);
     mActions[actReOpen]->setVisible(isReOpenable);
     mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
@@ -424,7 +431,7 @@ void ProjectContextMenu::onReOpenFile()
     if (file) emit reOpenFile(file, true, -1, false);
 }
 
-void ProjectContextMenu::onReOpenSolverOptionFileAsText()
+void ProjectContextMenu::onReOpenFileAsText()
 {
     PExFileNode *file = mNodes.first()->toFile();
     if (file) emit reOpenFile(file, true, -1, true);
