@@ -82,7 +82,7 @@ private:
     void onOpenFile();
     void onOpenFileAsText();
     void onReOpenFile();
-    void onReOpenSolverOptionFileAsText();
+    void onReOpenFileAsText();
     void onOpenLog();
 
 private:
