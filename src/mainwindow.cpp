@@ -3991,7 +3991,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
             fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
-            QTimer::singleShot(0, this, [this, edit, fileMeta](){
+            QTimer::singleShot(0, this, [this, edit, fileMeta]() {
                 edit->setFont(getEditorFont(fileMeta->fontGroup()));
             });
 
@@ -4331,7 +4331,7 @@ void MainWindow::toggleSearchDialog()
     } else {
         //  other alternative editors
         PExFileNode *fn = mProjectRepo.findFileNode(mRecent.editor());
-        if (fn) {
+        if (fn /*  && !fn->file()->document() */ ) { // TODO(JM) We could offer search in text mode
             if (fn->file()->kind() == FileKind::Gdx) {
                 gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor());
                 gdx->selectSearchField();
@@ -4343,6 +4343,9 @@ void MainWindow::toggleSearchDialog()
             }
             if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
                 sow->selectSearchField();
+                return;
+            }
+            if (ViewHelper::toEfiEditor(mRecent.editor())) {
                 return;
             }
         }
