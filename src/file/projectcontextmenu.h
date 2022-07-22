@@ -49,6 +49,8 @@ signals:
     void addExistingFile(PExProjectNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
+    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
+                      NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
@@ -76,14 +78,16 @@ private slots:
     void onAddNewSolverOptionFile(const QString &solverName);
     void onOpenTerminal();
     void onGdxDiff();
-
-private:
     void onOpenFileLoc();
     void onOpenFile();
     void onOpenFileAsText();
     void onReOpenFile();
     void onReOpenFileAsText();
     void onOpenLog();
+    void onOpenEfi();
+
+private:
+    QString getEfiName(PExProjectNode *project) const;
 
 private:
     QVector<PExAbstractNode*> mNodes;

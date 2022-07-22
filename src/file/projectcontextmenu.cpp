@@ -40,6 +40,7 @@ enum ContextAction {
     actSep1,
     actExplorer,
     actLogTab,
+    actOpenEfi,
     actSep2,
     actSetMain,
     actSep3,
@@ -76,6 +77,8 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
+    mActions.insert(actOpenEfi, addAction("Create &EFI file", this, &ProjectContextMenu::onOpenEfi));
+
     mActions.insert(actSep2, addSeparator());
     mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
 
@@ -151,10 +154,18 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
     bool canExportProject = project && project->childCount();
+    bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         if (!canExportProject) break;
         if (node->assignedProject() != project)
             canExportProject = false;
+    }
+    if (isProject && single) {
+        PExProjectNode *project = mNodes.first()->toProject();
+        QString efi = getEfiName(project);
+        isProjectEfi = !efi.isEmpty();
+        if (isProjectEfi && QFileInfo::exists(efi))
+            mActions[actOpenEfi]->setText("Open &EFI file");
     }
 
     PExFileNode *fileNode = mNodes.size() ? mNodes.first()->toFile() : nullptr;
@@ -229,6 +240,9 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     mActions[actLogTab]->setVisible(isProject);
     mActions[actLogTab]->setEnabled(single);
+
+    mActions[actOpenEfi]->setVisible(isProject);
+    mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
     mActions[actProjExport]->setVisible(!isFreeSpace);
     mActions[actProjExport]->setEnabled(canExportProject);
@@ -440,6 +454,29 @@ void ProjectContextMenu::onReOpenFileAsText()
 void ProjectContextMenu::onOpenLog()
 {
     if (mNodes.first()) emit openLogFor(mNodes.first(), true, true);
+}
+
+void ProjectContextMenu::onOpenEfi()
+{
+    if (mNodes.first()) {
+        PExProjectNode *project = mNodes.first()->toProject();
+        QString efi = getEfiName(project);
+        if (!efi.isEmpty()) {
+            QFile file(efi);
+            if (!file.exists()) {
+                if (file.open(QFile::WriteOnly | QFile::Text))
+                    file.close();
+            }
+            emit openFilePath(efi, true, true);
+        }
+    }
+}
+
+QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
+{
+    if (!project->runnableGms()) return QString();
+    QFileInfo info(project->runnableGms()->location());
+    return info.path() + '/' + info.completeBaseName() + ".efi";
 }
 
 void ProjectContextMenu::onSelectAll()
