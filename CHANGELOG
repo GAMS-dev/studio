@@ -1,6 +1,10 @@
-Version 1.13.0
+Version 1.13.0 *
 ==================
 - improved numerical formatting of the GDX Viewer when using `g-format` with `Full` precision.
+
+Version 1.12.3 *
+==================
+- fixed empty help view on some Linux distributions
 
 Version 1.12.2
 ==================
