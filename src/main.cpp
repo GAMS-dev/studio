@@ -19,7 +19,6 @@
  */
 #include "application.h"
 #include "exception.h"
-#include "version.h"
 
 #include <QSystemSemaphore>
 
@@ -30,11 +29,11 @@ bool prepareScaling()
     bool res = false;
     QString studioScale = qgetenv("GAMS_STUDIO_SCALE_FACTOR");
     QString studioScalePerMonitor = qgetenv("GAMS_STUDIO_SCREEN_SCALE_FACTORS");
-    if (qgetenv("QT_SCALE_FACTOR").isEmpty() && !studioScale.isEmpty()) {
+    if (qEnvironmentVariableIsEmpty("QT_SCALE_FACTOR") && !studioScale.isEmpty()) {
         qputenv("QT_SCALE_FACTOR", studioScale.toUtf8());
         res = true;
     }
-    if (qgetenv("QT_SCREEN_SCALE_FACTORS").isEmpty() && !studioScalePerMonitor.isEmpty()) {
+    if (qEnvironmentVariableIsEmpty("QT_SCREEN_SCALE_FACTORS") && !studioScalePerMonitor.isEmpty()) {
         qputenv("QT_SCREEN_SCALE_FACTORS", studioScalePerMonitor.toUtf8());
         res = true;
     }
@@ -43,6 +42,7 @@ bool prepareScaling()
 
 int main(int argc, char *argv[])
 {
+    qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu --no-sandbox");
     QApplication::setAttribute(Qt::AA_UseOpenGLES);
     QApplication::setApplicationVersion(STUDIO_VERSION);
     QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);

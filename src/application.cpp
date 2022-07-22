@@ -123,7 +123,7 @@ bool Application::checkForOtherInstance()
 
     if(socket.waitForConnected()) {
         QByteArray buffer;
-        for(QString f : mCmdParser.files())
+        Q_FOREACH (auto f, mCmdParser.files())
             buffer.append(f.toUtf8() + "\n");
         socket.write(buffer);
         socket.waitForBytesWritten();
@@ -168,7 +168,7 @@ bool Application::event(QEvent *event)
         // this is a macOS only event
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
         mMainWindow->openFiles({openEvent->url().path()}, false);
-        for (auto window : allWindows()) {
+        Q_FOREACH (auto window, allWindows()) {
             if (!window->isVisible())
                 continue;
             if (window->windowState() & Qt::WindowMinimized) {
