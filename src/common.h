@@ -171,6 +171,13 @@ enum NewTabStrategy {
     tabAtEnd
 };
 
+enum OpenGroupOption {
+    ogNone,
+    ogFindGroup,
+    ogCurrentGroup,
+    ogNewGroup
+};
+
 template <typename T>
 typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
 operator<<(QTextStream &dbg, T enumValue)

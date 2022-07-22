@@ -41,6 +41,7 @@
 #include "editors/navigationhistory.h"
 #include "neos/neosprocess.h"
 #include "engine/engineprocess.h"
+#include "common.h"
 
 #ifdef QWEBENGINE
 #include "help/helpwidget.h"
@@ -96,14 +97,12 @@ class MainWindow : public QMainWindow
     Q_OBJECT
 
 public:
-    enum OpenGroupOption { ogNone, ogFindGroup, ogCurrentGroup, ogNewGroup };
     enum OpenPermission { opNone, opNoGsp, opAll };
 
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
-    PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -162,6 +161,8 @@ signals:
     void savedAs();
 
 public slots:
+    PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr,
+                                    OpenGroupOption opt = ogNone, bool focus = false);
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);

@@ -216,7 +216,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this, &MainWindow::openFilePath);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this, &MainWindow::openFileWithOption);
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
@@ -3076,7 +3076,7 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt)
+PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt, bool focus)
 {
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
@@ -3123,7 +3123,7 @@ PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* kn
 
     // open the detected file
     if (fileNode) {
-        openFileNode(fileNode, false);
+        openFileNode(fileNode, focus);
     } else {
         DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
     }

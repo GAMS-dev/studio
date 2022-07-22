@@ -467,7 +467,7 @@ void ProjectContextMenu::onOpenEfi()
                 if (file.open(QFile::WriteOnly | QFile::Text))
                     file.close();
             }
-            emit openFilePath(efi, true, true);
+            emit openFilePath(efi, project, ogNone, true);
         }
     }
 }
