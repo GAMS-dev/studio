@@ -28,6 +28,11 @@ ConnectData::ConnectData(const YAML::Node& node) : ConnectAgent(node)
 {
 }
 
+ConnectData::ConnectData(const QString &inputFileName)
+{
+    loadFromFile(inputFileName);
+}
+
 void ConnectData::loadFromFile(const QString &inputFileName)
 {
     ConnectAgent::loadFromFile(inputFileName);
@@ -36,6 +41,15 @@ void ConnectData::loadFromFile(const QString &inputFileName)
 void ConnectData::loadFromString(const QString &input)
 {
     ConnectAgent::loadFromString(input);
+}
+
+void ConnectData::unload(const QString &outputFileName)
+{
+    YAML::Emitter emitter;
+    emitter << mRootNode;
+
+    std::ofstream fout(outputFileName.toStdString());
+    fout << emitter.c_str() << std::endl;
 }
 
 

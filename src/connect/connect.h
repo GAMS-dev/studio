@@ -21,6 +21,7 @@
 #define CONNECT_H
 
 #include "connectdata.h"
+#include "connecterror.h"
 #include "connectschema.h"
 
 namespace gams {
@@ -35,8 +36,8 @@ public:
 
     bool validateData(const QString& schemaname, ConnectData& data);
 
-    ConnectData *createFileHolder(const QStringList& schemaNameList);
-    ConnectData* createDataHolder(const QString& schemaName);
+    ConnectData* createDataHolder(const QStringList& schemaNameList);
+    void addDataForAgent(ConnectData* data, const QString& schemaName);
 
     ConnectSchema* getSchema(const QString& schemaName);
     QStringList getSchemaNames() const;
@@ -45,10 +46,13 @@ private:
     void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
     void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
 
-    QMap<QString, ConnectSchema*> mSchema;
-
     YAML::Node createConnectData(const QString& schemaName);
 
+    bool isTypeValid(QList<Type>& typeList, const YAML::Node &data);
+    void updateKeyList(const QString& schemaname, QString& keyFromRoot, YAML::Node& error, const YAML::Node &data);
+
+    QMap<QString, ConnectSchema*> mSchema;
+    YAML::Node mError;
 };
 
 } // namespace connect

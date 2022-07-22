@@ -34,7 +34,6 @@ protected:
     ConnectAgent(const YAML::Node& node);
     virtual void loadFromFile(const QString& inputFileName);
     virtual void loadFromString(const QString& input);
-    void unload(const QString& outputFileName);
 
     YAML::Node mRootNode;
 

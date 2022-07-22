@@ -122,6 +122,16 @@ QStringList ConnectSchema::getFirstLevelKeyList() const
     return mSchemaHelper.keys();
 }
 
+QStringList ConnectSchema::getAllRequiredKeyList() const
+{
+    QStringList keyList;
+    for(const QString& key : mSchemaHelper.keys()) {
+        if (mSchemaHelper[key]->required)
+            keyList << key;
+    }
+    return keyList;
+}
+
 bool ConnectSchema::contains(const QString &key) const
 {
     return (mSchemaHelper.contains(key));
@@ -153,28 +163,22 @@ bool ConnectSchema::isRequired(const QString &key) const
     }
 }
 
-Value ConnectSchema::getMin(const QString &key) const
+ValueWrapper ConnectSchema::getMin(const QString &key) const
 {
     if (contains(key)) {
-        ValueWrapper vw = mSchemaHelper[key]->min;
-        if (vw.type==ValueType::INTEGER)
-            return vw.value.intval;
-        else if (vw.type==ValueType::FLOAT)
-                return vw.value.doubleval;
+        return mSchemaHelper[key]->min;
+    } else {
+        return ValueWrapper();
     }
-    return Value();
 }
 
-Value ConnectSchema::getMax(const QString &key) const
+ValueWrapper ConnectSchema::getMax(const QString &key) const
 {
     if (contains(key)) {
-        ValueWrapper vw = mSchemaHelper[key]->max;
-        if (vw.type==ValueType::INTEGER)
-            return vw.value.intval;
-        else if (vw.type==ValueType::FLOAT)
-                return vw.value.doubleval;
+        return mSchemaHelper[key]->max;
+    } else {
+        return ValueWrapper();
     }
-    return Value();
 }
 
 

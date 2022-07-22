@@ -27,7 +27,6 @@ namespace connect {
 
 ConnectAgent::ConnectAgent()
 {
-    mRootNode = YAML::Node(YAML::NodeType::Map);  // of Map type by default
 }
 
 ConnectAgent::ConnectAgent(const YAML::Node &node) : mRootNode(node)
@@ -44,15 +43,6 @@ void ConnectAgent::loadFromString(const QString &input)
 {
     mRootNode = YAML::Load(input.toStdString());
 
-}
-
-void ConnectAgent::unload(const QString &outputFileName)
-{
-    YAML::Emitter emitter;
-    emitter << mRootNode;
-
-    std::ofstream fout(outputFileName.toStdString());
-    fout << emitter.c_str() << std::endl;
 }
 
 } // namespace connect

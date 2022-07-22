@@ -110,9 +110,13 @@ union Value  {
        return *this;
     }
 
-    bool operator==(bool val) const   { return boolval == val;  }
-    bool operator==(int val) const    { return intval == val;   }
-    bool operator==(double val) const { return doubleval == val;  }
+//    bool operator<(int val) const     { return intval < val;     }
+//    bool operator>(int val) const     { return intval > val;     }
+//    bool operator<(double val) const  { return doubleval < val;  }
+//    bool operator>(double val) const  { return doubleval > val;  }
+    bool operator==(bool val) const   { return boolval == val;   }
+    bool operator==(int val) const    { return intval == val;    }
+    bool operator==(double val) const { return doubleval == val; }
     bool operator==(const char* val) const {
         if( stringval == val )
            return true;
@@ -206,14 +210,15 @@ public:
     void loadFromString(const QString& input);
 
     QStringList getFirstLevelKeyList() const;
+    QStringList getAllRequiredKeyList() const;
     bool contains(const QString& key) const;
 
     Schema* getSchema(const QString& key) const;
 
     QList<Type> getType(const QString& key) const;
     bool isRequired(const QString& key) const;
-    Value getMin(const QString& key) const;
-    Value getMax(const QString& key) const;
+    ValueWrapper getMin(const QString& key) const;
+    ValueWrapper getMax(const QString& key) const;
 };
 
 } // namespace connect

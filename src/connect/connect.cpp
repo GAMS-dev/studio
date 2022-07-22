@@ -127,24 +127,25 @@ bool Connect::validateData(const QString &schemaname, ConnectData &data)
     return (error.size()== 0);
 }
 
-ConnectData *Connect::createFileHolder(const QStringList &schemaNameList)
+ConnectData *Connect::createDataHolder(const QStringList &schemaNameList)
 {
     int i = 0;
     YAML::Node data = YAML::Node(YAML::NodeType::Sequence);
-    foreach(QString filename, schemaNameList) {
+    foreach(QString name, schemaNameList) {
         YAML::Node node = YAML::Node(YAML::NodeType::Map);
-        node[filename.toStdString()] =  createConnectData(filename);
+        node[name.toStdString()] =  createConnectData(name);
         data[i++] = node;
     }
     return new ConnectData(data);
 }
 
-ConnectData* Connect::createDataHolder(const QString &schemaName)
+void Connect::addDataForAgent(ConnectData *data, const QString &schemaName)
 {
-    if (mSchema.contains(schemaName))
-        return new ConnectData(createConnectData(schemaName));
-    else
-        return nullptr;
+    Q_ASSERT(data->getRootNode().Type()==YAML::NodeType::Sequence);
+    int i = data->getRootNode().size();
+    YAML::Node node = YAML::Node(YAML::NodeType::Map);
+    node[schemaName.toStdString()] =  createConnectData(schemaName);
+    data[i] = node;
 }
 
 ConnectSchema *Connect::getSchema(const QString &schemaName)
@@ -265,7 +266,112 @@ YAML::Node Connect::createConnectData(const QString &schemaName)
             }
         }
     }
-    return data;
+    YAML::Node connectdata = YAML::Node(YAML::NodeType::Sequence);
+    connectdata[0] = data;
+    return connectdata;
+}
+
+bool Connect::isTypeValid(QList<Type>& typeList, const YAML::Node &data)
+{
+    bool validType = false;
+    foreach (Type t, typeList) {
+        try {
+            if (t==Type::INTEGER) {
+                if (data.Type()!=YAML::NodeType::Scalar)
+                    continue;
+                data.as<int>();
+            } else if (t==Type::FLOAT) {
+                      if (data.Type()!=YAML::NodeType::Scalar)
+                          continue;
+                      data.as<float>();
+            } else if (t==Type::BOOLEAN) {
+                      if (data.Type()!=YAML::NodeType::Scalar)
+                          continue;
+                       data.as<bool>();
+            } else if (t==Type::STRING) {
+                      if (data.Type()!=YAML::NodeType::Scalar)
+                          continue;
+                      data.as<std::string>();
+            } else if (t==Type::LIST) {
+                      if (data.Type()!=YAML::NodeType::Sequence)
+                          continue;
+            } else if (t==Type::DICT) {
+                      if (data.Type()!=YAML::NodeType::Map)
+                         continue;
+            }
+            validType = true;
+            break;
+        } catch (const YAML::BadConversion& e) {
+            validType=false;
+        }
+   }
+    return validType;
+}
+
+void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAML::Node& error, const YAML::Node &data)
+{
+    for (YAML::const_iterator it = data.begin(); it != data.end(); ++it) {
+        QString key = QString::fromStdString( it->first.as<std::string>() );
+        if (it->second.Type()==YAML::NodeType::Scalar) {
+            QList<Type> typeList = getSchema(schemaname)->getType(keyFromRoot);
+            bool validType = isTypeValid(typeList, it->second);
+            if (!validType) {
+                QString str = "must be of ";
+                if (typeList.size()==1) {
+                    str += typeToString(typeList[0]);
+                    str += " type";
+                } else {
+                    str += "[";
+                    int i = 0;
+                    for(auto const& t: typeList) {
+                        ++i;
+                        str += typeToString(t);
+                        if (i < typeList.size())
+                           str += ",";
+                    }
+                    str += "] type";
+                }
+                YAML::Node errorNode = YAML::Node(YAML::NodeType::Sequence);
+                errorNode.push_back( QString("must be of type %1" ).arg(str).toStdString() );
+                error[key.toStdString()] = errorNode;
+            } else {
+                ValueWrapper minval = getSchema(schemaname)->getMin(keyFromRoot);
+                if (minval.type==ValueType::INTEGER) {
+                    if (data.as<int>() < minval.value.intval) {
+                        /* TODO */
+                    }
+                } else if (minval.type==ValueType::FLOAT) {
+                        if (data.as<float>() < minval.value.doubleval) {
+                            /* TODO */
+                        }
+                }
+                ValueWrapper maxval = getSchema(schemaname)->getMax(keyFromRoot);
+                if (maxval.type!=ValueType::NOVALUE) {
+
+                }
+            }
+        } else if (it->second.Type()==YAML::NodeType::Sequence) {
+                   QString key = QString("%1:-").arg(keyFromRoot);
+                   QList<Type> typeList = getSchema(schemaname)->getType(key);
+                   YAML::Node listError;
+                   for(size_t i = 0; i<it->second.size(); i++) {
+                       YAML::Node itemError;
+                       updateKeyList(schemaname, key, itemError, it->second[i]);
+                       if (itemError.size() > 0) {
+                           YAML::Node nodeError = YAML::Node(YAML::NodeType::Map);
+                           nodeError[i] = itemError;
+                       }
+                   }
+                   if (listError.size() > 0) {
+                       YAML::Node errorNode = YAML::Node(YAML::NodeType::Sequence);
+                       errorNode.push_back( listError );
+                       error[keyFromRoot.toStdString()] = errorNode;
+                  }
+        } else if (it->second.Type()==YAML::NodeType::Map) {
+                  keyFromRoot = QString("%1:").arg(keyFromRoot);
+                  updateKeyList(schemaname, keyFromRoot, error, it->second );
+        }
+    }
 }
 
 } // namespace connect
