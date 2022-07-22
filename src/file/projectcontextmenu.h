@@ -49,8 +49,7 @@ signals:
     void addExistingFile(PExProjectNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
-                      NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFilePath(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone, bool focus = false);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
