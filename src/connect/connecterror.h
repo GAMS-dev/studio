@@ -29,6 +29,7 @@ namespace connect {
 class ConnectError : public ConnectAgent
 {
 public:
+    ConnectError();
     ConnectError(const YAML::Node& node);
 };
 

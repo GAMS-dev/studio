@@ -34,7 +34,7 @@ public:
     Connect();
     ~Connect();
 
-    bool validateData(const QString& schemaname, ConnectData& data);
+    bool validateData(const QString& inputFileName, bool checkSchema=false);
 
     ConnectData* createDataHolder(const QStringList& schemaNameList);
     void addDataForAgent(ConnectData* data, const QString& schemaName);
@@ -42,17 +42,19 @@ public:
     ConnectSchema* getSchema(const QString& schemaName);
     QStringList getSchemaNames() const;
 
+    ConnectError getError() const;
 private:
     void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
     void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
 
     YAML::Node createConnectData(const QString& schemaName);
+    bool validate(const QString& schemaname, ConnectData& data);
 
     bool isTypeValid(QList<Type>& typeList, const YAML::Node &data);
     void updateKeyList(const QString& schemaname, QString& keyFromRoot, YAML::Node& error, const YAML::Node &data);
 
     QMap<QString, ConnectSchema*> mSchema;
-    YAML::Node mError;
+    ConnectError mError;
 };
 
 } // namespace connect

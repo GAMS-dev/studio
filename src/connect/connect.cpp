@@ -47,7 +47,55 @@ Connect::~Connect()
     }
 }
 
-bool Connect::validateData(const QString &schemaname, ConnectData &data)
+bool Connect::validateData(const QString &inputFileName, bool checkSchema)
+{
+    YAML::Node error = YAML::Node(YAML::NodeType::Map);
+    try {
+        YAML::Node node = YAML::LoadFile(inputFileName.toStdString());
+        if (node.Type()!=YAML::NodeType::Sequence)
+            return false;
+
+        bool invalidSchema = true;
+        for (size_t i=0; i<node.size(); i++) {
+            if (node[i].Type()!=YAML::NodeType::Map) {
+                invalidSchema = true;
+                break;
+            } else {
+                for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
+                    QString key;
+                    try {
+                       std::string str = it->first.as<std::string>();
+                       key = QString::fromStdString(str);
+                    } catch(const YAML::BadConversion& e) {
+                        invalidSchema = true;
+                        break;
+                    }
+                    if (mSchema.keys().contains( key )) {
+                        if (checkSchema) {
+                            ConnectData data = node[i];
+                            invalidSchema = (validate( key, data )? false: true);
+                        } else{
+                           invalidSchema = false;
+                        }
+                    } else {
+                        YAML::Node errorNode = YAML::Node(YAML::NodeType::Sequence);
+                        errorNode.push_back( QString("unknonwn schema" ).toStdString() );
+                        error[key.toStdString()] = errorNode;
+
+                        invalidSchema = true;
+                    }
+                }
+            }
+        }
+        mError =  ConnectError(error);
+        return (!invalidSchema);
+
+    } catch(const YAML::ParserException& e) {
+        return false;
+    }
+}
+
+bool Connect::validate(const QString &schemaname, ConnectData &data)
 {
     YAML::Node datanode = data.getRootNode();
     if (datanode.Type()!=YAML::NodeType::Map) {
@@ -55,7 +103,6 @@ bool Connect::validateData(const QString &schemaname, ConnectData &data)
     }
 
     QStringList schemaKeylist = getSchema(schemaname)->getFirstLevelKeyList();
-//    qDebug() << "firstlevelkeylist::" << schemaKeylist;
     YAML::Node error;
     for (YAML::const_iterator it = data.getRootNode().begin(); it != data.getRootNode().end(); ++it) {
         QString key = QString::fromStdString( it->first.as<std::string>() );
@@ -123,7 +170,7 @@ bool Connect::validateData(const QString &schemaname, ConnectData &data)
            }
         }
     }
-
+    mError =  ConnectError(error);
     return (error.size()== 0);
 }
 
@@ -159,6 +206,11 @@ ConnectSchema *Connect::getSchema(const QString &schemaName)
 QStringList Connect::getSchemaNames() const
 {
     return mSchema.keys();
+}
+
+ConnectError Connect::getError() const
+{
+    return mError;
 }
 
 void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue)

@@ -24,6 +24,11 @@ namespace studio {
 namespace connect {
 
 
+ConnectError::ConnectError()
+{
+
+}
+
 ConnectError::ConnectError(const YAML::Node& node) : ConnectAgent(node)
 {
      Q_ASSERT(mRootNode.Type()==YAML::NodeType::Map);

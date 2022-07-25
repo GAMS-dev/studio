@@ -36,12 +36,20 @@ ConnectAgent::ConnectAgent(const YAML::Node &node) : mRootNode(node)
 
 void ConnectAgent::loadFromFile(const QString &inputFileName)
 {
-    mRootNode = YAML::LoadFile(inputFileName.toStdString());
+    try {
+        mRootNode = YAML::LoadFile(inputFileName.toStdString());
+    } catch(const YAML::ParserException& e) {
+        // ToDo
+    }
 }
 
 void ConnectAgent::loadFromString(const QString &input)
 {
-    mRootNode = YAML::Load(input.toStdString());
+    try {
+        mRootNode = YAML::Load(input.toStdString());
+    } catch(const YAML::ParserException& e) {
+        // ToDo
+    }
 
 }
 
