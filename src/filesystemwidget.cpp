@@ -21,6 +21,7 @@
 #include "ui_filesystemwidget.h"
 #include "filesystemmodel.h"
 #include "theme.h"
+#include "logger.h"
 
 #include <QMessageBox>
 #include <QMouseEvent>
@@ -48,6 +49,11 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
         mMissingFiles = files;
         emit selectionCountChanged(mFileSystemModel->selectionCount());
     });
+    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &regExp) {
+        mFilterModel->setFilterRegExp(regExp);
+    });
+    mUncommonFiles << "*.log" << "*.log~*" << "*.lxi" << "*.lst" << "*.efi" << "%1_files.txt"
+                   << "conf_%1" << "data_%1" << "static_%1" << "renderer_%1";
 }
 
 void FileSystemWidget::setInfo(const QString &message, bool valid) {
@@ -70,6 +76,23 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
     ui->assemblyFileLabel->setToolTip(toolTip);
 }
 
+void FileSystemWidget::setModelName(const QString &modelName)
+{
+    if (modelName.isEmpty()) {
+        mFilterModel->setUncommonRegExp(QRegExp());
+        return;
+    }
+    QStringList uncommonFiles;
+    for (const QString &rawFile: mUncommonFiles) {
+        uncommonFiles << rawFile.arg(modelName);
+    }
+    QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");
+    pattern = QString("^(%1)$").arg(pattern);
+    QRegExp rex(pattern);
+    DEB() << "pattern: " << pattern;
+    mFilterModel->setUncommonRegExp(rex);
+}
+
 QStringList FileSystemWidget::selectedFiles()
 {
     if (mFileSystemModel)
@@ -81,8 +104,6 @@ void FileSystemWidget::setSelectedFiles(const QStringList &files)
 {
     mFileSystemModel->setSelectedFiles(files);
     ui->createButton->setEnabled(false);
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
-    ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 
 QString FileSystemWidget::workingDirectory() const
@@ -118,6 +139,11 @@ void FileSystemWidget::clearMissingFiles()
     mMissingFiles.clear();
 }
 
+void FileSystemWidget::selectFilter()
+{
+    ui->edFilter->setFocus();
+}
+
 void FileSystemWidget::clearSelection()
 {
     mFileSystemModel->clearSelection();
@@ -138,6 +164,11 @@ void FileSystemWidget::on_selectAllButton_clicked()
 void FileSystemWidget::on_clearButton_clicked()
 {
     mFileSystemModel->clearSelection();
+}
+
+void FileSystemWidget::on_cbUncommon_clicked(bool checked)
+{
+    mFilterModel->setHideUncommonFiles(checked);
 }
 
 void FileSystemWidget::updateButtons()
@@ -210,6 +241,7 @@ void FileSystemItemDelegate::paint(QPainter *painter, const QStyleOptionViewItem
         icon.paint(painter, btRect, Qt::AlignCenter, writeBack ? QIcon::Normal : QIcon::Disabled);
     }
 }
+
 
 }
 }

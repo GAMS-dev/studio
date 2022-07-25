@@ -17,6 +17,30 @@ bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QMode
     return source_column == 0;
 }
 
+bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex &source_parent) const
+{
+    QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
+    if (idx.isValid()) {
+        if (static_cast<FileSystemModel*>(sourceModel())->isDir(idx)) {
+            QString text = sourceModel()->data(idx).toString();
+            if (mHideUncommon && text.startsWith("225")) return false;
+        } else {
+            QString text = sourceModel()->data(idx).toString();
+            if (mHideUncommon && mUncommonRegEx.isValid()) {
+                if (mUncommonRegEx.exactMatch(text)) {
+                    DEB() << text << " OUT";
+                    return false;
+                } else {
+                    DEB() << text << " IN";
+                }
+            }
+            return text.contains(filterRegExp());
+        }
+        return true;
+    }
+    return false;
+}
+
 FileSystemModel::FileSystemModel(QObject *parent)
     : QFileSystemModel(parent)
 {

@@ -60,6 +60,7 @@ public:
     int selectionCount();
     void clearMissingFiles();
     QStringList missingFiles() { return mMissingFiles; }
+    void selectFilter();
 
 signals:
     void createClicked();
@@ -72,6 +73,8 @@ private slots:
     void on_createButton_clicked();
     void on_selectAllButton_clicked();
     void on_clearButton_clicked();
+    void on_cbUncommon_clicked(bool checked);
+
     void updateButtons();
 
 private:
@@ -79,6 +82,7 @@ private:
     bool mValidAssemblyFile;
     QString mWorkingDirectory;
     bool mShowProtection = false;
+    QStringList mUncommonFiles;
     QStringList mMissingFiles;
 
     FileSystemModel *mFileSystemModel;

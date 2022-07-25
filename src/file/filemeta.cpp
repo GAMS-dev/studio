@@ -1153,6 +1153,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
     } else if (kind() == FileKind::Efi && !forcedAsTextEdit) {
         efi::EfiEditor *ee = ViewHelper::initEditorType(new efi::EfiEditor(parent));
         ee->setWorkingDir(project->workDir());
+        ee->setModelName(project->mainModelName());
         ee->load(location());
         res = ee;
     } else {

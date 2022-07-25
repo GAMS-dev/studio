@@ -18,10 +18,12 @@ public:
     explicit EfiEditor(QWidget *parent = nullptr);
     ~EfiEditor() override;
     void setWorkingDir(const QString &workDir);
+    void setModelName(const QString &name);
     void load(const QString &fileName);
     void save(const QString &fileName);
     bool isModified();
     void setWarnText(const QString &text);
+    void selectFilter();
 
 signals:
     void modificationChanged(bool modiState);

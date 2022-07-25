@@ -17,12 +17,17 @@ enum FileSystemRole {
 
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
+    bool mHideUncommon = true;
+    QRegExp mUncommonRegEx;
     Q_OBJECT
 public:
     FilteredFileSystemModel(QObject *parent = nullptr) { Q_UNUSED(parent) }
     bool isDir(const QModelIndex &index) const;
+    void setHideUncommonFiles(bool hide) { mHideUncommon = hide; invalidateFilter(); }
+    void setUncommonRegExp(QRegExp rex) { mUncommonRegEx = rex; invalidateFilter(); }
 protected:
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
+    bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
 };
 
 class FileSystemModel : public QFileSystemModel

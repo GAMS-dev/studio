@@ -69,6 +69,7 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
 
 void MiroDeployDialog::setModelName(const QString &modelName) {
     mModelName = modelName;
+    ui->fsWidget->setModelName(modelName);
     isDataContractAvailable();
 }
 

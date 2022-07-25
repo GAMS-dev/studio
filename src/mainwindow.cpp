@@ -4345,7 +4345,8 @@ void MainWindow::toggleSearchDialog()
                 sow->selectSearchField();
                 return;
             }
-            if (ViewHelper::toEfiEditor(mRecent.editor())) {
+            if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(mRecent.editor())) {
+                efi->selectFilter();
                 return;
             }
         }

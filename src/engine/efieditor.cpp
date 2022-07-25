@@ -30,6 +30,11 @@ void EfiEditor::setWorkingDir(const QString &workDir)
     updateInfoText(mFileName.isEmpty() ? " - no filename assigned" : "", !mFileName.isEmpty());
 }
 
+void EfiEditor::setModelName(const QString &name)
+{
+    ui->fsWidget->setModelName(name);
+}
+
 void EfiEditor::load(const QString &fileName)
 {
     if (ui->fsWidget->workingDirectory().isEmpty())
@@ -66,6 +71,11 @@ void EfiEditor::setWarnText(const QString &text)
         updateSelCount();
     else
         updateInfoText(text, false);
+}
+
+void EfiEditor::selectFilter()
+{
+    ui->fsWidget->selectFilter();
 }
 
 void EfiEditor::updateSelCount()
