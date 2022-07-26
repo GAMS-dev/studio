@@ -21,17 +21,25 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
 {
     QModelIndex idx = sourceModel()->index(source_row, 0, source_parent);
     if (idx.isValid()) {
-        if (static_cast<FileSystemModel*>(sourceModel())->isDir(idx)) {
+        FileSystemModel* srcModel = static_cast<FileSystemModel*>(sourceModel());
+        QString path = srcModel->data(idx, QFileSystemModel::FilePathRole).toString();
+        if (srcModel->isDir(idx)) {
             QString text = sourceModel()->data(idx).toString();
+            if (!path.startsWith(srcModel->rootPath())) return true;
             if (mHideUncommon && text.startsWith("225")) return false;
+            if (!filterRegExp().isEmpty()) {
+                QDir dir(srcModel->filePath(idx));
+                for (QFileInfo info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+                    QModelIndex child = srcModel->index(info.filePath());
+                    if (filterAcceptsRow(child.row(), idx)) return true;
+                }
+                return false;
+            }
         } else {
             QString text = sourceModel()->data(idx).toString();
             if (mHideUncommon && mUncommonRegEx.isValid()) {
                 if (mUncommonRegEx.exactMatch(text)) {
-                    DEB() << text << " OUT";
                     return false;
-                } else {
-                    DEB() << text << " IN";
                 }
             }
             return text.contains(filterRegExp());
@@ -221,6 +229,7 @@ void FileSystemModel::updateDirCheckStates()
 
 int FileSystemModel::dirCheckState(const QString &path, bool isConst) const
 {
+    if (path.startsWith("..")) return Qt::Unchecked;
     QDir dir(path);
     int flag = 0;
     QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);

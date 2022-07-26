@@ -51,7 +51,6 @@ public:
     QStringList selectedFiles(bool addWriteBackState = false);
     void setSelectedFiles(const QStringList &files);
     bool hasSelection();
-    void setRootDir(const QDir &dir);
     int selectionCount();
 
 signals:
