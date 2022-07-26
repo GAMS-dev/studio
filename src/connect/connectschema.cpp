@@ -119,7 +119,7 @@ void ConnectSchema::loadFromString(const QString &input)
 
 QStringList ConnectSchema::getFirstLevelKeyList() const
 {
-    return mSchemaHelper.keys();
+    return mFirstLeveKeyList;
 }
 
 QStringList ConnectSchema::getAllRequiredKeyList() const
