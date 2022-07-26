@@ -82,8 +82,11 @@ SOURCES += \
     connect/connect.cpp \
     connect/connectagent.cpp \
     connect/connectdata.cpp \
+    connect/connecteditor.cpp \
     connect/connecterror.cpp \
     connect/connectschema.cpp \
+    connect/schemadefinitionitem.cpp \
+    connect/schemadefinitionmodel.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codecompleter.cpp \
@@ -348,8 +351,11 @@ HEADERS += \
     connect/connect.h \
     connect/connectagent.h \
     connect/connectdata.h \
+    connect/connecteditor.h \
     connect/connecterror.h \
     connect/connectschema.h \
+    connect/schemadefinitionitem.h \
+    connect/schemadefinitionmodel.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
@@ -641,6 +647,7 @@ HEADERS += \
 
 FORMS += \
     confirmdialog.ui \
+    connect/connecteditor.ui \
     encodingsdialog.ui \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \
