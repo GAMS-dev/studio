@@ -25,6 +25,7 @@ public:
     bool isDir(const QModelIndex &index) const;
     void setHideUncommonFiles(bool hide) { mHideUncommon = hide; invalidateFilter(); }
     void setUncommonRegExp(QRegExp rex) { mUncommonRegEx = rex; invalidateFilter(); }
+    void setSourceModel(QAbstractItemModel *sourceModel) override;
 protected:
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;
     bool filterAcceptsRow(int source_row, const QModelIndex &source_parent) const override;
@@ -56,6 +57,7 @@ public:
 signals:
     void selectionCountChanged(int count);
     void missingFiles(QStringList files);
+    void isFiltered(QModelIndex source_index, bool &filtered) const;
 
 private slots:
     void newDirectoryData(const QString &path);
@@ -69,6 +71,7 @@ private:
 
     void setChildSelection(const QModelIndex &idx, bool remove);
     void selectAllFiles(const QDir &dir);
+    QList<QFileInfo> visibleFileInfoList(const QDir &dir) const;
 
     QString subPath(const QModelIndex &idx) const;
     QString subPath(const QString &path) const;

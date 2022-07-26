@@ -11,6 +11,16 @@ bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
     return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));
 }
 
+void FilteredFileSystemModel::setSourceModel(QAbstractItemModel *sourceModel)
+{
+    QSortFilterProxyModel::setSourceModel(sourceModel);
+    FileSystemModel *fsModel = qobject_cast<FileSystemModel*>(sourceModel);
+    if (fsModel)
+        connect(fsModel, &FileSystemModel::isFiltered, this, [this](QModelIndex source_index, bool &filtered) {
+            filtered = !filterAcceptsRow(source_index.row(), source_index.parent());
+        });
+}
+
 bool FilteredFileSystemModel::filterAcceptsColumn(int source_column, const QModelIndex &source_parent) const
 {
     Q_UNUSED(source_parent)
@@ -118,7 +128,7 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
     bool empty = true;
     QModelIndex first;
     QModelIndex idx;
-    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+    for (const QFileInfo &info : visibleFileInfoList(dir)) {
         idx = index(info.filePath());
         if (!first.isValid()) first = idx;
         empty = false;
@@ -138,6 +148,18 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
         emit dataChanged(first, idx, QVector<int>() << Qt::CheckStateRole);
     }
     mUpdateTimer.start();
+}
+
+QList<QFileInfo> FileSystemModel::visibleFileInfoList(const QDir &dir) const
+{
+    QList<QFileInfo> res;
+    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+        QModelIndex idx = index(info.filePath());
+        bool filtered;
+        emit isFiltered(idx, filtered);
+        if (!filtered) res << info;
+    }
+    return res;
 }
 
 void FileSystemModel::clearSelection()
@@ -232,7 +254,7 @@ int FileSystemModel::dirCheckState(const QString &path, bool isConst) const
     if (path.startsWith("..")) return Qt::Unchecked;
     QDir dir(path);
     int flag = 0;
-    QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    QList<QFileInfo> fiList = visibleFileInfoList(dir);
     if (fiList.isEmpty())
         return mSelectedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
 
@@ -290,7 +312,7 @@ void FileSystemModel::invalidateDirStates()
 void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
 {
     QDir dir(filePath(idx));
-    QList<QFileInfo> fiList = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    QList<QFileInfo> fiList = visibleFileInfoList(dir);
     if (fiList.isEmpty()) {
         if (remove) mSelectedFiles.remove(rootDirectory().relativeFilePath(dir.path()));
         else mSelectedFiles.insert(rootDirectory().relativeFilePath(dir.path()));
@@ -299,7 +321,7 @@ void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
 
     QModelIndex startIdx = QModelIndex();
     QModelIndex subIdx = QModelIndex();
-    for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+    for (const QFileInfo &info : visibleFileInfoList(dir)) {
         subIdx = index(info.filePath());
         if (!startIdx.isValid()) startIdx = subIdx;
         QString relPath = rootDirectory().relativeFilePath(info.filePath());
