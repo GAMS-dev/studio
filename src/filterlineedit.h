@@ -42,7 +42,7 @@ public:
     int effectiveKeyColumn();
 
 signals:
-    void regExpChanged(const QRegExp &regExp);
+    void regExpChanged(QRegExp regExp);
     void columnScopeChanged();
 
 protected:

@@ -20,6 +20,7 @@
 #include "filesystemwidget.h"
 #include "ui_filesystemwidget.h"
 #include "filesystemmodel.h"
+#include "file/filetype.h"
 #include "theme.h"
 #include "logger.h"
 
@@ -49,11 +50,12 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
         mMissingFiles = files;
         emit selectionCountChanged(mFileSystemModel->selectionCount());
     });
-    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &regExp) {
+    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegExp regExp) {
+        regExp.setCaseSensitivity(FileType::fsCaseSense());
         mFilterModel->setFilterRegExp(regExp);
     });
-    mUncommonFiles << "*.log" << "*.log~*" << "*.lxi" << "*.lst" << "*.efi" << "%1_files.txt"
-                   << "conf_%1" << "data_%1" << "static_%1" << "renderer_%1";
+    mUncommonFiles << "*.log" << "*.log~*" << "*.lxi" << "*.lst" << "*.efi"
+                   << "%1_files.txt" << "conf_%1" << "data_%1" << "static_%1" << "renderer_%1";
 }
 
 void FileSystemWidget::setInfo(const QString &message, bool valid) {
@@ -84,12 +86,12 @@ void FileSystemWidget::setModelName(const QString &modelName)
     }
     QStringList uncommonFiles;
     for (const QString &rawFile: mUncommonFiles) {
-        uncommonFiles << rawFile.arg(modelName);
+        uncommonFiles << rawFile.arg(modelName.toLower());
     }
     QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");
     pattern = QString("^(%1)$").arg(pattern);
     QRegExp rex(pattern);
-    DEB() << "pattern: " << pattern;
+    rex.setCaseSensitivity(FileType::fsCaseSense());
     mFilterModel->setUncommonRegExp(rex);
 }
 
