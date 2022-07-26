@@ -53,6 +53,8 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegExp regExp) {
         regExp.setCaseSensitivity(FileType::fsCaseSense());
         mFilterModel->setFilterRegExp(regExp);
+        QModelIndex rootIndex = mFileSystemModel->index(mWorkingDirectory);
+        ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
     });
     mUncommonFiles << "*.log" << "*.log~*" << "*.lxi" << "*.lst" << "*.efi"
                    << "%1_files.txt" << "conf_%1" << "data_%1" << "static_%1" << "renderer_%1";
@@ -181,11 +183,9 @@ void FileSystemWidget::updateButtons()
 
 void FileSystemWidget::setupViewModel()
 {
-    if (mWorkingDirectory.isEmpty())
-        return;
-
+    if (mWorkingDirectory.isEmpty()) return;
     mFileSystemModel->setRootPath(mWorkingDirectory);
-    auto rootIndex = mFileSystemModel->index(mWorkingDirectory);
+    QModelIndex rootIndex = mFileSystemModel->index(mWorkingDirectory);
     ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
 }
 

@@ -75,8 +75,10 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
 
     if (role == Qt::CheckStateRole) {
         QString path = filePath(idx);
-        if (isDir(idx))
+        if (isDir(idx)) {
+            if (!path.startsWith(rootPath())) return QVariant();
             return dirCheckState(path);
+        }
         else
             return mSelectedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
     } else if (role == WriteBackRole) {
