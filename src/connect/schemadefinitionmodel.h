@@ -45,6 +45,14 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+public slots:
+    void loadSchemaFromName(const QString& name);
+
+private:
+    void addTypeList(QList<Type>& typeList, QList<QVariant>& data);
+    void addValueList(QList<Value>& value, QList<QVariant>& data);
+    void addValue(ValueWrapper& value, QList<QVariant>& data);
+
 protected:
     void setupTreeItemModelData();
 

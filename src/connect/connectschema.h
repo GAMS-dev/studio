@@ -44,7 +44,7 @@ enum class Type {
 };
 Q_ENUM_NS(Type)
 
-static Type getType(QString& value) {
+static Type getTypeFromValue(QString& value) {
     if (value.compare("integer") == 0) {
         return Type::INTEGER;
     } else if (value.compare("string") == 0) {
@@ -89,6 +89,7 @@ union Value  {
     Value(double val) : doubleval(val) { }
     Value(const char* val) : stringval(val != NULL ? strdup(val) : NULL)  { }
     Value(const std::string& val) : stringval(strdup(val.c_str()))       { }
+
     Value& operator=(bool val)  {
        boolval = val;
        return *this;
@@ -135,14 +136,16 @@ union Value  {
     }
 };
 
-enum class ValueType { INTEGER, FLOAT, NOVALUE };
+enum class ValueType { INTEGER, FLOAT, STRING, BOOLEAN, NOVALUE };
 
 struct ValueWrapper {
     ValueType   type;
     union Value value;
-    ValueWrapper()                  : type(ValueType::NOVALUE) {  }
-    ValueWrapper(int intval_)       : type(ValueType::INTEGER), value(intval_)    { }
-    ValueWrapper(double doubleval_) : type(ValueType::FLOAT),   value(doubleval_) { }
+    ValueWrapper()                    : type(ValueType::NOVALUE) {  }
+    ValueWrapper(int intval_)         : type(ValueType::INTEGER), value(intval_)    { }
+    ValueWrapper(double doubleval_)   : type(ValueType::FLOAT),   value(doubleval_) { }
+    ValueWrapper(bool boolval_)       : type(ValueType::BOOLEAN), value(boolval_) { }
+    ValueWrapper(std::string strval_) : type(ValueType::STRING),  value(strval_) { }
 };
 
 
@@ -152,8 +155,10 @@ public:
     QList<Type>   types;
     bool          required;
     QList<Value>  allowedValues;
+    ValueWrapper  defaultValue;
     ValueWrapper  min;
     ValueWrapper  max;
+    bool          schemaDefined;
 
     Schema(
         int           level_,
@@ -171,15 +176,19 @@ public:
         QList<Type>   type_,
         bool          required_,
         QList<Value>  allowedValues_,
+        ValueWrapper  defaultValue_,
         ValueWrapper  min_,
-        ValueWrapper  max_
+        ValueWrapper  max_,
+        bool          schemaDefined_=false
     )
     : level(level_),
       types(type_),
       required(required_),
       allowedValues(allowedValues_),
+      defaultValue(defaultValue_),
       min(min_),
-      max(max_)
+      max(max_),
+      schemaDefined(schemaDefined_)
     { }
 
     bool hasType(Type tt) {
@@ -196,7 +205,8 @@ class ConnectSchema : public ConnectAgent
 {
 private:
     QMap<QString, Schema*> mSchemaHelper;
-    QStringList            mFirstLeveKeyList;
+    QStringList            mOrderedKeyList;
+//    QStringList            mFirstLeveKeyList;
 
     friend class Connect;
 
@@ -210,6 +220,7 @@ public:
     void loadFromString(const QString& input);
 
     QStringList getFirstLevelKeyList() const;
+    QStringList getNextLevelKeyList(const QString& key) const;
     QStringList getAllRequiredKeyList() const;
     bool contains(const QString& key) const;
 
@@ -219,6 +230,7 @@ public:
     bool isRequired(const QString& key) const;
     ValueWrapper getMin(const QString& key) const;
     ValueWrapper getMax(const QString& key) const;
+    bool isSchemaDefined(const QString& key) const;
 };
 
 } // namespace connect

@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QDebug>
 #include "connectschema.h"
 
 namespace gams {
@@ -30,18 +31,30 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
         for(size_t i=0; i<node["type"].size(); i++) {
            QString value(QString::fromStdString(node["type"][i].as<std::string>()));
            if (node["type"][i])
-               types << getType(value);
+               types << getTypeFromValue(value);
         }
     } else if (node["type"].Type()==YAML::NodeType::Scalar) {
               QString value(QString::fromStdString(node["type"].as<std::string>()));
               if (node["type"])
-                  types << getType(value);
+                  types << getTypeFromValue(value);
     }
     bool required = (node["required"] ? (node["required"].as<std::string>().compare("true") == 0): false);
     QList<Value> allowedValues;
     if (node["allowed"] && node.Type() == YAML::NodeType::Map) {
         for(size_t i=0; i<node["allowed"].size(); i++) {
             allowedValues <<  Value(node["allowed"][i].as<std::string>());
+        }
+    }
+    ValueWrapper defvalue;
+    if (node["default"] ) {
+        if (std::find(types.begin(), types.end(), Type::INTEGER) != types.end()) {
+            defvalue = ValueWrapper(node["default"].as<int>());
+        } else if (std::find(types.begin(), types.end(), Type::FLOAT) != types.end()) {
+                  defvalue = ValueWrapper(node["default"].as<double>());
+        } else if (std::find(types.begin(), types.end(), Type::STRING) != types.end()) {
+            defvalue = ValueWrapper(node["default"].as<std::string>());
+        } else if (std::find(types.begin(), types.end(), Type::BOOLEAN) != types.end()) {
+            defvalue = ValueWrapper(node["default"].as<bool>());
         }
     }
     ValueWrapper minvalue;
@@ -60,8 +73,12 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                   maxvalue = ValueWrapper(node["max"].as<double>());
         }
     }
-    mFirstLeveKeyList << key;
-    Schema* s = new Schema(level, types, required, allowedValues, minvalue, maxvalue);
+    mOrderedKeyList << key;
+//    if (!key.contains(":"))
+//        mFirstLeveKeyList << key;
+
+    bool schemaDefined = (node["schema"] ? true : false);
+    Schema* s = new Schema(level, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
     mSchemaHelper.insert(key, s);
     if (node["schema"]) {
         if (mSchemaHelper[key]->hasType(Type::LIST)) {
@@ -86,7 +103,6 @@ ConnectSchema::ConnectSchema(const QString &inputFileName)
     loadFromFile(inputFileName);
 }
 
-
 ConnectSchema::~ConnectSchema()
 {
     if (mSchemaHelper.size()>0) {
@@ -103,7 +119,6 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
         createSchemaHelper(key, it->second, 1);
     }
-
 }
 
 void ConnectSchema::loadFromString(const QString &input)
@@ -119,7 +134,22 @@ void ConnectSchema::loadFromString(const QString &input)
 
 QStringList ConnectSchema::getFirstLevelKeyList() const
 {
-    return mFirstLeveKeyList;
+    QStringList keyList;
+    for(const QString& key : mOrderedKeyList) {
+        if (!key.contains(":"))
+            keyList << key;
+    }
+    return keyList;
+}
+
+QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
+{
+    QStringList keyList;
+    for(const QString& k : mOrderedKeyList) { //mSchemaHelper.keys()) {
+        if (k.startsWith(key+":"))
+            keyList << k;
+    }
+    return keyList;
 }
 
 QStringList ConnectSchema::getAllRequiredKeyList() const
@@ -179,6 +209,14 @@ ValueWrapper ConnectSchema::getMax(const QString &key) const
     } else {
         return ValueWrapper();
     }
+}
+
+bool ConnectSchema::isSchemaDefined(const QString &key) const
+{
+    if (contains(key))
+        return mSchemaHelper[key]->schemaDefined;
+
+    return false;
 }
 
 

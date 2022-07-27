@@ -51,20 +51,27 @@ bool ConnectEditor::init()
 
     ui->SchemaControlListView->setViewMode(QListView::ListMode);
     ui->SchemaControlListView->setIconSize(QSize(16,16));
-    ui->ConnectHSplitter->setSizes(QList<int>({15, 65, 20}));
-
+    ui->ConnectHSplitter->setSizes(QList<int>({10, 70, 20}));
     ui->SchemaControlListView->setModel(schemaItemModel);
 
     ui->helpComboBox->setModel(schemaHelpModel);
 
-    SchemaDefinitionModel* model = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
-    ui->helpTreeView->setModel( model );
+    SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
+    ui->helpTreeView->setModel( defmodel );
+    ui->helpTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->helpTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->helpTreeView->resizeColumnToContents(0);
     ui->helpTreeView->resizeColumnToContents(1);
     ui->helpTreeView->resizeColumnToContents(2);
+    ui->helpTreeView->setItemsExpandable(true);
+    headerRegister(ui->helpTreeView->header());
 
     connect(ui->SchemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
     connect(ui->SchemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
+
+    connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
+        defmodel->loadSchemaFromName( schemaHelpModel->data( schemaHelpModel->index(index,0) ).toString() );
+    });
 
     return true;
 }
