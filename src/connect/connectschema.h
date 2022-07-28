@@ -154,17 +154,17 @@ public:
     int           level;
     QList<Type>   types;
     bool          required;
-    QList<Value>  allowedValues;
-    ValueWrapper  defaultValue;
-    ValueWrapper  min;
-    ValueWrapper  max;
-    bool          schemaDefined;
+    QList<ValueWrapper>  allowedValues;
+    ValueWrapper         defaultValue;
+    ValueWrapper         min;
+    ValueWrapper         max;
+    bool                 schemaDefined;
 
     Schema(
-        int           level_,
-        QList<Type>   type_,
-        bool          required_,
-        QList<Value>  allowedValues_
+        int                 level_,
+        QList<Type>         type_,
+        bool                required_,
+        QList<ValueWrapper> allowedValues_
     ) : level(level_),
         types(type_),
         required(required_),
@@ -175,11 +175,11 @@ public:
         int           level_,
         QList<Type>   type_,
         bool          required_,
-        QList<Value>  allowedValues_,
-        ValueWrapper  defaultValue_,
-        ValueWrapper  min_,
-        ValueWrapper  max_,
-        bool          schemaDefined_=false
+        QList<ValueWrapper>  allowedValues_,
+        ValueWrapper         defaultValue_,
+        ValueWrapper         min_,
+        ValueWrapper         max_,
+        bool                 schemaDefined_=false
     )
     : level(level_),
       types(type_),
@@ -206,7 +206,6 @@ class ConnectSchema : public ConnectAgent
 private:
     QMap<QString, Schema*> mSchemaHelper;
     QStringList            mOrderedKeyList;
-//    QStringList            mFirstLeveKeyList;
 
     friend class Connect;
 
@@ -219,6 +218,7 @@ public:
     void loadFromFile(const QString& inputFileName);
     void loadFromString(const QString& input);
 
+    QStringList getlKeyList() const;
     QStringList getFirstLevelKeyList() const;
     QStringList getNextLevelKeyList(const QString& key) const;
     QStringList getAllRequiredKeyList() const;

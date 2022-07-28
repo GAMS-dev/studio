@@ -50,8 +50,10 @@ public slots:
 
 private:
     void addTypeList(QList<Type>& typeList, QList<QVariant>& data);
-    void addValueList(QList<Value>& value, QList<QVariant>& data);
+    void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
     void addValue(ValueWrapper& value, QList<QVariant>& data);
+
+    void setupTree(const QString& schemaName, const QString& key, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
 
 protected:
     void setupTreeItemModelData();

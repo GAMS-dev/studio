@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include <QDebug>
 #include <QStandardItemModel>
 
@@ -60,10 +79,13 @@ bool ConnectEditor::init()
     ui->helpTreeView->setModel( defmodel );
     ui->helpTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->helpTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->helpTreeView->setItemsExpandable(true);
+    ui->helpTreeView->expandAll();
     ui->helpTreeView->resizeColumnToContents(0);
     ui->helpTreeView->resizeColumnToContents(1);
     ui->helpTreeView->resizeColumnToContents(2);
-    ui->helpTreeView->setItemsExpandable(true);
+    ui->helpTreeView->resizeColumnToContents(3);
+    ui->helpTreeView->resizeColumnToContents(4);
     headerRegister(ui->helpTreeView->header());
 
     connect(ui->SchemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
@@ -72,7 +94,14 @@ bool ConnectEditor::init()
     connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
         defmodel->loadSchemaFromName( schemaHelpModel->data( schemaHelpModel->index(index,0) ).toString() );
     });
-
+    connect(defmodel, &SchemaDefinitionModel::modelReset, [this]() {
+        ui->helpTreeView->expandAll();
+        ui->helpTreeView->resizeColumnToContents(0);
+        ui->helpTreeView->resizeColumnToContents(1);
+        ui->helpTreeView->resizeColumnToContents(2);
+        ui->helpTreeView->resizeColumnToContents(3);
+        ui->helpTreeView->resizeColumnToContents(4);
+    });
     return true;
 }
 
@@ -90,7 +119,13 @@ void ConnectEditor::schemaClicked(const QModelIndex &modelIndex)
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
-    qDebug() << "doubleclikced row=" << modelIndex.row() << ", col=" << modelIndex.column();
+    qDebug() << "doubleclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
+             << ui->SchemaControlListView->model()->data( modelIndex ).toString();
+    QStringList strlist;
+    strlist << ui->SchemaControlListView->model()->data( modelIndex ).toString();
+    ConnectData* data = mConnect->createDataHolder(strlist);
+    qDebug() << data->str().c_str();
+    //delete data;
 }
 
 }

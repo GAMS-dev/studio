@@ -38,11 +38,14 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
               if (node["type"])
                   types << getTypeFromValue(value);
     }
-    bool required = (node["required"] ? (node["required"].as<std::string>().compare("true") == 0): false);
-    QList<Value> allowedValues;
+    bool required = false;
+    if (node["required"]) {
+        required = (node["required"].as<std::string>().compare("true") == 0 || node["required"].as<std::string>().compare("True") == 0);
+    }
+    QList<ValueWrapper> allowedValues;
     if (node["allowed"] && node.Type() == YAML::NodeType::Map) {
         for(size_t i=0; i<node["allowed"].size(); i++) {
-            allowedValues <<  Value(node["allowed"][i].as<std::string>());
+            allowedValues <<  ValueWrapper(node["allowed"][i].as<std::string>());
         }
     }
     ValueWrapper defvalue;
@@ -74,8 +77,6 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
         }
     }
     mOrderedKeyList << key;
-//    if (!key.contains(":"))
-//        mFirstLeveKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
     Schema* s = new Schema(level, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
@@ -132,6 +133,11 @@ void ConnectSchema::loadFromString(const QString &input)
 
 }
 
+QStringList ConnectSchema::getlKeyList() const
+{
+    return mOrderedKeyList;
+}
+
 QStringList ConnectSchema::getFirstLevelKeyList() const
 {
     QStringList keyList;
@@ -145,7 +151,7 @@ QStringList ConnectSchema::getFirstLevelKeyList() const
 QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
 {
     QStringList keyList;
-    for(const QString& k : mOrderedKeyList) { //mSchemaHelper.keys()) {
+    for(const QString& k : mOrderedKeyList) {
         if (k.startsWith(key+":"))
             keyList << k;
     }
