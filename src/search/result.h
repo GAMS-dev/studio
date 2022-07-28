@@ -22,6 +22,7 @@
 
 #include <QString>
 #include "common.h"
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -52,6 +53,9 @@ private:
     QString mFilepath;
     QString mContext;
     NodeId mParent;
+
+    QString matchHighlightStart = QString("<b style=color:%1>").arg(Theme::color(Theme::Normal_Red).name());
+    QString matchHighlightEnd = QString("</b>");
 };
 
 }

@@ -19,7 +19,6 @@
 #include "resultsview.h"
 #include "searchdialog.h"
 #include "ui_resultsview.h"
-#include "exception.h"
 #include "searchresultmodel.h"
 #include "result.h"
 #include "common.h"

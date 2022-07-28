@@ -29,6 +29,13 @@ Result::Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent
     int left = qMax(0, colNr - MAX_CONTEXT_LENGTH/2 + length/2);
 
     mContext = context.mid(left, MAX_CONTEXT_LENGTH);
+
+    int startMatch = colNr - left;
+    int endMatch = colNr - left + length;
+
+    mContext = mContext.insert(endMatch, matchHighlightEnd);
+    mContext = mContext.insert(startMatch, matchHighlightStart);
+
     int lengthBeforeTrim = context.length();
     mContext = mContext.trimmed();
 
