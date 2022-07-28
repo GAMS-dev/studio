@@ -41,6 +41,9 @@
       </property>
       <item>
        <widget class="gams::studio::FilterLineEdit" name="edFilter">
+        <property name="toolTip">
+         <string>&lt;p style=&quot;white-space: nowrap;&quot;&gt;The filter applies to files only.&lt;br&gt;Folders without matching files are hidden.&lt;br&gt;Checkboxes of folders only reflect the check-state of visible entries.&lt;/p&gt;</string>
+        </property>
         <property name="placeholderText">
          <string>File filter</string>
         </property>
