@@ -54,7 +54,8 @@ private:
     QString mContext;
     NodeId mParent;
 
-    QString matchHighlightStart = QString("<b style=color:%1>").arg(Theme::color(Theme::Normal_Red).name());
+    QString matchHighlightStart = QString("<b style=background-color:%1;color:%2>")
+            .arg(Theme::color(Theme::Edit_matchesBg).name(), QColor(Qt::white).name());
     QString matchHighlightEnd = QString("</b>");
 };
 
