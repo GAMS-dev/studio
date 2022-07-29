@@ -4210,6 +4210,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
         }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
+        if (edit == mRecent.editor())
+            mSearchDialog->editorChanged(nullptr);
         mRecent.removeEditor(edit);
         fm->removeEditor(edit);
         edit->deleteLater();
