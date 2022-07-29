@@ -23,11 +23,8 @@
 #include "ui_searchdialog.h"
 #include "settings.h"
 #include "syntax.h"
-#include "file.h"
 #include "exception.h"
 #include "searchresultmodel.h"
-#include "searchworker.h"
-#include "option/solveroptionwidget.h"
 #include "viewhelper.h"
 #include "lxiviewer/lxiviewer.h"
 #include "../keys.h"
@@ -57,10 +54,18 @@ SearchDialog::~SearchDialog()
     delete ui;
 }
 
-void SearchDialog::closeEvent(QCloseEvent *event)
+void SearchDialog::showEvent(QShowEvent *event)
 {
+    Q_UNUSED(event)
     emit toggle();
 
+    if (!mSearch.isSearching()) {
+        updateDialogState();
+    }
+}
+
+void SearchDialog::closeEvent(QCloseEvent *event)
+{
     event->ignore();
     QDialog::closeEvent(event);
 }
@@ -262,16 +267,6 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
             res.insert(fm);
     }
     return res;
-}
-
-void SearchDialog::showEvent(QShowEvent *event)
-{
-    Q_UNUSED(event)
-
-    if (!mSearch.isSearching()) {
-        autofillSearchDialog();
-        updateDialogState();
-    }
 }
 
 void SearchDialog::on_searchNext()
@@ -644,6 +639,8 @@ void SearchDialog::addEntryToComboBox(QComboBox* box)
 
 void SearchDialog::autofillSearchDialog()
 {
+    if (mSearch.isSearching()) return;
+
     QWidget *widget = mCurrentEditor;
     PExAbstractNode *fsc = mFileHandler->fileNode(widget);
     if (!fsc) return;

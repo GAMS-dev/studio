@@ -76,7 +76,7 @@ public slots:
     void updateMatchLabel(int current = 0);
     void on_btn_clear_clicked();
     void filesChanged();
-    void relaySearchResults(bool showResults, QList<Result>* results);
+    void relaySearchResults(bool showResults, QList<gams::studio::search::Result>* results);
     void updateDialogState();
 
 private slots:

@@ -4353,7 +4353,6 @@ void MainWindow::toggleSearchDialog()
         // e.g. needed for KDE to raise the search dialog when minimized
         if (mSearchDialog->isMinimized()) {
             mSearchDialog->setWindowState(Qt::WindowMaximized);
-            mSearchDialog->autofillSearchDialog();
         }
         // toggle visibility
         if (mSearchDialog->isVisible()) {
