@@ -1,6 +1,7 @@
 #include "searchresultviewitemdelegate.h"
 #include <QApplication>
 #include <QPainter>
+#include <QTextCursor>
 #include <QTextDocument>
 
 SearchResultViewItemDelegate::SearchResultViewItemDelegate(QObject *parent)
@@ -21,14 +22,8 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
     painter->setClipRect(opt.rect);
     opt.rect = opt.rect.adjusted(padding, padding, -padding, -padding);
 
-// TODO(RG): restore this elide behavior:
-//    painter->drawText(opt.rect, Qt::AlignLeft | Qt::AlignVCenter,
-//                      opt.fontMetrics.elidedText(opt.text, Qt::ElideRight,
-//                                                 opt.rect.width()));
-
-
     QTextDocument doc;
-    doc.setHtml(opt.text);
+    doc.setHtml(elideRichText(opt.text, opt.rect.width(), opt.fontMetrics));
 
     opt.text = "";
     opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);
@@ -37,6 +32,31 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
     QRect clip(0, 0, opt.rect.width(), opt.rect.height());
     doc.drawContents(painter, clip);
 
-
     painter->restore();
+}
+
+QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int maxWidth, QFontMetrics metrics) const
+{
+    QTextDocument doc;
+    doc.setHtml(richText);
+    doc.adjustSize();
+
+    // Elide text
+    if (metrics.horizontalAdvance(doc.toPlainText()) > maxWidth) {
+        QTextCursor cursor(&doc);
+        cursor.movePosition(QTextCursor::End);
+
+        const QString elidedPostfix = "...";
+        int postfixWidth = metrics.horizontalAdvance(elidedPostfix);
+
+        while (metrics.horizontalAdvance(doc.toPlainText()) > maxWidth - postfixWidth) {
+            cursor.deletePreviousChar();
+            doc.adjustSize();
+        }
+
+        cursor.insertText(elidedPostfix);
+        return doc.toRawText();
+    }
+
+    return richText;
 }

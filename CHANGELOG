@@ -1,3 +1,7 @@
+Version 1.12.0*
+==================
+- added highlighting to matches in Search Result View
+
 Version 1.11.1
 ==================
 - fixed parameter procTreeMemMonitor in GAMS configuration influencing license dialog output
