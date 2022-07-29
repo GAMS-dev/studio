@@ -55,8 +55,8 @@ QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int
         }
 
         cursor.insertText(elidedPostfix);
-        return doc.toRawText();
-    }
 
+        return doc.toHtml();
+    }
     return richText;
 }
