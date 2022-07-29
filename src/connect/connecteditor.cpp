@@ -21,6 +21,7 @@
 #include <QStandardItemModel>
 
 #include "connecteditor.h"
+#include "connectdatamodel.h"
 #include "schemadefinitionmodel.h"
 #include "theme.h"
 #include "ui_connecteditor.h"
@@ -64,16 +65,22 @@ bool ConnectEditor::init()
         schemaItemModel->setItem(row, 0, item);
     }
 
-    ui->SchemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->SchemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
-    ui->SchemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
+    ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->schemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->schemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ui->SchemaControlListView->setViewMode(QListView::ListMode);
-    ui->SchemaControlListView->setIconSize(QSize(16,16));
-    ui->ConnectHSplitter->setSizes(QList<int>({10, 70, 20}));
-    ui->SchemaControlListView->setModel(schemaItemModel);
-
+    ui->schemaControlListView->setViewMode(QListView::ListMode);
+    ui->schemaControlListView->setIconSize(QSize(16,16));
+    ui->connectHSplitter->setSizes(QList<int>({10, 70, 20}));
+    ui->schemaControlListView->setModel(schemaItemModel);
     ui->helpComboBox->setModel(schemaHelpModel);
+
+    ConnectDataModel* datamodel = new ConnectDataModel(mConnect->loadDataFromFile(mLocation), this);
+    ui->helpTreeView->setModel( datamodel );
+    ui->dataTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    ui->dataTreeView->setItemsExpandable(true);
+    headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
     ui->helpTreeView->setModel( defmodel );
@@ -88,8 +95,8 @@ bool ConnectEditor::init()
     ui->helpTreeView->resizeColumnToContents(4);
     headerRegister(ui->helpTreeView->header());
 
-    connect(ui->SchemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
-    connect(ui->SchemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
+    connect(ui->schemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
+    connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
     connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
         defmodel->loadSchemaFromName( schemaHelpModel->data( schemaHelpModel->index(index,0) ).toString() );
@@ -119,10 +126,10 @@ void ConnectEditor::schemaClicked(const QModelIndex &modelIndex)
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
-    qDebug() << "doubleclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
-             << ui->SchemaControlListView->model()->data( modelIndex ).toString();
+    qDebug() << "doubseclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
+             << ui->schemaControlListView->model()->data( modelIndex ).toString();
     QStringList strlist;
-    strlist << ui->SchemaControlListView->model()->data( modelIndex ).toString();
+    strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
     ConnectData* data = mConnect->createDataHolder(strlist);
     qDebug() << data->str().c_str();
     //delete data;

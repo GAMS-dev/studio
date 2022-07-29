@@ -4,11 +4,11 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-SchemaDefinitionItem::SchemaDefinitionItem(const QString& name, const QList<QVariant>& data, SchemaDefinitionItem* parentItem)
+SchemaDefinitionItem::SchemaDefinitionItem(const QString& name, const QList<QVariant>& data, SchemaDefinitionItem* parentItem):
+    mSchemaName(name),
+    mItemData(data),
+    mParentItem(parentItem)
 {
-    mSchemaName = name;
-    mParentItem = parentItem;
-    mItemData = data;
 }
 
 SchemaDefinitionItem::~SchemaDefinitionItem()
@@ -66,7 +66,6 @@ bool SchemaDefinitionItem::setData(int column, const QVariant &value)
 
     mItemData[column] = value;
     return true;
-
 }
 
 void SchemaDefinitionItem::setParent(SchemaDefinitionItem *parent)

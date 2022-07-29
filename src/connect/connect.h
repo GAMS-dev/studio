@@ -36,6 +36,8 @@ public:
 
     bool validateData(const QString& inputFileName, bool checkSchema=false);
 
+    ConnectData* loadDataFromFile(const QString& fileName);
+
     ConnectData* createDataHolder(const QStringList& schemaNameList);
     void addDataForAgent(ConnectData* data, const QString& schemaName);
 

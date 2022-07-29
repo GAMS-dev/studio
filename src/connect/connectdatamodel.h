@@ -17,22 +17,23 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_CONNECT_SCHEMADEFINITIONMODEL_H
-#define GAMS_STUDIO_CONNECT_SCHEMADEFINITIONMODEL_H
+#ifndef GAMS_STUDIO_CONNECT_CONNECTDATAMODEL_H
+#define GAMS_STUDIO_CONNECT_CONNECTDATAMODEL_H
 
 #include <QAbstractItemModel>
+
 #include "connect.h"
-#include "schemadefinitionitem.h"
+#include "connectdataitem.h"
 
 namespace gams {
 namespace studio {
 namespace connect {
 
-class SchemaDefinitionModel : public QAbstractItemModel
+class ConnectDataModel : public QAbstractItemModel
 {
 public:
-    explicit SchemaDefinitionModel(Connect* connect, const QString& schemaName, QObject *parent = nullptr);
-    ~SchemaDefinitionModel() override;
+    explicit ConnectDataModel(ConnectData* data, QObject *parent = nullptr);
+    ~ConnectDataModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
@@ -45,26 +46,17 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
-public slots:
-    void loadSchemaFromName(const QString& name);
-
-private:
-    void addTypeList(QList<Type>& typeList, QList<QVariant>& data);
-    void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
-    void addValue(ValueWrapper& value, QList<QVariant>& data);
-
-    void setupTree(const QString& schemaName, const QString& key, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
-
 protected:
     void setupTreeItemModelData();
 
-    QString   mCurrentSchemaName;
-    Connect*  mConnect;
-    QMap<QString, SchemaDefinitionItem*> mRootItems;
+//    QString         mFileName;
+    ConnectData*     mConnectData;
+    ConnectDataItem* mRootItem;
+
 };
 
 } // namespace connect
 } // namespace studio
 } // namespace gams
 
-#endif // GAMS_STUDIO_CONNECT_SCHEMADEFINITIONMODEL_H
+#endif // GAMS_STUDIO_CONNECT_CONNECTDATAMODEL_H

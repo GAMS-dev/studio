@@ -95,6 +95,11 @@ bool Connect::validateData(const QString &inputFileName, bool checkSchema)
     }
 }
 
+ConnectData *Connect::loadDataFromFile(const QString &fileName)
+{
+    return new ConnectData(fileName);
+}
+
 bool Connect::validate(const QString &schemaname, ConnectData &data)
 {
     YAML::Node datanode = data.getRootNode();
@@ -318,9 +323,9 @@ YAML::Node Connect::createConnectData(const QString &schemaName)
             }
         }
     }
-    YAML::Node connectdata = YAML::Node(YAML::NodeType::Sequence);
-    connectdata[0] = data;
-    return connectdata;
+//    YAML::Node connectdata = YAML::Node(YAML::NodeType::Sequence);
+//    connectdata[0] = data;
+    return data;
 }
 
 bool Connect::isTypeValid(QList<Type>& typeList, const YAML::Node &data)
