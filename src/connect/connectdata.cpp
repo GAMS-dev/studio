@@ -24,13 +24,19 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectData::ConnectData(const YAML::Node& node) : ConnectAgent(node)
+ConnectData::ConnectData(const YAML::Node& node)
 {
+    mRootNode = node;
 }
 
 ConnectData::ConnectData(const QString &inputFileName)
 {
     loadFromFile(inputFileName);
+}
+
+ConnectData::~ConnectData()
+{
+
 }
 
 void ConnectData::loadFromFile(const QString &inputFileName)

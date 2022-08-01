@@ -24,16 +24,6 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-
-ConnectAgent::ConnectAgent()
-{
-}
-
-ConnectAgent::ConnectAgent(const YAML::Node &node) : mRootNode(node)
-{
-
-}
-
 void ConnectAgent::loadFromFile(const QString &inputFileName)
 {
     try {

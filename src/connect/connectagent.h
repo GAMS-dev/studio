@@ -30,8 +30,7 @@ namespace connect {
 class ConnectAgent
 {
 protected:
-    ConnectAgent();
-    ConnectAgent(const YAML::Node& node);
+    virtual ~ConnectAgent() {}
     virtual void loadFromFile(const QString& inputFileName);
     virtual void loadFromString(const QString& input);
 

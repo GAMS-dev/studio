@@ -29,9 +29,10 @@ ConnectError::ConnectError()
 
 }
 
-ConnectError::ConnectError(const YAML::Node& node) : ConnectAgent(node)
+ConnectError::ConnectError(const YAML::Node& node)
 {
      Q_ASSERT(mRootNode.Type()==YAML::NodeType::Map);
+    mRootNode = node;
 }
 
 } // namespace connect

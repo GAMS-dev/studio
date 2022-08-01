@@ -31,9 +31,10 @@ namespace connect {
 class ConnectData : public ConnectAgent
 {
 public:
-    ConnectData(const YAML::Node& node);
     ConnectData();
+    ConnectData(const YAML::Node& node);
     ConnectData(const QString& inputFileName);
+    ~ConnectData();
 
     void loadFromFile(const QString& inputFileName);
     void loadFromString(const QString& input);
