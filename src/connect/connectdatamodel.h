@@ -32,7 +32,7 @@ namespace connect {
 class ConnectDataModel : public QAbstractItemModel
 {
 public:
-    explicit ConnectDataModel(ConnectData* data, QObject *parent = nullptr);
+    explicit ConnectDataModel(const QString& filename, ConnectData* data, QObject *parent = nullptr);
     ~ConnectDataModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
@@ -45,11 +45,12 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
+//    QSize span(const QModelIndex &index) const override;
 
 protected:
     void setupTreeItemModelData();
 
-//    QString         mFileName;
+    QString          mLocation;
     ConnectData*     mConnectData;
     ConnectDataItem* mRootItem;
 

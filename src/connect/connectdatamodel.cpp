@@ -17,14 +17,20 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "connectdatamodel.h"
+#include <QDebug>
+#include <QColor>
+#include <QApplication>
+#include <QPalette>
 
+#include "connectdatamodel.h"
+#include "theme.h"
 namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectDataModel::ConnectDataModel(ConnectData* data, QObject *parent)
+ConnectDataModel::ConnectDataModel(const QString& filename, ConnectData* data, QObject *parent)
     : QAbstractItemModel{parent},
+      mLocation(filename),
       mConnectData(data)
 {
     setupTreeItemModelData();
@@ -32,6 +38,8 @@ ConnectDataModel::ConnectDataModel(ConnectData* data, QObject *parent)
 
 ConnectDataModel::~ConnectDataModel()
 {
+    if (mConnectData)
+        delete mConnectData;
     if (mRootItem)
         delete mRootItem;
 }
@@ -45,6 +53,18 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         return item->data(index.column());
+    }
+    case Qt::BackgroundRole: {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        ConnectDataItem *parentItem = item->parentItem();
+        if (parentItem == mRootItem) {
+            if (index.row() % 2 == 0)
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
+            else
+                return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
+        } else {
+            return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+        }
     }
     default:
          break;
@@ -136,14 +156,79 @@ void ConnectDataModel::setupTreeItemModelData()
     QList<ConnectDataItem*> parents;
     parents << mRootItem;
 
-    parents << parents.last()->child(parents.last()->childCount()-1);
-    //    for (YAML::const_iterator it = mConnectData->getRootNode().begin(); it != mConnectData->getRootNode().end(); ++it) {
-    for(size_t i = 0; i<mConnectData->getRootNode().size(); i++) {
+    QList<QVariant> connectData;
+    connectData << mLocation;
+    parents.last()->appendChild(new ConnectDataItem(connectData, parents.last()));
 
-        QList<QVariant> listData;
-        listData << "schema";
-        listData << mConnectData->getRootNode()[i].as<std::string>().c_str();
-        parents.last()->appendChild(new ConnectDataItem(listData, parents.last()));
+    Q_ASSERT(mConnectData->getRootNode().Type()==YAML::NodeType::Sequence); // TODO
+    for(size_t i = 0; i<mConnectData->getRootNode().size(); i++) {
+        parents << parents.last()->child(parents.last()->childCount()-1);
+
+        Q_ASSERT(mConnectData->getRootNode()[i].Type()==YAML::NodeType::Map); // TODO
+        YAML::Node rootnode = mConnectData->getRootNode()[i];
+
+        QList<QVariant> schemaindexData;
+        schemaindexData << QVariant::fromValue(i);
+        schemaindexData << "";
+        schemaindexData << "";
+        parents.last()->appendChild(new ConnectDataItem(schemaindexData, parents.last()));
+
+        for (YAML::const_iterator it = rootnode.begin(); it != rootnode.end(); ++it) {
+             parents << parents.last()->child(parents.last()->childCount()-1);
+             QList<QVariant> listData;
+             listData << it->first.as<std::string>().c_str();
+             listData << "";
+             listData << "";
+             parents.last()->appendChild(new ConnectDataItem(listData, parents.last()));
+
+             parents << parents.last()->child(parents.last()->childCount()-1);
+             Q_ASSERT(it->second.Type()==YAML::NodeType::Map); // TODO
+             for (YAML::const_iterator mit = it->second.begin(); mit != it->second.end(); ++mit) {
+
+                 if (mit->second.Type()==YAML::NodeType::Scalar) {
+                     QList<QVariant> itemData;
+                     itemData << mit->first.as<std::string>().c_str();
+                     itemData << QVariant(mit->second.as<std::string>().c_str()); // TODO
+                     itemData << "";
+                     parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
+                 } else if (mit->second.Type()==YAML::NodeType::Map) {
+                     qDebug() << "not implemented";
+                 } else if (mit->second.Type()==YAML::NodeType::Sequence) {
+                            QList<QVariant> itemData;
+                            itemData << mit->first.as<std::string>().c_str();
+                            itemData << "";
+                            itemData << "";
+                            parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
+                            parents << parents.last()->child(parents.last()->childCount()-1);
+                            for(size_t k = 0; k<mit->second.size(); k++) {
+                               QList<QVariant> indexData;
+                               indexData << QVariant::fromValue(k);
+                               indexData << "";
+                               indexData << "";
+                               parents.last()->appendChild(new ConnectDataItem(indexData, parents.last()));
+
+                               if (mit->second[k].Type()==YAML::NodeType::Map) {
+                                  parents << parents.last()->child(parents.last()->childCount()-1);
+                                  const YAML::Node mapnode = mit->second[k];
+                                  for (YAML::const_iterator mmit = mapnode.begin(); mmit != mapnode.end(); ++mmit) {
+                                       QList<QVariant> mapSeqData;
+                                       mapSeqData << mmit->first.as<std::string>().c_str();
+                                       mapSeqData << mmit->second.as<std::string>().c_str(); // TODO
+                                       mapSeqData << "";
+                                       parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
+                                  }
+                                  parents.pop_back();
+                               } else if (mit->second[k].Type()==YAML::NodeType::Scalar) {
+                                   qDebug() << "not yet implemented";
+                               }
+                           }
+                           parents.pop_back();
+                 }
+             }
+             parents.pop_back();
+             parents.pop_back();
+        }
+        parents.pop_back();
     }
     parents.pop_back();
 }

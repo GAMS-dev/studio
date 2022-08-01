@@ -251,7 +251,6 @@ void SchemaDefinitionModel::setupTreeItemModelData()
             SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, columnData, parents.last());
             parents.last()->appendChild(item);
 
-            qDebug() << "next of " << key << " is " << schema->getNextLevelKeyList(key);
             if (s->schemaDefined)
                 setupTree(schemaName, key, parents, schema);
         }
@@ -259,13 +258,10 @@ void SchemaDefinitionModel::setupTreeItemModelData()
 }
 
 void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& key, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema) {
-    qDebug() << "next of " << key << " is " << schema->getNextLevelKeyList(key);
-
     QString prefix = key+":-";
     Schema* schemaHelper = schema->getSchema(prefix);
     if (schemaHelper) {
         parents << parents.last()->child(parents.last()->childCount()-1);
-        qDebug() << "    " << key+":-"<< ", schema=" << (schemaHelper->schemaDefined?"Y":"N");
         QList<QVariant> listData;
         listData << "schema";
         listData << (schemaHelper->required?"Y":"");;
@@ -281,7 +277,6 @@ void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& 
             foreach(const QString& k,  nextlevelList) {
                 schemaHelper = schema->getSchema(k);
                 QString schemaKeyStr = k.mid(prefix.length()+1);
-                qDebug() << "    >> " << k << ", "<< schemaKeyStr;
                 if (k.endsWith(":-")) {
                    setupTree(schemaName, k.left(k.lastIndexOf(":")), parents, schema);
                } else {

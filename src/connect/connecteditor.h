@@ -47,13 +47,15 @@ public:
 private slots:
     void schemaClicked(const QModelIndex &modelIndex);
     void schemaDoubleClicked(const QModelIndex &modelIndex);
+    void updateDataColumnSpan();
 
 private:
     Ui::ConnectEditor *ui;
 
     bool init();
 
-    Connect* mConnect;
+    Connect*     mConnect;
+    ConnectData* mData;
     QString mLocation;
 };
 

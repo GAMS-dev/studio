@@ -75,11 +75,18 @@ bool ConnectEditor::init()
     ui->schemaControlListView->setModel(schemaItemModel);
     ui->helpComboBox->setModel(schemaHelpModel);
 
-    ConnectDataModel* datamodel = new ConnectDataModel(mConnect->loadDataFromFile(mLocation), this);
-    ui->helpTreeView->setModel( datamodel );
+    mData = mConnect->loadDataFromFile(mLocation);
+    qDebug() << mData->str().c_str();
+
+    ConnectDataModel* datamodel = new ConnectDataModel(mLocation, mData, this);
+    ui->dataTreeView->setModel( datamodel );
     ui->dataTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->dataTreeView->setItemsExpandable(true);
+    updateDataColumnSpan();
+    ui->dataTreeView->expandAll();
+    ui->dataTreeView->resizeColumnToContents(0);
+    ui->dataTreeView->resizeColumnToContents(1);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -100,6 +107,11 @@ bool ConnectEditor::init()
 
     connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
         defmodel->loadSchemaFromName( schemaHelpModel->data( schemaHelpModel->index(index,0) ).toString() );
+    });
+    connect(defmodel, &ConnectDataModel::modelReset, [this]() {
+        ui->dataTreeView->expandAll();
+        ui->dataTreeView->resizeColumnToContents(0);
+        ui->dataTreeView->resizeColumnToContents(1);
     });
     connect(defmodel, &SchemaDefinitionModel::modelReset, [this]() {
         ui->helpTreeView->expandAll();
@@ -133,6 +145,14 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
     ConnectData* data = mConnect->createDataHolder(strlist);
     qDebug() << data->str().c_str();
     //delete data;
+}
+
+void ConnectEditor::updateDataColumnSpan()
+{
+    qDebug() << "updateColumnSpan";
+//    for (YAML::const_iterator it = mData->getRootNode().begin(); it != mData->getRootNode().end(); ++it) {
+//    }
+
 }
 
 }
