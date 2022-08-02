@@ -15,6 +15,7 @@ EfiEditor::EfiEditor(QWidget *parent) :
     ui->fsWidget->setShowProtection(true);
     ui->fsWidget->setCreateVisible(false);
     connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::requestSave);
+    connect(ui->fsWidget, &fs::FileSystemWidget::modified, this, [this]() { setModified(true); });
     mModified = false;
 }
 

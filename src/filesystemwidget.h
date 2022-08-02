@@ -64,6 +64,7 @@ public:
 
 signals:
     void createClicked();
+    void modified();
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;

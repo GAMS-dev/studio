@@ -24,6 +24,7 @@ public:
     bool isModified();
     void setWarnText(const QString &text);
     void selectFilter();
+    void setModified(bool modified);
 
 signals:
     void modificationChanged(bool modiState);
@@ -31,7 +32,6 @@ signals:
 
 private:
     void updateInfoText(QString extraText, bool valid);
-    void setModified(bool modified);
 
 private:
     Ui::EfiEditor *ui;

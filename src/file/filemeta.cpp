@@ -1019,6 +1019,10 @@ void FileMeta::setModified(bool modified)
              option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
              if (gco) gco->setModified(modified);
         }
+    } else if (kind() == FileKind::Efi) {
+        for (QWidget *e : qAsConst(mEditors)) {
+             if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(e)) efi->setModified(modified);
+        }
     }
 }
 

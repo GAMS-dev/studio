@@ -179,6 +179,7 @@ void FileSystemWidget::selectionCountChanged(int count)
 {
     ui->laSelectCount->setText(QString(count ? "%1 file%2 selected" : "no file selected")
                                .arg(count).arg(count > 1 ? "s" : ""));
+    emit modified();
 }
 
 void FileSystemWidget::updateButtons()

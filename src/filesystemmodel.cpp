@@ -127,13 +127,11 @@ void FileSystemModel::selectAll()
 void FileSystemModel::selectAllFiles(const QDir &dir)
 {
     invalidateDirState(index(dir.path()));
-    bool empty = true;
-    QModelIndex first;
+    QSet<QModelIndex> indices;
     QModelIndex idx;
     for (const QFileInfo &info : visibleFileInfoList(dir)) {
         idx = index(info.filePath());
-        if (!first.isValid()) first = idx;
-        empty = false;
+        indices << idx;
         if (info.isDir()) {
             selectAllFiles(QDir(info.filePath()));
         } else {
@@ -141,13 +139,17 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
             emit selectionCountChanged(mSelectedFiles.count());
         }
     }
-    if (empty) {
+    if (!idx.isValid()) { // empty directory
         mSelectedFiles << rootDirectory().relativeFilePath(dir.path());
         idx = index(dir.path());
-        emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        indices << idx;
+    }
+    if (idx.isValid()) {
+        for (const QModelIndex &idx: indices) {
+            emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
+        }
         emit selectionCountChanged(mSelectedFiles.count());
-    } else {
-        emit dataChanged(first, idx, QVector<int>() << Qt::CheckStateRole);
+        invalidateDirState(idx);
     }
     mUpdateTimer.start();
 }
