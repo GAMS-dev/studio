@@ -64,7 +64,6 @@ public:
 
 signals:
     void createClicked();
-    void selectionCountChanged(int count);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -75,6 +74,7 @@ private slots:
     void on_clearButton_clicked();
     void on_cbUncommon_clicked(bool checked);
 
+    void selectionCountChanged(int count);
     void updateButtons();
 
 private:

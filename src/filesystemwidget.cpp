@@ -67,17 +67,17 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
         extraText = QString(" (%1 files missing)").arg(mMissingFiles.count());
         toolTip = "Missing files:\n" + mMissingFiles.join("\n");
     }
-    auto palette = ui->assemblyFileLabel->palette();
+    auto palette = ui->laInfo->palette();
     if (valid) {
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(), Theme::color(Theme::Normal_Green));
+        palette.setColor(ui->laInfo->foregroundRole(), Theme::color(Theme::Normal_Green));
         ui->createButton->setText("Save Changes");
     } else {
-        palette.setColor(ui->assemblyFileLabel->foregroundRole(), Theme::color(Theme::Normal_Red));
+        palette.setColor(ui->laInfo->foregroundRole(), Theme::color(Theme::Normal_Red));
         ui->createButton->setText("Create");
     }
-    ui->assemblyFileLabel->setPalette(palette);
-    ui->assemblyFileLabel->setText(message + extraText);
-    ui->assemblyFileLabel->setToolTip(toolTip);
+    ui->laInfo->setPalette(palette);
+    ui->laInfo->setText(message + extraText);
+    ui->laInfo->setToolTip(toolTip);
 }
 
 void FileSystemWidget::setModelName(const QString &modelName)
@@ -173,6 +173,12 @@ void FileSystemWidget::on_clearButton_clicked()
 void FileSystemWidget::on_cbUncommon_clicked(bool checked)
 {
     mFilterModel->setHideUncommonFiles(checked);
+}
+
+void FileSystemWidget::selectionCountChanged(int count)
+{
+    ui->laSelectCount->setText(QString(count ? "%1 file%2 selected" : "no file selected")
+                               .arg(count).arg(count > 1 ? "s" : ""));
 }
 
 void FileSystemWidget::updateButtons()

@@ -15,7 +15,6 @@ EfiEditor::EfiEditor(QWidget *parent) :
     ui->fsWidget->setShowProtection(true);
     ui->fsWidget->setCreateVisible(false);
     connect(ui->fsWidget, &fs::FileSystemWidget::createClicked, this, &EfiEditor::requestSave);
-    connect(ui->fsWidget, &fs::FileSystemWidget::selectionCountChanged, this, &EfiEditor::updateSelCount);
     mModified = false;
 }
 
@@ -53,6 +52,7 @@ void EfiEditor::load(const QString &fileName)
         }
         ui->fsWidget->setSelectedFiles(entries);
         file.close();
+        updateInfoText("", true);
     } else {
         updateInfoText(QString(file.exists() ? "- Can't load '%1'" : "- '%1' doesn't exist").arg(fileName), file.exists());
     }
@@ -67,24 +67,12 @@ bool EfiEditor::isModified()
 
 void EfiEditor::setWarnText(const QString &text)
 {
-    if (text.isEmpty())
-        updateSelCount();
-    else
-        updateInfoText(text, false);
+    updateInfoText(text, false);
 }
 
 void EfiEditor::selectFilter()
 {
     ui->fsWidget->selectFilter();
-}
-
-void EfiEditor::updateSelCount()
-{
-    setModified(true);
-    int count = ui->fsWidget->selectionCount();
-    updateInfoText(QString(count ? "- selected %1 file%2" : "- no selection")
-                   .arg(count).arg(count > 1 ? "s" : ""), true);
-
 }
 
 void EfiEditor::save(const QString &fileName)

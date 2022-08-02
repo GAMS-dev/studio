@@ -29,9 +29,6 @@ signals:
     void modificationChanged(bool modiState);
     void requestSave();
 
-private slots:
-    void updateSelCount();
-
 private:
     void updateInfoText(QString extraText, bool valid);
     void setModified(bool modified);

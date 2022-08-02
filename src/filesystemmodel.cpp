@@ -167,14 +167,21 @@ QList<QFileInfo> FileSystemModel::visibleFileInfoList(const QDir &dir) const
 void FileSystemModel::clearSelection()
 {
     QSet<QModelIndex> indices;
+    QSet<QString> remove;
     for (const QString &file : mSelectedFiles) {
-        QModelIndex mi = index(rootDirectory().absoluteFilePath(file));
-        while (mi.isValid()) {
-            indices << mi;
-            mi = mi.parent();
+        QModelIndex idx = index(rootDirectory().absoluteFilePath(file));
+        bool filtered;
+        emit isFiltered(idx, filtered);
+        if (!filtered) {
+            remove << file;
+            while (idx.isValid()) {
+                indices << idx;
+                idx = idx.parent();
+            }
         }
     }
-    mSelectedFiles.clear();
+    for (const QString &file: remove)
+        mSelectedFiles.remove(file);
     invalidateDirStates();
     for (const QModelIndex &idx : indices)
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
