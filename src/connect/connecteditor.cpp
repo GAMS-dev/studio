@@ -41,6 +41,7 @@ ConnectEditor::ConnectEditor(const QString& connectDataFileName, QWidget *parent
 bool ConnectEditor::init()
 {
     ui->setupUi(this);
+    setFocusProxy(ui->dataTreeView);
 
     qDebug() << "ConnectEditor::" << mLocation;
 
@@ -58,31 +59,40 @@ bool ConnectEditor::init()
 
         QStandardItem *item = new QStandardItem();
         item->setData( str, Qt::DisplayRole );
-        item->setIcon(Theme::icon(":/%1/plus", false));
+        item->setIcon(Theme::icon(":/%1/plus", true));
         item->setEditable(false);
         item->setSelectable(true);
         item->setTextAlignment(Qt::AlignLeft);
+        item->setForeground(Theme::color(Theme::Syntax_embedded));
         schemaItemModel->setItem(row, 0, item);
     }
 
     ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->schemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->schemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
-
+    ui->schemaControlListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    ui->schemaControlListView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->schemaControlListView->setViewMode(QListView::ListMode);
     ui->schemaControlListView->setIconSize(QSize(16,16));
-    ui->connectHSplitter->setSizes(QList<int>({10, 70, 20}));
+    ui->connectHSplitter->setSizes(QList<int>({15, 65, 20}));
     ui->schemaControlListView->setModel(schemaItemModel);
     ui->helpComboBox->setModel(schemaHelpModel);
+//    ui->helpComboBox->setItemIcon(0, Theme::icon(":/solid/question-square", false));
 
-    mData = mConnect->loadDataFromFile(mLocation);
-    qDebug() << mData->str().c_str();
+    ConnectData* data = mConnect->loadDataFromFile(mLocation);
+    qDebug() << data->str().c_str();
 
-    ConnectDataModel* datamodel = new ConnectDataModel(mLocation, mData, this);
-    ui->dataTreeView->setModel( datamodel );
-    ui->dataTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
-    ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
+    mDataModel = new ConnectDataModel(mLocation, data, this);
+    ui->dataTreeView->setModel( mDataModel );
+    ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
+                       | QAbstractItemView::SelectedClicked
+                       | QAbstractItemView::EditKeyPressed
+                       | QAbstractItemView::AnyKeyPressed );
+//    ui->dataTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->dataTreeView->setSelectionMode(QAbstractItemView::ExtendedSelection);
+    ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->dataTreeView->setItemsExpandable(true);
+    ui->dataTreeView->setAutoScroll(true);
     updateDataColumnSpan();
     ui->dataTreeView->expandAll();
     ui->dataTreeView->resizeColumnToContents(0);
@@ -102,7 +112,7 @@ bool ConnectEditor::init()
     ui->helpTreeView->resizeColumnToContents(4);
     headerRegister(ui->helpTreeView->header());
 
-    connect(ui->schemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
+//    connect(ui->schemaControlListView, &QListView::clicked, this, &ConnectEditor::schemaClicked);
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
     connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
@@ -127,32 +137,36 @@ bool ConnectEditor::init()
 ConnectEditor::~ConnectEditor()
 {
     delete ui;
+    if (mDataModel)
+        delete mDataModel;
     if (mConnect)
         delete mConnect;
 }
 
-void ConnectEditor::schemaClicked(const QModelIndex &modelIndex)
-{
-    qDebug() << "clikced row=" << modelIndex.row() << ", col=" << modelIndex.column();
-}
+//void ConnectEditor::schemaClicked(const QModelIndex &modelIndex)
+//{
+//    qDebug() << "clikced row=" << modelIndex.row() << ", col=" << modelIndex.column();
+//}
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
     qDebug() << "doubseclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
              << ui->schemaControlListView->model()->data( modelIndex ).toString();
+
     QStringList strlist;
     strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
-    ConnectData* data = mConnect->createDataHolder(strlist);
-    qDebug() << data->str().c_str();
-    //delete data;
+
+    mDataModel->addFromSchema( mConnect->createDataHolder(strlist) );
+    updateDataColumnSpan();
+    ui->dataTreeView->expandAll();
+    ui->dataTreeView->resizeColumnToContents(0);
+    ui->dataTreeView->resizeColumnToContents(1);
 }
 
 void ConnectEditor::updateDataColumnSpan()
 {
     qDebug() << "updateColumnSpan";
-//    for (YAML::const_iterator it = mData->getRootNode().begin(); it != mData->getRootNode().end(); ++it) {
-//    }
-
+    ui->dataTreeView->setFirstColumnSpanned(0, ui->dataTreeView->rootIndex(), true);
 }
 
 }

@@ -21,7 +21,8 @@
 #define CONNECTEDITOR_H
 
 #include "abstractview.h"
-#include "connect/connect.h"
+#include "connect.h"
+#include "connectdatamodel.h"
 
 namespace gams {
 namespace studio {
@@ -45,7 +46,7 @@ public:
     ~ConnectEditor() override;
 
 private slots:
-    void schemaClicked(const QModelIndex &modelIndex);
+//    void schemaClicked(const QModelIndex &modelIndex);
     void schemaDoubleClicked(const QModelIndex &modelIndex);
     void updateDataColumnSpan();
 
@@ -54,9 +55,10 @@ private:
 
     bool init();
 
-    Connect*     mConnect;
-    ConnectData* mData;
-    QString mLocation;
+    ConnectDataModel* mDataModel;
+//    ConnectData*      mData;
+    Connect*          mConnect;
+    QString           mLocation;
 };
 
 }

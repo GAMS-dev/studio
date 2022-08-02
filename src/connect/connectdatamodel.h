@@ -37,6 +37,7 @@ public:
 
     QVariant data(const QModelIndex& index, int role) const override;
     Qt::ItemFlags flags(const QModelIndex& index) const override;
+    bool setData(const QModelIndex &index, const QVariant &value, int role = Qt::EditRole) override;
 
     QVariant headerData(int section, Qt::Orientation orientation,
                         int role = Qt::DisplayRole) const override;
@@ -45,7 +46,15 @@ public:
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
-//    QSize span(const QModelIndex &index) const override;
+
+    ConnectDataItem* getItem(const QModelIndex &index) const;
+    void insertItem(int position, ConnectDataItem* item, const QModelIndex &parent);
+    bool removeItem(const QModelIndex &index);
+
+    bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
+
+public slots:
+    void addFromSchema(ConnectData* data);
 
 protected:
     void setupTreeItemModelData();

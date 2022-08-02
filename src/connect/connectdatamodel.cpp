@@ -38,8 +38,6 @@ ConnectDataModel::ConnectDataModel(const QString& filename, ConnectData* data, Q
 
 ConnectDataModel::~ConnectDataModel()
 {
-    if (mConnectData)
-        delete mConnectData;
     if (mRootItem)
         delete mRootItem;
 }
@@ -54,18 +52,38 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         return item->data(index.column());
     }
+    case Qt::ForegroundRole: {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        switch(item->data(2).toInt()) {
+           case 0: return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
+           case 1: return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
+           case 2: return  QVariant::fromValue(Theme::color(Theme::Syntax_embedded));
+           default: return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
+        }
+    }
     case Qt::BackgroundRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         ConnectDataItem *parentItem = item->parentItem();
         if (parentItem == mRootItem) {
-            if (index.row() % 2 == 0)
+                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
+        } else {
+            if (item->data(2).toInt() <=1 )
                 return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
             else
-                return QVariant::fromValue(Theme::color(Theme::Disable_Gray));
-        } else {
-            return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
+                return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
     }
+    case Qt::DecorationRole: {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        ConnectDataItem *parentItem = item->parentItem();
+        if (parentItem == mRootItem) {
+            return QVariant::fromValue(Theme::icon(":/img/file-edit"));
+        } else
+            if (item->data(2).toInt()==1 && index.column()==0) {
+                return QVariant::fromValue(Theme::icon(":/solid/new"));
+            }
+    }
+
     default:
          break;
     }
@@ -80,6 +98,25 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
         return Qt::NoItemFlags;
     else
         return Qt::ItemIsDragEnabled | defaultFlags;  // ToDo
+}
+
+bool ConnectDataModel::setData(const QModelIndex &index, const QVariant &value, int role)
+{
+    QVector<int> roles;
+    switch (role) {
+    case Qt::DisplayRole: {
+        roles = { Qt::EditRole };
+        ConnectDataItem *item = getItem(index);
+        bool result = item->setData(index.column(), value);
+        if (result)
+            emit dataChanged(index, index, roles);
+        return result;
+    }
+//    case Qt::CheckStateRole: {  }
+    default:
+        break;
+    }
+    return false;
 }
 
 QVariant ConnectDataModel::headerData(int section, Qt::Orientation orientation, int role) const
@@ -146,6 +183,57 @@ int ConnectDataModel::columnCount(const QModelIndex &parent) const
         return mRootItem->columnCount();
 }
 
+ConnectDataItem *ConnectDataModel::getItem(const QModelIndex &index) const
+{
+    if (index.isValid()) {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        if (item)
+            return item;
+    }
+    return mRootItem;
+}
+
+void ConnectDataModel::insertItem(int position, ConnectDataItem *item, const QModelIndex &parent)
+{
+    ConnectDataItem* parentItem = getItem(parent);
+
+    beginInsertRows(parent, position, position);
+    parentItem->insertChild(position, item);
+    endInsertRows();
+}
+
+bool ConnectDataModel::removeItem(const QModelIndex &index)
+{
+    ConnectDataItem* treeItem = getItem(index);
+    if (treeItem)
+        return removeRows(treeItem->row(), 1, parent(index));
+    else
+        return false;
+}
+
+bool ConnectDataModel::removeRows(int row, int count, const QModelIndex &parent)
+{
+    ConnectDataItem* parentItem = getItem(parent);
+    bool success = false;
+    if (count > 0) {
+        beginRemoveRows(parent, row, row + count - 1);
+        success = parentItem->removeChildren(row, count);
+        endRemoveRows();
+    }
+    return success;
+}
+
+void ConnectDataModel::addFromSchema(ConnectData* data)
+{
+    qDebug() << data->str().c_str();
+
+    beginResetModel();
+    endResetModel();
+
+    mConnectData = data;
+    setupTreeItemModelData();
+}
+
 void ConnectDataModel::setupTreeItemModelData()
 {
     QList<QVariant> rootData;
@@ -158,6 +246,8 @@ void ConnectDataModel::setupTreeItemModelData()
 
     QList<QVariant> connectData;
     connectData << mLocation;
+    connectData << "";
+    connectData << "0";
     parents.last()->appendChild(new ConnectDataItem(connectData, parents.last()));
 
     Q_ASSERT(mConnectData->getRootNode().Type()==YAML::NodeType::Sequence); // TODO
@@ -170,7 +260,7 @@ void ConnectDataModel::setupTreeItemModelData()
         QList<QVariant> schemaindexData;
         schemaindexData << QVariant::fromValue(i);
         schemaindexData << "";
-        schemaindexData << "";
+        schemaindexData << "1";
         parents.last()->appendChild(new ConnectDataItem(schemaindexData, parents.last()));
 
         for (YAML::const_iterator it = rootnode.begin(); it != rootnode.end(); ++it) {
@@ -178,7 +268,7 @@ void ConnectDataModel::setupTreeItemModelData()
              QList<QVariant> listData;
              listData << it->first.as<std::string>().c_str();
              listData << "";
-             listData << "";
+             listData << "2";
              parents.last()->appendChild(new ConnectDataItem(listData, parents.last()));
 
              parents << parents.last()->child(parents.last()->childCount()-1);
@@ -189,7 +279,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      QList<QVariant> itemData;
                      itemData << mit->first.as<std::string>().c_str();
                      itemData << QVariant(mit->second.as<std::string>().c_str()); // TODO
-                     itemData << "";
+                     itemData << "3";
                      parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
                  } else if (mit->second.Type()==YAML::NodeType::Map) {
                      qDebug() << "not implemented";
@@ -197,14 +287,14 @@ void ConnectDataModel::setupTreeItemModelData()
                             QList<QVariant> itemData;
                             itemData << mit->first.as<std::string>().c_str();
                             itemData << "";
-                            itemData << "";
+                            itemData << "3";
                             parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
                             parents << parents.last()->child(parents.last()->childCount()-1);
                             for(size_t k = 0; k<mit->second.size(); k++) {
                                QList<QVariant> indexData;
                                indexData << QVariant::fromValue(k);
                                indexData << "";
-                               indexData << "";
+                               indexData << "1";
                                parents.last()->appendChild(new ConnectDataItem(indexData, parents.last()));
 
                                if (mit->second[k].Type()==YAML::NodeType::Map) {
@@ -214,7 +304,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                        QList<QVariant> mapSeqData;
                                        mapSeqData << mmit->first.as<std::string>().c_str();
                                        mapSeqData << mmit->second.as<std::string>().c_str(); // TODO
-                                       mapSeqData << "";
+                                       mapSeqData << "3";
                                        parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
                                   }
                                   parents.pop_back();
