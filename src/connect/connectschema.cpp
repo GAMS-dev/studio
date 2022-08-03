@@ -24,9 +24,10 @@ namespace gams {
 namespace studio {
 namespace connect {
 
+
 void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int level)
 {
-    QList<Type> types;
+    QList<SchemaType> types;
     if (node["type"].Type()==YAML::NodeType::Sequence) {
         for(size_t i=0; i<node["type"].size(); i++) {
            QString value(QString::fromStdString(node["type"][i].as<std::string>()));
@@ -50,29 +51,29 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     }
     ValueWrapper defvalue;
     if (node["default"] ) {
-        if (std::find(types.begin(), types.end(), Type::INTEGER) != types.end()) {
+        if (std::find(types.begin(), types.end(), SchemaType::INTEGER) != types.end()) {
             defvalue = ValueWrapper(node["default"].as<int>());
-        } else if (std::find(types.begin(), types.end(), Type::FLOAT) != types.end()) {
+        } else if (std::find(types.begin(), types.end(), SchemaType::FLOAT) != types.end()) {
                   defvalue = ValueWrapper(node["default"].as<double>());
-        } else if (std::find(types.begin(), types.end(), Type::STRING) != types.end()) {
+        } else if (std::find(types.begin(), types.end(), SchemaType::STRING) != types.end()) {
             defvalue = ValueWrapper(node["default"].as<std::string>());
-        } else if (std::find(types.begin(), types.end(), Type::BOOLEAN) != types.end()) {
+        } else if (std::find(types.begin(), types.end(), SchemaType::BOOLEAN) != types.end()) {
             defvalue = ValueWrapper(node["default"].as<bool>());
         }
     }
     ValueWrapper minvalue;
     if (node["min"] ) {
-        if (std::find(types.begin(), types.end(), Type::INTEGER) != types.end()) {
+        if (std::find(types.begin(), types.end(), SchemaType::INTEGER) != types.end()) {
             minvalue = ValueWrapper(node["min"].as<int>());
-        } else if (std::find(types.begin(), types.end(), Type::FLOAT) != types.end()) {
+        } else if (std::find(types.begin(), types.end(), SchemaType::FLOAT) != types.end()) {
                   minvalue = ValueWrapper(node["min"].as<double>());
         }
     }
     ValueWrapper maxvalue;
     if (node["max"] ) {
-        if (std::find(types.begin(), types.end(), Type::INTEGER) != types.end()) {
+        if (std::find(types.begin(), types.end(), SchemaType::INTEGER) != types.end()) {
             maxvalue = ValueWrapper(node["max"].as<int>());
-        } else if (std::find(types.begin(), types.end(), Type::FLOAT) != types.end()) {
+        } else if (std::find(types.begin(), types.end(), SchemaType::FLOAT) != types.end()) {
                   maxvalue = ValueWrapper(node["max"].as<double>());
         }
     }
@@ -82,10 +83,10 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     Schema* s = new Schema(level, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
     mSchemaHelper.insert(key, s);
     if (node["schema"]) {
-        if (mSchemaHelper[key]->hasType(Type::LIST)) {
+        if (mSchemaHelper[key]->hasType(SchemaType::LIST)) {
             QString str = key + ":-";
             createSchemaHelper(str, node["schema"], ++level);
-        } else if (mSchemaHelper[key]->hasType(Type::DICT)) {
+        } else if (mSchemaHelper[key]->hasType(SchemaType::DICT)) {
                   ++level;
                   QString str;
                   for (YAML::const_iterator it=node["schema"].begin(); it != node["schema"].end(); ++it) {
@@ -181,12 +182,12 @@ Schema *ConnectSchema::getSchema(const QString &key) const
         return nullptr;
 }
 
-QList<Type> ConnectSchema::getType(const QString &key) const
+QList<SchemaType> ConnectSchema::getType(const QString &key) const
 {
     if (contains(key)) {
         return mSchemaHelper[key]->types;
     } else {
-        return QList<Type>();
+        return QList<SchemaType>();
     }
 }
 

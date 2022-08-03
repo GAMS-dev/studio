@@ -29,10 +29,23 @@ namespace gams {
 namespace studio {
 namespace connect {
 
+
+enum class DataItemColumn {
+    KEY,
+    VALUE,
+    CHECK_STATE,
+    DELETE,
+    MOVE_DOWN,
+    MOVE_UP,
+    EXPAND,
+    HELP
+};
+
 class ConnectDataModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
-    explicit ConnectDataModel(const QString& filename, ConnectData* data, QObject *parent = nullptr);
+    explicit ConnectDataModel(const QString& filename, Connect* connect, QObject *parent = nullptr);
     ~ConnectDataModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
@@ -60,6 +73,7 @@ protected:
     void setupTreeItemModelData();
 
     QString          mLocation;
+    Connect*         mConnect;
     ConnectData*     mConnectData;
     ConnectDataItem* mRootItem;
 

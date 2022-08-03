@@ -22,9 +22,6 @@
 
 #include "commonpaths.h"
 #include "connect.h"
-#include "connectdata.h"
-#include "connectschema.h"
-#include "connecterror.h"
 
 namespace gams {
 namespace studio {
@@ -119,32 +116,32 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
             }
 
             bool validType = false;
-            QList<Type> typeList = getSchema(schemaname)->getType(key);
-            foreach (Type type, typeList) {
+            QList<SchemaType> typeList = getSchema(schemaname)->getType(key);
+            foreach (SchemaType type, typeList) {
                 try {
-                    if (type==Type::INTEGER) {
+                    if (type==SchemaType::INTEGER) {
                         if (it->second.Type()==YAML::NodeType::Scalar)
                             it->second.as<int>();
                         else
                             continue;
-                    } else if (type==Type::FLOAT) {
+                    } else if (type==SchemaType::FLOAT) {
                               if (it->second.Type()==YAML::NodeType::Scalar)
                                  it->second.as<float>();
                               else
                                  continue;
-                    } else if (type==Type::BOOLEAN) {
+                    } else if (type==SchemaType::BOOLEAN) {
                                if (it->second.Type()==YAML::NodeType::Scalar)
                                    it->second.as<bool>();
                                else
                                    continue;
-                    } else if (type==Type::STRING) {
+                    } else if (type==SchemaType::STRING) {
                               if (it->second.Type()==YAML::NodeType::Scalar)
                                   it->second.as<std::string>();
                               else
                                   continue;
-                    } else if (type==Type::LIST) {
+                    } else if (type==SchemaType::LIST) {
                               continue; // TODO
-                    } else if (type==Type::DICT) {
+                    } else if (type==SchemaType::DICT) {
                               continue; // TODO
                     }
                     validType = true;
@@ -156,14 +153,14 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
            if (!validType) {
                std::string str = "must be of ";
                if (typeList.size()==1) {
-                   str += typeToString(typeList[0]);
+                   str += ConnectSchema::typeToString(typeList[0]);
                    str += " type";
                } else {
                    str += "[";
                    int i = 0;
                    for(auto const& t: typeList) {
                        ++i;
-                       str += typeToString(t);
+                       str += ConnectSchema::typeToString(t);
                        if (i < typeList.size())
                           str += ",";
                    }
@@ -328,31 +325,31 @@ YAML::Node Connect::createConnectData(const QString &schemaName)
     return data;
 }
 
-bool Connect::isTypeValid(QList<Type>& typeList, const YAML::Node &data)
+bool Connect::isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data)
 {
     bool validType = false;
-    foreach (Type t, typeList) {
+    foreach (SchemaType t, typeList) {
         try {
-            if (t==Type::INTEGER) {
+            if (t==SchemaType::INTEGER) {
                 if (data.Type()!=YAML::NodeType::Scalar)
                     continue;
                 data.as<int>();
-            } else if (t==Type::FLOAT) {
+            } else if (t==SchemaType::FLOAT) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                       data.as<float>();
-            } else if (t==Type::BOOLEAN) {
+            } else if (t==SchemaType::BOOLEAN) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                        data.as<bool>();
-            } else if (t==Type::STRING) {
+            } else if (t==SchemaType::STRING) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                       data.as<std::string>();
-            } else if (t==Type::LIST) {
+            } else if (t==SchemaType::LIST) {
                       if (data.Type()!=YAML::NodeType::Sequence)
                           continue;
-            } else if (t==Type::DICT) {
+            } else if (t==SchemaType::DICT) {
                       if (data.Type()!=YAML::NodeType::Map)
                          continue;
             }
@@ -370,19 +367,19 @@ void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAM
     for (YAML::const_iterator it = data.begin(); it != data.end(); ++it) {
         QString key = QString::fromStdString( it->first.as<std::string>() );
         if (it->second.Type()==YAML::NodeType::Scalar) {
-            QList<Type> typeList = getSchema(schemaname)->getType(keyFromRoot);
+            QList<SchemaType> typeList = getSchema(schemaname)->getType(keyFromRoot);
             bool validType = isTypeValid(typeList, it->second);
             if (!validType) {
                 QString str = "must be of ";
                 if (typeList.size()==1) {
-                    str += typeToString(typeList[0]);
+                    str += ConnectSchema::typeToString(typeList[0]);
                     str += " type";
                 } else {
                     str += "[";
                     int i = 0;
                     for(auto const& t: typeList) {
                         ++i;
-                        str += typeToString(t);
+                        str += ConnectSchema::typeToString(t);
                         if (i < typeList.size())
                            str += ",";
                     }
@@ -393,23 +390,23 @@ void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAM
                 error[key.toStdString()] = errorNode;
             } else {
                 ValueWrapper minval = getSchema(schemaname)->getMin(keyFromRoot);
-                if (minval.type==ValueType::INTEGER) {
+                if (minval.type==SchemaValueType::INTEGER) {
                     if (data.as<int>() < minval.value.intval) {
                         /* TODO */
                     }
-                } else if (minval.type==ValueType::FLOAT) {
+                } else if (minval.type==SchemaValueType::FLOAT) {
                         if (data.as<float>() < minval.value.doubleval) {
                             /* TODO */
                         }
                 }
                 ValueWrapper maxval = getSchema(schemaname)->getMax(keyFromRoot);
-                if (maxval.type!=ValueType::NOVALUE) {
+                if (maxval.type!=SchemaValueType::NOVALUE) {
 
                 }
             }
         } else if (it->second.Type()==YAML::NodeType::Sequence) {
                    QString key = QString("%1:-").arg(keyFromRoot);
-                   QList<Type> typeList = getSchema(schemaname)->getType(key);
+                   QList<SchemaType> typeList = getSchema(schemaname)->getType(key);
                    YAML::Node listError;
                    for(size_t i = 0; i<it->second.size(); i++) {
                        YAML::Node itemError;

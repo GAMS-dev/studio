@@ -33,7 +33,7 @@ namespace connect {
 
 Q_NAMESPACE
 
-enum class Type {
+enum class SchemaType {
     STRING,
     INTEGER,
     FLOAT,
@@ -42,9 +42,19 @@ enum class Type {
     DICT,
     UNDEFINED
 };
-Q_ENUM_NS(Type)
+Q_ENUM_NS(SchemaType)
 
-static Type getTypeFromValue(QString& value) {
+enum class SchemaValueType {
+    INTEGER,
+    FLOAT,
+    STRING,
+    BOOLEAN,
+    NOVALUE
+};
+Q_ENUM_NS(SchemaValueType)
+
+/*
+static inline Type getTypeFromValue(QString& value) {
     if (value.compare("integer") == 0) {
         return Type::INTEGER;
     } else if (value.compare("string") == 0) {
@@ -63,7 +73,7 @@ static Type getTypeFromValue(QString& value) {
     return Type::UNDEFINED;
 }
 
-static const char* typeToString(Type t) {
+static inline const char* typeToString(Type t) {
     const std::map<Type, const char*> typeStrings {
         { Type::INTEGER, "integer" },
         { Type::STRING,  "string" },
@@ -75,7 +85,7 @@ static const char* typeToString(Type t) {
     };
     auto   it  = typeStrings.find(t);
     return (it == typeStrings.end() ? "undefined" : it->second);
-}
+}*/
 
 union Value  {
     bool    boolval;
@@ -136,23 +146,21 @@ union Value  {
     }
 };
 
-enum class ValueType { INTEGER, FLOAT, STRING, BOOLEAN, NOVALUE };
-
 struct ValueWrapper {
-    ValueType   type;
+    SchemaValueType   type;
     union Value value;
-    ValueWrapper()                    : type(ValueType::NOVALUE) {  }
-    ValueWrapper(int intval_)         : type(ValueType::INTEGER), value(intval_)    { }
-    ValueWrapper(double doubleval_)   : type(ValueType::FLOAT),   value(doubleval_) { }
-    ValueWrapper(bool boolval_)       : type(ValueType::BOOLEAN), value(boolval_) { }
-    ValueWrapper(std::string strval_) : type(ValueType::STRING),  value(strval_) { }
+    ValueWrapper()                    : type(SchemaValueType::NOVALUE) {  }
+    ValueWrapper(int intval_)         : type(SchemaValueType::INTEGER), value(intval_)    { }
+    ValueWrapper(double doubleval_)   : type(SchemaValueType::FLOAT),   value(doubleval_) { }
+    ValueWrapper(bool boolval_)       : type(SchemaValueType::BOOLEAN), value(boolval_) { }
+    ValueWrapper(std::string strval_) : type(SchemaValueType::STRING),  value(strval_) { }
 };
 
 
 class Schema {
 public:
     int           level;
-    QList<Type>   types;
+    QList<SchemaType>   types;
     bool          required;
     QList<ValueWrapper>  allowedValues;
     ValueWrapper         defaultValue;
@@ -162,7 +170,7 @@ public:
 
     Schema(
         int                 level_,
-        QList<Type>         type_,
+        QList<SchemaType>         type_,
         bool                required_,
         QList<ValueWrapper> allowedValues_
     ) : level(level_),
@@ -173,7 +181,7 @@ public:
 
     Schema(
         int           level_,
-        QList<Type>   type_,
+        QList<SchemaType>   type_,
         bool          required_,
         QList<ValueWrapper>  allowedValues_,
         ValueWrapper         defaultValue_,
@@ -191,8 +199,8 @@ public:
       schemaDefined(schemaDefined_)
     { }
 
-    bool hasType(Type tt) {
-       for (const Type t : types) {
+    bool hasType(SchemaType tt) {
+       for (const SchemaType t : types) {
           if (t==tt) return true;
        }
        return false;
@@ -226,11 +234,44 @@ public:
 
     Schema* getSchema(const QString& key) const;
 
-    QList<Type> getType(const QString& key) const;
+    QList<SchemaType> getType(const QString& key) const;
     bool isRequired(const QString& key) const;
     ValueWrapper getMin(const QString& key) const;
     ValueWrapper getMax(const QString& key) const;
     bool isSchemaDefined(const QString& key) const;
+
+    static inline SchemaType getTypeFromValue(QString& value) {
+        if (value.compare("integer") == 0) {
+            return SchemaType::INTEGER;
+        } else if (value.compare("string") == 0) {
+                  return SchemaType::STRING;
+        } else if (value.compare("float") == 0) {
+                  return SchemaType::STRING;
+        } else if (value.compare("boolean") == 0) {
+                   return SchemaType::BOOLEAN;
+        } else if (value.compare("float") == 0) {
+                   return SchemaType::FLOAT;
+        } else if (value.compare("dict") == 0) {
+                   return SchemaType::DICT;
+        } else if (value.compare("list") == 0) {
+                  return SchemaType::LIST;
+        }
+        return SchemaType::UNDEFINED;
+    }
+
+    static inline const char* typeToString(SchemaType t) {
+        const std::map<SchemaType, const char*> typeStrings {
+            { SchemaType::INTEGER, "integer" },
+            { SchemaType::STRING,  "string" },
+            { SchemaType::FLOAT,   "float" },
+            { SchemaType::BOOLEAN, "boolean" },
+            { SchemaType::DICT,    "dict" },
+            { SchemaType::LIST,    "list" },
+            { SchemaType::UNDEFINED, "undefined" }
+        };
+        auto   it  = typeStrings.find(t);
+        return (it == typeStrings.end() ? "undefined" : it->second);
+    }
 };
 
 } // namespace connect

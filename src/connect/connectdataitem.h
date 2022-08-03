@@ -41,6 +41,7 @@ public:
     QVariant data(int column) const;
     int row() const;
     ConnectDataItem *parentItem();
+
     bool setData(int column, const QVariant &value);
 
     void setParent(ConnectDataItem* parent);

@@ -30,6 +30,7 @@ namespace connect {
 
 class SchemaDefinitionModel : public QAbstractItemModel
 {
+    Q_OBJECT
 public:
     explicit SchemaDefinitionModel(Connect* connect, const QString& schemaName, QObject *parent = nullptr);
     ~SchemaDefinitionModel() override;
@@ -49,7 +50,7 @@ public slots:
     void loadSchemaFromName(const QString& name);
 
 private:
-    void addTypeList(QList<Type>& typeList, QList<QVariant>& data);
+    void addTypeList(QList<SchemaType>& typeList, QList<QVariant>& data);
     void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
     void addValue(ValueWrapper& value, QList<QVariant>& data);
 

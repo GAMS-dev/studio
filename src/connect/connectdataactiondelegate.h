@@ -17,56 +17,33 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef CONNECTEDITOR_H
-#define CONNECTEDITOR_H
+#ifndef GAMS_STUDIO_CONNECT_CONNECTDATAACTIONDELEGATE_H
+#define GAMS_STUDIO_CONNECT_CONNECTDATAACTIONDELEGATE_H
 
-#include "abstractview.h"
-#include "connect.h"
+#include <QStyledItemDelegate>
 #include "connectdatamodel.h"
 
 namespace gams {
 namespace studio {
-
-class MainWindow;
-
 namespace connect {
 
-namespace Ui {
-class ConnectEditor;
-}
-
-class Connect;
-
-class ConnectEditor : public AbstractView
+class ConnectDataActionDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
-    explicit ConnectEditor(const QString& connectDataFileName, QWidget *parent = nullptr);
-    ~ConnectEditor() override;
+//    enum DelegateType { DT_TEXT, DT_ICON, DT_COMBOBOX,  };
+//    const int DelegateTypeRole = Qt::UserRole + 1;
 
-private slots:
-    void schemaDoubleClicked(const QModelIndex &modelIndex);
-    void updateDataColumnSpan();
+    explicit ConnectDataActionDelegate(DataItemColumn column, QObject *parent = nullptr);
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
 
-//    void on_dataTreeSelectionChanged(const QItemSelection &, const QItemSelection &);
-
+    bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
+                     const QModelIndex &index) override;
 private:
-    Ui::ConnectEditor *ui;
-
-    bool init();
-
-    ConnectDataModel* mDataModel;
-//    ConnectData*      mData;
-    Connect*          mConnect;
-    QString           mLocation;
-
-    void iterateModelItem(QModelIndex parent=QModelIndex());
-
+    DataItemColumn mColumn;
 };
 
-}
-}
-}
+} // namespace connect
+} // namespace studio
+} // namespace gams
 
-#endif // CONNECTEDITOR_H
+#endif // GAMS_STUDIO_CONNECT_CONNECTDATAACTIONDELEGATE_H

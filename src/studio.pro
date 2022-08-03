@@ -82,6 +82,11 @@ SOURCES += \
     connect/connect.cpp \
     connect/connectagent.cpp \
     connect/connectdata.cpp \
+    connect/connectdataactiondelegate.cpp \
+    connect/connectdataitem.cpp \
+    connect/connectdatakeydelegate.cpp \
+    connect/connectdatamodel.cpp \
+    connect/connectdatavaluedelegate.cpp \
     connect/connecteditor.cpp \
     connect/connecterror.cpp \
     connect/connectschema.cpp \
@@ -351,6 +356,11 @@ HEADERS += \
     connect/connect.h \
     connect/connectagent.h \
     connect/connectdata.h \
+    connect/connectdataactiondelegate.h \
+    connect/connectdataitem.h \
+    connect/connectdatakeydelegate.h \
+    connect/connectdatamodel.h \
+    connect/connectdatavaluedelegate.h \
     connect/connecteditor.h \
     connect/connecterror.h \
     connect/connectschema.h \

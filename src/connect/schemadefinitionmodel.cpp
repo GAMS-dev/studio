@@ -165,11 +165,11 @@ void SchemaDefinitionModel::loadSchemaFromName(const QString &name)
     endResetModel();
 }
 
-void SchemaDefinitionModel::addTypeList(QList<Type>& typeList, QList<QVariant> &data)
+void SchemaDefinitionModel::addTypeList(QList<SchemaType>& typeList, QList<QVariant> &data)
 {
     QStringList schemaTypeList;
-    for(Type t : typeList) {
-        schemaTypeList << QString::fromLatin1(typeToString(t));
+    for(SchemaType t : typeList) {
+        schemaTypeList << QString::fromLatin1(ConnectSchema::typeToString(t));
     }
     if (typeList.size() > 0) {
         if (typeList.size() == 1)
@@ -185,15 +185,15 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
 {
     QStringList valueStrList;
     for(ValueWrapper& value :  valueList) {
-        if (value.type==ValueType::NOVALUE) {
+        if (value.type==SchemaValueType::NOVALUE) {
             valueStrList << "";
-        } else if (value.type==ValueType::INTEGER) {
+        } else if (value.type==SchemaValueType::INTEGER) {
             valueStrList << QString::number(value.value.intval);
-        } else if (value.type==ValueType::FLOAT) {
+        } else if (value.type==SchemaValueType::FLOAT) {
             valueStrList << QString::number(value.value.doubleval);
-        } else if (value.type==ValueType::STRING) {
+        } else if (value.type==SchemaValueType::STRING) {
             valueStrList << QString(value.value.stringval);
-        } else if (value.type==ValueType::BOOLEAN) {
+        } else if (value.type==SchemaValueType::BOOLEAN) {
             valueStrList << QString(value.value.boolval);
         } else  {
             valueStrList << "";
@@ -211,15 +211,15 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
 
 void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
 {
-    if (value.type==ValueType::NOVALUE) {
+    if (value.type==SchemaValueType::NOVALUE) {
         data << "";
-    } else if (value.type==ValueType::INTEGER) {
+    } else if (value.type==SchemaValueType::INTEGER) {
         data << value.value.intval;
-    } else if (value.type==ValueType::FLOAT) {
+    } else if (value.type==SchemaValueType::FLOAT) {
         data << value.value.doubleval;
-    } else if (value.type==ValueType::STRING) {
+    } else if (value.type==SchemaValueType::STRING) {
         data << value.value.stringval;
-    } else if (value.type==ValueType::BOOLEAN) {
+    } else if (value.type==SchemaValueType::BOOLEAN) {
         data << value.value.boolval;
     } else  {
         data << "";

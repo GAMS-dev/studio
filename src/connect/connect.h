@@ -52,7 +52,7 @@ private:
     YAML::Node createConnectData(const QString& schemaName);
     bool validate(const QString& schemaname, ConnectData& data);
 
-    bool isTypeValid(QList<Type>& typeList, const YAML::Node &data);
+    bool isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data);
     void updateKeyList(const QString& schemaname, QString& keyFromRoot, YAML::Node& error, const YAML::Node &data);
 
     QMap<QString, ConnectSchema*> mSchema;
