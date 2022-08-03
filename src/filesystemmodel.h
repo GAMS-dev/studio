@@ -64,7 +64,7 @@ private slots:
     void updateDirCheckStates();
 
 private:
-    int dirCheckState(const QString &path, bool isConst = true) const;
+    int dirCheckState(const QString &path, bool filtered, bool isConst = true) const;
     void updateDirInfo(const QModelIndex &idx) const;
     void invalidateDirState(const QModelIndex &par);
     void invalidateDirStates();

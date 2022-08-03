@@ -77,7 +77,7 @@ QVariant FileSystemModel::data(const QModelIndex &idx, int role) const
         QString path = filePath(idx);
         if (isDir(idx)) {
             if (!path.startsWith(rootPath())) return QVariant();
-            return dirCheckState(path);
+            return dirCheckState(path, false, true);
         }
         else
             return mSelectedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
@@ -93,9 +93,11 @@ bool FileSystemModel::setData(const QModelIndex &idx, const QVariant &value, int
 {
     if (role == Qt::CheckStateRole && idx.column() == 0) {
         updateDirInfo(idx);
-        QString file = rootDirectory().relativeFilePath(filePath(idx));
-        if (isDir(idx) && mDirs.value(file).childCount > 0)
-            setChildSelection(idx, value.toInt() == Qt::Unchecked);
+        QString absFile = filePath(idx);
+        QString file = rootDirectory().relativeFilePath(absFile);
+        if (isDir(idx) && mDirs.value(file).childCount > 0) {
+            setChildSelection(idx, dirCheckState(absFile, true) == Qt::Checked);
+        }
         else if (value.toInt() == Qt::Unchecked)
             mSelectedFiles.remove(file);
         else
@@ -256,16 +258,17 @@ void FileSystemModel::updateDirCheckStates()
     dirs.sort();
     while (!dirs.isEmpty()) {
         QString path = dirs.takeLast();
-        mDirs[subPath(path)].checkState = dirCheckState(rootDirectory().absoluteFilePath(path), false);
+        mDirs[subPath(path)].checkState = dirCheckState(rootDirectory().absoluteFilePath(path), false, false);
     }
 }
 
-int FileSystemModel::dirCheckState(const QString &path, bool isConst) const
+int FileSystemModel::dirCheckState(const QString &path, bool filtered, bool isConst) const
 {
     if (path.startsWith("..")) return Qt::Unchecked;
     QDir dir(path);
     int flag = 0;
-    QList<QFileInfo> fiList = visibleFileInfoList(dir);
+    QList<QFileInfo> fiList = filtered ? visibleFileInfoList(dir)
+                                       : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     if (fiList.isEmpty())
         return mSelectedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
 
@@ -277,7 +280,7 @@ int FileSystemModel::dirCheckState(const QString &path, bool isConst) const
             }
             int state = mDirs.value(relPath).checkState;
             if (state < 0) {
-                state = dirCheckState(info.filePath(), false);
+                state = dirCheckState(info.filePath(), filtered, isConst);
             }
             if (state == Qt::PartiallyChecked) return Qt::PartiallyChecked;
             flag |= (state == Qt::Checked) ? 1 : 2;
