@@ -332,12 +332,9 @@ void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
         else mSelectedFiles.insert(rootDirectory().relativeFilePath(dir.path()));
         return;
     }
-
-    QModelIndex startIdx = QModelIndex();
     QModelIndex subIdx = QModelIndex();
     for (const QFileInfo &info : visibleFileInfoList(dir)) {
         subIdx = index(info.filePath());
-        if (!startIdx.isValid()) startIdx = subIdx;
         QString relPath = rootDirectory().relativeFilePath(info.filePath());
         if (info.isDir()) {
             updateDirInfo(subIdx);
@@ -347,12 +344,10 @@ void FileSystemModel::setChildSelection(const QModelIndex &idx, bool remove)
             mSelectedFiles.remove(relPath);
         else
             mSelectedFiles.insert(relPath);
+        emit dataChanged(subIdx, subIdx, QVector<int>() << Qt::CheckStateRole);
     }
     updateDirInfo(idx);
     mDirs[rootDirectory().relativeFilePath(dir.path())].checkState = remove ? Qt::Unchecked : Qt::Checked;
-
-    if (startIdx.isValid())
-        emit dataChanged(startIdx, subIdx, QVector<int>() << Qt::CheckStateRole);
 }
 
 QString FileSystemModel::subPath(const QModelIndex &idx) const
