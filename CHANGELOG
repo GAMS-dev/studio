@@ -1,3 +1,7 @@
+Version 1.11.2*
+==================
+- fixed occasional crash when opening search dialog after closing all files
+
 Version 1.11.1
 ==================
 - fixed parameter procTreeMemMonitor in GAMS configuration influencing license dialog output
