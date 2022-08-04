@@ -33,10 +33,18 @@ protected:
 
 class FileSystemModel : public QFileSystemModel
 {
+//    struct Entry {
+//        bool isDir = false;
+//        QString name;
+//        QString absoluteFilePath;
+//        QString relativeFilePath;
+//    };
+
     struct DirState {
         DirState() {}
-        int childCount = 0;
+        int childCount = -1;
         int checkState = -1; // Qt::CheckState plus invalid state (-1)
+//        QList<Entry*> entries;
     };
 
     Q_OBJECT

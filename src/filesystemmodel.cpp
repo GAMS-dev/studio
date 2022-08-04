@@ -296,10 +296,19 @@ void FileSystemModel::updateDirInfo(const QModelIndex &idx) const
 {
     if (!isDir(idx))
         return;
-    auto path = subPath(idx);
-    if (!mDirs.contains(path)) {
+    QString path = subPath(idx);
+    if (!mDirs.contains(path) || mDirs.value(path).childCount < 0) {
         QDir dir(filePath(idx));
         mDirs[path].childCount = int(dir.count()) - 2;
+//        mDirs[path].entries.clear();
+//        for (const QFileInfo &info: dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+//            Entry *e = new Entry();
+//            e->isDir = info.isDir();
+//            e->name = info.fileName();
+//            e->absoluteFilePath = info.absoluteFilePath();
+//            e->relativeFilePath = rootDirectory().relativeFilePath(e->absoluteFilePath);
+//            mDirs[path].entries.append(e);
+//        }
     }
 }
 
