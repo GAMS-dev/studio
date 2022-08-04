@@ -278,10 +278,7 @@ int FileSystemModel::dirCheckState(const QString &path, bool filtered, bool isCo
             if (!mDirs.contains(relPath) && !isConst) {
                 updateDirInfo(index(info.path()));
             }
-            int state = mDirs.value(relPath).checkState;
-            if (state < 0) {
-                state = dirCheckState(info.filePath(), filtered, isConst);
-            }
+            int state = dirCheckState(info.filePath(), filtered, isConst);
             if (state == Qt::PartiallyChecked) return Qt::PartiallyChecked;
             flag |= (state == Qt::Checked) ? 1 : 2;
         } else {
