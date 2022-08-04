@@ -435,22 +435,34 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
 
     tc.beginEditBlock();
     do {
+        QString modifiedReplaceTerm = replaceTerm;
         item = fm->document()->find(regex, from, options);
         lastItem = item;
 
         // mitigate infinite loop
-       if (lastItem.selectedText().length() == 0) {
-           if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
-       } else {
-           if (!item.isNull()) {
-               if (selectionScope && item.position() > to) break; // end early, limit reached
-               item.insertText(replaceTerm);
-               from = item.position();
-               hits++;
+        if (lastItem.selectedText().length() == 0) {
+            if (!lastItem.movePosition(QTextCursor::NextCharacter)) break;
+        } else {
+            if (!item.isNull()) {
+                if (selectionScope && item.position() > to) break; // end early, limit reached
+
+                if (regex.captureCount() > 0) {
+                    QRegularExpressionMatch match = regex.match(item.selectedText());
+                    for(int i = 1; i <= regex.captureCount(); i++) {
+                        QRegularExpression replaceGroup("\\$" + QString::number(i));
+                        QString captured = match.capturedTexts().at(i);
+                        modifiedReplaceTerm.replace(replaceGroup, captured);
+                    }
+                }
+
+                qDebug()/*rogo:delete*/<<QTime::currentTime()<< item.selectedText() << "=>" << modifiedReplaceTerm;
+                item.insertText(modifiedReplaceTerm);
+                from = item.position();
+                hits++;
                 // update anchor because it can move if match.length != replaceterm.length
-               to = qMax(searchSelection.position(), searchSelection.anchor());
-           }
-       }
+                to = qMax(searchSelection.position(), searchSelection.anchor());
+            }
+        }
     } while(!item.isNull());
     tc.endEditBlock();
 
