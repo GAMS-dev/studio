@@ -411,7 +411,19 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
-        textCursor().insertText(replacementText);
+
+        QString modifiedReplaceTerm = replacementText;
+        if (regex.captureCount() > 0) {
+
+            QRegularExpressionMatch match = regex.match(selection);
+            for(int i = 1; i <= regex.captureCount(); i++) {
+                QRegularExpression replaceGroup("\\$" + QString::number(i));
+                QString captured = match.capturedTexts().at(i);
+                modifiedReplaceTerm.replace(replaceGroup, captured);
+            }
+        }
+
+        textCursor().insertText(modifiedReplaceTerm);
     }
 }
 
@@ -455,7 +467,6 @@ int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString rep
                     }
                 }
 
-                qDebug()/*rogo:delete*/<<QTime::currentTime()<< item.selectedText() << "=>" << modifiedReplaceTerm;
                 item.insertText(modifiedReplaceTerm);
                 from = item.position();
                 hits++;
