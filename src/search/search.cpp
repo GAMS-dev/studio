@@ -28,6 +28,7 @@
 #include "searchworker.h"
 #include "editors/abstractedit.h"
 #include "editors/textview.h"
+#include "editors/sysloglocator.h"
 #include "viewhelper.h"
 
 namespace gams {
@@ -424,10 +425,10 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     ts.setCodec(fm->codec());
     int hits = 0;
 
-    if (file.open(QIODevice::ReadWrite)) {
-        QString content = ts.readAll();
-        hits = content.count(regex);
-        content.replace(regex, replaceTerm);
+    if (!file.open(QIODevice::ReadWrite)) {
+        SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
+        return 0;
+    }
 
     QString content;
     while (!ts.atEnd()) {
