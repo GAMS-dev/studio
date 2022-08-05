@@ -808,15 +808,19 @@ void FileMeta::save(const QString &newLocation)
         efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
         if (efi) {
             PExProjectNode *project = mFileRepo->projectRepo()->asProject(ViewHelper::groupId(efi));
-            QString text;
             if (project) {
-                QFileInfo gmsFi(project->runnableGms()->location());
-                QFileInfo thisFi(location);
-                if (gmsFi.completeBaseName().compare(thisFi.completeBaseName(), FileType::fsCaseSense()) != 0) {
-                    text = "Warning: only " + gmsFi.completeBaseName() + ".efi is used for " + thisFi.completeBaseName();
+                if (!project->runnableGms()) {
+                    efi->setWarnText("Warning: project contains no runnable GAMS file ");
+                } else {
+                    QFileInfo gmsFi(project->runnableGms()->location());
+                    QFileInfo thisFi(location);
+                    if (gmsFi.completeBaseName().compare(thisFi.completeBaseName(), FileType::fsCaseSense()) != 0) {
+                        QString text = "Warning: only " + gmsFi.completeBaseName()
+                                + ".efi is used for " + thisFi.completeBaseName();
+                        efi->setWarnText(text);
+                    }
                 }
             }
-            efi->setWarnText(text);
             efi->save(location);
         }
 
