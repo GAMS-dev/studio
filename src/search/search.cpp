@@ -26,11 +26,9 @@
 #include "search.h"
 #include "searchdialog.h"
 #include "searchworker.h"
-#include "exception.h"
 #include "editors/abstractedit.h"
 #include "editors/textview.h"
 #include "viewhelper.h"
-#include "searchfilehandler.h"
 
 namespace gams {
 namespace studio {
@@ -431,9 +429,38 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
         hits = content.count(regex);
         content.replace(regex, replaceTerm);
 
-        ts.seek(0);
-        ts << content;
+    QString content;
+    while (!ts.atEnd()) {
+        QString line = ts.readLine();
+
+        if (regex.captureCount() > 0) {
+            QRegularExpressionMatchIterator matchIter = regex.globalMatch(line);
+
+            // iterate over matches in this line
+            while(matchIter.hasNext()) {
+                QRegularExpressionMatch match = matchIter.next();
+                QString modifiedReplaceTerm = replaceTerm;
+
+                // replace capture groups placeholders with content
+                for(int i = 1; i <= regex.captureCount(); i++) {
+                    QRegularExpression replaceGroup("\\$" + QString::number(i));
+                    QString captured = match.capturedTexts().at(i);
+                    modifiedReplaceTerm.replace(replaceGroup, captured);
+                }
+
+                // replace match with filled replace term
+                line.replace(match.capturedStart(), match.capturedLength(), modifiedReplaceTerm);
+                hits++;
+            }
+        } else {
+            hits += line.count(regex);
+            line.replace(regex, replaceTerm);
+        }
+        content += line + "\n";
     }
+
+    ts.seek(0);
+    ts << content;
     file.close();
     return hits;
 }
