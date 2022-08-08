@@ -20,6 +20,7 @@
 #include <QPainter>
 #include <QMouseEvent>
 #include <QDebug>
+#include <QToolTip>
 
 #include "connectdatakeydelegate.h"
 #include "connectdatamodel.h"
@@ -31,76 +32,75 @@ namespace connect {
 ConnectDataKeyDelegate::ConnectDataKeyDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
 {
-
+    mIconWidth = 16;
+    mIconHeight = 16;
 }
 
-void ConnectDataKeyDelegate::paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const
+void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
 {
-    painter->save();
-
-    painter->setBackgroundMode(Qt::TransparentMode);
-    QBrush bg = QBrush(qvariant_cast<QColor>(index.data(Qt::BackgroundRole)));
-    painter->fillRect(option.rect, bg);
-
-//    int textLeftOffset = 10, iconSize=30, iconTopOffset=20, textTopOffset=0;
-    QRect textRect = option.rect;
-    QRect iconRect = option.rect;
+    QStyledItemDelegate::initStyleOption(option, index);
+    option->text = index.data(Qt::DisplayRole).toString();
     if (index.parent().isValid()) {
-
-        QColor fg = QColor(qvariant_cast<QColor>(index.data(Qt::ForegroundRole)));
-        painter->setPen(fg);
-//        painter->drawText(QPoint(option.rect.x()+5, option.rect.y()+option.rect.height()-5), index.data(Qt::DisplayRole).toString());
-        painter->drawText(textRect.left(),option.rect.y()+option.rect.height()-5, index.data(Qt::DisplayRole).toString());
-
         QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
         if (checkstate_index.data( Qt::DisplayRole ).toInt()==2) {
-           QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-           if (!icon.isNull()) {
-              painter->translate(iconRect.right()-20, iconRect.top()+5);
-
-              icon.paint(painter, QRect(0, 0, 16, 16), Qt::AlignVCenter|Qt::AlignRight);
-              qDebug() << "2 keypaint... "
-                       << "topleft(" << painter->viewport().topLeft().x() << "," << painter->viewport().topLeft().y() << ") "
-                       << "bottomright(" << painter->viewport().bottomRight().x() << "," << painter->viewport().bottomRight().y()<< ")";
-              qDebug() << "              option.rect(" << iconRect.x() << "," << iconRect.y() << ")";
-           }
+            option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+            option->decorationPosition = QStyleOptionViewItem::Right;
+            qDebug() << "2 icon rec(" << option->rect.topLeft().x() << "," << option->rect.topLeft().y() << ") " << option->rect.width()
+                     << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                     << "       index(" << index.row() << "," << index.column() << ") "      << index.data(Qt::DisplayRole).toString();
+            mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
+                        QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
         } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
-                  QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-                  if (!icon.isNull()) {
-                      painter->translate(option.rect.left()+5, option.rect.top());
-
-                      icon.paint(painter, QRect(0, 0, 16, 16), Qt::AlignVCenter|Qt::AlignLeft);
-                      qDebug() << "4 keypaint... "
-                               << "topleft(" << painter->viewport().topLeft().x() << "," << painter->viewport().topLeft().y() << ") "
-                               << "bottomright(" << painter->viewport().bottomRight().x() << "," << painter->viewport().bottomRight().y();
-                      qDebug() << "              option.rect(" << iconRect.x() << "," << iconRect.y() << ")";
-
-                  }
+            option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+            QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
+            if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
+                qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
+                         << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                         << "       index(" << index.row() << "," << index.column() << ") ";
+                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+            }
         }
     } else {
-        QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-        if (!icon.isNull()) {
-           painter->translate(option.rect.left()+5, option.rect.top());
-
-           qDebug() << "0 keypaint... ";
-           icon.paint(painter, QRect(0, 0, 16, 16), Qt::AlignVCenter|Qt::AlignLeft);
+        option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
+        if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
+            qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
+                     << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                     << "       index(" << index.row() << "," << index.column() << ") ";
+            mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
-
-        QColor fg = QColor(qvariant_cast<QColor>(index.data(Qt::ForegroundRole)));
-        painter->setPen(fg);
-        painter->drawText(QPoint(option.rect.x(), option.rect.y()+option.rect.height()-10), index.data(Qt::DisplayRole).toString());
     }
-    painter->restore();
 }
-
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     if (event->type()==QEvent::MouseButtonRelease) {
-        qDebug() << "key mouse release";
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
         qDebug() << "position(" << p.x() << "," << p.y() << ") ";
+        bool found = false;
+        foreach( QString key, mSchemaHelpPosition.keys() ) {
+            QRect rect = mSchemaHelpPosition[key];
+            qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
+            if (rect.contains(p)) {
+                qDebug() << "Found Schema! " << key;
+                emit requestSchemaHelp(key);
+                found = true;
+                break;
+            }
+        }
+        if (!found) {
+            foreach( QModelIndex idx, mSchemaAppendPosition.keys() ) {
+                QRect rect = mSchemaAppendPosition[idx];
+                qDebug() << "      check(" << rect.x() << "," << rect.y() << "), index=(" << index.row() << "," <<index.column()<<")"
+                         << "      equal?"<< (idx == index? "yes" : "no");
+                if (idx == index && rect.contains(p)) {
+                    qDebug() << "Found idx! " << idx.row() << "," << idx.column();
+                    found = true;
+                    break;
+                }
+            }
+        }
         return (index.data( Qt::DisplayRole ).toBool());
     }
     return QStyledItemDelegate::editorEvent(event,model, option, index);

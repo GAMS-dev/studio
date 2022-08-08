@@ -390,14 +390,18 @@ void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAM
                 error[key.toStdString()] = errorNode;
             } else {
                 ValueWrapper minval = getSchema(schemaname)->getMin(keyFromRoot);
-                if (minval.type==SchemaValueType::INTEGER) {
-                    if (data.as<int>() < minval.value.intval) {
-                        /* TODO */
-                    }
-                } else if (minval.type==SchemaValueType::FLOAT) {
-                        if (data.as<float>() < minval.value.doubleval) {
+                try {
+                    if (minval.type==SchemaValueType::INTEGER) {
+                        if (data.as<int>() < minval.value.intval) {
                             /* TODO */
                         }
+                    } else if (minval.type==SchemaValueType::FLOAT) {
+                            if (data.as<float>() < minval.value.doubleval) {
+                                /* TODO */
+                            }
+                    }
+                } catch(const YAML::BadConversion& e) {
+                    qDebug() << "bad conversion :: minval";
                 }
                 ValueWrapper maxval = getSchema(schemaname)->getMax(keyFromRoot);
                 if (maxval.type!=SchemaValueType::NOVALUE) {

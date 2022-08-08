@@ -29,17 +29,21 @@ namespace connect {
 
 class ConnectDataActionDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
-//    enum DelegateType { DT_TEXT, DT_ICON, DT_COMBOBOX,  };
-//    const int DelegateTypeRole = Qt::UserRole + 1;
-
-    explicit ConnectDataActionDelegate(DataItemColumn column, QObject *parent = nullptr);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    explicit ConnectDataActionDelegate( QObject *parent = nullptr);
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
+
 private:
-    DataItemColumn mColumn;
+    mutable int mIconWidth;
+    mutable int mIconHeight;
+
+    mutable QMap<QModelIndex, QRect> mDeleteActionPosition;
+    mutable QMap<QModelIndex, QRect> mMoveUpActionPosition;
+    mutable QMap<QModelIndex, QRect> mMoveDownActionPosition;
 };
 
 } // namespace connect

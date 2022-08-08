@@ -89,12 +89,17 @@ bool ConnectEditor::init()
 
     ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate( ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::KEY, keydelegate);
-    ConnectDataActionDelegate* actiondelegate = new ConnectDataActionDelegate( DataItemColumn::DELETE, ui->dataTreeView);
+    ConnectDataActionDelegate* actiondelegate = new ConnectDataActionDelegate( ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::DELETE, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MOVE_DOWN, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MOVE_UP, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::EXPAND, actiondelegate);
 
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::KEY, QHeaderView::Fixed);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::VALUE, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::DELETE, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_DOWN, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_UP, QHeaderView::ResizeToContents);
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->dataTreeView->header()->setStyle(HeaderViewProxy::instance());
     ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -126,6 +131,8 @@ bool ConnectEditor::init()
     ui->helpTreeView->resizeColumnToContents(3);
     ui->helpTreeView->resizeColumnToContents(4);
     headerRegister(ui->helpTreeView->header());
+
+    connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested);
 
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
@@ -179,7 +186,18 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 void ConnectEditor::updateDataColumnSpan()
 {
     qDebug() << "updateColumnSpan " << mDataModel->rowCount();
-    iterateModelItem( ui->dataTreeView->rootIndex()); //mDataModel->getItem( ui->dataTreeView->rootIndex() ));
+    iterateModelItem( ui->dataTreeView->rootIndex());
+}
+
+void ConnectEditor::schemaHelpRequested(const QString &schemaName)
+{
+   for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
+       QString str = mConnect->getSchemaNames().at(row);
+       if (str.compare(schemaName, Qt::CaseInsensitive)==0) {
+           ui->helpComboBox->setCurrentIndex(row);
+           break;
+       }
+   }
 }
 
 //void ConnectEditor::on_dataTreeSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)

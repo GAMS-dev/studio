@@ -49,6 +49,7 @@ private slots:
     void schemaDoubleClicked(const QModelIndex &modelIndex);
     void updateDataColumnSpan();
 
+    void schemaHelpRequested(const QString &schemaName);
 //    void on_dataTreeSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:

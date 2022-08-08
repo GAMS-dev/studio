@@ -28,12 +28,25 @@ namespace connect {
 
 class ConnectDataKeyDelegate : public QStyledItemDelegate
 {
+    Q_OBJECT
 public:
     explicit ConnectDataKeyDelegate(QObject *parent = nullptr);
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
+protected:
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
+
+signals:
+    void requestSchemaHelp(const QString &schemaname) const;
+    void requestAppendItem(const QModelIndex &index) const;
+
+private:
+    mutable int mIconWidth;
+    mutable int mIconHeight;
+
+    mutable QMap<QString, QRect> mSchemaHelpPosition;
+    mutable QMap<QModelIndex, QRect> mSchemaAppendPosition;
 };
 
 } // namespace connect
