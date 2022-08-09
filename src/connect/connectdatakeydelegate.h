@@ -31,6 +31,7 @@ class ConnectDataKeyDelegate : public QStyledItemDelegate
     Q_OBJECT
 public:
     explicit ConnectDataKeyDelegate(QObject *parent = nullptr);
+    ~ConnectDataKeyDelegate() override;
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
 protected:

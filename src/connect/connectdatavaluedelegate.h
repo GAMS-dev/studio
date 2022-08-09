@@ -22,6 +22,8 @@
 
 #include <QStyledItemDelegate>
 
+#include "connect.h"
+
 namespace gams {
 namespace studio {
 namespace connect {
@@ -30,7 +32,7 @@ class ConnectDataValueDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit ConnectDataValueDelegate(QObject *parent = nullptr);
+    explicit ConnectDataValueDelegate(Connect* c, QObject *parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
@@ -51,7 +53,8 @@ private slots:
     void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
-    QModelIndex mCurrentEditedIndex;
+    Connect*     mConnect;
+    QModelIndex  mCurrentEditedIndex;
     mutable bool mIsLastEditorClosed;
     mutable QWidget* mLastEditor;
 };

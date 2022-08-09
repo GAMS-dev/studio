@@ -181,22 +181,27 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isOpenWithSolverOptionEditor = false;
     bool isOpenWithGamsUserConfigEditor = false;
     bool isOpenWithEfiEditor = false;
+    bool isGConnectFile = fileNode && fileNode->file()->kind() == FileKind::GCon;
+    bool isOpenWithGamsConnectEditor = false;
     if (fileNode) {
         for (QWidget *e : fileNode->file()->editors()) {
             if (ViewHelper::toSolverOptionEdit(e))
                 isOpenWithSolverOptionEditor = true;
             else if (ViewHelper::toGamsConfigEditor(e))
-                isOpenWithGamsUserConfigEditor = true;
+                    isOpenWithGamsUserConfigEditor = true;
             else if (ViewHelper::toEfiEditor(e))
                 isOpenWithEfiEditor = true;
+            else if (ViewHelper::toGamsConnectEditor(e))
+                    isOpenWithGamsConnectEditor= true;
         }
     }
-    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor || isOpenWithEfiEditor);
+    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor || isOpenWithEfiEditor || isGConnectFile);
 
     bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
     bool isReOpenableWithGamsUserConfigEditor = isOpen && isGucFile && !isOpenWithGamsUserConfigEditor;
     bool isReOpenableWithEfiEditor = isOpen && isEfiFile && !isOpenWithEfiEditor;
-    bool isReOpenable = isReOpenableWithSolverOptionEditor || isReOpenableWithGamsUserConfigEditor || isReOpenableWithEfiEditor;
+    bool isReopenableWithGamsConnectEditor = isOpen && isGConnectFile && !isOpenWithGamsConnectEditor;
+    bool isReOpenable = isReOpenableWithSolverOptionEditor || isReOpenableWithGamsUserConfigEditor || isReOpenableWithEfiEditor || isReopenableWithGamsConnectEditor;
 
     // opening GDX diff is only possible for one or two selected GDX files
     bool isOpenableWithGdxDiff = false;
@@ -231,6 +236,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
         mActions[actReOpen]->setText( "&Reopen File using Gams User Configuration Editor" );
     else if (isReOpenableWithSolverOptionEditor)
         mActions[actReOpen]->setText( "&Reopen File using Solver Option Editor" );
+    else if (isReopenableWithGamsConnectEditor)
+        mActions[actReOpen]->setText( "&Reopen File using Gams Connect Editor" );
     else
         mActions[actReOpen]->setText( "&Reopen File using EFI Editor" );
     mActions[actReOpen]->setEnabled(isReOpenable);

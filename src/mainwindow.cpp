@@ -68,6 +68,7 @@
 #include "support/gamslicenseinfo.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
+#include "connect/connecteditor.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -4138,6 +4139,8 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
+    } else if (fileMeta->kind() == FileKind::GCon) {
+        connect::ConnectEditor *connectEditor= ViewHelper::toGamsConnectEditor(edit);
     }
 }
 

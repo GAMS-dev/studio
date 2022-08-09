@@ -40,7 +40,7 @@ enum class SchemaType {
     BOOLEAN,
     LIST,
     DICT,
-    UNDEFINED
+    UNDEFINED = -1
 };
 Q_ENUM_NS(SchemaType)
 
@@ -49,7 +49,8 @@ enum class SchemaValueType {
     FLOAT,
     STRING,
     BOOLEAN,
-    NOVALUE
+    NOVALUE,
+    UNDEFINED = -1
 };
 Q_ENUM_NS(SchemaValueType)
 
@@ -235,6 +236,9 @@ public:
     Schema* getSchema(const QString& key) const;
 
     QList<SchemaType> getType(const QString& key) const;
+    QStringList getTypeAsStringList(const QString& key) const;
+
+    QStringList getAllowedValueAsStringList(const QString& key) const;
     bool isRequired(const QString& key) const;
     ValueWrapper getMin(const QString& key) const;
     ValueWrapper getMax(const QString& key) const;

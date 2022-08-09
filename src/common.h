@@ -100,6 +100,7 @@ enum class FileKind {
     Opt,
     Guc,
     Efi,
+    GCon,
 };
 Q_ENUM_NS(FileKind)
 
@@ -129,6 +130,7 @@ enum class EditorType {
     gucfg,
     efi,
     pro,
+    gConYaml,
 };
 Q_ENUM_NS(EditorType)
 

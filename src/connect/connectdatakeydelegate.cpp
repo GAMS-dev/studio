@@ -36,13 +36,21 @@ ConnectDataKeyDelegate::ConnectDataKeyDelegate(QObject *parent)
     mIconHeight = 16;
 }
 
+ConnectDataKeyDelegate::~ConnectDataKeyDelegate()
+{
+    mSchemaHelpPosition.clear();
+    mSchemaAppendPosition.clear();
+}
+
 void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
 {
+    mSchemaHelpPosition.clear();
+    mSchemaAppendPosition.clear();
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = index.data(Qt::DisplayRole).toString();
     if (index.parent().isValid()) {
         QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
-        if (checkstate_index.data( Qt::DisplayRole ).toInt()==2) {
+        if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SCHEMA_NAME) {
             option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
             option->decorationPosition = QStyleOptionViewItem::Right;
             qDebug() << "2 icon rec(" << option->rect.topLeft().x() << "," << option->rect.topLeft().y() << ") " << option->rect.width()
@@ -50,20 +58,19 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
                      << "       index(" << index.row() << "," << index.column() << ") "      << index.data(Qt::DisplayRole).toString();
             mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
                         QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
-        } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
-            option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-            QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
-            if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
-                qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
-                         << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                         << "       index(" << index.row() << "," << index.column() << ") ";
-                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-            }
+        } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::LIST_APPEND ||
+                   checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MAP_APPEND     ) {
+                   option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+                   qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
+                            << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                            << "       index(" << index.row() << "," << index.column() << ") ";
+                   mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
     } else {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
-        if (checkstate_index.data( Qt::DisplayRole ).toInt()==4) {
+        if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::LIST_APPEND ||
+            checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MAP_APPEND     ) {
             qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
                      << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
                      << "       index(" << index.row() << "," << index.column() << ") ";

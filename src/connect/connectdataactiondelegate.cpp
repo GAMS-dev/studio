@@ -34,8 +34,19 @@ ConnectDataActionDelegate::ConnectDataActionDelegate(QObject *parent)
     mIconHeight = 16;
 }
 
+ConnectDataActionDelegate::~ConnectDataActionDelegate()
+{
+    mDeleteActionPosition.clear();
+    mMoveUpActionPosition.clear();
+    mMoveDownActionPosition.clear();
+}
+
 void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
 {
+    mDeleteActionPosition.clear();
+    mMoveUpActionPosition.clear();
+    mMoveDownActionPosition.clear();
+
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = "";
 

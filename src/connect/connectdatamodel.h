@@ -29,23 +29,35 @@ namespace gams {
 namespace studio {
 namespace connect {
 
+enum class DataCheckState {
+    ROOT,             // 0
+    SCHEMA_NAME,      // 1
+    LIST_ITEM,        // 2
+    KEY_ITEM,         // 3
+    ELEMENT_KEY,      // 4
+    ELEMENT_VALUE,    // 5
+    ELEMENT_MAP,      // 6
+    LIST_APPEND,      // 7
+    MAP_APPEND        // 8
+};
 
 enum class DataItemColumn {
     KEY,
     VALUE,
     CHECK_STATE,
+    SCHEMA_TYPE,
+    ALLOWED_VALUE,
     DELETE,
     MOVE_DOWN,
     MOVE_UP,
     EXPAND,
-    HELP
 };
 
 class ConnectDataModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit ConnectDataModel(const QString& filename, Connect* connect, QObject *parent = nullptr);
+    explicit ConnectDataModel(const QString& filename, Connect* c, QObject *parent = nullptr);
     ~ConnectDataModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;

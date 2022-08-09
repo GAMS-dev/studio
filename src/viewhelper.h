@@ -21,6 +21,7 @@
 #define VIEWHELPER_H
 
 #include "common.h"
+#include "connect/connecteditor.h"
 #include "editors/codeedit.h"
 #include "editors/textview.h"
 #include "file/projectoptions.h"
@@ -85,6 +86,10 @@ public:
         if(w) w->setProperty("EditorType", int(EditorType::opt));
         return w;
     }
+    inline static connect::ConnectEditor* initEditorType(connect::ConnectEditor * w) {
+        if(w) w->setProperty("EditorType", int(EditorType::gConYaml));
+        return w;
+    }
     inline static option::GamsConfigEditor* initEditorType(option::GamsConfigEditor * w) {
         if(w) w->setProperty("EditorType", int(EditorType::gucfg));
         return w;
@@ -146,6 +151,9 @@ public:
     inline static option::SolverOptionWidget* toSolverOptionEdit(QWidget* w) {
         return (editorType(w) == EditorType::opt) ? static_cast<option::SolverOptionWidget*>(w) : nullptr;
     }
+    inline static connect::ConnectEditor* toGamsConnectEditor(QWidget* w) {
+        return (editorType(w) == EditorType::gConYaml) ? static_cast<connect::ConnectEditor*>(w) : nullptr;
+    }
     inline static option::GamsConfigEditor* toGamsConfigEditor(QWidget* w) {
         return (editorType(w) == EditorType::gucfg) ? static_cast<option::GamsConfigEditor*>(w) : nullptr;
     }
@@ -184,6 +192,7 @@ public:
         res << "GAMS Include files (*.inc)"
         << "Option files (*.opt *.op* *.o*)"
         << "GAMS Configuration file (gamsconfig.yaml)"
+        << "Gams Connect Yaml File (*.yaml)"
         << "Text files (*.txt)"
         << "External files (*.efi)"
         << "All files (" + allFilesFilter + ")";
@@ -202,6 +211,7 @@ public:
         res << "GAMS Include files (*.inc)"
         << "Option files (*.opt *.op* *.o*)"
         << "GAMS Configuration file (gamsconfig.yaml)"
+        << "GAMS Connect yaml file (*.yaml)"
         << "GAMS Data eXchange (*.gdx)"
         << "Reference files (*.ref)"
         << "Text files (*.txt)"

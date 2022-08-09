@@ -25,16 +25,20 @@
 #include <QKeyEvent>
 
 #include "connectdatavaluedelegate.h"
+#include "connectdatamodel.h"
 #include "theme.h"
 
 namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectDataValueDelegate::ConnectDataValueDelegate( QObject *parent)
-    : QStyledItemDelegate{parent}
+ConnectDataValueDelegate::ConnectDataValueDelegate(Connect* c, QObject *parent)
+    : QStyledItemDelegate{parent},
+      mConnect(c)
 {
-
+    mCurrentEditedIndex = QModelIndex();
+    connect( this, &ConnectDataValueDelegate::currentEditedIndexChanged,
+             this, &ConnectDataValueDelegate::updateCurrentEditedIndex  );
 }
 
 QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -42,14 +46,27 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     Q_UNUSED(option)
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
-    completer->setModel(new QStringListModel( { "0", "1" } ));  //TOD
+
+    QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::ALLOWED_VALUE );
+    QStringList allowedval_list = allowedval_index.data().toStringList();
+    if (allowedval_list.size() > 0) {
+        completer->setModel( new QStringListModel(allowedval_list) );
+    }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
     completer->setMaxVisibleItems(10);
+
     lineEdit->setCompleter(completer);
     lineEdit->adjustSize();
+
     mLastEditor = lineEdit;
     mIsLastEditorClosed = false;
+
+    connect( lineEdit, &QLineEdit::editingFinished,
+             this, &ConnectDataValueDelegate::commitAndCloseEditor );
+
+    emit currentEditedIndexChanged(index);
+
     return lineEdit;
 }
 

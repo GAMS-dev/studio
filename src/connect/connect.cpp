@@ -225,7 +225,7 @@ void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
             } else if (str.compare("boolean") == 0) {
                      dataValue[0] = false;
             } else {
-                dataValue[0] = "";
+                dataValue[0] = "[value]";
             }
         }  else {
             std::string value = schemaValue["type"].as<std::string>() ;
@@ -250,9 +250,11 @@ void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                     dataValue[0] = node;
                 }
             } else if (value.compare("string") == 0) {
-                       dataValue[0] = "";
+                       dataValue[0] = "[value]";
             } else if (value.compare("integer") == 0) {
                        dataValue[0] = 0;
+            } else {
+                dataValue[0] = "[value]";
             }
         }
     }
@@ -265,6 +267,20 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
                 if (schemaValue["schema"]) {
                     listValue(schemaValue["schema"], dataValue);
+                } else {
+                    YAML::Node firsttype = schemaValue["type"][0];
+                    std::string value = firsttype.as<std::string>() ;
+                    if (value.compare("list") == 0) {
+                        dataValue[0] = "[value]";
+                    } else if (value.compare("boolean") == 0) {
+                           dataValue["[key]"] = "[value]";
+                    } else if (value.compare("integer") == 0) {
+                        dataValue = 0;
+                    } else if (value.compare("boolean") == 0) {
+                         dataValue = false;
+                    } else {
+                         dataValue = "[value]";
+                    }
                 }
             } else {
                 std::string value = schemaValue["type"].as<std::string>() ;
@@ -281,7 +297,7 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                             }
                         }
                     } else {
-                        dataValue = "";
+                        dataValue = "[value]";
                     }
                 } else if (value.compare("integer") == 0) {
                         dataValue = 0;
@@ -291,12 +307,14 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                            if (schemaValue["schema"]) {
                                mapValue(schemaValue["schema"], dataValue);
                            } else {
-                               dataValue[""] = "";
+                               dataValue["[key]"] = "[value]";
                            }
                 } else if (value.compare("list") == 0) {
                            if (schemaValue["schema"]) {
                                listValue(schemaValue["schema"], dataValue);
                            }
+                } else {
+                    dataValue = "[value]";
                 }
             }
         }

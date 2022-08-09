@@ -571,6 +571,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
+//    } else if (connect::ConnectWidget* gcyEdit = ViewHelper::toGamsConnnectEditor(edit)) {
+//
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
@@ -713,6 +715,20 @@ void FileMeta::load(int codecMib, bool init)
             }
         }
         if (!textOptEditor)
+            return;
+    }
+    qDebug() << "load()";
+    if (kind() == FileKind::GCon) {
+        bool textEditor = true;
+        for (QWidget *wid : qAsConst(mEditors)) {
+            qDebug() << "load() 1";
+            if (connect::ConnectEditor *cyaml = ViewHelper::toGamsConnectEditor(wid)) {
+                qDebug() << "load() 2";
+                textEditor = false;
+//                cyaml->on_reloadGamsUserConfigFile(mCodec);
+            }
+        }
+        if (!textEditor)
             return;
     }
     if (kind() == FileKind::Guc) {
@@ -1161,6 +1177,8 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             mCodec = QTextCodec::codecForName("utf-8");
             res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
                                                                          id(), parent));
+    } else if (kind() == FileKind::GCon && !forcedAsTextEdit) {
+        res =  ViewHelper::initEditorType(new connect::ConnectEditor(location(), parent ));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;

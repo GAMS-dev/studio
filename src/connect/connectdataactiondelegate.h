@@ -32,6 +32,7 @@ class ConnectDataActionDelegate : public QStyledItemDelegate
     Q_OBJECT
 public:
     explicit ConnectDataActionDelegate( QObject *parent = nullptr);
+    ~ConnectDataActionDelegate() override;
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,

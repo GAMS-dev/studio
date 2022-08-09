@@ -191,6 +191,35 @@ QList<SchemaType> ConnectSchema::getType(const QString &key) const
     }
 }
 
+QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
+{
+    QStringList strlist;
+    if (contains(key)) {
+        foreach(SchemaType t, mSchemaHelper[key]->types)
+            strlist << QString::number((int)t);
+    }
+    return strlist;
+}
+
+QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
+{
+    QStringList strlist;
+    if (contains(key)) {
+        foreach(ValueWrapper vw, mSchemaHelper[key]->allowedValues) {
+            int t = (int)vw.type;
+            if ( t==(int)SchemaValueType::INTEGER)
+                strlist << QString::number(vw.value.intval);
+            else if ( t==(int)SchemaValueType::FLOAT)
+                    strlist << QString::number(vw.value.doubleval);
+            else if (t==(int)SchemaValueType::STRING)
+                     strlist << QString(vw.value.stringval);
+            else if (t==(int)SchemaValueType::BOOLEAN)
+                     strlist << QString(vw.value.boolval);
+        }
+    }
+    return strlist;
+}
+
 bool ConnectSchema::isRequired(const QString &key) const
 {
     if (contains(key)) {

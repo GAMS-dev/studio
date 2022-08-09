@@ -73,18 +73,22 @@ bool ConnectEditor::init()
     ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->schemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->schemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
-    ui->schemaControlListView->setSizePolicy(QSizePolicy::Minimum, QSizePolicy::Minimum);
+    ui->schemaControlListView->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     ui->schemaControlListView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->schemaControlListView->setViewMode(QListView::ListMode);
     ui->schemaControlListView->setIconSize(QSize(16,16));
-    ui->connectHSplitter->setSizes(QList<int>({15, 65, 20}));
+
+//    ui->connectHSplitter->setSizes(QList<int>({10, 70, 20}));
+    ui->connectHSplitter->setStretchFactor(0, 3);
+    ui->connectHSplitter->setStretchFactor(1, 6);
+    ui->connectHSplitter->setStretchFactor(2, 4);
     ui->schemaControlListView->setModel(schemaItemModel);
     ui->helpComboBox->setModel(schemaHelpModel);
 
     mDataModel = new ConnectDataModel(mLocation, mConnect, this);
     ui->dataTreeView->setModel( mDataModel );
 
-    ConnectDataValueDelegate* itemdelegate = new ConnectDataValueDelegate( ui->dataTreeView);
+    ConnectDataValueDelegate* itemdelegate = new ConnectDataValueDelegate(mConnect, ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn(1, itemdelegate );
 
     ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate( ui->dataTreeView);
@@ -95,8 +99,8 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MOVE_UP, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::EXPAND, actiondelegate);
 
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::KEY, QHeaderView::Fixed);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::VALUE, QHeaderView::ResizeToContents);
+//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::KEY, QHeaderView::Fixed);
+//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::VALUE, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::DELETE, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_DOWN, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_UP, QHeaderView::ResizeToContents);
@@ -114,7 +118,9 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden(  ConnectDataModel::DATA_ITEM_STATE, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CHECK_STATE, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SCHEMA_TYPE, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ALLOWED_VALUE, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -210,8 +216,9 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
 void ConnectEditor::iterateModelItem(QModelIndex parent)
 {
     for (int i=0; i<mDataModel->rowCount(parent); i++) {
-        QModelIndex index = mDataModel->index(i, 0, parent);
-        if ( mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CHECK_STATE, parent), Qt::DisplayRole).toInt()<=2 )
+//        QModelIndex index = mDataModel->index(i, 0, parent);
+        if ( mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CHECK_STATE, parent), Qt::DisplayRole).toInt()<=(int)DataCheckState::LIST_ITEM ||
+             mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CHECK_STATE, parent), Qt::DisplayRole).toInt()==(int)DataCheckState::MAP_APPEND  )
             ui->dataTreeView->setFirstColumnSpanned(i, parent, true);
 
 //        if (mDataModel->hasChildren(index)) {

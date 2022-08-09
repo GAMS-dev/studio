@@ -24,6 +24,7 @@
 #include "filetype.h"
 #include "exception.h"
 #include "theme.h"
+#include "connect/connect.h"
 #include "support/solverconfiginfo.h"
 
 namespace gams {
@@ -45,6 +46,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false),
     new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false),
     new FileType(FileKind::Efi, {"efi"}, "External Files", false),
+    new FileType(FileKind::GCon, {"yaml", "yml"}, "Gams Connect Yaml File", false),
 };
 
 FileType *FileType::mNone = new FileType(FileKind::None, {""}, "Unknown File", false);
@@ -113,6 +115,11 @@ FileType &FileType::from(const QString &fileName)
                 QString::compare("gamsconfig",fi.completeBaseName(), Qt::CaseInsensitive)==0 ) {
                return *ft;
             }
+         } else if (ft->mKind == FileKind::GCon) {
+             if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) { // TODO: JP
+                     return *ft;
+             }
+
          } else if (ft->mKind == FileKind::Opt) {
                    if (mSolverNames.isEmpty()) {
                        try {
