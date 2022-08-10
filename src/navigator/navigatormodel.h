@@ -15,39 +15,19 @@
  * GNU General Public License for more details.
  *
  */
-#ifndef GAMS_STUDIO_NAVIGATORDIALOG_H
-#define GAMS_STUDIO_NAVIGATORDIALOG_H
+#ifndef NAVIGATORMODEL_H
+#define NAVIGATORMODEL_H
 
-#include <QDialog>
-#include "navigatorcomponent.h"
+#include <QAbstractTableModel>
 
-namespace Ui {
-class NavigatorDialog;
-}
-
-namespace gams {
-namespace studio {
-
-class NavigatorDialog : public QDialog {
-    Q_OBJECT
-
+class NavigatorModel : public QAbstractTableModel
+{
 public:
-    NavigatorDialog(MainWindow *parent = nullptr);
-    ~NavigatorDialog();
+    explicit NavigatorModel(QObject *parent = nullptr);
 
-private:
-    void keyPressEvent(QKeyEvent *e) override;
-    void showEvent(QShowEvent *e) override;
-
-private slots:
-    void returnPressed();
-
-private:
-    Ui::NavigatorDialog* ui = nullptr;
-    NavigatorComponent* mNavigator = nullptr;
-
+    int rowCount(const QModelIndex &parent) const;
+    int columnCount(const QModelIndex &parent) const;
+    QVariant data(const QModelIndex &index, int role) const;
 };
 
-}
-}
-#endif // GAMS_STUDIO_NAVIGATORDIALOG_H
+#endif // NAVIGATORMODEL_H

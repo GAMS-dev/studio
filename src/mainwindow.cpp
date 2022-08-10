@@ -30,6 +30,7 @@
 #include "encodingsdialog.h"
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
+#include "navigator/navigatordialog.h"
 #include "exception.h"
 #include "commonpaths.h"
 #include "process.h"

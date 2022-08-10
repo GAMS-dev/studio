@@ -39,7 +39,6 @@
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
-#include "navigator/navigatordialog.h"
 #include "neos/neosprocess.h"
 #include "reference/symbolreferenceitem.h"
 #include "engine/engineprocess.h"
@@ -63,6 +62,7 @@ class FileEventHandler;
 class GamsProcess;
 class GamsLibProcess;
 class WelcomePage;
+class NavigatorDialog;
 class Settings;
 class SearchResultList;
 class AutosaveHandler;

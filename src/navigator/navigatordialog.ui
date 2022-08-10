@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <ui version="4.0">
- <class>Navigator</class>
- <widget class="QDialog" name="Navigator">
+ <class>NavigatorDialog</class>
+ <widget class="QDialog" name="NavigatorDialog">
   <property name="geometry">
    <rect>
     <x>0</x>
@@ -33,33 +33,36 @@
     <widget class="QLineEdit" name="input"/>
    </item>
    <item>
-    <widget class="QListView" name="outputView">
+    <widget class="QTableView" name="tableView">
      <property name="frameShape">
       <enum>QFrame::NoFrame</enum>
      </property>
-     <property name="lineWidth">
-      <number>0</number>
-     </property>
-     <property name="verticalScrollBarPolicy">
-      <enum>Qt::ScrollBarAsNeeded</enum>
-     </property>
-     <property name="horizontalScrollBarPolicy">
-      <enum>Qt::ScrollBarAlwaysOff</enum>
+     <property name="frameShadow">
+      <enum>QFrame::Plain</enum>
      </property>
      <property name="editTriggers">
       <set>QAbstractItemView::NoEditTriggers</set>
      </property>
+     <property name="tabKeyNavigation">
+      <bool>false</bool>
+     </property>
      <property name="showDropIndicator" stdset="0">
       <bool>false</bool>
      </property>
-     <property name="defaultDropAction">
-      <enum>Qt::IgnoreAction</enum>
+     <property name="dragDropOverwriteMode">
+      <bool>false</bool>
      </property>
-     <property name="alternatingRowColors">
-      <bool>true</bool>
+     <property name="selectionMode">
+      <enum>QAbstractItemView::SingleSelection</enum>
      </property>
-     <property name="uniformItemSizes">
-      <bool>true</bool>
+     <property name="selectionBehavior">
+      <enum>QAbstractItemView::SelectRows</enum>
+     </property>
+     <property name="showGrid">
+      <bool>false</bool>
+     </property>
+     <property name="cornerButtonEnabled">
+      <bool>false</bool>
      </property>
     </widget>
    </item>
