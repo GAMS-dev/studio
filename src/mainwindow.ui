@@ -185,6 +185,8 @@
     <addaction name="menuEncoding"/>
     <addaction name="actionSearch"/>
     <addaction name="actionGo_To"/>
+    <addaction name="actionNavigator"/>
+    <addaction name="separator"/>
     <addaction name="actionMove_Line_Up"/>
     <addaction name="actionMove_Line_Down"/>
    </widget>
@@ -1555,6 +1557,14 @@
    </property>
    <property name="toolTip">
     <string>Opens and adds a folder to Studio</string>
+   </property>
+  </action>
+  <action name="actionNavigator">
+   <property name="text">
+    <string>Navigator</string>
+   </property>
+   <property name="shortcut">
+    <string>Ctrl+K</string>
    </property>
   </action>
  </widget>

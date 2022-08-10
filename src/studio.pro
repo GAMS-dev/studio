@@ -205,6 +205,7 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    navigator/navigatordialog.cpp \
     neos/httpmanager.cpp \
     neos/neosmanager.cpp \
     neos/neosprocess.cpp \
@@ -433,6 +434,7 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    navigator/navigatordialog.h \
     neos/httpmanager.h \
     neos/neosmanager.h \
     neos/neosprocess.h \
@@ -548,6 +550,7 @@ FORMS += \
     mainwindow.ui \
     miro/mirodeploydialog.ui \
     modeldialog/modeldialog.ui \
+    navigator/navigatordialog.ui \
     neos/neosstartdialog.ui \
     option/envvarconfigeditor.ui \
     option/gamsconfigeditor.ui \

@@ -362,6 +362,7 @@ MainWindow::~MainWindow()
     delete mNavigationHistory;
     delete mResultsView;
     delete mSearchDialog;
+    delete mNavigatorDialog;
     delete mPrintDialog;
     FileType::clear();
     HeaderViewProxy::deleteInstance();
@@ -5557,6 +5558,15 @@ void MainWindow::on_actionPin_Right_triggered()
 void MainWindow::on_actionPin_Below_triggered()
 {
     openPinView(ui->mainTabs->currentIndex(), Qt::Vertical);
+}
+
+
+void MainWindow::on_actionNavigator_triggered()
+{
+    if (!mNavigatorDialog)
+        mNavigatorDialog = new NavigatorDialog(this);
+
+    mNavigatorDialog->exec();
 }
 
 

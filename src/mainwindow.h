@@ -29,16 +29,15 @@
 #include "file.h"
 #include "file/recentdata.h"
 #include "modeldialog/libraryitem.h"
-#include "option/lineeditcompleteevent.h"
 #include "search/resultsview.h"
 #include "option/parametereditor.h"
-#include "commandlineparser.h"
 #include "statuswidgets.h"
 #include "maintabcontextmenu.h"
 #include "logtabcontextmenu.h"
 #include "gdxdiffdialog/gdxdiffdialog.h"
 #include "miro/mirocommon.h"
 #include "editors/navigationhistory.h"
+#include "navigator/navigatordialog.h"
 #include "neos/neosprocess.h"
 #include "engine/engineprocess.h"
 #include "common.h"
@@ -415,6 +414,7 @@ private slots:
     void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();
+    void on_actionNavigator_triggered();
 
 private:
     void zoomWidget(QWidget * widget, int range);
@@ -461,6 +461,7 @@ private:
     void goToLine(int result);
     QString readGucValue(QString key);
     void initCompleterActions();
+    void showNavigator();
 
 private:
     Ui::MainWindow *ui;
@@ -478,6 +479,7 @@ private:
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;
     search::ResultsView *mResultsView = nullptr;
+    NavigatorDialog *mNavigatorDialog = nullptr;
     QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
@@ -527,7 +529,6 @@ private:
     bool mMiroRunning = false;
     QString mEngineAuthToken;
     bool mEngineNoDialog = false;
-
 };
 
 }
