@@ -17,7 +17,6 @@
  */
 #include "tabdialog.h"
 #include "ui_tabdialog.h"
-#include "logger.h"
 #include "viewhelper.h"
 
 #include <QTimer>
