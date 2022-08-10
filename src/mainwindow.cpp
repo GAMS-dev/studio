@@ -20,7 +20,9 @@
 #include <QtConcurrent>
 #include <QSslSocket>
 #include <QtWidgets>
+#include "file/treeitemdelegate.h"
 #include "mainwindow.h"
+#include "option/lineeditcompleteevent.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
 #include "editors/abstractedit.h"

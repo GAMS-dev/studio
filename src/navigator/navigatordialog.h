@@ -12,6 +12,9 @@ public:
     ~NavigatorDialog();
 
 private:
+    void keyPressEvent(QKeyEvent *e) override;
+
+private:
     Ui::Navigator* ui;
 };
 

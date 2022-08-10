@@ -25,8 +25,10 @@
 #include <QPrinter>
 #include <QPrintDialog>
 
-#include "editors/codeedit.h"
-#include "file.h"
+#include "file/fileevent.h"
+#include "file/filemetarepo.h"
+#include "file/projectcontextmenu.h"
+#include "file/projectrepo.h"
 #include "file/recentdata.h"
 #include "modeldialog/libraryitem.h"
 #include "search/resultsview.h"
@@ -39,6 +41,7 @@
 #include "editors/navigationhistory.h"
 #include "navigator/navigatordialog.h"
 #include "neos/neosprocess.h"
+#include "reference/symbolreferenceitem.h"
 #include "engine/engineprocess.h"
 #include "common.h"
 
