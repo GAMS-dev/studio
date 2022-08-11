@@ -43,6 +43,7 @@ ColumnFilterFrame::ColumnFilterFrame(GdxSymbol *symbol, int column, QWidget *par
     connect(ui.pbInvert, &QPushButton::clicked, this, &ColumnFilterFrame::invert);
     connect(ui.cbToggleHideUnselected, &QCheckBox::toggled, this, &ColumnFilterFrame::toggleHideUnselected);
     connect(mModel, &FilterUelModel::dataChanged, this, &ColumnFilterFrame::listDataHasChanged);
+    connect(ui.lvLabels, &QuickSelectListView::quickSelect, this, &ColumnFilterFrame::apply);
 
     ui.lvLabels->setModel(mModel);
 }

@@ -31,7 +31,7 @@
     </widget>
    </item>
    <item>
-    <widget class="QListView" name="lvLabels">
+    <widget class="gams::studio::gdxviewer::QuickSelectListView" name="lvLabels">
      <property name="toolTip">
       <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of labels occurring in this column. Check or uncheck labels to decide which are displayed as soon as the filter is applied.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
@@ -127,6 +127,11 @@
    <class>gams::studio::FilterLineEdit</class>
    <extends>QLineEdit</extends>
    <header>filterlineedit.h</header>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::gdxviewer::QuickSelectListView</class>
+   <extends>QListView</extends>
+   <header>gdxviewer/quickselectlistview.h</header>
   </customwidget>
  </customwidgets>
  <resources/>

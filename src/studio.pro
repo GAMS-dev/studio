@@ -177,6 +177,7 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxviewerstate.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/quickselectlistview.cpp \
     gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
     gdxviewer/valuefilter.cpp \
@@ -403,6 +404,7 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxviewerstate.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/quickselectlistview.h \
     gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
