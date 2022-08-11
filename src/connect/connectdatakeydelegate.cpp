@@ -44,10 +44,11 @@ ConnectDataKeyDelegate::~ConnectDataKeyDelegate()
 
 void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
 {
-    mSchemaHelpPosition.clear();
-    mSchemaAppendPosition.clear();
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = index.data(Qt::DisplayRole).toString();
+    if (index.column()!=(int)DataItemColumn::Key)
+        return;
+
     if (index.parent().isValid()) {
         QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
         if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
@@ -66,7 +67,7 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
                             << "       index(" << index.row() << "," << index.column() << ") ";
                    mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
-    } else {
+    } /*else {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
         if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
@@ -76,19 +77,20 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
                      << "       index(" << index.row() << "," << index.column() << ") ";
             mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
-    }
+    }*/
 }
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    if (event->type()==QEvent::MouseButtonRelease) {
+    if (event->type()==QEvent::MouseButtonPress) {
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
-        qDebug() << "position(" << p.x() << "," << p.y() << ") ";
+        qDebug() << "position(" << p.x() << "," << p.y() << ") " << mSchemaHelpPosition.size()
+                                                                 << mSchemaAppendPosition.size() << ":" ;
         bool found = false;
         foreach( QString key, mSchemaHelpPosition.keys() ) {
             QRect rect = mSchemaHelpPosition[key];
-            qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
+            qDebug() << "      1 check(" << rect.x() << "," << rect.y() << ") " << key;
             if (rect.contains(p)) {
                 qDebug() << "Found Schema! " << key;
                 emit requestSchemaHelp(key);
@@ -99,7 +101,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
         if (!found) {
             foreach( QModelIndex idx, mSchemaAppendPosition.keys() ) {
                 QRect rect = mSchemaAppendPosition[idx];
-                qDebug() << "      check(" << rect.x() << "," << rect.y() << "), index=(" << index.row() << "," <<index.column()<<")"
+                qDebug() << "      2 check(" << rect.x() << "," << rect.y() << "), index=(" << index.row() << "," <<index.column()<<")"
                          << "      equal?"<< (idx == index? "yes" : "no");
                 if (idx == index && rect.contains(p)) {
                     qDebug() << "Found idx! " << idx.row() << "," << idx.column();

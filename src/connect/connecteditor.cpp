@@ -46,8 +46,6 @@ bool ConnectEditor::init()
     ui->setupUi(this);
     setFocusProxy(ui->dataTreeView);
 
-    qDebug() << "ConnectEditor::" << mLocation;
-
     mConnect = new Connect();
     QStringList schema = mConnect->getSchemaNames();
 
@@ -99,8 +97,8 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Expand, actiondelegate);
 
-//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::KEY, QHeaderView::Fixed);
-//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::VALUE, QHeaderView::ResizeToContents);
+//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Fixed);
+//    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
@@ -110,7 +108,7 @@ bool ConnectEditor::init()
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
                        | QAbstractItemView::AnyKeyPressed );
-    ui->dataTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
+    ui->dataTreeView->setSelectionMode(QAbstractItemView::NoSelection); //:SingleSelection);
     ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->dataTreeView->setItemsExpandable(true);
     ui->dataTreeView->setAutoScroll(true);
@@ -118,9 +116,9 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CHECK_STATE, true);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SCHEMA_TYPE, true);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ALLOWED_VALUE, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -184,7 +182,7 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 
     mDataModel->addFromSchema( mConnect->createDataHolder(strlist) );
     updateDataColumnSpan();
-    ui->dataTreeView->expandAll();
+    ui->dataTreeView->expandAll();  // expandRecursively()
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
 }

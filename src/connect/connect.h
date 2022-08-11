@@ -44,6 +44,8 @@ public:
     ConnectSchema* getSchema(const QString& schemaName);
     QStringList getSchemaNames() const;
 
+    bool isSchemaAvaiablel() const;
+
     ConnectError getError() const;
 private:
     void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue);

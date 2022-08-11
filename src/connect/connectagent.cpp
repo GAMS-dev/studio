@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <fstream>
+#include <QDebug>
 #include "connectagent.h"
 
 namespace gams {
@@ -29,7 +30,7 @@ void ConnectAgent::loadFromFile(const QString &inputFileName)
     try {
         mRootNode = YAML::LoadFile(inputFileName.toStdString());
     } catch(const YAML::ParserException& e) {
-        // ToDo
+        qDebug() << "Error Load from file : " << inputFileName;
     }
 }
 

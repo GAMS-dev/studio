@@ -141,7 +141,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                         return QVariant::fromValue(Theme::icon(":/solid/delete-all"));
                 } else if (index.column()==(int)DataItemColumn::MoveDown) {
                           if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
-                              item->data(0).toInt() < parentItem->childCount()-2)
+                              item->data(0).toInt() < parentItem->childCount()-1)
                               return QVariant::fromValue(Theme::icon(":/solid/move-down"));
                 } else if (index.column()==(int)DataItemColumn::MoveUp) {
                           if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
@@ -319,10 +319,20 @@ void ConnectDataModel::addFromSchema(ConnectData* data)
 
     beginResetModel();
 
-    mConnectData = data;
+    Q_ASSERT(data->getRootNode().Type()==YAML::NodeType::Sequence);
+    YAML::Node root = mConnectData->getRootNode();
+    if (root.IsNull()) {
+        mConnectData = data;
+    } else {
+        int size = root.size();
+        for (size_t i= 0; i<data->getRootNode().size(); i++) {
+             root[size+i] = data->getRootNode()[i];
+         }
+    }
     setupTreeItemModelData();
 
     endResetModel();
+
 
     emit dataChanged(index(0, (int)DataItemColumn::MoveDown),
                      index(rowCount() - 1, (int)DataItemColumn::Expand),
@@ -334,7 +344,8 @@ void ConnectDataModel::setupTreeItemModelData()
     QList<QVariant> rootData;
     rootData << "Key" << "Value"
              << "State" << "Type" << "AllowedValue"
-             << "A0"  << "A2" << "A3" << "A4";
+             << ""  << "" << "" << "";
+//             << "A0"  << "A2" << "A3" << "A4";
 
     mRootItem = new ConnectDataItem(rootData);
 

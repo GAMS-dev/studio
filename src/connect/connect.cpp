@@ -210,6 +210,11 @@ QStringList Connect::getSchemaNames() const
     return mSchema.keys();
 }
 
+bool Connect::isSchemaAvaiablel() const
+{
+    return !mSchema.isEmpty();
+}
+
 ConnectError Connect::getError() const
 {
     return mError;
