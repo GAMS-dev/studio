@@ -119,29 +119,29 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
             QList<SchemaType> typeList = getSchema(schemaname)->getType(key);
             foreach (SchemaType type, typeList) {
                 try {
-                    if (type==SchemaType::INTEGER) {
+                    if (type==SchemaType::Integer) {
                         if (it->second.Type()==YAML::NodeType::Scalar)
                             it->second.as<int>();
                         else
                             continue;
-                    } else if (type==SchemaType::FLOAT) {
+                    } else if (type==SchemaType::Float) {
                               if (it->second.Type()==YAML::NodeType::Scalar)
                                  it->second.as<float>();
                               else
                                  continue;
-                    } else if (type==SchemaType::BOOLEAN) {
+                    } else if (type==SchemaType::Boolean) {
                                if (it->second.Type()==YAML::NodeType::Scalar)
                                    it->second.as<bool>();
                                else
                                    continue;
-                    } else if (type==SchemaType::STRING) {
+                    } else if (type==SchemaType::String) {
                               if (it->second.Type()==YAML::NodeType::Scalar)
                                   it->second.as<std::string>();
                               else
                                   continue;
-                    } else if (type==SchemaType::LIST) {
+                    } else if (type==SchemaType::List) {
                               continue; // TODO
-                    } else if (type==SchemaType::DICT) {
+                    } else if (type==SchemaType::Dict) {
                               continue; // TODO
                     }
                     validType = true;
@@ -348,26 +348,26 @@ bool Connect::isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data)
     bool validType = false;
     foreach (SchemaType t, typeList) {
         try {
-            if (t==SchemaType::INTEGER) {
+            if (t==SchemaType::Integer) {
                 if (data.Type()!=YAML::NodeType::Scalar)
                     continue;
                 data.as<int>();
-            } else if (t==SchemaType::FLOAT) {
+            } else if (t==SchemaType::Float) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                       data.as<float>();
-            } else if (t==SchemaType::BOOLEAN) {
+            } else if (t==SchemaType::Boolean) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                        data.as<bool>();
-            } else if (t==SchemaType::STRING) {
+            } else if (t==SchemaType::String) {
                       if (data.Type()!=YAML::NodeType::Scalar)
                           continue;
                       data.as<std::string>();
-            } else if (t==SchemaType::LIST) {
+            } else if (t==SchemaType::List) {
                       if (data.Type()!=YAML::NodeType::Sequence)
                           continue;
-            } else if (t==SchemaType::DICT) {
+            } else if (t==SchemaType::Dict) {
                       if (data.Type()!=YAML::NodeType::Map)
                          continue;
             }
@@ -409,11 +409,11 @@ void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAM
             } else {
                 ValueWrapper minval = getSchema(schemaname)->getMin(keyFromRoot);
                 try {
-                    if (minval.type==SchemaValueType::INTEGER) {
+                    if (minval.type==SchemaValueType::Integer) {
                         if (data.as<int>() < minval.value.intval) {
                             /* TODO */
                         }
-                    } else if (minval.type==SchemaValueType::FLOAT) {
+                    } else if (minval.type==SchemaValueType::Float) {
                             if (data.as<float>() < minval.value.doubleval) {
                                 /* TODO */
                             }
@@ -422,7 +422,7 @@ void Connect::updateKeyList(const QString& schemaname, QString& keyFromRoot, YAM
                     qDebug() << "bad conversion :: minval";
                 }
                 ValueWrapper maxval = getSchema(schemaname)->getMax(keyFromRoot);
-                if (maxval.type!=SchemaValueType::NOVALUE) {
+                if (maxval.type!=SchemaValueType::NoValue) {
 
                 }
             }

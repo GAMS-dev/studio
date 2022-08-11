@@ -55,11 +55,11 @@ void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, co
         if (!icon.isNull()) {
             option->icon = icon;
             if (index.data( Qt::DisplayRole ).toBool()) {
-                if (index.column()==(int)DataItemColumn::DELETE)
+                if (index.column()==(int)DataItemColumn::Delete)
                     mDeleteActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-                else if (index.column()==(int)DataItemColumn::MOVE_DOWN)
+                else if (index.column()==(int)DataItemColumn::MoveDown)
                         mMoveDownActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-                else if (index.column()==(int)DataItemColumn::MOVE_UP)
+                else if (index.column()==(int)DataItemColumn::MoveUp)
                         mMoveUpActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
             }
         }
@@ -76,7 +76,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
         const QPoint p = mouseevent->pos();  // ->globalPos()
         if (index.data( Qt::DisplayRole ).toBool()) {
             bool found = false;
-            if (index.column()==(int)DataItemColumn::DELETE) {
+            if (index.column()==(int)DataItemColumn::Delete) {
                 foreach( QModelIndex idx, mDeleteActionPosition.keys() ) {
                     QRect rect = mDeleteActionPosition[idx];
                     qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
@@ -86,7 +86,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
                         break;
                     }
                 }
-            } else if (index.column()==(int)DataItemColumn::MOVE_DOWN) {
+            } else if (index.column()==(int)DataItemColumn::MoveDown) {
                       foreach( QModelIndex idx, mMoveDownActionPosition.keys() ) {
                           QRect rect = mMoveDownActionPosition[idx];
                           qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
@@ -96,7 +96,7 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
                               break;
                           }
                       }
-            }   else if (index.column()==(int)DataItemColumn::MOVE_UP) {
+            }   else if (index.column()==(int)DataItemColumn::MoveUp) {
                          foreach( QModelIndex idx, mMoveUpActionPosition.keys() ) {
                              QRect rect = mMoveUpActionPosition[idx];
                              qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";

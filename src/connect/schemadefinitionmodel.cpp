@@ -185,15 +185,15 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
 {
     QStringList valueStrList;
     for(ValueWrapper& value :  valueList) {
-        if (value.type==SchemaValueType::NOVALUE) {
+        if (value.type==SchemaValueType::NoValue) {
             valueStrList << "";
-        } else if (value.type==SchemaValueType::INTEGER) {
+        } else if (value.type==SchemaValueType::Integer) {
             valueStrList << QString::number(value.value.intval);
-        } else if (value.type==SchemaValueType::FLOAT) {
+        } else if (value.type==SchemaValueType::Float) {
             valueStrList << QString::number(value.value.doubleval);
-        } else if (value.type==SchemaValueType::STRING) {
+        } else if (value.type==SchemaValueType::String) {
             valueStrList << QString(value.value.stringval);
-        } else if (value.type==SchemaValueType::BOOLEAN) {
+        } else if (value.type==SchemaValueType::Boolean) {
             valueStrList << QString(value.value.boolval);
         } else  {
             valueStrList << "";
@@ -211,15 +211,15 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
 
 void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
 {
-    if (value.type==SchemaValueType::NOVALUE) {
+    if (value.type==SchemaValueType::NoValue) {
         data << "";
-    } else if (value.type==SchemaValueType::INTEGER) {
+    } else if (value.type==SchemaValueType::Integer) {
         data << value.value.intval;
-    } else if (value.type==SchemaValueType::FLOAT) {
+    } else if (value.type==SchemaValueType::Float) {
         data << value.value.doubleval;
-    } else if (value.type==SchemaValueType::STRING) {
+    } else if (value.type==SchemaValueType::String) {
         data << value.value.stringval;
-    } else if (value.type==SchemaValueType::BOOLEAN) {
+    } else if (value.type==SchemaValueType::Boolean) {
         data << value.value.boolval;
     } else  {
         data << "";

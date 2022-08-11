@@ -34,59 +34,25 @@ namespace connect {
 Q_NAMESPACE
 
 enum class SchemaType {
-    STRING,
-    INTEGER,
-    FLOAT,
-    BOOLEAN,
-    LIST,
-    DICT,
-    UNDEFINED = -1
+    String,
+    Integer,
+    Float,
+    Boolean,
+    List,
+    Dict,
+    Undefined = -1
 };
 Q_ENUM_NS(SchemaType)
 
 enum class SchemaValueType {
-    INTEGER,
-    FLOAT,
-    STRING,
-    BOOLEAN,
-    NOVALUE,
-    UNDEFINED = -1
+    Integer,
+    Float,
+    String,
+    Boolean,
+    NoValue,
+    Undefined = -1
 };
 Q_ENUM_NS(SchemaValueType)
-
-/*
-static inline Type getTypeFromValue(QString& value) {
-    if (value.compare("integer") == 0) {
-        return Type::INTEGER;
-    } else if (value.compare("string") == 0) {
-              return Type::STRING;
-    } else if (value.compare("float") == 0) {
-              return Type::STRING;
-    } else if (value.compare("boolean") == 0) {
-               return Type::BOOLEAN;
-    } else if (value.compare("float") == 0) {
-               return Type::FLOAT;
-    } else if (value.compare("dict") == 0) {
-               return Type::DICT;
-    } else if (value.compare("list") == 0) {
-              return Type::LIST;
-    }
-    return Type::UNDEFINED;
-}
-
-static inline const char* typeToString(Type t) {
-    const std::map<Type, const char*> typeStrings {
-        { Type::INTEGER, "integer" },
-        { Type::STRING,  "string" },
-        { Type::FLOAT,   "float" },
-        { Type::BOOLEAN, "boolean" },
-        { Type::DICT,    "dict" },
-        { Type::LIST,    "list" },
-        { Type::UNDEFINED, "undefined" }
-    };
-    auto   it  = typeStrings.find(t);
-    return (it == typeStrings.end() ? "undefined" : it->second);
-}*/
 
 union Value  {
     bool    boolval;
@@ -150,11 +116,11 @@ union Value  {
 struct ValueWrapper {
     SchemaValueType   type;
     union Value value;
-    ValueWrapper()                    : type(SchemaValueType::NOVALUE) {  }
-    ValueWrapper(int intval_)         : type(SchemaValueType::INTEGER), value(intval_)    { }
-    ValueWrapper(double doubleval_)   : type(SchemaValueType::FLOAT),   value(doubleval_) { }
-    ValueWrapper(bool boolval_)       : type(SchemaValueType::BOOLEAN), value(boolval_) { }
-    ValueWrapper(std::string strval_) : type(SchemaValueType::STRING),  value(strval_) { }
+    ValueWrapper()                    : type(SchemaValueType::NoValue) {  }
+    ValueWrapper(int intval_)         : type(SchemaValueType::Integer), value(intval_)    { }
+    ValueWrapper(double doubleval_)   : type(SchemaValueType::Float),   value(doubleval_) { }
+    ValueWrapper(bool boolval_)       : type(SchemaValueType::Boolean), value(boolval_) { }
+    ValueWrapper(std::string strval_) : type(SchemaValueType::String),  value(strval_) { }
 };
 
 
@@ -246,32 +212,32 @@ public:
 
     static inline SchemaType getTypeFromValue(QString& value) {
         if (value.compare("integer") == 0) {
-            return SchemaType::INTEGER;
+            return SchemaType::Integer;
         } else if (value.compare("string") == 0) {
-                  return SchemaType::STRING;
+                  return SchemaType::String;
         } else if (value.compare("float") == 0) {
-                  return SchemaType::STRING;
+                  return SchemaType::String;
         } else if (value.compare("boolean") == 0) {
-                   return SchemaType::BOOLEAN;
+                   return SchemaType::Boolean;
         } else if (value.compare("float") == 0) {
-                   return SchemaType::FLOAT;
+                   return SchemaType::Float;
         } else if (value.compare("dict") == 0) {
-                   return SchemaType::DICT;
+                   return SchemaType::Dict;
         } else if (value.compare("list") == 0) {
-                  return SchemaType::LIST;
+                  return SchemaType::List;
         }
-        return SchemaType::UNDEFINED;
+        return SchemaType::Undefined;
     }
 
     static inline const char* typeToString(SchemaType t) {
         const std::map<SchemaType, const char*> typeStrings {
-            { SchemaType::INTEGER, "integer" },
-            { SchemaType::STRING,  "string" },
-            { SchemaType::FLOAT,   "float" },
-            { SchemaType::BOOLEAN, "boolean" },
-            { SchemaType::DICT,    "dict" },
-            { SchemaType::LIST,    "list" },
-            { SchemaType::UNDEFINED, "undefined" }
+            { SchemaType::Integer, "integer" },
+            { SchemaType::String,  "string" },
+            { SchemaType::Float,   "float" },
+            { SchemaType::Boolean, "boolean" },
+            { SchemaType::Dict,    "dict" },
+            { SchemaType::List,    "list" },
+            { SchemaType::Undefined, "undefined" }
         };
         auto   it  = typeStrings.find(t);
         return (it == typeStrings.end() ? "undefined" : it->second);

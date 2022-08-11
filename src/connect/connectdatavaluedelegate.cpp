@@ -47,7 +47,7 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
 
-    QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::ALLOWED_VALUE );
+    QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
     QStringList allowedval_list = allowedval_index.data().toStringList();
     if (allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );

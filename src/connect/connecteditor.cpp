@@ -92,18 +92,18 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn(1, itemdelegate );
 
     ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate( ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::KEY, keydelegate);
+    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Key, keydelegate);
     ConnectDataActionDelegate* actiondelegate = new ConnectDataActionDelegate( ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::DELETE, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MOVE_DOWN, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MOVE_UP, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::EXPAND, actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Delete, actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
+    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Expand, actiondelegate);
 
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::KEY, QHeaderView::Fixed);
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::VALUE, QHeaderView::ResizeToContents);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::DELETE, QHeaderView::ResizeToContents);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_DOWN, QHeaderView::ResizeToContents);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MOVE_UP, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->dataTreeView->header()->setStyle(HeaderViewProxy::instance());
     ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
@@ -217,8 +217,8 @@ void ConnectEditor::iterateModelItem(QModelIndex parent)
 {
     for (int i=0; i<mDataModel->rowCount(parent); i++) {
 //        QModelIndex index = mDataModel->index(i, 0, parent);
-        if ( mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CHECK_STATE, parent), Qt::DisplayRole).toInt()<=(int)DataCheckState::LIST_ITEM ||
-             mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CHECK_STATE, parent), Qt::DisplayRole).toInt()==(int)DataCheckState::MAP_APPEND  )
+        if ( mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CheckState, parent), Qt::DisplayRole).toInt()<=(int)DataCheckState::ListItem ||
+             mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CheckState, parent), Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend  )
             ui->dataTreeView->setFirstColumnSpanned(i, parent, true);
 
 //        if (mDataModel->hasChildren(index)) {

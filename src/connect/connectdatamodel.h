@@ -30,27 +30,27 @@ namespace studio {
 namespace connect {
 
 enum class DataCheckState {
-    ROOT,             // 0
-    SCHEMA_NAME,      // 1
-    LIST_ITEM,        // 2
-    KEY_ITEM,         // 3
-    ELEMENT_KEY,      // 4
-    ELEMENT_VALUE,    // 5
-    ELEMENT_MAP,      // 6
-    LIST_APPEND,      // 7
-    MAP_APPEND        // 8
+    Root          = 0,
+    SchemaName   = 1,
+    ListItem     = 2,
+    KeyItem      = 3,
+    ElementKey   = 4,
+    ElementValue = 5,
+    ElementMap   = 6,
+    ListAppend   = 7,
+    MapAppend    = 8
 };
 
 enum class DataItemColumn {
-    KEY,
-    VALUE,
-    CHECK_STATE,
-    SCHEMA_TYPE,
-    ALLOWED_VALUE,
-    DELETE,
-    MOVE_DOWN,
-    MOVE_UP,
-    EXPAND,
+    Key           = 0,
+    Value         = 1,
+    CheckState   = 2,
+    SchemaType   = 3,
+    AllowedValue = 4,
+    Delete        = 5,
+    MoveDown     = 6,
+    MoveUp       = 7,
+    Expand        = 8
 };
 
 class ConnectDataModel : public QAbstractItemModel

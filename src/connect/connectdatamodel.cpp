@@ -54,7 +54,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case Qt::DisplayRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-        if (index.column()==(int)DataItemColumn::SCHEMA_TYPE || index.column()==(int)DataItemColumn::ALLOWED_VALUE)
+        if (index.column()==(int)DataItemColumn::SchemaType || index.column()==(int)DataItemColumn::AllowedValue)
            return  QVariant(item->data(index.column()).toStringList());
 //           return  QVariant(item->data(index.column()).toStringList().join(","));
         else
@@ -62,7 +62,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ForegroundRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-        switch(item->data( (int)DataItemColumn::CHECK_STATE ).toInt()) {
+        switch(item->data( (int)DataItemColumn::CheckState ).toInt()) {
            case 0: return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
            case 1: return  QVariant::fromValue(Theme::color(Theme::Syntax_embedded));
            case 2: return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
@@ -75,10 +75,10 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         if (parentItem == mRootItem) {
                 return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
         } else {
-            if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt() <= (int)DataCheckState::LIST_ITEM )
+            if (item->data( (int)DataItemColumn::CheckState ).toInt() <= (int)DataCheckState::ListItem )
                 return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
-            else if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt() == (int)DataCheckState::LIST_APPEND ||
-                     item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::MAP_APPEND       )
+            else if (item->data( (int)DataItemColumn::CheckState ).toInt() == (int)DataCheckState::ListAppend ||
+                     item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend       )
                     return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
@@ -88,29 +88,29 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         ConnectDataItem *parentItem = item->parentItem();
         if (parentItem != mRootItem) { // TODO
-            QModelIndex data_index = index.sibling(index.row(),(int)DataItemColumn::KEY );
-            if (index.column()==(int)DataItemColumn::DELETE) {
+            QModelIndex data_index = index.sibling(index.row(),(int)DataItemColumn::Key );
+            if (index.column()==(int)DataItemColumn::Delete) {
                 return QVariant( QString("delete \"%1\" and all children if there is any").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::MOVE_DOWN) {
-                      if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_ITEM &&
+            } else if (index.column()==(int)DataItemColumn::MoveDown) {
+                      if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
                           item->data(0).toInt() < parentItem->childCount()-1)
                           return QVariant( QString("move \"%1\" and all it children down").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::MOVE_UP) {
-                      if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_ITEM)
+            } else if (index.column()==(int)DataItemColumn::MoveUp) {
+                      if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
                           return QVariant( QString("move \"%1\" and all it children up").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::EXPAND) {
+            } else if (index.column()==(int)DataItemColumn::Expand) {
                        break; // TODO
-            } else if (index.column()==(int)DataItemColumn::KEY) {
-                      if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::SCHEMA_NAME)
+            } else if (index.column()==(int)DataItemColumn::Key) {
+                      if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName)
                           return QVariant( QString("show help for \"%1\" schema").arg( data_index.data(Qt::DisplayRole).toString()) );
-                      else if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_APPEND ||
-                               item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::MAP_APPEND     )
+                      else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend ||
+                               item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend     )
                                return QVariant( "add element" );
 
             }
         } else {
-            if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_APPEND ||
-                item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::MAP_APPEND     )
+            if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend ||
+                item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend     )
                return QVariant( "add schema data" );
 
         }
@@ -119,34 +119,34 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     case Qt::DecorationRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         ConnectDataItem *parentItem = item->parentItem();
-        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CHECK_STATE );
+        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
         if (parentItem == mRootItem && index.column()==0) {
-            if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ROOT) {
+            if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::Root) {
                 return QVariant::fromValue(Theme::icon(":/img/file-edit"));
-            } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::LIST_APPEND ||
-                       checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MAP_APPEND     ) {
+            } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend ||
+                       checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend     ) {
                     return QVariant::fromValue(Theme::icon(":/solid/plus"));
             }
         } else { // TODO
-            if (index.column()==(int)DataItemColumn::KEY) {
-                if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SCHEMA_NAME) {
+            if (index.column()==(int)DataItemColumn::Key) {
+                if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaName) {
                    return QVariant::fromValue(Theme::icon(":/solid/question"));
-                } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::LIST_APPEND ||
-                           checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MAP_APPEND     ) {
+                } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend ||
+                           checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend     ) {
                     return QVariant::fromValue(Theme::icon(":/solid/plus"));
                 }
             } else {
-                if (index.column()==(int)DataItemColumn::DELETE) {
+                if (index.column()==(int)DataItemColumn::Delete) {
                     if (item->data(index.column()).toBool())
                         return QVariant::fromValue(Theme::icon(":/solid/delete-all"));
-                } else if (index.column()==(int)DataItemColumn::MOVE_DOWN) {
-                          if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_ITEM &&
+                } else if (index.column()==(int)DataItemColumn::MoveDown) {
+                          if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
                               item->data(0).toInt() < parentItem->childCount()-2)
                               return QVariant::fromValue(Theme::icon(":/solid/move-down"));
-                } else if (index.column()==(int)DataItemColumn::MOVE_UP) {
-                          if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CHECK_STATE ).toInt()==(int)DataCheckState::LIST_ITEM)
+                } else if (index.column()==(int)DataItemColumn::MoveUp) {
+                          if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
                               return QVariant::fromValue(Theme::icon(":/solid/move-up"));
-                } else if (index.column()==(int)DataItemColumn::EXPAND) {
+                } else if (index.column()==(int)DataItemColumn::Expand) {
                            break;
                 }
             }
@@ -166,24 +166,24 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
     ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
     if (!index.isValid()) {
         return Qt::NoItemFlags;
-    } else if (index.column()==(int)DataItemColumn::KEY) {
-               if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_MAP ||
-                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_KEY ||
-                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_VALUE  )
+    } else if (index.column()==(int)DataItemColumn::Key) {
+               if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementMap ||
+                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementKey ||
+                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementValue  )
                    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
                else
                    return Qt::NoItemFlags;
-    } else if (index.column()==(int)DataItemColumn::VALUE) {
-              if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_KEY   ||
-                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_VALUE ||
-                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ELEMENT_MAP      )
+    } else if (index.column()==(int)DataItemColumn::Value) {
+              if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementKey   ||
+                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementValue ||
+                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementMap      )
                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-              else if (item->data( (int)DataItemColumn::CHECK_STATE ).toInt()<=(int)DataCheckState::ELEMENT_KEY ||
-                  item->data( (int)DataItemColumn::CHECK_STATE ).toInt()>=(int)DataCheckState::LIST_APPEND)
+              else if (item->data( (int)DataItemColumn::CheckState ).toInt()<=(int)DataCheckState::ElementKey ||
+                  item->data( (int)DataItemColumn::CheckState ).toInt()>=(int)DataCheckState::ListAppend)
                      return  Qt::NoItemFlags;
               else
                     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
-    } else if (index.column()>(int)DataItemColumn::CHECK_STATE) {
+    } else if (index.column()>(int)DataItemColumn::CheckState) {
                return  Qt::NoItemFlags;
     } else {
         return QAbstractItemModel::flags(index);
@@ -324,8 +324,8 @@ void ConnectDataModel::addFromSchema(ConnectData* data)
 
     endResetModel();
 
-    emit dataChanged(index(0, (int)DataItemColumn::MOVE_DOWN),
-                     index(rowCount() - 1, (int)DataItemColumn::EXPAND),
+    emit dataChanged(index(0, (int)DataItemColumn::MoveDown),
+                     index(rowCount() - 1, (int)DataItemColumn::Expand),
                      QVector<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
 }
 
@@ -363,7 +363,7 @@ void ConnectDataModel::setupTreeItemModelData()
         QList<QVariant> schemaindexData;
         schemaindexData << QVariant::fromValue(i);
         schemaindexData << "";
-        schemaindexData << QVariant((int)DataCheckState::LIST_ITEM);
+        schemaindexData << QVariant((int)DataCheckState::ListItem);
         schemaindexData << QVariant(QStringList());
         schemaindexData << QVariant(QStringList());
         schemaindexData << QVariant(true);  // A0
@@ -380,7 +380,7 @@ void ConnectDataModel::setupTreeItemModelData()
              QList<QVariant> listData;
              listData << currentSchemaName;
              listData << "";
-             listData << QVariant((int)DataCheckState::SCHEMA_NAME);
+             listData << QVariant((int)DataCheckState::SchemaName);
              listData << QVariant(QStringList());
              listData << QVariant(QStringList());
              listData << QVariant(false); // A0
@@ -400,7 +400,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      QList<QVariant> itemData;
                      itemData << key;
                      itemData << QVariant(mit->second.as<std::string>().c_str()); // TODO
-                     itemData << QVariant((int)DataCheckState::ELEMENT_VALUE);
+                     itemData << QVariant((int)DataCheckState::ElementValue);
                      itemData << QVariant(schema->getTypeAsStringList(key));
                      itemData << QVariant(schema->getAllowedValueAsStringList(key));
                      itemData << QVariant(!schema->isRequired(key)); // A0
@@ -417,7 +417,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      QList<QVariant> itemData;
                      itemData << key;
                      itemData << ""; // TODO
-                     itemData << QVariant((int)DataCheckState::KEY_ITEM);
+                     itemData << QVariant((int)DataCheckState::KeyItem);
                      itemData << QVariant(schema->getTypeAsStringList(key));
                      itemData << QVariant(QStringList());
                      itemData << QVariant(!schema->isRequired(key)); // A0
@@ -434,7 +434,7 @@ void ConnectDataModel::setupTreeItemModelData()
                          mapitemData << mapkey;
                          Q_ASSERT(dmit->second.Type()==YAML::NodeType::Scalar); // TODO
                          mapitemData << QVariant(dmit->second.as<std::string>().c_str()); // TODO
-                         mapitemData << QVariant((int)DataCheckState::ELEMENT_MAP);
+                         mapitemData << QVariant((int)DataCheckState::ElementMap);
                          mapitemData << QVariant(schema->getTypeAsStringList(key));
                          mapitemData << QVariant(QStringList());
                          mapitemData << QVariant(!schema->isRequired(key)); // A0
@@ -451,7 +451,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      QList<QVariant> sequenceDummyData;
                      sequenceDummyData << "";
                      sequenceDummyData << "";
-                     sequenceDummyData << QVariant((int)DataCheckState::MAP_APPEND);
+                     sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(false); // A0
@@ -467,7 +467,7 @@ void ConnectDataModel::setupTreeItemModelData()
                             QList<QVariant> itemData;
                             itemData << key;
                             itemData << "";
-                            itemData << QVariant((int)DataCheckState::KEY_ITEM);
+                            itemData << QVariant((int)DataCheckState::KeyItem);
                             itemData << QVariant(schema->getTypeAsStringList(key));
                             itemData << QVariant(QStringList());
                             itemData << QVariant(!schema->isRequired(key)); // A0
@@ -481,7 +481,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                 QList<QVariant> indexData;
                                 indexData << QVariant::fromValue(k);
                                 indexData << QVariant(QStringList());
-                                indexData << QVariant((int)DataCheckState::LIST_ITEM);
+                                indexData << QVariant((int)DataCheckState::ListItem);
                                 indexData << QVariant(QStringList());
                                 indexData << QVariant(QStringList());
                                 indexData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
@@ -502,7 +502,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                          QList<QVariant> seqSeqData;
                                          seqSeqData << key;
                                          seqSeqData << "";
-                                         seqSeqData << QVariant((int)DataCheckState::KEY_ITEM);
+                                         seqSeqData << QVariant((int)DataCheckState::KeyItem);
                                          seqSeqData << QVariant(schema->getTypeAsStringList(key));
                                          seqSeqData << QVariant(QStringList());
                                          seqSeqData << QVariant(!schema->isRequired(key)); // A0
@@ -517,7 +517,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                              QList<QVariant> indexSeqData;
                                              indexSeqData << QVariant::fromValue(kk);
                                              indexSeqData << QVariant(QStringList());
-                                             indexSeqData << QVariant((int)DataCheckState::LIST_ITEM);
+                                             indexSeqData << QVariant((int)DataCheckState::ListItem);
                                              indexSeqData << QVariant(QStringList());
                                              indexSeqData << QVariant(QStringList());
                                              indexSeqData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
@@ -531,7 +531,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                  QList<QVariant> indexScalarData;
                                                 indexScalarData << mmit->second[kk].as<std::string>().c_str();
                                                 indexScalarData << ""; // TODO
-                                                indexScalarData << QVariant((int)DataCheckState::ELEMENT_VALUE);
+                                                indexScalarData << QVariant((int)DataCheckState::ElementValue);
                                                 indexScalarData << QVariant(QStringList());
                                                 indexScalarData << QVariant(QStringList());
                                                 indexScalarData << "";  // A0
@@ -545,7 +545,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                              QList<QVariant> indexSeqDummyData;
                                              indexSeqDummyData << "";
                                              indexSeqDummyData << "";
-                                             indexSeqDummyData << QVariant((int)DataCheckState::LIST_APPEND);
+                                             indexSeqDummyData << QVariant((int)DataCheckState::ListAppend);
                                              indexSeqDummyData << QVariant(QStringList());
                                              indexSeqDummyData << QVariant(QStringList());
                                              indexSeqDummyData << QVariant(false);  // A0
@@ -562,7 +562,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                 QList<QVariant> mapData;
                                                 mapData << key;
                                                 mapData << "";
-                                                mapData << QVariant((int)DataCheckState::KEY_ITEM);
+                                                mapData << QVariant((int)DataCheckState::KeyItem);
                                                 mapData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
                                                 mapData << QVariant(QStringList());
                                                 mapData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
@@ -577,7 +577,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                      QList<QVariant> mapSeqData;
                                                      mapSeqData << mmmit->first.as<std::string>().c_str();
                                                      mapSeqData << mmmit->second.as<std::string>().c_str();  // can be int/bool/double
-                                                     mapSeqData << QVariant((int)DataCheckState::ELEMENT_MAP);
+                                                     mapSeqData << QVariant((int)DataCheckState::ElementMap);
                                                      mapSeqData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
                                                      mapSeqData << QVariant(QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":"))));
                                                      mapSeqData << QVariant(!schema->isRequired(dataKeys.join(":")));  // A0
@@ -592,7 +592,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                 QList<QVariant> indexSeqDummyData;
                                                 indexSeqDummyData << "";
                                                 indexSeqDummyData << "";
-                                                indexSeqDummyData << QVariant((int)DataCheckState::MAP_APPEND);
+                                                indexSeqDummyData << QVariant((int)DataCheckState::MapAppend);
                                                 indexSeqDummyData << QVariant(QStringList());
                                                 indexSeqDummyData << QVariant(QStringList());
                                                 indexSeqDummyData << QVariant(false);  // A0
@@ -605,7 +605,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                          QList<QVariant> mapSeqData;
                                          mapSeqData << key;
                                          mapSeqData << mmit->second.as<std::string>().c_str(); // TODO
-                                         mapSeqData << QVariant((int)DataCheckState::ELEMENT_VALUE);
+                                         mapSeqData << QVariant((int)DataCheckState::ElementValue);
                                          mapSeqData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
                                          mapSeqData << QVariant(QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":"))));
                                          mapSeqData << QVariant(!schema->isRequired(dataKeys.join(":")));  // A0
@@ -623,7 +623,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                    QList<QVariant> mapSeqData;
                                    mapSeqData << "";
                                    mapSeqData << ""; // TODO
-                                   mapSeqData << QVariant((int)DataCheckState::ELEMENT_VALUE);
+                                   mapSeqData << QVariant((int)DataCheckState::ElementValue);
                                    mapSeqData << QVariant(QStringList());
                                    mapSeqData << QVariant(QStringList());
                                    mapSeqData << "";  // A0
@@ -640,11 +640,11 @@ void ConnectDataModel::setupTreeItemModelData()
                             // update data in MOVE_DOWN and MOVE_UP column
                             for(int row = 0; row<parents.last()->childCount(); row++) {
                                 ConnectDataItem* item = parents.last()->child(row);
-                                if (item->data((int)DataItemColumn::CHECK_STATE).toInt() == 1) {
-                                    if (item->data((int)DataItemColumn::KEY).toInt() < parents.last()-> childCount()-1)
-                                        item->setData((int)DataItemColumn::MOVE_DOWN, QVariant(true));
-                                    else if (item->data((int)DataItemColumn::KEY).toInt() > 0)
-                                             item->setData((int)DataItemColumn::MOVE_UP, QVariant(true));
+                                if (item->data((int)DataItemColumn::CheckState).toInt() == 1) {
+                                    if (item->data((int)DataItemColumn::Key).toInt() < parents.last()-> childCount()-1)
+                                        item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                    else if (item->data((int)DataItemColumn::Key).toInt() > 0)
+                                             item->setData((int)DataItemColumn::MoveUp, QVariant(true));
                                 }
                             }
 
@@ -653,7 +653,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      QList<QVariant> sequenceDummyData;
                      sequenceDummyData << "";
                      sequenceDummyData << "";
-                     sequenceDummyData << QVariant((int)DataCheckState::MAP_APPEND);
+                     sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(false); // A0
@@ -682,7 +682,7 @@ void ConnectDataModel::setupTreeItemModelData()
     QList<QVariant> sequenceDummyData;
     sequenceDummyData << "";
     sequenceDummyData << "";
-    sequenceDummyData << QVariant((int)DataCheckState::LIST_APPEND);
+    sequenceDummyData << QVariant((int)DataCheckState::ListAppend);
     sequenceDummyData << QVariant(QStringList());
     sequenceDummyData << QVariant(QStringList());
     sequenceDummyData << QVariant(false);  // A0
