@@ -49,35 +49,23 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
     if (index.column()!=(int)DataItemColumn::Key)
         return;
 
-    if (index.parent().isValid()) {
-        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-        if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
-            option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-            option->decorationPosition = QStyleOptionViewItem::Right;
-            qDebug() << "2 icon rec(" << option->rect.topLeft().x() << "," << option->rect.topLeft().y() << ") " << option->rect.width()
-                     << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                     << "       index(" << index.row() << "," << index.column() << ") "      << index.data(Qt::DisplayRole).toString();
-            mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
-                        QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
-        } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
-                   checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
-                   option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-                   qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
-                            << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                            << "       index(" << index.row() << "," << index.column() << ") ";
-                   mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-        }
-    } /*else {
+    QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
+    if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-        if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
-            checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
-            qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
-                     << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                     << "       index(" << index.row() << "," << index.column() << ") ";
-            mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-        }
-    }*/
+        option->decorationPosition = QStyleOptionViewItem::Right;
+        qDebug() << "2 icon rec(" << option->rect.topLeft().x() << "," << option->rect.topLeft().y() << ") " << option->rect.width()
+                 << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                 << "       index(" << index.row() << "," << index.column() << ") "      << index.data(Qt::DisplayRole).toString();
+        mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
+                    QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
+    } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
+               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
+               option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+               qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
+                        << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
+                        << "       index(" << index.row() << "," << index.column() << ") ";
+               mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+    }
 }
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)

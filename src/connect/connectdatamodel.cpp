@@ -73,7 +73,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         ConnectDataItem *parentItem = item->parentItem();
         if (parentItem == mRootItem) {
-                return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Background));
+            return QVariant::fromValue(QApplication::palette().color(QPalette::Window));
         } else {
             if (item->data( (int)DataItemColumn::CheckState ).toInt() <= (int)DataCheckState::ListItem )
                 return QVariant::fromValue(QGuiApplication::palette().color(QPalette::Window));
@@ -86,74 +86,67 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-        ConnectDataItem *parentItem = item->parentItem();
-        if (parentItem != mRootItem) { // TODO
+        if (item->data(index.column()).toBool()) {
+            ConnectDataItem *parentItem = item->parentItem();
             QModelIndex data_index = index.sibling(index.row(),(int)DataItemColumn::Key );
-            if (index.column()==(int)DataItemColumn::Delete) {
-                return QVariant( QString("delete \"%1\" and all children if there is any").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::MoveDown) {
-                      if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
-                          item->data(0).toInt() < parentItem->childCount()-1)
-                          return QVariant( QString("move \"%1\" and all it children down").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::MoveUp) {
-                      if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
-                          return QVariant( QString("move \"%1\" and all it children up").arg( data_index.data(Qt::DisplayRole).toString()) );
-            } else if (index.column()==(int)DataItemColumn::Expand) {
-                       break; // TODO
-            } else if (index.column()==(int)DataItemColumn::Key) {
-                      if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName)
-                          return QVariant( QString("show help for \"%1\" schema").arg( data_index.data(Qt::DisplayRole).toString()) );
-                      else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend ||
-                               item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend     )
-                               return QVariant( "add element" );
-
-            }
-        } else {
-            if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend ||
-                item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend     )
-               return QVariant( "add schema data" );
-
-        }
-    }
-//    case Qt::UserRole: { }
-    case Qt::DecorationRole: {
-        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-        ConnectDataItem *parentItem = item->parentItem();
-        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-        if (parentItem == mRootItem && index.column()==0) {
-            if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::Root) {
-                return QVariant::fromValue(Theme::icon(":/img/file-edit"));
-            } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend ||
-                       checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend     ) {
-                    return QVariant::fromValue(Theme::icon(":/solid/plus"));
-            }
-        } else { // TODO
-            if (index.column()==(int)DataItemColumn::Key) {
-                if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaName) {
-                   return QVariant::fromValue(Theme::icon(":/solid/question"));
-                } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend ||
-                           checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend     ) {
-                    return QVariant::fromValue(Theme::icon(":/solid/plus"));
+            if (parentItem == mRootItem) {
+                if (index.column()==(int)DataItemColumn::Delete) {
+                    return QVariant( QString("delete \"%1\" data including all children").arg( data_index.data(Qt::DisplayRole).toString()) );
+                } else if (index.column()==(int)DataItemColumn::MoveUp) {
+                          return QVariant( QString("move \"%1\" data up including all children").arg( data_index.data(Qt::DisplayRole).toString()) );
+                } else if (index.column()==(int)DataItemColumn::MoveDown) {
+                           return QVariant( QString("move \"%1\" data down including all it children").arg( data_index.data(Qt::DisplayRole).toString()) );
+                } else if (index.column()==(int)DataItemColumn::Key) {
+                          if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName) {
+                             return QVariant( QString("show help for \"%1\" schema").arg( data_index.data(Qt::DisplayRole).toString()) );
+                          } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend) {
+                                    return QVariant("add schmea element");
+                          }
                 }
             } else {
                 if (index.column()==(int)DataItemColumn::Delete) {
-                    if (item->data(index.column()).toBool())
-                        return QVariant::fromValue(Theme::icon(":/solid/delete-all"));
+                    return QVariant( QString("delete \"%1\" and all children if there is any").arg( data_index.data(Qt::DisplayRole).toString()) );
                 } else if (index.column()==(int)DataItemColumn::MoveDown) {
                           if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
                               item->data(0).toInt() < parentItem->childCount()-1)
-                              return QVariant::fromValue(Theme::icon(":/solid/move-down"));
+                              return QVariant( QString("move \"%1\" and all it children down").arg( data_index.data(Qt::DisplayRole).toString()) );
                 } else if (index.column()==(int)DataItemColumn::MoveUp) {
                           if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
-                              return QVariant::fromValue(Theme::icon(":/solid/move-up"));
-                } else if (index.column()==(int)DataItemColumn::Expand) {
-                           break;
+                              return QVariant( QString("move \"%1\" and all it children up").arg( data_index.data(Qt::DisplayRole).toString()) );
+                } else  if (index.column()==(int)DataItemColumn::Key) {
+                           QVariant parent_data = parentItem->data(index.column());
+                           if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend) {
+                               return QVariant( QString("add element to the list of %1").arg( parent_data.toString() ) );
+                           } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend) {
+                                      return QVariant( QString("add element to  %1 dict").arg( parent_data.toString() ) );
+                           }
                 }
             }
         }
         break;
     }
-
+    case Qt::DecorationRole: {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
+       if (index.column()==(int)DataItemColumn::Key) {
+           if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaName) {
+              return QVariant::fromValue(Theme::icon(":/solid/question"));
+           } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend ||
+                      checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend     ) {
+               return QVariant::fromValue(Theme::icon(":/solid/plus"));
+           }
+       } else if (index.column()==(int)DataItemColumn::Delete) {
+                 if (item->data(index.column()).toBool())
+                     return QVariant::fromValue(Theme::icon(":/solid/delete-all"));
+       } else if (index.column()==(int)DataItemColumn::MoveDown) {
+                  if (item->data(index.column()).toBool())
+                      return QVariant::fromValue(Theme::icon(":/solid/move-down"));
+       } else if (index.column()==(int)DataItemColumn::MoveUp) {
+                  if (item->data(index.column()).toBool())
+                      return QVariant::fromValue(Theme::icon(":/solid/move-up"));
+       }
+        break;
+    }
     default:
          break;
     }
@@ -352,39 +345,15 @@ void ConnectDataModel::setupTreeItemModelData()
     QList<ConnectDataItem*> parents;
     parents << mRootItem;
 
-    QList<QVariant> connectData;
-    connectData << mLocation;
-    connectData << "";
-    connectData << "0";
-    connectData << QVariant(QStringList());
-    connectData << QVariant(QStringList());
-    connectData << " "; // A0
-    connectData << " "; // A2
-    connectData << " "; // A3
-    connectData << " "; // A4
-    parents.last()->appendChild(new ConnectDataItem(connectData, parents.last()));
-
     QString currentSchemaName;
     for(size_t i = 0; i<mConnectData->getRootNode().size(); i++) {
-        parents << parents.last()->child(parents.last()->childCount()-1);
+//        parents << parents.last()->child(parents.last()->childCount()-1);
 
         Q_ASSERT(mConnectData->getRootNode()[i].Type()==YAML::NodeType::Map); // TODO
         YAML::Node rootnode = mConnectData->getRootNode()[i];
 
-        QList<QVariant> schemaindexData;
-        schemaindexData << QVariant::fromValue(i);
-        schemaindexData << "";
-        schemaindexData << QVariant((int)DataCheckState::ListItem);
-        schemaindexData << QVariant(QStringList());
-        schemaindexData << QVariant(QStringList());
-        schemaindexData << QVariant(true);  // A0
-        schemaindexData << "";  // A2
-        schemaindexData << "";  // A3
-        schemaindexData << "";  // A4
-        parents.last()->appendChild(new ConnectDataItem(schemaindexData, parents.last()));
-
         for (YAML::const_iterator it = rootnode.begin(); it != rootnode.end(); ++it) {
-             parents << parents.last()->child(parents.last()->childCount()-1);
+//             parents << parents.last()->child(parents.last()->childCount()-1);
              currentSchemaName = QString::fromStdString(it->first.as<std::string>());
              ConnectSchema* schema = mConnect->getSchema(currentSchemaName);
              QStringList dataKeys;
@@ -394,7 +363,7 @@ void ConnectDataModel::setupTreeItemModelData()
              listData << QVariant((int)DataCheckState::SchemaName);
              listData << QVariant(QStringList());
              listData << QVariant(QStringList());
-             listData << QVariant(false); // A0
+             listData << QVariant(true); // A0
              listData << ""; // A2
              listData << ""; // A3
              listData << ""; // A4
@@ -644,27 +613,27 @@ void ConnectDataModel::setupTreeItemModelData()
                                    parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
 //                                   parents.pop_back();
                                }
+                               for(int row = 0; row<parents.last()->childCount(); row++) {
+                                   ConnectDataItem* item = parents.last()->child(row);
+                                   if (item->data((int)DataItemColumn::CheckState).toInt() == (int)DataCheckState::ListItem) {
+                                       QVariant data = item->data((int)DataItemColumn::Key);
+                                      if (data.toInt() < parents.last()-> childCount()-1)
+                                          item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                      else if (data.toInt() > 0)
+                                              item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                                      else
+                                           item->setData((int)DataItemColumn::MoveUp, QVariant(false));
+                                   }
+                               }
                             }
                             dataKeys.removeLast();
                             parents.pop_back();
-
-                            // update data in MOVE_DOWN and MOVE_UP column
-                            for(int row = 0; row<parents.last()->childCount(); row++) {
-                                ConnectDataItem* item = parents.last()->child(row);
-                                if (item->data((int)DataItemColumn::CheckState).toInt() == 1) {
-                                    if (item->data((int)DataItemColumn::Key).toInt() < parents.last()-> childCount()-1)
-                                        item->setData((int)DataItemColumn::MoveDown, QVariant(true));
-                                    else if (item->data((int)DataItemColumn::Key).toInt() > 0)
-                                             item->setData((int)DataItemColumn::MoveUp, QVariant(true));
-                                }
-                            }
-
                  }
                  if (isMapToSequence) {
                      QList<QVariant> sequenceDummyData;
                      sequenceDummyData << "";
                      sequenceDummyData << "";
-                     sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
+                     sequenceDummyData << QVariant((int)DataCheckState::ListAppend);
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(QStringList());
                      sequenceDummyData << QVariant(false); // A0
@@ -676,20 +645,40 @@ void ConnectDataModel::setupTreeItemModelData()
 
              }
              parents.pop_back();
-             parents.pop_back();
+//             parents.pop_back();
         }
-        parents.pop_back();
+//        parents.pop_back();
+
+        // update data in MOVE_DOWN and MOVE_UP column
+        for(int row = 0; row<parents.last()->childCount(); row++) {
+            ConnectDataItem* item = parents.last()->child(row);
+            if (item->data((int)DataItemColumn::CheckState).toInt() == (int)DataCheckState::SchemaName) {
+                QVariant data = item->data((int)DataItemColumn::Key);
+                if (data.userType()==QMetaType::Int) {
+                    if (data.toInt() < parents.last()-> childCount()-1)
+                        item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                    else if (data.toInt() > 0)
+                             item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                    else
+                         item->setData((int)DataItemColumn::MoveUp, QVariant(false));
+                } else if (data.userType()==QMetaType::QString) {
+                           if (!data.toString().isEmpty()) {
+                               if (row == 0) {
+                                   item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                               } else if (row==parents.last()->childCount()-1) {
+                                          item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                               } else {
+                                   item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                   item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                               }
+                           }
+                }
+            }
+        }
+
     }
+
 /*
-    ConnectDataItem* item = parents.last();
-    ConnectDataItem* parent = item->parent();
-    if (item->data((int)DataItemColumn::CHECK_STATE).toInt() == 1) {
-        if (item->data((int)DataItemColumn::KEY).toInt() < parent-> childCount()-1)
-            item->setData((int)DataItemColumn::MOVE_DOWN, QVariant(true));
-        else if (item->data((int)DataItemColumn::KEY).toInt() > 0)
-                 item->setData((int)DataItemColumn::MOVE_UP, QVariant(true));
-    }
-*/
     QList<QVariant> sequenceDummyData;
     sequenceDummyData << "";
     sequenceDummyData << "";
@@ -701,8 +690,8 @@ void ConnectDataModel::setupTreeItemModelData()
     sequenceDummyData << QVariant(false);  // A3
     sequenceDummyData << QVariant(false);  // A4
     parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, parents.last()));
-
-    parents.pop_back();
+*/
+//    parents.pop_back();
 }
 
 } // namespace connect

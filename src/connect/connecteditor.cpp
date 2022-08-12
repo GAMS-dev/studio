@@ -50,17 +50,12 @@ bool ConnectEditor::init()
     QStringList schema = mConnect->getSchemaNames();
 
     QStandardItemModel* schemaItemModel = new QStandardItemModel( mConnect->getSchemaNames().size(), 1, this );
-    QStandardItemModel* schemaHelpModel = new QStandardItemModel( mConnect->getSchemaNames().size(), 1, this );
+//    QStandardItemModel* schemaHelpModel = new QStandardItemModel( mConnect->getSchemaNames().size(), 1, this );
 
     for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
-        QString str = mConnect->getSchemaNames().at(row);
-        QStandardItem *helpitem = new QStandardItem();
-        helpitem->setData( str, Qt::DisplayRole );
-        schemaHelpModel->setItem(row, 0, helpitem);
-
         QStandardItem *item = new QStandardItem();
-        item->setData( str, Qt::DisplayRole );
-        item->setIcon(Theme::icon(":/%1/plus", true));
+        item->setData( mConnect->getSchemaNames().at(row), Qt::DisplayRole );
+        item->setIcon(Theme::icon(":/%1/plus",  QIcon::Mode::Disabled));
         item->setEditable(false);
         item->setSelectable(true);
         item->setTextAlignment(Qt::AlignLeft);
@@ -68,20 +63,24 @@ bool ConnectEditor::init()
         schemaItemModel->setItem(row, 0, item);
     }
 
+    ui->schemaControlListView->setModel(schemaItemModel);
     ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->schemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->schemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->schemaControlListView->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
     ui->schemaControlListView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->schemaControlListView->setViewMode(QListView::ListMode);
-    ui->schemaControlListView->setIconSize(QSize(16,16));
+    ui->schemaControlListView->setIconSize(QSize(14,14));
+    ui->schemaControlListView->setBackgroundRole(QPalette::Window);
+    ui->schemaControlListView->viewport()->setAutoFillBackground(true);
+    QPalette palette = ui->schemaControlListView->viewport()->palette();
+    palette.setColor(QPalette::Background, Qt::gray);
+    ui->schemaControlListView->viewport()->setPalette(palette);
+    ui->schemaControlListView->setCurrentIndex(schemaItemModel->index(0,0));
 
-//    ui->connectHSplitter->setSizes(QList<int>({10, 70, 20}));
-    ui->connectHSplitter->setStretchFactor(0, 3);
-    ui->connectHSplitter->setStretchFactor(1, 6);
-    ui->connectHSplitter->setStretchFactor(2, 4);
-    ui->schemaControlListView->setModel(schemaItemModel);
-    ui->helpComboBox->setModel(schemaHelpModel);
+    ui->connectHSplitter->setStretchFactor(0, 4);
+    ui->connectHSplitter->setStretchFactor(1, 3);
+    ui->connectHSplitter->setStretchFactor(2, 5);
 
     mDataModel = new ConnectDataModel(mLocation, mConnect, this);
     ui->dataTreeView->setModel( mDataModel );
@@ -112,11 +111,11 @@ bool ConnectEditor::init()
     ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->dataTreeView->setItemsExpandable(true);
     ui->dataTreeView->setAutoScroll(true);
-    updateDataColumnSpan();
+//    updateDataColumnSpan();
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     headerRegister(ui->dataTreeView->header());
@@ -138,11 +137,11 @@ bool ConnectEditor::init()
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested);
 
+    connect(ui->schemaControlListView, &QListView::clicked,  [=](const QModelIndex &index) {
+        defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
+    });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
-    connect(ui->helpComboBox, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
-        defmodel->loadSchemaFromName( schemaHelpModel->data( schemaHelpModel->index(index,0) ).toString() );
-    });
     connect(defmodel, &ConnectDataModel::modelReset, [this]() {
         ui->dataTreeView->expandAll();
         ui->dataTreeView->resizeColumnToContents(0);
@@ -181,13 +180,13 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
     strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
 
     mDataModel->addFromSchema( mConnect->createDataHolder(strlist) );
-    updateDataColumnSpan();
+//    updateDataColumnSpan();
     ui->dataTreeView->expandAll();  // expandRecursively()
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
 }
 
-void ConnectEditor::updateDataColumnSpan()
+void ConnectEditor::updateDataColumnSpan(const QModelIndex &modelIndex)
 {
     qDebug() << "updateColumnSpan " << mDataModel->rowCount();
     iterateModelItem( ui->dataTreeView->rootIndex());
@@ -198,18 +197,13 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
    for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
        QString str = mConnect->getSchemaNames().at(row);
        if (str.compare(schemaName, Qt::CaseInsensitive)==0) {
-           ui->helpComboBox->setCurrentIndex(row);
+           QModelIndex index = ui->schemaControlListView->model()->index(row, 0);
+           ui->schemaControlListView->setCurrentIndex( index );
+           emit ui->schemaControlListView->clicked( index );
            break;
        }
    }
 }
-
-//void ConnectEditor::on_dataTreeSelectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
-//{
-//    for(const QModelIndex &index: selected.indexes()) {
-//        qDebug() << "selected->(" << index.row() << "," << index.column() << ")";
-//    }
-//}
 
 void ConnectEditor::iterateModelItem(QModelIndex parent)
 {

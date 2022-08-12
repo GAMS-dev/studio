@@ -30,7 +30,7 @@ namespace studio {
 namespace connect {
 
 enum class DataCheckState {
-    Root          = 0,
+    Root         = 0,
     SchemaName   = 1,
     ListItem     = 2,
     KeyItem      = 3,
