@@ -117,9 +117,10 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -145,7 +146,6 @@ bool ConnectEditor::init()
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() {
-        qDebug() << "data model is about modelabout to be reset";
         saveExpandedState();
     });
     connect(mDataModel, &ConnectDataModel::modelReset, [this]() {

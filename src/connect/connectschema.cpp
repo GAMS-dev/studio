@@ -195,8 +195,17 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
 {
     QStringList strlist;
     if (contains(key)) {
-        foreach(SchemaType t, mSchemaHelper[key]->types)
-            strlist << QString::number((int)t);
+        foreach(SchemaType t, mSchemaHelper[key]->types) {
+            int tt = (int)t;
+            if ( tt==(int)SchemaValueType::Integer)
+                strlist << "integer";
+            else if ( tt==(int)SchemaValueType::Float)
+                    strlist << "float";
+            else if (tt==(int)SchemaValueType::String)
+                     strlist << "string";
+            else if (tt==(int)SchemaValueType::Boolean)
+                     strlist << "boolean";
+        }
     }
     return strlist;
 }

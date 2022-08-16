@@ -51,6 +51,13 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     QStringList allowedval_list = allowedval_index.data().toStringList();
     if (allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );
+    } else {
+        QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
+        QStringList type_list = type_index.data().toStringList();
+        if (type_list.contains("boolean", Qt::CaseInsensitive)) {
+            QStringList boolean_list({ "true", "false"});
+            completer->setModel( new QStringListModel(boolean_list) );
+        }
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
     completer->setCaseSensitivity(Qt::CaseInsensitive);
