@@ -36,7 +36,6 @@
 #include <QLabel>
 #include <QTimer>
 
-
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -513,6 +512,16 @@ void GdxSymbolView::tvFilterScrollRight()
     ui->tvTableViewFilter->horizontalHeader()->setOffsetToSectionPosition(mTvFilterSection);
 }
 
+void GdxSymbolView::onResizeColumnsLV()
+{
+    mAutoResizeLV = false;
+}
+
+void GdxSymbolView::onResizeColumnsTV()
+{
+    mAutoResizeTV = false;
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
@@ -527,24 +536,33 @@ void GdxSymbolView::showContextMenu(QPoint p)
 
 void GdxSymbolView::autoResizeColumns()
 {
+    disconnect(ui->tvListView->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::onResizeColumnsLV);
     if (mTableView) {
-        ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
-        for (int i=0; i<mTVResizeColNr; i++) {
-            ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+        autoResizeTableViewColumns();
+        for (int i=0; i<ui->tvTableViewFilter->model()->columnCount(); i++)
             ui->tvTableViewFilter->resizeColumnToContents(ui->tvTableViewFilter->columnAt(0)+i);
-        }
     }
     else
-        ui->tvListView->resizeColumnsToContents();
+        autoResizeListViewColumns();
+    connect(ui->tvListView->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::onResizeColumnsLV);
 }
 
 void GdxSymbolView::autoResizeTableViewColumns(bool force)
 {
+    disconnect(ui->tvTableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::onResizeColumnsTV);
     if (mTableView || force) {
         ui->tvTableView->horizontalHeader()->setResizeContentsPrecision(mTVResizePrecision);
         for (int i=0; i<mTVResizeColNr; i++)
             ui->tvTableView->resizeColumnToContents(ui->tvTableView->columnAt(0)+i);
+        mAutoResizeTV = true;
     }
+    connect(ui->tvTableView->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::onResizeColumnsTV);
+}
+
+void GdxSymbolView::autoResizeListViewColumns()
+{
+    ui->tvListView->resizeColumnsToContents();
+    mAutoResizeLV = true;
 }
 
 void GdxSymbolView::adjustDomainScrollbar()
@@ -717,18 +735,27 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     applyFilters(symViewState);
 
     ui->tvListView->horizontalHeader()->restoreState(symViewState->listViewHeaderState());
+
+    mAutoResizeLV = symViewState->autoResizeLV();
+    mAutoResizeTV = symViewState->autoResizeTV();
+
     mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->sqTrailingZeroes());
     mRestoreSqZeroes = symViewState->restoreSqZeroes();
     mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
+    if (mAutoResizeLV)
+        autoResizeListViewColumns();
+
     if (symViewState->tableViewLoaded()) {
         if (!symViewState->tableViewActive()) {
             initTableViewModel(symViewState->tvColDim(), symViewState->tvDimOrder());
-            autoResizeTableViewColumns(true);
+            if (mAutoResizeTV)
+                autoResizeTableViewColumns(true);
         }
-        restoreTableViewHeaderState(symViewState);
+        if (!mAutoResizeTV)
+            restoreTableViewHeaderState(symViewState);
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
         mTVFirstInit = false;
     }
@@ -795,6 +822,9 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 
     symViewState->setTableViewActive(mTableView);
     symViewState->setListViewHeaderState(ui->tvListView->horizontalHeader()->saveState());
+
+    symViewState->setAutoResizeLV(mAutoResizeLV);
+    symViewState->setAutoResizeTV(mAutoResizeTV);
 
     QVector<bool> showAttributes;
     for (QCheckBox* cb : mShowValColActions)

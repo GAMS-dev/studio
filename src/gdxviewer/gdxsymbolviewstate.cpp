@@ -179,6 +179,26 @@ void GdxSymbolViewState::setTableViewColumnWidths(const QVector<int> &tableViewC
     mTableViewColumnWidths = tableViewColumnWidths;
 }
 
+bool GdxSymbolViewState::autoResizeLV() const
+{
+    return mAutoResizeLV;
+}
+
+void GdxSymbolViewState::setAutoResizeLV(bool newAutoResizeLV)
+{
+    mAutoResizeLV = newAutoResizeLV;
+}
+
+bool GdxSymbolViewState::autoResizeTV() const
+{
+    return mAutoResizeTV;
+}
+
+void GdxSymbolViewState::setAutoResizeTV(bool newAutoResizeTV)
+{
+    mAutoResizeTV = newAutoResizeTV;
+}
+
 
 } // namespace gdxviewer
 } // namespace studio

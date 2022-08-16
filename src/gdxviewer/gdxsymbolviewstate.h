@@ -78,12 +78,21 @@ public:
     QVector<int> getTableViewColumnWidths() const;
     void setTableViewColumnWidths(const QVector<int> &tableViewColumnWidths);
 
+    bool autoResizeLV() const;
+    void setAutoResizeLV(bool newAutoResizeLV);
+
+    bool autoResizeTV() const;
+    void setAutoResizeTV(bool newAutoResizeTV);
+
 private:
     bool mSqDefaults;
     bool mSqTrailingZeroes;
     bool mRestoreSqZeroes;
     bool mTableViewActive;
     bool mTableViewLoaded = false;
+
+    bool mAutoResizeLV = true;
+    bool mAutoResizeTV = true;
     int mNumericalPrecision;
     int mValFormatIndex;
     int mDim;

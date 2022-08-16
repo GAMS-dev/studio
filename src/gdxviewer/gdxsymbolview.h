@@ -72,6 +72,7 @@ public slots:
     void freeFilterMenu();
     void autoResizeColumns();
     void autoResizeTableViewColumns(bool force=false);
+    void autoResizeListViewColumns();
     void adjustDomainScrollbar();
 
 protected:
@@ -82,6 +83,8 @@ private slots:
     void updateNumericalPrecision();
     void tvFilterScrollLeft();
     void tvFilterScrollRight();
+    void onResizeColumnsLV();
+    void onResizeColumnsTV();
 
 private:
     enum DefaultSymbolView {listView, tableView };
@@ -136,6 +139,9 @@ private:
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
     QVector<QStringList> mPendingUncheckedLabels;
+
+    bool mAutoResizeLV;
+    bool mAutoResizeTV;
 };
 
 
