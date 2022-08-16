@@ -14,7 +14,7 @@ QuickSelectListView::QuickSelectListView(QWidget *parent) :
 
 void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
 {
-    if (event->button() == Qt::MiddleButton) {
+    if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::ControlModifier)) {
         QModelIndex idx = this->indexAt(event->pos());
         if (idx.isValid()) {
             for(int row=0; row<model()->rowCount(); row++)
