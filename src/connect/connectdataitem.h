@@ -29,26 +29,31 @@ namespace connect {
 class ConnectDataItem
 {
 public:
-    ConnectDataItem(const QList<QVariant>& data, ConnectDataItem* parentItem = nullptr);
+    ConnectDataItem(const QList<QVariant>& data, int id, ConnectDataItem* parentItem = nullptr);
     ~ConnectDataItem();
 
     void appendChild(ConnectDataItem *child);
 
     ConnectDataItem* child(int row);
-    ConnectDataItem* parent();
+    int childNumber() const;
+    int id() const;
+
     int childCount() const;
     int columnCount() const;
+
     QVariant data(int column) const;
     int row() const;
+
     ConnectDataItem *parentItem();
+    void setParent(ConnectDataItem* parent);
 
     bool setData(int column, const QVariant &value);
 
-    void setParent(ConnectDataItem* parent);
     void insertChild(int row, ConnectDataItem* item);
     bool removeChildren(int position, int count);
 
 private:
+    int                     mID;
     QList<QVariant>         mItemData;
     QList<ConnectDataItem*> mChildItems;
     ConnectDataItem*        mParentItem;

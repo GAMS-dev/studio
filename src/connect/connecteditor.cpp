@@ -64,6 +64,7 @@ bool ConnectEditor::init()
     }
 
     ui->schemaControlListView->setModel(schemaItemModel);
+
     ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->schemaControlListView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->schemaControlListView->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -71,11 +72,12 @@ bool ConnectEditor::init()
     ui->schemaControlListView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->schemaControlListView->setViewMode(QListView::ListMode);
     ui->schemaControlListView->setIconSize(QSize(14,14));
-    ui->schemaControlListView->setBackgroundRole(QPalette::Window);
+    ui->schemaControlListView->setAutoFillBackground(true);
+    ui->schemaControlListView->setBackgroundRole(QPalette::NoRole);
     ui->schemaControlListView->viewport()->setAutoFillBackground(true);
-    QPalette palette = ui->schemaControlListView->viewport()->palette();
-    palette.setColor(QPalette::Background, Qt::gray);
-    ui->schemaControlListView->viewport()->setPalette(palette);
+//    QPalette palette = ui->schemaControlListView->viewport()->palette();
+//    palette.setColor(QPalette::Background, Qt::gray);
+//    ui->schemaControlListView->viewport()->setPalette(palette);
     ui->schemaControlListView->setCurrentIndex(schemaItemModel->index(0,0));
 
     ui->connectHSplitter->setStretchFactor(0, 4);
@@ -94,7 +96,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Delete, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
-    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Expand, actiondelegate);
+//    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Expand, actiondelegate);
 
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Fixed);
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::ResizeToContents);
@@ -142,8 +144,12 @@ bool ConnectEditor::init()
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
-    connect(defmodel, &ConnectDataModel::modelReset, [this]() {
-        ui->dataTreeView->expandAll();
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() {
+        qDebug() << "data model is about modelabout to be reset";
+        saveExpandedState();
+    });
+    connect(mDataModel, &ConnectDataModel::modelReset, [this]() {
+        restoreExpandedState();
         ui->dataTreeView->resizeColumnToContents(0);
         ui->dataTreeView->resizeColumnToContents(1);
     });
@@ -173,15 +179,16 @@ ConnectEditor::~ConnectEditor()
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
-    qDebug() << "doubseclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
+
+    qDebug() << "doubleclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
              << ui->schemaControlListView->model()->data( modelIndex ).toString();
 
     QStringList strlist;
     strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
 
-    mDataModel->addFromSchema( mConnect->createDataHolder(strlist) );
+    mDataModel->addFromSchema( mConnect->createDataHolder(strlist), mDataModel->rowCount() );
+    ui->dataTreeView->expandRecursively( mDataModel->index( mDataModel->rowCount()-1, 0) );
 //    updateDataColumnSpan();
-    ui->dataTreeView->expandAll();  // expandRecursively()
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
 }
@@ -203,6 +210,42 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
            break;
        }
    }
+}
+
+void ConnectEditor::saveExpandedState()
+{
+    for(int row = 0; row < mDataModel->rowCount(); ++row)
+        saveExpandedOnLevel(mDataModel->index(row,0));
+}
+
+void ConnectEditor::restoreExpandedState()
+{
+    ui->dataTreeView->setUpdatesEnabled(false);
+
+    for(int row = 0; row < mDataModel->rowCount(); ++row)
+        restoreExpandedOnLevel(mDataModel->index(row,0));
+
+    ui->dataTreeView->setUpdatesEnabled(true);
+}
+
+void ConnectEditor::saveExpandedOnLevel(const QModelIndex &index)
+{
+    if (ui->dataTreeView->isExpanded(index)) {
+        if(index.isValid())
+            mExpandIDs << index.data(Qt::UserRole).toInt();
+        qDebug() << index.data(Qt::UserRole).toInt();
+        for(int row = 0; row < mDataModel->rowCount(index); ++row)
+            saveExpandedOnLevel( mDataModel->index(row,0, index) );
+    }
+}
+
+void ConnectEditor::restoreExpandedOnLevel(const QModelIndex &index)
+{
+    if(mExpandIDs.contains(index.data(Qt::UserRole).toInt())) {
+        ui->dataTreeView->setExpanded(index, true);
+        for(int row = 0; row < mDataModel->rowCount(index); ++row)
+            restoreExpandedOnLevel( mDataModel->index(row,0, index) );
+    }
 }
 
 void ConnectEditor::iterateModelItem(QModelIndex parent)

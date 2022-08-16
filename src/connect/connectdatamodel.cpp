@@ -31,6 +31,7 @@ namespace connect {
 
 ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject *parent)
     : QAbstractItemModel{parent},
+      mItemIDCount(0),
       mLocation(filename),
       mConnect(c)
 {
@@ -57,6 +58,8 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         if (index.column()==(int)DataItemColumn::SchemaType || index.column()==(int)DataItemColumn::AllowedValue)
            return  QVariant(item->data(index.column()).toStringList());
 //           return  QVariant(item->data(index.column()).toStringList().join(","));
+        else if (index.column()==(int)DataItemColumn::Expand)
+                 return QVariant(item->id());
         else
            return item->data(index.column());
     }
@@ -83,6 +86,10 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
             else
                 return QVariant::fromValue(QApplication::palette().color(QPalette::Base));
         }
+    }
+    case Qt::UserRole: {
+        ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+        return QVariant(item->id());
     }
     case Qt::ToolTipRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
@@ -215,18 +222,17 @@ QModelIndex ConnectDataModel::index(int row, int column, const QModelIndex &pare
     if (!hasIndex(row, column, parent))
         return QModelIndex();
 
-    ConnectDataItem *parentItem;
-
-    if (!parent.isValid())
-        parentItem = mRootItem;
-    else
-        parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
-
+    ConnectDataItem *parentItem = getItem(parent);
     ConnectDataItem *childItem = parentItem->child(row);
     if (childItem)
         return createIndex(row, column, childItem);
     else
         return QModelIndex();
+}
+
+QModelIndex ConnectDataModel::indexForTreeItem(ConnectDataItem *item)
+{
+    return createIndex(item->childNumber(), 0, item);
 }
 
 QModelIndex ConnectDataModel::parent(const QModelIndex &index) const
@@ -294,6 +300,20 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
         return false;
 }
 
+bool ConnectDataModel::insertRows(int row, int count, const QModelIndex &parent)
+{
+    ConnectDataItem* parentItem = getItem(parent);
+    bool success = false;
+    if (count > 0) {
+        beginInsertRows(parent, row, row + count - 1);
+        for (int i=0; i<count; ++i) {
+            parentItem->insertChild(row+i, mRootItem);
+        }
+        endInsertRows();
+    }
+    return success;
+}
+
 bool ConnectDataModel::removeRows(int row, int count, const QModelIndex &parent)
 {
     ConnectDataItem* parentItem = getItem(parent);
@@ -306,41 +326,32 @@ bool ConnectDataModel::removeRows(int row, int count, const QModelIndex &parent)
     return success;
 }
 
-void ConnectDataModel::addFromSchema(ConnectData* data)
+void ConnectDataModel::addFromSchema(ConnectData* data, int insertPosition)
 {
     qDebug() << data->str().c_str();
 
-    beginResetModel();
+    Q_ASSERT(data->getRootNode().Type() ==YAML::NodeType::Sequence);
+    Q_ASSERT(insertPosition <= rowCount());
 
-    Q_ASSERT(data->getRootNode().Type()==YAML::NodeType::Sequence);
-    YAML::Node root = mConnectData->getRootNode();
-    if (root.IsNull()) {
-        mConnectData = data;
-    } else {
-        int size = root.size();
-        for (size_t i= 0; i<data->getRootNode().size(); i++) {
-             root[size+i] = data->getRootNode()[i];
-         }
-    }
-    setupTreeItemModelData();
-
-    endResetModel();
-
+    beginInsertRows(QModelIndex(), insertPosition, insertPosition+1);
+    insertSchemaModelData(data, insertPosition);
+    endInsertRows();
 
     emit dataChanged(index(0, (int)DataItemColumn::MoveDown),
                      index(rowCount() - 1, (int)DataItemColumn::Expand),
                      QVector<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
+
 }
 
-void ConnectDataModel::setupTreeItemModelData()
+void ConnectDataModel::setupTreeItemModelDataX()
 {
     QList<QVariant> rootData;
     rootData << "Key" << "Value"
              << "State" << "Type" << "AllowedValue"
-             << ""  << "" << "" << "";
+             << ""  << "" << "" << "" << "";
 //             << "A0"  << "A2" << "A3" << "A4";
 
-    mRootItem = new ConnectDataItem(rootData);
+    mRootItem = new ConnectDataItem(rootData, mItemIDCount++);
 
     QList<ConnectDataItem*> parents;
     parents << mRootItem;
@@ -367,7 +378,7 @@ void ConnectDataModel::setupTreeItemModelData()
              listData << ""; // A2
              listData << ""; // A3
              listData << ""; // A4
-             parents.last()->appendChild(new ConnectDataItem(listData, parents.last()));
+             parents.last()->appendChild(new ConnectDataItem(listData, mItemIDCount++, parents.last()));
 
              parents << parents.last()->child(parents.last()->childCount()-1);
              Q_ASSERT(it->second.Type()==YAML::NodeType::Map); // TODO
@@ -387,7 +398,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      itemData << QVariant(false); // A2
                      itemData << ""; // A3
                      itemData << ""; // A4
-                     parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
+                     parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
 
                      dataKeys.removeLast();
                  } else if (mit->second.Type()==YAML::NodeType::Map) {
@@ -404,7 +415,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      itemData << QVariant(false); // A2
                      itemData << ""; // A3
                      itemData << ""; // A4
-                     parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
+                     parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
                      parents << parents.last()->child(parents.last()->childCount()-1);
                      int k = 0;
                      for (YAML::const_iterator dmit = mit->second.begin(); dmit != mit->second.end(); ++dmit) {
@@ -421,7 +432,7 @@ void ConnectDataModel::setupTreeItemModelData()
                          mapitemData << ""; // A2
                          mapitemData << ""; // A3
                          mapitemData << ""; // A4
-                         parents.last()->appendChild(new ConnectDataItem(mapitemData, parents.last()));
+                         parents.last()->appendChild(new ConnectDataItem(mapitemData, mItemIDCount++, parents.last()));
                          dataKeys.removeLast();
                          k++;
                      }
@@ -438,7 +449,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      sequenceDummyData << QVariant(false); // A2
                      sequenceDummyData << QVariant(false); // A3
                      sequenceDummyData << QVariant(false); // A4
-                     parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, parents.last()));
+                     parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
                  } else if (mit->second.Type()==YAML::NodeType::Sequence) {
                             isMapToSequence = true;
                             QString key = QString::fromStdString(mit->first.as<std::string>());
@@ -454,7 +465,7 @@ void ConnectDataModel::setupTreeItemModelData()
                             itemData << ""; // A2
                             itemData << ""; // A3
                             itemData << ""; // A4
-                            parents.last()->appendChild(new ConnectDataItem(itemData, parents.last()));
+                            parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
                             parents << parents.last()->child(parents.last()->childCount()-1);
                             dataKeys << "-";
                             for(size_t k = 0; k<mit->second.size(); k++) {
@@ -468,7 +479,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                 indexData << ""; // A2
                                 indexData << ""; // A3
                                 indexData << ""; // A4
-                                parents.last()->appendChild(new ConnectDataItem(indexData, parents.last()));
+                                parents.last()->appendChild(new ConnectDataItem(indexData, mItemIDCount++, parents.last()));
 
                                if (mit->second[k].Type()==YAML::NodeType::Map) {
                                   parents << parents.last()->child(parents.last()->childCount()-1);
@@ -489,7 +500,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                          seqSeqData << ""; // A2
                                          seqSeqData << ""; // A3
                                          seqSeqData << ""; // A4
-                                         parents.last()->appendChild(new ConnectDataItem(seqSeqData, parents.last()));
+                                         parents.last()->appendChild(new ConnectDataItem(seqSeqData, mItemIDCount++, parents.last()));
 
                                          dataKeys << "-";
                                          parents << parents.last()->child(parents.last()->childCount()-1);
@@ -504,7 +515,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                              indexSeqData << ""; // A2
                                              indexSeqData << ""; // A3
                                              indexSeqData << ""; // A4
-                                             parents.last()->appendChild(new ConnectDataItem(indexSeqData, parents.last()));
+                                             parents.last()->appendChild(new ConnectDataItem(indexSeqData, mItemIDCount++, parents.last()));
 
                                             if (mmit->second[kk].Type()==YAML::NodeType::Scalar) {
                                                 parents << parents.last()->child(parents.last()->childCount()-1);
@@ -518,7 +529,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                 indexScalarData << "";  // A2
                                                 indexScalarData << "";  // A3
                                                 indexScalarData << "";  // A4
-                                                parents.last()->appendChild(new ConnectDataItem(indexScalarData, parents.last()));
+                                                parents.last()->appendChild(new ConnectDataItem(indexScalarData, mItemIDCount++, parents.last()));
                                                 parents.pop_back();
                                              } // TODO: else
 
@@ -532,7 +543,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                              indexSeqDummyData << QVariant(false);  // A2
                                              indexSeqDummyData << QVariant(false);  // A3
                                              indexSeqDummyData << QVariant(false);  // A4
-                                             parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, parents.last()));
+                                             parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, mItemIDCount++, parents.last()));
 
                                          }
                                          parents.pop_back();
@@ -549,7 +560,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                 mapData << QVariant(false); // A2
                                                 mapData << ""; // A3
                                                 mapData << ""; // A4
-                                                parents.last()->appendChild(new ConnectDataItem(mapData, parents.last()));
+                                                parents.last()->appendChild(new ConnectDataItem(mapData, mItemIDCount++, parents.last()));
 
                                                 parents << parents.last()->child(parents.last()->childCount()-1);
                                                 const YAML::Node mapmapnode = mmit->second;
@@ -564,7 +575,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                      mapSeqData << "";  // A2
                                                      mapSeqData << "";  // A3
                                                      mapSeqData << "";  // A4
-                                                     parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
+                                                     parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
                                                      dataKeys.removeLast();
                                                 }
                                                 parents.pop_back();
@@ -579,7 +590,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                                 indexSeqDummyData << QVariant(false);  // A2
                                                 indexSeqDummyData << QVariant(false);  // A3
                                                 indexSeqDummyData << QVariant(false);  // A4
-                                                parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, parents.last()));
+                                                parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, mItemIDCount++, parents.last()));
 
                                      } else if (mmit->second.Type()==YAML::NodeType::Scalar) {
                                          QList<QVariant> mapSeqData;
@@ -592,7 +603,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                          mapSeqData << "";  // A2
                                          mapSeqData << "";  // A3
                                          mapSeqData << "";  // A4
-                                         parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
+                                         parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
                                          dataKeys.removeLast();
                                      }
                                   }
@@ -610,7 +621,7 @@ void ConnectDataModel::setupTreeItemModelData()
                                    mapSeqData << "";  // A2
                                    mapSeqData << "";  // A3
                                    mapSeqData << "";  // A4
-                                   parents.last()->appendChild(new ConnectDataItem(mapSeqData, parents.last()));
+                                   parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
 //                                   parents.pop_back();
                                }
                                for(int row = 0; row<parents.last()->childCount(); row++) {
@@ -640,7 +651,7 @@ void ConnectDataModel::setupTreeItemModelData()
                      sequenceDummyData << QVariant(false); // A2
                      sequenceDummyData << QVariant(false); // A3
                      sequenceDummyData << QVariant(false); // A4
-                     parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, parents.last()));
+                     parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
                  }
 
              }
@@ -677,21 +688,349 @@ void ConnectDataModel::setupTreeItemModelData()
         }
 
     }
+}
 
-/*
-    QList<QVariant> sequenceDummyData;
-    sequenceDummyData << "";
-    sequenceDummyData << "";
-    sequenceDummyData << QVariant((int)DataCheckState::ListAppend);
-    sequenceDummyData << QVariant(QStringList());
-    sequenceDummyData << QVariant(QStringList());
-    sequenceDummyData << QVariant(false);  // A0
-    sequenceDummyData << QVariant(false);  // A2
-    sequenceDummyData << QVariant(false);  // A3
-    sequenceDummyData << QVariant(false);  // A4
-    parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, parents.last()));
-*/
-//    parents.pop_back();
+void ConnectDataModel::setupTreeItemModelData()
+{
+    QList<QVariant> rootData;
+    rootData << "Key" << "Value"
+             << "State" << "Type" << "AllowedValue"
+             << ""  << "" << "" << "" << "";
+
+    mRootItem = new ConnectDataItem(rootData, mItemIDCount++);
+
+    if (!mConnectData->getRootNode().IsNull())
+        insertSchemaModelData(mConnectData, 0);
+}
+
+void ConnectDataModel::insertSchemaModelData(ConnectData* data, int position)
+{
+    YAML::Node node = data->getRootNode();
+    Q_ASSERT(node.Type()==YAML::NodeType::Sequence);
+
+    QList<ConnectDataItem*> parents;
+    parents << mRootItem;
+
+    for(size_t i = 0; i<node.size(); i++) {
+        for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
+            QString schemaName = QString::fromStdString(it->first.as<std::string>());
+            ConnectSchema* schema = mConnect->getSchema(schemaName);
+            QStringList dataKeys;
+            QList<QVariant> listData;
+            listData << schemaName;
+            listData << "";
+            listData << QVariant((int)DataCheckState::SchemaName);
+            listData << QVariant(QStringList());
+            listData << QVariant(QStringList());
+            listData << QVariant(true); // A0
+            listData << ""; // A2
+            listData << ""; // A3
+            listData << ""; // A4
+            if (position>=parents.last()->childCount()) {
+                parents.last()->appendChild(new ConnectDataItem(listData, mItemIDCount++, parents.last()));
+            } else {
+                parents.last()->insertChild(position, new ConnectDataItem(listData, mItemIDCount++, parents.last()));
+            }
+
+            parents << parents.last()->child(parents.last()->childCount()-1);
+            for (YAML::const_iterator mit = it->second.begin(); mit != it->second.end(); ++mit) {
+                 bool isMapToSequence = false;
+                 if (mit->second.Type()==YAML::NodeType::Scalar) {
+                     QString key = QString::fromStdString(mit->first.as<std::string>());
+                     dataKeys << key;
+                     QList<QVariant> itemData;
+                     itemData << key;
+                     itemData << QVariant(mit->second.as<std::string>().c_str()); // TODO
+                     itemData << QVariant((int)DataCheckState::ElementValue);
+                     itemData << QVariant(schema->getTypeAsStringList(key));
+                     itemData << QVariant(schema->getAllowedValueAsStringList(key));
+                     itemData << QVariant(!schema->isRequired(key)); // A0
+                     itemData << QVariant(false); // A2
+                     itemData << ""; // A3
+                     itemData << ""; // A4
+                     parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
+
+                     dataKeys.removeLast();
+                     } else if (mit->second.Type()==YAML::NodeType::Map) {
+                               qDebug() << "not implemented " << QString::fromStdString(mit->first.as<std::string>());
+                               QString key = QString::fromStdString(mit->first.as<std::string>());
+                               dataKeys << key;
+                               QList<QVariant> itemData;
+                               itemData << key;
+                               itemData << ""; // TODO
+                               itemData << QVariant((int)DataCheckState::KeyItem);
+                               itemData << QVariant(schema->getTypeAsStringList(key));
+                               itemData << QVariant(QStringList());
+                               itemData << QVariant(!schema->isRequired(key)); // A0
+                               itemData << QVariant(false); // A2
+                               itemData << ""; // A3
+                               itemData << ""; // A4
+                               parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
+                               parents << parents.last()->child(parents.last()->childCount()-1);
+                               int k = 0;
+                               for (YAML::const_iterator dmit = mit->second.begin(); dmit != mit->second.end(); ++dmit) {
+                                   QString mapkey = QString::fromStdString(dmit->first.as<std::string>());
+                                   dataKeys << mapkey;
+                                   QList<QVariant> mapitemData;
+                                   mapitemData << mapkey;
+                                   Q_ASSERT(dmit->second.Type()==YAML::NodeType::Scalar); // TODO
+                                   mapitemData << QVariant(dmit->second.as<std::string>().c_str()); // TODO
+                                   mapitemData << QVariant((int)DataCheckState::ElementMap);
+                                   mapitemData << QVariant(schema->getTypeAsStringList(key));
+                                   mapitemData << QVariant(QStringList());
+                                   mapitemData << QVariant(!schema->isRequired(key)); // A0
+                                   mapitemData << ""; // A2
+                                   mapitemData << ""; // A3
+                                   mapitemData << ""; // A4
+                                   parents.last()->appendChild(new ConnectDataItem(mapitemData, mItemIDCount++, parents.last()));
+                                   dataKeys.removeLast();
+                                   k++;
+                               }
+                               parents.pop_back();
+                               dataKeys.removeLast();
+
+                               QList<QVariant> sequenceDummyData;
+                               sequenceDummyData << "";
+                               sequenceDummyData << "";
+                               sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
+                               sequenceDummyData << QVariant(QStringList());
+                               sequenceDummyData << QVariant(QStringList());
+                               sequenceDummyData << QVariant(false); // A0
+                               sequenceDummyData << QVariant(false); // A2
+                               sequenceDummyData << QVariant(false); // A3
+                               sequenceDummyData << QVariant(false); // A4
+                               parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
+                     } else if (mit->second.Type()==YAML::NodeType::Sequence) {
+                               isMapToSequence = true;
+                               QString key = QString::fromStdString(mit->first.as<std::string>());
+                               dataKeys << key;
+                               qDebug() << key << ">>" << dataKeys;
+                               QList<QVariant> itemData;
+                               itemData << key;
+                               itemData << "";
+                               itemData << QVariant((int)DataCheckState::KeyItem);
+                               itemData << QVariant(schema->getTypeAsStringList(key));
+                               itemData << QVariant(QStringList());
+                               itemData << QVariant(!schema->isRequired(key)); // A0
+                               itemData << ""; // A2
+                               itemData << ""; // A3
+                               itemData << ""; // A4
+                               parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
+                               parents << parents.last()->child(parents.last()->childCount()-1);
+                               dataKeys << "-";
+                               for(size_t k = 0; k<mit->second.size(); k++) {
+                                   QList<QVariant> indexData;
+                                   indexData << QVariant::fromValue(k);
+                                   indexData << QVariant(QStringList());
+                                   indexData << QVariant((int)DataCheckState::ListItem);
+                                   indexData << QVariant(QStringList());
+                                   indexData << QVariant(QStringList());
+                                   indexData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
+                                   indexData << ""; // A2
+                                   indexData << ""; // A3
+                                   indexData << ""; // A4
+                                   parents.last()->appendChild(new ConnectDataItem(indexData, mItemIDCount++, parents.last()));
+
+                                  if (mit->second[k].Type()==YAML::NodeType::Map) {
+                                     parents << parents.last()->child(parents.last()->childCount()-1);
+                                     const YAML::Node mapnode = mit->second[k];
+                                     for (YAML::const_iterator mmit = mapnode.begin(); mmit != mapnode.end(); ++mmit) {
+                                         key =  QString::fromStdString( mmit->first.as<std::string>() );
+                                         dataKeys << key;
+                                         if (mmit->second.Type()==YAML::NodeType::Sequence) {
+                                             QList<QVariant> seqSeqData;
+                                             seqSeqData << key;
+                                             seqSeqData << "";
+                                             seqSeqData << QVariant((int)DataCheckState::KeyItem);
+                                             seqSeqData << QVariant(schema->getTypeAsStringList(key));
+                                             seqSeqData << QVariant(QStringList());
+                                             seqSeqData << QVariant(!schema->isRequired(key)); // A0
+                                             seqSeqData << ""; // A2
+                                             seqSeqData << ""; // A3
+                                             seqSeqData << ""; // A4
+                                             parents.last()->appendChild(new ConnectDataItem(seqSeqData, mItemIDCount++, parents.last()));
+
+                                             dataKeys << "-";
+                                             parents << parents.last()->child(parents.last()->childCount()-1);
+                                             for(size_t kk = 0; kk<mmit->second.size(); kk++) {
+                                                 QList<QVariant> indexSeqData;
+                                                 indexSeqData << QVariant::fromValue(kk);
+                                                 indexSeqData << QVariant(QStringList());
+                                                 indexSeqData << QVariant((int)DataCheckState::ListItem);
+                                                 indexSeqData << QVariant(QStringList());
+                                                 indexSeqData << QVariant(QStringList());
+                                                 indexSeqData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
+                                                 indexSeqData << ""; // A2
+                                                 indexSeqData << ""; // A3
+                                                 indexSeqData << ""; // A4
+                                                 parents.last()->appendChild(new ConnectDataItem(indexSeqData, mItemIDCount++, parents.last()));
+
+                                                 if (mmit->second[kk].Type()==YAML::NodeType::Scalar) {
+                                                     parents << parents.last()->child(parents.last()->childCount()-1);
+                                                      QList<QVariant> indexScalarData;
+                                                     indexScalarData << mmit->second[kk].as<std::string>().c_str();
+                                                     indexScalarData << ""; // TODO
+                                                     indexScalarData << QVariant((int)DataCheckState::ElementValue);
+                                                     indexScalarData << QVariant(QStringList());
+                                                     indexScalarData << QVariant(QStringList());
+                                                     indexScalarData << "";  // A0
+                                                     indexScalarData << "";  // A2
+                                                     indexScalarData << "";  // A3
+                                                     indexScalarData << "";  // A4
+                                                     parents.last()->appendChild(new ConnectDataItem(indexScalarData, mItemIDCount++, parents.last()));
+                                                     parents.pop_back();
+                                                  } // TODO: else
+
+                                                  QList<QVariant> indexSeqDummyData;
+                                                  indexSeqDummyData << "";
+                                                  indexSeqDummyData << "";
+                                                  indexSeqDummyData << QVariant((int)DataCheckState::ListAppend);
+                                                  indexSeqDummyData << QVariant(QStringList());
+                                                  indexSeqDummyData << QVariant(QStringList());
+                                                  indexSeqDummyData << QVariant(false);  // A0
+                                                  indexSeqDummyData << QVariant(false);  // A2
+                                                  indexSeqDummyData << QVariant(false);  // A3
+                                                  indexSeqDummyData << QVariant(false);  // A4
+                                                  parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, mItemIDCount++, parents.last()));
+
+                                             }
+                                             parents.pop_back();
+                                             dataKeys.removeLast();
+
+                                         } else if (mmit->second.Type()==YAML::NodeType::Map) {
+                                                    QList<QVariant> mapData;
+                                                    mapData << key;
+                                                    mapData << "";
+                                                    mapData << QVariant((int)DataCheckState::KeyItem);
+                                                    mapData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
+                                                    mapData << QVariant(QStringList());
+                                                    mapData << QVariant(!schema->isRequired(dataKeys.join(":"))); // A0
+                                                    mapData << QVariant(false); // A2
+                                                    mapData << ""; // A3
+                                                    mapData << ""; // A4
+                                                    parents.last()->appendChild(new ConnectDataItem(mapData, mItemIDCount++, parents.last()));
+
+                                                    parents << parents.last()->child(parents.last()->childCount()-1);
+                                                    const YAML::Node mapmapnode = mmit->second;
+                                                    for (YAML::const_iterator mmmit = mapmapnode.begin(); mmmit != mapmapnode.end(); ++mmmit) {
+                                                         QList<QVariant> mapSeqData;
+                                                         mapSeqData << mmmit->first.as<std::string>().c_str();
+                                                         mapSeqData << mmmit->second.as<std::string>().c_str();  // can be int/bool/double
+                                                         mapSeqData << QVariant((int)DataCheckState::ElementMap);
+                                                         mapSeqData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
+                                                         mapSeqData << QVariant(QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":"))));
+                                                         mapSeqData << QVariant(!schema->isRequired(dataKeys.join(":")));  // A0
+                                                         mapSeqData << "";  // A2
+                                                         mapSeqData << "";  // A3
+                                                         mapSeqData << "";  // A4
+                                                         parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
+                                                         dataKeys.removeLast();
+                                                    }
+                                                    parents.pop_back();
+
+                                                    QList<QVariant> indexSeqDummyData;
+                                                    indexSeqDummyData << "";
+                                                    indexSeqDummyData << "";
+                                                    indexSeqDummyData << QVariant((int)DataCheckState::MapAppend);
+                                                    indexSeqDummyData << QVariant(QStringList());
+                                                    indexSeqDummyData << QVariant(QStringList());
+                                                    indexSeqDummyData << QVariant(false);  // A0
+                                                    indexSeqDummyData << QVariant(false);  // A2
+                                                    indexSeqDummyData << QVariant(false);  // A3
+                                                    indexSeqDummyData << QVariant(false);  // A4
+                                                    parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, mItemIDCount++, parents.last()));
+
+                                         } else if (mmit->second.Type()==YAML::NodeType::Scalar) {
+                                             QList<QVariant> mapSeqData;
+                                             mapSeqData << key;
+                                             mapSeqData << mmit->second.as<std::string>().c_str(); // TODO
+                                             mapSeqData << QVariant((int)DataCheckState::ElementValue);
+                                             mapSeqData << QVariant(schema->getTypeAsStringList(dataKeys.join(":")));
+                                             mapSeqData << QVariant(QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":"))));
+                                             mapSeqData << QVariant(!schema->isRequired(dataKeys.join(":")));  // A0
+                                             mapSeqData << "";  // A2
+                                             mapSeqData << "";  // A3
+                                             mapSeqData << "";  // A4
+                                             parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
+                                             dataKeys.removeLast();
+                                         }
+                                     }
+                                     parents.pop_back();
+                                  } else if (mit->second[k].Type()==YAML::NodeType::Scalar) {
+                                      qDebug() << "not yet implemented ";
+                                      QList<QVariant> mapSeqData;
+                                      mapSeqData << "";
+                                      mapSeqData << ""; // TODO
+                                      mapSeqData << QVariant((int)DataCheckState::ElementValue);
+                                      mapSeqData << QVariant(QStringList());
+                                      mapSeqData << QVariant(QStringList());
+                                      mapSeqData << "";  // A0
+                                      mapSeqData << "";  // A2
+                                      mapSeqData << "";  // A3
+                                      mapSeqData << "";  // A4
+                                      parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
+                                 }
+                                  for(int row = 0; row<parents.last()->childCount(); row++) {
+                                     ConnectDataItem* item = parents.last()->child(row);
+                                     if (item->data((int)DataItemColumn::CheckState).toInt() == (int)DataCheckState::ListItem) {
+                                         QVariant data = item->data((int)DataItemColumn::Key);
+                                         if (data.toInt() < parents.last()-> childCount()-1)
+                                            item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                         else if (data.toInt() > 0)
+                                                 item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                                         else
+                                             item->setData((int)DataItemColumn::MoveUp, QVariant(false));
+                                     }
+                                  }
+                               }
+                               dataKeys.removeLast();
+                               parents.pop_back();
+                     }
+                     if (isMapToSequence) {
+                 QList<QVariant> sequenceDummyData;
+                 sequenceDummyData << "";
+                 sequenceDummyData << "";
+                 sequenceDummyData << QVariant((int)DataCheckState::ListAppend);
+                 sequenceDummyData << QVariant(QStringList());
+                 sequenceDummyData << QVariant(QStringList());
+                 sequenceDummyData << QVariant(false); // A0
+                 sequenceDummyData << QVariant(false); // A2
+                 sequenceDummyData << QVariant(false); // A3
+                 sequenceDummyData << QVariant(false); // A4
+                 parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
+             }
+
+           }
+            parents.pop_back();
+            // update data in MOVE_DOWN and MOVE_UP column
+            for(int row = 0; row<parents.last()->childCount(); row++) {
+                ConnectDataItem* item = parents.last()->child(row);
+                if (item->data((int)DataItemColumn::CheckState).toInt() == (int)DataCheckState::SchemaName) {
+                    QVariant data = item->data((int)DataItemColumn::Key);
+                    if (data.userType()==QMetaType::Int) {
+                        if (data.toInt() < parents.last()-> childCount()-1)
+                            item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                        else if (data.toInt() > 0)
+                                 item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                        else
+                             item->setData((int)DataItemColumn::MoveUp, QVariant(false));
+                    } else if (data.userType()==QMetaType::QString) {
+                               if (!data.toString().isEmpty()) {
+                                   if (row == 0) {
+                                       item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                   } else if (row==parents.last()->childCount()-1) {
+                                              item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                                   } else {
+                                       item->setData((int)DataItemColumn::MoveDown, QVariant(true));
+                                       item->setData((int)DataItemColumn::MoveUp, QVariant(true));
+                                   }
+                               }
+                   }
+               }
+            }
+        }
+        position++;
+    }
 }
 
 } // namespace connect

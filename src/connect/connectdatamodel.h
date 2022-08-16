@@ -68,6 +68,9 @@ public:
                         int role = Qt::DisplayRole) const override;
     QModelIndex index(int row, int column,
                       const QModelIndex& parent = QModelIndex()) const override;
+
+    QModelIndex indexForTreeItem(ConnectDataItem* item);
+
     QModelIndex parent(const QModelIndex& index) const override;
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
@@ -76,14 +79,20 @@ public:
     void insertItem(int position, ConnectDataItem* item, const QModelIndex &parent);
     bool removeItem(const QModelIndex &index);
 
+    bool insertRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
     bool removeRows(int row, int count, const QModelIndex &parent = QModelIndex()) override;
 
 public slots:
-    void addFromSchema(ConnectData* data);
+    void addFromSchema(ConnectData* data, int insertPosition);
 
 protected:
     void setupTreeItemModelData();
+    void setupTreeItemModelDataX();
+    void insertSchemaModelData(ConnectData* data, int position);
 
+    void deleteTreeItemModelData(int id);
+
+    int              mItemIDCount;
     QString          mLocation;
     Connect*         mConnect;
     ConnectData*     mConnectData;

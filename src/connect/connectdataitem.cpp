@@ -23,7 +23,8 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectDataItem::ConnectDataItem( const QList<QVariant> &data, ConnectDataItem *parentItem):
+ConnectDataItem::ConnectDataItem( const QList<QVariant> &data, int id, ConnectDataItem *parentItem):
+    mID(id),
     mItemData(data),
     mParentItem(parentItem)
 {
@@ -44,9 +45,16 @@ ConnectDataItem *ConnectDataItem::child(int row)
     return mChildItems.value(row);
 }
 
-ConnectDataItem *ConnectDataItem::parent()
+int ConnectDataItem::childNumber() const
 {
-    return mParentItem;
+    if (mParentItem)
+        return mParentItem->mChildItems.indexOf(const_cast<ConnectDataItem*>(this));
+    return 0;
+}
+
+int ConnectDataItem::id() const
+{
+    return mID;
 }
 
 int ConnectDataItem::childCount() const
@@ -77,6 +85,11 @@ ConnectDataItem *ConnectDataItem::parentItem()
     return mParentItem;
 }
 
+void ConnectDataItem::setParent(ConnectDataItem *parent)
+{
+    mParentItem = parent;
+}
+
 bool ConnectDataItem::setData(int column, const QVariant &value)
 {
     if (column < 0 || column >= mItemData.size())
@@ -84,11 +97,6 @@ bool ConnectDataItem::setData(int column, const QVariant &value)
 
     mItemData[column] = value;
     return true;
-}
-
-void ConnectDataItem::setParent(ConnectDataItem *parent)
-{
-    mParentItem = parent;
 }
 
 void ConnectDataItem::insertChild(int row, ConnectDataItem *item)

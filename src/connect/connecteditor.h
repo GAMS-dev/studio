@@ -53,12 +53,19 @@ private slots:
 //    void on_dataTreeSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
-    Ui::ConnectEditor *ui;
-
     bool init();
 
+    void saveExpandedState();
+    void restoreExpandedState();
+
+    void saveExpandedOnLevel(const QModelIndex& index);
+    void restoreExpandedOnLevel(const QModelIndex& index);
+
+private:
+    Ui::ConnectEditor *ui;
+
+    QList<int>        mExpandIDs;
     ConnectDataModel* mDataModel;
-//    ConnectData*      mData;
     Connect*          mConnect;
     QString           mLocation;
 
