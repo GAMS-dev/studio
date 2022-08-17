@@ -50,6 +50,9 @@ private slots:
     void updateDataColumnSpan(const QModelIndex &modelIndex);
 
     void schemaHelpRequested(const QString &schemaName);
+    void deleteDataItemRequested(const QModelIndex &index);
+    void moveUpDatatItemRequested(const QModelIndex &index);
+    void moveDownDatatItemRequested(const QModelIndex &index);
 //    void on_dataTreeSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:

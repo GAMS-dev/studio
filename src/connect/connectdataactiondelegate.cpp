@@ -43,69 +43,67 @@ ConnectDataActionDelegate::~ConnectDataActionDelegate()
 
 void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const
 {
-    mDeleteActionPosition.clear();
-    mMoveUpActionPosition.clear();
-    mMoveDownActionPosition.clear();
-
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = "";
 
-    if (index.parent().isValid()) {
-        QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-        if (!icon.isNull()) {
-            option->icon = icon;
-            if (index.data( Qt::DisplayRole ).toBool()) {
-                if (index.column()==(int)DataItemColumn::Delete)
-                    mDeleteActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-                else if (index.column()==(int)DataItemColumn::MoveDown)
-                        mMoveDownActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-                else if (index.column()==(int)DataItemColumn::MoveUp)
-                        mMoveUpActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
-            }
+    QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+    if (!icon.isNull()) {
+        option->icon = icon;
+        if ( index.data( Qt::DisplayRole ).toBool() ) {
+            if (index.column()==(int)DataItemColumn::Delete)
+                mDeleteActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+            else if (index.column()==(int)DataItemColumn::MoveDown)
+                    mMoveDownActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
+            else if (index.column()==(int)DataItemColumn::MoveUp)
+                    mMoveUpActionPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
         }
-    } else {
-
     }
 }
 
 bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    qDebug() << "editorEvent " << index.column();
+    qDebug() << "editorEvent " << index.row() << "," << index.column();
     if (event->type()==QEvent::MouseButtonRelease) {
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
-        if (index.data( Qt::DisplayRole ).toBool()) {
+        if (index.data( Qt::DisplayRole ).toBool() ) {
             bool found = false;
             if (index.column()==(int)DataItemColumn::Delete) {
-                foreach( QModelIndex idx, mDeleteActionPosition.keys() ) {
-                    QRect rect = mDeleteActionPosition[idx];
-                    qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
-                    if (idx == index && rect.contains(p)) {
-                        qDebug() << "Found delete action! " << idx;
+                QMap<QModelIndex, QRect>::iterator it;
+                for (it= mDeleteActionPosition.begin();  it != mDeleteActionPosition.end(); ++it) {
+                    QRect rect = mDeleteActionPosition[it.key()];
+                    if (rect.contains(p)) {
+                        emit requestDeleteItem(index);
                         found = true;
                         break;
                     }
                 }
+                if (found)
+                    mDeleteActionPosition.erase(it);
             } else if (index.column()==(int)DataItemColumn::MoveDown) {
-                      foreach( QModelIndex idx, mMoveDownActionPosition.keys() ) {
-                          QRect rect = mMoveDownActionPosition[idx];
-                          qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
-                          if (idx == index && rect.contains(p)) {
-                              qDebug() << "Found MoveDown action! " << idx;
+                      QMap<QModelIndex, QRect>::iterator it;
+                      for (it= mMoveDownActionPosition.begin();  it != mMoveDownActionPosition.end(); ++it) {
+                          QRect rect = mMoveDownActionPosition[it.key()];
+                          if (it.key() == index && rect.contains(p)) {
+                              emit requestMoveDownItem(index);
                               found = true;
                               break;
                           }
                       }
+                      if (found)
+                          mMoveDownActionPosition.erase(it);
             }   else if (index.column()==(int)DataItemColumn::MoveUp) {
-                         foreach( QModelIndex idx, mMoveUpActionPosition.keys() ) {
-                             QRect rect = mMoveUpActionPosition[idx];
-                             qDebug() << "      check(" << rect.x() << "," << rect.y() << ") ";
-                             if (idx == index && rect.contains(p)) {
-                                 qDebug() << "Found MoveUp action! " << idx;
+                         QMap<QModelIndex, QRect>::iterator it;
+                         for (it= mMoveUpActionPosition.begin();  it != mMoveUpActionPosition.end(); ++it) {
+                             QRect rect = mMoveUpActionPosition[it.key()];
+                             if (it.key() == index && rect.contains(p)) {
+                                 emit requestMoveUpItem(index);
                                  found = true;
                                  break;
                              }
                          }
+                         if (found)
+                             mMoveUpActionPosition.erase(it);
             }
             return found;
         }

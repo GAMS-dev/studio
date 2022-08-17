@@ -70,33 +70,33 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    if (event->type()==QEvent::MouseButtonPress) {
+    if (event->type()==QEvent::MouseButtonRelease) {
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
         qDebug() << "position(" << p.x() << "," << p.y() << ") " << mSchemaHelpPosition.size()
                                                                  << mSchemaAppendPosition.size() << ":" ;
         bool found = false;
-        foreach( QString key, mSchemaHelpPosition.keys() ) {
-            QRect rect = mSchemaHelpPosition[key];
-            qDebug() << "      1 check(" << rect.x() << "," << rect.y() << ") " << key;
-            if (rect.contains(p)) {
-                qDebug() << "Found Schema! " << key;
-                emit requestSchemaHelp(key);
+        QMap<QString, QRect>::const_iterator it;
+        for (it= mSchemaHelpPosition.cbegin();  it != mSchemaHelpPosition.cend(); ++it) {
+            if (it.value().contains(p)) {
+                emit requestSchemaHelp(it.key());
                 found = true;
                 break;
             }
         }
         if (!found) {
-            foreach( QModelIndex idx, mSchemaAppendPosition.keys() ) {
-                QRect rect = mSchemaAppendPosition[idx];
-                qDebug() << "      2 check(" << rect.x() << "," << rect.y() << "), index=(" << index.row() << "," <<index.column()<<")"
-                         << "      equal?"<< (idx == index? "yes" : "no");
-                if (idx == index && rect.contains(p)) {
-                    qDebug() << "Found idx! " << idx.row() << "," << idx.column();
+            QMap<QModelIndex, QRect>::const_iterator it;
+            for (it= mSchemaAppendPosition.cbegin();  it != mSchemaAppendPosition.cend(); ++it) {
+                qDebug() << "      2 check(" << it.value().x() << "," << it.value().y() << ") "
+                                            << "), index=(" << index.row() << "," <<index.column()<<")"
+                                            << "      equal?"<< (it.key() == index? "yes" : "no");
+                if (it.key()== index && it.value().contains(p)) {
+                    qDebug() << "Found idx! " << it.key().row() << "," << it.key().column();
                     found = true;
                     break;
                 }
             }
+            return found;
         }
         return (index.data( Qt::DisplayRole ).toBool());
     }

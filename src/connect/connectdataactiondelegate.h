@@ -38,6 +38,11 @@ public:
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
 
+signals:
+    void requestDeleteItem(const QModelIndex &index);
+    void requestMoveDownItem(const QModelIndex &index);
+    void requestMoveUpItem(const QModelIndex &index);
+
 private:
     mutable int mIconWidth;
     mutable int mIconHeight;

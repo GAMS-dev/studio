@@ -55,13 +55,21 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case Qt::DisplayRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-        if (index.column()==(int)DataItemColumn::SchemaType || index.column()==(int)DataItemColumn::AllowedValue)
+        if (index.column()==(int)DataItemColumn::SchemaType || index.column()==(int)DataItemColumn::AllowedValue) {
            return  QVariant(item->data(index.column()).toStringList());
 //           return  QVariant(item->data(index.column()).toStringList().join(","));
-        else if (index.column()==(int)DataItemColumn::Expand)
+        } else if (index.column()==(int)DataItemColumn::Key) {
+                  QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
+                  if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListItem) {
+                     return QVariant(index.row());
+                  } else {
+                      return item->data(index.column());
+                  }
+        } else if (index.column()==(int)DataItemColumn::Expand) {
                  return QVariant(item->id());
-        else
-           return item->data(index.column());
+        } else {
+            return item->data(index.column());
+        }
     }
     case Qt::ForegroundRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
@@ -324,6 +332,25 @@ bool ConnectDataModel::removeRows(int row, int count, const QModelIndex &parent)
         endRemoveRows();
     }
     return success;
+}
+
+bool ConnectDataModel::moveRows(const QModelIndex &sourceParent, int sourceRow, int count, const QModelIndex &destinationParent, int destinationChild)
+{
+    ConnectDataItem* destParentItem = getItem(destinationParent);
+    ConnectDataItem* sourceParentItem = getItem(sourceParent);
+    if (destParentItem != sourceParentItem)
+        return false;
+
+    beginMoveRows(sourceParent, sourceRow, sourceRow+count, destinationParent, destinationChild);
+    destParentItem->insertChild(destinationChild, getItem(index(sourceRow, 0, sourceParent)));
+    sourceParentItem->removeChildren(sourceRow, 1);
+    endMoveRows();
+
+    emit dataChanged(index(0, (int)DataItemColumn::Key),
+                     index(rowCount()-1, (int)DataItemColumn::Expand),
+                     QVector<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
+
+    return true;
 }
 
 void ConnectDataModel::addFromSchema(ConnectData* data, int insertPosition)

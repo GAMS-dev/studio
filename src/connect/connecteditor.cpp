@@ -117,10 +117,11 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+    ui->dataTreeView->clearSelection();
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -139,6 +140,9 @@ bool ConnectEditor::init()
     headerRegister(ui->helpTreeView->header());
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested);
+    connect(actiondelegate, &ConnectDataActionDelegate::requestDeleteItem, this, &ConnectEditor::deleteDataItemRequested);
+    connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested);
+    connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested);
 
     connect(ui->schemaControlListView, &QListView::clicked,  [=](const QModelIndex &index) {
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
@@ -165,6 +169,7 @@ bool ConnectEditor::init()
         ui->helpTreeView->resizeColumnToContents(3);
         ui->helpTreeView->resizeColumnToContents(4);
     });
+
     return true;
 }
 
@@ -210,6 +215,30 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
            break;
        }
    }
+}
+
+void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
+{
+    ui->dataTreeView->setUpdatesEnabled(false);
+    qDebug() << "delete (" << index.row() <<"," << index.column() << ") and all its children";
+    mDataModel->removeItem(index);
+    ui->dataTreeView->setUpdatesEnabled(true);
+}
+
+void ConnectEditor::moveUpDatatItemRequested(const QModelIndex &index)
+{
+    ui->dataTreeView->setUpdatesEnabled(false);
+    qDebug() << "move (" << index.row() <<"," << index.column() << ") and all its children up";
+//    mDataModel->moveRows( index.parent(), index.row(), 1, index.parent(), index.row()-1 );
+    ui->dataTreeView->setUpdatesEnabled(true);
+}
+
+void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
+{
+    ui->dataTreeView->setUpdatesEnabled(false);
+    qDebug() << "move (" << index.row() <<"," << index.column() << ") and all its children down";
+//    mDataModel->moveRows( index.parent(), index.row(), 1, index.parent(), index.row()+1 );
+    ui->dataTreeView->setUpdatesEnabled(true);
 }
 
 void ConnectEditor::saveExpandedState()

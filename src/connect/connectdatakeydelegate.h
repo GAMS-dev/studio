@@ -39,8 +39,8 @@ protected:
                      const QModelIndex &index) override;
 
 signals:
-    void requestSchemaHelp(const QString &schemaname) const;
-    void requestAppendItem(const QModelIndex &index) const;
+    void requestSchemaHelp(const QString &schemaname);
+    void requestAppendItem(const QModelIndex &index);
 
 private:
     mutable int mIconWidth;
