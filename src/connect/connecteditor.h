@@ -50,6 +50,7 @@ private slots:
     void updateDataColumnSpan(const QModelIndex &modelIndex);
 
     void schemaHelpRequested(const QString &schemaName);
+    void appendItemRequested(const QModelIndex &index);
     void deleteDataItemRequested(const QModelIndex &index);
     void moveUpDatatItemRequested(const QModelIndex &index);
     void moveDownDatatItemRequested(const QModelIndex &index);

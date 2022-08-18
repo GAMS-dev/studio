@@ -52,6 +52,10 @@ public:
     void insertChild(int row, ConnectDataItem* item);
     bool removeChildren(int position, int count);
 
+    bool moveChildren(int source, int destination);
+
+    bool isFirstChild() const;
+    bool isLastChild() const;
 private:
     int                     mID;
     QList<QVariant>         mItemData;

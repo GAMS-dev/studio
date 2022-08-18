@@ -116,6 +116,26 @@ bool ConnectDataItem::removeChildren(int position, int count)
     return true;
 }
 
+bool ConnectDataItem::moveChildren(int source, int destination)
+{
+    if (source < 0 || destination < 0 || source==destination ||
+        source > mChildItems.size() || destination > mChildItems.size())
+        return false;
+
+    mChildItems.move(source, destination);
+    return true;
+}
+
+bool ConnectDataItem::isFirstChild() const
+{
+    return (childNumber()==0);
+}
+
+bool ConnectDataItem::isLastChild() const
+{
+    return (childNumber()==mParentItem->childCount()-1);
+}
+
 } // namespace connect
 } // namespace studio
 } // namespace gams

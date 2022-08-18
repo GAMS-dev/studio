@@ -84,15 +84,18 @@ public:
 
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                               const QModelIndex &destinationParent, int destinationChild) override;
+
 public slots:
     void addFromSchema(ConnectData* data, int insertPosition);
+    void appendMapElement(const QModelIndex& index);
+    void appendListElement(const QModelIndex& index);
 
 protected:
+    void informDataChanged(const QModelIndex& parent);
+
     void setupTreeItemModelData();
     void setupTreeItemModelDataX();
     void insertSchemaModelData(ConnectData* data, int position);
-
-    void deleteTreeItemModelData(int id);
 
     int              mItemIDCount;
     QString          mLocation;

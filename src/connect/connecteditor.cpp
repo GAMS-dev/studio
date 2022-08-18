@@ -117,10 +117,10 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
     ui->dataTreeView->clearSelection();
     headerRegister(ui->dataTreeView->header());
 
@@ -140,6 +140,7 @@ bool ConnectEditor::init()
     headerRegister(ui->helpTreeView->header());
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested);
+    connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested);
     connect(actiondelegate, &ConnectDataActionDelegate::requestDeleteItem, this, &ConnectEditor::deleteDataItemRequested);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested);
@@ -149,13 +150,14 @@ bool ConnectEditor::init()
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked);
 
-    connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() {
-        saveExpandedState();
-    });
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeRemoved , [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsInserted, [this]() { restoreExpandedState();  });
+    connect(mDataModel, &ConnectDataModel::rowsRemoved , [this]() { restoreExpandedState();  });
+    connect(mDataModel, &ConnectDataModel::rowsMoved   , [this]() { restoreExpandedState();  });
     connect(mDataModel, &ConnectDataModel::modelReset, [this]() {
         restoreExpandedState();
-        ui->dataTreeView->resizeColumnToContents(0);
-        ui->dataTreeView->resizeColumnToContents(1);
     });
 ///    connect(ui->dataTreeView->selectionModel(),
 ///            &QItemSelectionModel::selectionChanged, this,
@@ -184,16 +186,12 @@ ConnectEditor::~ConnectEditor()
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
-
-    qDebug() << "doubleclikced row=" << modelIndex.row() << ", col=" << modelIndex.column()
-             << ui->schemaControlListView->model()->data( modelIndex ).toString();
-
     QStringList strlist;
     strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
 
     mDataModel->addFromSchema( mConnect->createDataHolder(strlist), mDataModel->rowCount() );
     ui->dataTreeView->expandRecursively( mDataModel->index( mDataModel->rowCount()-1, 0) );
-//    updateDataColumnSpan();
+
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
 }
@@ -217,6 +215,17 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
    }
 }
 
+void ConnectEditor::appendItemRequested(const QModelIndex &index)
+{
+    qDebug() << "append item (" << index.row() <<"," << index.column() << ")";
+    QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+    if ((int)DataCheckState::ListAppend==checkstate_idx.data().toInt()) {
+//        mDataModel->appendListElement(index);
+    } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
+              mDataModel->appendMapElement(index);
+    }
+}
+
 void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
 {
     ui->dataTreeView->setUpdatesEnabled(false);
@@ -228,8 +237,9 @@ void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
 void ConnectEditor::moveUpDatatItemRequested(const QModelIndex &index)
 {
     ui->dataTreeView->setUpdatesEnabled(false);
-    qDebug() << "move (" << index.row() <<"," << index.column() << ") and all its children up";
-//    mDataModel->moveRows( index.parent(), index.row(), 1, index.parent(), index.row()-1 );
+    qDebug() << "move " << index.row() <<"," << index.column() << ") and all its children up";
+    mDataModel->moveRows( index.parent(), index.row(), 1,
+                          index.parent(), index.row()-1 );
     ui->dataTreeView->setUpdatesEnabled(true);
 }
 
@@ -237,12 +247,14 @@ void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
 {
     ui->dataTreeView->setUpdatesEnabled(false);
     qDebug() << "move (" << index.row() <<"," << index.column() << ") and all its children down";
-//    mDataModel->moveRows( index.parent(), index.row(), 1, index.parent(), index.row()+1 );
+    mDataModel->moveRows( index.parent(), index.row(), 1,
+                          index.parent(), index.row()+2 );
     ui->dataTreeView->setUpdatesEnabled(true);
 }
 
 void ConnectEditor::saveExpandedState()
 {
+    mExpandIDs.clear();
     for(int row = 0; row < mDataModel->rowCount(); ++row)
         saveExpandedOnLevel(mDataModel->index(row,0));
 }
@@ -262,7 +274,6 @@ void ConnectEditor::saveExpandedOnLevel(const QModelIndex &index)
     if (ui->dataTreeView->isExpanded(index)) {
         if(index.isValid())
             mExpandIDs << index.data(Qt::UserRole).toInt();
-        qDebug() << index.data(Qt::UserRole).toInt();
         for(int row = 0; row < mDataModel->rowCount(index); ++row)
             saveExpandedOnLevel( mDataModel->index(row,0, index) );
     }

@@ -92,6 +92,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
                                             << "      equal?"<< (it.key() == index? "yes" : "no");
                 if (it.key()== index && it.value().contains(p)) {
                     qDebug() << "Found idx! " << it.key().row() << "," << it.key().column();
+                    emit requestAppendItem(index);
                     found = true;
                     break;
                 }
