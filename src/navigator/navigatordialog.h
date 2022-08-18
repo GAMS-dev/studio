@@ -19,7 +19,8 @@
 #define GAMS_STUDIO_NAVIGATORDIALOG_H
 
 #include <QDialog>
-#include "navigatorcomponent.h"
+#include "mainwindow.h"
+#include "navigator/navigatormodel.h"
 
 namespace Ui {
 class NavigatorDialog;
@@ -32,20 +33,25 @@ class NavigatorDialog : public QDialog {
     Q_OBJECT
 
 public:
-    NavigatorDialog(MainWindow *parent = nullptr);
+    NavigatorDialog(MainWindow* main = nullptr);
     ~NavigatorDialog();
 
 private:
-    void keyPressEvent(QKeyEvent *e) override;
-    void showEvent(QShowEvent *e) override;
+    void keyPressEvent(QKeyEvent* e) override;
+    void showEvent(QShowEvent* e) override;
+    bool eventFilter(QObject* watched, QEvent* event) override;
+
+    void fillContent();
+    void setInput(const QString& input);
 
 private slots:
     void returnPressed();
 
 private:
     Ui::NavigatorDialog* ui = nullptr;
-    NavigatorComponent* mNavigator = nullptr;
-
+    MainWindow* mMain = nullptr;
+    NavigatorModel* mNavModel = nullptr;
+    QSortFilterProxyModel* mFilterModel = nullptr;
 };
 
 }
