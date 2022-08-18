@@ -20,14 +20,27 @@
 
 #include <QAbstractTableModel>
 
+#include "mainwindow.h"
+
+namespace gams {
+namespace studio {
+
 class NavigatorModel : public QAbstractTableModel
 {
 public:
-    explicit NavigatorModel(QObject *parent = nullptr);
+    explicit NavigatorModel(QObject *parent, MainWindow *main);
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
+    void setContent(QMap<QString, QString> content);
+
+private:
+    QMap<QString, QString> mContent;
+    gams::studio::MainWindow* mMain = nullptr;
+    QObject* QAbstractTableModel;
 };
 
+}
+}
 #endif // NAVIGATORMODEL_H

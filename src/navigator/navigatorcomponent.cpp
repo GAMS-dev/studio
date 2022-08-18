@@ -22,10 +22,45 @@ namespace studio {
 
 NavigatorComponent::NavigatorComponent(QObject *parent, MainWindow* main)
     : QObject(parent), mMain(main),
-      mNavModel(new NavigatorModel(this)), mFilterModel(new QSortFilterProxyModel(this))
+      mNavModel(new NavigatorModel(this, mMain)), mFilterModel(new QSortFilterProxyModel(this))
 {
-
+    mFilterModel->setSourceModel(mNavModel);
+    fillContent();
 }
+
+NavigatorComponent::~NavigatorComponent()
+{
+    mNavModel->deleteLater();
+}
+
+NavigatorModel *NavigatorComponent::Model()
+{
+    return mNavModel;
+}
+
+QSortFilterProxyModel* NavigatorComponent::FilterModel()
+{
+    return mFilterModel;
+}
+
+void NavigatorComponent::setInput(const QString &input)
+{
+    mFilterModel->setFilterWildcard(input);
+}
+
+void NavigatorComponent::fillContent()
+{
+    QMap<QString, QString> content;
+    foreach (FileMeta* fm, mMain->fileRepo()->fileMetas())
+        content.insert(fm->location(), "known files");
+
+    foreach (FileMeta* fm, mMain->fileRepo()->openFiles())
+        content.insert(fm->location(), "open Files");
+
+    mNavModel->setContent(content);
+}
+
+
 
 }
 }

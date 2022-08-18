@@ -22,7 +22,6 @@
 #include <QSortFilterProxyModel>
 #include "navigatormodel.h"
 
-
 namespace gams {
 namespace studio {
 
@@ -32,11 +31,17 @@ class NavigatorComponent : public QObject
     Q_OBJECT
 public:
     explicit NavigatorComponent(QObject *parent = nullptr, MainWindow* main = nullptr);
+    ~NavigatorComponent();
+    NavigatorModel* Model();
+    QSortFilterProxyModel* FilterModel();
+    void setInput(const QString& input);
 
 private:
+    void fillContent();
+
     MainWindow* mMain = nullptr;
     NavigatorModel* mNavModel = nullptr;
-    QSortFilterProxyModel *mFilterModel = nullptr;
+    QSortFilterProxyModel* mFilterModel = nullptr;
 };
 
 }

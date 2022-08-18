@@ -28,12 +28,17 @@ namespace studio {
 NavigatorDialog::NavigatorDialog(MainWindow *parent)
     : QDialog((QWidget*)parent), ui(new Ui::NavigatorDialog)
 {
-//    setWindowFlags(Qt::Popup)?
     ui->setupUi(this);
     setWindowTitle("Navigator");
     mNavigator = new NavigatorComponent(this, parent);
 
     connect(ui->input, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
+    connect(ui->input, &QLineEdit::textEdited, mNavigator, &NavigatorComponent::setInput);
+    ui->tableView->setModel(mNavigator->Model());
+
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -43,7 +48,20 @@ NavigatorDialog::~NavigatorDialog()
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 {
-     QDialog::keyPressEvent(e);
+    if (e->key() == Qt::Key_Down) {
+        int pos = ui->tableView->currentIndex().row() + 1;
+        if (pos >= ui->tableView->model()->rowCount())
+            pos = 0;
+
+        ui->tableView->setCurrentIndex(mNavigator->FilterModel()->index(pos, 0));
+    } else if (e->key() == Qt::Key_Up) {
+        int pos = ui->tableView->currentIndex().row() - 1;
+        if (pos < 0)
+            pos = ui->tableView->model()->rowCount() - 1;
+
+        ui->tableView->setCurrentIndex(mNavigator->FilterModel()->index(pos, 0));
+    } else
+        QDialog::keyPressEvent(e);
 }
 
 void NavigatorDialog::showEvent(QShowEvent *e)
