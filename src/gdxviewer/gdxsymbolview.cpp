@@ -35,6 +35,7 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
+#include <QDebug>
 
 #include <numerics/doubleformatter.h>
 
@@ -539,8 +540,7 @@ void GdxSymbolView::autoResizeColumns()
     disconnect(ui->tvListView->horizontalHeader(), &QHeaderView::sectionResized, this, &GdxSymbolView::onResizeColumnsLV);
     if (mTableView) {
         autoResizeTableViewColumns();
-        for (int i=0; i<ui->tvTableViewFilter->model()->columnCount(); i++)
-            ui->tvTableViewFilter->resizeColumnToContents(ui->tvTableViewFilter->columnAt(0)+i);
+        ui->tvTableViewFilter->resizeColumnsToContents();
     }
     else
         autoResizeListViewColumns();
