@@ -426,6 +426,7 @@ void GdxViewer::applyState()
 {
     if (!mState) return;
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
+    ui->tvSymbols->resizeColumnsToContents();
     if (this->isVisible())
         applySelectedSymbol();
 }
