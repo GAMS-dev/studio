@@ -171,6 +171,8 @@ public slots:
     void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
+    void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
+                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
@@ -206,8 +208,6 @@ private slots:
     void updateRecentEdit(QWidget *old, QWidget *now);
     void openProjectOptions(PExProjectNode *project);
     void createProject(QString projectPath);
-    void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
-                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);

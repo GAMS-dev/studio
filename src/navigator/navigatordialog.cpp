@@ -141,7 +141,7 @@ void NavigatorDialog::returnPressed()
 
     if (mCurrentMode == NavigatorMode::AllFiles) {
         FileMeta* fm = mNavModel->content().at(index.row()).file;
-        mMain->openFilePath(fm->location(), true);
+        mMain->openFile(fm, true);
 
     } else if (mCurrentMode == NavigatorMode::Line) {
         QString inputText = ui->input->text();
