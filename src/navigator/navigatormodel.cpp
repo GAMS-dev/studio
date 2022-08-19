@@ -27,9 +27,14 @@ NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
 
 }
 
-void NavigatorModel::setContent(QMap<QString, QString> content)
+void NavigatorModel::setContent(QVector<NavigatorContent> content)
 {
     mContent = content;
+}
+
+QVector<NavigatorContent> NavigatorModel::content() const
+{
+    return mContent;
 }
 
 int NavigatorModel::rowCount(const QModelIndex &parent) const
@@ -48,15 +53,16 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
         if (index.column() == 0)
-            return mContent.keys().at(index.row());
+            return mContent.at(index.row()).file->location();
         else if (index.column() == 1)
-            return mContent.values().at(index.row());
+            return mContent.at(index.row()).additionalInfo;
 
     } else if (role == Qt::TextAlignmentRole) {
         if (index.column() == 0)
             return Qt::AlignLeft;
         else
             return Qt::AlignRight;
+
     } else if (role == Qt::FontRole) {
         if (index.column() == 1) {
             QFont font;

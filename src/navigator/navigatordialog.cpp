@@ -66,14 +66,29 @@ void NavigatorDialog::setInput(const QString &input)
 
 void NavigatorDialog::fillContent()
 {
-    QMap<QString, QString> content;
-    foreach (FileMeta* fm, mMain->fileRepo()->fileMetas())
-        content.insert(fm->location(), "known files");
+    QVector<NavigatorContent> content;
+    foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
+        NavigatorContent nc = {fm, "open files"};
+        content.append(nc);
+    }
 
-    foreach (FileMeta* fm, mMain->fileRepo()->openFiles())
-        content.insert(fm->location(), "open Files");
+    foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
+        if (!valueExists(fm, content)) {
+            NavigatorContent nc = {fm, "known files"};
+            content.append(nc);
+        }
+    }
 
     mNavModel->setContent(content);
+}
+
+bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
+{
+    foreach (NavigatorContent c, content) {
+        if (c.file == fm)
+            return true;
+    }
+    return false;
 }
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
@@ -115,6 +130,10 @@ bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
 
 void NavigatorDialog::returnPressed()
 {
+    FileMeta* fm = mNavModel->content().at(
+                    mFilterModel->mapToSource(ui->tableView->currentIndex()).row()).file;
+
+    mMain->openFilePath(fm->location(), true);
     close();
 }
 

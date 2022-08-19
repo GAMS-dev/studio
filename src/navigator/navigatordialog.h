@@ -43,6 +43,7 @@ private:
 
     void fillContent();
     void setInput(const QString& input);
+    bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
 
 private slots:
     void returnPressed();
