@@ -30,6 +30,7 @@ NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
 void NavigatorModel::setContent(QVector<NavigatorContent> content)
 {
     mContent = content;
+    emit dataChanged(createIndex(0, 0), createIndex(content.count(), 0));
 }
 
 QVector<NavigatorContent> NavigatorModel::content() const

@@ -4659,16 +4659,22 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 
+// TODO(rogo): remove this together with the whole goto dialog?
 void MainWindow::goToLine(int result)
+{
+    if (result)
+        jumpToLine(mGotoDialog->lineNumber());
+}
+
+void MainWindow::jumpToLine(int line)
 {
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
     TextView *tv = ViewHelper::toTextView(mRecent.editor());
-    if (result) {
-        if (codeEdit)
-            codeEdit->jumpTo(mGotoDialog->lineNumber());
-        if (tv)
-            tv->jumpTo(mGotoDialog->lineNumber(), 0);
-    }
+
+    if (codeEdit)
+        codeEdit->jumpTo(line);
+    if (tv)
+        tv->jumpTo(line, 0);
 }
 
 search::ResultsView *MainWindow::resultsView() const
@@ -4678,13 +4684,19 @@ search::ResultsView *MainWindow::resultsView() const
 
 void MainWindow::on_actionGo_To_triggered()
 {
-    if (!currentEdit()) return;
-    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
-    TextView *tv = ViewHelper::toTextView(mRecent.editor());
-    if (!tv && !codeEdit) return;
-    int numberLines = codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
+    int numberLines = linesInCurrentEditor();
     mGotoDialog->maxLineCount(numberLines);
     mGotoDialog->open();
+}
+
+int MainWindow::linesInCurrentEditor() {
+    if (!currentEdit()) return -1;
+
+    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
+    TextView *tv = ViewHelper::toTextView(mRecent.editor());
+
+    if (!tv && !codeEdit) return -1;
+    return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
 }
 
 void MainWindow::on_actionRedo_triggered()

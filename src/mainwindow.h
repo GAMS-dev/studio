@@ -105,6 +105,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
+    void jumpToLine(int line);
     void watchProjectTree();
 
     bool outputViewVisibility();
@@ -150,6 +151,8 @@ public:
     void resetHistory();
     void clearHistory(FileMeta *file);
     void historyChanged();
+    int linesInCurrentEditor();
+
 
 #ifdef QWEBENGINE
     help::HelpWidget *helpWidget() const;

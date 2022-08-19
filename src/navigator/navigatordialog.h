@@ -29,6 +29,8 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
+enum class NavigatorMode { Null, AllFiles, Line };
+
 class NavigatorDialog : public QDialog {
     Q_OBJECT
 
@@ -41,9 +43,11 @@ private:
     void showEvent(QShowEvent* e) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
 
-    void fillContent();
+    QVector<NavigatorContent> collectAllFiles();
     void setInput(const QString& input);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
+    void updateContent(NavigatorMode mode);
+    QVector<NavigatorContent> navigateLine();
 
 private slots:
     void returnPressed();
@@ -53,6 +57,7 @@ private:
     MainWindow* mMain = nullptr;
     NavigatorModel* mNavModel = nullptr;
     QSortFilterProxyModel* mFilterModel = nullptr;
+    NavigatorMode mCurrentMode = NavigatorMode::Null;
 };
 
 }
