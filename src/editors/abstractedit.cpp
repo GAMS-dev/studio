@@ -661,7 +661,8 @@ void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
 void AbstractEdit::jumpTo(int line, int column)
 {
     QTextCursor cursor;
-    if (document()->blockCount()-1 < line) return;
+    if (document()->blockCount()-1 < line)
+        line = document()->blockCount()-1;
     cursor = QTextCursor(document()->findBlockByNumber(line));
     cursor.clearSelection();
     cursor.setPosition(cursor.position() + column);

@@ -199,7 +199,9 @@ void TextView::zoomOut(int range)
 
 bool TextView::jumpTo(int lineNr, int charNr, int length, bool focus)
 {
-    if (lineNr > mMapper->knownLineNrs()) return false;
+    if (lineNr > mMapper->knownLineNrs())
+        lineNr = mMapper->knownLineNrs();
+
     int vTop = mMapper->visibleTopLine();
     int vAll = mMapper->visibleLineCount();
     if (lineNr < vTop+(vAll/6) || lineNr > vTop+(vAll*5/6)) {
