@@ -13,6 +13,10 @@ Version 1.12.0
 - added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
 - fixed project changes on search over multiple files where a file is linked to more than one project
 - changed GAMS version mismatch error message to a warning message
+- added Navigator feature (`Ctrl+K`)
+    - filter files by typing a search term, wildcards are also supported (e.g.: *.gms)
+    - press `Enter` to jump to a selected file
+    - type `:` and a number to jump to that line in the current file
 
 Version 1.11.3
 ==================
