@@ -39,6 +39,8 @@ public:
     ConnectData* loadDataFromFile(const QString& fileName);
 
     ConnectData* createDataHolder(const QStringList& schemaNameList);
+    ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema);
+
     void addDataForAgent(ConnectData* data, const QString& schemaName);
 
     ConnectSchema* getSchema(const QString& schemaName);
@@ -47,9 +49,12 @@ public:
     bool isSchemaAvaiablel() const;
 
     ConnectError getError() const;
+
 private:
     void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
     void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
+
+    YAML::Node getDefaultValueByType(Schema* schemaHelper);
 
     YAML::Node createConnectData(const QString& schemaName);
     bool validate(const QString& schemaname, ConnectData& data);

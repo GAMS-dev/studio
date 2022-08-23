@@ -188,6 +188,58 @@ ConnectData *Connect::createDataHolder(const QStringList &schemaNameList)
     return new ConnectData(data);
 }
 
+ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, const QStringList &schema)
+{
+    YAML::Node data = YAML::Node(YAML::NodeType::Sequence);
+    QString schemastr = schema.join(":");
+    qDebug() << "createDataHolderFromSchema:" << schemaname << ", " <<schema << ", " << schemastr;
+    ConnectSchema* s = mSchema[schemaname];
+    if (!s)
+        return new ConnectData(data);
+
+    qDebug() << "1  s could be nullptr";
+    Schema* schemaHelper = s->getSchema(schemastr);
+    if (!schemaHelper)
+        return new ConnectData(data);
+
+    qDebug() << "2 :: " << schemaHelper->level << ":" << (schemaHelper->schemaDefined?"schema defined":"NO schema defined");
+    QStringList nextlevel = s->getNextLevelKeyList(schemastr);
+    qDebug() << "3 :: " << nextlevel;
+
+    if (schemaHelper->schemaDefined) { // || !nextlevel.isEmpty()) {
+        schemaHelper = s->getSchema(nextlevel.at(0));
+        QString first = nextlevel.at(0);
+        nextlevel.removeFirst();
+        qDebug() << "4 :: " << first << " :::: " << nextlevel;
+        if (schemaHelper->types.contains(SchemaType::Dict)) {
+            YAML::Node node = YAML::Node(YAML::NodeType::Map);
+            if  (nextlevel.size() <= 0) {
+                node["[key]"] = "[value]";
+            } else {
+                first.append(":");
+                foreach (QString str, nextlevel) {
+                    QString key = str.mid(first.size());
+                    qDebug()  << "5 :: " << str << ":" << first << ":" << str.indexOf(first) << ":" << key;
+                    schemaHelper = s->getSchema(str);
+                    node[key.toStdString()] = getDefaultValueByType( schemaHelper );
+                    // ToDo next level
+                }
+            }
+            data[0] = node;
+
+        } else if (schemaHelper->types.contains(SchemaType::List)) {
+                 YAML::Node node = YAML::Node(YAML::NodeType::Sequence);
+                 data[0] = node;
+        } else {
+            data[0] = getDefaultValueByType( schemaHelper );
+        }
+    } else {
+        data[0] = getDefaultValueByType( schemaHelper );
+    }
+
+    return new ConnectData(data);
+}
+
 void Connect::addDataForAgent(ConnectData *data, const QString &schemaName)
 {
     Q_ASSERT(data->getRootNode().Type()==YAML::NodeType::Sequence);
@@ -324,6 +376,53 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
             }
         }
     }
+}
+
+YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
+{
+    SchemaType type = schemaHelper->types.at(0);
+    QList<ValueWrapper> allowedValues = schemaHelper->allowedValues;
+    ValueWrapper defaultValue = schemaHelper->defaultValue;
+    YAML::Node node = YAML::Node(YAML::NodeType::Scalar);
+    switch (type) {
+    case SchemaType::String: {
+        std::string str = "[value]";
+        for(int i=0; i<allowedValues.size(); i++) {
+            ValueWrapper str = allowedValues.at(0);
+            if (std::string(str.value.stringval).compare("default")==0) {
+               str = "default";
+               break;
+            }
+        }
+        node = ( defaultValue.type==SchemaValueType::NoValue
+                              ? (allowedValues.size() > 0 ? std::string(allowedValues.at(0).value.stringval) : str)
+                              : std::string(defaultValue.value.stringval) );
+        break;
+    }
+    case SchemaType::Integer: {
+        node = ( defaultValue.type==SchemaValueType::NoValue
+                              ? (allowedValues.size() > 0 ? allowedValues.at(0).value.intval : 0)
+                              : defaultValue.value.intval );
+        break;
+    }
+    case SchemaType::Float: {
+        node = ( defaultValue.type==SchemaValueType::NoValue
+                              ? (allowedValues.size() > 0 ? allowedValues.at(0).value.doubleval : 0.0)
+                              : defaultValue.value.doubleval );
+        break;
+    }
+    case SchemaType::Boolean: {
+        node = (defaultValue.type==SchemaValueType::NoValue
+                              ? (allowedValues.size() > 0 ? allowedValues.at(0).value.boolval : false)
+                              : defaultValue.value.boolval );
+        break;
+    }
+    default: { // string
+        node = "[value]";
+        break;
+    }
+    }
+    return node;
 }
 
 YAML::Node Connect::createConnectData(const QString &schemaName)

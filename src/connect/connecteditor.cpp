@@ -121,7 +121,6 @@ bool ConnectEditor::init()
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
-    ui->dataTreeView->clearSelection();
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -172,6 +171,8 @@ bool ConnectEditor::init()
         ui->helpTreeView->resizeColumnToContents(4);
     });
 
+    ui->dataTreeView->clearSelection();
+    ui->helpTreeView->clearSelection();
     return true;
 }
 
@@ -219,8 +220,17 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
 {
     qDebug() << "append item (" << index.row() <<"," << index.column() << ")";
     QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
-    if ((int)DataCheckState::ListAppend==checkstate_idx.data().toInt()) {
-//        mDataModel->appendListElement(index);
+    if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
+        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
+        QStringList schema = values_idx.data().toStringList();
+        qDebug() << "     value_idx.data" << schema;
+        if ( !schema.isEmpty() ) {
+            QString schemaname = schema.at(0);
+            schema.removeFirst();
+            ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema);
+            qDebug() << schemadata->str().c_str();
+            mDataModel->appendListElement(schemadata, index);
+        }
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);
     }
