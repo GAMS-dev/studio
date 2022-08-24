@@ -35,7 +35,6 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
-#include <QDebug>
 
 #include <numerics/doubleformatter.h>
 
@@ -757,6 +756,7 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
         if (!mAutoResizeTV)
             restoreTableViewHeaderState(symViewState);
         ui->tvTableViewFilter->horizontalHeader()->restoreState(symViewState->tableViewFilterHeaderState());
+        ui->tvTableViewFilter->resizeColumnsToContents();
         mTVFirstInit = false;
     }
     mLVFirstInit = false;
