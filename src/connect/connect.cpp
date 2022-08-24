@@ -221,12 +221,25 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
                     QString key = str.mid(first.size());
                     qDebug()  << "5 :: " << str << ":" << first << ":" << str.indexOf(first) << ":" << key;
                     schemaHelper = s->getSchema(str);
-                    node[key.toStdString()] = getDefaultValueByType( schemaHelper );
                     // ToDo next level
+                    if (schemaHelper->types.contains(SchemaType::Dict)) {
+                        YAML::Node childnode = YAML::Node(YAML::NodeType::Map);
+                        if (!schemaHelper->schemaDefined) {
+                            childnode["[key]"] = "[value]";
+                            node[key.toStdString()] = childnode;
+                        } else {
+
+                        }
+                    } else if (schemaHelper->types.contains(SchemaType::List)) {
+                             YAML::Node childnode = YAML::Node(YAML::NodeType::Sequence);
+                             childnode[0] = getDefaultValueByType( schemaHelper );
+                             node[key.toStdString()] = childnode;
+                    } else {
+                        node[key.toStdString()] = getDefaultValueByType( schemaHelper );
+                    }
                 }
             }
             data[0] = node;
-
         } else if (schemaHelper->types.contains(SchemaType::List)) {
                  YAML::Node node = YAML::Node(YAML::NodeType::Sequence);
                  data[0] = node;

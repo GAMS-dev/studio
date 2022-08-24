@@ -117,10 +117,10 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
@@ -234,6 +234,8 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);
     }
+    ui->dataTreeView->expandRecursively( mDataModel->index( mDataModel->rowCount()-1, 0) );
+    ui->dataTreeView->scrollTo(index);
 }
 
 void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
