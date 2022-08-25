@@ -731,19 +731,15 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project = aNode->assignedProject();
     } else {
         QFileInfo firstFile(files.first());
-        QDir dir(files.first());
+
         QString name;
-
-
         QString basePath;
-        if (firstFile.isFile()) {
+        if (firstFile.isFile())
             basePath = firstFile.absolutePath();
-            name = firstFile.completeBaseName();
-        } else if (dir.exists()) {
+        else if (firstFile.isDir())
             basePath = firstFile.filePath();
-            name = dir.dirName();
-        }
 
+        name = firstFile.completeBaseName();
         project = createProject(name, basePath, files.first());
     }
 
