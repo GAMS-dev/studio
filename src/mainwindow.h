@@ -427,6 +427,7 @@ private:
     void initWelcomePage();
     void initIcons();
     void initEnvironment();
+    void initNavigator();
     void adjustFonts();
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
@@ -506,6 +507,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
+    QLineEdit* mNavigatorInput = nullptr;
 
     QMutex mFileMutex;
     QVector<FileEventData> mFileEvents;

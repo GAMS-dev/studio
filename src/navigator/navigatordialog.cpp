@@ -26,11 +26,11 @@
 namespace gams {
 namespace studio {
 
-NavigatorDialog::NavigatorDialog(MainWindow *main)
-    : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main)
+NavigatorDialog::NavigatorDialog(MainWindow *main, QLineEdit* inputField)
+    : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
+    setWindowFlags(Qt::Popup);
     ui->setupUi(this);
-    setWindowTitle("Navigator");
     mNavModel = new NavigatorModel(this, main);
     updateContent(NavigatorMode::AllFiles);
 
@@ -48,8 +48,8 @@ NavigatorDialog::NavigatorDialog(MainWindow *main)
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->installEventFilter(this);
 
-    connect(ui->input, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
-    connect(ui->input, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
+    connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
+    connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
     connect(mNavModel, &NavigatorModel::dataChanged, mFilterModel, &QSortFilterProxyModel::dataChanged);
 }
 
@@ -62,6 +62,11 @@ NavigatorDialog::~NavigatorDialog()
 
 void NavigatorDialog::setInput(const QString &input)
 {
+    if (!isVisible()) {
+        show();
+        mInput->setFocus();
+    }
+
     NavigatorMode mode;
 
     if (input.startsWith("?")) {
@@ -161,7 +166,7 @@ void NavigatorDialog::returnPressed()
         mMain->openFile(fm, true);
 
     } else if (mCurrentMode == NavigatorMode::Line) {
-        QString inputText = ui->input->text();
+        QString inputText = mInput->text();
         bool ok = false;
 
         int lineNr = inputText.midRef(1).toInt(&ok);
@@ -172,6 +177,7 @@ void NavigatorDialog::returnPressed()
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 {
+    qDebug()/*rogo:delete*/<<QTime::currentTime()<<__FUNCTION__ << e;
     if (e->key() == Qt::Key_Down) {
         int pos = ui->tableView->currentIndex().row() + 1;
         if (pos >= ui->tableView->model()->rowCount())
@@ -184,14 +190,22 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
             pos = ui->tableView->model()->rowCount() - 1;
 
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
-    } else
-        QDialog::keyPressEvent(e);
+    } else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Return ||  e->key() == Qt::Key_Enter) {
+        close();
+    } else QDialog::keyPressEvent(e);
 }
 
 void NavigatorDialog::showEvent(QShowEvent *e)
 {
     Q_UNUSED(e)
-    ui->input->setFocus();
+    QPoint position;
+
+    position.setX(mInput->pos().x() - width());
+    position.setY(mInput->pos().y() - height() - 5);
+
+    move(mInput->mapToGlobal(position));
+
+    mInput->setFocus();
 }
 
 bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
@@ -199,6 +213,7 @@ bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
     if (watched != ui->tableView) return false;
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        qDebug()/*rogo:delete*/<<QTime::currentTime()<<__FUNCTION__<<keyEvent;
         if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down) {
             keyPressEvent(keyEvent);
             return true;

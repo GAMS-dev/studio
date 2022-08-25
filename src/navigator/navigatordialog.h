@@ -35,7 +35,7 @@ class NavigatorDialog : public QDialog {
     Q_OBJECT
 
 public:
-    NavigatorDialog(MainWindow* main = nullptr);
+    NavigatorDialog(MainWindow* main, QLineEdit *inputField);
     ~NavigatorDialog();
 
 private:
@@ -57,6 +57,7 @@ private:
     Ui::NavigatorDialog* ui = nullptr;
     MainWindow* mMain = nullptr;
     NavigatorModel* mNavModel = nullptr;
+    QLineEdit* mInput = nullptr;
     QSortFilterProxyModel* mFilterModel = nullptr;
     NavigatorMode mCurrentMode = NavigatorMode::Null;
 };

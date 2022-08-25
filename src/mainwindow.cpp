@@ -330,9 +330,11 @@ MainWindow::MainWindow(QWidget *parent)
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme();
     ViewHelper::updateBaseTheme();
+
     initGamsStandardPaths();
     updateRunState();
     initCompleterActions();
+    initNavigator();
 
     checkGamsLicense();
     checkSslLibrary();
@@ -366,6 +368,7 @@ MainWindow::~MainWindow()
     delete mResultsView;
     delete mSearchDialog;
     delete mNavigatorDialog;
+    delete mNavigatorInput;
     delete mPrintDialog;
     FileType::clear();
     HeaderViewProxy::deleteInstance();
@@ -477,6 +480,14 @@ void MainWindow::initToolBar()
     connect(mGamsParameterEditor->dockChild(), &AbstractView::zoomRequest, this, [this](int delta) {
         zoomWidget(mGamsParameterEditor->dockChild(), delta);
     });
+}
+
+void MainWindow::initNavigator()
+{
+    mNavigatorInput = new QLineEdit(this);
+    ui->statusBar->addWidget(mNavigatorInput, 1);
+    mNavigatorInput->setPlaceholderText("Navigator: type \"?\" for help.");
+    mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
 }
 
 void MainWindow::updateToolbar(QWidget* current)
@@ -5555,7 +5566,6 @@ void MainWindow::on_actionImport_Project_triggered()
     importProjectDialog();
 }
 
-
 void MainWindow::on_actionExport_Project_triggered()
 {
     PExProjectNode *project = mRecent.project();
@@ -5563,12 +5573,10 @@ void MainWindow::on_actionExport_Project_triggered()
     exportProjectDialog(project);
 }
 
-
 void MainWindow::on_actionPin_Right_triggered()
 {
     openPinView(ui->mainTabs->currentIndex(), Qt::Horizontal);
 }
-
 
 void MainWindow::on_actionPin_Below_triggered()
 {
@@ -5578,10 +5586,8 @@ void MainWindow::on_actionPin_Below_triggered()
 
 void MainWindow::on_actionNavigator_triggered()
 {
-    if (!mNavigatorDialog)
-        mNavigatorDialog = new NavigatorDialog(this);
-
-    mNavigatorDialog->exec();
+    mNavigatorDialog->show();
+    mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
 
 
