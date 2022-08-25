@@ -27,6 +27,7 @@ namespace studio {
 
 struct NavigatorContent {
     FileMeta* file;
+    QString fileText;
     QString additionalInfo;
 };
 

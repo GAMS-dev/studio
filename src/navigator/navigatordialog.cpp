@@ -64,7 +64,10 @@ void NavigatorDialog::setInput(const QString &input)
 {
     NavigatorMode mode;
 
-    if (input.startsWith(":")) {
+    if (input.startsWith("?")) {
+        mode = NavigatorMode::Help;
+        mFilterModel->setFilterWildcard("");
+    } else if (input.startsWith(":")) {
         mode = NavigatorMode::Line;
         mFilterModel->setFilterWildcard("");
     } else {
@@ -85,9 +88,12 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         case NavigatorMode::Line:
             content = navigateLine();
         break;
+        case NavigatorMode::Help:
+            content = showHelpContent();
+        break;
         default:
             content = QVector<NavigatorContent>();
-            break;
+        break;
     }
     mNavModel->setContent(content);
     mCurrentMode = mode;
@@ -96,17 +102,27 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         mFilterModel->sort(0);
 }
 
+QVector<NavigatorContent> NavigatorDialog::showHelpContent()
+{
+    QVector<NavigatorContent> content;
+
+    content.append({ nullptr, "FILENAME", "filter files"});
+    content.append({ nullptr, ":NUMBER", "jump to line number"});
+
+    return content;
+}
+
 QVector<NavigatorContent> NavigatorDialog::collectAllFiles()
 {
     QVector<NavigatorContent> content;
     foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
-        NavigatorContent nc = {fm, "open files"};
+        NavigatorContent nc = {fm, fm->location(), "open files"};
         content.append(nc);
     }
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content)) {
-            NavigatorContent nc = {fm, "known files"};
+            NavigatorContent nc = {fm, fm->location(), "known files"};
             content.append(nc);
         }
     }
@@ -127,7 +143,8 @@ QVector<NavigatorContent> NavigatorDialog::navigateLine()
 {
     QVector<NavigatorContent> content;
 
-    NavigatorContent nc = { mMain->fileRepo()->fileMeta(mMain->recent()->editor()),
+    FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+    NavigatorContent nc = { fm, fm->location(),
                             "Max Lines: " + QString::number(mMain->linesInCurrentEditor())
                           };
     content.append(nc);
@@ -139,7 +156,7 @@ void NavigatorDialog::returnPressed()
 {
     QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
 
-    if (mCurrentMode == NavigatorMode::AllFiles) {
+    if (mCurrentMode == NavigatorMode::AllFiles && index.row() != -1) {
         FileMeta* fm = mNavModel->content().at(index.row()).file;
         mMain->openFile(fm, true);
 
