@@ -80,6 +80,10 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                 return  QVariant::fromValue(Theme::color(Theme::Syntax_embedded));
         else if (state==(int)DataCheckState::ListItem || state==(int)DataCheckState::MapAppend || state==(int)DataCheckState::ListAppend)
                  return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
+        else if (state==(int)DataCheckState::ElementMap || state==(int)DataCheckState::ElementKey)
+            return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
+        else if (index.column()==(int)DataItemColumn::Value)
+            return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
         else
             return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
     }
