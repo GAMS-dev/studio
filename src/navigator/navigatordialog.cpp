@@ -33,7 +33,6 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     setWindowFlags(Qt::Popup);
     ui->setupUi(this);
     mNavModel = new NavigatorModel(this, main);
-    updateContent(NavigatorMode::AllFiles);
 
     mFilterModel = new QSortFilterProxyModel(this);
     mFilterModel->setSourceModel(mNavModel);
@@ -59,6 +58,15 @@ NavigatorDialog::~NavigatorDialog()
     delete ui;
     delete mNavModel;
     delete mFilterModel;
+}
+
+void NavigatorDialog::showEvent(QShowEvent *e)
+{
+    Q_UNUSED(e)
+
+    updatePosition();
+    updateContent(NavigatorMode::AllFiles);
+    mInput->setFocus();
 }
 
 void NavigatorDialog::setInput(const QString &input)
@@ -190,17 +198,9 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
             pos = ui->tableView->model()->rowCount() - 1;
 
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
-    } else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Return ||  e->key() == Qt::Key_Enter) {
+    } else if (e->key() == Qt::Key_Escape) {
         close();
     } else mInput->receiveKeyEvent(e);
-}
-
-void NavigatorDialog::showEvent(QShowEvent *e)
-{
-    Q_UNUSED(e)
-
-    updatePosition();
-    mInput->setFocus();
 }
 
 void NavigatorDialog::updatePosition()

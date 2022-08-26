@@ -492,9 +492,9 @@ void MainWindow::initNavigator()
     ui->statusBar->addWidget(spacer, 2);
 
     mNavigatorInput->setMinimumWidth(300);
-//    mNavigatorInput->setMaximumWidth(300);
     mNavigatorInput->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mNavigatorInput->setPlaceholderText("Navigator: type \"?\" for help.");
+    mNavigatorInput->setClearButtonEnabled(true);
     ui->statusBar->addWidget(mNavigatorInput, 1);
 
     mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
