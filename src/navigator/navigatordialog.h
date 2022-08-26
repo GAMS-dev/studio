@@ -37,6 +37,7 @@ class NavigatorDialog : public QDialog {
 public:
     NavigatorDialog(MainWindow* main, NavigatorLineEdit *inputField);
     ~NavigatorDialog();
+    void updatePosition();
 
 private:
     void keyPressEvent(QKeyEvent* e) override;

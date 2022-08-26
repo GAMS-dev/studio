@@ -198,14 +198,19 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 void NavigatorDialog::showEvent(QShowEvent *e)
 {
     Q_UNUSED(e)
+
+    updatePosition();
+    mInput->setFocus();
+}
+
+void NavigatorDialog::updatePosition()
+{
     QPoint position;
 
-    position.setX(mInput->pos().x() - width());
+    position.setX(mInput->pos().x() - width() - mInput->width());
     position.setY(mInput->pos().y() - height() - 5);
 
     move(mInput->mapToGlobal(position));
-
-    mInput->setFocus();
 }
 
 bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
