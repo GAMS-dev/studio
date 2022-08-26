@@ -190,66 +190,28 @@ ConnectData *Connect::createDataHolder(const QStringList &schemaNameList)
 
 ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, const QStringList &schema)
 {
-    YAML::Node data = YAML::Node(YAML::NodeType::Sequence);
-    QString schemastr = schema.join(":");
-    qDebug() << "createDataHolderFromSchema:" << schemaname << ", " <<schema << ", " << schemastr;
     ConnectSchema* s = mSchema[schemaname];
+    YAML::Node data;
     if (!s)
         return new ConnectData(data);
 
-    qDebug() << "1  s could be nullptr";
+    QString schemastr = schema.join(":");
     Schema* schemaHelper = s->getSchema(schemastr);
     if (!schemaHelper)
         return new ConnectData(data);
 
-    qDebug() << "2 :: " << schemaHelper->level << ":" << (schemaHelper->schemaDefined?"schema defined":"NO schema defined");
-    QStringList nextlevel = s->getNextLevelKeyList(schemastr);
-    qDebug() << "3 :: " << nextlevel;
+    for (YAML::const_iterator it = s->mRootNode.begin(); it != s->mRootNode.end(); ++it) {
+        QString key = QString(it->first.as<std::string>().c_str());
+        if (key.compare(schema.at(0))!=0)
+            continue;
 
-    if (schemaHelper->schemaDefined) { // || !nextlevel.isEmpty()) {
-        schemaHelper = s->getSchema(nextlevel.at(0));
-        QString first = nextlevel.at(0);
-        nextlevel.removeFirst();
-        qDebug() << "4 :: " << first << " :::: " << nextlevel;
-        if (schemaHelper->types.contains(SchemaType::Dict)) {
-            YAML::Node node = YAML::Node(YAML::NodeType::Map);
-            if  (nextlevel.size() <= 0) {
-                node["[key]"] = "[value]";
-            } else {
-                first.append(":");
-                foreach (QString str, nextlevel) {
-                    QString key = str.mid(first.size());
-                    qDebug()  << "5 :: " << str << ":" << first << ":" << str.indexOf(first) << ":" << key;
-                    schemaHelper = s->getSchema(str);
-                    // ToDo next level
-                    if (schemaHelper->types.contains(SchemaType::Dict)) {
-                        YAML::Node childnode = YAML::Node(YAML::NodeType::Map);
-                        if (!schemaHelper->schemaDefined) {
-                            childnode["[key]"] = "[value]";
-                            node[key.toStdString()] = childnode;
-                        } else {
+        if (it->second.Type() == YAML::NodeType::Map) {
+            YAML::Node value = YAML::Node(YAML::NodeType::Map);
+            mapValue( it->second, value );
 
-                        }
-                    } else if (schemaHelper->types.contains(SchemaType::List)) {
-                             YAML::Node childnode = YAML::Node(YAML::NodeType::Sequence);
-                             childnode[0] = getDefaultValueByType( schemaHelper );
-                             node[key.toStdString()] = childnode;
-                    } else {
-                        node[key.toStdString()] = getDefaultValueByType( schemaHelper );
-                    }
-                }
-            }
-            data[0] = node;
-        } else if (schemaHelper->types.contains(SchemaType::List)) {
-                 YAML::Node node = YAML::Node(YAML::NodeType::Sequence);
-                 data[0] = node;
-        } else {
-            data[0] = getDefaultValueByType( schemaHelper );
+            return new ConnectData(value);
         }
-    } else {
-        data[0] = getDefaultValueByType( schemaHelper );
     }
-
     return new ConnectData(data);
 }
 
