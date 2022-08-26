@@ -31,6 +31,7 @@
 #include "welcomepage.h"
 #include "modeldialog/modeldialog.h"
 #include "navigator/navigatordialog.h"
+#include "navigator/navigatorlineedit.h"
 #include "exception.h"
 #include "commonpaths.h"
 #include "process.h"
@@ -484,9 +485,18 @@ void MainWindow::initToolBar()
 
 void MainWindow::initNavigator()
 {
-    mNavigatorInput = new QLineEdit(this);
-    ui->statusBar->addWidget(mNavigatorInput, 1);
+    mNavigatorInput = new NavigatorLineEdit(this);
+
+    QLabel* spacer = new QLabel;
+    spacer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
+    ui->statusBar->addWidget(spacer, 2);
+
+    mNavigatorInput->setMinimumWidth(300);
+//    mNavigatorInput->setMaximumWidth(300);
+    mNavigatorInput->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mNavigatorInput->setPlaceholderText("Navigator: type \"?\" for help.");
+    ui->statusBar->addWidget(mNavigatorInput, 1);
+
     mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
 }
 
@@ -495,7 +505,7 @@ void MainWindow::updateToolbar(QWidget* current)
     // deactivate save for welcome page
     bool activateSave = (current != mWp);
 
-    for (auto a : ui->toolBar->actions()) {
+    for (QAction *a : ui->toolBar->actions()) {
         if (a->text() == "&Save") a->setEnabled(activateSave);
     }
 }
@@ -4670,7 +4680,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 
-// TODO(rogo): remove this together with the whole goto dialog?
+// TODO(RG): remove this together with the whole goto dialog, later
 void MainWindow::goToLine(int result)
 {
     if (result)

@@ -206,6 +206,7 @@ SOURCES += \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
     navigator/navigatordialog.cpp \
+    navigator/navigatorlineedit.cpp \
     navigator/navigatormodel.cpp \
     neos/httpmanager.cpp \
     neos/neosmanager.cpp \
@@ -436,6 +437,7 @@ HEADERS += \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
     navigator/navigatordialog.h \
+    navigator/navigatorlineedit.h \
     navigator/navigatormodel.h \
     neos/httpmanager.h \
     neos/neosmanager.h \

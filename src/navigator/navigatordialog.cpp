@@ -16,8 +16,9 @@
  *
  */
 #include <QKeyEvent>
-#include "navigatordialog.h"
 #include "ui_navigatordialog.h"
+#include "navigator/navigatorlineedit.h"
+#include "navigatordialog.h"
 
 // TODO(rogo): delete
 #include <QTime>
@@ -26,7 +27,7 @@
 namespace gams {
 namespace studio {
 
-NavigatorDialog::NavigatorDialog(MainWindow *main, QLineEdit* inputField)
+NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField)
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
     setWindowFlags(Qt::Popup);
@@ -177,7 +178,6 @@ void NavigatorDialog::returnPressed()
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 {
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<<__FUNCTION__ << e;
     if (e->key() == Qt::Key_Down) {
         int pos = ui->tableView->currentIndex().row() + 1;
         if (pos >= ui->tableView->model()->rowCount())
@@ -192,7 +192,7 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
     } else if (e->key() == Qt::Key_Escape || e->key() == Qt::Key_Return ||  e->key() == Qt::Key_Enter) {
         close();
-    } else QDialog::keyPressEvent(e);
+    } else mInput->receiveKeyEvent(e);
 }
 
 void NavigatorDialog::showEvent(QShowEvent *e)
@@ -213,7 +213,6 @@ bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
     if (watched != ui->tableView) return false;
     if (event->type() == QEvent::KeyPress) {
         QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        qDebug()/*rogo:delete*/<<QTime::currentTime()<<__FUNCTION__<<keyEvent;
         if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down) {
             keyPressEvent(keyEvent);
             return true;

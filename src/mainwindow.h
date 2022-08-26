@@ -67,6 +67,8 @@ class Settings;
 class SearchResultList;
 class AutosaveHandler;
 class SystemLogEdit;
+class NavigatorLineEdit;
+
 namespace search {
 class SearchDialog;
 }
@@ -507,7 +509,7 @@ private:
     ProjectContextMenu mProjectContextMenu;
     MainTabContextMenu mMainTabContextMenu;
     LogTabContextMenu mLogTabContextMenu;
-    QLineEdit* mNavigatorInput = nullptr;
+    NavigatorLineEdit* mNavigatorInput = nullptr;
 
     QMutex mFileMutex;
     QVector<FileEventData> mFileEvents;
