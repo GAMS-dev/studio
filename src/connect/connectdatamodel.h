@@ -94,6 +94,7 @@ protected:
     void informDataChanged(const QModelIndex& parent);
 
     void setupTreeItemModelData();
+    void insertSchemaData(const QString& schemaName, ConnectData* data,  QList<ConnectDataItem*>& parents);
     void insertSchemaModelData(ConnectData* data, int position);
 
     int              mItemIDCount;

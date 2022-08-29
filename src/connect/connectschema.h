@@ -126,9 +126,10 @@ struct ValueWrapper {
 
 class Schema {
 public:
-    int           level;
-    QList<SchemaType>   types;
-    bool          required;
+    int                  level;
+    YAML::Node           schemaNode;
+    QList<SchemaType>    types;
+    bool                 required;
     QList<ValueWrapper>  allowedValues;
     ValueWrapper         defaultValue;
     ValueWrapper         min;
@@ -136,35 +137,29 @@ public:
     bool                 schemaDefined;
 
     Schema(
-        int                 level_,
-        QList<SchemaType>         type_,
-        bool                required_,
-        QList<ValueWrapper> allowedValues_
+        int                  level_,
+        YAML::Node           schemaNode_,
+        QList<SchemaType>    type_,
+        bool                 required_,
+        QList<ValueWrapper>  allowedValues_
     ) : level(level_),
+        schemaNode(schemaNode_),
         types(type_),
         required(required_),
         allowedValues(allowedValues_)
       { }
 
     Schema(
-        int           level_,
-        QList<SchemaType>   type_,
-        bool          required_,
+        int                  level_,
+        YAML::Node           schemaNode_,
+        QList<SchemaType>    type_,
+        bool                 required_,
         QList<ValueWrapper>  allowedValues_,
         ValueWrapper         defaultValue_,
         ValueWrapper         min_,
         ValueWrapper         max_,
         bool                 schemaDefined_=false
-    )
-    : level(level_),
-      types(type_),
-      required(required_),
-      allowedValues(allowedValues_),
-      defaultValue(defaultValue_),
-      min(min_),
-      max(max_),
-      schemaDefined(schemaDefined_)
-    { }
+    );
 
     bool hasType(SchemaType tt) {
        for (const SchemaType t : types) {

@@ -80,7 +80,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     mOrderedKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
-    Schema* s = new Schema(level, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
+    Schema* s = new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
     mSchemaHelper.insert(key, s);
     if (node["schema"]) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
@@ -176,6 +176,7 @@ bool ConnectSchema::contains(const QString &key) const
 
 Schema *ConnectSchema::getSchema(const QString &key) const
 {
+    qDebug() << mSchemaHelper.keys();
     if (contains(key))
         return mSchemaHelper[key];
     else
@@ -263,6 +264,18 @@ bool ConnectSchema::isSchemaDefined(const QString &key) const
 
     return false;
 }
+
+Schema::Schema(int level_, YAML::Node schemaNode_, QList<SchemaType> type_, bool required_, QList<ValueWrapper> allowedValues_, ValueWrapper defaultValue_, ValueWrapper min_, ValueWrapper max_, bool schemaDefined_)
+    : level(level_),
+      schemaNode(schemaNode_),
+      types(type_),
+      required(required_),
+      allowedValues(allowedValues_),
+      defaultValue(defaultValue_),
+      min(min_),
+      max(max_),
+      schemaDefined(schemaDefined_)
+{ }
 
 
 } // namespace connect
