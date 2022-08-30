@@ -209,7 +209,7 @@ bool ConnectDataModel::setData(const QModelIndex &index, const QVariant &value, 
 {
     QVector<int> roles;
     switch (role) {
-    case Qt::DisplayRole: {
+    case Qt::EditRole: {
         roles = { Qt::EditRole };
         ConnectDataItem *item = getItem(index);
         bool result = item->setData(index.column(), value);
@@ -217,7 +217,6 @@ bool ConnectDataModel::setData(const QModelIndex &index, const QVariant &value, 
             emit dataChanged(index, index, roles);
         return result;
     }
-//    case Qt::CheckStateRole: {  }
     default:
         break;
     }
