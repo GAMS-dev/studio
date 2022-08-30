@@ -223,13 +223,12 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
         QStringList schema = values_idx.data().toStringList();
-        qDebug() << "     value_idx.data" << schema;
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
             ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema);
             qDebug() << schemadata->str().c_str();
-            mDataModel->appendListElement(schemadata, index);
+            mDataModel->appendListElement(schemaname, schema, schemadata, index);
         }
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);

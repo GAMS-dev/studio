@@ -88,14 +88,13 @@ public:
 public slots:
     void addFromSchema(ConnectData* data, int insertPosition);
     void appendMapElement(const QModelIndex& index);
-    void appendListElement(ConnectData* data, const QModelIndex& index);
+    void appendListElement(const QString& schemaname, QStringList& keys, ConnectData* data, const QModelIndex& index);
 
 protected:
     void informDataChanged(const QModelIndex& parent);
 
     void setupTreeItemModelData();
-    void insertSchemaData(const QString& schemaName, ConnectData* data,  QList<ConnectDataItem*>& parents);
-    void insertSchemaModelData(ConnectData* data, int position);
+    void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data,  QList<ConnectDataItem*>& parents);
 
     int              mItemIDCount;
     QString          mLocation;

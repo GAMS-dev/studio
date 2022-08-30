@@ -201,17 +201,9 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
-    if (schemaHelper->schemaDefined) {
-        YAML::Node value = YAML::Node(YAML::NodeType::Map);
-        mapValue( schemanode, value );
-        return new ConnectData(value);
-    } else {
-        YAML::Node value = YAML::Node(YAML::NodeType::Sequence);
-        mapValue( schemanode, value );
-        data[0] = value;
-    }
-
-    return new ConnectData(data);
+    YAML::Node value = YAML::Node(YAML::NodeType::Map);
+     mapValue( schemanode, value );
+    return new ConnectData(value);
 }
 
 void Connect::addDataForAgent(ConnectData *data, const QString &schemaName)
