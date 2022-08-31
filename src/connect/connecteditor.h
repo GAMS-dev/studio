@@ -42,8 +42,22 @@ class ConnectEditor : public AbstractView
     Q_OBJECT
 
 public:
-    explicit ConnectEditor(const QString& connectDataFileName, QWidget *parent = nullptr);
+    explicit ConnectEditor(const QString& connectDataFileName,
+                           FileId id,  QTextCodec* codec, QWidget *parent = nullptr);
     ~ConnectEditor() override;
+
+    FileId fileId() const;
+
+    bool saveAs(const QString &location);
+
+    bool isModified() const;
+    void setModified(bool modified);
+
+signals:
+    void modificationChanged(bool modifiedState);
+
+public slots:
+    bool saveConnectFile(const QString &location);
 
 private slots:
     void schemaDoubleClicked(const QModelIndex &modelIndex);
@@ -67,11 +81,15 @@ private:
 
 private:
     Ui::ConnectEditor *ui;
+    bool        mModified;
+    FileId      mFileId;
+    QTextCodec* mCodec;
 
     QList<int>        mExpandIDs;
     ConnectDataModel* mDataModel;
     Connect*          mConnect;
     QString           mLocation;
+
 
     void iterateModelItem(QModelIndex parent=QModelIndex());
 

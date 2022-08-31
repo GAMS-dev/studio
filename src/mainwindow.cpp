@@ -4133,14 +4133,12 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt
-               || fileMeta->kind() == FileKind::Guc|| fileMeta->kind() == FileKind::Efi) {
+    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
+               || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
-    } else if (fileMeta->kind() == FileKind::GCon) {
-        connect::ConnectEditor *connectEditor= ViewHelper::toGamsConnectEditor(edit);
     }
 }
 

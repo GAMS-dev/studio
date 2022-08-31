@@ -32,13 +32,12 @@ class ConnectDataValueDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit ConnectDataValueDelegate(Connect* c, QObject *parent = nullptr);
+    explicit ConnectDataValueDelegate(QObject *parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
-    QModelIndex currentEditedIndex() const;
     QWidget* lastEditor() const;
     bool isLastEditorClosed() const;
 
@@ -46,15 +45,12 @@ protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;
 
 signals:
-    void currentEditedIndexChanged(const QModelIndex &index) const;
+    void modificationChanged(bool modifiedState);
 
 private slots:
     void commitAndCloseEditor();
-    void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
-    Connect*     mConnect;
-    QModelIndex  mCurrentEditedIndex;
     mutable bool mIsLastEditorClosed;
     mutable QWidget* mLastEditor;
 };

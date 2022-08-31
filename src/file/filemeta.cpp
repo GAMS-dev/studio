@@ -571,8 +571,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
-//    } else if (connect::ConnectWidget* gcyEdit = ViewHelper::toGamsConnnectEditor(edit)) {
-//
+    } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
+        connect(gcEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
@@ -827,7 +827,6 @@ void FileMeta::save(const QString &newLocation)
     } else if (kind() == FileKind::Guc) {
         option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
         if (gucEditor) gucEditor->saveConfigFile(location);
-
     } else if (kind() == FileKind::Efi) {
         efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
         if (efi) {
@@ -847,6 +846,9 @@ void FileMeta::save(const QString &newLocation)
             }
             efi->save(location);
         }
+    } else if (kind() == FileKind::GCon) {
+        connect::ConnectEditor* gconEditor = ViewHelper::toGamsConnectEditor( mEditors.first() );
+        if (gconEditor) gconEditor->saveConnectFile(location);
 
     } else { // no document, e.g. lst
         QFile old(mLocation);
@@ -990,6 +992,11 @@ bool FileMeta::isModified() const
         for (QWidget *wid: mEditors) {
             if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(wid))
                 return efi->isModified();
+    } else if (kind() == FileKind::GCon) {
+        for (QWidget *wid: mEditors) {
+            connect::ConnectEditor* gconEditor = ViewHelper::toGamsConnectEditor(wid);
+            if (gconEditor)
+                return gconEditor->isModified();
         }
     }
     return false;
@@ -1037,6 +1044,11 @@ void FileMeta::setModified(bool modified)
 {
     if (document()) {
         document()->setModified(modified);
+    } else if (kind() == FileKind::GCon) {
+        for (QWidget *e : qAsConst(mEditors)) {
+             connect::ConnectEditor *ce = ViewHelper::toGamsConnectEditor(e);
+             if (ce) ce->setModified(modified);
+        }
     } else if (kind() == FileKind::Opt) {
           for (QWidget *e : qAsConst(mEditors)) {
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
@@ -1178,7 +1190,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             res = ViewHelper::initEditorType(new option::GamsConfigEditor( QFileInfo(name()).completeBaseName(), location(),
                                                                          id(), parent));
     } else if (kind() == FileKind::GCon && !forcedAsTextEdit) {
-        res =  ViewHelper::initEditorType(new connect::ConnectEditor(location(), parent ));
+        res =  ViewHelper::initEditorType(new connect::ConnectEditor(location(), id(), mCodec, parent ));
     } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;

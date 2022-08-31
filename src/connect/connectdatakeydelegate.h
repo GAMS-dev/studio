@@ -40,7 +40,6 @@ public:
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
-    QModelIndex currentEditedIndex() const;
     QWidget* lastEditor() const;
     bool isLastEditorClosed() const;
 
@@ -53,11 +52,10 @@ signals:
     void requestSchemaHelp(const QString &schemaname);
     void requestAppendItem(const QModelIndex &index);
 
-    void currentEditedIndexChanged(const QModelIndex &index) const;
+    void modificationChanged(bool modifiedState);
 
 private slots:
     void commitAndCloseEditor();
-    void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
     mutable int mIconWidth;
@@ -66,8 +64,6 @@ private:
     mutable QMap<QString, QRect> mSchemaHelpPosition;
     mutable QMap<QModelIndex, QRect> mSchemaAppendPosition;
 
-    Connect*     mConnect;
-    QModelIndex  mCurrentEditedIndex;
     mutable bool mIsLastEditorClosed;
     mutable QWidget* mLastEditor;
 };

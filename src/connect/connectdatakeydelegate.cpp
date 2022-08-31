@@ -35,9 +35,6 @@ ConnectDataKeyDelegate::ConnectDataKeyDelegate(QObject *parent)
 {
     mIconWidth = 16;
     mIconHeight = 16;
-    mCurrentEditedIndex = QModelIndex();
-    connect( this, &ConnectDataKeyDelegate::currentEditedIndexChanged,
-             this, &ConnectDataKeyDelegate::updateCurrentEditedIndex  );
 }
 
 ConnectDataKeyDelegate::~ConnectDataKeyDelegate()
@@ -89,13 +86,11 @@ QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptio
     connect( lineEdit, &QLineEdit::editingFinished,
              this, &ConnectDataKeyDelegate::commitAndCloseEditor );
 
-    emit currentEditedIndexChanged(index);
     return lineEdit;
 }
 
 void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         QVariant data = index.model()->data( index );
@@ -107,18 +102,12 @@ void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 
 void ConnectDataKeyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         model->setData( index, lineEdit->text() ) ;
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-QModelIndex ConnectDataKeyDelegate::currentEditedIndex() const
-{
-    return mCurrentEditedIndex;
 }
 
 QWidget *ConnectDataKeyDelegate::lastEditor() const
@@ -136,14 +125,10 @@ void ConnectDataKeyDelegate::commitAndCloseEditor()
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
-    updateCurrentEditedIndex(QModelIndex());
+    emit modificationChanged(true);
     mIsLastEditorClosed = true;
 }
 
-void ConnectDataKeyDelegate::updateCurrentEditedIndex(const QModelIndex &index)
-{
-    mCurrentEditedIndex = index;
-}
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {

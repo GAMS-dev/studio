@@ -32,13 +32,9 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectDataValueDelegate::ConnectDataValueDelegate(Connect* c, QObject *parent)
-    : QStyledItemDelegate{parent},
-      mConnect(c)
+ConnectDataValueDelegate::ConnectDataValueDelegate(QObject *parent)
+    : QStyledItemDelegate{parent}
 {
-    mCurrentEditedIndex = QModelIndex();
-    connect( this, &ConnectDataValueDelegate::currentEditedIndexChanged,
-             this, &ConnectDataValueDelegate::updateCurrentEditedIndex  );
 }
 
 QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
@@ -71,15 +67,11 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
 
     connect( lineEdit, &QLineEdit::editingFinished,
              this, &ConnectDataValueDelegate::commitAndCloseEditor );
-
-    emit currentEditedIndexChanged(index);
-
     return lineEdit;
 }
 
 void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         QVariant data = index.model()->data( index );
@@ -94,29 +86,18 @@ void ConnectDataValueDelegate::commitAndCloseEditor()
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
     emit commitData(lineEdit);
     emit closeEditor(lineEdit);
-    updateCurrentEditedIndex(QModelIndex());
+    emit modificationChanged(true);
     mIsLastEditorClosed = true;
-}
-
-void ConnectDataValueDelegate::updateCurrentEditedIndex(const QModelIndex &index)
-{
-    mCurrentEditedIndex = index;
 }
 
 void ConnectDataValueDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
         model->setData( index, lineEdit->text() ) ;
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-QModelIndex ConnectDataValueDelegate::currentEditedIndex() const
-{
-    return mCurrentEditedIndex;
 }
 
 QWidget *ConnectDataValueDelegate::lastEditor() const
