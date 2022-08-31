@@ -82,7 +82,7 @@ void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex 
     emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
+        QVariant data = index.model()->data( index );
         lineEdit->setText(  data.toString() ) ;
         return;
     }

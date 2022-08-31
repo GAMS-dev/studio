@@ -158,7 +158,7 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
                } else {
                    str += "[";
                    int i = 0;
-                   for(auto const& t: typeList) {
+                   foreach(auto const& t, typeList) {
                        ++i;
                        str += ConnectSchema::typeToString(t);
                        if (i < typeList.size())

@@ -21,6 +21,7 @@
 #include <QMouseEvent>
 #include <QDebug>
 #include <QToolTip>
+#include <QLineEdit>
 
 #include "connectdatakeydelegate.h"
 #include "connectdatamodel.h"
@@ -34,6 +35,9 @@ ConnectDataKeyDelegate::ConnectDataKeyDelegate(QObject *parent)
 {
     mIconWidth = 16;
     mIconHeight = 16;
+    mCurrentEditedIndex = QModelIndex();
+    connect( this, &ConnectDataKeyDelegate::currentEditedIndexChanged,
+             this, &ConnectDataKeyDelegate::updateCurrentEditedIndex  );
 }
 
 ConnectDataKeyDelegate::~ConnectDataKeyDelegate()
@@ -68,9 +72,88 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
     }
 }
 
+QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
+{
+    Q_UNUSED(option)
+    QLineEdit* lineEdit = new QLineEdit(parent);
+
+    QModelIndex checkstate_index = index.sibling( index.row(), (int)DataItemColumn::CheckState );
+    if (checkstate_index.data(Qt::DisplayRole).toInt()!=(int)DataCheckState::ElementKey &&
+       checkstate_index.data(Qt::DisplayRole).toInt()!=(int)DataCheckState::ElementMap     )
+        return lineEdit;
+
+    lineEdit->adjustSize();
+    mLastEditor = lineEdit;
+    mIsLastEditorClosed = false;
+
+    connect( lineEdit, &QLineEdit::editingFinished,
+             this, &ConnectDataKeyDelegate::commitAndCloseEditor );
+
+    emit currentEditedIndexChanged(index);
+    return lineEdit;
+}
+
+void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
+{
+    emit currentEditedIndexChanged(index);
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
+    if (lineEdit) {
+        QVariant data = index.model()->data( index );
+        lineEdit->setText(  data.toString() ) ;
+        return;
+    }
+    QStyledItemDelegate::setEditorData(editor, index);
+}
+
+void ConnectDataKeyDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
+{
+    emit currentEditedIndexChanged(index);
+    QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
+    if (lineEdit) {
+        model->setData( index, lineEdit->text() ) ;
+        return;
+    }
+    QStyledItemDelegate::setModelData(editor, model, index);
+}
+
+QModelIndex ConnectDataKeyDelegate::currentEditedIndex() const
+{
+    return mCurrentEditedIndex;
+}
+
+QWidget *ConnectDataKeyDelegate::lastEditor() const
+{
+   return mLastEditor;
+}
+
+bool ConnectDataKeyDelegate::isLastEditorClosed() const
+{
+    return mIsLastEditorClosed;
+}
+
+void ConnectDataKeyDelegate::commitAndCloseEditor()
+{
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
+    emit commitData(lineEdit);
+    emit closeEditor(lineEdit);
+    updateCurrentEditedIndex(QModelIndex());
+    mIsLastEditorClosed = true;
+}
+
+void ConnectDataKeyDelegate::updateCurrentEditedIndex(const QModelIndex &index)
+{
+    mCurrentEditedIndex = index;
+}
+
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
+    qDebug() << "editorEvent";
     if (event->type()==QEvent::MouseButtonRelease) {
+        QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+        if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
+            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap    ) {
+             return true;
+        }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
         qDebug() << "position(" << p.x() << "," << p.y() << ") " << mSchemaHelpPosition.size()
@@ -103,6 +186,26 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
     }
     return QStyledItemDelegate::editorEvent(event,model, option, index);
 
+}
+
+bool ConnectDataKeyDelegate::eventFilter(QObject *editor, QEvent *event)
+{
+    qDebug() << "evenFilter";
+    if (!editor)
+        return false;
+
+    if(event->type()==QEvent::KeyPress) {
+       QLineEdit* lineEdit = static_cast<QLineEdit *>(editor);
+       QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
+       if (keyEvent->key() == Qt::Key_Escape) {
+             emit closeEditor(lineEdit);
+             return true;
+       } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
+                  emit lineEdit->editingFinished();
+                  return true;
+       }
+    }
+    return QStyledItemDelegate::eventFilter(editor, event);
 }
 
 } // namespace connect

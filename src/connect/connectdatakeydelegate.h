@@ -22,6 +22,8 @@
 
 #include <QStyledItemDelegate>
 
+#include "connect.h"
+
 namespace gams {
 namespace studio {
 namespace connect {
@@ -34,13 +36,28 @@ public:
     ~ConnectDataKeyDelegate() override;
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
+    QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void setEditorData(QWidget *editor, const QModelIndex &index) const override;
+    void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
+
+    QModelIndex currentEditedIndex() const;
+    QWidget* lastEditor() const;
+    bool isLastEditorClosed() const;
+
 protected:
     bool editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option,
                      const QModelIndex &index) override;
+    bool eventFilter(QObject * editor, QEvent * event) override;
 
 signals:
     void requestSchemaHelp(const QString &schemaname);
     void requestAppendItem(const QModelIndex &index);
+
+    void currentEditedIndexChanged(const QModelIndex &index) const;
+
+private slots:
+    void commitAndCloseEditor();
+    void updateCurrentEditedIndex(const QModelIndex &index);
 
 private:
     mutable int mIconWidth;
@@ -48,6 +65,11 @@ private:
 
     mutable QMap<QString, QRect> mSchemaHelpPosition;
     mutable QMap<QModelIndex, QRect> mSchemaAppendPosition;
+
+    Connect*     mConnect;
+    QModelIndex  mCurrentEditedIndex;
+    mutable bool mIsLastEditorClosed;
+    mutable QWidget* mLastEditor;
 };
 
 } // namespace connect

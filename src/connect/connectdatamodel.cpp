@@ -53,6 +53,9 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     switch (role) {
+    case Qt::EditRole: {
+
+    }
     case Qt::DisplayRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
         if (index.column()==(int)DataItemColumn::SchemaType || index.column()==(int)DataItemColumn::AllowedValue) {
@@ -182,19 +185,18 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
     if (!index.isValid()) {
         return Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Key) {
-               if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementMap ||
-                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementKey ||
-                   item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementValue  )
+               if (item->data((int)DataItemColumn::CheckState).toInt()== (int)DataCheckState::ElementMap ||
+                   item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey    )
                    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
                else
                    return Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Value) {
-              if (item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementKey   ||
-                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementValue ||
-                  item->data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ElementMap      )
+              if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementKey   ||
+                  item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue ||
+                  item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementMap      )
                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
               else if (item->data( (int)DataItemColumn::CheckState ).toInt()<=(int)DataCheckState::ElementKey ||
-                  item->data( (int)DataItemColumn::CheckState ).toInt()>=(int)DataCheckState::ListAppend)
+                       item->data( (int)DataItemColumn::CheckState ).toInt()>=(int)DataCheckState::ListAppend)
                      return  Qt::NoItemFlags;
               else
                     return Qt::ItemIsEditable | QAbstractItemModel::flags(index);

@@ -72,7 +72,7 @@ bool ConnectEditor::init()
     ui->schemaControlListView->setSizeAdjustPolicy(QAbstractScrollArea::AdjustToContents);
     ui->schemaControlListView->setViewMode(QListView::ListMode);
     ui->schemaControlListView->setIconSize(QSize(14,14));
-    ui->schemaControlListView->setAutoFillBackground(true);
+    ui->schemaControlListView->setAutoFillBackground(false);
     ui->schemaControlListView->setBackgroundRole(QPalette::NoRole);
     ui->schemaControlListView->viewport()->setAutoFillBackground(true);
 //    QPalette palette = ui->schemaControlListView->viewport()->palette();
@@ -117,13 +117,13 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
     headerRegister(ui->dataTreeView->header());
 
-    SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().first(), this);
+    SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().at(0), this);
     ui->helpTreeView->setModel( defmodel );
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->helpTreeView->header()->setStyle(HeaderViewProxy::instance());
