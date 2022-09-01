@@ -3,6 +3,7 @@ Version 1.11.2*
 - fixed occasional crash when opening search dialog after closing all files
 - fixed drag'n'drop creating group with invalid working directory
 - removed link to outdated introduction video
+- fixed GDX Viewer showing wrong data in table view because of a falsely restored symbol which dimension or type has changed
 
 Version 1.11.1
 ==================
