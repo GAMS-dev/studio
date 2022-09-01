@@ -164,9 +164,6 @@ void WelcomePage::setupIcons()
     ui->label_trnsport->setIndent(30);
     ui->label_trnsport->setIconSize(size);
     ui->label_trnsport->setIcon(Theme::icon(":/%1/truck"));
-    ui->label_tutvid->setIndent(30);
-    ui->label_tutvid->setIconSize(size);
-    ui->label_tutvid->setIcon(Theme::icon(":/%1/film"));
     ui->label_doc_studio->setIndent(30);
     ui->label_doc_studio->setIconSize(size);
     ui->label_doc_studio->setIcon(Theme::icon(":/img/gams-w"));

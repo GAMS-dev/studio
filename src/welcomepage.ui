@@ -410,28 +410,6 @@
                 </widget>
                </item>
                <item>
-                <widget class="gams::studio::WpLabel" name="label_tutvid">
-                 <property name="mouseTracking">
-                  <bool>true</bool>
-                 </property>
-                 <property name="frameShape">
-                  <enum>QFrame::StyledPanel</enum>
-                 </property>
-                 <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Introduction Video&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;External link to youtube.com&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
-                 </property>
-                 <property name="wordWrap">
-                  <bool>true</bool>
-                 </property>
-                 <property name="margin">
-                  <number>4</number>
-                 </property>
-                 <property name="link" stdset="0">
-                  <string>https://www.youtube.com/watch?v=p1D86dpyFfY</string>
-                 </property>
-                </widget>
-               </item>
-               <item>
                 <widget class="gams::studio::WpLabel" name="label_doc_studio">
                  <property name="font">
                   <font>
