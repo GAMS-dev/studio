@@ -4,6 +4,7 @@ Version 1.11.2*
 - fixed drag'n'drop creating group with invalid working directory
 - removed link to outdated introduction video
 - fixed GDX Viewer showing wrong data in table view because of a falsely restored symbol which dimension or type has changed
+- fixed GDX Viewer crash occurring when a file is reloaded during a drag-and-drop operation in table view mode
 
 Version 1.11.1
 ==================
