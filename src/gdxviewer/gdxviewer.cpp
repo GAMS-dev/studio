@@ -118,11 +118,11 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             }
             mSymbolViews.replace(selectedIdx, symView);
 
-            if (mState && mState->symbolViewStates().contains(selectedSymbol->name()))
-                symView->setSym(selectedSymbol, mGdxSymbolTable, mState->symbolViewState(selectedSymbol->name()));
+            GdxSymbolViewState* symViewState = mState ? mState->symbolViewState(selectedSymbol->name()) : nullptr;
+            if (mState && symViewState && symViewState->dim() == selectedSymbol->dim() && symViewState->type() == selectedSymbol->type())
+                symView->setSym(selectedSymbol, mGdxSymbolTable, symViewState);
             else
                 symView->setSym(selectedSymbol, mGdxSymbolTable);
-
         }
 
         if (!selectedSymbol->isLoaded())
