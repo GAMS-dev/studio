@@ -99,7 +99,6 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Delete, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
-//    ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Expand, actiondelegate);
 
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Fixed);
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::ResizeToContents);
@@ -120,10 +119,10 @@ bool ConnectEditor::init()
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-//    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().at(0), this);
@@ -202,10 +201,9 @@ bool ConnectEditor::saveAs(const QString &location)
 {
     setModified(false);
     bool successs = false;
-    if (mLocation!=location) {
-       // ToDo
-    }
-    qDebug() << "save : " << location;
+    ConnectData* data = mDataModel->getConnectData();
+    qDebug()<< data->str().c_str();
+    data->unload(location);
     return successs;
 }
 

@@ -504,6 +504,65 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     qDebug() << "end appendListElement (" << index.row() << "," << index.column() << ") " << rowCount();
 }
 
+ConnectData *ConnectDataModel::getConnectData()
+{
+     YAML::Node root = YAML::Node(YAML::NodeType::Sequence);
+     for(int i=0; i<mRootItem->childCount(); ++i) {
+         ConnectDataItem* item = mRootItem->child(i);
+         YAML::Node node = YAML::Node(YAML::NodeType::Map);
+         std::string key = item->data((int)DataItemColumn::Key).toString().toStdString();
+         YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
+         getData( item, mapnode );
+         node[key] = mapnode;
+         root[i] = node;
+     }
+     return new ConnectData(root);
+}
+
+void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
+{
+    for(int i=0; i<item->childCount(); ++i) {
+        ConnectDataItem* childitem = item->child(i);
+        if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::SchemaName) {
+            std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
+            YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
+            getData( childitem, mapnode );
+            node[key] = mapnode;
+        } else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::KeyItem) {
+            std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
+            YAML::Node mapnode;
+            getData( childitem, mapnode );
+            node[key] = mapnode;
+        } else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ListItem) {
+                   YAML::Node mapnode;
+                   for(int j=0; j<childitem->childCount(); ++j) {  // skip row with DataCheckState::ListItem
+                       ConnectDataItem* seqchilditem = childitem->child(j);
+                       std::string seqmapkey = seqchilditem->data((int)DataItemColumn::Key).toString().toStdString();
+                       if (seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue ||
+                           seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap      ) {
+                           YAML::Node mapseqnode;
+                           getData(seqchilditem, mapseqnode);
+                           mapnode[seqmapkey] = seqchilditem->data((int)DataItemColumn::Value).toString().toStdString();;
+                       } else if (seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey ) {
+                           mapnode = seqmapkey;
+                       } else {
+                           YAML::Node mapseqnode;
+                           getData(seqchilditem, mapseqnode);
+                           mapnode[seqmapkey] = mapseqnode;
+                       }
+                   }
+                   node[i] = mapnode;
+        } else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue ||
+                   childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap      ) {
+                   std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
+                   node[key] = childitem->data((int)DataItemColumn::Value).toString().toStdString();
+        }  else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey) {
+                  YAML::Node node = YAML::Node(YAML::NodeType::Scalar);
+                  node = YAML::Node(childitem->data((int)DataItemColumn::Key).toString().toStdString());
+        }
+    }
+}
+
 void ConnectDataModel::informDataChanged(const QModelIndex& parent)
 {
     QModelIndex checkstate_index = parent.sibling(parent.row(), (int)DataItemColumn::CheckState);

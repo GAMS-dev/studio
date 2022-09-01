@@ -23,6 +23,7 @@
 #include <QAbstractItemModel>
 
 #include "connect.h"
+#include "connectdata.h"
 #include "connectdataitem.h"
 
 namespace gams {
@@ -90,7 +91,10 @@ public slots:
     void appendMapElement(const QModelIndex& index);
     void appendListElement(const QString& schemaname, QStringList& keys, ConnectData* data, const QModelIndex& index);
 
+    ConnectData* getConnectData();
+
 protected:
+    void getData(ConnectDataItem* item, YAML::Node& node);
     void informDataChanged(const QModelIndex& parent);
 
     void setupTreeItemModelData();
