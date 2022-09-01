@@ -112,7 +112,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         // create new GdxSymbolView if the symbol is selected for the first time
         if (!mSymbolViews.at(selectedIdx)) {
-            GdxSymbolView* symView = new GdxSymbolView();
+            GdxSymbolView* symView = new GdxSymbolView(this);
             for (QHeaderView *header : symView->headers()) {
                 headerRegister(header);
             }
@@ -145,9 +145,14 @@ GdxSymbol *GdxViewer::selectedSymbol()
     return selected;
 }
 
-int GdxViewer::reload(QTextCodec* codec, bool quiet)
+int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
 {
     if (mHasChanged || codec != mCodec) {
+        if (dragInProgress() || mPendingInvalidate) {
+            if (triggerReload)
+                QTimer::singleShot(50, this, [this, codec, quiet, triggerReload](){ reload(codec, quiet, triggerReload); });
+            return -2;
+        }
         mCodec = codec;
         releaseFile();
         int initError = init(quiet);
@@ -210,11 +215,25 @@ void GdxViewer::releaseFile()
 
 void GdxViewer::invalidate()
 {
+    if (dragInProgress()) {
+        mPendingInvalidate = true;
+        QTimer::singleShot(50, this, &GdxViewer::invalidate);
+        return;
+    }
     if (isEnabled()) {
         saveState();
         setEnabled(false);
         releaseFile();
     }
+    mPendingInvalidate = false;
+}
+
+bool GdxViewer::dragInProgress()
+{
+    GdxSymbol *sym = selectedSymbol();
+    if (sym)
+        return symbolViewByName(sym->name())->dragInProgress();
+    return false;
 }
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)

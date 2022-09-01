@@ -168,8 +168,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->setContextMenuPolicy(Qt::CustomContextMenu);
     ui->tvTableView->setContextMenuPolicy(Qt::CustomContextMenu);
 
-    ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical));
-    ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal));
+    ui->tvTableView->setVerticalHeader(new NestedHeaderView(Qt::Vertical, ui->tvTableView));
+    ui->tvTableView->setHorizontalHeader(new NestedHeaderView(Qt::Horizontal, ui->tvTableView));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvTableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
 
@@ -858,6 +858,11 @@ QList<QHeaderView *> GdxSymbolView::headers()
                                  << ui->tvTableViewFilter->horizontalHeader()
                                  << ui->tvListView->verticalHeader()
                                  << ui->tvTableView->verticalHeader();
+}
+
+bool GdxSymbolView::dragInProgress()
+{
+    return static_cast<NestedHeaderView*>(ui->tvTableView->horizontalHeader())->dragInProgress() || static_cast<NestedHeaderView*>(ui->tvTableView->verticalHeader())->dragInProgress();
 }
 
 void GdxSymbolView::enableControls()

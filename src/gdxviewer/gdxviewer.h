@@ -53,13 +53,16 @@ public:
     ~GdxViewer() override;
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
-    int reload(QTextCodec* codec, bool quiet = false);
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
     void selectSearchField();
     void releaseFile();
+    bool dragInProgress();
+
+public slots:
     void invalidate();
+    int reload(QTextCodec* codec, bool quiet=false, bool triggerReload=true);
 
 private slots:
     void hideUniverseSymbol();
@@ -101,6 +104,7 @@ private:
     QTextCodec *mCodec;
 
     GdxViewerState* mState = nullptr;
+    bool mPendingInvalidate = false;
 };
 
 } // namespace gdxviewer

@@ -213,14 +213,16 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         //do not allow to drag the value column (lavel, marginal,...) of variables and equations
         if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && pointToDimension(mDragStartPosition)==dim()-1)
             return;
-        QDrag *drag = new QDrag(this);
         QMimeData *mimeData = new QMimeData;
         if (orientation() == Qt::Vertical)
             mimeData->setData("GDXDRAGDROP/COL", QByteArray::number(pointToDimension(mDragStartPosition)));
         else
             mimeData->setData("GDXDRAGDROP/ROW", QByteArray::number(pointToDimension(mDragStartPosition)));
+        mDragInProgress = true;
+        QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->exec();
+        event->accept();
     }
 
     if(orientation() == Qt::Vertical)
@@ -309,6 +311,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
         event->accept();
         dimIdxEnd = -1;
         dimIdxStart = -1;
+        static_cast<NestedHeaderView*>(static_cast<QTableView*>(this->parent())->horizontalHeader())->setDragInProgress(false);
+        static_cast<NestedHeaderView*>(static_cast<QTableView*>(this->parent())->verticalHeader())->setDragInProgress(false);
         return;
     }
 
@@ -339,6 +343,9 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
 
     static_cast<GdxSymbolView*>(parent()->parent())->toggleColumnHidden();
     static_cast<GdxSymbolView*>(parent()->parent())->autoResizeTableViewColumns();
+
+    static_cast<NestedHeaderView*>(static_cast<QTableView*>(this->parent())->horizontalHeader())->setDragInProgress(false);
+    static_cast<NestedHeaderView*>(static_cast<QTableView*>(this->parent())->verticalHeader())->setDragInProgress(false);
 }
 
 void NestedHeaderView::dragLeaveEvent(QDragLeaveEvent *event)
@@ -447,6 +454,16 @@ void NestedHeaderView::bindScrollMechanism()
 TableViewModel *NestedHeaderView::sym() const
 {
     return static_cast<TableViewModel*>(model());
+}
+
+bool NestedHeaderView::dragInProgress() const
+{
+    return mDragInProgress;
+}
+
+void NestedHeaderView::setDragInProgress(bool dragInProgress)
+{
+    mDragInProgress = dragInProgress;
 }
 
 QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
