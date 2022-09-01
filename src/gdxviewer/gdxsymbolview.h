@@ -63,6 +63,7 @@ public:
     void saveFilters(GdxSymbolViewState* symViewState);
     bool eventFilter(QObject *watched, QEvent *event) override;
     QList<QHeaderView*> headers();
+    bool dragInProgress();
 
 public slots:
     void enableControls();

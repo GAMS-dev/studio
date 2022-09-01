@@ -39,6 +39,9 @@ public:
     void setDdEnabled(bool value);
     int dim() const;
 
+    bool dragInProgress() const;
+    void setDragInProgress(bool dragInProgress);
+
 public slots:
     void reset() override;
 
@@ -75,6 +78,7 @@ private:
 
     QVector<int> sectionWidth;
     bool ddEnabled = true;
+    bool mDragInProgress = false;
 };
 
 } // namespace gdxviewer

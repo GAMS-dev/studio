@@ -1741,8 +1741,8 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                int gdxErr = gv->reload(file->codec(), changed);
-                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
+                int gdxErr = gv->reload(file->codec(), changed, false);
+                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : gdxErr==-2 ? FileProcessKind::fileLocked : FileProcessKind::ignore);
             }
         }
         return FileProcessKind::ignore;
