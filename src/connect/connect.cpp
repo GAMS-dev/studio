@@ -308,8 +308,9 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
             } else {
                 std::string value = schemaValue["type"].as<std::string>() ;
                 if (value.compare("string") == 0) {
-                    // allowed
-                    if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
+                    if (schemaValue["default"]) {
+                        dataValue = schemaValue["default"].as<std::string>();
+                    } else  if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
                         std::string str = schemaValue["allowed"][0].as<std::string>();
                         dataValue = str;
                         for(size_t i=0; i<schemaValue["allowed"].size(); i++) {
@@ -323,9 +324,9 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                         dataValue = "[value]";
                     }
                 } else if (value.compare("integer") == 0) {
-                        dataValue = 0;
+                          dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);
                 } else if (value.compare("boolean") == 0) {
-                        dataValue = false;
+                          dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
                 } else if (value.compare("dict") == 0) {
                            if (schemaValue["schema"]) {
                                mapValue(schemaValue["schema"], dataValue);
