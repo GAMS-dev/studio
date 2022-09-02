@@ -51,7 +51,8 @@ enum class DataItemColumn {
     Delete       = 5,
     MoveDown     = 6,
     MoveUp       = 7,
-    ElementID    = 8
+    ElementID    = 8,
+    SchemaKey    = 9
 };
 
 class ConnectDataModel : public QAbstractItemModel
