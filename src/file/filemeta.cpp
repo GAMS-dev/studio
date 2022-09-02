@@ -992,6 +992,7 @@ bool FileMeta::isModified() const
         for (QWidget *wid: mEditors) {
             if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(wid))
                 return efi->isModified();
+        }
     } else if (kind() == FileKind::GCon) {
         for (QWidget *wid: mEditors) {
             connect::ConnectEditor* gconEditor = ViewHelper::toGamsConnectEditor(wid);
