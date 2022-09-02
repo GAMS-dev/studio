@@ -64,6 +64,7 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
     } else {
         palette.setColor(ui->assemblyFileLabel->foregroundRole(), Theme::color(Theme::Normal_Red));
         ui->createButton->setText("Create");
+        ui->createButton->setEnabled(true);
     }
     ui->assemblyFileLabel->setPalette(palette);
     ui->assemblyFileLabel->setText(message + extraText);
