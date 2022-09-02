@@ -1028,6 +1028,16 @@ bool FileMeta::isPinnable()
     return !suppressedKinds.contains(kind());
 }
 
+void FileMeta::updateTabName(QTabWidget *tabWidget, int index)
+{
+    tabWidget->setTabText(index, name(NameModifier::editState));
+    if (isPinnable())
+        tabWidget->setTabToolTip(index, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location()) +
+                                 "<br>- Pin right <b>Ctrl+Click</b><br>- Pin below <b>Shift+Ctrl+Click</b></p>");
+    else
+        tabWidget->setTabToolTip(index, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location())+"</p>");
+}
+
 QTextDocument *FileMeta::document() const
 {
     return mDocument;
@@ -1195,11 +1205,7 @@ void FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewT
     case tabAtEnd: break;
     }
     int i = tabWidget->insertTab(atIndex, edit, name(NameModifier::editState));
-    if (isPinnable())
-        tabWidget->setTabToolTip(i, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location()) +
-                                 "<br>- Pin right <b>Ctrl+Click</b><br>- Pin below <b>Shift+Ctrl+Click</b></p>");
-    else
-        tabWidget->setTabToolTip(i, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location())+"</p>");
+    updateTabName(tabWidget, i);
     if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(edit)) {
         try {
             load(codecMib);

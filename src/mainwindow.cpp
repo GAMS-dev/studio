@@ -1717,7 +1717,7 @@ void MainWindow::fileChanged(const FileId fileId)
             int index = ui->mainTabs->indexOf(edit);
             if (index >= 0) {
                 ViewHelper::setModified(edit, fm->isModified());
-                ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
+                fm->updateTabName(ui->mainTabs, index);
             }
         }
     }
