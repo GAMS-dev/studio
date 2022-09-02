@@ -100,6 +100,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
 
+    ui->dataTreeView->header()->hide();
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Fixed);
 //    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
@@ -122,7 +123,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::CheckState, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaType, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Expand, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ElementID, true);
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().at(0), this);

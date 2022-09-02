@@ -68,7 +68,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                   } else {
                       return item->data(index.column());
                   }
-        } else if (index.column()==(int)DataItemColumn::Expand) {
+        } else if (index.column()==(int)DataItemColumn::ElementID) {
                  return QVariant(item->id());
         } else {
             return item->data(index.column());
@@ -613,7 +613,7 @@ void ConnectDataModel::informDataChanged(const QModelIndex& parent)
     }
 
     emit dataChanged(index(0, (int)DataItemColumn::MoveDown, parent),
-                     index(getItem(parent)->childCount()-1, (int)DataItemColumn::Expand, parent),
+                     index(getItem(parent)->childCount()-1, (int)DataItemColumn::ElementID, parent),
                      QVector<int> { Qt::DisplayRole, Qt::ToolTipRole, Qt::DecorationRole} );
 
 }

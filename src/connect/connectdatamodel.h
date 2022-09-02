@@ -43,15 +43,15 @@ enum class DataCheckState {
 };
 
 enum class DataItemColumn {
-    Key           = 0,
-    Value         = 1,
+    Key          = 0,
+    Value        = 1,
     CheckState   = 2,
     SchemaType   = 3,
     AllowedValue = 4,
-    Delete        = 5,
+    Delete       = 5,
     MoveDown     = 6,
     MoveUp       = 7,
-    Expand        = 8
+    ElementID    = 8
 };
 
 class ConnectDataModel : public QAbstractItemModel
