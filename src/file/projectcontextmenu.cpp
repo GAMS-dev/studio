@@ -195,7 +195,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
                     isOpenWithGamsConnectEditor= true;
         }
     }
-    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor || isOpenWithEfiEditor || isGConnectFile);
+    bool isReOpenableAsText = isOpen && (isOpenWithSolverOptionEditor || isOpenWithGamsUserConfigEditor || isOpenWithEfiEditor || isOpenWithGamsConnectEditor);
 
     bool isReOpenableWithSolverOptionEditor = isOpen && isOptFile && !isOpenWithSolverOptionEditor;
     bool isReOpenableWithGamsUserConfigEditor = isOpen && isGucFile && !isOpenWithGamsUserConfigEditor;
