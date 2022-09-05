@@ -21,6 +21,7 @@
 #include <QColor>
 #include <QApplication>
 #include <QPalette>
+#include <QMimeData>
 
 #include "schemadefinitionmodel.h"
 #include "theme.h"
@@ -51,7 +52,10 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
     switch (role) {
     case Qt::DisplayRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        return item->data(index.column());
+        if (index.column()==item->columnCount()-1)
+            return QVariant(item->data(index.column()).toStringList().join(":"));
+        else
+            return item->data(index.column());
     }
     case Qt::ForegroundRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
@@ -155,6 +159,31 @@ int SchemaDefinitionModel::columnCount(const QModelIndex &parent) const
         return mRootItems[mCurrentSchemaName]->columnCount();
 }
 
+QStringList SchemaDefinitionModel::mimeTypes() const
+{
+    QStringList types;
+    types <<  "application/vnd.gams-connect.text";
+    return types;
+}
+
+QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
+{
+    QMimeData* mimeData = new QMimeData();
+    QByteArray encodedData;
+    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+
+    for (const QModelIndex &index : indexes) {
+        if (index.column() != 6)
+            continue;
+        QString text = QString("schema=%1").arg(index.data(Qt::DisplayRole).toString());
+        qDebug() << "1 setmimedata:("<< index.row() << "," << index.column() << ")" << text;
+        stream << text;
+    }
+    qDebug() << "2 setmimedata:"<< QString(encodedData);
+    mimeData->setData( "application/vnd.gams-connect.text", encodedData);
+    return mimeData;
+}
+
 void SchemaDefinitionModel::loadSchemaFromName(const QString &name)
 {
     if (!mRootItems.keys().contains(name))
@@ -229,7 +258,8 @@ void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
 void SchemaDefinitionModel::setupTreeItemModelData()
 {
     QList<QVariant> rootData;
-    rootData << "Field" << "Required"  << "Type" << "default" << "Allowed Values"  << "min" /*<< "max"*/;
+    rootData << "Field" << "Required"  << "Type" << "default"
+             << "Allowed Values"  << "min" /*<< "max"*/ << "SchemaKey";
 
     foreach(const QString& schemaName, mConnect->getSchemaNames()) {
         SchemaDefinitionItem* rootItem = new SchemaDefinitionItem(schemaName, rootData);
@@ -239,8 +269,11 @@ void SchemaDefinitionModel::setupTreeItemModelData()
         parents << rootItem;
 
         ConnectSchema* schema = mConnect->getSchema(schemaName);
+        QStringList schemaKeys;
+        schemaKeys << schemaName;
         foreach(const QString& key, schema->getFirstLevelKeyList()) {
             QList<QVariant> columnData;
+            schemaKeys << key;
             columnData << key;
             Schema* s = schema->getSchema(key);
             columnData << (s->required?"Y":"");
@@ -248,19 +281,24 @@ void SchemaDefinitionModel::setupTreeItemModelData()
             addValue(s->defaultValue, columnData);
             addValueList(s->allowedValues, columnData);
             addValue(s->min, columnData);
+            columnData << QVariant(schemaKeys);
             SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, columnData, parents.last());
             parents.last()->appendChild(item);
 
             if (s->schemaDefined)
-                setupTree(schemaName, key, parents, schema);
+                setupTree(schemaName, key, schemaKeys, parents, schema);
+
+            schemaKeys.removeLast();
         }
     }
 }
 
-void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& key, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema) {
+void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& key,
+                                      QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema) {
     QString prefix = key+":-";
     Schema* schemaHelper = schema->getSchema(prefix);
     if (schemaHelper) {
+        schemaKeys << "-";
         parents << parents.last()->child(parents.last()->childCount()-1);
         QList<QVariant> listData;
         listData << "schema";
@@ -269,6 +307,7 @@ void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& 
         addValue(schemaHelper->defaultValue, listData);
         addValueList(schemaHelper->allowedValues, listData);
         addValue(schemaHelper->min, listData);
+        listData << QVariant(schemaKeys);
         parents.last()->appendChild(new SchemaDefinitionItem(schemaName, listData, parents.last()));
 
         QStringList nextlevelList = schema->getNextLevelKeyList(prefix);
@@ -278,8 +317,9 @@ void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& 
                 schemaHelper = schema->getSchema(k);
                 QString schemaKeyStr = k.mid(prefix.length()+1);
                 if (k.endsWith(":-")) {
-                   setupTree(schemaName, k.left(k.lastIndexOf(":")), parents, schema);
+                   setupTree(schemaName, k.left(k.lastIndexOf(":")), schemaKeys, parents, schema);
                } else {
+                    schemaKeys << schemaKeyStr;
                     QList<QVariant> data;
                     data <<  schemaKeyStr;
                     data << (schemaHelper->required?"Y":"");;
@@ -287,11 +327,14 @@ void SchemaDefinitionModel::setupTree(const QString& schemaName, const QString& 
                     addValue(schemaHelper->defaultValue, data);
                     addValueList(schemaHelper->allowedValues, data);
                     addValue(schemaHelper->min, data);
+                    data << QVariant(schemaKeys);
                     parents.last()->appendChild(new SchemaDefinitionItem(schemaName, data, parents.last()));
+                    schemaKeys.removeLast();
                }
             }
             parents.pop_back();
         }
+        schemaKeys.removeLast();
     }
     parents.pop_back();
 }

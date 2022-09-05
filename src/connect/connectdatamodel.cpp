@@ -22,6 +22,7 @@
 #include <QApplication>
 #include <QPalette>
 #include <QStringListModel>
+#include <QMimeData>
 
 #include "connectdatamodel.h"
 #include "theme.h"
@@ -183,15 +184,16 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
 {
+    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
     if (!index.isValid()) {
         return Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Key) {
                if (item->data((int)DataItemColumn::CheckState).toInt()== (int)DataCheckState::ElementMap ||
                    item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey    )
-                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+                   return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
                else
-                   return Qt::NoItemFlags;
+                   return Qt::ItemIsDropEnabled | Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Value) {
               if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementKey   ||
                   item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue ||
@@ -199,11 +201,11 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
               else if (item->data( (int)DataItemColumn::CheckState ).toInt()<=(int)DataCheckState::ElementKey ||
                        item->data( (int)DataItemColumn::CheckState ).toInt()>=(int)DataCheckState::ListAppend)
-                     return  Qt::NoItemFlags;
+                     return   Qt::NoItemFlags;
               else
-                    return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+                    return QAbstractItemModel::flags(index);
     } else if (index.column()>(int)DataItemColumn::CheckState) {
-               return  Qt::NoItemFlags;
+               return Qt::NoItemFlags;
     } else {
         return QAbstractItemModel::flags(index);
     }
@@ -316,12 +318,9 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
     ConnectDataItem* treeItem = getItem(index);
     if (treeItem) {
         if (!treeItem->isLastChild()) {
-            qDebug() << "not last child";
             if ((int)DataCheckState::KeyItem==treeItem->data((int)DataItemColumn::CheckState).toInt()) {
-                qDebug() << "     state="<< treeItem->data((int)DataItemColumn::CheckState).toInt();
                 QModelIndex sibling = index.sibling(index.row()+1, 0);
                 int state = sibling.data((int)DataItemColumn::CheckState).toInt();
-                qDebug() << "     sibling state="<< state;
                 if ((int)DataCheckState::ListAppend==state || (int)DataCheckState::MapAppend==state)
                     removeRows(index.row()+1, 1, parent(sibling));
             }
@@ -385,6 +384,46 @@ bool ConnectDataModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     informDataChanged(destinationParent);
 
     return true;
+}
+
+QStringList ConnectDataModel::mimeTypes() const
+{
+    QStringList types;
+    types <<  "application/vnd.gams-connect.text";
+    return types;
+}
+
+Qt::DropActions ConnectDataModel::supportedDropActions() const
+{
+    return Qt::CopyAction ;
+}
+
+bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    qDebug() << "dropmimdata:("  << row << "," << column << ")";
+    Q_UNUSED(column)
+    if (action == Qt::IgnoreAction || action != Qt::CopyAction)
+        return true;
+    if (column != (int)DataItemColumn::Key)
+        return false;
+    if (!mimedata->hasFormat("application/vnd.gams-connect.text"))
+        return false;
+
+    QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+    QStringList newItems;
+    int rows = 0;
+
+    while (!stream.atEnd()) {
+       QString text;
+       stream >> text;
+       newItems << text;
+       ++rows;
+    }
+
+    qDebug() << newItems;
+    return false;
 }
 
 void ConnectDataModel::addFromSchema(ConnectData* data, int position)

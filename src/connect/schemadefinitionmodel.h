@@ -46,6 +46,9 @@ public:
     int rowCount(const QModelIndex& parent = QModelIndex()) const override;
     int columnCount(const QModelIndex& parent = QModelIndex()) const override;
 
+    QStringList mimeTypes() const override;
+    QMimeData* mimeData(const QModelIndexList & indexes) const override;
+
 public slots:
     void loadSchemaFromName(const QString& name);
 
@@ -54,7 +57,8 @@ private:
     void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
     void addValue(ValueWrapper& value, QList<QVariant>& data);
 
-    void setupTree(const QString& schemaName, const QString& key, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
+    void setupTree(const QString& schemaName, const QString& key,
+                   QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
 
 protected:
     void setupTreeItemModelData();

@@ -87,6 +87,11 @@ public:
     bool moveRows(const QModelIndex &sourceParent, int sourceRow, int count,
                               const QModelIndex &destinationParent, int destinationChild) override;
 
+    QStringList mimeTypes() const override;
+
+    Qt::DropActions supportedDropActions() const override;
+    bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
+
 public slots:
     void addFromSchema(ConnectData* data, int insertPosition);
     void appendMapElement(const QModelIndex& index);

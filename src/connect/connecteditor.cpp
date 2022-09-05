@@ -114,6 +114,11 @@ bool ConnectEditor::init()
     ui->dataTreeView->setSelectionBehavior(QAbstractItemView::SelectItems);
     ui->dataTreeView->setItemsExpandable(true);
     ui->dataTreeView->setAutoScroll(true);
+    ui->dataTreeView->viewport()->setAcceptDrops(true);
+    ui->dataTreeView->setDropIndicatorShown(true);
+    ui->dataTreeView->setDragDropMode(QAbstractItemView::DropOnly);
+    ui->dataTreeView->setDragDropOverwriteMode(false);
+    ui->dataTreeView->setDefaultDropAction(Qt::CopyAction);
 //    updateDataColumnSpan();
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
@@ -132,12 +137,15 @@ bool ConnectEditor::init()
     ui->helpTreeView->setSelectionMode(QAbstractItemView::SingleSelection);
     ui->helpTreeView->setSelectionBehavior(QAbstractItemView::SelectRows);
     ui->helpTreeView->setItemsExpandable(true);
+    ui->helpTreeView->setDragEnabled(true);
+    ui->helpTreeView->setDragDropMode(QAbstractItemView::DragOnly);
     ui->helpTreeView->expandAll();
     ui->helpTreeView->resizeColumnToContents(0);
     ui->helpTreeView->resizeColumnToContents(1);
     ui->helpTreeView->resizeColumnToContents(2);
     ui->helpTreeView->resizeColumnToContents(3);
     ui->helpTreeView->resizeColumnToContents(4);
+    ui->helpTreeView->setColumnHidden( 6, true );
     headerRegister(ui->helpTreeView->header());
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested, Qt::UniqueConnection);
