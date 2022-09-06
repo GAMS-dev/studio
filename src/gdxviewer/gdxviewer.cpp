@@ -139,8 +139,10 @@ GdxSymbol *GdxViewer::selectedSymbol()
     GdxSymbol* selected = nullptr;
     if (ui->tvSymbols->selectionModel()) {
         QModelIndexList selectedIdx = ui->tvSymbols->selectionModel()->selectedRows();
-        if(!selectedIdx.isEmpty())
-            selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+        if(!selectedIdx.isEmpty()) {
+            int symNr =  selectedIdx.at(0).data().toInt();
+            selected = mGdxSymbolTable->gdxSymbols().at(symNr);
+        }
     }
     return selected;
 }
