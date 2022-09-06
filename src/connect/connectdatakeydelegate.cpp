@@ -54,17 +54,11 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
     if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         option->decorationPosition = QStyleOptionViewItem::Right;
-        qDebug() << "2 icon rec(" << option->rect.topLeft().x() << "," << option->rect.topLeft().y() << ") " << option->rect.width()
-                 << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                 << "       index(" << index.row() << "," << index.column() << ") "      << index.data(Qt::DisplayRole).toString();
         mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
                     QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
                checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
-               qDebug() << "4 icon rec(" << option->rect.x() << "," << option->rect.y() << ") " << option->rect.width()
-                        << "       icon width(" << option->icon.pixmap(option->icon.actualSize(QSize(mIconWidth, mIconHeight))).width() << ")"
-                        << "       index(" << index.row() << "," << index.column() << ") ";
                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
     }
 }

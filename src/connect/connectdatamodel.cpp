@@ -184,7 +184,6 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
 
 Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
 {
-    Qt::ItemFlags flags = QAbstractItemModel::flags(index);
     ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
     if (!index.isValid()) {
         return Qt::NoItemFlags;
@@ -398,22 +397,22 @@ Qt::DropActions ConnectDataModel::supportedDropActions() const
     return Qt::CopyAction ;
 }
 
-bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
-    qDebug() << "dropmimdata:("  << row << "," << column << ")";
-    Q_UNUSED(column)
-    if (action == Qt::IgnoreAction || action != Qt::CopyAction)
-        return true;
-    if (column != (int)DataItemColumn::Key)
+    if (action != Qt::CopyAction)
         return false;
+
     if (!mimedata->hasFormat("application/vnd.gams-connect.text"))
+        return false;
+
+    if (row < 0 || column > 0)
         return false;
 
     QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
 
     QStringList newItems;
-    int rows = 0;
+    int rows = stream.atEnd()?-1:0;
 
     while (!stream.atEnd()) {
        QString text;
@@ -422,7 +421,44 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
        ++rows;
     }
 
+    qDebug() << "1 can dropmimedata:("  << row << "," << column << ") parent("  << parent.row() <<","<< parent.column() << ")" ;
     qDebug() << newItems;
+//    if (rows > 0)
+//       qDebug() << newItems[0].split(":");
+
+    return true;
+}
+
+bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
+{
+    if (!canDropMimeData(mimedata, action, row, column, parent))
+        return false;
+
+    if (action == Qt::IgnoreAction)
+        return true;
+
+    qDebug() << "1 dropmimdata:("  << row << "," << column << ")";
+    int beginRow = -1;
+    if (row != -1)
+        beginRow = row;
+    else if (parent.isValid())
+        beginRow = parent.row();
+    else
+          beginRow = rowCount(QModelIndex());
+
+    qDebug() << "2 dropmimdata:("  << row << "," << column << ")";
+    ConnectDataItem* parentItem;
+    if (!parent.isValid())
+        parentItem = mRootItem;
+    else
+        parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
+    qDebug() << "3 dropmimdata:("  << row << "," << column << ")";
+    ConnectDataItem *childItem = parentItem->child(column);
+    if (childItem)
+        qDebug() << "child:" << childItem->data((int)DataItemColumn::SchemaKey);
+    else
+        qDebug() << "invalid child:" << childItem->data((int)DataItemColumn::SchemaKey);
+   qDebug() << "4 dropmiemdata: row="  << beginRow ;
     return false;
 }
 
@@ -673,7 +709,7 @@ void ConnectDataModel::setupTreeItemModelData()
     QList<QVariant> rootData;
     rootData << "Key" << "Value"
              << "State" << "Type" << "AllowedValue"
-             << ""  << "" << "" << "" << "ID" << "SchemaKey";
+             << ""  << "" << "" << "" << "" << "";
 
     mRootItem = new ConnectDataItem(rootData, mItemIDCount++);
 

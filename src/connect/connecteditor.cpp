@@ -89,7 +89,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
 
-    ui->dataTreeView->header()->hide();
+//    ui->dataTreeView->header()->hide();
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
@@ -161,9 +161,6 @@ bool ConnectEditor::init()
     connect(mDataModel, &ConnectDataModel::modelReset, [this]() {
         restoreExpandedState();
     });
-///    connect(ui->dataTreeView->selectionModel(),
-///            &QItemSelectionModel::selectionChanged, this,
-///            &ConnectEditor::on_dataTreeSelectionChanged, Qt::UniqueConnection);
 
     connect(defmodel, &SchemaDefinitionModel::modelReset, [this]() {
         ui->helpTreeView->expandAll();

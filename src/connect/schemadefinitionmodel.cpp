@@ -50,12 +50,19 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         return QVariant();
 
     switch (role) {
-    case Qt::DisplayRole: {
+    case Qt::UserRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
         if (index.column()==item->columnCount()-1)
             return QVariant(item->data(index.column()).toStringList().join(":"));
         else
+            return QVariant();
+    }
+    case Qt::DisplayRole: {
+        SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
+        if (index.column()<=item->columnCount()-1)
             return item->data(index.column());
+        else
+            return QVariant();
     }
     case Qt::ForegroundRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
@@ -173,11 +180,11 @@ QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
-        if (index.column() != 6)
-            continue;
-        QString text = QString("schema=%1").arg(index.data(Qt::DisplayRole).toString());
+        QModelIndex sibling = index.sibling(index.row(), 6);
+        QString text = QString("schema=%1").arg(sibling.data(Qt::UserRole).toString());
         qDebug() << "1 setmimedata:("<< index.row() << "," << index.column() << ")" << text;
         stream << text;
+        break;
     }
     qDebug() << "2 setmimedata:"<< QString(encodedData);
     mimeData->setData( "application/vnd.gams-connect.text", encodedData);
