@@ -219,10 +219,10 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         else
             mimeData->setData("GDXDRAGDROP/ROW", QByteArray::number(pointToDimension(mDragStartPosition)));
         mDragInProgress = true;
+        event->accept();
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->exec();
-        event->accept();
     }
 
     if(orientation() == Qt::Vertical)
