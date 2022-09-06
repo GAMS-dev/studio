@@ -92,6 +92,7 @@ SOURCES += \
     connect/connectschema.cpp \
     connect/schemadefinitionitem.cpp \
     connect/schemadefinitionmodel.cpp \
+    connect/schemalistmodel.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codecompleter.cpp \
@@ -366,6 +367,7 @@ HEADERS += \
     connect/connectschema.h \
     connect/schemadefinitionitem.h \
     connect/schemadefinitionmodel.h \
+    connect/schemalistmodel.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \

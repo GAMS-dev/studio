@@ -25,7 +25,7 @@
 #include "connectdatavaluedelegate.h"
 #include "connectdataactiondelegate.h"
 #include "schemadefinitionmodel.h"
-#include "theme.h"
+#include "schemalistmodel.h"
 #include "headerviewproxy.h"
 #include "ui_connecteditor.h"
 
@@ -52,20 +52,7 @@ bool ConnectEditor::init()
     mConnect = new Connect();
     QStringList schema = mConnect->getSchemaNames();
 
-    QStandardItemModel* schemaItemModel = new QStandardItemModel( mConnect->getSchemaNames().size(), 1, this );
-//    QStandardItemModel* schemaHelpModel = new QStandardItemModel( mConnect->getSchemaNames().size(), 1, this );
-
-    for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
-        QStandardItem *item = new QStandardItem();
-        item->setData( mConnect->getSchemaNames().at(row), Qt::DisplayRole );
-        item->setIcon(Theme::icon(":/%1/plus",  QIcon::Mode::Disabled));
-        item->setEditable(false);
-        item->setSelectable(true);
-        item->setTextAlignment(Qt::AlignLeft);
-        item->setForeground(Theme::color(Theme::Syntax_embedded));
-        schemaItemModel->setItem(row, 0, item);
-    }
-
+    SchemaListModel* schemaItemModel = new SchemaListModel( mConnect->getSchemaNames(), this );
     ui->schemaControlListView->setModel(schemaItemModel);
 
     ui->schemaControlListView->setSelectionMode(QAbstractItemView::SingleSelection);
@@ -78,6 +65,8 @@ bool ConnectEditor::init()
     ui->schemaControlListView->setAutoFillBackground(false);
     ui->schemaControlListView->setBackgroundRole(QPalette::NoRole);
     ui->schemaControlListView->viewport()->setAutoFillBackground(true);
+    ui->schemaControlListView->setDragEnabled(true);
+    ui->schemaControlListView->setDropIndicatorShown(true);
 //    QPalette palette = ui->schemaControlListView->viewport()->palette();
 //    palette.setColor(QPalette::Background, Qt::gray);
 //    ui->schemaControlListView->viewport()->setPalette(palette);
@@ -159,6 +148,7 @@ bool ConnectEditor::init()
 
     connect(ui->schemaControlListView, &QListView::clicked,  [=](const QModelIndex &index) {
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
+        schemaItemModel->setToolTip(index);
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
 
