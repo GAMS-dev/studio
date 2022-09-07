@@ -24,6 +24,7 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
+#include <QTimer>
 #include "theme.h"
 
 namespace gams {
@@ -223,17 +224,13 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
         drag->exec();
-        if(orientation() == Qt::Vertical)
-            headerDataChanged(orientation(),0, qMax(0,model()->rowCount()-1));
-        else
-            headerDataChanged(orientation(),0, qMax(0,model()->columnCount()-1));
-        mSymbolView->setDragInProgress(false);
-    } else {
-        if(orientation() == Qt::Vertical)
-            headerDataChanged(orientation(),0, qMax(0,model()->rowCount()-1));
-        else
-            headerDataChanged(orientation(),0, qMax(0,model()->columnCount()-1));
+        QTimer::singleShot(0, this, [this](){ mSymbolView->setDragInProgress(false); });
     }
+
+    if(orientation() == Qt::Vertical)
+        headerDataChanged(orientation(),0, qMax(0,model()->rowCount()-1));
+    else
+        headerDataChanged(orientation(),0, qMax(0,model()->columnCount()-1));
 }
 
 void NestedHeaderView::dragEnterEvent(QDragEnterEvent *event)
