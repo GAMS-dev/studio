@@ -104,6 +104,9 @@ public slots:
     ConnectData* getConnectData();
 
 protected:
+    bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey);
+    bool existsUnderSameParent(const QString& tobeinsertSchema, int row, const QModelIndex& parent);
+
     void getData(ConnectDataItem* item, YAML::Node& node);
     void informDataChanged(const QModelIndex& parent);
 

@@ -426,6 +426,7 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 
     if (column > 0)
         return false;
+
     qDebug() << "00 can dropmimedata:";
      return true;
 }
@@ -452,19 +453,49 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
     }
     QStringList schemastrlist = newItems[0].split("=");
 
-    qDebug() << "1 dropmimedata:("  << row << "," << column << ")";
     ConnectDataItem* parentItem;
     if (!parent.isValid()) {
+        qDebug() << "11 dropmimedata:("  << row << "," << column << ")";
         parentItem = mRootItem;
         QStringList schemalist = schemastrlist[1].split(":");
         if (schemalist.size()==1 && row > -1 && column > -1) { // insert from shema name
             emit fromSchemaInserted(schemalist.first(), row);
             return true;
         }
+        qDebug() << "2 dopmimedata: parent:" << parentItem->data((int)DataItemColumn::SchemaKey).toString();
     } else {
-        parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
+        qDebug() << "12 dropmimedata:("  << row << "," << column << ") ";
+        qDebug() << "          parent(" << parent.row()<< "," << parent.column() << ")";
+        QStringList schemalist = schemastrlist[1].split(":");
+        if (schemalist.size()<=1 || row < 0  || column < 0)
+            return false;
+//        parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
+        int insertRow = -1;
+        if (row >=0 && row < rowCount(parent)) {
+            qDebug() << "121";
+            insertRow = row;
+        } else { // append,  drop at the last row
+            qDebug() << "122";
+            insertRow = row-1;
+        }
+        qDebug() << schemastrlist[1] << ", "
+                << index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString() << ", ";
+//                << parentItem->child(insertRow)->data((int)DataItemColumn::SchemaKey).toString();
+        QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
+        QStringList insertSchemaKey = index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":");
+        if (tobeinsertSchemaKey.size() != insertSchemaKey.size())
+            return false;
+
+        if (!hasSameParent(schemastrlist[1].split(":"), insertSchemaKey))
+            return false;
+        // check if tobeinsertSchemaKey exists under the same parent
+        if (existsUnderSameParent(schemastrlist[1], insertRow, parent)) {
+            return false;
+         }
+        // TODO insert tobeinsertSchemaKey at position index(row, column, parent)
+        qDebug() << "3 dropmimedata";
+        return true;
     }
-    qDebug() << "3 dropmimedata: parent:" << parentItem->data((int)DataItemColumn::SchemaKey).toString();
 
     return false;
 }
@@ -610,6 +641,30 @@ ConnectData *ConnectDataModel::getConnectData()
          root[i] = node;
      }
      return new ConnectData(root);
+}
+
+bool ConnectDataModel::hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey)
+{
+    bool sameParent = true;
+    for(int i = 0; i<schemaKey.size()-1; ++i) {
+        if (tobeinsertSchema.at(i).compare(schemaKey.at(i))!=0) {
+            sameParent = false;
+            break;
+        }
+    }
+    return sameParent;
+}
+
+bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, int row, const QModelIndex &parent)
+{
+    qDebug() << "exit ? under" << parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString();
+//    ConnectDataItem* parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
+    for (int i =0; i<rowCount(parent); ++i) {
+        qDebug() << " ... " << index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString();
+        if (tobeinsertSchema.compare(index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString())==0)
+            return true;
+    }
+    return false;
 }
 
 void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
