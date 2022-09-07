@@ -223,7 +223,7 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         event->accept();
         QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
-        drag->exec();
+        drag->exec(); // blocking
         QTimer::singleShot(0, this, [this](){ mSymbolView->setDragInProgress(false); });
     }
 
