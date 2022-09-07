@@ -190,14 +190,15 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
     } else if (index.column()==(int)DataItemColumn::Key) {
                if (item->data((int)DataItemColumn::CheckState).toInt()== (int)DataCheckState::ElementMap ||
                    item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey    )
-                   return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
+                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
                else
                    return Qt::ItemIsDropEnabled | Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Value) {
               if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementKey   ||
-                  item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue ||
                   item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementMap      )
                   return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+              else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue)
+                      return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
               else if (item->data( (int)DataItemColumn::CheckState ).toInt()<=(int)DataCheckState::ElementKey ||
                        item->data( (int)DataItemColumn::CheckState ).toInt()>=(int)DataCheckState::ListAppend)
                      return   Qt::NoItemFlags;
@@ -399,13 +400,13 @@ Qt::DropActions ConnectDataModel::supportedDropActions() const
 
 bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
+    Q_UNUSED(row);
+    Q_UNUSED(parent)
+    qDebug() << "0 can drop ? :("  << row << "," << column << ") parent("  << parent.row() <<","<< parent.column() << ")" ;
     if (action != Qt::CopyAction)
         return false;
 
     if (!mimedata->hasFormat("application/vnd.gams-connect.text"))
-        return false;
-
-    if (row < 0 || column > 0)
         return false;
 
     QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
@@ -413,52 +414,58 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 
     QStringList newItems;
     int rows = stream.atEnd()?-1:0;
-
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
        newItems << text;
        ++rows;
     }
+    QStringList schemastrlist = newItems[0].split("=");
+    if (schemastrlist.size() <= 1)
+        return false;
 
-    qDebug() << "1 can dropmimedata:("  << row << "," << column << ") parent("  << parent.row() <<","<< parent.column() << ")" ;
-    qDebug() << newItems;
-//    if (rows > 0)
-//       qDebug() << newItems[0].split(":");
-
-    return true;
+    if (column > 0)
+        return false;
+    qDebug() << "00 can dropmimedata:";
+     return true;
 }
 
 bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
+    qDebug() << "000 dropmimedata:("  << row << "," << column << ")";
     if (!canDropMimeData(mimedata, action, row, column, parent))
         return false;
 
+    qDebug() << "0 dropmimedata:("  << row << "," << column << ")";
     if (action == Qt::IgnoreAction)
         return true;
 
-    qDebug() << "1 dropmimdata:("  << row << "," << column << ")";
-    int beginRow = -1;
-    if (row != -1)
-        beginRow = row;
-    else if (parent.isValid())
-        beginRow = parent.row();
-    else
-          beginRow = rowCount(QModelIndex());
+    QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
+    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QStringList newItems;
+    int rows = stream.atEnd()?-1:0;
+    while (!stream.atEnd()) {
+       QString text;
+       stream >> text;
+       newItems << text;
+       ++rows;
+    }
+    QStringList schemastrlist = newItems[0].split("=");
 
-    qDebug() << "2 dropmimdata:("  << row << "," << column << ")";
+    qDebug() << "1 dropmimedata:("  << row << "," << column << ")";
     ConnectDataItem* parentItem;
-    if (!parent.isValid())
+    if (!parent.isValid()) {
         parentItem = mRootItem;
-    else
+        QStringList schemalist = schemastrlist[1].split(":");
+        if (schemalist.size()==1 && row > -1 && column > -1) { // insert from shema name
+            emit fromSchemaInserted(schemalist.first(), row);
+            return true;
+        }
+    } else {
         parentItem = static_cast<ConnectDataItem*>(parent.internalPointer());
-    qDebug() << "3 dropmimdata:("  << row << "," << column << ")";
-    ConnectDataItem *childItem = parentItem->child(column);
-    if (childItem)
-        qDebug() << "child:" << childItem->data((int)DataItemColumn::SchemaKey);
-    else
-        qDebug() << "invalid child:" << childItem->data((int)DataItemColumn::SchemaKey);
-   qDebug() << "4 dropmiemdata: row="  << beginRow ;
+    }
+    qDebug() << "3 dropmimedata: parent:" << parentItem->data((int)DataItemColumn::SchemaKey).toString();
+
     return false;
 }
 
@@ -475,7 +482,7 @@ void ConnectDataModel::addFromSchema(ConnectData* data, int position)
     QList<ConnectDataItem*> parents;
     parents << mRootItem;
 
-    beginInsertRows(QModelIndex(), position, position+1);
+    beginInsertRows(indexForTreeItem(parents.last()), position, position+1);
     for(size_t i = 0; i<node.size(); i++) {
         for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
             QString schemaName = QString::fromStdString(it->first.as<std::string>());
@@ -493,11 +500,11 @@ void ConnectDataModel::addFromSchema(ConnectData* data, int position)
             listData << QVariant(QStringList(schemaName));
             if (position>=parents.last()->childCount()) {
                 parents.last()->appendChild(new ConnectDataItem(listData, mItemIDCount++, parents.last()));
+                parents << parents.last()->child(parents.last()->childCount()-1);
             } else {
                 parents.last()->insertChild(position, new ConnectDataItem(listData, mItemIDCount++, parents.last()));
+                parents << parents.last()->child(position);
             }
-
-            parents << parents.last()->child(parents.last()->childCount()-1);
 
             insertSchemaData(schemaName, dataKeys, new ConnectData(it->second), parents);
 

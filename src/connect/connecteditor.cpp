@@ -152,6 +152,8 @@ bool ConnectEditor::init()
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
 
+    connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
+
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() { saveExpandedState(); });
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , [this]() { saveExpandedState(); });
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeRemoved , [this]() { saveExpandedState(); });
@@ -219,18 +221,22 @@ bool ConnectEditor::saveConnectFile(const QString &location)
     return saveAs(location);
 }
 
-void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
+void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
 {
     setModified(true);
-
     QStringList strlist;
-    strlist << ui->schemaControlListView->model()->data( modelIndex ).toString();
-
-    mDataModel->addFromSchema( mConnect->createDataHolder(strlist), mDataModel->rowCount() );
-    ui->dataTreeView->expandRecursively( mDataModel->index( mDataModel->rowCount()-1, 0) );
+    strlist << schemaname;
+    mDataModel->addFromSchema( mConnect->createDataHolder(strlist), position );
+    ui->dataTreeView->expandRecursively( mDataModel->index( position, (int)DataItemColumn::Key ) );
 
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
+}
+
+void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
+{
+    QString schemaname = ui->schemaControlListView->model()->data( modelIndex ).toString();
+    emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount());
 }
 
 void ConnectEditor::updateDataColumnSpan(const QModelIndex &modelIndex)

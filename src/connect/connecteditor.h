@@ -60,6 +60,8 @@ public slots:
     bool saveConnectFile(const QString &location);
 
 private slots:
+    void fromSchemaInserted(const QString& schemaname, int position);
+
     void schemaDoubleClicked(const QModelIndex &modelIndex);
     void updateDataColumnSpan(const QModelIndex &modelIndex);
 

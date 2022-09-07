@@ -93,6 +93,9 @@ public:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
+signals:
+    void fromSchemaInserted(const QString& schemaname, int insertPosition);
+
 public slots:
     void addFromSchema(ConnectData* data, int insertPosition);
     void appendMapElement(const QModelIndex& index);

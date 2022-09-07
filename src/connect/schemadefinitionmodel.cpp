@@ -98,8 +98,10 @@ Qt::ItemFlags SchemaDefinitionModel::flags(const QModelIndex &index) const
     Qt::ItemFlags defaultFlags = QAbstractItemModel::flags(index);
     if (!index.isValid())
         return Qt::NoItemFlags;
+    else if (index.sibling(index.row(), 0).data(Qt::DisplayRole).toString().compare("schema")==0)
+        return defaultFlags;
     else
-        return Qt::ItemIsDragEnabled | defaultFlags;  // ToDo
+        return Qt::ItemIsDragEnabled | defaultFlags;
 }
 
 QVariant SchemaDefinitionModel::headerData(int section, Qt::Orientation orientation, int role) const
