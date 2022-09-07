@@ -63,7 +63,9 @@ public:
     void saveFilters(GdxSymbolViewState* symViewState);
     bool eventFilter(QObject *watched, QEvent *event) override;
     QList<QHeaderView*> headers();
-    bool dragInProgress();
+
+    bool dragInProgress() const;
+    void setDragInProgress(bool dragInProgress);
 
 public slots:
     void enableControls();
@@ -137,6 +139,8 @@ private:
     // in the meantime, those labels are stored in mPendingUncheckedLabels and are written back as unchecked labels when
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
     QVector<QStringList> mPendingUncheckedLabels;
+
+    bool mDragInProgress = false;
 };
 
 
