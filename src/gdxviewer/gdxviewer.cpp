@@ -150,8 +150,9 @@ GdxSymbol *GdxViewer::selectedSymbol()
 int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
 {
     if (mHasChanged || codec != mCodec) {
+        // in case a drag-and-drop opertion or the invalidate() function is in progress, we have to wait for it to complete
         if (dragInProgress() || mPendingInvalidate) {
-            if (triggerReload)
+            if (triggerReload) // call reload() again every 50 ms
                 QTimer::singleShot(50, this, [this, codec, quiet, triggerReload](){ reload(codec, quiet, triggerReload); });
             return -2;
         }
@@ -217,8 +218,10 @@ void GdxViewer::releaseFile()
 
 void GdxViewer::invalidate()
 {
+    // in case a drag-and-drop opertion is in progress, we have to wait for it to complete
     if (dragInProgress()) {
         mPendingInvalidate = true;
+        // call invalidate() again every 50 ms
         QTimer::singleShot(50, this, &GdxViewer::invalidate);
         return;
     }
