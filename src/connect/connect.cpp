@@ -196,14 +196,46 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
         return new ConnectData(data);
 
     QString schemastr = schema.join(":");
+
     Schema* schemaHelper = s->getSchema(schemastr);
     if (!schemaHelper)
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
-    YAML::Node value = YAML::Node(YAML::NodeType::Map);
-     mapValue( schemanode, value );
-    return new ConnectData(value);
+    YAML::Emitter e;
+    e << schemanode;
+    mapValue( schemanode, data );
+    return new ConnectData(data);
+}
+
+ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlist)
+{
+    qDebug() << "  __x_ 0 schemstrlist=" << schemastrlist;
+    QString schemaname = schemastrlist.first();
+    ConnectSchema* s = mSchema[schemaname];
+    YAML::Node data;
+    if (!s)
+        return new ConnectData(data);
+
+    QStringList tobeinsertSchemaKey(schemastrlist);
+    tobeinsertSchemaKey.removeFirst();
+    QString schemastr = tobeinsertSchemaKey.join(":");
+    qDebug() << "  __x_ 1 schemastr=" << schemastr;
+
+    Schema* schemaHelper = s->getSchema(schemastr);
+    if (!schemaHelper)
+        return new ConnectData(data);
+
+    qDebug() << "  __x_ 2 schemaHelper=" << schemaHelper->level;
+//    QList<SchemaType> types = schemaHelper->types;
+    YAML::Node schemanode = schemaHelper->schemaNode;
+    YAML::Emitter e;
+    e << schemanode;
+    qDebug() << "  __x_ 3 schemanode=" << e.c_str();
+    YAML::Node value;
+    mapValue( schemanode, value );
+    data[tobeinsertSchemaKey.last().toStdString()] = value;
+    return new ConnectData(data);
 }
 
 void Connect::addDataForAgent(ConnectData *data, const QString &schemaName)

@@ -95,23 +95,27 @@ public:
 
 signals:
     void fromSchemaInserted(const QString& schemaname, int insertPosition);
+    void indexExpandedAndResized(const QModelIndex &index);
+
+    void modificationChanged(bool modifiedState);
 
 public slots:
-    void addFromSchema(ConnectData* data, int insertPosition);
+    void addFromSchema(gams::studio::connect::ConnectData* data, int insertPosition);
     void appendMapElement(const QModelIndex& index);
-    void appendListElement(const QString& schemaname, QStringList& keys, ConnectData* data, const QModelIndex& index);
+    void appendMapElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, int position, const QModelIndex& index);
+    void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data ,const QModelIndex& parentIndex);
 
     ConnectData* getConnectData();
 
 protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey);
-    bool existsUnderSameParent(const QString& tobeinsertSchema, int row, const QModelIndex& parent);
+    bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent);
 
     void getData(ConnectDataItem* item, YAML::Node& node);
     void informDataChanged(const QModelIndex& parent);
 
     void setupTreeItemModelData();
-    void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data,  QList<ConnectDataItem*>& parents);
+    void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents);
 
     int              mItemIDCount;
     QString          mLocation;

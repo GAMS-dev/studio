@@ -40,6 +40,7 @@ public:
 
     ConnectData* createDataHolder(const QStringList& schemaNameList);
     ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema);
+    ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist);
 
     void addDataForAgent(ConnectData* data, const QString& schemaName);
 

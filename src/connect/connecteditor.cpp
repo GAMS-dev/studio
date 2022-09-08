@@ -106,7 +106,6 @@ bool ConnectEditor::init()
     ui->dataTreeView->viewport()->setAcceptDrops(true);
     ui->dataTreeView->setDropIndicatorShown(true);
     ui->dataTreeView->setDragDropMode(QAbstractItemView::DropOnly);
-    ui->dataTreeView->setDragDropOverwriteMode(false);
     ui->dataTreeView->setDefaultDropAction(Qt::CopyAction);
 //    updateDataColumnSpan();
     ui->dataTreeView->expandAll();
@@ -152,7 +151,9 @@ bool ConnectEditor::init()
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
 
+    connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
+    connect(mDataModel, &ConnectDataModel::indexExpandedAndResized, this, &ConnectEditor::expandAndResizedToContents, Qt::UniqueConnection);
 
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() { saveExpandedState(); });
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , [this]() { saveExpandedState(); });
@@ -227,10 +228,7 @@ void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
     QStringList strlist;
     strlist << schemaname;
     mDataModel->addFromSchema( mConnect->createDataHolder(strlist), position );
-    ui->dataTreeView->expandRecursively( mDataModel->index( position, (int)DataItemColumn::Key ) );
-
-    for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
-        ui->dataTreeView->resizeColumnToContents(i);
+    expandAndResizedToContents( mDataModel->index( position, (int)DataItemColumn::Key ) );
 }
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
@@ -244,6 +242,17 @@ void ConnectEditor::updateDataColumnSpan(const QModelIndex &modelIndex)
     Q_UNUSED(modelIndex);
     qDebug() << "updateColumnSpan " << mDataModel->rowCount();
     iterateModelItem( ui->dataTreeView->rootIndex());
+}
+
+void ConnectEditor::expandAndResizedToContents(const QModelIndex &index)
+{
+    qDebug() << "expandAndResizedToContents: (" << index.row() << "," << index.column()
+             <<") parent:(" << index.parent().row() << "," << index.parent().column() << ")";
+    ui->dataTreeView->expandRecursively( index );
+    qDebug() << "expandAndResizedToContents: valid index:" << (index.isValid()?"Y":"N");
+    for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
+        ui->dataTreeView->resizeColumnToContents(i);
+    ui->dataTreeView->scrollTo(index);
 }
 
 void ConnectEditor::schemaHelpRequested(const QString &schemaName)
@@ -278,8 +287,7 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);
     }
-    ui->dataTreeView->expandRecursively( mDataModel->index( mDataModel->rowCount()-1, 0) );
-    ui->dataTreeView->scrollTo(index);
+    expandAndResizedToContents( mDataModel->index( mDataModel->rowCount()-1, 0) );
 }
 
 void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
