@@ -24,14 +24,15 @@
 #include <QMimeData>
 #include <QApplication>
 #include <QMap>
+#include <QTimer>
 #include "theme.h"
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, QWidget *parent)
-    :QHeaderView(orientation, parent)
+NestedHeaderView::NestedHeaderView(Qt::Orientation orientation, GdxSymbolView* symbolView, QWidget *parent)
+    :QHeaderView(orientation, parent), mSymbolView(symbolView)
 {
     setAcceptDrops(true);
     connect(this, &QHeaderView::sectionResized, this, [this]() { ddEnabled = false; });
@@ -204,7 +205,7 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
 {
     QHeaderView::mouseMoveEvent(event);
     mMousePos = event->pos();
-    if ((event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance() && ddEnabled) {
+    if (!mSymbolView->dragInProgress() && (event->buttons() & Qt::LeftButton) && (mMousePos - mDragStartPosition).manhattanLength() > QApplication::startDragDistance() && ddEnabled) {
         // do not allow to drag a dummy row/column
         if (orientation() == Qt::Vertical && pointToDimension(mDragStartPosition) == 0 && sym()->needDummyRow())
             return;
@@ -213,14 +214,17 @@ void NestedHeaderView::mouseMoveEvent(QMouseEvent *event)
         //do not allow to drag the value column (lavel, marginal,...) of variables and equations
         if (orientation() == Qt::Horizontal && (sym()->type() == GMS_DT_EQU || sym()->type() == GMS_DT_VAR) && pointToDimension(mDragStartPosition)==dim()-1)
             return;
-        QDrag *drag = new QDrag(this);
+        mSymbolView->setDragInProgress(true);
         QMimeData *mimeData = new QMimeData;
         if (orientation() == Qt::Vertical)
             mimeData->setData("GDXDRAGDROP/COL", QByteArray::number(pointToDimension(mDragStartPosition)));
         else
             mimeData->setData("GDXDRAGDROP/ROW", QByteArray::number(pointToDimension(mDragStartPosition)));
+        event->accept();
+        QDrag *drag = new QDrag(this);
         drag->setMimeData(mimeData);
-        drag->exec();
+        drag->exec(); // blocking
+        QTimer::singleShot(0, this, [this](){ mSymbolView->setDragInProgress(false); });
     }
 
     if(orientation() == Qt::Vertical)
@@ -448,6 +452,7 @@ TableViewModel *NestedHeaderView::sym() const
 {
     return static_cast<TableViewModel*>(model());
 }
+
 
 QSize NestedHeaderView::sectionSizeFromContents(int logicalIndex) const
 {

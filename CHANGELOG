@@ -6,6 +6,16 @@ Version 1.12.0  *
 - added quick selection to GDX Viewer filters
 - improved GDX Viewer auto-resizing behavior
 
+Version 1.11.2
+==================
+- updated tooltip of a tab after filename changed with "save as..."
+- removed link to outdated introduction video
+- fixed occasional crash when opening search dialog after closing all files
+- fixed drag'n'drop creating group with invalid working directory
+- fixed GDX Viewer showing wrong data in table view because of a falsely restored symbol which dimension or type has changed
+- fixed GDX Viewer crash occurring when a file is reloaded during a drag'n'drop operation in table view mode
+- fixed disabled "Create" button in MIRO dialog on missing assembly file
+
 Version 1.11.1
 ==================
 - fixed parameter procTreeMemMonitor in GAMS configuration influencing license dialog output

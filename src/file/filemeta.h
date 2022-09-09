@@ -78,6 +78,7 @@ public:
     void resetTempReloadState();
     void setModified(bool modified=true);
     bool isPinnable();
+    void updateTabName(QTabWidget *tabWidget, int index);
 
     QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
     void addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);

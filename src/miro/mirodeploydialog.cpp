@@ -62,7 +62,7 @@ void MiroDeployDialog::setAssemblyFileName(const QString &file) {
     if (fi.exists()) {
         ui->fsWidget->setInfo("File " + fi.fileName() + " found.", true);
     } else {
-        ui->fsWidget->setInfo("No file " + fi.fileName() + " found!", true);
+        ui->fsWidget->setInfo("No file " + fi.fileName() + " found!", false);
     }
     updateTestDeployButtons();
 }
@@ -81,6 +81,7 @@ QStringList MiroDeployDialog::selectedFiles()
 void MiroDeployDialog::setSelectedFiles(const QStringList &files)
 {
     ui->fsWidget->setSelectedFiles(files);
+    if (!mModelAssemblyFile.isEmpty()) setAssemblyFileName(mModelAssemblyFile);
 }
 
 void MiroDeployDialog::setWorkingDirectory(const QString &workingDirectory)

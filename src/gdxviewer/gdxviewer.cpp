@@ -112,17 +112,17 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
 
         // create new GdxSymbolView if the symbol is selected for the first time
         if (!mSymbolViews.at(selectedIdx)) {
-            GdxSymbolView* symView = new GdxSymbolView();
+            GdxSymbolView* symView = new GdxSymbolView(this);
             for (QHeaderView *header : symView->headers()) {
                 headerRegister(header);
             }
             mSymbolViews.replace(selectedIdx, symView);
 
-            if (mState && mState->symbolViewStates().contains(selectedSymbol->name()))
-                symView->setSym(selectedSymbol, mGdxSymbolTable, mState->symbolViewState(selectedSymbol->name()));
+            GdxSymbolViewState* symViewState = mState ? mState->symbolViewState(selectedSymbol->name()) : nullptr;
+            if (mState && symViewState && symViewState->dim() == selectedSymbol->dim() && symViewState->type() == selectedSymbol->type())
+                symView->setSym(selectedSymbol, mGdxSymbolTable, symViewState);
             else
                 symView->setSym(selectedSymbol, mGdxSymbolTable);
-
         }
 
         if (!selectedSymbol->isLoaded())
@@ -139,15 +139,23 @@ GdxSymbol *GdxViewer::selectedSymbol()
     GdxSymbol* selected = nullptr;
     if (ui->tvSymbols->selectionModel()) {
         QModelIndexList selectedIdx = ui->tvSymbols->selectionModel()->selectedRows();
-        if(!selectedIdx.isEmpty())
-            selected = mGdxSymbolTable->gdxSymbols().at(selectedIdx.at(0).row());
+        if(!selectedIdx.isEmpty()) {
+            int symNr =  selectedIdx.at(0).data().toInt();
+            selected = mGdxSymbolTable->gdxSymbols().at(symNr);
+        }
     }
     return selected;
 }
 
-int GdxViewer::reload(QTextCodec* codec, bool quiet)
+int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
 {
     if (mHasChanged || codec != mCodec) {
+        // in case a drag-and-drop opertion or the invalidate() function is in progress, we have to wait for it to complete
+        if (dragInProgress() || mPendingInvalidate) {
+            if (triggerReload) // call reload() again every 50 ms
+                QTimer::singleShot(50, this, [this, codec, quiet, triggerReload](){ reload(codec, quiet, triggerReload); });
+            return -2;
+        }
         mCodec = codec;
         releaseFile();
         int initError = init(quiet);
@@ -210,11 +218,27 @@ void GdxViewer::releaseFile()
 
 void GdxViewer::invalidate()
 {
+    // in case a drag-and-drop opertion is in progress, we have to wait for it to complete
+    if (dragInProgress()) {
+        mPendingInvalidate = true;
+        // call invalidate() again every 50 ms
+        QTimer::singleShot(50, this, &GdxViewer::invalidate);
+        return;
+    }
     if (isEnabled()) {
         saveState();
         setEnabled(false);
         releaseFile();
     }
+    mPendingInvalidate = false;
+}
+
+bool GdxViewer::dragInProgress()
+{
+    GdxSymbol *sym = selectedSymbol();
+    if (sym)
+        return symbolViewByName(sym->name())->dragInProgress();
+    return false;
 }
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)

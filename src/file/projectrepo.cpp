@@ -699,7 +699,7 @@ void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStri
 void ProjectRepo::stepRunAnimation()
 {
     mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIconCount);
-    for (PExProjectNode* project: mRunnigGroups) {
+    for (PExProjectNode* project: qAsConst(mRunnigGroups)) {
         QModelIndex ind = mTreeModel->index(project);
         if (ind.isValid())
             emit mTreeModel->dataChanged(ind, ind);
@@ -713,11 +713,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         files.removeFirst();
 
     QList<NodeId> addIds;
-    for (NodeId id : knownIds) {
+    for (const NodeId &id : knownIds) {
         PExGroupNode *group = asGroup(id);
         if (group && group->type() == NodeType::group) {
             QVector<PExFileNode*> groupFiles = group->listFiles();
-            for (PExFileNode* file: groupFiles) {
+            for (PExFileNode* file: qAsConst(groupFiles)) {
                 files << file->location();
                 addIds << file->id();
             }
@@ -731,18 +731,15 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project = aNode->assignedProject();
     } else {
         QFileInfo firstFile(files.first());
-        QDir dir(files.first());
+
         QString name;
-
         QString basePath;
-        if (firstFile.isFile()) {
-            basePath = firstFile.absoluteFilePath();
-            name = firstFile.completeBaseName();
-        } else if (dir.exists()) {
+        if (firstFile.isFile())
+            basePath = firstFile.absolutePath();
+        else if (firstFile.isDir())
             basePath = firstFile.filePath();
-            name = dir.dirName();
-        }
 
+        name = firstFile.completeBaseName();
         project = createProject(name, basePath, files.first());
     }
 

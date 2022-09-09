@@ -74,6 +74,7 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
     } else {
         palette.setColor(ui->laInfo->foregroundRole(), Theme::color(Theme::Normal_Red));
         ui->createButton->setText("Create");
+        ui->createButton->setEnabled(true);
     }
     ui->laInfo->setPalette(palette);
     ui->laInfo->setText(message + extraText);

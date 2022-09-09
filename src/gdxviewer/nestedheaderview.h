@@ -18,6 +18,7 @@
 #ifndef NESTEDHEADERVIEW_H
 #define NESTEDHEADERVIEW_H
 
+#include "gdxsymbolview.h"
 #include "tableviewmodel.h"
 #include <QHeaderView>
 
@@ -32,7 +33,7 @@ class NestedHeaderView : public QHeaderView
 {
     Q_OBJECT
 public:
-    NestedHeaderView(Qt::Orientation orientation, QWidget *parent = nullptr);
+    NestedHeaderView(Qt::Orientation orientation, GdxSymbolView* symbolView, QWidget *parent = nullptr);
     ~NestedHeaderView() override;
     void setModel(QAbstractItemModel *model) override;
 
@@ -56,6 +57,7 @@ protected:
     bool event(QEvent *e) override;
 
 private:
+    GdxSymbolView *mSymbolView = nullptr;
     int pointToDimension(QPoint p);
     int pointToDropDimension(QPoint p);
     void bindScrollMechanism();

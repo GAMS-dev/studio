@@ -1717,7 +1717,7 @@ void MainWindow::fileChanged(const FileId fileId)
             int index = ui->mainTabs->indexOf(edit);
             if (index >= 0) {
                 ViewHelper::setModified(edit, fm->isModified());
-                ui->mainTabs->setTabText(index, fm->name(NameModifier::raw));
+                fm->updateTabName(ui->mainTabs, index);
             }
         }
     }
@@ -1741,8 +1741,8 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                int gdxErr = gv->reload(file->codec(), changed);
-                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : FileProcessKind::ignore);
+                int gdxErr = gv->reload(file->codec(), changed, false);
+                if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : gdxErr==-2 ? FileProcessKind::fileLocked : FileProcessKind::ignore);
             }
         }
         return FileProcessKind::ignore;
@@ -4210,6 +4210,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
         }
         lastIndex = ui->mainTabs->indexOf(edit);
         ui->mainTabs->removeTab(lastIndex);
+        if (edit == mRecent.editor())
+            mSearchDialog->editorChanged(nullptr);
         mRecent.removeEditor(edit);
         fm->removeEditor(edit);
         edit->deleteLater();
@@ -4354,7 +4356,6 @@ void MainWindow::toggleSearchDialog()
         // e.g. needed for KDE to raise the search dialog when minimized
         if (mSearchDialog->isMinimized()) {
             mSearchDialog->setWindowState(Qt::WindowMaximized);
-            mSearchDialog->autofillSearchDialog();
         }
         // toggle visibility
         if (mSearchDialog->isVisible()) {

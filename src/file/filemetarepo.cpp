@@ -23,7 +23,6 @@
 #include "syntax/textmarkrepo.h"
 #include "settings.h"
 #include "exception.h"
-#include "logger.h"
 #include "viewhelper.h"
 #include <QFileInfo>
 

@@ -64,6 +64,9 @@ public:
     bool eventFilter(QObject *watched, QEvent *event) override;
     QList<QHeaderView*> headers();
 
+    bool dragInProgress() const;
+    void setDragInProgress(bool dragInProgress);
+
 public slots:
     void enableControls();
     void toggleSqueezeDefaults(bool checked);
@@ -140,6 +143,7 @@ private:
     // the state is stored the next time. As soon as a label becomes available again, it gets unchecked when a state is applied.
     QVector<QStringList> mPendingUncheckedLabels;
 
+    bool mDragInProgress = false;
     bool mAutoResizeLV;
     bool mAutoResizeTV;
 };
