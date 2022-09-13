@@ -103,7 +103,7 @@ ProjectContextMenu::ProjectContextMenu()
             for (QString solvername : solverDefFileNames.keys()) {
                 if (optFiles.contains(solverDefFileNames.value(solvername))) { //there exists such a file
                     QAction* createSolverOption = newSolverOptionMenu->addAction(solvername.toLower());
-                    connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
+                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
 
                     mAvailableSolvers << solvername;
                     mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
@@ -116,7 +116,7 @@ ProjectContextMenu::ProjectContextMenu()
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
                    continue;
                QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);
-               connect(createSolverOption, &QAction::triggered, [=] { onAddNewSolverOptionFile(solvername); });
+               connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername); });
 
                mAvailableSolvers << solvername;
                mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
@@ -271,13 +271,13 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
     mActions[actAddNewOpt]->setVisible(isProject);
-    for (QAction* action : mSolverOptionActions)
+    for (QAction* action : qAsConst(mSolverOptionActions))
         action->setVisible(isProject);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExFileNode *file = node->toFile();
         if (file) emit closeFile(file);
     }
@@ -286,7 +286,7 @@ void ProjectContextMenu::onCloseFile()
 void ProjectContextMenu::onAddExisitingFile()
 {
     QVector<PExProjectNode*> projects;
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!projects.contains(project))
@@ -302,8 +302,8 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (PExProjectNode *project: projects) {
-        for (QString filePath: filePaths) {
+    for (PExProjectNode *project: qAsConst(projects)) {
+        for (const QString &filePath: qAsConst(filePaths)) {
             emit addExistingFile(project, filePath);
         }
     }
@@ -312,7 +312,7 @@ void ProjectContextMenu::onAddExisitingFile()
 void ProjectContextMenu::onAddNewFile()
 {
     QVector<PExProjectNode*> projects;
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!projects.contains(project))
@@ -328,11 +328,11 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExGroupNode *group = node->toGroup();
         if (!group) continue;
         QVector<PExFileNode*> files = group->listFiles();
-        for (PExFileNode* file : files) {
+        for (PExFileNode* file : qAsConst(files)) {
             emit closeFile(file);
         }
     }
@@ -340,7 +340,7 @@ void ProjectContextMenu::onCloseGroup()
 
 void ProjectContextMenu::onCloseProject()
 {
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (project) emit closeProject(project);
@@ -362,7 +362,7 @@ void ProjectContextMenu::onExportProject()
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
     QVector<PExProjectNode*> groups;
-    for (PExAbstractNode *node: mNodes) {
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!groups.contains(project))

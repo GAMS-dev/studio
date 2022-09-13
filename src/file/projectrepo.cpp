@@ -671,7 +671,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     for (QModelIndex ind: mTreeModel->popDeclined()) {
         selModel->select(ind, QItemSelectionModel::Deselect);
     }
-    for (QModelIndex group: groups) {
+    for (QModelIndex group: qAsConst(groups)) {
         if (!mTreeView->isExpanded(group)) {
             mTreeView->setExpanded(group, true);
             for (int row = 0; row < mTreeModel->rowCount(group); ++row) {

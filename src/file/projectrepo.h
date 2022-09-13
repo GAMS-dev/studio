@@ -146,8 +146,6 @@ signals:
     void logTabRenamed(QWidget *wid, const QString &newName);
     void openRecentFile();
     void parentAssigned(const PExAbstractNode *node);
-    void deselect(const QVector<QModelIndex> &declined);
-    void select(const QVector<QModelIndex> &selected);
     void closeFileEditors(FileId fileId);
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);

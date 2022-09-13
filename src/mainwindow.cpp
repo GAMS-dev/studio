@@ -2867,8 +2867,25 @@ void MainWindow::on_projectView_activated(const QModelIndex &index)
     if ((node->type() == NodeType::group) || (node->type() == NodeType::project)) {
         ui->projectView->isExpanded(index) ? ui->projectView->collapse(index) : ui->projectView->expand(index);
     } else if (node->type() == NodeType::file) {
-        PExFileNode *file = mProjectRepo.asFileNode(index);
-        if (file) openFileNode(file);
+        PExFileNode *node = mProjectRepo.asFileNode(index);
+        if (node) {
+            bool pin = QGuiApplication::queryKeyboardModifiers() & (Qt::ControlModifier | Qt::ShiftModifier);
+            bool pinH = QGuiApplication::queryKeyboardModifiers() & Qt::ShiftModifier;
+            openFileNode(node, !pin);
+            if (pin && node->file()) {
+                int idx = -1;
+                for (int i = 0; i < node->file()->editors().size(); ++i) {
+                    QWidget *wid = node->file()->editors().at(i);
+                    idx = ui->mainTabs->indexOf(wid);
+                    if (idx >= 0) break;
+                }
+                if (idx >= 0) {
+                    openPinView(idx, pinH ? Qt::Horizontal : Qt::Vertical);
+                    ui->projectView->selectionModel()->select(mProjectRepo.treeModel()->index(node), QItemSelectionModel::ClearAndSelect);
+                    mPinView->widget()->setFocus();
+                }
+            }
+        }
     }
 }
 
