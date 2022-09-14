@@ -79,6 +79,7 @@ void GoToDialog::keyPressEvent(QKeyEvent *event)
 {
     if (event->modifiers().testFlag(Qt::ControlModifier) && event->key() == Qt::Key_G)
         reject();
+    QDialog::keyPressEvent(event);
 }
 
 }
