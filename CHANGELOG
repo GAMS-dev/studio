@@ -1,3 +1,7 @@
+Version 1.11.3 *
+==================
+- Added convenient shortcut ctrl-g to also close the goto-dialog
+
 Version 1.11.2
 ==================
 - updated tooltip of a tab after filename changed with "save as..."
