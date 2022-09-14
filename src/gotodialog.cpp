@@ -22,6 +22,7 @@
 
 #include <QIntValidator>
 #include <QPainter>
+#include <QKeyEvent>
 
 namespace gams {
 namespace studio {
@@ -71,6 +72,12 @@ void GoToDialog::on_goToButton_clicked()
     if (mLineNumber >= 0 && mLineNumber <= mMaxLines)
         accept();
     else
+        reject();
+}
+
+void GoToDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers().testFlag(Qt::ControlModifier) && event->key() == Qt::Key_G)
         reject();
 }
 

@@ -46,10 +46,14 @@ public slots:
 private slots:
     void on_goToButton_clicked();
 
+protected:
+    void keyPressEvent(QKeyEvent *event) override;
+
 private:
     Ui::GoToDialog *ui;
     int mLineNumber = -1;
     int mMaxLines = -1;
+
 };
 
 }
