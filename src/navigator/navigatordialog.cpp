@@ -82,6 +82,12 @@ void NavigatorDialog::setInput(const QString &input)
     } else if (input.startsWith(":")) {
         mode = NavigatorMode::Line;
         mFilterModel->setFilterWildcard("");
+    } else if (input.startsWith("p ")) {
+        mode = NavigatorMode::InProject;
+        mFilterModel->setFilterWildcard("");
+    } else if (input.startsWith("t ")) {
+        mode = NavigatorMode::Tabs;
+        mFilterModel->setFilterWildcard("");
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
@@ -92,19 +98,25 @@ void NavigatorDialog::setInput(const QString &input)
 void NavigatorDialog::updateContent(NavigatorMode mode) {
     if (mode == mCurrentMode) return;
 
-    QVector<NavigatorContent> content;
+    QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {
-        case NavigatorMode::AllFiles:
-            content = collectAllFiles();
-            break;
-        case NavigatorMode::Line:
-            content = navigateLine();
-        break;
         case NavigatorMode::Help:
-            content = showHelpContent();
+            generateHelpContent(content);
+        break;
+        case NavigatorMode::Line:
+            navigateLine(content);
+        break;
+        case NavigatorMode::AllFiles:
+            collectAllFiles(content);
+        break;
+        case NavigatorMode::InProject:
+            collectInProject(content);
+        break;
+        case NavigatorMode::Tabs:
+            collectTabs(content);
         break;
         default:
-            content = QVector<NavigatorContent>();
+            qWarning() << "Unhandled NavigatorMode";
         break;
     }
     mNavModel->setContent(content);
@@ -114,23 +126,18 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         mFilterModel->sort(0);
 }
 
-QVector<NavigatorContent> NavigatorDialog::showHelpContent()
+void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
 {
-    QVector<NavigatorContent> content;
-
-    content.append({ nullptr, "FILENAME", "filter files"});
+    content.append({ nullptr, "FILENAME", "filter all files"});
     content.append({ nullptr, ":NUMBER", "jump to line number"});
-
-    return content;
+    content.append({ nullptr, "p FILENAME", "filter files in current project"});
+    content.append({ nullptr, "t FILENAME", "filter open tabs"});
 }
 
-QVector<NavigatorContent> NavigatorDialog::collectAllFiles()
+void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 {
-    QVector<NavigatorContent> content;
-    foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
-        NavigatorContent nc = {fm, fm->location(), "open files"};
-        content.append(nc);
-    }
+    collectTabs(content);
+    collectInProject(content);
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content)) {
@@ -138,48 +145,59 @@ QVector<NavigatorContent> NavigatorDialog::collectAllFiles()
             content.append(nc);
         }
     }
-
-    return content;
 }
 
-bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
+void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
 {
-    foreach (NavigatorContent c, content) {
-        if (c.file == fm)
-            return true;
+    PExFileNode* currentFile = mMain->projectRepo()->findFileNode(mMain->currentEdit());
+    if (!currentFile) return;
+
+    for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
+        FileMeta* fm = f->file();
+        if (!valueExists(fm, content)) {
+            NavigatorContent nc = {fm, fm->location(), "current project"};
+            content.append(nc);
+        }
     }
-    return false;
 }
 
-QVector<NavigatorContent> NavigatorDialog::navigateLine()
+void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
-    QVector<NavigatorContent> content;
+    foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
+        if (!valueExists(fm, content)) {
+            NavigatorContent nc = {fm, fm->location(), "open files"};
+            content.append(nc);
+        }
+    }
+}
 
+void NavigatorDialog::navigateLine(QVector<NavigatorContent> &content)
+{
     FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     NavigatorContent nc = { fm, fm->location(),
                             "Max Lines: " + QString::number(mMain->linesInCurrentEditor())
                           };
     content.append(nc);
-
-    return content;
 }
 
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
 
-    if (mCurrentMode == NavigatorMode::AllFiles && index.row() != -1) {
-        FileMeta* fm = mNavModel->content().at(index.row()).file;
-        mMain->openFile(fm, true);
-
-    } else if (mCurrentMode == NavigatorMode::Line) {
+    if (mCurrentMode == NavigatorMode::Line) {
         QString inputText = mInput->text();
         bool ok = false;
 
         int lineNr = inputText.midRef(1).toInt(&ok);
         if (ok) mMain->jumpToLine(lineNr-1);
+
+    } else if (index.row() != -1) {
+        FileMeta* fm = mNavModel->content().at(index.row()).file;
+        mMain->openFile(fm, true);
+
+    } else {
+        close();
     }
-    close();
 }
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
@@ -220,6 +238,15 @@ bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
             keyPressEvent(keyEvent);
             return true;
         }
+    }
+    return false;
+}
+
+bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
+{
+    foreach (NavigatorContent c, content) {
+        if (c.file == fm)
+            return true;
     }
     return false;
 }

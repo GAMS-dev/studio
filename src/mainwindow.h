@@ -129,6 +129,7 @@ public:
     FileMetaRepo* fileRepo();
     ProjectRepo* projectRepo();
     TextMarkRepo* textMarkRepo();
+    QWidget *currentEdit();
 
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
@@ -407,7 +408,6 @@ protected:
     int currentLogTab();
     QTabWidget* mainTabs();
     void initGamsStandardPaths();
-    QWidget *currentEdit();
     QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
