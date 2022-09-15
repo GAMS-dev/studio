@@ -3496,9 +3496,9 @@ void MainWindow::newProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptOpen);
-    dialog->setFileMode(QFileDialog::DirectoryOnly);
-
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
+    dialog->setDefaultSuffix("gsp");
     connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
