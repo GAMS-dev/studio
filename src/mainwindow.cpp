@@ -486,6 +486,7 @@ void MainWindow::initToolBar()
 void MainWindow::initNavigator()
 {
     mNavigatorInput = new NavigatorLineEdit(this);
+    mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
 
     QLabel* spacer = new QLabel;
     spacer->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::MinimumExpanding);
@@ -5593,9 +5594,6 @@ void MainWindow::on_actionPin_Below_triggered()
 
 void MainWindow::on_actionNavigator_triggered()
 {
-    if (!mNavigatorDialog)
-        mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
-
     mNavigatorDialog->show();
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
