@@ -3544,7 +3544,7 @@ void MainWindow::createProject(QString projectPath)
 {
     // create empty project
     QFileInfo fi(projectPath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
+    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.path(), QString());
     openProjectOptions(project);
 }
 
