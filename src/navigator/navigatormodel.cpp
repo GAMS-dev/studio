@@ -23,14 +23,13 @@ namespace studio {
 
 NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
     mMain(main), QAbstractTableModel(parent)
-{
-
-}
+{ }
 
 void NavigatorModel::setContent(QVector<NavigatorContent> content)
 {
+    beginResetModel();
     mContent = content;
-    emit dataChanged(createIndex(0, 0), createIndex(content.count(), 0));
+    endResetModel();
 }
 
 QVector<NavigatorContent> NavigatorModel::content() const

@@ -33,8 +33,8 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     setWindowFlags(Qt::Popup);
     ui->setupUi(this);
     mNavModel = new NavigatorModel(this, main);
-
     mFilterModel = new QSortFilterProxyModel(this);
+
     mFilterModel->setSourceModel(mNavModel);
     mFilterModel->sort(0);
     mFilterModel->setDynamicSortFilter(false);
@@ -50,7 +50,6 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
 
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
-    connect(mNavModel, &NavigatorModel::dataChanged, mFilterModel, &QSortFilterProxyModel::dataChanged);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -77,7 +76,6 @@ void NavigatorDialog::setInput(const QString &input)
     }
 
     NavigatorMode mode;
-
     if (input.startsWith("?")) {
         mode = NavigatorMode::Help;
         mFilterModel->setFilterWildcard("");

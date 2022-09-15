@@ -496,8 +496,6 @@ void MainWindow::initNavigator()
     mNavigatorInput->setPlaceholderText("Navigator: type \"?\" for help.");
     mNavigatorInput->setClearButtonEnabled(true);
     ui->statusBar->addWidget(mNavigatorInput, 1);
-
-    mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
 }
 
 void MainWindow::updateToolbar(QWidget* current)
@@ -5593,13 +5591,14 @@ void MainWindow::on_actionPin_Below_triggered()
     openPinView(ui->mainTabs->currentIndex(), Qt::Vertical);
 }
 
-
 void MainWindow::on_actionNavigator_triggered()
 {
+    if (!mNavigatorDialog)
+        mNavigatorDialog = new NavigatorDialog(this, mNavigatorInput);
+
     mNavigatorDialog->show();
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
-
 
 }
 }
