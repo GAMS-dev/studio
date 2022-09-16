@@ -54,6 +54,7 @@ private:
     void collectLogs(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
     void updateContent(NavigatorMode mode);
+    void openFile(QModelIndex index);
 
 private slots:
     void returnPressed();

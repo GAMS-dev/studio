@@ -107,6 +107,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
+    void jumpToTab(FileMeta* fm);
     void jumpToLine(int line);
     void watchProjectTree();
 

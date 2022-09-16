@@ -3272,6 +3272,17 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
     }
 }
 
+void MainWindow::jumpToTab(FileMeta *fm)
+{
+    QList<QWidget*> logs = openLogs();
+    foreach (QWidget* w, logs) {
+        if (fm->location() == ViewHelper::location(w)) {
+            ui->logTabs->setCurrentIndex(ui->logTabs->indexOf(w));
+            return;
+        }
+    }
+}
+
 void MainWindow::mouseMoveEvent(QMouseEvent* event)
 {
     if (event->buttons()) {

@@ -74,7 +74,7 @@ void NavigatorDialog::setInput(const QString &input)
         show();
         mInput->setFocus();
     }
-
+    QString filter = input;
     NavigatorMode mode;
     if (input.startsWith("?")) {
         mode = NavigatorMode::Help;
@@ -84,13 +84,13 @@ void NavigatorDialog::setInput(const QString &input)
         mFilterModel->setFilterWildcard("");
     } else if (input.startsWith("p ")) {
         mode = NavigatorMode::InProject;
-        mFilterModel->setFilterWildcard("");
+        mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else if (input.startsWith("t ")) {
         mode = NavigatorMode::Tabs;
-        mFilterModel->setFilterWildcard("");
+        mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else if (input.startsWith("l ")) {
         mode = NavigatorMode::Logs;
-        mFilterModel->setFilterWildcard("");
+        mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
@@ -148,7 +148,7 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
     collectLogs(content);
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
-        if (!valueExists(fm, content)) {
+        if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
             NavigatorContent nc = {fm, fm->location(), "known files"};
             content.append(nc);
         }
@@ -172,7 +172,7 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
 void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
     foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
-        if (!valueExists(fm, content)) {
+        if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
             NavigatorContent nc = {fm, fm->location(), "open files"};
             content.append(nc);
         }
@@ -181,7 +181,7 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 {
-    for (PExProjectNode* project : mMain->projectRepo()->projects()) {
+    foreach (PExProjectNode* project, mMain->projectRepo()->projects()) {
         PExLogNode* log = project->logNode();
 
         FileMeta* fm = log->file();
@@ -213,12 +213,20 @@ void NavigatorDialog::returnPressed()
         if (ok) mMain->jumpToLine(lineNr-1);
 
     } else if (index.row() != -1) {
-        FileMeta* fm = mNavModel->content().at(index.row()).file;
-        mMain->openFile(fm, true);
-
+        openFile(index);
     } else {
         close();
     }
+}
+
+void NavigatorDialog::openFile(QModelIndex index)
+{
+    FileMeta* fm = mNavModel->content().at(index.row()).file;
+
+    if (fm->location().endsWith("~log"))
+        mMain->jumpToTab(fm);
+    else
+        mMain->openFile(fm, true);
 }
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
