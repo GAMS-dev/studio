@@ -65,7 +65,7 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    updateContent(NavigatorMode::AllFiles);
+    updateContent(mCurrentMode);
     mInput->setFocus();
 }
 
@@ -100,8 +100,6 @@ void NavigatorDialog::setInput(const QString &input)
 }
 
 void NavigatorDialog::updateContent(NavigatorMode mode) {
-    if (mode == mCurrentMode) return;
-
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {
         case NavigatorMode::Help:

@@ -25,11 +25,11 @@ NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
     QAbstractTableModel(parent), mMain(main)
 { }
 
-void NavigatorModel::setContent(QVector<NavigatorContent> content, QString currentFile)
+void NavigatorModel::setContent(QVector<NavigatorContent> content, QString workDir)
 {
     beginResetModel();
     mContent = content;
-    mCurrentDir.setPath(QFileInfo(currentFile).absolutePath());
+    mCurrentDir.setPath(QFileInfo(workDir).absolutePath());
     endResetModel();
 }
 
@@ -66,7 +66,8 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 
         } else if (index.column() == 1) { // path
             if (!fm) return QVariant();
-            return mCurrentDir.relativeFilePath(f.absolutePath());
+            QString relativePath = mCurrentDir.relativeFilePath(f.absolutePath());
+            return relativePath == "." ? QVariant() : relativePath;
 
         } else if (index.column() == 2) { // additional info
             return mContent.at(index.row()).additionalInfo;

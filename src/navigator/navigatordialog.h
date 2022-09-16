@@ -29,7 +29,7 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
-enum class NavigatorMode { Null, AllFiles, Line, Help, InProject, Tabs, Logs };
+enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs };
 
 class NavigatorDialog : public QDialog {
     Q_OBJECT
@@ -65,7 +65,7 @@ private:
     NavigatorModel* mNavModel = nullptr;
     NavigatorLineEdit* mInput = nullptr;
     QSortFilterProxyModel* mFilterModel = nullptr;
-    NavigatorMode mCurrentMode = NavigatorMode::Null;
+    NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
 };
 
 }

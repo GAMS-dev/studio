@@ -39,7 +39,7 @@ public:
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
-    void setContent(QVector<NavigatorContent> content, QString currentFile);
+    void setContent(QVector<NavigatorContent> content, QString workDir);
     QVector<NavigatorContent> content() const;
 
 private:
