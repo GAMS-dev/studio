@@ -27,7 +27,7 @@ namespace studio {
 
 struct NavigatorContent {
     FileMeta* file;
-    QString fileText;
+    QString text;
     QString additionalInfo;
 };
 
@@ -39,13 +39,14 @@ public:
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
-    void setContent(QVector<NavigatorContent> content);
+    void setContent(QVector<NavigatorContent> content, QString currentFile);
     QVector<NavigatorContent> content() const;
 
 private:
+    QObject* QAbstractTableModel = nullptr;
     QVector<NavigatorContent> mContent;
     gams::studio::MainWindow* mMain = nullptr;
-    QObject* QAbstractTableModel;
+    QDir mCurrentDir;
 };
 
 }

@@ -22,13 +22,14 @@ namespace studio {
 
 
 NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
-    mMain(main), QAbstractTableModel(parent)
+    QAbstractTableModel(parent), mMain(main)
 { }
 
-void NavigatorModel::setContent(QVector<NavigatorContent> content)
+void NavigatorModel::setContent(QVector<NavigatorContent> content, QString currentFile)
 {
     beginResetModel();
     mContent = content;
+    mCurrentDir.setPath(QFileInfo(currentFile).absolutePath());
     endResetModel();
 }
 
@@ -46,27 +47,43 @@ int NavigatorModel::rowCount(const QModelIndex &parent) const
 int NavigatorModel::columnCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
-    return 2;
+    return 3;
 }
 
 QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
-        if (index.column() == 0) {
-            return mContent.at(index.row()).fileText;
+        FileMeta* fm = mContent.at(index.row()).file;
+        QFileInfo f;
+        if (fm) f = QFileInfo(fm->location());
 
-        } else if (index.column() == 1)
+        if (index.column() == 0) { // file name
+            if (!mContent.at(index.row()).text.isEmpty())
+                return mContent.at(index.row()).text;
+
+            if (!fm) return QVariant();
+            return f.fileName();
+
+        } else if (index.column() == 1) { // path
+            if (!fm) return QVariant();
+            return mCurrentDir.relativeFilePath(f.absolutePath());
+
+        } else if (index.column() == 2) { // additional info
             return mContent.at(index.row()).additionalInfo;
+        }
 
     } else if (role == Qt::TextAlignmentRole) {
-        if (index.column() == 0)
+        if (index.column() == 0 || index.column() == 1)
             return Qt::AlignLeft;
         else
             return Qt::AlignRight;
 
     } else if (role == Qt::FontRole) {
-        if (index.column() == 1) {
-            QFont font;
+        QFont font;
+        if (index.column() == 0) {
+            font.setBold(true);
+            return font;
+        } else if (index.column() == 2) {
             font.setItalic(true);
             return font;
         }

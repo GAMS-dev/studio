@@ -45,6 +45,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     ui->tableView->setModel(mFilterModel);
     ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
     ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->installEventFilter(this);
 
@@ -125,7 +126,7 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
             qWarning() << "Unhandled NavigatorMode";
         break;
     }
-    mNavModel->setContent(content);
+    mNavModel->setContent(content, mMain->recent()->path());
     mCurrentMode = mode;
 
     if (mFilterModel)
@@ -149,7 +150,7 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            NavigatorContent nc = {fm, fm->location(), "known files"};
+            NavigatorContent nc = {fm, "", "known files"};
             content.append(nc);
         }
     }
@@ -163,7 +164,7 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
     for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
         FileMeta* fm = f->file();
         if (!valueExists(fm, content)) {
-            NavigatorContent nc = {fm, fm->location(), "current project"};
+            NavigatorContent nc = {fm, "", "current project"};
             content.append(nc);
         }
     }
@@ -173,7 +174,7 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
     foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            NavigatorContent nc = {fm, fm->location(), "open files"};
+            NavigatorContent nc = {fm, "", "open files"};
             content.append(nc);
         }
     }
@@ -187,7 +188,7 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
         FileMeta* fm = log->file();
         if (fm->editors().empty()) continue;
 
-        NavigatorContent nc = {fm, fm->location(), "open logs"};
+        NavigatorContent nc = {fm, "", "open logs"};
         content.append(nc);
     }
 }
@@ -195,7 +196,7 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 void NavigatorDialog::navigateLine(QVector<NavigatorContent> &content)
 {
     FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-    NavigatorContent nc = { fm, fm->location(),
+    NavigatorContent nc = { fm, "",
                             "Max Lines: " + QString::number(mMain->linesInCurrentEditor())
                           };
     content.append(nc);
