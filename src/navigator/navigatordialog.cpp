@@ -16,6 +16,7 @@
  *
  */
 #include <QKeyEvent>
+#include <QStatusBar>
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -251,10 +252,10 @@ void NavigatorDialog::updatePosition()
 {
     QPoint position;
 
-    position.setX(mInput->pos().x() - width() - mInput->width());
-    position.setY(mInput->pos().y() - height() - 5);
+    position.setX(qMin(mInput->pos().x(), mMain->width() - width()));
+    position.setY(mMain->height() - height() - mMain->statusBar()->height());
 
-    move(mInput->mapToGlobal(position));
+    move(mMain->mapToGlobal(position));
 }
 
 bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
