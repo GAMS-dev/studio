@@ -3496,9 +3496,9 @@ void MainWindow::newProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptSave);
-    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    dialog->setDefaultSuffix("gsp");
+    dialog->setAcceptMode(QFileDialog::AcceptOpen);
+    dialog->setFileMode(QFileDialog::DirectoryOnly);
+
     connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
@@ -3544,7 +3544,7 @@ void MainWindow::createProject(QString projectPath)
 {
     // create empty project
     QFileInfo fi(projectPath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.path(), QString());
+    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
     openProjectOptions(project);
 }
 
