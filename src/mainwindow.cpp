@@ -3495,7 +3495,7 @@ void MainWindow::openDelayedFiles()
 void MainWindow::newProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
+    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
     dialog->setAcceptMode(QFileDialog::AcceptOpen);
     dialog->setFileMode(QFileDialog::DirectoryOnly);
 

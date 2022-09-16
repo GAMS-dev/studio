@@ -1,6 +1,7 @@
 Version 1.11.3 *
 ==================
 - Added convenient shortcut ctrl-g to also close the goto-dialog
+- fixed wrong dialog title for "New Project"
 
 Version 1.11.2
 ==================
