@@ -88,6 +88,9 @@ void NavigatorDialog::setInput(const QString &input)
     } else if (input.startsWith("t ")) {
         mode = NavigatorMode::Tabs;
         mFilterModel->setFilterWildcard("");
+    } else if (input.startsWith("l ")) {
+        mode = NavigatorMode::Logs;
+        mFilterModel->setFilterWildcard("");
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
@@ -115,6 +118,9 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         case NavigatorMode::Tabs:
             collectTabs(content);
         break;
+        case NavigatorMode::Logs:
+            collectLogs(content);
+        break;
         default:
             qWarning() << "Unhandled NavigatorMode";
         break;
@@ -128,16 +134,18 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
 
 void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append({ nullptr, "FILENAME", "filter all files"});
     content.append({ nullptr, ":NUMBER", "jump to line number"});
+    content.append({ nullptr, "FILENAME", "filter all files"});
     content.append({ nullptr, "p FILENAME", "filter files in current project"});
     content.append({ nullptr, "t FILENAME", "filter open tabs"});
+    content.append({ nullptr, "l FILENAME", "filter logs"});
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 {
     collectTabs(content);
     collectInProject(content);
+    collectLogs(content);
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content)) {
@@ -168,6 +176,19 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
             NavigatorContent nc = {fm, fm->location(), "open files"};
             content.append(nc);
         }
+    }
+}
+
+void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
+{
+    for (PExProjectNode* project : mMain->projectRepo()->projects()) {
+        PExLogNode* log = project->logNode();
+
+        FileMeta* fm = log->file();
+        if (fm->editors().empty()) continue;
+
+        NavigatorContent nc = {fm, fm->location(), "open logs"};
+        content.append(nc);
     }
 }
 
