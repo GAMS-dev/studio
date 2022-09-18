@@ -30,6 +30,7 @@
 #include "valuefilter.h"
 #include "tableviewdomainmodel.h"
 #include "settings.h"
+#include "exportdialog.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -95,6 +96,13 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     aSelectAll->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(aSelectAll);
     ui->tvTableView->addAction(aSelectAll);
+
+    QAction* aExport = mContextMenuLV.addAction("Export", [this]() { emit showExportDialog(); });
+    mContextMenuTV.addAction(aExport);
+    aExport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
+    aExport->setShortcutVisibleInContextMenu(true);
+    ui->tvListView->addAction(aExport);
+    ui->tvTableView->addAction(aExport);
 
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
@@ -443,6 +451,22 @@ void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
 
     QClipboard* clip = QApplication::clipboard();
     clip->setText(sList.join(""));
+}
+
+QString GdxSymbolView::dataAsCsv()
+{
+    if (!ui->tvListView->model())
+        return "";
+
+    QTableView *tv;
+    if (mTableView)
+        tv = ui->tvTableView;
+    else
+        tv = ui->tvListView;
+    tv->selectAll();
+    copySelectionToClipboard(",");
+    QClipboard* clip = QApplication::clipboard();
+    return clip->text();
 }
 
 void GdxSymbolView::toggleColumnHidden()

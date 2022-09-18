@@ -28,6 +28,7 @@
 #include "gdxcc.h"
 #include "common.h"
 #include "gdxviewerstate.h"
+#include "exportdialog.h"
 
 class QMutex;
 class QSortFilterProxyModel;
@@ -53,6 +54,7 @@ public:
     ~GdxViewer() override;
     void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
     GdxSymbol* selectedSymbol();
+    void createSymbolView(GdxSymbol* sym, int symbolIndex);
     void setHasChanged(bool value);
     void copyAction();
     void selectAllAction();
@@ -86,6 +88,7 @@ private:
     void applyState();
     void applySymbolState(GdxSymbol* symbol);
     void applySelectedSymbol();
+    void showExportDialog();
 
     Ui::GdxViewer *ui;
     QString mGdxFile;
@@ -105,6 +108,7 @@ private:
 
     GdxViewerState* mState = nullptr;
     bool mPendingInvalidate = false;
+    ExportDialog *mExportDialog = nullptr;
 };
 
 } // namespace gdxviewer

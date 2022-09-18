@@ -167,6 +167,8 @@ SOURCES += \
     gdxdiffdialog/gdxdiffprocess.cpp \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
+    gdxviewer/exportdialog.cpp \
+    gdxviewer/exportmodel.cpp \
     gdxviewer/filteruelmodel.cpp \
     gdxviewer/gdxsymbol.cpp \
     gdxviewer/gdxsymbolheaderview.cpp \
@@ -393,6 +395,8 @@ HEADERS += \
     gdxdiffdialog/gdxdiffprocess.h \
     gdxviewer/columnfilter.h \
     gdxviewer/columnfilterframe.h \
+    gdxviewer/exportdialog.h \
+    gdxviewer/exportmodel.h \
     gdxviewer/filteruelmodel.h \
     gdxviewer/gdxsymbol.h \
     gdxviewer/gdxsymbolheaderview.h \
@@ -533,6 +537,7 @@ FORMS += \
     filesystemwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \
+    gdxviewer/exportdialog.ui \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/valuefilterwidget.ui \

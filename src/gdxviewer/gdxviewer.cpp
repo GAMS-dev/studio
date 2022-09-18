@@ -107,19 +107,8 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         }
 
         // create new GdxSymbolView if the symbol is selected for the first time
-        if (!mSymbolViews.at(selectedIdx)) {
-            GdxSymbolView* symView = new GdxSymbolView(this);
-            for (QHeaderView *header : symView->headers()) {
-                headerRegister(header);
-            }
-            mSymbolViews.replace(selectedIdx, symView);
-
-            GdxSymbolViewState* symViewState = mState ? mState->symbolViewState(selectedSymbol->name()) : nullptr;
-            if (mState && symViewState && symViewState->dim() == selectedSymbol->dim() && symViewState->type() == selectedSymbol->type())
-                symView->setSym(selectedSymbol, mGdxSymbolTable, symViewState);
-            else
-                symView->setSym(selectedSymbol, mGdxSymbolTable);
-        }
+        if (!mSymbolViews.at(selectedIdx))
+            createSymbolView(selectedSymbol, selectedIdx);
 
         if (!selectedSymbol->isLoaded())
             QtConcurrent::run(this, &GdxViewer::loadSymbol, selectedSymbol);
@@ -141,6 +130,23 @@ GdxSymbol *GdxViewer::selectedSymbol()
         }
     }
     return selected;
+}
+
+void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
+{
+    GdxSymbolView* symView = new GdxSymbolView(this);
+    connect(symView, &GdxSymbolView::showExportDialog, this, &GdxViewer::showExportDialog);
+    for (QHeaderView *header : symView->headers()) {
+        headerRegister(header);
+    }
+
+    mSymbolViews.replace(symbolIndex, symView);
+
+    GdxSymbolViewState* symViewState = mState ? mState->symbolViewState(sym->name()) : nullptr;
+    if (mState && symViewState && symViewState->dim() == sym->dim() && symViewState->type() == sym->type())
+        symView->setSym(sym, mGdxSymbolTable, symViewState);
+    else
+        symView->setSym(sym, mGdxSymbolTable);
 }
 
 int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
@@ -486,6 +492,13 @@ void GdxViewer::applySelectedSymbol()
             }
         }
     }
+}
+
+void GdxViewer::showExportDialog()
+{
+    if (!mExportDialog)
+        mExportDialog = new ExportDialog(this, mGdxSymbolTable, this);
+    mExportDialog->show();
 }
 
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
