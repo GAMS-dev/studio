@@ -187,19 +187,17 @@ void GdxViewer::copyAction()
 {
     QWidget *source = focusWidget();
 
-    if (static_cast<QTableView*>(source) == ui->tvSymbols)
+    if (source == ui->tvSymbols)
         copySelectionToClipboard();
-    else if (static_cast<GdxSymbolView*>(source->parent())) {
-        GdxSymbolView* gdxView = static_cast<GdxSymbolView*>(source->parent());
+    else if (GdxSymbolView* gdxView = qobject_cast<GdxSymbolView*>(source->parent()))
         gdxView->copySelectionToClipboard(",");
-    }
 }
 
 void GdxViewer::selectAllAction()
 {
     QWidget *source = focusWidget();
 
-    QTableView* view = dynamic_cast<QTableView*>(source);
+    QTableView* view = qobject_cast<QTableView*>(source);
     if (!view) return;
     view->selectAll();
 }

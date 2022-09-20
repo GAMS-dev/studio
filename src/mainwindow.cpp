@@ -4709,12 +4709,12 @@ void MainWindow::on_actionCopy_triggered()
 
     if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
         tv->copySelection();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->copy();
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
     } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
-    } else if (focusWidget() == mSyslog) {
-        mSyslog->copy();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->copySelection();
     } else if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
