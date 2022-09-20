@@ -240,6 +240,7 @@ SOURCES += \
     option/solveroptionwidget.cpp \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
+    process/connectprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
@@ -468,6 +469,7 @@ HEADERS += \
     pinviewwidget.h \
     process.h \
     process/abstractprocess.h \
+    process/connectprocess.h \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \

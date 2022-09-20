@@ -64,9 +64,10 @@ public:
     void saveFilters(GdxSymbolViewState* symViewState);
     bool eventFilter(QObject *watched, QEvent *event) override;
     QList<QHeaderView*> headers();
-
     bool dragInProgress() const;
     void setDragInProgress(bool dragInProgress);
+    bool isTableViewActive() const;
+    TableViewModel *getTvModel() const;
 
 public slots:
     void enableControls();
@@ -115,6 +116,7 @@ private:
     void resetValFormat();
     void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
     void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
+    QString copySelectionToString(QString separator, bool copyLabels = true);
 
     QVector<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;

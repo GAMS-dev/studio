@@ -61,6 +61,7 @@ public:
     void selectSearchField();
     void releaseFile();
     bool dragInProgress();
+    GdxSymbolView *symbolViewByName(QString name);
 
 public slots:
     void invalidate();
@@ -83,7 +84,6 @@ private:
     static int errorCallback(int count, const char *message);
 
 private:
-    GdxSymbolView *symbolViewByName(QString name);
     void saveState();
     void applyState();
     void applySymbolState(GdxSymbol* symbol);

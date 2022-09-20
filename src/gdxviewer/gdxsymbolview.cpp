@@ -374,83 +374,9 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 
 void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
 {
-    if (!ui->tvListView->model())
-        return;
-    // row -> column -> QModelIndex
-    QMap<int, QMap<int, QString>> sortedSelection;
-    QTableView *tv;
-    if (mTableView)
-        tv = ui->tvTableView;
-    else {
-        tv = ui->tvListView;
-        copyLabels = false; // copy labels only available in table view mode
-    }
-
-    QModelIndexList selection = tv->selectionModel()->selection().indexes();
-    if (selection.isEmpty())
-        return;
-
-    int minRow = std::numeric_limits<int>::max();
-    int maxRow = std::numeric_limits<int>::min();
-    int minCol = std::numeric_limits<int>::max();
-    int maxCol = std::numeric_limits<int>::min();
-
-    for (const QModelIndex &idx : qAsConst(selection)) {
-        int currentRow = idx.row();
-        int currentCol = idx.column();
-        if (tv->isColumnHidden(currentCol))
-            continue;
-
-        currentCol = tv->horizontalHeader()->visualIndex(currentCol);
-        QString currenText = idx.data().toString();
-        if (currenText.contains(separator)) {
-            if (currenText.contains("\'"))
-                currenText = "\"" + currenText + "\"";
-            else
-                currenText = "\'" + currenText + "\'";
-        }
-        sortedSelection[currentRow][currentCol] = currenText;
-
-        minRow = qMin(minRow, currentRow);
-        maxRow = qMax(maxRow, currentRow);
-        minCol = qMin(minCol, currentCol);
-        maxCol = qMax(maxCol, currentCol);
-    }
-
-    QStringList sList;
-    if (copyLabels) { // copy labels as well in table view mode
-        int colHeaderDim = (static_cast<NestedHeaderView*>(tv->horizontalHeader()))->dim();
-        int rowHeaderDim = (static_cast<NestedHeaderView*>(tv->verticalHeader()))->dim();
-        for (int i=0; i<colHeaderDim; i++) {
-            for (int j=0; j<rowHeaderDim; j++)
-                sList << separator;
-            for(int c=minCol; c<maxCol+1; c++) {
-                if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
-                    continue;
-                sList << tv->model()->headerData(c, Qt::Horizontal).toStringList()[i] << separator;
-            }
-            sList.pop_back(); // remove last separator
-            sList << "\n";
-        }
-    }
-
-    for(int r=minRow; r<maxRow+1; r++) {
-        if (copyLabels) { // copy labels as well in table view mode
-            for (QString label:tv->model()->headerData(r, Qt::Vertical).toStringList())
-                sList << label << separator;
-        }
-        for(int c=minCol; c<maxCol+1; c++) {
-            if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
-                continue;
-            sList << sortedSelection[r][c] << separator;
-        }
-        sList.pop_back(); // remove last separator
-        sList << "\n";
-    }
-    sList.pop_back();  // remove last newline
-
+    QString data = copySelectionToString(separator, copyLabels);
     QClipboard* clip = QApplication::clipboard();
-    clip->setText(sList.join(""));
+    clip->setText(data);
 }
 
 QString GdxSymbolView::dataAsCsv()
@@ -463,10 +389,11 @@ QString GdxSymbolView::dataAsCsv()
         tv = ui->tvTableView;
     else
         tv = ui->tvListView;
+    QItemSelection selection = tv->selectionModel()->selection();
     tv->selectAll();
-    copySelectionToClipboard(",");
-    QClipboard* clip = QApplication::clipboard();
-    return clip->text();
+    QString data = copySelectionToString(",");
+    tv->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
+    return data;
 }
 
 void GdxSymbolView::toggleColumnHidden()
@@ -544,6 +471,11 @@ void GdxSymbolView::onResizeColumnsLV()
 void GdxSymbolView::onResizeColumnsTV()
 {
     mAutoResizeTV = false;
+}
+
+TableViewModel *GdxSymbolView::getTvModel() const
+{
+    return mTvModel;
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -748,6 +680,90 @@ bool GdxSymbolView::dragInProgress() const
 void GdxSymbolView::setDragInProgress(bool dragInProgress)
 {
     mDragInProgress = dragInProgress;
+}
+
+QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
+{
+    if (!ui->tvListView->model())
+        return "" ;
+    // row -> column -> QModelIndex
+    QMap<int, QMap<int, QString>> sortedSelection;
+    QTableView *tv;
+    if (mTableView)
+        tv = ui->tvTableView;
+    else {
+        tv = ui->tvListView;
+        copyLabels = false; // copy labels only available in table view mode
+    }
+
+    QModelIndexList selection = tv->selectionModel()->selection().indexes();
+    if (selection.isEmpty())
+        return "";
+
+    int minRow = std::numeric_limits<int>::max();
+    int maxRow = std::numeric_limits<int>::min();
+    int minCol = std::numeric_limits<int>::max();
+    int maxCol = std::numeric_limits<int>::min();
+
+    for (const QModelIndex &idx : qAsConst(selection)) {
+        int currentRow = idx.row();
+        int currentCol = idx.column();
+        if (tv->isColumnHidden(currentCol))
+            continue;
+
+        currentCol = tv->horizontalHeader()->visualIndex(currentCol);
+        QString currenText = idx.data().toString();
+        if (currenText.contains(separator)) {
+            if (currenText.contains("\'"))
+                currenText = "\"" + currenText + "\"";
+            else
+                currenText = "\'" + currenText + "\'";
+        }
+        sortedSelection[currentRow][currentCol] = currenText;
+
+        minRow = qMin(minRow, currentRow);
+        maxRow = qMax(maxRow, currentRow);
+        minCol = qMin(minCol, currentCol);
+        maxCol = qMax(maxCol, currentCol);
+    }
+
+    QStringList sList;
+    if (copyLabels) { // copy labels as well in table view mode
+        int colHeaderDim = (static_cast<NestedHeaderView*>(tv->horizontalHeader()))->dim();
+        int rowHeaderDim = (static_cast<NestedHeaderView*>(tv->verticalHeader()))->dim();
+        for (int i=0; i<colHeaderDim; i++) {
+            for (int j=0; j<rowHeaderDim; j++)
+                sList << separator;
+            for(int c=minCol; c<maxCol+1; c++) {
+                if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
+                    continue;
+                sList << tv->model()->headerData(c, Qt::Horizontal).toStringList()[i] << separator;
+            }
+            sList.pop_back(); // remove last separator
+            sList << "\n";
+        }
+    }
+
+    for(int r=minRow; r<maxRow+1; r++) {
+        if (copyLabels) { // copy labels as well in table view mode
+            for (QString label:tv->model()->headerData(r, Qt::Vertical).toStringList())
+                sList << label << separator;
+        }
+        for(int c=minCol; c<maxCol+1; c++) {
+            if (tv->isColumnHidden(tv->horizontalHeader()->logicalIndex(c)))
+                continue;
+            sList << sortedSelection[r][c] << separator;
+        }
+        sList.pop_back(); // remove last separator
+        sList << "\n";
+    }
+    sList.pop_back();  // remove last newline
+    return sList.join("");
+}
+
+bool GdxSymbolView::isTableViewActive() const
+{
+    return mTableView;
 }
 
 QVector<QStringList> GdxSymbolView::pendingUncheckedLabels() const

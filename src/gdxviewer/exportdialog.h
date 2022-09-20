@@ -3,6 +3,7 @@
 
 #include "exportmodel.h"
 #include <QDialog>
+#include <process/connectprocess.h>
 
 namespace gams {
 namespace studio {
@@ -34,6 +35,7 @@ private:
     Ui::ExportDialog *ui;
     bool writeSymbolToCsv(GdxSymbol* sym, QString file);
     ExportModel *mExportModel = nullptr;
+    ConnectProcess *mProc = nullptr;
 };
 
 
