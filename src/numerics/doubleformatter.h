@@ -34,7 +34,7 @@ public:
         f = 1,
         e = 2
     };
-    static int gFormatFull;
+    static const int gFormatFull;
     static QString format(double v, Format format, int precision, int squeeze);
 
 private:
