@@ -1,9 +1,10 @@
 Version 1.11.3 *
 ==================
-- Added convenient shortcut ctrl-g to also close the goto-dialog
+- Added convenient shortcut `CTRL + G` to also close the goto-dialog
 - fixed wrong dialog title for "New Project"
 - added `Ctrl + C` shortcut to system log
 - added `Clear Log` action to the context menu of the system log
+- display shortcuts for cut, copy, and paste to editors context menus
 
 Version 1.11.2
 ==================
