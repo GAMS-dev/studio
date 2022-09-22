@@ -103,10 +103,14 @@ void SystemLogEdit::contextMenuEvent(QContextMenuEvent *e)
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
         if (act->objectName() == "edit-copy") {
+            act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+C"));
             connect(act, &QAction::triggered, this, &SystemLogEdit::copy);
         }
     }
+    QAction act("Clear Log", this);
+    connect(&act, &QAction::triggered, this, &SystemLogEdit::clear);
+    menu->insertAction(menu->actions().at(3), &act);
     menu->exec(e->globalPos());
     delete menu;
 }
