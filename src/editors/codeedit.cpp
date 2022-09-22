@@ -264,6 +264,11 @@ void CodeEdit::disconnectTimers()
 
 void CodeEdit::clearSelection()
 {
+    textCursor().clearSelection();
+}
+
+void CodeEdit::deleteSelection()
+{
     if (isReadOnly()) return;
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->replaceBlockText(QStringList()<<QString());
@@ -1122,7 +1127,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             menu->removeAction(act);
             act->disconnect();
             if (hasBlockSelection) act->setEnabled(true);
-            connect(act, &QAction::triggered, this, &CodeEdit::clearSelection);
+            connect(act, &QAction::triggered, this, &CodeEdit::deleteSelection);
             menu->insertAction(lastAct, act);
         }
         lastAct = act;
