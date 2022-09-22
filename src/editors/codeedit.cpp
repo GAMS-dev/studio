@@ -1101,28 +1101,29 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
             menu->removeAction(act);
             act->disconnect();
+            act->setShortcut(QKeySequence("Ctrl+V"));
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-copy") {
             menu->removeAction(act);
             act->disconnect();
             act->setEnabled(true);
+            act->setShortcut(QKeySequence("Ctrl+C"));
             connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
             menu->insertAction(lastAct, act);
-        } else if (hasBlockSelection) {
-            if (act->objectName() == "edit-cut") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
-                menu->insertAction(lastAct, act);
-            } else if (act->objectName() == "edit-delete") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::clearSelection);
-                menu->insertAction(lastAct, act);
-            }
+        } else if (act->objectName() == "edit-cut") {
+            menu->removeAction(act);
+            act->disconnect();
+            if (hasBlockSelection) act->setEnabled(true);
+            act->setShortcut(QKeySequence("Ctrl+X"));
+            connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-delete") {
+            menu->removeAction(act);
+            act->disconnect();
+            if (hasBlockSelection) act->setEnabled(true);
+            connect(act, &QAction::triggered, this, &CodeEdit::clearSelection);
+            menu->insertAction(lastAct, act);
         }
         lastAct = act;
     }

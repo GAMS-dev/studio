@@ -22,7 +22,6 @@
 #include <QByteArray>
 #include <QApplication>
 #include "process/abstractprocess.h"
-#include "editors/processlogedit.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"

@@ -23,7 +23,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
-#include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
 #include "encodingsdialog.h"
