@@ -29,7 +29,7 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
-enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs };
+enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, Folder };
 
 class NavigatorDialog : public QDialog {
     Q_OBJECT
@@ -52,8 +52,9 @@ private:
     void collectInProject(QVector<NavigatorContent> &content);
     void collectTabs(QVector<NavigatorContent> &content);
     void collectLogs(QVector<NavigatorContent> &content);
+    void collectFileSystem(QVector<NavigatorContent> &content, const QString &input);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
-    void updateContent(NavigatorMode mode);
+    void updateContent(NavigatorMode mode, const QString &input);
     void openFile(QModelIndex index);
 
 private slots:

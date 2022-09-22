@@ -26,7 +26,24 @@ namespace gams {
 namespace studio {
 
 struct NavigatorContent {
-    FileMeta* file;
+    NavigatorContent(FileMeta* file, QString additionalText) {
+        fileMeta = file;
+        fileInfo = QFileInfo(file->location());
+        additionalInfo = additionalText;
+    }
+
+    NavigatorContent(QFileInfo file, QString additionalText) {
+        fileInfo = file;
+        additionalInfo = additionalText;
+    }
+
+    NavigatorContent(QString txt, QString additionalText) {
+        text = txt;
+        additionalInfo = additionalText;
+    }
+
+    FileMeta* fileMeta = nullptr;
+    QFileInfo fileInfo;
     QString text;
     QString additionalInfo;
 };
@@ -41,6 +58,7 @@ public:
     QVariant data(const QModelIndex &index, int role) const;
     void setContent(QVector<NavigatorContent> content, QString workDir);
     QVector<NavigatorContent> content() const;
+    QDir currentDir() const;
 
 private:
     QObject* QAbstractTableModel = nullptr;

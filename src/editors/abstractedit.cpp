@@ -20,8 +20,6 @@
 #include "editors/abstractedit.h"
 #include "search/search.h"
 #include "search/searchlocator.h"
-#include "viewhelper.h"
-#include "logger.h"
 #include "keys.h"
 #include "theme.h"
 

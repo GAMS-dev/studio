@@ -66,7 +66,7 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    updateContent(mCurrentMode);
+    updateContent(mCurrentMode, "");
     mInput->setFocus();
 }
 
@@ -93,14 +93,17 @@ void NavigatorDialog::setInput(const QString &input)
     } else if (input.startsWith("l ")) {
         mode = NavigatorMode::Logs;
         mFilterModel->setFilterWildcard(filter.remove(0, 2));
+    } else if (input.startsWith("f ")) {
+        mode = NavigatorMode::Folder;
+        mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
     }
-    updateContent(mode);
+    updateContent(mode, input);
 }
 
-void NavigatorDialog::updateContent(NavigatorMode mode) {
+void NavigatorDialog::updateContent(NavigatorMode mode, const QString& input) {
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {
         case NavigatorMode::Help:
@@ -121,6 +124,9 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         case NavigatorMode::Logs:
             collectLogs(content);
         break;
+        case NavigatorMode::Folder:
+            collectFileSystem(content, input);
+        break;
         default:
             qWarning() << "Unhandled NavigatorMode";
         break;
@@ -134,11 +140,11 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
 
 void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append({ nullptr, ":NUMBER", "jump to line number"});
-    content.append({ nullptr, "FILENAME", "filter all files"});
-    content.append({ nullptr, "p FILENAME", "filter files in current project"});
-    content.append({ nullptr, "t FILENAME", "filter open tabs"});
-    content.append({ nullptr, "l FILENAME", "filter logs"});
+    content.append(NavigatorContent(":NUMBER", "jump to line number"));
+    content.append(NavigatorContent("FILENAME", "filter all files"));
+    content.append(NavigatorContent("p FILENAME", "filter files in current project"));
+    content.append(NavigatorContent("t FILENAME", "filter open tabs"));
+    content.append(NavigatorContent("l FILENAME", "filter logs"));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
@@ -149,8 +155,7 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            NavigatorContent nc = {fm, "", "known files"};
-            content.append(nc);
+            content.append(NavigatorContent(fm, "known files"));
         }
     }
 }
@@ -163,8 +168,7 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
     for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
         FileMeta* fm = f->file();
         if (!valueExists(fm, content)) {
-            NavigatorContent nc = {fm, "", "current project"};
-            content.append(nc);
+            content.append(NavigatorContent(fm, "current project"));
         }
     }
 }
@@ -173,8 +177,7 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
     foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            NavigatorContent nc = {fm, "", "open files"};
-            content.append(nc);
+            content.append(NavigatorContent(fm, "open files"));
         }
     }
 }
@@ -187,18 +190,25 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
         FileMeta* fm = log->file();
         if (fm->editors().empty()) continue;
 
-        NavigatorContent nc = {fm, "", "open logs"};
-        content.append(nc);
+        content.append(NavigatorContent(fm, "open logs"));
+    }
+}
+
+void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content, const QString& input)
+{
+    QString textInput = input;
+    textInput = textInput.remove(0, 2);
+
+    QDir selectedFolder = mNavModel->currentDir();
+    for (const QFileInfo &entry : selectedFolder.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name)) {
+        content.append(NavigatorContent(entry, "filesystem"));
     }
 }
 
 void NavigatorDialog::navigateLine(QVector<NavigatorContent> &content)
 {
     FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-    NavigatorContent nc = { fm, "",
-                            "Max Lines: " + QString::number(mMain->linesInCurrentEditor())
-                          };
-    content.append(nc);
+    content.append(NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInCurrentEditor())));
 }
 
 void NavigatorDialog::returnPressed()
@@ -221,12 +231,16 @@ void NavigatorDialog::returnPressed()
 
 void NavigatorDialog::openFile(QModelIndex index)
 {
-    FileMeta* fm = mNavModel->content().at(index.row()).file;
-
-    if (fm->location().endsWith("~log"))
-        mMain->jumpToTab(fm);
-    else
-        mMain->openFile(fm, true);
+    NavigatorContent nc = mNavModel->content().at(index.row());
+    if (FileMeta* fm = nc.fileMeta) {
+        if (fm->location().endsWith("~log"))
+            mMain->jumpToTab(fm);
+        else
+            mMain->openFile(fm, true);
+    } else {
+        qDebug()/*rogo:delete*/<<QTime::currentTime()<< "ncfi" << nc.fileInfo << nc.fileInfo.absoluteFilePath();
+        mMain->openFilePath(nc.fileInfo.absoluteFilePath());
+    }
 }
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
@@ -274,7 +288,7 @@ bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
 {
     foreach (NavigatorContent c, content) {
-        if (c.file == fm)
+        if (c.fileMeta == fm)
             return true;
     }
     return false;

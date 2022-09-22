@@ -29,13 +29,18 @@ void NavigatorModel::setContent(QVector<NavigatorContent> content, QString workD
 {
     beginResetModel();
     mContent = content;
-    mCurrentDir.setPath(QFileInfo(workDir).absolutePath());
+    mCurrentDir = QDir(workDir);
     endResetModel();
 }
 
 QVector<NavigatorContent> NavigatorModel::content() const
 {
     return mContent;
+}
+
+QDir NavigatorModel::currentDir() const
+{
+    return mCurrentDir;
 }
 
 int NavigatorModel::rowCount(const QModelIndex &parent) const
@@ -53,15 +58,13 @@ int NavigatorModel::columnCount(const QModelIndex &parent) const
 QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
-        FileMeta* fm = mContent.at(index.row()).file;
-        QFileInfo f;
-        if (fm) f = QFileInfo(fm->location());
+        NavigatorContent nc = mContent.at(index.row());
+        FileMeta* fm = nc.fileMeta;
+        QFileInfo f = nc.fileInfo;
 
         if (index.column() == 0) { // file name
-            if (!mContent.at(index.row()).text.isEmpty())
-                return mContent.at(index.row()).text;
-
-            if (!fm) return QVariant();
+            if (!nc.text.isEmpty())
+                return nc.text;
             return f.fileName();
 
         } else if (index.column() == 1) { // path
@@ -70,7 +73,7 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
             return relativePath == "." ? QVariant() : relativePath;
 
         } else if (index.column() == 2) { // additional info
-            return mContent.at(index.row()).additionalInfo;
+            return nc.additionalInfo;
         }
 
     } else if (role == Qt::TextAlignmentRole) {
