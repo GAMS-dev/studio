@@ -1097,13 +1097,23 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
-        if (act->objectName() == "select-all") {
+        DEB() << "Action: " << act->objectName();
+        if (act->objectName() == "edit-undo") {
+            menu->removeAction(act);
+            act->setShortcut(QKeySequence("Ctrl+Z"));
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-redo") {
+            menu->removeAction(act);
+            act->setShortcut(QKeySequence("Ctrl+Y"));
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "select-all") {
             if (mBlockEdit) act->setEnabled(false);
             menu->removeAction(act);
             act->disconnect();
+            act->setShortcut(QKeySequence("Ctrl+A"));
             connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
             menu->insertAction(lastAct, act);
-        } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
+        } else if (act->objectName() == "edit-paste") {
             menu->removeAction(act);
             act->disconnect();
             act->setShortcut(QKeySequence("Ctrl+V"));
@@ -1112,7 +1122,6 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
         } else if (act->objectName() == "edit-copy") {
             menu->removeAction(act);
             act->disconnect();
-            act->setEnabled(true);
             act->setShortcut(QKeySequence("Ctrl+C"));
             connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
             menu->insertAction(lastAct, act);
@@ -1127,6 +1136,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
             menu->removeAction(act);
             act->disconnect();
             if (hasBlockSelection) act->setEnabled(true);
+            act->setShortcut(QKeySequence("Del"));
             connect(act, &QAction::triggered, this, &CodeEdit::deleteSelection);
             menu->insertAction(lastAct, act);
         }
