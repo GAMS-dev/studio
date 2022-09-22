@@ -110,7 +110,7 @@ void SystemLogEdit::contextMenuEvent(QContextMenuEvent *e)
     }
     QAction act("Clear Log", this);
     connect(&act, &QAction::triggered, this, &SystemLogEdit::clear);
-    menu->insertAction(menu->actions().at(3), &act);
+    menu->addAction(&act);
     menu->exec(e->globalPos());
     delete menu;
 }
