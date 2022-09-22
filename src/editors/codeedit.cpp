@@ -268,7 +268,7 @@ void CodeEdit::clearSelection()
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->replaceBlockText(QStringList()<<QString());
     } else {
-        textCursor().clearSelection();
+        textCursor().removeSelectedText();
     }
 }
 
