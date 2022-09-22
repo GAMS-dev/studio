@@ -3,6 +3,7 @@ Version 1.11.3 *
 - Added convenient shortcut ctrl-g to also close the goto-dialog
 - fixed wrong dialog title for "New Project"
 - added `Ctrl + C` shortcut to system log
+- added `Clear Log` action to the context menu of the system log
 
 Version 1.11.2
 ==================
