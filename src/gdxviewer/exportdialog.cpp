@@ -66,13 +66,30 @@ void ExportDialog::on_pbExport_clicked()
     instPDEW += "    symbols:\n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
         int rowDimension = sym->dim();
+        QString ip;
+        QString pdew;
+        pdew =  "      - name: " + sym->name() + "\n";
+        pdew += "        range: " + sym->name() + "!A1\n";
+        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
+            QString dom = "(";
+            for (int i=0; i<sym->dim(); i++)
+                dom += QString::number(i) + ",";
+            dom.truncate(dom.length()-1);
+            dom += ")";
+            ip += "- Projection:\n";
+            ip += "    name: " + sym->name() + dom + "\n";
+            ip += "    newName: " + sym->name() + "_proj" + dom + "\n";
+            ip += "    asParameter: true\n";
+            pdew =  "      - name: " + sym->name() + "_proj\n";
+            pdew += "        range: " + sym->name() + "!A1\n";
+        }
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView && symView->isTableViewActive()) {
-            instPDEW += "      - name: " + sym->name() + "_proj\n";
-            instPDEW += "        range: " + sym->name() + "!A1\n";
+            pdew =  "      - name: " + sym->name() + "_proj\n";
+            pdew += "        range: " + sym->name() + "!A1\n";
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
             QVector<int> dimOrder = symView->getTvModel()->tvDimOrder();
-            QString ip = "- Projection:\n";
+            ip = "- Projection:\n";
             QString dom = "(";
             QString domNew = "(";
             for (int i=0; i<sym->dim(); i++) {
@@ -85,16 +102,20 @@ void ExportDialog::on_pbExport_clicked()
             domNew += ")";
             ip += "    name: " + sym->name() + dom + "\n";
             ip += "    newName: " + sym->name() + "_proj" + domNew + "\n";
+            if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
+                ip += "    asParameter: true\n";
+            }
             ip += "- PythonCode:\n";
             ip += "    code: |\n";
             ip += "      r = connect.container.data['" + sym->name() + "_proj'].records\n";
             ip += "      connect.container.data['" + sym->name() + "_proj'].records=r.sort_values([c for c in r.columns])\n";
-            instProjections.append(ip);
-        } else {
-            instPDEW += "      - name: " + sym->name() + "\n";
-            instPDEW += "        range: " + sym->name() + "!A1\n";
         }
-        instPDEW += "        rowDimension: " + QString::number(rowDimension) + "\n";
+        pdew += "        rowDimension: " + QString::number(rowDimension) + "\n";
+
+        if (!ip.isEmpty())
+            instProjections.append(ip);
+        if (!pdew.isEmpty())
+            instPDEW += pdew;
     }
 
     QString instYaml = Settings::settings()->toString(skDefaultWorkspace) + "/" + "do_export.yaml";
