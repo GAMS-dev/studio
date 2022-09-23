@@ -69,8 +69,11 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 
         } else if (index.column() == 1) { // path
             if (!fm) return QVariant();
-            QString relativePath = mCurrentDir.relativeFilePath(f.absolutePath());
-            return relativePath == "." ? QVariant() : relativePath;
+            QString path = mCurrentDir.relativeFilePath(f.absolutePath());
+            if (path.count("..") > 3)
+                path = f.absolutePath();
+
+            return path == "." ? QVariant() : path;
 
         } else if (index.column() == 2) { // additional info
             return nc.additionalInfo;

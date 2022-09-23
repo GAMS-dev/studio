@@ -44,8 +44,8 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     mFilterModel->setFilterKeyColumn(0);
 
     ui->tableView->setModel(mFilterModel);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::Stretch);
-    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(0, QHeaderView::ResizeToContents);
+    ui->tableView->horizontalHeader()->setSectionResizeMode(1, QHeaderView::Stretch);
     ui->tableView->horizontalHeader()->setSectionResizeMode(2, QHeaderView::ResizeToContents);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
     ui->tableView->installEventFilter(this);
@@ -156,7 +156,7 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 
     foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            content.append(NavigatorContent(fm, "known files"));
+            content.append(NavigatorContent(fm, "Known Files"));
         }
     }
 }
@@ -169,7 +169,7 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
     for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
         FileMeta* fm = f->file();
         if (!valueExists(fm, content)) {
-            content.append(NavigatorContent(fm, "current project"));
+            content.append(NavigatorContent(fm, "Current Project"));
         }
     }
 }
@@ -178,7 +178,7 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
     foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
-            content.append(NavigatorContent(fm, "open files"));
+            content.append(NavigatorContent(fm, "Open Tabs"));
         }
     }
 }
@@ -191,7 +191,7 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
         FileMeta* fm = log->file();
         if (fm->editors().empty()) continue;
 
-        content.append(NavigatorContent(fm, "open logs"));
+        content.append(NavigatorContent(fm, "Open Logs"));
     }
 }
 
@@ -201,7 +201,11 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     textInput = textInput.remove(0, 2);
 
     if (!mDirSelectionOngoing) {
-        mSelectedDirectory = mNavModel->currentDir();
+        QDir dir(textInput);
+        if (dir.isAbsolute())
+            mSelectedDirectory = dir;
+        else mSelectedDirectory = mNavModel->currentDir();
+
         mDirSelectionOngoing = true;
     }
 
