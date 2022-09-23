@@ -59,21 +59,21 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
         NavigatorContent nc = mContent.at(index.row());
-        FileMeta* fm = nc.fileMeta;
         QFileInfo f = nc.fileInfo;
 
-        if (index.column() == 0) { // file name
-            if (!nc.text.isEmpty())
+        if (index.column() == 0) { // file name: show text if available, otherwise fileinfo
+            if (!nc.text.isEmpty()) {
                 return nc.text;
-            return f.fileName();
+            } else {
+                return f.fileName();
+            }
 
-        } else if (index.column() == 1) { // path
-            if (!fm) return QVariant();
+        } else if (index.column() == 1) { // path: relative path if contains less than 4 .., otherwise absolute
+            // TODO(rogo): fix behavior when f is ".."
             QString path = mCurrentDir.relativeFilePath(f.absolutePath());
             if (path.count("..") > 3)
                 path = f.absolutePath();
-
-            return path == "." ? QVariant() : path;
+            return (path == ".") ? QVariant() : path;
 
         } else if (index.column() == 2) { // additional info
             return nc.additionalInfo;

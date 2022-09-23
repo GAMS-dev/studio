@@ -57,6 +57,14 @@ private:
     void updateContent(NavigatorMode mode);
     void selectFileOrFolder(QModelIndex index);
 
+    ///
+    /// \brief findClosestPath removes characters from the current string
+    /// until it finds a valid directory
+    /// \param path
+    /// \return
+    ///
+    QDir findClosestPath(const QString& path);
+
 private slots:
     void returnPressed();
 

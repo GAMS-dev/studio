@@ -91,7 +91,6 @@ void NavigatorDialog::setInput(const QString &input)
         mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else if (input.startsWith("f ")) {
         mode = NavigatorMode::Folder;
-        mFilterModel->setFilterWildcard(filter.remove(0, 2));
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
@@ -133,6 +132,11 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
 
     if (mFilterModel)
         mFilterModel->sort(0);
+
+    // select first entry if user hasnt anything selected
+    if (!ui->tableView->selectionModel()->hasSelection()) {
+        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+    }
 }
 
 void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
@@ -194,16 +198,23 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 {
     QString textInput = mMain->navigatorInput()->text();
-    textInput = textInput.remove(0, 2);
+    textInput = textInput.remove(0, 2); // remove prefix
 
+    QDir dir(textInput);
     if (!mDirSelectionOngoing) {
-        QDir dir(textInput);
-        if (dir.isAbsolute())
-            mSelectedDirectory = dir;
-        else mSelectedDirectory = mNavModel->currentDir();
-
+        mSelectedDirectory = mNavModel->currentDir();
         mDirSelectionOngoing = true;
+    } else if (dir.exists()) {
+        mSelectedDirectory = dir;
+        textInput.append(QDir::separator()); // we need paths to end in seperator
+    } else {
+        mSelectedDirectory = findClosestPath(textInput);
     }
+
+    QString filter = textInput.right(textInput.length() - textInput.lastIndexOf(QDir::separator()));
+    filter.remove(QDir::separator());
+
+    mFilterModel->setFilterWildcard(filter);
 
     for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name)) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
@@ -250,6 +261,8 @@ void NavigatorDialog::selectFileOrFolder(QModelIndex index)
             close();
         } else {
             mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
+            mMain->navigatorInput()->setText(
+                        "f " + mSelectedDirectory.absolutePath() + QDir::separator());
             updateContent(NavigatorMode::Folder);
         }
     }
@@ -304,6 +317,27 @@ bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>&
             return true;
     }
     return false;
+}
+
+QDir NavigatorDialog::findClosestPath(const QString& path)
+{
+    QString tryPath = path;
+
+    int i = 10;
+    while(tryPath.length() > 0) {
+        tryPath = tryPath.left(tryPath.length()-1);
+        if (tryPath.isEmpty()) tryPath = mNavModel->currentDir().absolutePath();
+
+        QDir d(tryPath);
+        if (d.exists()) {
+            return d;
+        }
+
+        // infinite loop safeguard
+        if (i-- == 0)
+            break;
+    }
+    return QDir();
 }
 
 }
