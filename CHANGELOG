@@ -4,7 +4,7 @@ Version 1.11.3 *
 - fixed wrong dialog title for "New Project"
 - added `Ctrl + C` shortcut to system log
 - added `Clear Log` action to the context menu of the system log
-- display shortcuts for cut, copy, and paste to editors context menus
+- display shortcuts for various actions to context menu of editor
 
 Version 1.11.2
 ==================
