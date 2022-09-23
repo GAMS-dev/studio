@@ -884,6 +884,11 @@ search::SearchDialog* MainWindow::searchDialog() const
     return mSearchDialog;
 }
 
+QLineEdit* MainWindow::navigatorInput()
+{
+    return mNavigatorInput;
+}
+
 QStringList MainWindow::encodingNames()
 {
     QStringList res;

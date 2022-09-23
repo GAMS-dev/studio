@@ -52,10 +52,10 @@ private:
     void collectInProject(QVector<NavigatorContent> &content);
     void collectTabs(QVector<NavigatorContent> &content);
     void collectLogs(QVector<NavigatorContent> &content);
-    void collectFileSystem(QVector<NavigatorContent> &content, const QString &input);
+    void collectFileSystem(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
-    void updateContent(NavigatorMode mode, const QString &input);
-    void openFile(QModelIndex index);
+    void updateContent(NavigatorMode mode);
+    void selectFileOrFolder(QModelIndex index);
 
 private slots:
     void returnPressed();
@@ -67,6 +67,8 @@ private:
     NavigatorLineEdit* mInput = nullptr;
     QSortFilterProxyModel* mFilterModel = nullptr;
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
+    bool mDirSelectionOngoing = false;
+    QDir mSelectedDirectory;
 };
 
 }

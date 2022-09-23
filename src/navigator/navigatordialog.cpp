@@ -66,7 +66,7 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    updateContent(mCurrentMode, "");
+    setInput(mMain->navigatorInput()->text());
     mInput->setFocus();
 }
 
@@ -100,10 +100,10 @@ void NavigatorDialog::setInput(const QString &input)
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
     }
-    updateContent(mode, input);
+    updateContent(mode);
 }
 
-void NavigatorDialog::updateContent(NavigatorMode mode, const QString& input) {
+void NavigatorDialog::updateContent(NavigatorMode mode) {
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {
         case NavigatorMode::Help:
@@ -125,7 +125,7 @@ void NavigatorDialog::updateContent(NavigatorMode mode, const QString& input) {
             collectLogs(content);
         break;
         case NavigatorMode::Folder:
-            collectFileSystem(content, input);
+            collectFileSystem(content);
         break;
         default:
             qWarning() << "Unhandled NavigatorMode";
@@ -133,6 +133,7 @@ void NavigatorDialog::updateContent(NavigatorMode mode, const QString& input) {
     }
     mNavModel->setContent(content, mMain->recent()->path());
     mCurrentMode = mode;
+    if (mode != NavigatorMode::Folder) mDirSelectionOngoing = false;
 
     if (mFilterModel)
         mFilterModel->sort(0);
@@ -194,14 +195,18 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
     }
 }
 
-void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content, const QString& input)
+void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 {
-    QString textInput = input;
+    QString textInput = mMain->navigatorInput()->text();
     textInput = textInput.remove(0, 2);
 
-    QDir selectedFolder = mNavModel->currentDir();
-    for (const QFileInfo &entry : selectedFolder.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name)) {
-        content.append(NavigatorContent(entry, "filesystem"));
+    if (!mDirSelectionOngoing) {
+        mSelectedDirectory = mNavModel->currentDir();
+        mDirSelectionOngoing = true;
+    }
+
+    for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name)) {
+        content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }
 
@@ -221,25 +226,32 @@ void NavigatorDialog::returnPressed()
 
         int lineNr = inputText.midRef(1).toInt(&ok);
         if (ok) mMain->jumpToLine(lineNr-1);
+        close();
 
     } else if (index.row() != -1) {
-        openFile(index);
+        selectFileOrFolder(index);
     } else {
         close();
     }
 }
 
-void NavigatorDialog::openFile(QModelIndex index)
+void NavigatorDialog::selectFileOrFolder(QModelIndex index)
 {
     NavigatorContent nc = mNavModel->content().at(index.row());
     if (FileMeta* fm = nc.fileMeta) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
-        else
-            mMain->openFile(fm, true);
+        else mMain->openFile(fm, true);
+
+        close();
     } else {
-        qDebug()/*rogo:delete*/<<QTime::currentTime()<< "ncfi" << nc.fileInfo << nc.fileInfo.absoluteFilePath();
-        mMain->openFilePath(nc.fileInfo.absoluteFilePath());
+        if (nc.fileInfo.isFile()) {
+            mMain->openFilePath(nc.fileInfo.absoluteFilePath());
+            close();
+        } else {
+            mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
+            updateContent(NavigatorMode::Folder);
+        }
     }
 }
 
