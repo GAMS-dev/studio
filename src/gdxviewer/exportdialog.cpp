@@ -65,17 +65,21 @@ void ExportDialog::on_pbExport_clicked()
     instPDEW += "    file: " + excelFile + "\n";
     instPDEW += "    symbols:\n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+        QString dom;
+        if (sym->dim() > 0) {
+            dom = "(";
+            for (int i=0; i<sym->dim(); i++)
+                dom += QString::number(i) + ",";
+            dom.truncate(dom.length()-1);
+            dom += ")";
+        }
+
         int rowDimension = sym->dim();
         QString ip;
         QString pdew;
         pdew =  "      - name: " + sym->name() + "\n";
         pdew += "        range: " + sym->name() + "!A1\n";
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            QString dom = "(";
-            for (int i=0; i<sym->dim(); i++)
-                dom += QString::number(i) + ",";
-            dom.truncate(dom.length()-1);
-            dom += ")";
             ip += "- Projection:\n";
             ip += "    name: " + sym->name() + dom + "\n";
             ip += "    newName: " + sym->name() + "_proj" + dom + "\n";
@@ -90,15 +94,10 @@ void ExportDialog::on_pbExport_clicked()
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
             QVector<int> dimOrder = symView->getTvModel()->tvDimOrder();
             ip = "- Projection:\n";
-            QString dom = "(";
             QString domNew = "(";
-            for (int i=0; i<sym->dim(); i++) {
-                dom += QString::number(i) + ",";
+            for (int i=0; i<sym->dim(); i++)
                 domNew += QString::number(dimOrder.at(i)) + ",";
-            }
-            dom.truncate(dom.length()-1);
             domNew.truncate(domNew.length()-1);
-            dom += ")";
             domNew += ")";
             ip += "    name: " + sym->name() + dom + "\n";
             ip += "    newName: " + sym->name() + "_proj" + domNew + "\n";
