@@ -16,7 +16,7 @@ Version 1.12.0
 - added Navigator feature (`Ctrl+K`)
     - filter files by typing a search term, wildcards are also supported (e.g.: *.gms)
     - press `Enter` to jump to a selected file
-    - type `:` and a number to jump to that line in the current file
+    - type `?` to show help about all available prefixes
 
 Version 1.11.3
 ==================
