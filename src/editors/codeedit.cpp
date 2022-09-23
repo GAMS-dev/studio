@@ -264,11 +264,16 @@ void CodeEdit::disconnectTimers()
 
 void CodeEdit::clearSelection()
 {
+    textCursor().clearSelection();
+}
+
+void CodeEdit::deleteSelection()
+{
     if (isReadOnly()) return;
     if (mBlockEdit && !mBlockEdit->blockText().isEmpty()) {
         mBlockEdit->replaceBlockText(QStringList()<<QString());
     } else {
-        textCursor().clearSelection();
+        textCursor().removeSelectedText();
     }
 }
 
@@ -1092,37 +1097,47 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
-        if (act->objectName() == "select-all") {
+        if (act->objectName() == "edit-undo") {
+            menu->removeAction(act);
+            act->setShortcut(QKeySequence("Ctrl+Z"));
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-redo") {
+            menu->removeAction(act);
+            act->setShortcut(QKeySequence("Ctrl+Y"));
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "select-all") {
             if (mBlockEdit) act->setEnabled(false);
             menu->removeAction(act);
             act->disconnect();
+            act->setShortcut(QKeySequence("Ctrl+A"));
             connect(act, &QAction::triggered, this, &CodeEdit::selectAllText);
             menu->insertAction(lastAct, act);
-        } else if (act->objectName() == "edit-paste" && act->isEnabled()) {
+        } else if (act->objectName() == "edit-paste") {
             menu->removeAction(act);
             act->disconnect();
+            act->setShortcut(QKeySequence("Ctrl+V"));
             connect(act, &QAction::triggered, this, &CodeEdit::pasteClipboard);
             menu->insertAction(lastAct, act);
         } else if (act->objectName() == "edit-copy") {
             menu->removeAction(act);
             act->disconnect();
-            act->setEnabled(true);
+            act->setShortcut(QKeySequence("Ctrl+C"));
             connect(act, &QAction::triggered, this, &CodeEdit::copySelection);
             menu->insertAction(lastAct, act);
-        } else if (hasBlockSelection) {
-            if (act->objectName() == "edit-cut") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
-                menu->insertAction(lastAct, act);
-            } else if (act->objectName() == "edit-delete") {
-                menu->removeAction(act);
-                act->disconnect();
-                act->setEnabled(true);
-                connect(act, &QAction::triggered, this, &CodeEdit::clearSelection);
-                menu->insertAction(lastAct, act);
-            }
+        } else if (act->objectName() == "edit-cut") {
+            menu->removeAction(act);
+            act->disconnect();
+            if (hasBlockSelection) act->setEnabled(true);
+            act->setShortcut(QKeySequence("Ctrl+X"));
+            connect(act, &QAction::triggered, this, &CodeEdit::cutSelection);
+            menu->insertAction(lastAct, act);
+        } else if (act->objectName() == "edit-delete") {
+            menu->removeAction(act);
+            act->disconnect();
+            if (hasBlockSelection) act->setEnabled(true);
+            act->setShortcut(QKeySequence("Del"));
+            connect(act, &QAction::triggered, this, &CodeEdit::deleteSelection);
+            menu->insertAction(lastAct, act);
         }
         lastAct = act;
     }

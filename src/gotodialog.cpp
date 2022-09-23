@@ -22,6 +22,7 @@
 
 #include <QIntValidator>
 #include <QPainter>
+#include <QKeyEvent>
 
 namespace gams {
 namespace studio {
@@ -72,6 +73,13 @@ void GoToDialog::on_goToButton_clicked()
         accept();
     else
         reject();
+}
+
+void GoToDialog::keyPressEvent(QKeyEvent *event)
+{
+    if (event->modifiers().testFlag(Qt::ControlModifier) && event->key() == Qt::Key_G)
+        reject();
+    QDialog::keyPressEvent(event);
 }
 
 }

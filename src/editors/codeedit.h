@@ -159,6 +159,7 @@ signals:
 
 public slots:
     void clearSelection();
+    void deleteSelection();
     void cutSelection();
     virtual void copySelection();
     virtual void selectAllText();

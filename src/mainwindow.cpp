@@ -23,7 +23,6 @@
 #include "mainwindow.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
-#include "editors/processlogedit.h"
 #include "editors/abstractedit.h"
 #include "editors/systemlogedit.h"
 #include "encodingsdialog.h"
@@ -3512,7 +3511,7 @@ void MainWindow::openDelayedFiles()
 void MainWindow::newProjectDialog()
 {
     QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
+    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
     dialog->setAcceptMode(QFileDialog::AcceptOpen);
     dialog->setFileMode(QFileDialog::DirectoryOnly);
 
@@ -4727,12 +4726,12 @@ void MainWindow::on_actionCopy_triggered()
 
     if (TextView *tv = ViewHelper::toTextView(focusWidget())) {
         tv->copySelection();
+    } else if (focusWidget() == mSyslog) {
+        mSyslog->copy();
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(mRecent.editor())) {
         gdx->copyAction();
     } else if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         sow->copyAction();
-    } else if (focusWidget() == mSyslog) {
-        mSyslog->copy();
     } else if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         tv->copySelection();
     } else if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {

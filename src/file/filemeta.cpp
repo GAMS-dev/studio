@@ -1038,7 +1038,7 @@ bool FileMeta::isPinnable()
 
 void FileMeta::updateTabName(QTabWidget *tabWidget, int index)
 {
-    tabWidget->setTabText(index, name(NameModifier::editState));
+    tabWidget->setTabText(index, name(NameModifier::raw));
     if (isPinnable())
         tabWidget->setTabToolTip(index, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location()) +
                                  "<br>- Pin right <b>Ctrl+Click</b><br>- Pin below <b>Shift+Ctrl+Click</b></p>");

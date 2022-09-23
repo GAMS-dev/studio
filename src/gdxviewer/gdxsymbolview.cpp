@@ -387,7 +387,7 @@ void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
     int minCol = std::numeric_limits<int>::max();
     int maxCol = std::numeric_limits<int>::min();
 
-    for (QModelIndex idx : selection) {
+    for (const QModelIndex &idx : qAsConst(selection)) {
         int currentRow = idx.row();
         int currentCol = idx.column();
         if (tv->isColumnHidden(currentCol))

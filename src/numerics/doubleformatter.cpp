@@ -24,7 +24,7 @@ namespace gams {
 namespace studio {
 namespace numerics {
 
-int DoubleFormatter::gFormatFull = 0;
+const int DoubleFormatter::gFormatFull = 0;
 
 QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze)
 {

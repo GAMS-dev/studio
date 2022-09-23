@@ -97,6 +97,24 @@ void SystemLogEdit::mouseReleaseEvent(QMouseEvent *event)
     }
 }
 
+void SystemLogEdit::contextMenuEvent(QContextMenuEvent *e)
+{
+    QMenu *menu = createStandardContextMenu();
+    for (int i = menu->actions().count()-1; i >= 0; --i) {
+        QAction *act = menu->actions().at(i);
+        if (act->objectName() == "edit-copy") {
+            act->disconnect();
+            act->setShortcut(QKeySequence("Ctrl+C"));
+            connect(act, &QAction::triggered, this, &SystemLogEdit::copy);
+        }
+    }
+    QAction act("Clear Log", this);
+    connect(&act, &QAction::triggered, this, &SystemLogEdit::clear);
+    menu->addAction(&act);
+    menu->exec(e->globalPos());
+    delete menu;
+}
+
 AbstractEdit::EditorType SystemLogEdit::type() const
 {
     return EditorType::SystemLog;

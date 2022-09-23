@@ -7,6 +7,15 @@ Version 1.12.0  *
 - improved GDX Viewer auto-resizing behavior
 - added directly open in Pin-View from Project-Explorer by double-clicking while holding CTRL (for horizontal pin) or CTRL+SHIFT (for vertical pin)
 
+Version 1.11.3
+==================
+- added shortcut `Ctrl + G` to also close the GoTo dialog
+- fixed wrong dialog title for "New Project"
+- added `Ctrl + C` shortcut to system log
+- added `Clear Log` action to the system log context menu
+- added shortcut descriptions for various actions in context menu of editor
+- fixed drag'n'drop not working in project explorer on macOS
+
 Version 1.11.2
 ==================
 - updated tooltip of a tab after filename changed with "save as..."

@@ -20,7 +20,6 @@
 
 #include "common.h"
 #include "editors/codeedit.h"
-#include "editors/processlogedit.h"
 #include "editors/textview.h"
 #include "file/projectoptions.h"
 #include "gdxviewer/gdxviewer.h"

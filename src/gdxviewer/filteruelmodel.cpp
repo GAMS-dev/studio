@@ -55,7 +55,7 @@ int FilterUelModel::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return static_cast<int>(mUels->size());
+    return int(mUels->size());
 }
 
 QVariant FilterUelModel::data(const QModelIndex &index, int role) const

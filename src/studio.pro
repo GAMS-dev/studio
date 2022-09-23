@@ -90,7 +90,6 @@ SOURCES += \
     editors/memorymapper.cpp \
     editors/navigationhistory.cpp \
     editors/navigationhistorylocator.cpp \
-    editors/processlogedit.cpp \
     editors/sysloglocator.cpp \
     editors/systemlogedit.cpp \
     editors/textview.cpp \
@@ -314,7 +313,6 @@ HEADERS += \
     editors/memorymapper.h \
     editors/navigationhistory.h \
     editors/navigationhistorylocator.h \
-    editors/processlogedit.h \
     editors/sysloglocator.h \
     editors/systemlogedit.h \
     editors/textview.h \
