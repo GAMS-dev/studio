@@ -501,6 +501,11 @@ void GdxViewer::showExportDialog()
     mExportDialog->show();
 }
 
+QString GdxViewer::gdxFile() const
+{
+    return mGdxFile;
+}
+
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
     GdxSymbol *sym = mGdxSymbolTable->getSymbolByName(name);

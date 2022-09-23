@@ -33,7 +33,6 @@ private:
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     Ui::ExportDialog *ui;
-    bool writeSymbolToCsv(GdxSymbol* sym, QString file);
     ExportModel *mExportModel = nullptr;
     ConnectProcess *mProc = nullptr;
 };

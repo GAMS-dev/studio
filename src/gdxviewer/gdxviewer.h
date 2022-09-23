@@ -62,6 +62,7 @@ public:
     void releaseFile();
     bool dragInProgress();
     GdxSymbolView *symbolViewByName(QString name);
+    QString gdxFile() const;
 
 public slots:
     void invalidate();
