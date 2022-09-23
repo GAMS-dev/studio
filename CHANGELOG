@@ -1,4 +1,4 @@
-Version 1.11.3 *
+Version 1.11.3
 ==================
 - added shortcut `Ctrl + G` to also close the GoTo dialog
 - fixed wrong dialog title for "New Project"
