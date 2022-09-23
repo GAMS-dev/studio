@@ -1097,7 +1097,6 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QAction *lastAct = nullptr;
     for (int i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
-        DEB() << "Action: " << act->objectName();
         if (act->objectName() == "edit-undo") {
             menu->removeAction(act);
             act->setShortcut(QKeySequence("Ctrl+Z"));
