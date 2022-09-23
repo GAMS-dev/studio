@@ -21,10 +21,6 @@
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
 
-// TODO(rogo): delete
-#include <QTime>
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 

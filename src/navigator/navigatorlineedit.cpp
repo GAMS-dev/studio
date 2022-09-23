@@ -17,9 +17,6 @@
  */
 #include "navigatorlineedit.h"
 
-// TODO(rogo): remove debug output
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 
