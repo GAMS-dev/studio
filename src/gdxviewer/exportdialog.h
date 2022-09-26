@@ -29,17 +29,25 @@ private slots:
     void on_pbCancel_clicked();
     void on_pbExport_clicked();
 
+    void on_pbBrows_clicked();
+
 private:
     QString generateInstructions();
     QString generateGdxReader();
     QString generatePDExcelWriter(QString excelFile);
     QString generateProjections();
 
+    QString generateDomains(GdxSymbol *sym);
+    QString generateDomainsNew(GdxSymbol *sym);
+
+    void setOutput(QString filePath);
+
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     Ui::ExportDialog *ui;
     ExportModel *mExportModel = nullptr;
     ConnectProcess *mProc = nullptr;
+    QString mRecentPath;
 };
 
 
