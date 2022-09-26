@@ -203,6 +203,7 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
                 dom += QString::number(dimOrder.at(i)) + ",";
             dom.truncate(dom.length()-1);
             dom += ")";
+            return dom;
         }
         return generateDomains(sym);
     }
@@ -219,7 +220,9 @@ void ExportDialog::on_pbBrows_clicked()
     QString filter("Excel file (*.xlsx);");
     QString filePath = QFileDialog::getSaveFileName(this, "Choose Excel File...",
                                                             mRecentPath,
-                                                            filter);
+                                                            filter,
+                                                            nullptr,
+                                                            QFileDialog::DontConfirmOverwrite);
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
         setOutput(filePath);
