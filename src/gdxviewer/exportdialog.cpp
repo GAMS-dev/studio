@@ -50,21 +50,70 @@ void ExportDialog::on_pbCancel_clicked()
 
 void ExportDialog::on_pbExport_clicked()
 {
-    QString instGDXR = "";
-    instGDXR += "- GDXReader:\n";
-    instGDXR += "    file: " + mGdxViewer->gdxFile() + "\n";
-    instGDXR += "    symbols: \n";
+    QString instYaml = Settings::settings()->toString(skDefaultWorkspace) + "/" + "do_export.yaml";
+    QFile f(instYaml);
+    if (f.open(QFile::WriteOnly | QFile::Text)) {
+        f.write(generateInstructions().toUtf8());
+        f.close();
+    }
+    QStringList l;
+    l << instYaml;
+    mProc->setParameters(l);
+    mProc->setWorkingDirectory(Settings::settings()->toString(skDefaultWorkspace));
+    mProc->execute();
+}
+
+QString ExportDialog::generateInstructions()
+{
+    QString inst;
+    inst += generateGdxReader();
+    inst += generateProjections();
+    inst += generatePDExcelWriter("output.xlsx");
+    return inst;
+}
+
+QString ExportDialog::generateGdxReader()
+{
+    QString inst;
+    inst += "- GDXReader:\n";
+    inst += "    file: " + mGdxViewer->gdxFile() + "\n";
+    inst += "    symbols: \n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols())
-        instGDXR += "      - name: " + sym->name() + "\n";
+        inst += "      - name: " + sym->name() + "\n";
+    return inst;
+}
 
-    QString excelFile = "output.xlsx";
-    QStringList instProjections;
-
-    QString instPDEW = "";
-    instPDEW += "- PandasExcelWriter:\n";
-    instPDEW += "    file: " + excelFile + "\n";
-    instPDEW += "    symbols:\n";
+QString ExportDialog::generatePDExcelWriter(QString excelFile)
+{
+    QString inst = "- PandasExcelWriter:\n";
+    inst += "    file: " + excelFile + "\n";
+    inst += "    symbols:\n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+        QString name = sym->name();
+        QString range = sym->name() + "!A1";
+        int rowDimension = sym->dim();
+        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+            name += "_proj";
+        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
+        if (symView && symView->isTableViewActive()) {
+            name = sym->name() + "_proj";
+            rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
+        }
+        inst +=  "      - name: " + name + "\n";
+        inst += "        range: " + range + "\n";
+        inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
+    }
+    return inst;
+}
+
+QString ExportDialog::generateProjections()
+{
+    QString inst;
+    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+        QString name;
+        QString newName;
+        bool asParameter = false;
+        bool domOrderChanged = false;
         QString dom;
         if (sym->dim() > 0) {
             dom = "(";
@@ -73,64 +122,40 @@ void ExportDialog::on_pbExport_clicked()
             dom.truncate(dom.length()-1);
             dom += ")";
         }
-
-        int rowDimension = sym->dim();
-        QString ip;
-        QString pdew;
-        pdew =  "      - name: " + sym->name() + "\n";
-        pdew += "        range: " + sym->name() + "!A1\n";
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            ip += "- Projection:\n";
-            ip += "    name: " + sym->name() + dom + "\n";
-            ip += "    newName: " + sym->name() + "_proj" + dom + "\n";
-            ip += "    asParameter: true\n";
-            pdew =  "      - name: " + sym->name() + "_proj\n";
-            pdew += "        range: " + sym->name() + "!A1\n";
+            name = sym->name() + dom;
+            newName = sym->name() + "_proj" + dom;
+            asParameter = true;
         }
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView && symView->isTableViewActive()) {
-            pdew =  "      - name: " + sym->name() + "_proj\n";
-            pdew += "        range: " + sym->name() + "!A1\n";
-            rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
             QVector<int> dimOrder = symView->getTvModel()->tvDimOrder();
-            ip = "- Projection:\n";
             QString domNew = "(";
             for (int i=0; i<sym->dim(); i++)
                 domNew += QString::number(dimOrder.at(i)) + ",";
             domNew.truncate(domNew.length()-1);
             domNew += ")";
-            ip += "    name: " + sym->name() + dom + "\n";
-            ip += "    newName: " + sym->name() + "_proj" + domNew + "\n";
-            if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-                ip += "    asParameter: true\n";
+            if (dom != domNew) {
+                name = sym->name() + dom;
+                newName = sym->name() + "_proj" + domNew;
+                domOrderChanged = true;
             }
-            ip += "- PythonCode:\n";
-            ip += "    code: |\n";
-            ip += "      r = connect.container.data['" + sym->name() + "_proj'].records\n";
-            ip += "      connect.container.data['" + sym->name() + "_proj'].records=r.sort_values([c for c in r.columns])\n";
         }
-        pdew += "        rowDimension: " + QString::number(rowDimension) + "\n";
-
-        if (!ip.isEmpty())
-            instProjections.append(ip);
-        if (!pdew.isEmpty())
-            instPDEW += pdew;
+        if (!name.isEmpty()) {
+            inst += "- Projection:\n";
+            inst += "    name: " + name + "\n";
+            inst += "    newName: " + newName + "\n";
+            if (asParameter)
+                inst += "    asParameter: true\n";
+            if (domOrderChanged) {
+                inst += "- PythonCode:\n";
+                inst += "    code: |\n";
+                inst += "      r = connect.container.data['" + sym->name() + "_proj'].records\n";
+                inst += "      connect.container.data['" + sym->name() + "_proj'].records=r.sort_values([c for c in r.columns])\n";
+            }
+        }
     }
-
-    QString instYaml = Settings::settings()->toString(skDefaultWorkspace) + "/" + "do_export.yaml";
-    QFile f(instYaml);
-    if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(instGDXR.toUtf8());
-        for (QString i : instProjections)
-            f.write(i.toUtf8());
-        f.write(instPDEW.toUtf8());
-        f.close();
-    }
-    QStringList l;
-    l << instYaml;
-    mProc->setParameters(l);
-    mProc->setWorkingDirectory(Settings::settings()->toString(skDefaultWorkspace));
-    mProc->execute();
+    return inst;
 }
 
 } // namespace gdxviewer

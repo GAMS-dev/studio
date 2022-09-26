@@ -30,6 +30,11 @@ private slots:
     void on_pbExport_clicked();
 
 private:
+    QString generateInstructions();
+    QString generateGdxReader();
+    QString generatePDExcelWriter(QString excelFile);
+    QString generateProjections();
+
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     Ui::ExportDialog *ui;
