@@ -48,6 +48,7 @@ private:
     ExportModel *mExportModel = nullptr;
     ConnectProcess *mProc = nullptr;
     QString mRecentPath;
+    QString mGdxFile;
 };
 
 

@@ -30,7 +30,8 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     mProc = new ConnectProcess(this);
-    mRecentPath = Settings::settings()->toString(skDefaultWorkspace);
+    mGdxFile = gdxViewer->gdxFile();
+    mRecentPath = QFileInfo(mGdxFile).path();
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
@@ -109,7 +110,7 @@ QString ExportDialog::generateGdxReader()
 {
     QString inst;
     inst += "- GDXReader:\n";
-    inst += "    file: " + mGdxViewer->gdxFile() + "\n";
+    inst += "    file: " + mGdxFile + "\n";
     inst += "    symbols: \n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols())
         inst += "      - name: " + sym->name() + "\n";
@@ -219,7 +220,7 @@ void ExportDialog::setOutput(QString filePath)
 
 void ExportDialog::on_pbBrows_clicked()
 {
-    QString filter("Excel file (*.xlsx);");
+    QString filter("Excel file (*.xlsx)");
     QString filePath = QFileDialog::getSaveFileName(this, "Choose Excel File...",
                                                             mRecentPath,
                                                             filter,
