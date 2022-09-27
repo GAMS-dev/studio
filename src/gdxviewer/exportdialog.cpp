@@ -27,6 +27,8 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui(new Ui::ExportDialog)
 {
     ui->setupUi(this);
+    setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+
     mProc = new ConnectProcess(this);
     mRecentPath = Settings::settings()->toString(skDefaultWorkspace);
     if (HeaderViewProxy::platformShouldDrawBorder())
