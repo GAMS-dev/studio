@@ -35,7 +35,13 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
-    ui->tableView->setModel(mExportModel);
+    mProxyModel = new QSortFilterProxyModel(this);
+    mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    mProxyModel->setSourceModel(mExportModel);
+    mProxyModel->setFilterKeyColumn(2);
+    mProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
+
+    ui->tableView->setModel(mProxyModel);
     ui->tableView->hideRow(0); // hide universe symbol
     ui->tableView->setColumnHidden(6,true); // hide the "Loaded" column
     ui->tableView->setColumnHidden(7,true); // hide the "Text" column
@@ -44,6 +50,9 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
 
 ExportDialog::~ExportDialog()
 {
+    mProxyModel->setSourceModel(nullptr);
+    delete mProxyModel;
+    mProxyModel = nullptr;
     delete mExportModel;
     mExportModel = nullptr;
     delete mProc;

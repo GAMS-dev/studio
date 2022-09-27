@@ -79,6 +79,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 
 GdxViewer::~GdxViewer()
 {
+    delete mExportDialog;
     freeSymbols();
     delete mState;
     delete mGdxMutex;

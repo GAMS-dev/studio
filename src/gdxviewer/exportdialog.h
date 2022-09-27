@@ -3,6 +3,7 @@
 
 #include "exportmodel.h"
 #include <QDialog>
+#include <QSortFilterProxyModel>
 #include <process/connectprocess.h>
 
 namespace gams {
@@ -46,6 +47,7 @@ private:
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     Ui::ExportDialog *ui;
     ExportModel *mExportModel = nullptr;
+    QSortFilterProxyModel* mProxyModel = nullptr;
     ConnectProcess *mProc = nullptr;
     QString mRecentPath;
     QString mGdxFile;
