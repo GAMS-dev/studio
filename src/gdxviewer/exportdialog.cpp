@@ -36,7 +36,9 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
     ui->tableView->setModel(mExportModel);
-    ui->tableView->hideRow(0);
+    ui->tableView->hideRow(0); // hide universe symbol
+    ui->tableView->setColumnHidden(6,true); // hide the "Loaded" column
+    ui->tableView->setColumnHidden(7,true); // hide the "Text" column
     ui->tableView->resizeColumnsToContents();
 }
 
@@ -135,7 +137,7 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
         }
         inst += "      - name: " + name + "\n";
-        inst += "        range: " + range + "\n";
+        inst += "        range: " + mExportModel->range().at(sym->nr()) + "\n";
         inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
     }
     return inst;
