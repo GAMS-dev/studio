@@ -38,14 +38,22 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     mProxyModel = new QSortFilterProxyModel(this);
     mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mProxyModel->setSourceModel(mExportModel);
-    mProxyModel->setFilterKeyColumn(2);
-    mProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
 
     ui->tableView->setModel(mProxyModel);
     ui->tableView->hideRow(0); // hide universe symbol
     ui->tableView->setColumnHidden(6,true); // hide the "Loaded" column
     ui->tableView->setColumnHidden(7,true); // hide the "Text" column
     ui->tableView->resizeColumnsToContents();
+
+    QPalette palette;
+    palette.setColor(QPalette::Highlight,ui->tableView->palette().highlight().color());
+    palette.setColor(QPalette::HighlightedText, ui->tableView->palette().highlightedText().color());
+    ui->tableView->setPalette(palette);
+
+    ui->tableView->sortByColumn(2,Qt::AscendingOrder);
+    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
+    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
+    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 }
 
 ExportDialog::~ExportDialog()
