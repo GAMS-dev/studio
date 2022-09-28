@@ -28,12 +28,14 @@ public:
 
 private slots:
     void on_pbCancel_clicked();
-    void on_pbExport_clicked();
-
     void on_pbBrowseExcel_clicked();
     void on_pbBrowseConnect_clicked();
+    void save();
+    void saveAndExecute();
 
 private:
+    void save(QString connectFile);
+    void execute(QString connectFile);
 
     const QString PROJ_SUFFIX = "_proj_";
     QString generateInstructions();
@@ -52,6 +54,9 @@ private:
     ConnectProcess *mProc = nullptr;
     QString mRecentPath;
     QString mGdxFile;
+
+    QAction *mExportAction = nullptr;
+    QAction *mSaveAction = nullptr;
 };
 
 

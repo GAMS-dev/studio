@@ -29,6 +29,12 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->setupUi(this);
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
+    QMenu* m = new QMenu();
+    mSaveAction = m->addAction("Save", [this]() { ui->toolButton->setDefaultAction(mSaveAction), ExportDialog::save(); });
+    mExportAction = m->addAction("Export", this, [this]() { ui->toolButton->setDefaultAction(mExportAction); ExportDialog::saveAndExecute(); });
+    ui->toolButton->setMenu(m);
+    ui->toolButton->setDefaultAction(mExportAction);
+
     mProc = new ConnectProcess(this);
     mGdxFile = gdxViewer->gdxFile();
     mRecentPath = QFileInfo(mGdxFile).path();
@@ -75,47 +81,6 @@ void ExportDialog::on_pbCancel_clicked()
     reject();
 }
 
-void ExportDialog::on_pbExport_clicked()
-{
-    QString output = ui->leExcel->text().trimmed();
-    if (output.isEmpty()) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("GDX Export");
-        msgBox.setText("Output file can not be empty:\n" + output);
-        msgBox.setStandardButtons(QMessageBox::Ok);
-        msgBox.setIcon(QMessageBox::Critical);
-        msgBox.exec();
-        return;
-    }
-    else if (QFileInfo(output).isRelative())
-        output = QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace) + QDir::separator() + output);
-    if (QFileInfo(output).suffix().isEmpty())
-        output = output + ".xlsx";
-    if (QFileInfo(output).exists()) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Overwrite Existing File");
-        msgBox.setText(QFileInfo(output).fileName() + " already exists.\nDo you want to overwrite it?");
-        msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
-        msgBox.setIcon(QMessageBox::Warning);
-        if (msgBox.exec() == QMessageBox::No)
-            return;
-    }
-
-    mRecentPath = QFileInfo(output).path();
-    ui->leExcel->setText(output);
-
-    QString instFilePath = ui->leConnect->text().trimmed();
-    QFile f(instFilePath);
-    if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions().toUtf8());
-        f.close();
-    }
-    QStringList l;
-    l << instFilePath;
-    mProc->setParameters(l);
-    mProc->setWorkingDirectory(Settings::settings()->toString(skDefaultWorkspace));
-    mProc->execute();
-}
 
 QString ExportDialog::generateInstructions()
 {
@@ -262,6 +227,63 @@ void ExportDialog::on_pbBrowseConnect_clicked()
     }
 }
 
+void ExportDialog::save()
+{
+    QString connectFile = ui->leConnect->text().trimmed();
+    save(connectFile);
+}
+
+void ExportDialog::saveAndExecute()
+{
+    QString connectFile = ui->leConnect->text().trimmed();
+    save(connectFile);
+    execute(connectFile);
+}
+
+void ExportDialog::save(QString connectFile)
+{
+    QString output = ui->leExcel->text().trimmed();
+    if (output.isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Export");
+        msgBox.setText("Output file can not be empty:\n" + output);
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return;
+    }
+    else if (QFileInfo(output).isRelative())
+        output = QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace) + QDir::separator() + output);
+    if (QFileInfo(output).suffix().isEmpty())
+        output = output + ".xlsx";
+    if (QFileInfo(output).exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Overwrite Existing File");
+        msgBox.setText(QFileInfo(output).fileName() + " already exists.\nDo you want to overwrite it?");
+        msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
+        msgBox.setIcon(QMessageBox::Warning);
+        if (msgBox.exec() == QMessageBox::No)
+            return;
+    }
+
+    mRecentPath = QFileInfo(output).path();
+    ui->leExcel->setText(output);
+
+    QFile f(connectFile);
+    if (f.open(QFile::WriteOnly | QFile::Text)) {
+        f.write(generateInstructions().toUtf8());
+        f.close();
+    }
+}
+
+void ExportDialog::execute(QString connectFile)
+{
+    QStringList l;
+    l << connectFile;
+    mProc->setParameters(l);
+    mProc->setWorkingDirectory(mRecentPath);
+    mProc->execute();
+}
 
 } // namespace gdxviewer
 } // namespace studio
