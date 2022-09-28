@@ -9,6 +9,7 @@ Version 1.12.0  *
 - fixed GDX Viewer crash when reloading a file with an alias being selected
 - improved the GDX Viewer symbol table colors especially when the theme has changed
 - fixed crash when switching tabs on macOS
+- fixed project changes on search over multiple files where a file is linked to more than one project
 
 Version 1.11.3
 ==================
