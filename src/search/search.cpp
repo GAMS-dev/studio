@@ -96,7 +96,7 @@ void Search::start(bool ignoreReadonly, bool searchBackwards, bool showResults)
         }
     }
     // start background task first
-    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? ViewHelper::groupId(currentFile->topEditor()) : NodeId();
+    NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject ? currentFile->projectId() : NodeId();
     SearchWorker* sw = new SearchWorker(unmodified, mRegex, &mResults, projectNode, showResults);
     sw->moveToThread(&mThread);
 
@@ -199,7 +199,7 @@ void Search::findInDoc(FileMeta* fm)
         if (!item.isNull()) {
             mResults.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                    item.selectedText().length(), fm->location(),
-                                   ViewHelper::groupId(mSearchDialog->currentEditor()), item.block().text()));
+                                   fm->projectId(), item.block().text()));
         }
         if (mResults.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());

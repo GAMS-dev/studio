@@ -587,6 +587,16 @@ void FileMeta::addEditor(QWidget *edit)
         aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
+const NodeId &FileMeta::projectId() const
+{
+    return mProjectId;
+}
+
+void FileMeta::setProjectId(const NodeId &newProjectId)
+{
+    mProjectId = newProjectId;
+}
+
 void FileMeta::editToTop(QWidget *edit)
 {
     addEditor(edit);
@@ -807,7 +817,7 @@ void FileMeta::save(const QString &newLocation)
     } else if (kind() == FileKind::Efi) {
         efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
         if (efi) {
-            PExProjectNode *project = mFileRepo->projectRepo()->asProject(ViewHelper::groupId(efi));
+            PExProjectNode *project = mFileRepo->projectRepo()->asProject(projectId());
             if (project) {
                 if (!project->runnableGms()) {
                     efi->setWarnText("Warning: project contains no runnable GAMS file ");
@@ -1197,7 +1207,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
         }
     }
     ViewHelper::setFileId(res, id());
-    ViewHelper::setGroupId(res, project->id());
+    setProjectId(project->id());
     ViewHelper::setLocation(res, location());
 
     addEditor(res);

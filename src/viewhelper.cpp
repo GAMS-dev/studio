@@ -55,28 +55,28 @@ void ViewHelper::setFileId(QWidget *widget, FileId id)
     }
 }
 
-NodeId ViewHelper::groupId(QWidget *widget)
-{
-    if (!widget) return NodeId();
-
-    bool ok;
-    NodeId res = widget->property("groupId").toInt(&ok);
-    return ok ? res : NodeId();
-}
-
-void ViewHelper::setGroupId(QWidget *widget, NodeId id)
-{
-    widget->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
-    if (AbstractEdit *ed = toAbstractEdit(widget)) {
-        // if there is an inner edit: set the property additionally
-        if (ed != widget)
-            ed->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
-    }
-    if (TextView *tv = toTextView(widget)) {
-        // if there is an inner edit: set the property additionally
-        tv->edit()->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
-    }
-}
+//NodeId ViewHelper::groupId(QWidget *widget)
+//{
+//    if (!widget) return NodeId();
+//
+//    bool ok;
+//    NodeId res = widget->property("groupId").toInt(&ok);
+//    return ok ? res : NodeId();
+//}
+//
+//void ViewHelper::setGroupId(QWidget *widget, NodeId id)
+//{
+//    widget->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
+//    if (AbstractEdit *ed = toAbstractEdit(widget)) {
+//        // if there is an inner edit: set the property additionally
+//        if (ed != widget)
+//            ed->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
+//    }
+//    if (TextView *tv = toTextView(widget)) {
+//        // if there is an inner edit: set the property additionally
+//        tv->edit()->setProperty("groupId", id.isValid() ? QVariant(id) : -1);
+//    }
+//}
 
 QString ViewHelper::location(QWidget *widget)
 {

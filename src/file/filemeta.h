@@ -103,6 +103,8 @@ public:
     static bool hasExistingFolder(QList<QUrl> urls);
     static QStringList pathList(QList<QUrl> urls);
     void invalidate();
+    const NodeId &projectId() const;
+    void setProjectId(const NodeId &newProjectId);
 
 public slots:
     void reload();
@@ -153,6 +155,7 @@ private:
 
 private:
     FileId mId;
+    NodeId mProjectId;
     FileMetaRepo* mFileRepo;
     QString mLocation;
     QString mName;

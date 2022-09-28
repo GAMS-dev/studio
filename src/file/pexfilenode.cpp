@@ -106,7 +106,7 @@ QString PExFileNode::tooltip()
     QString edGroup = "-";
     if (file()->editors().size()) {
         edFile = QString::number(ViewHelper::fileId(file()->editors().first()));
-        edGroup = QString::number(ViewHelper::groupId(file()->editors().first()));
+        edGroup = QString::number(file()->projectId());
     }
     tip += "\nedit: " + edFile + " " + edGroup;
     return tip;

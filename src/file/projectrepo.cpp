@@ -138,7 +138,7 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(editWidget);
     if (!fileMeta) return nullptr;
-    NodeId groupId = ViewHelper::groupId(editWidget);
+    NodeId groupId = fileMeta->projectId();
     PExAbstractNode *node = groupId.isValid() ? mNodes.value(groupId) : nullptr;
     PExGroupNode *group = node ? node->toGroup() : nullptr;
     if (!group) return nullptr;
@@ -149,7 +149,7 @@ PExProjectNode *ProjectRepo::findProjectForOptions(QWidget *projectOptionsWidget
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(projectOptionsWidget);
     if (!fileMeta || fileMeta->kind() != FileKind::PrO) return nullptr;
-    NodeId groupId = ViewHelper::groupId(projectOptionsWidget);
+    NodeId groupId = fileMeta->projectId();
     if (!groupId.isValid()) return nullptr;
     PExAbstractNode *node = mNodes.value(groupId);
     return node ? node->toProject() : nullptr;
@@ -570,8 +570,7 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         if (!explicitName.isNull())
             file->setName(explicitName);
         addToProject(project, file, true);
-        for (QWidget *w: fileMeta->editors())
-            ViewHelper::setGroupId(w, project->id());
+        fileMeta->setProjectId(project->id());
     }
     if (!project->runnableGms() && fileMeta->kind() == FileKind::Gms)
         project->setRunnableGms(fileMeta);

@@ -61,7 +61,7 @@ void SearchWorker::findInFiles()
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
         if (!mProject.isValid())
-            projectGroup = ViewHelper::groupId(fm->topEditor());
+            projectGroup = fm->projectId();
 
         int lineCounter = 0;
         QFile file(fm->location());

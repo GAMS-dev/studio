@@ -345,7 +345,7 @@ void MainWindow::watchProjectTree()
     connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
         // to update the project if changed
-        mRecent.setEditor(mRecent.editor());
+        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
@@ -1936,7 +1936,8 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
     }
 
     if (exitCode == ecTooManyScratchDirs) {
-        PExProjectNode* project = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
+        FileMeta *fm = mRecent.fileMeta();
+        PExProjectNode* project = fm ? mProjectRepo.findProject(fm->projectId()) : nullptr;
         QString path = project ? QDir::toNativeSeparators(project->workDir()) : currentPath();
 
         // TODO fix QDialog::exec() issue
@@ -3171,8 +3172,9 @@ void MainWindow::openFiles(OpenGroupOption opt)
 PExProjectNode *MainWindow::currentProject()
 {
     PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
+    if (!node) return mRecent.project();
     PExProjectNode *project = (node ? node->assignedProject()
-                                    : mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor())));
+                                    : mProjectRepo.findProject(node->file()->projectId()));
     if (!project) project = mRecent.project();
     return project;
 }
@@ -3528,8 +3530,10 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
-            mRecent.setEditor(wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget());
-            if (FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor())) {
+            QWidget *edit = wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget();
+            FileMeta *fm = mFileMetaRepo.fileMeta(edit);
+            mRecent.setEditor(fm, edit);
+            if (fm) {
                 fm->editToTop(mRecent.editor());
                 ui->actionPin_Right->setEnabled(fm->isPinnable());
                 ui->actionPin_Below->setEnabled(fm->isPinnable());
@@ -3988,8 +3992,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     // open edit if existing or create one
     if (edit) {
-        if (project)
-            ViewHelper::setGroupId(edit, project->id());
+        if (project) fileMeta->setProjectId(project->id());
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
@@ -4450,12 +4453,12 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
 
     QWidget *wid = ui->mainTabs->widget(tabIndex);
     if (!wid) return;
-    PExGroupNode *group = mProjectRepo.asGroup(ViewHelper::groupId(wid));
+    FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+    if (!fm || !fm->isPinnable()) return;
+    PExGroupNode *group = mProjectRepo.asGroup(fm->projectId());
     if (!group) return;
     PExProjectNode *pro = group->assignedProject();
     if (!pro) return;
-    FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-    if (!fm || !fm->isPinnable()) return;
     closePinView();
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
@@ -5172,7 +5175,9 @@ void MainWindow::on_actionRemoveBookmarks_triggered()
 
 void MainWindow::on_actionDeleteScratchDirs_triggered()
 {
-    PExProjectNode* node = mProjectRepo.findProject(ViewHelper::groupId(mRecent.editor()));
+    FileMeta *fm = mRecent.fileMeta();
+    if (!fm) return;
+    PExProjectNode* node = mProjectRepo.findProject(fm->projectId());
     QString path = node ? QDir::toNativeSeparators(node->workDir()) : currentPath();
 
     QMessageBox msgBox;

@@ -35,7 +35,7 @@ void RecentData::init(MainWindow *mainWindow)
     mPath = Settings::settings()->toString(skDefaultWorkspace);
 }
 
-void RecentData::setEditor(QWidget *edit)
+void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
 {
     if (!mMainWindow) EXCEPT() << "Warning: RecentData isn't initialized";
 
@@ -58,8 +58,9 @@ void RecentData::setEditor(QWidget *edit)
         }
     }
 
-    mEditList.removeAll(edit);
+    purgeEditor(edit);
     mEditList << edit;
+    mMetaList << fileMeta;
 
     if (PExFileNode* node = mMainWindow->projectRepo()->findFileNode(edit)) {
         mEditFileId = node->file()->id();
@@ -98,9 +99,27 @@ void RecentData::setEditor(QWidget *edit)
 void RecentData::removeEditor(QWidget *edit)
 {
     bool lastRemoved = !mEditList.isEmpty() && mEditList.last() == edit;
-    mEditList.removeAll(edit);
-    if (lastRemoved)
-        setEditor(mEditList.size() > 0 ? mEditList.last() : nullptr);
+    purgeEditor(edit);
+    if (lastRemoved) {
+        if (mEditList.size() > 0)
+            setEditor(mMetaList.last(), mEditList.last());
+        else
+            setEditor(nullptr, nullptr);
+    }
+}
+
+void RecentData::purgeEditor(QWidget *edit)
+{
+    while (mEditList.contains(edit)) {
+        int i = mEditList.indexOf(edit);
+        mEditList.removeAt(i);
+        mMetaList.removeAt(i);
+    }
+}
+
+FileMeta *RecentData::fileMeta() const
+{
+    return mMetaList.isEmpty() ? nullptr : mMetaList.last();
 }
 
 QWidget *RecentData::editor() const
@@ -110,18 +129,19 @@ QWidget *RecentData::editor() const
 
 PExProjectNode *RecentData::project() const
 {
-    return (editor() ? mMainWindow->projectRepo()->asProject(ViewHelper::groupId(editor())) : nullptr);
+    return (fileMeta() ? mMainWindow->projectRepo()->asProject(fileMeta()->projectId()) : nullptr);
 }
 
 QWidget *RecentData::persistentEditor() const
 {
     for (int i = mEditList.size()-1; i >= 0; --i) {
-        if (FileMeta *fm = mMainWindow->fileRepo()->fileMeta(mEditList.at(i))) {
-            if (fm->kind() != FileKind::PrO) return mEditList.at(i);
+        if (FileMeta *fm = mMetaList.at(i)) {
+            if (fm && fm->kind() != FileKind::PrO) return mEditList.at(i);
         }
     }
     return nullptr;
 }
+
 
 
 } // namespace studio

@@ -32,9 +32,10 @@ public:
     RecentData();
     void init(MainWindow *mainWindow);
 
-    void setEditor(QWidget* edit);
+    void setEditor(FileMeta *fileMeta, QWidget* edit);
     void removeEditor(QWidget* edit);
 
+    FileMeta* fileMeta() const;
     QWidget* editor() const;
     PExProjectNode* project() const;
     FileId editFileId() const { return mEditFileId; }
@@ -42,8 +43,12 @@ public:
     QWidget* persistentEditor() const;
 
 private:
+    void purgeEditor(QWidget *edit);
+
+private:
     MainWindow *mMainWindow = nullptr;
     QVector<QWidget*> mEditList;
+    QVector<FileMeta*> mMetaList;
     FileId mEditFileId;
     QString mPath;
 };
