@@ -53,12 +53,33 @@
       </widget>
      </item>
      <item>
-      <widget class="QLineEdit" name="lineEdit"/>
+      <widget class="QLineEdit" name="leExcel"/>
      </item>
      <item>
-      <widget class="QPushButton" name="pbBrows">
+      <widget class="QPushButton" name="pbBrowseExcel">
        <property name="text">
         <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
+   </item>
+   <item>
+    <layout class="QHBoxLayout" name="horizontalLayout_4">
+     <item>
+      <widget class="QLabel" name="label_2">
+       <property name="text">
+        <string>Connect File</string>
+       </property>
+      </widget>
+     </item>
+     <item>
+      <widget class="QLineEdit" name="leConnect"/>
+     </item>
+     <item>
+      <widget class="QPushButton" name="pbBrowseConnect">
+       <property name="text">
+        <string>Browse</string>
        </property>
       </widget>
      </item>

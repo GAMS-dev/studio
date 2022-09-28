@@ -32,6 +32,8 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     mProc = new ConnectProcess(this);
     mGdxFile = gdxViewer->gdxFile();
     mRecentPath = QFileInfo(mGdxFile).path();
+    QString connectFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.yaml";
+    ui->leConnect->setText(QDir::toNativeSeparators(connectFile));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
@@ -75,7 +77,7 @@ void ExportDialog::on_pbCancel_clicked()
 
 void ExportDialog::on_pbExport_clicked()
 {
-    QString output = ui->lineEdit->text().trimmed();
+    QString output = ui->leExcel->text().trimmed();
     if (output.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Export");
@@ -100,9 +102,9 @@ void ExportDialog::on_pbExport_clicked()
     }
 
     mRecentPath = QFileInfo(output).path();
-    ui->lineEdit->setText(output);
+    ui->leExcel->setText(output);
 
-    QString instFilePath = mRecentPath + "/" + "do_export.yaml";
+    QString instFilePath = ui->leConnect->text().trimmed();
     QFile f(instFilePath);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
         f.write(generateInstructions().toUtf8());
@@ -117,7 +119,7 @@ void ExportDialog::on_pbExport_clicked()
 
 QString ExportDialog::generateInstructions()
 {
-    QString output = ui->lineEdit->text().trimmed();
+    QString output = ui->leExcel->text().trimmed();
     QString inst;
     inst += generateGdxReader();
     inst += generateProjections();
@@ -232,12 +234,7 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
     return dom;
 }
 
-void ExportDialog::setOutput(QString filePath)
-{
-    ui->lineEdit->setText(QDir::toNativeSeparators(filePath));
-}
-
-void ExportDialog::on_pbBrows_clicked()
+void ExportDialog::on_pbBrowseExcel_clicked()
 {
     QString filter("Excel file (*.xlsx)");
     QString filePath = QFileDialog::getSaveFileName(this, "Choose Excel File...",
@@ -247,9 +244,24 @@ void ExportDialog::on_pbBrows_clicked()
                                                             QFileDialog::DontConfirmOverwrite);
     if (!filePath.isEmpty()) {
         mRecentPath = QFileInfo(filePath).path();
-        setOutput(filePath);
+        ui->leExcel->setText(QDir::toNativeSeparators(filePath));
     }
 }
+
+void ExportDialog::on_pbBrowseConnect_clicked()
+{
+    QString filter("Connect instructions (*.yaml)");
+    QString filePath = QFileDialog::getSaveFileName(this, "Choose Connect File...",
+                                                            mRecentPath,
+                                                            filter,
+                                                            nullptr,
+                                                            QFileDialog::DontConfirmOverwrite);
+    if (!filePath.isEmpty()) {
+        mRecentPath = QFileInfo(filePath).path();
+        ui->leConnect->setText(QDir::toNativeSeparators(filePath));
+    }
+}
+
 
 } // namespace gdxviewer
 } // namespace studio
