@@ -34,6 +34,8 @@ private slots:
     void on_pbBrowseConnect_clicked();
 
 private:
+
+    const QString PROJ_SUFFIX = "_proj_";
     QString generateInstructions();
     QString generateGdxReader();
     QString generatePDExcelWriter(QString excelFile);

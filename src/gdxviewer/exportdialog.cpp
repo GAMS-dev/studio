@@ -148,11 +148,11 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
         QString range = sym->name() + "!A1";
         int rowDimension = sym->dim();
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-            name += "_proj";
+            name += PROJ_SUFFIX;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
         if (symView && symView->isTableViewActive()) {
             if (generateDomains(sym) != generateDomainsNew(sym))
-                name = sym->name() + "_proj";
+                name = sym->name() + PROJ_SUFFIX;
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
         }
         inst += "      - name: " + name + "\n";
@@ -173,7 +173,7 @@ QString ExportDialog::generateProjections()
         QString dom = generateDomains(sym);
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
             name = sym->name() + dom;
-            newName = sym->name() + "_proj" + dom;
+            newName = sym->name() + PROJ_SUFFIX + dom;
             asParameter = true;
         }
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
@@ -181,7 +181,7 @@ QString ExportDialog::generateProjections()
             QString domNew = generateDomainsNew(sym);
             if (dom != domNew) {
                 name = sym->name() + dom;
-                newName = sym->name() + "_proj" + domNew;
+                newName = sym->name() + PROJ_SUFFIX + domNew;
                 domOrderChanged = true;
             }
         }
@@ -194,8 +194,8 @@ QString ExportDialog::generateProjections()
             if (domOrderChanged) {
                 inst += "- PythonCode:\n";
                 inst += "    code: |\n";
-                inst += "      r = connect.container.data['" + sym->name() + "_proj'].records\n";
-                inst += "      connect.container.data['" + sym->name() + "_proj'].records=r.sort_values([c for c in r.columns])\n";
+                inst += "      r = connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records\n";
+                inst += "      connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records=r.sort_values([c for c in r.columns])\n";
             }
         }
     }
