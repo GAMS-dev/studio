@@ -221,9 +221,13 @@ void FileMetaRepo::setDebugMode(bool debug)
     if (!debug) return;
 //    DEB() << "\n--------------- FileMetas (Editors) ---------------";
     QMap<int, AbstractEdit*> edits;
-    for (QWidget* wid: editors()) {
-        AbstractEdit*ed = ViewHelper::toAbstractEdit(wid);
-        if (ed) edits.insert(int(ViewHelper::fileId(ed)), ed);
+    QHashIterator<FileId, FileMeta*> i(mFiles);
+    while (i.hasNext()) {
+        i.next();
+        for (QWidget *wid : i.value()->editors()) {
+            AbstractEdit *edit = ViewHelper::toAbstractEdit(wid);
+            if (edit) edits.insert(int(i.key()), edit);
+        }
     }
 
     for (int key: edits.keys()) {

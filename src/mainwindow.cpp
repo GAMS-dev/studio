@@ -4208,7 +4208,8 @@ void MainWindow::closeFileEditors(const FileId fileId)
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
 
-    if (ViewHelper::fileId(mPinView->widget()) == fileId) {
+    FileMeta *pinFm = mFileMetaRepo.fileMeta(mPinView->widget());
+    if (pinFm && pinFm->id() == fileId) {
         closePinView();
     }
 

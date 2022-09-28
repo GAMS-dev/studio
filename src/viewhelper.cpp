@@ -33,27 +33,27 @@ namespace studio {
 ViewHelper::ViewHelper()
 { }
 
-FileId ViewHelper::fileId(QWidget *widget)
-{
-    if (!widget) return FileId();
-    bool ok;
-    FileId res = widget->property("fileId").toInt(&ok);
-    return ok ? res : FileId();
-}
+//FileId ViewHelper::fileId(QWidget *widget)
+//{
+//    if (!widget) return FileId();
+//    bool ok;
+//    FileId res = widget->property("fileId").toInt(&ok);
+//    return ok ? res : FileId();
+//}
 
-void ViewHelper::setFileId(QWidget *widget, FileId id)
-{
-    widget->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
-    if (AbstractEdit *ed = toAbstractEdit(widget)) {
-        // if there is an inner edit: set the property additionally
-        if (ed != widget)
-            ed->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
-    }
-    if (TextView *tv = toTextView(widget)) {
-        // if there is an inner edit: set the property additionally
-        tv->edit()->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
-    }
-}
+//void ViewHelper::setFileId(QWidget *widget, FileId id)
+//{
+//    widget->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
+//    if (AbstractEdit *ed = toAbstractEdit(widget)) {
+//        // if there is an inner edit: set the property additionally
+//        if (ed != widget)
+//            ed->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
+//    }
+//    if (TextView *tv = toTextView(widget)) {
+//        // if there is an inner edit: set the property additionally
+//        tv->edit()->setProperty("fileId", id.isValid() ? QVariant(id) : -1);
+//    }
+//}
 
 //NodeId ViewHelper::groupId(QWidget *widget)
 //{

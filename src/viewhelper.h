@@ -44,8 +44,8 @@ class ViewHelper
 {
     ViewHelper();
 public:
-    static FileId fileId(QWidget* widget);
-    static void setFileId(QWidget* widget, FileId id);
+//    static FileId fileId(QWidget* widget);
+//    static void setFileId(QWidget* widget, FileId id);
 
 //    static NodeId groupId(QWidget* widget);
 //    static void setGroupId(QWidget* widget, NodeId id);
