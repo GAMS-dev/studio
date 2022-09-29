@@ -126,17 +126,16 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
             qWarning() << "Unhandled NavigatorMode";
         break;
     }
-    mNavModel->setContent(content, mMain->recent()->path());
+    mNavModel->setContent(content);
     mCurrentMode = mode;
-    if (mode != NavigatorMode::Folder) mDirSelectionOngoing = false;
-
-    if (mFilterModel)
-        mFilterModel->sort(0);
+    if (mode != NavigatorMode::Folder) {
+        mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
+        mDirSelectionOngoing = false;
+    }
 
     // select first entry if user hasnt anything selected
-    if (!ui->tableView->selectionModel()->hasSelection()) {
+    if (mFilterModel && !ui->tableView->selectionModel()->hasSelection())
         ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
-    }
 }
 
 void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
@@ -210,13 +209,15 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     } else {
         mSelectedDirectory = findClosestPath(textInput);
     }
+    mNavModel->setCurrentDir(mSelectedDirectory);
 
+    // filter prefix and extract relevant wildcard term
     QString filter = textInput.right(textInput.length() - textInput.lastIndexOf(QDir::separator()));
     filter.remove(QDir::separator());
-
     mFilterModel->setFilterWildcard(filter);
 
-    for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name)) {
+
+    for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name|QDir::DirsFirst)) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }

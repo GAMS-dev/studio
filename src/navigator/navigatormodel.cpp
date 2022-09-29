@@ -25,11 +25,10 @@ NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
     QAbstractTableModel(parent), mMain(main)
 { }
 
-void NavigatorModel::setContent(QVector<NavigatorContent> content, QString workDir)
+void NavigatorModel::setContent(QVector<NavigatorContent> content)
 {
     beginResetModel();
     mContent = content;
-    mCurrentDir = QDir(workDir);
     endResetModel();
 }
 
@@ -41,6 +40,11 @@ QVector<NavigatorContent> NavigatorModel::content() const
 QDir NavigatorModel::currentDir() const
 {
     return mCurrentDir;
+}
+
+void NavigatorModel::setCurrentDir(QDir dir)
+{
+    mCurrentDir.setPath(dir.canonicalPath());
 }
 
 int NavigatorModel::rowCount(const QModelIndex &parent) const
@@ -62,20 +66,23 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
         QFileInfo f = nc.fileInfo;
 
         if (index.column() == 0) { // file name: show text if available, otherwise fileinfo
-            if (!nc.text.isEmpty()) {
+            if (!nc.text.isEmpty())
                 return nc.text;
-            } else {
-                return f.fileName();
-            }
+            else return f.fileName();
 
         } else if (index.column() == 1) { // path: relative path if contains less than 4 .., otherwise absolute
-            // TODO(rogo): fix behavior when f is ".."
+            if (f.fileName().contains("..")) // detect ".." and hide path
+                return QVariant();
+
             QString path = mCurrentDir.relativeFilePath(f.absolutePath());
-            if (path.count("..") > 3)
+            if (path.count("..") > 2)
                 path = f.absolutePath();
             return (path == ".") ? QVariant() : path;
 
         } else if (index.column() == 2) { // additional info
+            if (f.fileName().contains("..")) // detect ".." and hide info
+                return QVariant();
+
             return nc.additionalInfo;
         }
 
