@@ -9,7 +9,6 @@
 #include <headerviewproxy.h>
 #include <settings.h>
 
-#include <QDebug>
 #include <QFile>
 #include <QFileDialog>
 #include <QMessageBox>
@@ -115,13 +114,18 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
         QString range = sym->name() + "!A1";
         int rowDimension = sym->dim();
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-            name += PROJ_SUFFIX;
+            name = sym->name() + PROJ_SUFFIX;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
-        if (symView && symView->isTableViewActive()) {
-            if (generateDomains(sym) != generateDomainsNew(sym))
-                name = sym->name() + PROJ_SUFFIX;
+        if (symView && symView->isTableViewActive())
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
+        else if (mGdxViewer->state() && mGdxViewer->state()->symbolViewState(sym->name())) {
+            if (mGdxViewer->state()->symbolViewState(sym->name())->tableViewActive())
+                rowDimension = sym->dim() - mGdxViewer->state()->symbolViewState(sym->name())->tvColDim();
         }
+        else if (sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
+            rowDimension = sym->dim() - 1;
+        if (generateDomains(sym) != generateDomainsNew(sym))
+            name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
         inst += "        range: " + mExportModel->range().at(sym->nr()) + "\n";
         inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
@@ -138,19 +142,16 @@ QString ExportDialog::generateProjections()
         bool asParameter = false;
         bool domOrderChanged = false;
         QString dom = generateDomains(sym);
+        QString domNew = generateDomainsNew(sym);
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
             name = sym->name() + dom;
             newName = sym->name() + PROJ_SUFFIX + dom;
             asParameter = true;
         }
-        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
-        if (symView && symView->isTableViewActive()) {
-            QString domNew = generateDomainsNew(sym);
-            if (dom != domNew) {
-                name = sym->name() + dom;
-                newName = sym->name() + PROJ_SUFFIX + domNew;
-                domOrderChanged = true;
-            }
+        if (dom != domNew) {
+            name = sym->name() + dom;
+            newName = sym->name() + PROJ_SUFFIX + domNew;
+            domOrderChanged = true;
         }
         if (!name.isEmpty()) {
             inst += "- Projection:\n";
@@ -195,6 +196,16 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
             dom.truncate(dom.length()-1);
             dom += ")";
             return dom;
+        } else if (mGdxViewer->state() && mGdxViewer->state()->symbolViewState(sym->name())) {
+            if (mGdxViewer->state()->symbolViewState(sym->name())->tableViewActive()) {
+                QVector<int> dimOrder =  mGdxViewer->state()->symbolViewState(sym->name())->tvDimOrder();
+                dom = "(";
+                for (int i=0; i<sym->dim(); i++)
+                    dom += QString::number(dimOrder.at(i)) + ",";
+                dom.truncate(dom.length()-1);
+                dom += ")";
+                return dom;
+            }
         }
         return generateDomains(sym);
     }

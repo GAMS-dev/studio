@@ -48,6 +48,8 @@ class GdxSymbolView : public QWidget
     Q_OBJECT
 
 public:
+    enum DefaultSymbolView {listView, tableView };
+
     explicit GdxSymbolView(QWidget *parent = nullptr);
     ~GdxSymbolView() override;
 
@@ -95,7 +97,6 @@ private slots:
     void onResizeColumnsTV();
 
 private:
-    enum DefaultSymbolView {listView, tableView };
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
     TableViewModel* mTvModel = nullptr;

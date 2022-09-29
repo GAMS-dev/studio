@@ -228,6 +228,8 @@ void GdxViewer::invalidate()
     }
     if (isEnabled()) {
         saveState();
+        delete mExportDialog;
+        mExportDialog = nullptr;
         setEnabled(false);
         releaseFile();
     }
@@ -500,6 +502,11 @@ void GdxViewer::showExportDialog()
     if (!mExportDialog)
         mExportDialog = new ExportDialog(this, mGdxSymbolTable, this);
     mExportDialog->show();
+}
+
+GdxViewerState *GdxViewer::state() const
+{
+    return mState;
 }
 
 QString GdxViewer::gdxFile() const

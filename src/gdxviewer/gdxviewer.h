@@ -63,6 +63,7 @@ public:
     bool dragInProgress();
     GdxSymbolView *symbolViewByName(QString name);
     QString gdxFile() const;
+    GdxViewerState *state() const;
 
 public slots:
     void invalidate();
