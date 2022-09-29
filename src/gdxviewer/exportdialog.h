@@ -53,10 +53,10 @@ private:
 
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
+    std::unique_ptr<ConnectProcess> mProc = nullptr;
     Ui::ExportDialog *ui;
     ExportModel *mExportModel = nullptr;
     QSortFilterProxyModel* mProxyModel = nullptr;
-    std::unique_ptr<ConnectProcess> mProc = nullptr;
     QString mRecentPath;
     QString mGdxFile;
 

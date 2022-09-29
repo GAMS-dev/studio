@@ -35,10 +35,10 @@ public:
     QStringList range() const;
 
 private:
+    GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     QVector<bool> mChecked;
     QStringList mRange;
-    GdxViewer *mGdxViewer = nullptr;
 };
 
 } // namespace gdxviewer
