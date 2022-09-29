@@ -24,6 +24,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     QDialog(parent),
     mGdxViewer(gdxViewer),
     mSymbolTableModel(symbolTableModel),
+    mProc(new ConnectProcess(this)),
     ui(new Ui::ExportDialog)
 {
     ui->setupUi(this);
@@ -35,7 +36,6 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->toolButton->setMenu(m);
     ui->toolButton->setDefaultAction(mExportAction);
 
-    mProc = new ConnectProcess(this);
     mGdxFile = gdxViewer->gdxFile();
     mRecentPath = QFileInfo(mGdxFile).path();
     QString connectFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.yaml";
@@ -62,22 +62,24 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+
+    connect(mProc.get(), &ConnectProcess::finished, [this]() { setControlsEnabled(true); });
 }
 
 ExportDialog::~ExportDialog()
 {
+    cancelProcess(50);
     mProxyModel->setSourceModel(nullptr);
     delete mProxyModel;
     mProxyModel = nullptr;
     delete mExportModel;
     mExportModel = nullptr;
-    delete mProc;
-    mProc = nullptr;
     delete ui;
 }
 
 void ExportDialog::on_pbCancel_clicked()
 {
+    cancelProcess();
     reject();
 }
 
@@ -229,15 +231,23 @@ void ExportDialog::on_pbBrowseConnect_clicked()
 
 void ExportDialog::save()
 {
+    setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
     save(connectFile);
 }
 
 void ExportDialog::saveAndExecute()
 {
+    setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
     save(connectFile);
     execute(connectFile);
+}
+
+void ExportDialog::closeEvent(QCloseEvent *e)
+{
+    Q_UNUSED(e)
+    on_pbCancel_clicked();
 }
 
 void ExportDialog::save(QString connectFile)
@@ -283,6 +293,23 @@ void ExportDialog::execute(QString connectFile)
     mProc->setParameters(l);
     mProc->setWorkingDirectory(mRecentPath);
     mProc->execute();
+}
+
+void ExportDialog::cancelProcess(int waitMSec)
+{
+    if (mProc->state() != QProcess::NotRunning)
+        mProc->stop(waitMSec);
+}
+
+void ExportDialog::setControlsEnabled(bool enabled)
+{
+    ui->toolButton->setEnabled(enabled);
+    ui->leConnect->setEnabled(enabled);
+    ui->leExcel->setEnabled(enabled);
+    ui->pbBrowseConnect->setEnabled(enabled);
+    ui->pbBrowseExcel->setEnabled(enabled);
+    ui->comboBox->setEnabled(enabled);
+    ui->tableView->setEnabled(enabled);
 }
 
 } // namespace gdxviewer

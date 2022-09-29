@@ -13,9 +13,7 @@ class ConnectProcess final : public AbstractGamsProcess
 public:
     ConnectProcess(QObject *parent = nullptr);
     void execute() override;
-
-private:
-    static QString appName();
+    void stop(int waitMSec=0);
 };
 
 } // namespace studio

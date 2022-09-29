@@ -33,9 +33,14 @@ private slots:
     void save();
     void saveAndExecute();
 
+protected:
+    void closeEvent(QCloseEvent *e) override;
+
 private:
     void save(QString connectFile);
     void execute(QString connectFile);
+    void cancelProcess(int waitMSec=0);
+    void setControlsEnabled(bool enabled);
 
     const QString PROJ_SUFFIX = "_proj_";
     QString generateInstructions();
@@ -51,7 +56,7 @@ private:
     Ui::ExportDialog *ui;
     ExportModel *mExportModel = nullptr;
     QSortFilterProxyModel* mProxyModel = nullptr;
-    ConnectProcess *mProc = nullptr;
+    std::unique_ptr<ConnectProcess> mProc = nullptr;
     QString mRecentPath;
     QString mGdxFile;
 
