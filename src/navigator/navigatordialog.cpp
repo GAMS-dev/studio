@@ -140,11 +140,11 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
 
 void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append(NavigatorContent(":NUMBER", "jump to line number"));
-    content.append(NavigatorContent("FILENAME", "filter all files"));
-    content.append(NavigatorContent("p FILENAME", "filter files in current project"));
-    content.append(NavigatorContent("t FILENAME", "filter open tabs"));
-    content.append(NavigatorContent("l FILENAME", "filter logs"));
+    content.append(NavigatorContent(":number", "jump to line number"));
+    content.append(NavigatorContent("filename", "filter all files"));
+    content.append(NavigatorContent("P filename", "filter files in current project"));
+    content.append(NavigatorContent("T filename", "filter open tabs"));
+    content.append(NavigatorContent("L filename", "filter logs"));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
