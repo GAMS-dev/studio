@@ -204,18 +204,19 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
         mSelectedDirectory = mNavModel->currentDir();
         mDirSelectionOngoing = true;
     } else if (dir.exists()) {
-        mSelectedDirectory = dir;
-        textInput.append(QDir::separator()); // we need paths to end in seperator
+        if (dir.isRelative()) {
+            mSelectedDirectory.setPath(mNavModel->currentDir().absolutePath() + QDir::separator() + textInput);
+        } else mSelectedDirectory = dir;
+
+        textInput.append(QDir::separator()); // we need paths to end in seperator for better usability
     } else {
         mSelectedDirectory = findClosestPath(textInput);
     }
-    mNavModel->setCurrentDir(mSelectedDirectory);
 
     // filter prefix and extract relevant wildcard term
     QString filter = textInput.right(textInput.length() - textInput.lastIndexOf(QDir::separator()));
     filter.remove(QDir::separator());
     mFilterModel->setFilterWildcard(filter);
-
 
     for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name|QDir::DirsFirst)) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
