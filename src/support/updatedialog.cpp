@@ -31,6 +31,7 @@ UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
       ui(new Ui::UpdateDialog)
 {
     ui->setupUi(this);
+    setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 }
 
 void UpdateDialog::checkForUpdate()
