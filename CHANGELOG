@@ -6,6 +6,7 @@ Version 1.11.3
 - added `Clear Log` action to the system log context menu
 - added shortcut descriptions for various actions in context menu of editor
 - fixed drag'n'drop not working in project explorer on macOS
+- fixed GDX Viewer crash when reloading a file with an alias being selected
 
 Version 1.11.2
 ==================
