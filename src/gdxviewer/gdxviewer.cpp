@@ -422,15 +422,6 @@ void GdxViewer::saveState()
 
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
-
-    // delete symbols that do not exist anymore or differ in dimension or type
-    for (QString name : mState->symbolViewStates().keys()) {
-        GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
-        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
-        if (!sym || sym->dim() != symViewState->dim() || sym->type() != symViewState->type())
-            mState->deleteSymbolViewState(name);
-    }
-
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
@@ -458,6 +449,13 @@ void GdxViewer::applyState()
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(false);
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
+    // delete symbols that do not exist anymore or differ in dimension or type
+    for (QString name : mState->symbolViewStates().keys()) {
+        GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
+        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
+        if (!sym || sym->dim() != symViewState->dim() || sym->type() != symViewState->type())
+            mState->deleteSymbolViewState(name);
+    }
     if (this->isVisible())
         applySelectedSymbol();
 }
