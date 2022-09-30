@@ -52,11 +52,6 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->setColumnHidden(7,true); // hide the "Text" column
     ui->tableView->resizeColumnsToContents();
 
-    QPalette palette;
-    palette.setColor(QPalette::Highlight,ui->tableView->palette().highlight().color());
-    palette.setColor(QPalette::HighlightedText, ui->tableView->palette().highlightedText().color());
-    ui->tableView->setPalette(palette);
-
     ui->tableView->sortByColumn(2,Qt::AscendingOrder);
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
