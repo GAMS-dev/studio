@@ -467,8 +467,7 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
         GdxSymbolViewState* symViewState = mState->symbolViewState(name);
         if (symViewState) {
             GdxSymbolView* symView = symbolViewByName(name);
-            if (symView->sym()->dim() == symViewState->dim() && symView->sym()->type() == symViewState->type())
-                symView->applyState(symViewState);
+            symView->applyState(symViewState);
             mState->deleteSymbolViewState(name);
         }
     }
@@ -485,9 +484,7 @@ void GdxViewer::applySelectedSymbol()
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
                 GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
-                if (mState->symbolViewState(name) && mState->symbolViewState(name)->dim() == sym->dim() && mState->symbolViewState(name)->type() == sym->type())
-                    ui->tvSymbols->selectRow(r);
-                else if (mState->selectedSymbolIsAlias())
+                if (mState->symbolViewState(name) || mState->selectedSymbolIsAlias())
                     ui->tvSymbols->selectRow(r);
                 break;
             }
