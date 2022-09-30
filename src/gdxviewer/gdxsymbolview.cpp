@@ -379,23 +379,6 @@ void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
     clip->setText(data);
 }
 
-QString GdxSymbolView::dataAsCsv()
-{
-    if (!ui->tvListView->model())
-        return "";
-
-    QTableView *tv;
-    if (mTableView)
-        tv = ui->tvTableView;
-    else
-        tv = ui->tvListView;
-    QItemSelection selection = tv->selectionModel()->selection();
-    tv->selectAll();
-    QString data = copySelectionToString(",");
-    tv->selectionModel()->select(selection, QItemSelectionModel::ClearAndSelect);
-    return data;
-}
-
 void GdxSymbolView::toggleColumnHidden()
 {
     toggleSqueezeDefaults(mSqDefaults->isChecked());

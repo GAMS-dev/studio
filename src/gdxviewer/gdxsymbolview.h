@@ -57,7 +57,6 @@ public:
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
     void copySelectionToClipboard(QString separator, bool copyLabels = true);
-    QString dataAsCsv();
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
     void applyState(GdxSymbolViewState* symViewState);
