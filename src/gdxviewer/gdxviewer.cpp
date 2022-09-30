@@ -234,8 +234,10 @@ void GdxViewer::invalidate()
 bool GdxViewer::dragInProgress()
 {
     GdxSymbol *sym = selectedSymbol();
-    if (sym)
-        return symbolViewByName(sym->name())->dragInProgress();
+    if (sym) {
+        if (GdxSymbolView *symView=symbolViewByName(sym->name()))
+            return symView->dragInProgress();
+    }
     return false;
 }
 
@@ -489,6 +491,11 @@ void GdxViewer::applySelectedSymbol()
 
 GdxSymbolView *GdxViewer::symbolViewByName(QString name)
 {
+    GdxSymbol *sym = mGdxSymbolTable->getSymbolByName(name);
+    if (sym->type() == GMS_DT_ALIAS) {
+        sym = mGdxSymbolTable->gdxSymbols().at(sym->subType());
+        name = sym->name();
+    }
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView && symView->sym()->name().toLower() == name.toLower())
             return symView;
