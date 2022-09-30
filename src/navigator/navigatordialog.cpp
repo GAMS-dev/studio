@@ -27,7 +27,9 @@ namespace studio {
 NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField)
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
-    setWindowFlags(Qt::Popup);
+    setWindowFlags(Qt::ToolTip);
+    setFocusProxy(mInput);
+
     ui->setupUi(this);
     mNavModel = new NavigatorModel(this, main);
     mFilterModel = new QSortFilterProxyModel(this);
@@ -63,15 +65,13 @@ void NavigatorDialog::showEvent(QShowEvent *e)
 
     updatePosition();
     setInput(mMain->navigatorInput()->text());
-    mInput->setFocus();
 }
 
 void NavigatorDialog::setInput(const QString &input)
 {
-    if (!isVisible()) {
+    if (!isVisible())
         show();
-        mInput->setFocus();
-    }
+
     QString filter = input;
     NavigatorMode mode;
     if (input.startsWith("?")) {
@@ -286,7 +286,7 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
     } else if (e->key() == Qt::Key_Escape) {
         close();
-    } else mInput->receiveKeyEvent(e);
+    }
 }
 
 void NavigatorDialog::updatePosition()
@@ -297,6 +297,11 @@ void NavigatorDialog::updatePosition()
     position.setY(mMain->height() - height() - mMain->statusBar()->height());
 
     move(mMain->mapToGlobal(position));
+}
+
+void NavigatorDialog::receiveKeyEvent(QKeyEvent *event)
+{
+    keyPressEvent(event);
 }
 
 bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)

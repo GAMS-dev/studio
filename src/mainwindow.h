@@ -166,10 +166,6 @@ public:
     search::ResultsView *resultsView() const;
     void invalidateResultsView();
 
-signals:
-    void saved();
-    void savedAs();
-
 public slots:
     PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr,
                                     OpenGroupOption opt = ogNone, bool focus = false);
@@ -472,7 +468,6 @@ private:
     void goToLine(int result);
     QString readGucValue(QString key);
     void initCompleterActions();
-    void showNavigator();
 
 private:
     Ui::MainWindow *ui;

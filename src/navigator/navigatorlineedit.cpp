@@ -23,9 +23,28 @@ namespace studio {
 NavigatorLineEdit::NavigatorLineEdit(QWidget* parent) : QLineEdit(parent)
 { }
 
-void NavigatorLineEdit::receiveKeyEvent(QKeyEvent *keyEvent)
+void NavigatorLineEdit::mouseReleaseEvent(QMouseEvent* event)
 {
-    QLineEdit::keyPressEvent(keyEvent);
+    emit receivedFocus();
+    QLineEdit::mouseReleaseEvent(event);
+}
+
+void NavigatorLineEdit::focusInEvent(QFocusEvent *event)
+{
+    // do not send receivedFocus() here because this widget gets focus after closing the dialog
+    QLineEdit::focusInEvent(event);
+}
+
+void NavigatorLineEdit::focusOutEvent(QFocusEvent *event)
+{
+    emit lostFocus();
+    QLineEdit::focusOutEvent(event);
+}
+
+void NavigatorLineEdit::keyPressEvent(QKeyEvent *event)
+{
+    emit sendKeyEvent(event);
+    QLineEdit::keyPressEvent(event);
 }
 
 }

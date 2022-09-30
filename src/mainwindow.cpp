@@ -243,8 +243,6 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->installEventFilter(this);
     installEventFilter(this);
 
-    connect(this, &MainWindow::saved, this, &MainWindow::on_actionSave_triggered);
-    connect(this, &MainWindow::savedAs, this, &MainWindow::on_actionSave_As_triggered);
     connect(qApp, &QApplication::focusChanged, this, &MainWindow::updateRecentEdit);
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
@@ -496,7 +494,12 @@ void MainWindow::initNavigator()
     mNavigatorInput->setSizePolicy(QSizePolicy::MinimumExpanding, QSizePolicy::Preferred);
     mNavigatorInput->setPlaceholderText("Navigator: type \"?\" for help.");
     mNavigatorInput->setClearButtonEnabled(true);
+
     ui->statusBar->addWidget(mNavigatorInput, 1);
+
+    connect(mNavigatorInput, &NavigatorLineEdit::receivedFocus, this, &MainWindow::on_actionNavigator_triggered);
+    connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::close);
+    connect(mNavigatorInput, &NavigatorLineEdit::sendKeyEvent, mNavigatorDialog, &NavigatorDialog::receiveKeyEvent);
 }
 
 void MainWindow::updateToolbar(QWidget* current)

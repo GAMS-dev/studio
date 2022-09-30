@@ -31,13 +31,17 @@ namespace studio {
 
 enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, Folder };
 
-class NavigatorDialog : public QDialog {
+class NavigatorDialog : public QDialog
+{
     Q_OBJECT
 
 public:
     NavigatorDialog(MainWindow* main, NavigatorLineEdit *inputField);
     ~NavigatorDialog();
     void updatePosition();
+
+public slots:
+    void receiveKeyEvent(QKeyEvent *event);
 
 private:
     void keyPressEvent(QKeyEvent* e) override;

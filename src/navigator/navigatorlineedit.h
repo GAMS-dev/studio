@@ -19,6 +19,7 @@
 #define NAVIGATORLINEEDIT_H
 
 #include <QLineEdit>
+#include <QFocusEvent>
 #include <QWidget>
 
 namespace gams {
@@ -26,9 +27,21 @@ namespace studio {
 
 class NavigatorLineEdit : public QLineEdit
 {
+    Q_OBJECT
+
 public:
     NavigatorLineEdit(QWidget *parent = nullptr);
-    void receiveKeyEvent(QKeyEvent* keyEvent);
+
+signals:
+    void sendKeyEvent(QKeyEvent* keyEvent);
+    void receivedFocus();
+    void lostFocus();
+
+protected:
+    void mouseReleaseEvent(QMouseEvent *event);
+    void focusInEvent(QFocusEvent *event);
+    void focusOutEvent(QFocusEvent *event);
+    void keyPressEvent(QKeyEvent *event);
 };
 
 }
