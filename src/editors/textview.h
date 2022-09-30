@@ -79,11 +79,6 @@ public:
     int firstErrorLine();
     void print(QPagedPaintDevice *printer);
     void scrollSynchronize(int dx, int dy);
-    inline FileId fileId() {
-        bool ok;
-        FileId file = property("fileId").toInt(&ok);
-        return ok ? file : FileId();
-    }
 
 signals:
     void addProcessData(const QByteArray &data);
@@ -127,11 +122,6 @@ protected:
     void resizeEvent(QResizeEvent *event) override;
     void showEvent(QShowEvent *event) override;
     void focusInEvent(QFocusEvent *event) override;
-    inline NodeId groupId() {
-        bool ok;
-        NodeId group = property("groupId").toInt(&ok);
-        return ok ? group : NodeId();
-    }
 
 private:
     void init();

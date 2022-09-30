@@ -70,11 +70,7 @@ public:
     void setSearchSelectionActive(bool active);
     void updateSearchSelection();
     void findInSelection(QList<search::Result> &results);
-    inline FileId fileId() {
-        bool ok;
-        FileId file = property("fileId").toInt(&ok);
-        return ok ? file : FileId();
-    }
+    FileId fileId() const;
     virtual void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
     virtual int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
     virtual void scrollSynchronize(int dx, int dy);
@@ -86,6 +82,8 @@ signals:
     void cloneBookmarkMenu(QMenu *menu);
     void scrolled(QWidget *widget, int dx, int dy);
     void zoomRequest(int delta);
+    void getProjectId(NodeId &projectId) const;
+    void getFileId(FileId &fileId) const;
 
 public slots:
     virtual void updateExtraSelections();
@@ -113,11 +111,7 @@ protected:
     void wheelEvent(QWheelEvent *e) override;
     const QList<TextMark *> marksAtMouse() const;
 
-    inline NodeId groupId() const {
-        bool ok;
-        NodeId group = property("groupId").toInt(&ok);
-        return ok ? group : NodeId();
-    }
+    NodeId projectId() const;
     virtual void setMarks(const LineMarks *marks);
     virtual const LineMarks* marks() const;
     virtual int absoluteBlockNr(const int &localBlockNr) const;

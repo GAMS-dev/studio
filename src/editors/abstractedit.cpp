@@ -393,10 +393,16 @@ void AbstractEdit::findInSelection(QList<Result> &results)
         if (!item.isNull() && item.position() <= endPos) {
             results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
                                           item.selectedText().length(), property("location").toString(),
-                                          groupId(), item.block().text()));
+                                          projectId(), item.block().text()));
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());
+}
+
+FileId AbstractEdit::fileId() const {
+    FileId fileId;
+    emit getFileId(fileId);
+    return fileId;
 }
 
 void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
@@ -504,7 +510,7 @@ QString AbstractEdit::getToolTipText(const QPoint &pos)
     QVector<int> lstLines = toolTipLstNumbers(pos);
     if (lstLines.isEmpty()) return QString();
     QStringList tips;
-    emit requestLstTexts(groupId(), lstLines, tips);
+    emit requestLstTexts(projectId(), lstLines, tips);
     return tips.join("\n");
 }
 
@@ -602,10 +608,17 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
     if (cur.isNull()) return res;
     QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cur.blockNumber()));
     for (TextMark* mark: qAsConst(marks)) {
-        if ((!mark->groupId().isValid() || mark->groupId() == groupId()))
+        if ((!mark->groupId().isValid() || mark->groupId() == projectId()))
             res << mark;
     }
     return res;
+}
+
+NodeId AbstractEdit::projectId() const
+{
+    NodeId projectId;
+    emit getProjectId(projectId);
+    return projectId;
 }
 
 void AbstractEdit::mouseMoveEvent(QMouseEvent *e)

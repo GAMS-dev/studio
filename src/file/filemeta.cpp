@@ -362,10 +362,10 @@ void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)
 //    if (charsAdded) --mChangedLine;
 //    if (!column) --mChangedLine;
     if (removedLines > 0)
-        mFileRepo->textMarkRepo()->removeMarks(id(), edit->groupId(), QSet<TextMark::Type>()
+        mFileRepo->textMarkRepo()->removeMarks(id(), projectId(), QSet<TextMark::Type>()
                                                , fromLine, fromLine+removedLines);
     for (int i = fromLine; i <= toLine; ++i) {
-        const QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, edit->groupId());
+        const QList<TextMark*> marks = mFileRepo->textMarkRepo()->marks(id(), i, projectId());
         for (TextMark *mark: marks) {
             if (mark->blockEnd() >= column)
                 mark->flatten();
@@ -541,6 +541,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(aEdit, &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         connect(aEdit, &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         connect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
+        connect(aEdit, &AbstractEdit::getProjectId, this, [this](NodeId &projectId) { projectId = this->projectId(); });
+        connect(aEdit, &AbstractEdit::getFileId, this, [this](FileId &fileId) { fileId = this->id(); });
 
         CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
         if (scEdit && mHighlighter) {
