@@ -7,6 +7,7 @@ Version 1.12.0  *
 - improved GDX Viewer auto-resizing behavior
 - added directly open in Pin-View from Project-Explorer by double-clicking while holding CTRL (for horizontal pin) or CTRL+SHIFT (for vertical pin)
 - fixed GDX Viewer crash when reloading a file with an alias being selected
+- improved the GDX Viewer symbol table colors especially when the theme has changed
 
 Version 1.11.3
 ==================

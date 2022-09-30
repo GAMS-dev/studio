@@ -55,10 +55,6 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
 
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tvSymbols->horizontalHeader()->setStyle(HeaderViewProxy::instance());
-    QPalette palette;
-    palette.setColor(QPalette::Highlight, ui->tvSymbols->palette().highlight().color());
-    palette.setColor(QPalette::HighlightedText, ui->tvSymbols->palette().highlightedText().color());
-    ui->tvSymbols->setPalette(palette);
     setFocusProxy(ui->tvSymbols);
 
     mGdxMutex = new QMutex();
