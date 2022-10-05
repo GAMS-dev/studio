@@ -441,6 +441,15 @@ int GdxSymbol::numericalColumnCount() const
     return mNumericalColumnCount;
 }
 
+GdxSymbol *GdxSymbol::aliasedSymbol()
+{
+    if (mType == GMS_DT_ALIAS) {
+        GdxSymbol *sym = mGdxSymbolTable->gdxSymbols().at(mSubType);
+        return sym;
+    } else
+        return this;
+}
+
 bool GdxSymbol::hasInvalidUel() const
 {
     return mHasInvalidUel;

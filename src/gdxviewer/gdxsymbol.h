@@ -103,6 +103,8 @@ public:
 
     int numericalColumnCount() const;
 
+    GdxSymbol *aliasedSymbol();
+
 
 signals:
     void loadFinished();
