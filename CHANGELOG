@@ -8,6 +8,7 @@ Version 1.12.0  *
 - added directly open in Pin-View from Project-Explorer by double-clicking while holding CTRL (for horizontal pin) or CTRL+SHIFT (for vertical pin)
 - fixed GDX Viewer crash when reloading a file with an alias being selected
 - improved the GDX Viewer symbol table colors especially when the theme has changed
+- fixed crash when switching tabs on macOS
 
 Version 1.11.3
 ==================
