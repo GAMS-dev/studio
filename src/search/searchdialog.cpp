@@ -172,7 +172,7 @@ void SearchDialog::updateDialogState()
 
     if (!searching) updateComponentAvailability();
 
-    QApplication::processEvents();
+    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
 }
 
 QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
