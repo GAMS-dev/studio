@@ -95,7 +95,15 @@ QString ExportDialog::generateGdxReader()
     inst += "    file: " + mGdxFile + "\n";
     inst += "    symbols: \n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols())
-        inst += "      - name: " + sym->name() + "\n";
+        inst += "      - name: " + sym->aliasedSymbol()->name() + "\n";
+    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+        if (sym->type() == GMS_DT_ALIAS) {
+            QString dom = generateDomains(sym);
+            inst += "- Projection:\n";
+            inst += "    name: " + sym->aliasedSymbol()->name() + dom + "\n";
+            inst += "    newName: " + sym->name() + dom + "\n";
+        }
+    }
     return inst;
 }
 
@@ -111,11 +119,15 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
+        GdxViewerState *state = mGdxViewer->state();
+        GdxSymbolViewState *symViewState = nullptr;
+        if (state)
+            symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
         if (symView && symView->isTableViewActive())
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
-        else if (mGdxViewer->state() && mGdxViewer->state()->symbolViewState(sym->name())) {
-            if (mGdxViewer->state()->symbolViewState(sym->name())->tableViewActive())
-                rowDimension = sym->dim() - mGdxViewer->state()->symbolViewState(sym->name())->tvColDim();
+        else if (state && symViewState) {
+            if (symViewState->tableViewActive())
+                rowDimension = sym->dim() - symViewState->tvColDim();
         }
         else if (sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
             rowDimension = sym->dim() - 1;
@@ -168,6 +180,7 @@ QString ExportDialog::generateProjections()
 QString ExportDialog::generateDomains(GdxSymbol *sym)
 {
     QString dom;
+    sym = sym->aliasedSymbol();
     if (sym->dim() > 0) {
         dom = "(";
         for (int i=0; i<sym->dim(); i++)
@@ -181,28 +194,29 @@ QString ExportDialog::generateDomains(GdxSymbol *sym)
 QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
 {
     QString dom;
+    sym = sym->aliasedSymbol();
     if (sym->dim() > 0) {
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
-        if (symView && symView->isTableViewActive()) {
-            QVector<int> dimOrder = symView->getTvModel()->tvDimOrder();
+        GdxViewerState *state = mGdxViewer->state();
+        GdxSymbolViewState *symViewState = nullptr;
+        if (state)
+            symViewState = mGdxViewer->state()->symbolViewState(sym->name());
+        bool tableViewActive = symView && symView->isTableViewActive();
+        bool hasTableViewState = symViewState && symViewState->tableViewActive();
+        if (tableViewActive || hasTableViewState) {
+            QVector<int> dimOrder;
+            if (tableViewActive)
+                dimOrder = symView->getTvModel()->tvDimOrder();
+            else if (hasTableViewState)
+                dimOrder = symViewState->tvDimOrder();
             dom = "(";
             for (int i=0; i<sym->dim(); i++)
                 dom += QString::number(dimOrder.at(i)) + ",";
             dom.truncate(dom.length()-1);
             dom += ")";
             return dom;
-        } else if (mGdxViewer->state() && mGdxViewer->state()->symbolViewState(sym->name())) {
-            if (mGdxViewer->state()->symbolViewState(sym->name())->tableViewActive()) {
-                QVector<int> dimOrder =  mGdxViewer->state()->symbolViewState(sym->name())->tvDimOrder();
-                dom = "(";
-                for (int i=0; i<sym->dim(); i++)
-                    dom += QString::number(dimOrder.at(i)) + ",";
-                dom.truncate(dom.length()-1);
-                dom += ")";
-                return dom;
-            }
-        }
-        return generateDomains(sym);
+        } else
+            return generateDomains(sym);
     }
     return dom;
 }
@@ -240,6 +254,7 @@ void ExportDialog::save()
     setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
     save(connectFile);
+    setControlsEnabled(true);
 }
 
 void ExportDialog::saveAndExecute()
