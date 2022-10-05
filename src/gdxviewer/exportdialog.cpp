@@ -57,7 +57,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    connect(mProc.get(), &ConnectProcess::finished, [this]() { setControlsEnabled(true); });
+    connect(mProc.get(), &ConnectProcess::finished, [this]() {  exportDone(); });
 }
 
 ExportDialog::~ExportDialog()
@@ -261,8 +261,10 @@ void ExportDialog::saveAndExecute()
 {
     setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
-    save(connectFile);
-    execute(connectFile);
+    if (save(connectFile))
+        execute(connectFile);
+    else
+        setControlsEnabled(true);
 }
 
 void ExportDialog::closeEvent(QCloseEvent *e)
@@ -271,17 +273,23 @@ void ExportDialog::closeEvent(QCloseEvent *e)
     on_pbCancel_clicked();
 }
 
-void ExportDialog::save(QString connectFile)
+void ExportDialog::exportDone()
+{
+    setControlsEnabled(true);
+    accept();
+}
+
+bool ExportDialog::save(QString connectFile)
 {
     QString output = ui->leExcel->text().trimmed();
     if (output.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Export");
-        msgBox.setText("Output file can not be empty:\n" + output);
+        msgBox.setText("Excel file can not be empty:\n" + output);
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
-        return;
+        return false;
     }
     else if (QFileInfo(output).isRelative())
         output = QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace) + QDir::separator() + output);
@@ -294,7 +302,7 @@ void ExportDialog::save(QString connectFile)
         msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
         msgBox.setIcon(QMessageBox::Warning);
         if (msgBox.exec() == QMessageBox::No)
-            return;
+            return false;
     }
 
     mRecentPath = QFileInfo(output).path();
@@ -305,6 +313,7 @@ void ExportDialog::save(QString connectFile)
         f.write(generateInstructions().toUtf8());
         f.close();
     }
+    return true;
 }
 
 void ExportDialog::execute(QString connectFile)

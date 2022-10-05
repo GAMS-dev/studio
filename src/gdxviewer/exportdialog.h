@@ -36,8 +36,11 @@ private slots:
 protected:
     void closeEvent(QCloseEvent *e) override;
 
+private slots:
+    void exportDone();
+
 private:
-    void save(QString connectFile);
+    bool save(QString connectFile);
     void execute(QString connectFile);
     void cancelProcess(int waitMSec=0);
     void setControlsEnabled(bool enabled);
