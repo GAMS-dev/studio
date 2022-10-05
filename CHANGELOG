@@ -1,4 +1,4 @@
-Version 1.11.4
+Version 1.11.4  *
 ==================
 - fixed GDX Viewer crash when reloading a file with an alias being selected
 
