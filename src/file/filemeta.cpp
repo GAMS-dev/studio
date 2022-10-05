@@ -74,7 +74,6 @@ void FileMeta::setLocation(QString location)
                                                     : QFileInfo(mLocation).fileName();
         for (QWidget*wid: qAsConst(mEditors)) {
             ViewHelper::setLocation(wid, location);
-//            ViewHelper::setFileId(wid, id());
         }
         mAutoReload = mData.type->autoReload();
     }
@@ -527,7 +526,6 @@ void FileMeta::addEditor(QWidget *edit)
     mEditors.prepend(edit);
     initEditorColors();
     ViewHelper::setLocation(edit, location());
-//    ViewHelper::setFileId(edit, id());
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
 
     edit->installEventFilter(this);
@@ -1208,7 +1206,6 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);
         }
     }
-//    ViewHelper::setFileId(res, id());
     setProjectId(project->id());
     ViewHelper::setLocation(res, location());
 
