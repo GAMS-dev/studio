@@ -125,11 +125,9 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
             symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
         if (symView && symView->isTableViewActive())
             rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
-        else if (state && symViewState) {
-            if (symViewState->tableViewActive())
-                rowDimension = sym->dim() - symViewState->tvColDim();
-        }
-        else if (sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
+        else if (symViewState && symViewState->tableViewActive())
+            rowDimension = sym->dim() - symViewState->tvColDim();
+        else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
             rowDimension = sym->dim() - 1;
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
