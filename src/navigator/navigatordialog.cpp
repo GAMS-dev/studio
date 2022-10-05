@@ -145,6 +145,7 @@ void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
     content.append(NavigatorContent("P filename", "filter files in current project"));
     content.append(NavigatorContent("T filename", "filter open tabs"));
     content.append(NavigatorContent("L filename", "filter logs"));
+    content.append(NavigatorContent("F filename", "files in filesystem"));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
