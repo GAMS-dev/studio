@@ -446,7 +446,9 @@ void GdxViewer::applyState()
 {
     if (!mState) return;
     ui->tvSymbols->horizontalHeader()->restoreState(mState->symbolTableHeaderState());
+    ui->tvSymbols->horizontalHeader()->setStretchLastSection(false);
     ui->tvSymbols->resizeColumnsToContents();
+    ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
     if (this->isVisible())
         applySelectedSymbol();
 }
