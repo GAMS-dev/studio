@@ -259,7 +259,7 @@ void NavigatorDialog::selectFileOrFolder(QModelIndex index)
         close();
     } else {
         if (nc.fileInfo.isFile()) {
-            mMain->openFilePath(nc.fileInfo.absoluteFilePath());
+            mMain->openFileWithOption(nc.fileInfo.absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
             mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
