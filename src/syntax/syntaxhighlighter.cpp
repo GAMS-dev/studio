@@ -143,6 +143,11 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
 
+    if (text.length() > 1000) {
+        setCurrentBlockCRIndex(purgeCode(cri));
+        return;
+    }
+
     bool scanBlock = (textBlock.blockNumber() == mScanBlockNr);
     if (scanBlock) {
         CodeRelation codeRel = mCodes.at(cri);
