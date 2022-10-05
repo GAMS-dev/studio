@@ -482,7 +482,6 @@ void GdxViewer::applySelectedSymbol()
         for (int r=0; r<ui->tvSymbols->model()->rowCount(); r++) {
             QModelIndex index = ui->tvSymbols->model()->index(r, 1);
             if (index.data().toString().toLower() == name.toLower()) {
-                GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
                 if (mState->symbolViewState(name) || mState->selectedSymbolIsAlias())
                     ui->tvSymbols->selectRow(r);
                 break;
