@@ -143,9 +143,8 @@ void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 
     mSymbolViews.replace(symbolIndex, symView);
 
-    GdxSymbolViewState* symViewState = mState ? mState->symbolViewState(sym->name()) : nullptr;
-    if (mState && symViewState && symViewState->dim() == sym->dim() && symViewState->type() == sym->type())
-        symView->setSym(sym, mGdxSymbolTable, symViewState);
+    if (mState && mState->symbolViewStates().contains(sym->name()))
+        symView->setSym(sym, mGdxSymbolTable, mState->symbolViewState(sym->name()));
     else
         symView->setSym(sym, mGdxSymbolTable);
 }
