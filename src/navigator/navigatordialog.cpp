@@ -77,20 +77,20 @@ void NavigatorDialog::setInput(const QString &input)
     if (input.startsWith("?")) {
         mode = NavigatorMode::Help;
         mFilterModel->setFilterWildcard("");
-    } else if (input.startsWith(":")) {
+    } else if (input.startsWith(":", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Line;
         mFilterModel->setFilterWildcard("");
-    } else if (input.startsWith("p ")) {
+    } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::InProject;
         mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("t ")) {
+    } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Tabs;
         mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("l ")) {
+    } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Logs;
         mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("f ")) {
-        mode = NavigatorMode::Folder;
+    } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
+        mode = NavigatorMode::FileSystem;
     } else {
         mode = NavigatorMode::AllFiles;
         mFilterModel->setFilterWildcard(input);
@@ -102,10 +102,10 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {
         case NavigatorMode::Help:
-            generateHelpContent(content);
+            collectHelpContent(content);
         break;
         case NavigatorMode::Line:
-            navigateLine(content);
+            collectLineNavigation(content);
         break;
         case NavigatorMode::AllFiles:
             collectAllFiles(content);
@@ -119,7 +119,7 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         case NavigatorMode::Logs:
             collectLogs(content);
         break;
-        case NavigatorMode::Folder:
+        case NavigatorMode::FileSystem:
             collectFileSystem(content);
         break;
         default:
@@ -128,7 +128,7 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
     }
     mNavModel->setContent(content);
     mCurrentMode = mode;
-    if (mode != NavigatorMode::Folder) {
+    if (mode != NavigatorMode::FileSystem) {
         mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
         mDirSelectionOngoing = false;
     }
@@ -138,14 +138,14 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
 }
 
-void NavigatorDialog::generateHelpContent(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append(NavigatorContent(":number", "jump to line number"));
-    content.append(NavigatorContent("filename", "filter all files"));
-    content.append(NavigatorContent("P filename", "filter files in current project"));
-    content.append(NavigatorContent("T filename", "filter open tabs"));
-    content.append(NavigatorContent("L filename", "filter logs"));
-    content.append(NavigatorContent("F filename", "files in filesystem"));
+    content.append(NavigatorContent(":number", "jump to line number", ":"));
+    content.append(NavigatorContent("filename", "filter all files", ""));
+    content.append(NavigatorContent("P filename", "filter files in current project", "P "));
+    content.append(NavigatorContent("T filename", "filter open tabs", "T "));
+    content.append(NavigatorContent("L filename", "filter logs", "L "));
+    content.append(NavigatorContent("F filename", "files in filesystem", "F "));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
@@ -224,7 +224,7 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     }
 }
 
-void NavigatorDialog::navigateLine(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 {
     FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     content.append(NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInCurrentEditor())));
@@ -235,23 +235,20 @@ void NavigatorDialog::returnPressed()
     QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
 
     if (mCurrentMode == NavigatorMode::Line) {
-        QString inputText = mInput->text();
-        bool ok = false;
-
-        int lineNr = inputText.midRef(1).toInt(&ok);
-        if (ok) mMain->jumpToLine(lineNr-1);
-        close();
-
-    } else if (index.row() != -1) {
-        selectFileOrFolder(index);
-    } else {
-        close();
+        selectLineNavigation();
+        return;
     }
+
+    if (index.row() == -1) return;
+
+    NavigatorContent nc = mNavModel->content().at(index.row());
+    if (mCurrentMode == NavigatorMode::Help)
+        selectHelpContent(nc);
+    else selectFileOrFolder(nc);
 }
 
-void NavigatorDialog::selectFileOrFolder(QModelIndex index)
+void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 {
-    NavigatorContent nc = mNavModel->content().at(index.row());
     if (FileMeta* fm = nc.fileMeta) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
@@ -266,9 +263,25 @@ void NavigatorDialog::selectFileOrFolder(QModelIndex index)
             mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
             mMain->navigatorInput()->setText(
                         "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
-            updateContent(NavigatorMode::Folder);
+            updateContent(NavigatorMode::FileSystem);
         }
     }
+}
+
+void NavigatorDialog::selectHelpContent(NavigatorContent nc)
+{
+    mInput->setText(nc.insertPrefix);
+    setInput(nc.insertPrefix);
+}
+
+void NavigatorDialog::selectLineNavigation()
+{
+    QString inputText = mInput->text();
+    bool ok = false;
+
+    int lineNr = inputText.midRef(1).toInt(&ok);
+    if (ok) mMain->jumpToLine(lineNr-1);
+    close();
 }
 
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)

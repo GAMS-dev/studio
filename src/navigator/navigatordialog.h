@@ -29,7 +29,7 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
-enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, Folder };
+enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, FileSystem };
 
 class NavigatorDialog : public QDialog
 {
@@ -49,8 +49,8 @@ private:
     bool eventFilter(QObject* watched, QEvent* event) override;
     void setInput(const QString& input);
 
-    void generateHelpContent(QVector<NavigatorContent> &content);
-    void navigateLine(QVector<NavigatorContent> &content);
+    void collectHelpContent(QVector<NavigatorContent> &content);
+    void collectLineNavigation(QVector<NavigatorContent> &content);
     void collectAllFiles(QVector<NavigatorContent> &content);
     void collectOpenFiles(QVector<NavigatorContent> &content);
     void collectInProject(QVector<NavigatorContent> &content);
@@ -59,7 +59,9 @@ private:
     void collectFileSystem(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
     void updateContent(NavigatorMode mode);
-    void selectFileOrFolder(QModelIndex index);
+    void selectFileOrFolder(NavigatorContent nc);
+    void selectHelpContent(NavigatorContent nc);
+    void selectLineNavigation();
 
     ///
     /// \brief findClosestPath removes characters from the current string

@@ -26,26 +26,31 @@ namespace gams {
 namespace studio {
 
 struct NavigatorContent {
+    // known files
     NavigatorContent(FileMeta* file, QString additionalText) {
         fileMeta = file;
         fileInfo = QFileInfo(file->location());
         additionalInfo = additionalText;
     }
 
+    // unknown fikes
     NavigatorContent(QFileInfo file, QString additionalText) {
         fileInfo = file;
         additionalInfo = additionalText;
     }
 
-    NavigatorContent(QString txt, QString additionalText) {
+    // help content
+    NavigatorContent(QString txt, QString additionalText, QString prefix) {
         text = txt;
         additionalInfo = additionalText;
+        insertPrefix = prefix;
     }
 
     FileMeta* fileMeta = nullptr;
     QFileInfo fileInfo;
     QString text;
     QString additionalInfo;
+    QString insertPrefix;
 };
 
 class NavigatorModel : public QAbstractTableModel
