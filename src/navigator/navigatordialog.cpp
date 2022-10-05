@@ -264,7 +264,7 @@ void NavigatorDialog::selectFileOrFolder(QModelIndex index)
         } else {
             mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
             mMain->navigatorInput()->setText(
-                        "f " + mSelectedDirectory.absolutePath() + QDir::separator());
+                        "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
             updateContent(NavigatorMode::Folder);
         }
     }
