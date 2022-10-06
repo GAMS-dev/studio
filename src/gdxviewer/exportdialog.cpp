@@ -132,7 +132,7 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
-        inst += "        range: " + mExportModel->range().at(sym->nr()) + "\n";
+        inst += "        range: " + sym->name() + "!A1\n";
         inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
     }
     return inst;

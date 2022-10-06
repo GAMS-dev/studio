@@ -13,8 +13,6 @@ ExportModel::ExportModel(GdxViewer* gdxViewer, GdxSymbolTableModel *symbolTableM
     : QAbstractTableModel(parent), mGdxViewer(gdxViewer), mSymbolTableModel(symbolTableModel)
 {
     mChecked.resize(mSymbolTableModel->symbolCount()+1);
-    for (GdxSymbol *sym : symbolTableModel->gdxSymbols())
-        mRange.append(sym->name() + "!A1");
 }
 
 ExportModel::~ExportModel()
@@ -28,11 +26,6 @@ QVariant ExportModel::headerData(int section, Qt::Orientation orientation, int r
         if (section==0) {
             if(role == Qt::DisplayRole) {
                 return "Export";
-            }
-        }
-        else if (section==8) {
-            if(role == Qt::DisplayRole) {
-                return "Range";
             }
         }
     }
@@ -52,7 +45,7 @@ int ExportModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return mSymbolTableModel->columnCount(parent) + 2;
+    return mSymbolTableModel->columnCount(parent) + 1;
 }
 
 QVariant ExportModel::data(const QModelIndex &index, int role) const
@@ -69,10 +62,6 @@ QVariant ExportModel::data(const QModelIndex &index, int role) const
         }
         return QVariant();
     }
-    else if (index.column() == 8) {
-        if (role == Qt::DisplayRole || role == Qt::EditRole)
-            return mRange.at(index.row());
-    }
     QModelIndex idx = mSymbolTableModel->index(index.row(), index.column()-1);
     return mSymbolTableModel->data(idx, role);
     return QVariant();
@@ -84,10 +73,6 @@ bool ExportModel::setData(const QModelIndex &index, const QVariant &value, int r
         if (role==Qt::CheckStateRole)
             mChecked[index.row()] = value.toBool();
     }
-    else if (index.column() == 8) {
-        if (role==Qt::EditRole)
-            mRange[index.row()] = value.toString();
-    }
     return true;
 }
 
@@ -97,8 +82,6 @@ Qt::ItemFlags ExportModel::flags(const QModelIndex &index) const
     if (index.isValid()) {
         if (index.column() == 0)
             f |= Qt::ItemIsUserCheckable;
-        if (index.column() == 8)
-            f |= Qt::ItemIsEditable;
     }
     return f;
 }
@@ -111,11 +94,6 @@ QList<GdxSymbol *> ExportModel::selectedSymbols()
             l.append(mSymbolTableModel->gdxSymbols().at(r));
     }
     return l;
-}
-
-QStringList ExportModel::range() const
-{
-    return mRange;
 }
 
 } // namespace gdxviewer

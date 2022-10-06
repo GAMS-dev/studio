@@ -32,13 +32,10 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QList<GdxSymbol*> selectedSymbols();
 
-    QStringList range() const;
-
 private:
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
     QVector<bool> mChecked;
-    QStringList mRange;
 };
 
 } // namespace gdxviewer
