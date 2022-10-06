@@ -77,7 +77,7 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
             QString path = mCurrentDir.relativeFilePath(f.absolutePath());
             if (path.count("..") > 2)
                 path = f.absolutePath();
-            return (path == ".") ? QVariant() : path;
+            return (path == ".") ? QVariant() : QDir::toNativeSeparators(path);
 
         } else if (index.column() == 2) { // additional info
             if (f.fileName().contains("..")) // detect ".." and hide info
