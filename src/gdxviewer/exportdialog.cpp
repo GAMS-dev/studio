@@ -289,7 +289,20 @@ bool ExportDialog::save(QString connectFile)
         msgBox.exec();
         return false;
     }
-    else if (mExportModel->selectedSymbols().isEmpty()) {
+    if (QFileInfo(output).isRelative())
+        output = QDir::toNativeSeparators(mRecentPath + QDir::separator() + output);
+    if (QFileInfo(output).suffix().isEmpty())
+        output = output + ".xlsx";
+    if (QFileInfo(output).suffix() != "xlsx") {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Export");
+        msgBox.setText("File extension of Excel file needs to be 'xlsx' but is '" + QFileInfo(output).suffix() + "'");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return false;
+    }
+    if (mExportModel->selectedSymbols().isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Export");
         msgBox.setText("At least one symbol has to be selected for export");
@@ -298,10 +311,6 @@ bool ExportDialog::save(QString connectFile)
         msgBox.exec();
         return false;
     }
-    else if (QFileInfo(output).isRelative())
-        output = QDir::toNativeSeparators(Settings::settings()->toString(skDefaultWorkspace) + QDir::separator() + output);
-    if (QFileInfo(output).suffix().isEmpty())
-        output = output + ".xlsx";
     if (QFileInfo(output).exists()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Overwrite Existing File");
