@@ -11,6 +11,8 @@ Version 1.12.0
 - fixed crash when switching tabs on macOS
 - fixed selected project changing when searching over multiple files where a file is linked to more than one project
 - added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
+- fixed project changes on search over multiple files where a file is linked to more than one project
+- changed GAMS version mismatch error message to a warning message
 
 Version 1.11.3
 ==================

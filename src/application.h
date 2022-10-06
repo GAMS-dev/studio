@@ -86,6 +86,8 @@ public slots:
 
     void logError(const QString &message);
 
+    void logWarning(const QString &message);
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.

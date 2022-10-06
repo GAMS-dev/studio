@@ -50,7 +50,10 @@ Application::Application(int& argc, char** argv)
     pal.setColor(QPalette::Disabled, QPalette::Window, QColor(255,255,255));
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
-    connect(&mDistribValidator, &support::DistributionValidator::newError, this, &Application::logError);
+    connect(&mDistribValidator, &support::DistributionValidator::newError,
+            this, &Application::logError);
+    connect(&mDistribValidator, &support::DistributionValidator::newWarning,
+            this, &Application::logWarning);
 }
 
 Application::~Application()
@@ -152,6 +155,11 @@ void Application::receiveFileArguments()
 void Application::logError(const QString &message)
 {
     SysLogLocator::systemLog()->append(message, LogMsgType::Error);
+}
+
+void Application::logWarning(const QString &message)
+{
+    SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
 }
 
 bool Application::event(QEvent *event)

@@ -40,6 +40,7 @@ public:
 
 signals:
     void newError(const QString&);
+    void newWarning(const QString&);
 
 private:
     ///

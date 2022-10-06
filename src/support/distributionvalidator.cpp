@@ -84,7 +84,7 @@ void DistributionValidator::checkCompatibility()
         QString error = QString("Found incompatible GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
                 .arg(regex.cap(regex.captureCount()))
                 .arg(GAMS_DISTRIB_VERSION_SHORT);
-        emit newError(error);
+        emit newWarning(error);
     }
     else {
         emit newError("Could not validate GAMS Distribution version.");
