@@ -21,6 +21,7 @@ Version 1.12.0
     - the GoTo- and TabBrowser-Dialogs are now obsolete and will be removed in the future
 - added icons to the main tabs
 - added icons to the main tabs (except for macOS)
+- added editor settings to skip syntax highlighting for long lines
 
 Version 1.11.3
 ==================
