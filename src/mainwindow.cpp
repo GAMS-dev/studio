@@ -498,7 +498,7 @@ void MainWindow::initNavigator()
     ui->statusBar->addWidget(mNavigatorInput, 1);
 
     connect(mNavigatorInput, &NavigatorLineEdit::receivedFocus, this, &MainWindow::on_actionNavigator_triggered);
-    connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::close);
+    connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::conditionallyClose);
     connect(mNavigatorInput, &NavigatorLineEdit::sendKeyEvent, mNavigatorDialog, &NavigatorDialog::receiveKeyEvent);
 }
 
@@ -585,6 +585,13 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setSize(skWinSize, size());
     }
+}
+
+void MainWindow::changeEvent(QEvent* event)
+{
+    // top level state of window changed
+    if (event->type() == QEvent::ActivationChange && !isActiveWindow())
+        mNavigatorDialog->conditionallyClose();
 }
 
 int MainWindow::logTabCount()
@@ -3302,11 +3309,10 @@ void MainWindow::mouseMoveEvent(QMouseEvent* event)
 
 void MainWindow::mousePressEvent(QMouseEvent *event)
 {
-    QMouseEvent* me = static_cast<QMouseEvent*>(event);
-    if (me->button() == Qt::ForwardButton) {
+    if (event->button() == Qt::ForwardButton) {
         on_actionGoForward_triggered();
         event->accept();
-    } else if (me->button() == Qt::BackButton) {
+    } else if (event->button() == Qt::BackButton) {
         on_actionGoBack_triggered();
         event->accept();
     }

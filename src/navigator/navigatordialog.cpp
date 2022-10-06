@@ -17,6 +17,8 @@
  */
 #include <QKeyEvent>
 #include <QStatusBar>
+#include "qapplication.h"
+#include "qnamespace.h"
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -27,7 +29,7 @@ namespace studio {
 NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField)
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
-    setWindowFlags(Qt::ToolTip);
+    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
     setFocusProxy(mInput);
 
     ui->setupUi(this);
@@ -316,6 +318,13 @@ void NavigatorDialog::updatePosition()
 void NavigatorDialog::receiveKeyEvent(QKeyEvent *event)
 {
     keyPressEvent(event);
+}
+
+bool NavigatorDialog::conditionallyClose()
+{
+    if (QApplication::activeWindow() == this)
+        return false;
+    else return QDialog::close();
 }
 
 bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)

@@ -42,6 +42,7 @@ public:
 
 public slots:
     void receiveKeyEvent(QKeyEvent *event);
+    bool conditionallyClose();
 
 private:
     void keyPressEvent(QKeyEvent* e) override;
@@ -83,6 +84,7 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
+
 };
 
 }
