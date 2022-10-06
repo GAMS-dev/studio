@@ -19,6 +19,7 @@ Version 1.12.0
     - press `Enter` to jump to a selected file
     - type `?` to show help about all available prefixes
     - the GoTo- and TabBrowser-Dialogs are now obsolete and will be removed in the future
+- added icons to the main tabs
 
 Version 1.11.3
 ==================

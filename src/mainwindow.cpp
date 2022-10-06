@@ -5519,7 +5519,9 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
     }
     int alpha = tabIndex == mainTabs()->currentIndex() ? 100 : 40;
     QIcon icon = node->icon(QIcon::Normal, alpha);
+#ifndef __APPLE__
     ui->mainTabs->setTabIcon(tabIndex, icon);
+#endif
 }
 
 void MainWindow::on_actionPrint_triggered()
