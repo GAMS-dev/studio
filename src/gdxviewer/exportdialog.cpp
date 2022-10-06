@@ -92,7 +92,7 @@ QString ExportDialog::generateGdxReader()
 {
     QString inst;
     inst += "- GDXReader:\n";
-    inst += "    file: " + mGdxFile + "\n";
+    inst += "    file: " + QDir::toNativeSeparators(mGdxFile) + "\n";
     inst += "    symbols: \n";
     for(GdxSymbol* sym: mExportModel->selectedSymbols())
         inst += "      - name: " + sym->aliasedSymbol()->name() + "\n";
