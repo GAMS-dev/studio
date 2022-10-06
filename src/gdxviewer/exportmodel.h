@@ -32,6 +32,9 @@ public:
     Qt::ItemFlags flags(const QModelIndex& index) const override;
     QList<GdxSymbol*> selectedSymbols();
 
+    void selectAll();
+    void deselectAll();
+
 private:
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;

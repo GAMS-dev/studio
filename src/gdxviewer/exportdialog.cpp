@@ -358,6 +358,16 @@ void ExportDialog::setControlsEnabled(bool enabled)
     ui->tableView->setEnabled(enabled);
 }
 
+void ExportDialog::on_pbSelectAll_clicked()
+{
+    mExportModel->selectAll();
+}
+
+void ExportDialog::on_pbDeselectAll_clicked()
+{
+    mExportModel->deselectAll();
+}
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams

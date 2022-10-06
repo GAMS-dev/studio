@@ -38,6 +38,8 @@ protected:
 
 private slots:
     void exportDone();
+    void on_pbSelectAll_clicked();
+    void on_pbDeselectAll_clicked();
 
 private:
     bool save(QString connectFile, bool fileExistsWarning=true);

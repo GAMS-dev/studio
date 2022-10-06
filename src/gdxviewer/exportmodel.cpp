@@ -70,8 +70,10 @@ QVariant ExportModel::data(const QModelIndex &index, int role) const
 bool ExportModel::setData(const QModelIndex &index, const QVariant &value, int role)
 {
     if (index.column() == 0) {
-        if (role==Qt::CheckStateRole)
+        if (role==Qt::CheckStateRole) {
             mChecked[index.row()] = value.toBool();
+            emit dataChanged(index, index);
+        }
     }
     return true;
 }
@@ -89,11 +91,25 @@ Qt::ItemFlags ExportModel::flags(const QModelIndex &index) const
 QList<GdxSymbol *> ExportModel::selectedSymbols()
 {
     QList<GdxSymbol*> l = QList<GdxSymbol*>();
-    for (int r=0; r<mSymbolTableModel->symbolCount()+1; r++) {
+    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) { // r=1 to skip universe symbol
         if (mChecked[r])
             l.append(mSymbolTableModel->gdxSymbols().at(r));
     }
     return l;
+}
+
+void ExportModel::selectAll()
+{
+    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) // r=1 to skip universe symbol
+        mChecked[r] = true;
+    emit dataChanged(index(0, 0), index(rowCount()-1, 0));
+}
+
+void ExportModel::deselectAll()
+{
+    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) // r=1 to skip universe symbol
+        mChecked[r] = false;
+    emit dataChanged(index(0, 0), index(rowCount()-1, 0));
 }
 
 } // namespace gdxviewer
