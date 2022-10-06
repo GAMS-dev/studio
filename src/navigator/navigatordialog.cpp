@@ -29,7 +29,7 @@ namespace studio {
 NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField)
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
-    setWindowFlags(Qt::Dialog | Qt::FramelessWindowHint);
+    setWindowFlags(Qt::ToolTip);
     setFocusProxy(mInput);
 
     ui->setupUi(this);

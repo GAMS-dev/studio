@@ -14,6 +14,7 @@ Version 1.12.0
 - fixed project changes on search over multiple files where a file is linked to more than one project
 - changed GAMS version mismatch error message to a warning message
 - added Navigator feature (`Ctrl+K`)
+    - Please note: this feature is currently in beta and does not have mouse support yet!
     - filter files by typing a search term, wildcards are also supported (e.g.: *.gms)
     - press `Enter` to jump to a selected file
     - type `?` to show help about all available prefixes
