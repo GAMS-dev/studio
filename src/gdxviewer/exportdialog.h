@@ -40,7 +40,7 @@ private slots:
     void exportDone();
 
 private:
-    bool save(QString connectFile);
+    bool save(QString connectFile, bool fileExistsWarning=true);
     void execute(QString connectFile);
     void cancelProcess(int waitMSec=0);
     void setControlsEnabled(bool enabled);

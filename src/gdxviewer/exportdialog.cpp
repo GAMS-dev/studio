@@ -110,6 +110,7 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
 {
     QString inst = "- PandasExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
+    inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
     inst += "    symbols:\n";
     for (GdxSymbol* sym: mExportModel->selectedSymbols()) {
         QString name = sym->name();
@@ -250,7 +251,7 @@ void ExportDialog::save()
 {
     setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
-    save(connectFile);
+    save(connectFile, false);
     setControlsEnabled(true);
 }
 
@@ -276,7 +277,7 @@ void ExportDialog::exportDone()
     accept();
 }
 
-bool ExportDialog::save(QString connectFile)
+bool ExportDialog::save(QString connectFile, bool fileExistsWarning)
 {
     QString output = ui->leExcel->text().trimmed();
     if (output.isEmpty()) {
@@ -310,7 +311,7 @@ bool ExportDialog::save(QString connectFile)
         msgBox.exec();
         return false;
     }
-    if (QFileInfo(output).exists()) {
+    if (fileExistsWarning && QFileInfo(output).exists()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Overwrite Existing File");
         msgBox.setText(QFileInfo(output).fileName() + " already exists.\nDo you want to overwrite it?");
