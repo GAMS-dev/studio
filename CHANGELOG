@@ -10,7 +10,7 @@ Version 1.12.0  *
 - improved the GDX Viewer symbol table colors especially when the theme has changed
 - fixed crash when switching tabs on macOS
 - fixed project changes on search over multiple files where a file is linked to more than one project
-- added first export dialog version to the GDX Viewer
+- added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
 
 Version 1.11.3
 ==================
