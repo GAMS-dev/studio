@@ -238,6 +238,7 @@ private slots:
 
     // View
     void invalidateTheme();
+    void rehighlightOpenFiles();
     void gamsProcessStateChanged(PExGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);

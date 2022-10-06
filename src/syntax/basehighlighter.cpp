@@ -19,6 +19,7 @@
 #include "logger.h"
 #include "blockdata.h"
 #include "blockcode.h"
+#include "settings.h"
 #include <QTimer>
 
 namespace gams {
@@ -100,6 +101,7 @@ void BaseHighlighter::resume()
 
 void BaseHighlighter::rehighlight()
 {
+    mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
     setDirty(mDoc->firstBlock(), mDoc->lastBlock());
     processDirtyParts();

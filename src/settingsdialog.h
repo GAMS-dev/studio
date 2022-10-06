@@ -63,6 +63,7 @@ signals:
     void editorTabSizeChanged(int size);
     void reactivateEngineDialog();
     void persistToken();
+    void rehighlight();
 
 public slots:
     void delayBaseThemeChange(bool valid);
@@ -107,6 +108,7 @@ private:
     Settings *mSettings;
     MainWindow *mMain;
     bool isModified = false;
+    bool mNeedRehighlight = false;
     bool mInitializing = true;
     QList<ThemeWidget*> mColorWidgets;
     int mFixedThemeCount = 0;

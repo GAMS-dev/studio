@@ -3991,6 +3991,15 @@ void MainWindow::invalidateTheme()
     repaint();
 }
 
+void MainWindow::rehighlightOpenFiles()
+{
+    for (const QString &fileName : mOpenTabsList) {
+        FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
+        if (meta->isOpen() && meta->highlighter())
+            meta->highlighter()->rehighlight();
+    }
+}
+
 void MainWindow::ensureInScreen()
 {
     QRect appGeo = geometry();
@@ -4352,6 +4361,7 @@ void MainWindow::on_actionSettings_triggered()
         mSettingsDialog = new SettingsDialog(this);
         mSettingsDialog->setModal(true);
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
+        connect(mSettingsDialog, &SettingsDialog::rehighlight, this, &MainWindow::rehighlightOpenFiles);
         connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);

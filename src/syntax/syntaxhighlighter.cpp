@@ -143,7 +143,7 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     if (!textBlock.userData()) textBlock.setUserData(new BlockData());
     BlockData* blockData = static_cast<BlockData*>(textBlock.userData());
 
-    if (text.length() > 1000) {
+    if (maxLineLength() >= 0 && text.length() >= maxLineLength()) {
         setCurrentBlockCRIndex(purgeCode(cri));
         return;
     }

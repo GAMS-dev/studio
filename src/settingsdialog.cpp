@@ -91,6 +91,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
+    connect(ui->sb_highlightBound, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        mNeedRehighlight = true;
+        setModified();
+    });
     connect(ui->cb_showlinenr, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_editor, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_linewrap_process, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -153,6 +157,7 @@ void SettingsDialog::loadSettings()
     ui->sb_fontsize->setValue(mSettings->toInt(skEdFontSize));
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
     ui->sb_tabsize->setValue(mSettings->toInt(skEdTabSize));
+    ui->sb_highlightBound->setValue(mSettings->toInt(skEdHighlightBound));
     ui->cb_linewrap_editor->setChecked(mSettings->toBool(skEdLineWrapEditor));
     ui->cb_linewrap_process->setChecked(mSettings->toBool(skEdLineWrapProcess));
     ui->cb_clearlog->setChecked(mSettings->toBool(skEdClearLog));
@@ -280,6 +285,7 @@ void SettingsDialog::saveSettings()
     mSettings->setInt(skEdFontSize, ui->sb_fontsize->value());
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
     mSettings->setInt(skEdTabSize, ui->sb_tabsize->value());
+    mSettings->setInt(skEdHighlightBound, ui->sb_highlightBound->value());
     mSettings->setBool(skEdLineWrapEditor, ui->cb_linewrap_editor->isChecked());
     mSettings->setBool(skEdLineWrapProcess, ui->cb_linewrap_process->isChecked());
     mSettings->setBool(skEdClearLog, ui->cb_clearlog->isChecked());
@@ -349,6 +355,7 @@ void SettingsDialog::saveSettings()
     mSettings->save();
     mSettings->block();
     setModifiedStatus(false);
+    if (mNeedRehighlight) emit rehighlight();
 }
 
 void SettingsDialog::on_btn_browse_clicked()
@@ -413,6 +420,7 @@ void SettingsDialog::editorBaseColorChanged()
 void SettingsDialog::afterLoad()
 {
     setModifiedStatus(false);
+    mNeedRehighlight = false;
 }
 
 void SettingsDialog::themeModified()

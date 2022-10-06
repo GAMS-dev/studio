@@ -324,6 +324,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEdFontSize, scUser, {"editor","fontSize"}, 10);
     safelyAdd(res, skEdShowLineNr, scUser, {"editor","showLineNr"}, true);
     safelyAdd(res, skEdTabSize, scUser, {"editor","TabSize"}, 4);
+    safelyAdd(res, skEdHighlightBound, scUser, {"editor","HighlightBound"}, 1500);
     safelyAdd(res, skEdLineWrapEditor, scUser, {"editor","lineWrapEditor"}, false);
     safelyAdd(res, skEdLineWrapProcess, scUser, {"editor","lineWrapProcess"}, false);
     safelyAdd(res, skEdClearLog, scUser, {"editor","clearLog"}, false);

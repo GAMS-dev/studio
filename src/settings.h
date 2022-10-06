@@ -92,6 +92,7 @@ enum SettingsKey {
     skEdFontSize,
     skEdShowLineNr,
     skEdTabSize,
+    skEdHighlightBound,
     skEdLineWrapEditor,
     skEdLineWrapProcess,
     skEdClearLog,

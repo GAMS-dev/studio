@@ -64,6 +64,7 @@ protected:
     int previousBlockCRIndex() const;
     void setCurrentBlockCRIndex(int newState);
     QTextBlock currentBlock() const;
+    int maxLineLength() { return mMaxLineLength; }
 
 private:
     void reformatCurrentBlock();
@@ -120,6 +121,7 @@ private:
     bool mCompleted = false;
     QTextDocument *mDoc = nullptr;
     int mBlockCount = 1;
+    int mMaxLineLength = -1;
     QTextBlock mCurrentBlock;
     QVector<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks
     QVector<QTextCharFormat> mFormatChanges;
