@@ -53,6 +53,7 @@ public:
     void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
     void setAutoReload(const QString &location);
+    void getIcon(QIcon &icon, FileMeta *file, NodeId projectId);
 
     void setDebugMode(bool debug);
     bool debugMode() const;

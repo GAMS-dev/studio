@@ -1662,6 +1662,9 @@ void MainWindow::loadCommandLines(PExFileNode* oldfn, PExFileNode* fn)
 
 void MainWindow::activeTabChanged(int index)
 {
+    if (mCurrentMainTab >= 0) updateTabIcon(nullptr, mCurrentMainTab);
+    if  (index >= 0) updateTabIcon(nullptr, index);
+    mCurrentMainTab = index;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
     PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
     PExFileNode* node = mProjectRepo.findFileNode(editWidget);
@@ -4053,7 +4056,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
-            fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
+            int tabIndex = fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
+            PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);
+            if (!node) node = project;
+            updateTabIcon(node, tabIndex);
             QTimer::singleShot(0, this, [this, edit, fileMeta]() {
                 edit->setFont(getEditorFont(fileMeta->fontGroup()));
             });
@@ -5496,6 +5502,25 @@ void MainWindow::printDocument()
     }
 }
 
+void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
+{
+    if (tabIndex < 0) return;
+    if (!node) {
+        QWidget *wid = mainTabs()->widget(tabIndex);
+        NodeId proId = ViewHelper::groupId(wid);
+        PExProjectNode *project = mProjectRepo.asProject(proId);
+        FileId fileId = ViewHelper::fileId(wid);
+        FileMeta *meta = mFileMetaRepo.fileMeta(fileId);
+        if (!project || ! meta)
+            return;
+        PExFileNode *fileNode = project->findFile(meta);
+        node = fileNode;
+        if (!node) node = project;
+    }
+    int alpha = tabIndex == mainTabs()->currentIndex() ? 100 : 40;
+    QIcon icon = node->icon(QIcon::Normal, alpha);
+    ui->mainTabs->setTabIcon(tabIndex, icon);
+}
 
 void MainWindow::on_actionPrint_triggered()
 {

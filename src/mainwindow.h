@@ -234,6 +234,7 @@ private slots:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void newProcessCall(const QString &text, const QString &call);
     void printDocument();
+    void updateTabIcon(PExAbstractNode *node, int tabIndex);
 
     // View
     void invalidateTheme();
@@ -526,6 +527,7 @@ private:
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;
     bool mNeosNoDialog = false;
+    int mCurrentMainTab = -1;
     QString mNeosMail;
     qreal mInitialTableFontSize = -1.0;
     qreal mTableFontSizeDif = 0.0;

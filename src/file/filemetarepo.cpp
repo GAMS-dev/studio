@@ -374,6 +374,17 @@ void FileMetaRepo::fontChangeRequest(FileMeta *fileMeta, QFont f)
     emit setGroupFontSize(fileMeta->fontGroup(), f.pointSizeF());
 }
 
+void FileMetaRepo::getIcon(QIcon &icon, FileMeta *file, NodeId projectId)
+{
+    PExProjectNode *project = mProjectRepo->asProject(projectId);
+    PExAbstractNode *node = mProjectRepo->findFile(file, project);
+    if (node) {
+        icon = node->icon(QIcon::Selected, 40);
+    } else if (project) {
+        icon = project->icon(QIcon::Selected, 40);
+    }
+}
+
 void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
 {
     if (mTextMarkRepo == textMarkRepo && mProjectRepo == projectRepo) return;

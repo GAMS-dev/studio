@@ -150,6 +150,9 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
                 }
                 if (opt.leftButtonSize.width() > 0) opt.rect.setLeft(opt.rect.left() + opt.leftButtonSize.width() + 4);
                 if (opt.rightButtonSize.width() > 0) opt.rect.setRight(opt.rect.right() - opt.rightButtonSize.width() - 4);
+                if (!opt.icon.isNull()) {
+                    opt.rect.setLeft(opt.rect.left() + opt.iconSize.width() + 4);
+                }
                 QProxyStyle::drawItemText(painter, opt.rect, Qt::AlignVCenter|Qt::AlignLeft, tab->palette, true, opt.text);
                 painter->restore();
                 return;

@@ -1213,7 +1213,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
     return res;
 }
 
-void FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTabStrategy tabStrategy)
+int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTabStrategy tabStrategy)
 {
     int atIndex = tabWidget->count();
     switch (tabStrategy) {
@@ -1236,6 +1236,7 @@ void FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewT
             e.raise();
         }
     }
+    return i;
 }
 
 FileMeta::Data::Data(QString location, FileType *knownType)

@@ -80,7 +80,7 @@ public:
     void updateTabName(QTabWidget *tabWidget, int index);
 
     QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
-    void addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
+    int addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
     QWidgetList editors() const;
     QWidget* topEditor() const;
     void editToTop(QWidget* edit);
