@@ -283,7 +283,16 @@ bool ExportDialog::save(QString connectFile)
     if (output.isEmpty()) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("GDX Export");
-        msgBox.setText("Excel file can not be empty:\n" + output);
+        msgBox.setText("Excel file can not be empty");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.setIcon(QMessageBox::Critical);
+        msgBox.exec();
+        return false;
+    }
+    else if (mExportModel->selectedSymbols().isEmpty()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("GDX Export");
+        msgBox.setText("At least one symbol has to be selected for export");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
         msgBox.exec();
