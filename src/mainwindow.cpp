@@ -5507,12 +5507,11 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
     if (tabIndex < 0) return;
     if (!node) {
         QWidget *wid = mainTabs()->widget(tabIndex);
-        NodeId proId = ViewHelper::groupId(wid);
+        FileMeta *meta = mFileMetaRepo.fileMeta(wid);
+        if (!meta) return;
+        NodeId proId = meta->projectId();
         PExProjectNode *project = mProjectRepo.asProject(proId);
-        FileId fileId = ViewHelper::fileId(wid);
-        FileMeta *meta = mFileMetaRepo.fileMeta(fileId);
-        if (!project || ! meta)
-            return;
+        if (!project) return;
         PExFileNode *fileNode = project->findFile(meta);
         node = fileNode;
         if (!node) node = project;
