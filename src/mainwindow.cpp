@@ -4723,6 +4723,10 @@ search::ResultsView *MainWindow::resultsView() const
 
 void MainWindow::on_actionGo_To_triggered()
 {
+    if (!currentEdit()) return;
+    if (!ViewHelper::toCodeEdit(currentEdit()) && !ViewHelper::toTextView(currentEdit()))
+        return;
+
     int numberLines = linesInCurrentEditor();
     mGotoDialog->maxLineCount(numberLines);
     mGotoDialog->open();
