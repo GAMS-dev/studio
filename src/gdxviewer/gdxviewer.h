@@ -73,6 +73,7 @@ private slots:
     void hideUniverseSymbol();
     void columnScopeChanged();
     void applySelectedSymbolOnFocus(QWidget *old, QWidget *now);
+    void on_pbExport_clicked();
 
 private:
     void loadSymbol(GdxSymbol* selectedSymbol);

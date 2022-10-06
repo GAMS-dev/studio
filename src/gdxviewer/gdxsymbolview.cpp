@@ -97,13 +97,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->addAction(aSelectAll);
     ui->tvTableView->addAction(aSelectAll);
 
-    QAction* aExport = mContextMenuLV.addAction("Export", [this]() { emit showExportDialog(); });
-    mContextMenuTV.addAction(aExport);
-    aExport->setShortcutContext(Qt::WidgetWithChildrenShortcut);
-    aExport->setShortcutVisibleInContextMenu(true);
-    ui->tvListView->addAction(aExport);
-    ui->tvTableView->addAction(aExport);
-
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
     QVBoxLayout* vLayout = new QVBoxLayout();

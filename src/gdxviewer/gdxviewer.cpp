@@ -136,7 +136,6 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 {
     GdxSymbolView* symView = new GdxSymbolView(this);
-    connect(symView, &GdxSymbolView::showExportDialog, this, &GdxViewer::showExportDialog);
     for (QHeaderView *header : symView->headers()) {
         headerRegister(header);
     }
@@ -521,6 +520,10 @@ GdxSymbolView *GdxViewer::symbolViewByName(QString name)
     return nullptr;
 }
 
+void GdxViewer::on_pbExport_clicked()
+{
+    showExportDialog();
+}
 
 } // namespace gdxviewer
 } // namespace studio

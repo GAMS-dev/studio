@@ -81,9 +81,6 @@ public slots:
     void autoResizeListViewColumns();
     void adjustDomainScrollbar();
 
-signals:
-    void showExportDialog();
-
 protected:
     bool event(QEvent *event) override;
 

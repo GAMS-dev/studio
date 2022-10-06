@@ -52,7 +52,7 @@
         <number>0</number>
        </property>
        <item>
-        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1">
+        <layout class="QHBoxLayout" name="horizontalLayout" stretch="1,0">
          <property name="spacing">
           <number>4</number>
          </property>
@@ -75,6 +75,13 @@
            </property>
            <property name="placeholderText">
             <string>Filter ...</string>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QPushButton" name="pbExport">
+           <property name="text">
+            <string>Export</string>
            </property>
           </widget>
          </item>
