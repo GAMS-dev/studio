@@ -49,7 +49,6 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->setModel(mProxyModel);
     ui->tableView->hideRow(0); // hide universe symbol
     ui->tableView->setColumnHidden(6,true); // hide the "Loaded" column
-    ui->tableView->setColumnHidden(7,true); // hide the "Text" column
     ui->tableView->resizeColumnsToContents();
 
     ui->tableView->sortByColumn(2,Qt::AscendingOrder);
