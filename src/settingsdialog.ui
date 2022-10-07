@@ -487,7 +487,7 @@
              <number>-1</number>
             </property>
             <property name="maximum">
-             <number>10000</number>
+             <number>1000000</number>
             </property>
            </widget>
           </item>
@@ -710,7 +710,7 @@
             <x>0</x>
             <y>0</y>
             <width>570</width>
-            <height>277</height>
+            <height>265</height>
            </rect>
           </property>
           <attribute name="label">
@@ -773,8 +773,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
