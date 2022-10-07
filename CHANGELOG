@@ -4,24 +4,23 @@ Version 1.12.0
 - added filter to MIRO deploy dialog and EFI editor
 - added capture group support for regular expressions in Search Dialog
 - added quick selection to GDX Viewer filters
-- improved GDX Viewer auto-resizing behavior
-- added function to open directly in Pin-View from Project Explorer by `Ctrl`+double-click (for horizontal pin) or `Ctrl+Shift` (for vertical pin)
-- fixed GDX Viewer crash when reloading a file with an alias selected
-- improved the GDX Viewer symbol table colors especially when the theme has changed
-- fixed crash when switching tabs on macOS
-- fixed selected project changing when searching over multiple files where a file is linked to more than one project
+- added function to open directly in Pin-View from Project Explorer by `Ctrl+double-click` (for horizontal pin) or `Ctrl+Shift` (for vertical pin)
 - added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
-- fixed project changes on search over multiple files where a file is linked to more than one project
-- changed GAMS version mismatch error message to a warning message
 - added Navigator feature (`Ctrl+K`)
     - Please note: this feature is currently in beta and does not have mouse support yet!
     - filter files by typing a search term, wildcards are also supported (e.g.: *.gms)
     - press `Enter` to jump to a selected file
     - type `?` to show help about all available prefixes
     - the GoTo- and TabBrowser-Dialogs are now obsolete and will be removed in the future
-- added icons to the main tabs
 - added icons to the main tabs (except for macOS)
 - added editor settings to skip syntax highlighting for long lines
+- changed GAMS version mismatch error message to a warning message
+- improved GDX Viewer auto-resizing behavior
+- improved the GDX Viewer symbol table colors especially when the theme has changed
+- fixed GDX Viewer crash when reloading a file with an alias selected
+- fixed crash when switching tabs on macOS
+- fixed selected project changing when searching over multiple files where a file is linked to more than one project
+- fixed project changes on search over multiple files where a file is linked to more than one project
 
 Version 1.11.3
 ==================
