@@ -20,6 +20,7 @@ Version 1.12.0
     - type `?` to show help about all available prefixes
     - the GoTo- and TabBrowser-Dialogs are now obsolete and will be removed in the future
 - added icons to the main tabs
+- added icons to the main tabs (except for macOS)
 
 Version 1.11.3
 ==================
