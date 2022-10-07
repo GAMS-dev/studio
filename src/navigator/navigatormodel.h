@@ -33,7 +33,7 @@ struct NavigatorContent {
         additionalInfo = additionalText;
     }
 
-    // unknown fikes
+    // unknown files
     NavigatorContent(QFileInfo file, QString additionalText) {
         fileInfo = file;
         additionalInfo = additionalText;
