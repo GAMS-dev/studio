@@ -4,7 +4,7 @@ Version 1.12.0
 - added filter to MIRO deploy dialog and EFI editor
 - added capture group support for regular expressions in Search Dialog
 - added quick selection to GDX Viewer filters
-- added function to open directly in Pin-View from Project Explorer by `Ctrl+double-click` (for horizontal pin) or `Ctrl+Shift` (for vertical pin)
+- added function to open directly in Pin-View from Project Explorer by `Ctrl+double-click` (for horizontal pin) or `Ctrl+Shift+double-click` (for vertical pin)
 - added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
 - added Navigator feature (`Ctrl+K`)
     - Please note: this feature is currently in beta and does not have mouse support yet!
@@ -20,7 +20,6 @@ Version 1.12.0
 - fixed GDX Viewer crash when reloading a file with an alias selected
 - fixed crash when switching tabs on macOS
 - fixed selected project changing when searching over multiple files where a file is linked to more than one project
-- fixed project changes on search over multiple files where a file is linked to more than one project
 
 Version 1.11.3
 ==================
