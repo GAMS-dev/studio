@@ -147,6 +147,7 @@ private:
     QString mWorkPath;
     QString mOutPath;
     QString mModelName;
+    QString mMainFile;
     QString mEngineVersion;
     QString mGamsVersion;
     bool mInKubernetes = false;

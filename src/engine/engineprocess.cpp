@@ -319,13 +319,16 @@ void EngineProcess::terminateLocal()
 void EngineProcess::setParameters(const QStringList &parameters)
 {
     if (parameters.size()) {
-        QString relPath = QDir(workingDirectory()).relativeFilePath(parameters.first());
-        if (relPath.startsWith("..")) {
+        mMainFile = parameters.first();
+        if (mMainFile.startsWith('"') && mMainFile.endsWith('"'))
+            mMainFile = mMainFile.mid(1, mMainFile.length()-2);
+        mMainFile = QDir(workingDirectory()).relativeFilePath(mMainFile);
+        if (mMainFile.startsWith("..")) {
             emit newStdChannelData("\nThe run file isn't located inside the working directory or it's subfolders.\n");
             mOutPath = "";
             return;
         }
-        mModelName = QFileInfo(relPath).completeBaseName();
+        mModelName = QFileInfo(mMainFile).completeBaseName();
         QString tempName = workingDirectory() + "/" + modelName() + "-temp";
         int n = 0;
         QDir outDir(tempName);
@@ -951,6 +954,8 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
             line = line.left(line.length() - 1).trimmed();
             writeBack = true;
         }
+        if (QDir(workingDirectory()).relativeFilePath(line).compare(mMainFile) == 0)
+            continue;
         QFileInfo fi(line);
         if (fi.isAbsolute()) {
             if (fi.exists()) {
