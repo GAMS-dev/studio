@@ -481,6 +481,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     if (!gmsFile) {
         setParameter("lst", "");
         emit changed(id());
+        emit runnableChanged();
         return;
     }
     if (workDir().isEmpty())
@@ -490,6 +491,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
     emit changed(id());
+    emit runnableChanged();
 }
 
 FileMeta *PExProjectNode::projectOptionsFileMeta() const

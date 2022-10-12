@@ -1,6 +1,7 @@
 Version 1.12.1  *
 ==================
 - fixed unexpected behavior when adding the main file to an efi file
+- fixed tab icons not updated on changing main file
 
 Version 1.12.0
 ==================

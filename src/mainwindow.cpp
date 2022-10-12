@@ -275,6 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, mSearchDialog, &search::SearchDialog::filesChanged);
+    connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -3512,6 +3513,7 @@ void MainWindow::setMainGms(PExFileNode *node)
     if (project) {
         project->setRunnableGms(node->file());
         updateRunState();
+        updateTabIcons();
     }
 }
 
@@ -5531,6 +5533,14 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 #ifndef __APPLE__
     ui->mainTabs->setTabIcon(tabIndex, icon);
 #endif
+}
+
+void MainWindow::updateTabIcons()
+{
+    for (int i = 0; i < mainTabs()->count(); ++i) {
+        if (mainTabs()->widget(i) == mWp) continue;
+        updateTabIcon(nullptr, i);
+    }
 }
 
 void MainWindow::on_actionPrint_triggered()

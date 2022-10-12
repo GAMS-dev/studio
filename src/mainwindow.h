@@ -235,6 +235,8 @@ private slots:
     void newProcessCall(const QString &text, const QString &call);
     void printDocument();
     void updateTabIcon(PExAbstractNode *node, int tabIndex);
+    void updateTabIcons();
+
 
     // View
     void invalidateTheme();
