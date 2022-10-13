@@ -19,8 +19,8 @@
  */
 #include <QKeyEvent>
 #include <QStatusBar>
-#include "qapplication.h"
-#include "qnamespace.h"
+#include <QApplication>
+
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -53,6 +53,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     ui->tableView->installEventFilter(this);
 
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
+    connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
 }
 
@@ -237,7 +238,11 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
+    selectItem(index);
+}
 
+void NavigatorDialog::selectItem(QModelIndex index)
+{
     if (mCurrentMode == NavigatorMode::Line) {
         selectLineNavigation();
         return;
@@ -305,6 +310,12 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
     } else if (e->key() == Qt::Key_Escape) {
         close();
     }
+}
+
+void NavigatorDialog::itemClicked(const QModelIndex &index)
+{
+    if (index.isValid())
+        selectItem(index);
 }
 
 void NavigatorDialog::updatePosition()

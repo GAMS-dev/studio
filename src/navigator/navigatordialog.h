@@ -76,6 +76,7 @@ private:
 
 private slots:
     void returnPressed();
+    void itemClicked(const QModelIndex& index);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;
