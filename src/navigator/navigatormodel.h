@@ -19,8 +19,7 @@
 #define NAVIGATORMODEL_H
 
 #include <QAbstractTableModel>
-
-#include "mainwindow.h"
+#include "file/filemeta.h"
 
 namespace gams {
 namespace studio {
@@ -56,7 +55,7 @@ struct NavigatorContent {
 class NavigatorModel : public QAbstractTableModel
 {
 public:
-    explicit NavigatorModel(QObject *parent, MainWindow *main);
+    explicit NavigatorModel(QObject *parent);
 
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
@@ -67,9 +66,7 @@ public:
     void setCurrentDir(QDir dir);
 
 private:
-    QObject* QAbstractTableModel = nullptr;
     QVector<NavigatorContent> mContent;
-    gams::studio::MainWindow* mMain = nullptr;
     QDir mCurrentDir;
 };
 

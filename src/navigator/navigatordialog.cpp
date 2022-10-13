@@ -33,7 +33,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     setFocusProxy(mInput);
 
     ui->setupUi(this);
-    mNavModel = new NavigatorModel(this, main);
+    mNavModel = new NavigatorModel(this);
     mFilterModel = new QSortFilterProxyModel(this);
 
     mFilterModel->setSourceModel(mNavModel);

@@ -21,8 +21,8 @@ namespace gams {
 namespace studio {
 
 
-NavigatorModel::NavigatorModel(QObject *parent, MainWindow* main) :
-    QAbstractTableModel(parent), mMain(main)
+NavigatorModel::NavigatorModel(QObject *parent) :
+    QAbstractTableModel(parent)
 { }
 
 void NavigatorModel::setContent(QVector<NavigatorContent> content)
