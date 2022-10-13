@@ -20,7 +20,9 @@
 #include <QKeyEvent>
 #include <QStatusBar>
 #include <QApplication>
+#include <QAbstractItemModel>
 
+#include "qnamespace.h"
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -32,7 +34,6 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
     setWindowFlags(Qt::ToolTip);
-    setFocusProxy(mInput);
 
     ui->setupUi(this);
     mNavModel = new NavigatorModel(this);
@@ -293,6 +294,17 @@ void NavigatorDialog::selectLineNavigation()
     close();
 }
 
+bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched != ui->tableView) return false;
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        keyPressEvent(keyEvent);
+        return true;
+    }
+    return false;
+}
+
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Qt::Key_Down) {
@@ -309,6 +321,10 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
     } else if (e->key() == Qt::Key_Escape) {
         close();
+    } else if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        returnPressed();
+    } else {
+        mInput->keyPressEvent(e);
     }
 }
 
@@ -338,19 +354,6 @@ bool NavigatorDialog::conditionallyClose()
     if (QApplication::activeWindow() == this)
         return false;
     else return QDialog::close();
-}
-
-bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
-{
-    if (watched != ui->tableView) return false;
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down) {
-            keyPressEvent(keyEvent);
-            return true;
-        }
-    }
-    return false;
 }
 
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)

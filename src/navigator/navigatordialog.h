@@ -65,6 +65,7 @@ private:
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
+    void selectItem(QModelIndex index);
 
     ///
     /// \brief findClosestPath removes characters from the current string

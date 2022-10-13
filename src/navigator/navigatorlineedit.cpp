@@ -45,8 +45,13 @@ void NavigatorLineEdit::focusOutEvent(QFocusEvent *event)
 
 void NavigatorLineEdit::keyPressEvent(QKeyEvent *event)
 {
-    emit sendKeyEvent(event);
-    QLineEdit::keyPressEvent(event);
+    if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down ||
+            event->key() == Qt::Key_Escape || event->key() == Qt::Key_Return ||
+            event->key() == Qt::Key_Enter) {
+        emit sendKeyEvent(event);
+    } else {
+        QLineEdit::keyPressEvent(event);
+    }
 }
 
 }

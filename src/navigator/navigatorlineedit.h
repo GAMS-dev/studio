@@ -33,9 +33,10 @@ class NavigatorLineEdit : public QLineEdit
 
 public:
     NavigatorLineEdit(QWidget *parent = nullptr);
+    void keyPressEvent(QKeyEvent *event);
 
 signals:
-    void sendKeyEvent(QKeyEvent* keyEvent);
+    void sendKeyEvent(QKeyEvent *keyEvent);
     void receivedFocus();
     void lostFocus();
 
@@ -43,7 +44,6 @@ protected:
     void mouseReleaseEvent(QMouseEvent *event);
     void focusInEvent(QFocusEvent *event);
     void focusOutEvent(QFocusEvent *event);
-    void keyPressEvent(QKeyEvent *event);
 };
 
 }
