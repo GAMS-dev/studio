@@ -4,6 +4,7 @@ Version 1.12.1  *
 - fixed tab icons not updated on changing main file
 - fixed project state (unmodified/modified) when working directory or base directory ends with a path separator
 - fixed crash when trying to print an EFI file
+- fixed some icons ignore transparence setting
 
 Version 1.12.0
 ==================
