@@ -167,9 +167,11 @@ void ProjectOptions::updateState()
     if (ui->edName->text().trimmed().compare(mSharedData->project()->name()))
         isModified = true;
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
+    if (path.endsWith("/")) path = path.left(path.length()-1);
     if (path.compare(mSharedData->project()->location(), FileType::fsCaseSense()))
         isModified = true;
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
+    if (path.endsWith("/")) path = path.left(path.length()-1);
     if (path.compare(mSharedData->project()->workDir(), FileType::fsCaseSense()))
         isModified = true;
     if (isModified != mModified) {
