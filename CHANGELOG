@@ -11,7 +11,7 @@ Version 1.12.1  *
 - added default value for Excel output file in the export dialog
 - added mouse support for Navigator results
 - fixed Navigator dialog not moving with Studio
-- fixed navigator hiding behavior when focussed
+- fixed Navigator not following position changes of main window
 
 Version 1.12.0
 ==================
