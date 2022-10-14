@@ -3,6 +3,7 @@ Version 1.12.1  *
 - fixed unexpected behavior when adding the main file to an efi file
 - fixed tab icons not updated on changing main file
 - fixed project state (unmodified/modified) when working directory or base directory ends with a path separator
+- fixed crash when trying to print an EFI file
 
 Version 1.12.0
 ==================

@@ -5582,7 +5582,7 @@ void MainWindow::on_actionPrint_triggered()
 bool MainWindow::enabledPrintAction()
 {
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm || !focusWidget())
+    if (!fm || !focusWidget() || !fm->document())
         return false;
     return focusWidget() == mRecent.editor()
             || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild
