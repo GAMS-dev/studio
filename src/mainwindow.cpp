@@ -1013,6 +1013,10 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
         for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
             nodes << mProjectRepo.node(id);
         }
+        if (nodes.isEmpty()) {
+            PExAbstractNode *node = mProjectRepo.node(index);
+            if (node) nodes << node;
+        }
     }
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
