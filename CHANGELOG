@@ -9,6 +9,8 @@ Version 1.12.1  *
 - fixed model name containing blanks fails to be executed on NEOS and Engine
 - reflect domain order of the list view when exporting a symbol using the export dialog
 - added default value for Excel output file in the export dialog
+- added mouse support for Navigator results
+- fixed Navigator dialog not moving with Studio
 
 Version 1.12.0
 ==================
