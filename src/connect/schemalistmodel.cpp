@@ -38,7 +38,7 @@ SchemaListModel::SchemaListModel(const QStringList& schema, QObject *parent)
         sitem->setEditable(false);
         sitem->setSelectable(true);
         sitem->setTextAlignment(Qt::AlignLeft);
-        sitem->setForeground(Theme::color(Theme::Syntax_embedded));
+        sitem->setForeground(Theme::color(Theme::Normal_Green));
         if (row==0)
             sitem->setToolTip(
                         QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3.</p> <p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> <p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p></body></html>")

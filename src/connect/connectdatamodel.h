@@ -93,6 +93,8 @@ public:
     bool canDropMimeData(const QMimeData *data, Qt::DropAction action, int row, int column, const QModelIndex &parent) const override;
     bool dropMimeData(const QMimeData * mimedata, Qt::DropAction action, int row, int column, const QModelIndex & parent) override;
 
+    ConnectData* getConnectData();
+
 signals:
     void fromSchemaInserted(const QString& schemaname, int insertPosition);
     void indexExpandedAndResized(const QModelIndex &index);
@@ -103,9 +105,7 @@ public slots:
     void addFromSchema(gams::studio::connect::ConnectData* data, int insertPosition);
     void appendMapElement(const QModelIndex& index);
     void appendMapElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, int position, const QModelIndex& index);
-    void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data ,const QModelIndex& parentIndex);
-
-    ConnectData* getConnectData();
+    void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
 
 protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey);

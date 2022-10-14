@@ -221,13 +221,11 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
     tobeinsertSchemaKey.removeFirst();
     QString schemastr = tobeinsertSchemaKey.join(":");
     qDebug() << "  __x_ 1 schemastr=" << schemastr;
-
     Schema* schemaHelper = s->getSchema(schemastr);
     if (!schemaHelper)
         return new ConnectData(data);
 
     qDebug() << "  __x_ 2 schemaHelper=" << schemaHelper->level;
-//    QList<SchemaType> types = schemaHelper->types;
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Emitter e;
     e << schemanode;

@@ -116,6 +116,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ElementID, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaKey, true);
+    ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
     headerRegister(ui->dataTreeView->header());
 
     SchemaDefinitionModel* defmodel = new SchemaDefinitionModel(mConnect, mConnect->getSchemaNames().at(0), this);
@@ -234,7 +235,8 @@ void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
     QString schemaname = ui->schemaControlListView->model()->data( modelIndex ).toString();
-    emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount());
+
+    emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount(mDataModel->index(0,0)) );
 }
 
 void ConnectEditor::updateDataColumnSpan(const QModelIndex &modelIndex)

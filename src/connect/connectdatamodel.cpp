@@ -83,7 +83,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         if (state==(int)DataCheckState::Root)
             return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
         else if (state==(int)DataCheckState::SchemaName)
-                return  QVariant::fromValue(Theme::color(Theme::Syntax_embedded));
+                return  QVariant::fromValue(Theme::color(Theme::Normal_Green));
         else if (state==(int)DataCheckState::ListItem || state==(int)DataCheckState::MapAppend || state==(int)DataCheckState::ListAppend)
                  return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
         else if (state==(int)DataCheckState::ElementMap || state==(int)DataCheckState::ElementKey)
@@ -420,11 +420,23 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
        newItems << text;
        ++rows;
     }
+    if (column > 0) // not the first column
+        return false;
+
     QStringList schemastrlist = newItems[0].split("=");
+    qDebug() << schemastrlist << " :: " << "0 can drop ? :("  << row << "," << column << ") parent("  << parent.row() <<","<< parent.column() << ")" ;
     if (schemastrlist.size() <= 1)
         return false;
 
-    if (column > 0)
+    QStringList schemalist = schemastrlist[1].split(":");
+    qDebug() << schemalist;
+    if (row < 0 || column < 0)
+        return false;
+
+    if (!parent.isValid())
+        return false;
+
+    if (schemalist.size()==1 && parent.parent().isValid())
         return false;
 
     qDebug() << "00 can dropmimedata:";
@@ -433,10 +445,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 
 bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent)
 {
-    qDebug() << "000 dropmimedata:("  << row << "," << column << ")";
-    if (!canDropMimeData(mimedata, action, row, column, parent))
-        return false;
-
     qDebug() << "0 dropmimedata:("  << row << "," << column << ")";
     if (action == Qt::IgnoreAction)
         return true;
@@ -466,9 +474,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
     } else {
         qDebug() << "12 dropmimedata:("  << row << "," << column << ") ";
         qDebug() << "          parent(" << parent.row()<< "," << parent.column() << ")";
-        QStringList schemalist = schemastrlist[1].split(":");
-        if (schemalist.size()<=1 || row < 0  || column < 0)
-            return false;
         int insertRow = -1;
         if (row >=0 && row < rowCount(parent)) {
             qDebug() << "121";
@@ -481,19 +486,27 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
                 << index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString() << ", ";
         QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
         QStringList insertSchemaKey = index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":");
+        qDebug() << "tobeinsertSchemaKey=" << tobeinsertSchemaKey << " :: "
+                 << "insertSchemaKey=" << insertSchemaKey;
         if (tobeinsertSchemaKey.size() != insertSchemaKey.size())
             return false;
 
         if (!hasSameParent(tobeinsertSchemaKey, insertSchemaKey))
             return false;
+
+        QString schemaname = tobeinsertSchemaKey.first();
+        if (tobeinsertSchemaKey.size() == 1) {
+            qDebug() << "tobeinsertSchemaKey.size() == 1 :: " << tobeinsertSchemaKey;
+            emit fromSchemaInserted(schemaname, row);
+            return true;
+        }
+
         // check if tobeinsertSchemaKey exists under the same parent
         if (existsUnderSameParent(schemastrlist[1],  parent)) {
             return false;
          }
-        // insert tobeinsertSchemaKey at position index(row, column, parent)
         ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey);
         qDebug() << "data=" << data->str().c_str();
-        QString schemaname = tobeinsertSchemaKey.first();
         tobeinsertSchemaKey.removeFirst();
         tobeinsertSchemaKey.removeLast();
         appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
@@ -509,15 +522,16 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
 void ConnectDataModel::addFromSchema(ConnectData* data, int position)
 {
     qDebug() << data->str().c_str();
+    qDebug() << "position=" << position  << ", rowCount()=" << rowCount()
+             << ", schemaCount()=" << rowCount(index(0,0));
 
     Q_ASSERT(data->getRootNode().Type() ==YAML::NodeType::Sequence);
-    Q_ASSERT(position <= rowCount());
 
     YAML::Node node = data->getRootNode();
     Q_ASSERT(node.Type()==YAML::NodeType::Sequence);
 
     QList<ConnectDataItem*> parents;
-    parents << mRootItem;
+    parents << mRootItem << mRootItem->child(0);
 
     beginInsertRows(indexForTreeItem(parents.last()), position, position+1);
     for(size_t i = 0; i<node.size(); i++) {
@@ -657,14 +671,18 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
 ConnectData *ConnectDataModel::getConnectData()
 {
      YAML::Node root = YAML::Node(YAML::NodeType::Sequence);
+     Q_ASSERT(mRootItem->childCount()==1);
      for(int i=0; i<mRootItem->childCount(); ++i) {
-         ConnectDataItem* item = mRootItem->child(i);
-         YAML::Node node = YAML::Node(YAML::NodeType::Map);
-         std::string key = item->data((int)DataItemColumn::Key).toString().toStdString();
-         YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
-         getData( item, mapnode );
-         node[key] = mapnode;
-         root[i] = node;
+         ConnectDataItem* rootitem = mRootItem->child(i);
+         for(int j=0; j<rootitem->childCount(); ++j) {
+            ConnectDataItem* item = rootitem->child(j);
+            YAML::Node node = YAML::Node(YAML::NodeType::Map);
+            std::string key = item->data((int)DataItemColumn::Key).toString().toStdString();
+            YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
+            getData( item, mapnode );
+            node[key] = mapnode;
+            root[j] = node;
+         }
      }
      return new ConnectData(root);
 }
@@ -800,12 +818,26 @@ void ConnectDataModel::setupTreeItemModelData()
 
     mRootItem = new ConnectDataItem(rootData, mItemIDCount++);
 
+    QList<ConnectDataItem*> parents;
+    parents << mRootItem;
+
+    QList<QVariant> rootListData;
+    rootListData << "";
+    rootListData << "";
+    rootListData << QVariant((int)DataCheckState::Root);
+    rootListData << "";
+    rootListData << "";
+    rootListData << "";
+    rootListData << "";
+    rootListData << "";
+    rootListData << "";
+    rootListData << "";
+    parents.last()->appendChild(new ConnectDataItem(rootListData, mItemIDCount++, parents.last()));
+    parents << parents.last()->child(parents.last()->childCount()-1);
+
     if (!mConnectData->getRootNode().IsNull()) {
         YAML::Node node = mConnectData->getRootNode();
         Q_ASSERT(node.Type()==YAML::NodeType::Sequence);
-
-        QList<ConnectDataItem*> parents;
-        parents << mRootItem;
 
         int position = 0;
         for(size_t i = 0; i<node.size(); i++) {
