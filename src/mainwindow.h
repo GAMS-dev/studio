@@ -406,7 +406,6 @@ protected:
     bool event(QEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
-    void changeEvent(QEvent *event) override;
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

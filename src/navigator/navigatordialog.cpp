@@ -104,6 +104,11 @@ void NavigatorDialog::setInput(const QString &input)
     updateContent(mode);
 }
 
+void NavigatorDialog::changeEvent(QEvent*)
+{
+    conditionallyClose();
+}
+
 void NavigatorDialog::updateContent(NavigatorMode mode) {
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     switch (mode) {

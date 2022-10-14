@@ -589,13 +589,6 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     }
 }
 
-void MainWindow::changeEvent(QEvent* event)
-{
-    // top level state of window changed
-    if (event->type() == QEvent::ActivationChange && !isActiveWindow())
-        mNavigatorDialog->conditionallyClose();
-}
-
 int MainWindow::logTabCount()
 {
     return ui->logTabs->count();

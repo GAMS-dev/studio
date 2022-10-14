@@ -51,6 +51,7 @@ private:
     void showEvent(QShowEvent* e) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
     void setInput(const QString& input);
+    void changeEvent(QEvent*) override;
 
     void collectHelpContent(QVector<NavigatorContent> &content);
     void collectLineNavigation(QVector<NavigatorContent> &content);
@@ -88,7 +89,6 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
-
 };
 
 }
