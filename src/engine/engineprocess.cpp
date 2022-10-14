@@ -128,7 +128,7 @@ QStringList EngineProcess::compileParameters() const
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             needsXSave = false;
-            i.setValue("xsave=" + modelName());
+            i.setValue("xsave=\"" + modelName() + '"');
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
@@ -137,7 +137,7 @@ QStringList EngineProcess::compileParameters() const
             continue;
         }
     }
-    if (needsXSave) params << ("xsave=" + modelName());
+    if (needsXSave) params << ("xsave=\"" + modelName() + '"');
     if (needsActC) params << ("action=c");
     if (needsPw) params << ("previousWork=1");
     return params;

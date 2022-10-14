@@ -6,6 +6,7 @@ Version 1.12.1  *
 - fixed crash when trying to print an EFI file
 - fixed some icons ignore transparence setting
 - fixed wrong context menu for new entry in Project Explorer after using "Save as..."
+- fixed model name containing fails to be executed on NEOS and Engine
 
 Version 1.12.0
 ==================
