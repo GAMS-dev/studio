@@ -5,6 +5,7 @@ Version 1.12.1  *
 - fixed project state (unmodified/modified) when working directory or base directory ends with a path separator
 - fixed crash when trying to print an EFI file
 - fixed some icons ignore transparence setting
+- fixed wrong context menu for new entry in Project Explorer after using "Save as..."
 
 Version 1.12.0
 ==================
