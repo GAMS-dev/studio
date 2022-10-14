@@ -225,7 +225,10 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     filter.remove(QDir::separator());
     mFilterModel->setFilterWildcard(filter);
 
-    for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name|QDir::DirsFirst)) {
+    QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
+                                           QDir::NoDot | QDir::AllEntries,
+                                           QDir::Name | QDir::DirsFirst);
+    for (const QFileInfo &entry : localEntryInfoList) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }
@@ -336,6 +339,8 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
 
 void NavigatorDialog::updatePosition()
 {
+    if (!isVisible()) return;
+
     QPoint position;
 
     position.setX(qMin(mInput->pos().x(), mMain->width() - width()));

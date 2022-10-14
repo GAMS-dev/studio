@@ -573,6 +573,7 @@ void MainWindow::moveEvent(QMoveEvent *event)
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setPoint(skWinPos, pos());
     }
+    mNavigatorDialog->updatePosition();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
