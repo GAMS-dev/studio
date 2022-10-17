@@ -64,6 +64,7 @@ private:
     void updateKeyList(const QString& schemaname, QString& keyFromRoot, YAML::Node& error, const YAML::Node &data);
 
     QMap<QString, ConnectSchema*> mSchema;
+    QMap<QString, QString> mSchemaError;
     ConnectError mError;
 };
 

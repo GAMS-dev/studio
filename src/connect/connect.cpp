@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QDir>
+#include <QMessageBox>
 #include <QDebug>
 
 #include "commonpaths.h"
@@ -32,7 +33,33 @@ Connect::Connect()
     QString connectPath = QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir());
     QStringList schemaFiles = QDir(connectPath).entryList(QStringList() << "*.yaml" << "*.yml", QDir::Files);
     foreach(const QString& filename, schemaFiles) {
-       mSchema[QFileInfo(filename).baseName()] = new ConnectSchema(QDir(connectPath).filePath(filename));
+        try {
+           mSchema[QFileInfo(filename).baseName()] = new ConnectSchema(QDir(connectPath).filePath(filename));
+        } catch (std::exception &e) {
+            mSchemaError[QDir(connectPath).filePath(filename)] = e.what();
+            continue;
+        }
+    }
+    if (mSchemaError.size()>0) {
+//        qDebug() << "Error reading schema : %s : %s" << filename << e.what();
+        QStringList keys = mSchemaError.keys();
+        QMessageBox msgBox;
+        msgBox.setText("Warning");
+        msgBox.setIcon(QMessageBox::Warning);
+        if (mSchemaError.size()==1) {
+            msgBox.setText("Schema \""+ QFileInfo(keys.first()).baseName() + "\" read from \""
+                                      + QDir(connectPath).filePath(mSchemaError.keys().first()) + "\" contains an unsupported/invalid rule. \n"
+                           + "Data using a schema from this file may not display correctly.\n"+
+                           + "You can reopen the file using text editor to edit the content."    );
+        } else {
+            QString msg("An unsupported/invalid schema read from [" + keys.join(",")
+                                                                    + "] contains an unsupported/invalid rule. \n"
+                           + "Data using a schema from this file may not display correctly.\n"+
+                           + "You can reopen the file using text editor to edit the content."    );
+        }
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        if (msgBox.exec() == QMessageBox::Ok)
+            return;
     }
 }
 
