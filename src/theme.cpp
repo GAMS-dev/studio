@@ -364,8 +364,6 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
 
     QHash<QString, QStringList> iconCode = mIconCodes;
     QHash<QString, QStringList>::const_iterator it = iconCode.constBegin(); // Icon_Gray + Icon_Back
-    if (data.contains("database"))
-        qDebug() << "BEFORE:\n" << QString(data);
     for ( ; it != iconCode.constEnd() ; ++it) {
         int start = data.indexOf("<style");
         while (start >= 0 && start < end) {
@@ -400,8 +398,6 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
             }
         }
     }
-    if (data.contains("database"))
-        qDebug() << "AFTER:\n" << QString(data);
     return data;
 }
 
