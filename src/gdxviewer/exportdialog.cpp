@@ -30,6 +30,7 @@
 
 #include <QFile>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QMessageBox>
 
 #include <process/connectprocess.h>
@@ -217,15 +218,28 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
         GdxViewerState *state = mGdxViewer->state();
         GdxSymbolViewState *symViewState = nullptr;
         if (state)
-            symViewState = mGdxViewer->state()->symbolViewState(sym->name());
-        bool tableViewActive = symView && symView->isTableViewActive();
-        bool hasTableViewState = symViewState && symViewState->tableViewActive();
-        if (tableViewActive || hasTableViewState) {
-            QVector<int> dimOrder;
-            if (tableViewActive)
+            symViewState = state->symbolViewState(sym->name());
+        QVector<int> dimOrder;
+        if (symView) {
+            if (symView->isTableViewActive())
                 dimOrder = symView->getTvModel()->tvDimOrder();
-            else if (hasTableViewState)
+            else
+                dimOrder = symView->listViewDimOrder();
+        } else if (symViewState) {
+            if (symViewState->tableViewActive())
                 dimOrder = symViewState->tvDimOrder();
+            else {
+                QHeaderView *dummyHeader = new QHeaderView(Qt::Horizontal);
+                dummyHeader->restoreState(symViewState->listViewHeaderState());
+                for (int i=0; i<sym->columnCount(); i++) {
+                    int idx = dummyHeader->logicalIndex(i);
+                    if (idx<sym->dim())
+                        dimOrder << idx;
+                }
+                delete dummyHeader;
+            }
+        }
+        if (!dimOrder.isEmpty()) {
             dom = "(";
             for (int i=0; i<sym->dim(); i++)
                 dom += QString::number(dimOrder.at(i)) + ",";

@@ -69,6 +69,7 @@ public:
     void setDragInProgress(bool dragInProgress);
     bool isTableViewActive() const;
     TableViewModel *getTvModel() const;
+    QVector<int> listViewDimOrder();
 
 public slots:
     void enableControls();
