@@ -179,7 +179,7 @@ private:
 
     friend class Connect;
 
-    void createSchemaHelper(QString& key, const YAML::Node& node, int level);
+    void createSchemaHelper(QString& key, const YAML::Node& node, int level, int rule=0);
 
 public:
     ConnectSchema(const QString& inputFileName);
@@ -194,6 +194,8 @@ public:
     QStringList getAllRequiredKeyList() const;
     bool contains(const QString& key) const;
 
+    int getNumberOfAnyOfDefined(const QString& key) const;
+    bool isAnyOfDefined(const QString& key) const;
     Schema* getSchema(const QString& key) const;
 
     QList<SchemaType> getType(const QString& key) const;
