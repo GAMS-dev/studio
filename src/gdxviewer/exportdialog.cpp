@@ -59,6 +59,8 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     mRecentPath = QFileInfo(mGdxFile).path();
     QString connectFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.yaml";
     ui->leConnect->setText(QDir::toNativeSeparators(connectFile));
+    QString excelFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.xlsx";
+    ui->leExcel->setText(QDir::toNativeSeparators(excelFile));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
