@@ -7,6 +7,8 @@ Version 1.12.1  *
 - fixed some icons ignore transparence setting
 - fixed wrong context menu for new entry in Project Explorer after using "Save as..."
 - fixed model name containing blanks fails to be executed on NEOS and Engine
+- reflect domain order of the list view when exporting a symbol using the export dialog
+- added default value for Excel output file in the export dialog
 
 Version 1.12.0
 ==================
