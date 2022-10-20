@@ -246,7 +246,7 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::returnPressed()
 {
-    QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
+    QModelIndex index = ui->tableView->currentIndex();
     selectItem(index);
 }
 
@@ -256,10 +256,11 @@ void NavigatorDialog::selectItem(QModelIndex index)
         selectLineNavigation();
         return;
     }
-
     if (index.row() == -1) return;
 
-    NavigatorContent nc = mNavModel->content().at(index.row());
+    QModelIndex mappedIndex = mFilterModel->mapToSource(index);
+    NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
+
     if (mCurrentMode == NavigatorMode::Help)
         selectHelpContent(nc);
     else selectFileOrFolder(nc);
