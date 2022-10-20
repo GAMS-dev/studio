@@ -28,6 +28,17 @@ namespace gams {
 namespace studio {
 namespace connect {
 
+enum class SchemaItemColumn {
+    Field        = 0,
+    Required     = 1,
+    Type         = 2,
+    Default      = 3,
+    AllowedValue = 4,
+    min          = 5,
+    SchemaKey    = 6,
+    DragEnabled  = 7
+};
+
 class SchemaDefinitionModel : public QAbstractItemModel
 {
     Q_OBJECT

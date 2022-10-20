@@ -66,9 +66,12 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                   QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
                   if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListItem) {
                      return QVariant(index.row());
-                  } else {
-                      return item->data(index.column());
+                  } else if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ListAppend) {
+                      QString key = item->data(Qt::DisplayRole).toString();
+                      if (key.contains("["))
+                          return QVariant(key.left(item->data(Qt::DisplayRole).toString().indexOf("[")));
                   }
+                  return item->data(index.column());
         } else if (index.column()==(int)DataItemColumn::ElementID) {
                  return QVariant(item->id());
         } else if (index.column()==(int)DataItemColumn::SchemaKey) {
@@ -879,7 +882,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
     ConnectSchema* schema = mConnect->getSchema(schemaName);
 
     QStringList schemaKeys;
-    schemaKeys << schemaName << dataKeys;
+    schemaKeys << schemaName;
+    if (!dataKeys.isEmpty())
+        schemaKeys << dataKeys;
 
     for (YAML::const_iterator mit = data->getRootNode().begin(); mit != data->getRootNode().end(); ++mit) {
          QString mapToSequenceKey = "";
@@ -984,7 +989,14 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    schemaKeys.removeLast();
          } else if (mit->second.Type()==YAML::NodeType::Sequence) {
              QString key = QString::fromStdString(mit->first.as<std::string>());
+             bool isAnyofDefined = schema->isAnyOfDefined(key);
+             if (isAnyofDefined) {
+                 QStringList anyofSchemaLlist = schema->getAllAnyOfKeys(key);
+                 qDebug() << anyofSchemaLlist;
+                 key += "[0]";
+             }
              mapToSequenceKey = key;
+             qDebug() << "  >>>>> "  << key;
              dataKeys   << key;
              schemaKeys << key;
              QList<QVariant> itemData;

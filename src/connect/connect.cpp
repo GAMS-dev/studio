@@ -350,7 +350,6 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                 } else {
                     YAML::Node firsttype = schemaValue["type"][0];
                     std::string value = firsttype.as<std::string>() ;
-                    qDebug() << "     type ::" <<  value.c_str();
                     if (value.compare("list") == 0) {
                         dataValue[0] = "[value]";
                     } else if (value.compare("boolean") == 0) {
@@ -395,6 +394,15 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                            }
                 } else {
                     dataValue = "[value]";
+                }
+            }
+        } else {
+            if (schemaValue["anyof"]) {
+                if (schemaValue["anyof"].Type()==YAML::NodeType::Sequence) {
+                    YAML::Node anyofnode = schemaValue["anyof"][0];
+                    if (anyofnode.Type() == YAML::NodeType::Map) {
+                        mapValue( anyofnode, dataValue );
+                    }
                 }
             }
         }

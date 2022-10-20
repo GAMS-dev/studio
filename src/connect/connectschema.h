@@ -194,6 +194,7 @@ public:
     QStringList getAllRequiredKeyList() const;
     bool contains(const QString& key) const;
 
+    QStringList getAllAnyOfKeys(const QString& key) const;
     int getNumberOfAnyOfDefined(const QString& key) const;
     bool isAnyOfDefined(const QString& key) const;
     Schema* getSchema(const QString& key) const;

@@ -90,10 +90,10 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     Schema* s = new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
     mSchemaHelper.insert(key, s);
     if (schemaDefined) {
-        if (mSchemaHelper.values(key).at(0)->hasType(SchemaType::List)) {
+        if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
             createSchemaHelper(str, node["schema"], ++level);
-        } else if (mSchemaHelper.values(key).at(0)->hasType(SchemaType::Dict)) {
+        } else if (mSchemaHelper[key]->hasType(SchemaType::Dict)) {
                   ++level;
                   QString str;
                   for (YAML::const_iterator it=node["schema"].begin(); it != node["schema"].end(); ++it) {
@@ -129,12 +129,11 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         YAML::Node node = it->second;
         if (node["anyof"]) {
             qDebug() << "key=" << key;
-            createSchemaHelper(key, it->second, 1, false);
+//            createSchemaHelper(key, it->second, 1, false);
             if (node["anyof"].Type()==YAML::NodeType::Sequence) {
                 qDebug() << "   sequence";
                 for(size_t i=0; i<node["anyof"].size(); i++) {
-                   qDebug() << "   :: " << i ; // << value;
-                   QString str = QString("%1:[%2]").arg(key).arg(i);
+                   QString str = QString("%1[%2]").arg(key).arg(i);
                    createSchemaHelper(str, node["anyof"][i], 1, true);
                 }
             } else {
@@ -145,13 +144,6 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         }
     }
 
-    for (const QString& key :  mSchemaHelper.keys()) {
-//        qDebug() << "key=" << key;
-//        for (int i=0; i<getNumberOfSchemaKeys(key); ++i) {
-//            Schema *s = getSchema(key);
-//            qDebug() << "   i="<< i << ", level="<< s->level;
-//        }
-    }
     qDebug() << mOrderedKeyList;
 }
 
@@ -176,7 +168,11 @@ QStringList ConnectSchema::getFirstLevelKeyList() const
 {
     QStringList keyList;
     for(const QString& key : mOrderedKeyList) {
-        if (!key.contains(":"))
+        if (key.contains(":"))
+            continue;
+        if (key.contains("["))
+            keyList << key.left(key.indexOf("["));
+        else
             keyList << key;
     }
     return keyList;
@@ -207,12 +203,23 @@ bool ConnectSchema::contains(const QString &key) const
     return (mSchemaHelper.contains(key));
 }
 
+QStringList ConnectSchema::getAllAnyOfKeys(const QString &key) const
+{
+    QStringList keyslist;
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        if (it.key().contains(key) && !keyslist.contains(it.key()))
+            keyslist << it.key();
+    }
+    return keyslist;
+
+}
+
 int ConnectSchema::getNumberOfAnyOfDefined(const QString &key) const
 {
     int num=0;
     QString keystr;
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
-        keystr = QString("%1:[%2]").arg(key).arg(num);
+        keystr = QString("%1[%2]").arg(key).arg(num);
         if (keystr.compare(it.key())==0)
             ++num;
     }

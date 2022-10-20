@@ -129,12 +129,14 @@ bool ConnectEditor::init()
     ui->helpTreeView->setDragEnabled(true);
     ui->helpTreeView->setDragDropMode(QAbstractItemView::DragOnly);
     ui->helpTreeView->expandAll();
-    ui->helpTreeView->resizeColumnToContents(0);
-    ui->helpTreeView->resizeColumnToContents(1);
-    ui->helpTreeView->resizeColumnToContents(2);
-    ui->helpTreeView->resizeColumnToContents(3);
-    ui->helpTreeView->resizeColumnToContents(4);
-    ui->helpTreeView->setColumnHidden( 6, true );
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Field);
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Required);
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Type);
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
+    ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
     headerRegister(ui->helpTreeView->header());
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested, Qt::UniqueConnection);
