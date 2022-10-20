@@ -588,6 +588,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setSize(skWinSize, size());
     }
+    if (mNavigatorDialog)
+        mNavigatorDialog->updatePosition();
 }
 
 int MainWindow::logTabCount()
