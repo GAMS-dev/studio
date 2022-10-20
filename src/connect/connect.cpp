@@ -350,14 +350,13 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue)
                 } else {
                     YAML::Node firsttype = schemaValue["type"][0];
                     std::string value = firsttype.as<std::string>() ;
+                    qDebug() << "     type ::" <<  value.c_str();
                     if (value.compare("list") == 0) {
                         dataValue[0] = "[value]";
                     } else if (value.compare("boolean") == 0) {
-                           dataValue["[key]"] = "[value]";
+                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
                     } else if (value.compare("integer") == 0) {
-                        dataValue = 0;
-                    } else if (value.compare("boolean") == 0) {
-                         dataValue = false;
+                        dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);;
                     } else {
                          dataValue = "[value]";
                     }
