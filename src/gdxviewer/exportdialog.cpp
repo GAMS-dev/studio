@@ -54,7 +54,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     mExportAction = m->addAction("Export", this, [this]() { ui->toolButton->setDefaultAction(mExportAction); ExportDialog::saveAndExecute(); });
     ui->toolButton->setMenu(m);
     ui->toolButton->setDefaultAction(mExportAction);
-    ui->toolButton->setToolTip("<html><head/><body><p><span style=' font-weight:600;'>Export:</span> Generate and run GAMS Connect file</p><p><span style=' font-weight:600;'>Save:</span> Generate GAMS Connect file</p></body></html>");
+    ui->toolButton->setToolTip("<html><head/><body><p><span style=' font-weight:600;'>Export</span> data and save GAMS Connect file</p><p><span style=' font-weight:600;'>Save</span> GAMS Connect file only</p></body></html>");
 
     mGdxFile = gdxViewer->gdxFile();
     mRecentPath = QFileInfo(mGdxFile).path();
