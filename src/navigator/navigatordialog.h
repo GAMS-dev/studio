@@ -50,19 +50,20 @@ private:
     void keyPressEvent(QKeyEvent* e) override;
     void showEvent(QShowEvent* e) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
-    void setInput(const QString& input);
+    void inputChanged();
     void changeEvent(QEvent*) override;
 
     void collectHelpContent(QVector<NavigatorContent> &content);
-    void collectLineNavigation(QVector<NavigatorContent> &content);
+    void handleLineNavigation(QVector<NavigatorContent> &content, int lineNr);
     void collectAllFiles(QVector<NavigatorContent> &content);
     void collectOpenFiles(QVector<NavigatorContent> &content);
     void collectInProject(QVector<NavigatorContent> &content);
     void collectTabs(QVector<NavigatorContent> &content);
     void collectLogs(QVector<NavigatorContent> &content);
     void collectFileSystem(QVector<NavigatorContent> &content);
+    void collectLineNavigation(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
-    void updateContent(NavigatorMode mode);
+    void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
@@ -89,6 +90,7 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
+    QRegularExpression mLineRegex = QRegularExpression(":(\\d*)$");
 };
 
 }

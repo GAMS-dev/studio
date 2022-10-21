@@ -4752,16 +4752,19 @@ void MainWindow::on_actionGo_To_triggered()
     if (!ViewHelper::toCodeEdit(currentEdit()) && !ViewHelper::toTextView(currentEdit()))
         return;
 
-    int numberLines = linesInCurrentEditor();
+    int numberLines = linesInEditor();
     mGotoDialog->maxLineCount(numberLines);
     mGotoDialog->open();
 }
 
-int MainWindow::linesInCurrentEditor() {
-    if (!currentEdit()) return -1;
+int MainWindow::linesInEditor(QWidget* editor) {
+    if (!editor && !currentEdit()) return -1;
 
-    CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
-    TextView *tv = ViewHelper::toTextView(mRecent.editor());
+    if (!editor && currentEdit())
+        editor = currentEdit();
+
+    CodeEdit *codeEdit = ViewHelper::toCodeEdit(editor);
+    TextView *tv = ViewHelper::toTextView(editor);
 
     if (!tv && !codeEdit) return -1;
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;

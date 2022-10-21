@@ -156,7 +156,7 @@ public:
     void resetHistory();
     void clearHistory(FileMeta *file);
     void historyChanged();
-    int linesInCurrentEditor();
+    int linesInEditor(QWidget *editor = nullptr);
 
 
 #ifdef QWEBENGINE

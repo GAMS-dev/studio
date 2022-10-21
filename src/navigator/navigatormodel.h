@@ -30,7 +30,7 @@ struct NavigatorContent {
     // known files
     NavigatorContent(FileMeta* file, QString additionalText) {
         fileMeta = file;
-        fileInfo = QFileInfo(file->location());
+        if (file) fileInfo = QFileInfo(file->location());
         additionalInfo = additionalText;
     }
 

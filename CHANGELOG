@@ -1,6 +1,7 @@
-Version 1.12.2  *
+Version 1.12.2 *
 ==================
 - fixed crash when moving line in text file
+- added support for trailing ":NUMBER" when choosing files in Navigator
 
 Version 1.12.1
 ==================
