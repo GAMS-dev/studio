@@ -1,17 +1,16 @@
-Version 1.12.1  *
+Version 1.12.1
 ==================
 - fixed unexpected behavior when adding the main file to an efi file
-- fixed tab icons not updated on changing main file
+- fixed tab icons not updating when changing main file
 - fixed project state (unmodified/modified) when working directory or base directory ends with a path separator
 - fixed crash when trying to print an EFI file
-- fixed some icons ignore transparence setting
+- fixed some icons not properly using transparency
 - fixed wrong context menu for new entry in Project Explorer after using "Save as..."
 - fixed model name containing blanks fails to be executed on NEOS and Engine
-- reflect domain order of the list view when exporting a symbol using the export dialog
+- added reflection of domain order when exporting a symbol using the export dialog
 - added default value for Excel output file in the export dialog
 - added mouse support for Navigator results
-- fixed Navigator dialog not moving with Studio
-- fixed Navigator not following position changes of main window
+- fixed Navigator dialog not moving with Studio window
 
 Version 1.12.0
 ==================
