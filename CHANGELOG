@@ -1,10 +1,24 @@
+Version 1.12.1
+==================
+- fixed unexpected behavior when adding the main file to an efi file
+- fixed tab icons not updating when changing main file
+- fixed project state (unmodified/modified) when working directory or base directory ends with a path separator
+- fixed crash when trying to print an EFI file
+- fixed some icons not properly using transparency
+- fixed wrong context menu for new entry in Project Explorer after using "Save as..."
+- fixed model name containing blanks fails to be executed on NEOS and Engine
+- added reflection of domain order when exporting a symbol using the export dialog
+- added default value for Excel output file in the export dialog
+- added mouse support for Navigator results
+- fixed Navigator dialog not moving with Studio window
+
 Version 1.12.0
 ==================
 - added highlighting to matches in Search Result View
 - added filter to MIRO deploy dialog and EFI editor
 - added capture group support for regular expressions in Search Dialog
 - added quick selection to GDX Viewer filters
-- added function to open directly in Pin-View from Project Explorer by `Ctrl+double-click` (for horizontal pin) or `Ctrl+Shift` (for vertical pin)
+- added function to open directly in Pin-View from Project Explorer by `Ctrl+double-click` (for horizontal pin) or `Ctrl+Shift+double-click` (for vertical pin)
 - added first version of an export dialog to the GDX Viewer, currently supporting Excel output only
 - added Navigator feature (`Ctrl+K`)
     - Please note: this feature is currently in beta and does not have mouse support yet!
@@ -20,7 +34,6 @@ Version 1.12.0
 - fixed GDX Viewer crash when reloading a file with an alias selected
 - fixed crash when switching tabs on macOS
 - fixed selected project changing when searching over multiple files where a file is linked to more than one project
-- fixed project changes on search over multiple files where a file is linked to more than one project
 
 Version 1.11.3
 ==================

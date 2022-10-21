@@ -1,3 +1,22 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2022 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2022 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "exportdialog.h"
 #include "exportmodel.h"
 #include "gdxsymbol.h"
@@ -11,6 +30,7 @@
 
 #include <QFile>
 #include <QFileDialog>
+#include <QHeaderView>
 #include <QMessageBox>
 
 #include <process/connectprocess.h>
@@ -34,11 +54,14 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     mExportAction = m->addAction("Export", this, [this]() { ui->toolButton->setDefaultAction(mExportAction); ExportDialog::saveAndExecute(); });
     ui->toolButton->setMenu(m);
     ui->toolButton->setDefaultAction(mExportAction);
+    ui->toolButton->setToolTip("<html><head/><body><p><span style=' font-weight:600;'>Export</span> data and save GAMS Connect file</p><p><span style=' font-weight:600;'>Save</span> GAMS Connect file only</p></body></html>");
 
     mGdxFile = gdxViewer->gdxFile();
     mRecentPath = QFileInfo(mGdxFile).path();
     QString connectFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.yaml";
     ui->leConnect->setText(QDir::toNativeSeparators(connectFile));
+    QString excelFile = mRecentPath + "/" + QFileInfo(mGdxFile).completeBaseName() + "_export.xlsx";
+    ui->leExcel->setText(QDir::toNativeSeparators(excelFile));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
@@ -198,15 +221,28 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
         GdxViewerState *state = mGdxViewer->state();
         GdxSymbolViewState *symViewState = nullptr;
         if (state)
-            symViewState = mGdxViewer->state()->symbolViewState(sym->name());
-        bool tableViewActive = symView && symView->isTableViewActive();
-        bool hasTableViewState = symViewState && symViewState->tableViewActive();
-        if (tableViewActive || hasTableViewState) {
-            QVector<int> dimOrder;
-            if (tableViewActive)
+            symViewState = state->symbolViewState(sym->name());
+        QVector<int> dimOrder;
+        if (symView) {
+            if (symView->isTableViewActive())
                 dimOrder = symView->getTvModel()->tvDimOrder();
-            else if (hasTableViewState)
+            else
+                dimOrder = symView->listViewDimOrder();
+        } else if (symViewState) {
+            if (symViewState->tableViewActive())
                 dimOrder = symViewState->tvDimOrder();
+            else {
+                QHeaderView *dummyHeader = new QHeaderView(Qt::Horizontal);
+                dummyHeader->restoreState(symViewState->listViewHeaderState());
+                for (int i=0; i<sym->columnCount(); i++) {
+                    int idx = dummyHeader->logicalIndex(i);
+                    if (idx<sym->dim())
+                        dimOrder << idx;
+                }
+                delete dummyHeader;
+            }
+        }
+        if (!dimOrder.isEmpty()) {
             dom = "(";
             for (int i=0; i<sym->dim(); i++)
                 dom += QString::number(dimOrder.at(i)) + ",";

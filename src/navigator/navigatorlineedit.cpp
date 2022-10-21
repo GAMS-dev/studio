@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "navigatorlineedit.h"
 
@@ -43,8 +45,13 @@ void NavigatorLineEdit::focusOutEvent(QFocusEvent *event)
 
 void NavigatorLineEdit::keyPressEvent(QKeyEvent *event)
 {
-    emit sendKeyEvent(event);
-    QLineEdit::keyPressEvent(event);
+    if (event->key() == Qt::Key_Up || event->key() == Qt::Key_Down ||
+            event->key() == Qt::Key_Escape || event->key() == Qt::Key_Return ||
+            event->key() == Qt::Key_Enter) {
+        emit sendKeyEvent(event);
+    } else {
+        QLineEdit::keyPressEvent(event);
+    }
 }
 
 }

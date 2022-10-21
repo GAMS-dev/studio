@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
 #define GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
@@ -147,6 +149,7 @@ private:
     QString mWorkPath;
     QString mOutPath;
     QString mModelName;
+    QString mMainFile;
     QString mEngineVersion;
     QString mGamsVersion;
     bool mInKubernetes = false;

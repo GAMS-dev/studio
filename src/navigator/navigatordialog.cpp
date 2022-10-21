@@ -14,10 +14,14 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QKeyEvent>
 #include <QStatusBar>
-#include "qapplication.h"
+#include <QApplication>
+#include <QAbstractItemModel>
+
 #include "qnamespace.h"
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
@@ -30,10 +34,9 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     : QDialog((QWidget*)main), ui(new Ui::NavigatorDialog), mMain(main), mInput(inputField)
 {
     setWindowFlags(Qt::ToolTip);
-    setFocusProxy(mInput);
 
     ui->setupUi(this);
-    mNavModel = new NavigatorModel(this, main);
+    mNavModel = new NavigatorModel(this);
     mFilterModel = new QSortFilterProxyModel(this);
 
     mFilterModel->setSourceModel(mNavModel);
@@ -51,6 +54,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     ui->tableView->installEventFilter(this);
 
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
+    connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
 }
 
@@ -98,6 +102,11 @@ void NavigatorDialog::setInput(const QString &input)
         mFilterModel->setFilterWildcard(input);
     }
     updateContent(mode);
+}
+
+void NavigatorDialog::changeEvent(QEvent*)
+{
+    conditionallyClose();
 }
 
 void NavigatorDialog::updateContent(NavigatorMode mode) {
@@ -221,7 +230,10 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     filter.remove(QDir::separator());
     mFilterModel->setFilterWildcard(filter);
 
-    for (const QFileInfo &entry : mSelectedDirectory.entryInfoList(QDir::NoDot|QDir::AllEntries, QDir::Name|QDir::DirsFirst)) {
+    QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
+                                           QDir::NoDot | QDir::AllEntries,
+                                           QDir::Name | QDir::DirsFirst);
+    for (const QFileInfo &entry : localEntryInfoList) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }
@@ -234,16 +246,21 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::returnPressed()
 {
-    QModelIndex index = mFilterModel->mapToSource(ui->tableView->currentIndex());
+    QModelIndex index = ui->tableView->currentIndex();
+    selectItem(index);
+}
 
+void NavigatorDialog::selectItem(QModelIndex index)
+{
     if (mCurrentMode == NavigatorMode::Line) {
         selectLineNavigation();
         return;
     }
-
     if (index.row() == -1) return;
 
-    NavigatorContent nc = mNavModel->content().at(index.row());
+    QModelIndex mappedIndex = mFilterModel->mapToSource(index);
+    NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
+
     if (mCurrentMode == NavigatorMode::Help)
         selectHelpContent(nc);
     else selectFileOrFolder(nc);
@@ -286,6 +303,17 @@ void NavigatorDialog::selectLineNavigation()
     close();
 }
 
+bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
+{
+    if (watched != ui->tableView) return false;
+    if (event->type() == QEvent::KeyPress) {
+        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
+        keyPressEvent(keyEvent);
+        return true;
+    }
+    return false;
+}
+
 void NavigatorDialog::keyPressEvent(QKeyEvent *e)
 {
     if (e->key() == Qt::Key_Down) {
@@ -302,11 +330,23 @@ void NavigatorDialog::keyPressEvent(QKeyEvent *e)
         ui->tableView->setCurrentIndex(mFilterModel->index(pos, 0));
     } else if (e->key() == Qt::Key_Escape) {
         close();
+    } else if (e->key() == Qt::Key_Return || e->key() == Qt::Key_Enter) {
+        returnPressed();
+    } else {
+        mInput->keyPressEvent(e);
     }
+}
+
+void NavigatorDialog::itemClicked(const QModelIndex &index)
+{
+    if (index.isValid())
+        selectItem(index);
 }
 
 void NavigatorDialog::updatePosition()
 {
+    if (!isVisible()) return;
+
     QPoint position;
 
     position.setX(qMin(mInput->pos().x(), mMain->width() - width()));
@@ -325,19 +365,6 @@ bool NavigatorDialog::conditionallyClose()
     if (QApplication::activeWindow() == this)
         return false;
     else return QDialog::close();
-}
-
-bool NavigatorDialog::eventFilter(QObject *watched, QEvent *event)
-{
-    if (watched != ui->tableView) return false;
-    if (event->type() == QEvent::KeyPress) {
-        QKeyEvent *keyEvent = static_cast<QKeyEvent*>(event);
-        if (keyEvent->key() == Qt::Key_Up || keyEvent->key() == Qt::Key_Down) {
-            keyPressEvent(keyEvent);
-            return true;
-        }
-    }
-    return false;
 }
 
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)

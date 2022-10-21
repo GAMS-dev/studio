@@ -235,6 +235,8 @@ private slots:
     void newProcessCall(const QString &text, const QString &call);
     void printDocument();
     void updateTabIcon(PExAbstractNode *node, int tabIndex);
+    void updateTabIcons();
+
 
     // View
     void invalidateTheme();
@@ -404,7 +406,6 @@ protected:
     bool event(QEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
-    void changeEvent(QEvent *event) override;
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

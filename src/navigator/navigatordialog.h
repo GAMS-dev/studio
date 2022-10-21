@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #ifndef GAMS_STUDIO_NAVIGATORDIALOG_H
 #define GAMS_STUDIO_NAVIGATORDIALOG_H
@@ -49,6 +51,7 @@ private:
     void showEvent(QShowEvent* e) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
     void setInput(const QString& input);
+    void changeEvent(QEvent*) override;
 
     void collectHelpContent(QVector<NavigatorContent> &content);
     void collectLineNavigation(QVector<NavigatorContent> &content);
@@ -63,6 +66,7 @@ private:
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
+    void selectItem(QModelIndex index);
 
     ///
     /// \brief findClosestPath removes characters from the current string
@@ -74,6 +78,7 @@ private:
 
 private slots:
     void returnPressed();
+    void itemClicked(const QModelIndex& index);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;
@@ -84,7 +89,6 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
-
 };
 
 }

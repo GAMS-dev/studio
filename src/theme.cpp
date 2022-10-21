@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "theme.h"
 #include <QHash>
@@ -379,7 +381,7 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
             while (data.length() > from && data.at(from) != '{') ++from;
             if (data.indexOf("fill:", from) != from+1) continue;
             from += 6;
-            int len = data.indexOf(";}", from) - from;
+            int len = data.indexOf(";", from) - from;
             data.replace(from, len, colorCode.toLatin1());
         }
         if (alpha<100 && alpha>=0) {

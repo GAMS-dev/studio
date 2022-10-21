@@ -433,6 +433,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
     connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
+    connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
     addToIndex(project);
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
@@ -572,9 +573,9 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         addToProject(project, file, true);
         fileMeta->setProjectId(project->id());
     }
+    connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     if (!project->runnableGms() && fileMeta->kind() == FileKind::Gms)
         project->setRunnableGms(fileMeta);
-    connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     return file;
 }
 

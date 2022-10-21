@@ -275,6 +275,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, mSearchDialog, &search::SearchDialog::filesChanged);
+    connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -572,6 +573,8 @@ void MainWindow::moveEvent(QMoveEvent *event)
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setPoint(skWinPos, pos());
     }
+    if (mNavigatorDialog)
+        mNavigatorDialog->updatePosition();
 }
 
 void MainWindow::resizeEvent(QResizeEvent *event)
@@ -585,13 +588,8 @@ void MainWindow::resizeEvent(QResizeEvent *event)
     if (!isMaximized() && !isFullScreen() && (scrDiff.width()>0 || scrDiff.height()>0) && screen->size() != size()) {
         Settings::settings()->setSize(skWinSize, size());
     }
-}
-
-void MainWindow::changeEvent(QEvent* event)
-{
-    // top level state of window changed
-    if (event->type() == QEvent::ActivationChange && !isActiveWindow())
-        mNavigatorDialog->conditionallyClose();
+    if (mNavigatorDialog)
+        mNavigatorDialog->updatePosition();
 }
 
 int MainWindow::logTabCount()
@@ -1011,6 +1009,10 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
         if (!list.contains(index)) return;
         for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
             nodes << mProjectRepo.node(id);
+        }
+        if (nodes.isEmpty()) {
+            PExAbstractNode *node = mProjectRepo.node(index);
+            if (node) nodes << node;
         }
     }
     mProjectContextMenu.setNodes(nodes);
@@ -3512,6 +3514,7 @@ void MainWindow::setMainGms(PExFileNode *node)
     if (project) {
         project->setRunnableGms(node->file());
         updateRunState();
+        updateTabIcons();
     }
 }
 
@@ -5533,6 +5536,14 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 #endif
 }
 
+void MainWindow::updateTabIcons()
+{
+    for (int i = 0; i < mainTabs()->count(); ++i) {
+        if (mainTabs()->widget(i) == mWp) continue;
+        updateTabIcon(nullptr, i);
+    }
+}
+
 void MainWindow::on_actionPrint_triggered()
 {
     if (!enabledPrintAction()) return;
@@ -5572,7 +5583,7 @@ void MainWindow::on_actionPrint_triggered()
 bool MainWindow::enabledPrintAction()
 {
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editor());
-    if (!fm || !focusWidget())
+    if (!fm || !focusWidget() || !fm->document())
         return false;
     return focusWidget() == mRecent.editor()
             || ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild

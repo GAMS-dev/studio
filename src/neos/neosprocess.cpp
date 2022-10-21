@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "neosprocess.h"
 #include "neosmanager.h"
@@ -102,7 +104,7 @@ QStringList NeosProcess::compileParameters()
         QString par = i.next();
         if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             needsXSave = false;
-            i.setValue("xsave=" + fi.fileName());
+            i.setValue("xsave=\"" + fi.fileName() + '"');
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
@@ -111,7 +113,7 @@ QStringList NeosProcess::compileParameters()
             continue;
         }
     }
-    if (needsXSave) params << ("xsave=" + fi.fileName());
+    if (needsXSave) params << ("xsave=\"" + fi.fileName() + '"');
     if (!hasPw) params << ("previousWork=1");
     if (needsActC) params << ("action=c");
     return params;

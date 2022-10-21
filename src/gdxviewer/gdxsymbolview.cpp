@@ -454,6 +454,17 @@ TableViewModel *GdxSymbolView::getTvModel() const
     return mTvModel;
 }
 
+QVector<int> GdxSymbolView::listViewDimOrder()
+{
+    QVector<int> dimOrder;
+    for (int i=0; i<mSym->columnCount(); i++) {
+        int idx = ui->tvListView->horizontalHeader()->logicalIndex(i);
+        if (idx<mSym->dim())
+            dimOrder << idx;
+    }
+    return dimOrder;
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));

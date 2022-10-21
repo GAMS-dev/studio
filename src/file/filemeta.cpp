@@ -50,8 +50,6 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
     mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
     if (!mCodec) mCodec = QTextCodec::codecForLocale();
-    if (location.contains('\\'))
-        location = QDir::fromNativeSeparators(location);
     setLocation(location);
     mTempAutoReloadTimer.setSingleShot(true); // only for measurement
     mReloadTimer.setSingleShot(true);

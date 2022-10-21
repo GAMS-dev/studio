@@ -125,6 +125,7 @@ signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
     void baseDirChanged(PExProjectNode *project);
+    void runnableChanged();
 
 public slots:
     void setErrorText(int lstLine, QString text);

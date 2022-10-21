@@ -14,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "projectoptions.h"
 #include "ui_projectoptions.h"
@@ -165,9 +167,11 @@ void ProjectOptions::updateState()
     if (ui->edName->text().trimmed().compare(mSharedData->project()->name()))
         isModified = true;
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
+    if (path.endsWith("/")) path = path.left(path.length()-1);
     if (path.compare(mSharedData->project()->location(), FileType::fsCaseSense()))
         isModified = true;
     path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
+    if (path.endsWith("/")) path = path.left(path.length()-1);
     if (path.compare(mSharedData->project()->workDir(), FileType::fsCaseSense()))
         isModified = true;
     if (isModified != mModified) {
