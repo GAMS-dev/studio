@@ -231,7 +231,6 @@ void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
     QStringList strlist;
     strlist << schemaname;
     mDataModel->addFromSchema( mConnect->createDataHolder(strlist), position );
-    expandAndResizedToContents( mDataModel->index( position, (int)DataItemColumn::Key ) );
 }
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
@@ -252,8 +251,8 @@ void ConnectEditor::expandAndResizedToContents(const QModelIndex &index)
 {
     qDebug() << "expandAndResizedToContents: (" << index.row() << "," << index.column()
              <<") parent:(" << index.parent().row() << "," << index.parent().column() << ")";
-    ui->dataTreeView->expandRecursively( index );
     qDebug() << "expandAndResizedToContents: valid index:" << (index.isValid()?"Y":"N");
+    ui->dataTreeView->expandRecursively( index );
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
     ui->dataTreeView->scrollTo(index);
@@ -346,7 +345,7 @@ void ConnectEditor::restoreExpandedState()
 void ConnectEditor::saveExpandedOnLevel(const QModelIndex &index)
 {
     if (ui->dataTreeView->isExpanded(index)) {
-        if(index.isValid())
+        if(index.isValid() && !mExpandIDs.contains(index.data(Qt::UserRole).toInt()))
             mExpandIDs << index.data(Qt::UserRole).toInt();
         for(int row = 0; row < mDataModel->rowCount(index); ++row)
             saveExpandedOnLevel( mDataModel->index(row,0, index) );
