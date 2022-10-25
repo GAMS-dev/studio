@@ -501,7 +501,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         if (tobeinsertSchemaKey.size() == 1) {
             qDebug() << "tobeinsertSchemaKey.size() == 1 :: " << tobeinsertSchemaKey;
             emit fromSchemaInserted(schemaname, row);
-            emit indexExpandedAndResized(index(row, (int)DataItemColumn::Key, parent));
             return true;
         }
 
@@ -572,7 +571,7 @@ void ConnectDataModel::addFromSchema(ConnectData* data, int position)
 
     informDataChanged( index(0,0).parent() );
     QModelIndex parent = indexForTreeItem( mRootItem->child(0) );
-    emit indexExpandedAndResized(index(mRootItem->child(0)->childCount()-1, (int)DataItemColumn::Key, parent));
+    emit indexExpandedAndResized(index(position-1, (int)DataItemColumn::Key, parent));
 }
 
 void ConnectDataModel::appendMapElement(const QModelIndex &index)
