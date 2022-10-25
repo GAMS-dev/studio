@@ -463,7 +463,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
        ++rows;
     }
     QStringList schemastrlist = newItems[0].split("=");
-
     ConnectDataItem* parentItem;
     if (!parent.isValid()) {
         qDebug() << "11 dropmimedata:("  << row << "," << column << ")";
@@ -894,7 +893,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              dataKeys << key;
              schemaKeys << key;
              QList<QVariant> itemData;
-             itemData << key;
+             itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              itemData << QVariant(mit->second.as<std::string>().c_str()); // TODO
              itemData << QVariant((int)DataCheckState::ElementValue);
              itemData << QVariant(schema->getTypeAsStringList(dataKeys.join(":"))); //key));
@@ -917,7 +916,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    dataKeys << key;
                    schemaKeys << key;
                    QList<QVariant> itemData;
-                   itemData << key;
+                   itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
                    itemData << ""; // TODO
                    itemData << QVariant((int)DataCheckState::KeyItem);
                    itemData << QVariant(schema->getTypeAsStringList(dataKeys.join(":"))); //key));
@@ -973,7 +972,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    }
 
                    QList<QVariant> sequenceDummyData;
-                   sequenceDummyData << key;
+                   sequenceDummyData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
                    sequenceDummyData << "";
                    sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
                    sequenceDummyData << QVariant(QStringList());
@@ -993,14 +992,14 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              bool isAnyofDefined = schema->isAnyOfDefined(key);
              if (isAnyofDefined) {
                  QStringList anyofSchemaLlist = schema->getAllAnyOfKeys(key);
-                 qDebug() << anyofSchemaLlist;
+                 qDebug() << "anyofschemalist=" << anyofSchemaLlist;
                  key += "[0]";
              }
              mapToSequenceKey = key;
              dataKeys   << key;
              schemaKeys << key;
              QList<QVariant> itemData;
-             itemData << key;
+             itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              itemData << "";
              itemData << QVariant((int)DataCheckState::KeyItem);
              itemData << QVariant(schema->getTypeAsStringList(dataKeys.join(":"))); //key));

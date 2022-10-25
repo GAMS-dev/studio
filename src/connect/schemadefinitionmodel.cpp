@@ -288,14 +288,16 @@ void SchemaDefinitionModel::setupTreeItemModelData()
         ConnectSchema* schema = mConnect->getSchema(schemaName);
         QStringList schemaKeys;
         schemaKeys << schemaName;
+        QStringList anyOfDefinedKeys;
         foreach(const QString& key, schema->getFirstLevelKeyList()) {
-            if (schemaKeys.contains(key))
+            if (schemaKeys.contains(key) || anyOfDefinedKeys.contains(key))
                 continue;
             QList<QVariant> columnData;
             Schema* s = schema->getSchema(key);
             bool isAnyOfDefined = schema->isAnyOfDefined(key);
-            schemaKeys << key;
             if (isAnyOfDefined) {
+                if (!anyOfDefinedKeys.contains(key))
+                    anyOfDefinedKeys << key;
                 schemaKeys << key;
                 columnData << key;
                 columnData << "";
@@ -310,9 +312,12 @@ void SchemaDefinitionModel::setupTreeItemModelData()
 
                 for (int i =0; i<schema->getNumberOfAnyOfDefined(key); ++i) {
                     QString keystr = QString("%1[%2]").arg(key).arg(i);
+                    schemaKeys.removeLast();
+                    schemaKeys << keystr;
                     setupAnyofSchemaTree(schemaName, keystr, schemaKeys, parents, schema);
                 }
             } else {
+                schemaKeys << key;
                 columnData << key;
                 columnData << (s->required?"Y":"");
                 addTypeList(s->types, columnData);
@@ -329,6 +334,7 @@ void SchemaDefinitionModel::setupTreeItemModelData()
             }
             schemaKeys.removeLast();
         }
+        qDebug() << anyOfDefinedKeys;
     }
 }
 
@@ -336,7 +342,6 @@ void SchemaDefinitionModel::setupAnyofSchemaTree(const QString &schemaName, cons
 {
     Schema* schemaHelper = schema->getSchema(key);
     if (schemaHelper) {
-        schemaKeys << key;
         Schema* s = schema->getSchema(key);
         QList<QVariant> listData;
         listData << key;
@@ -354,7 +359,6 @@ void SchemaDefinitionModel::setupAnyofSchemaTree(const QString &schemaName, cons
         if (s->schemaDefined)
             setupSchemaTree(schemaName, key, schemaKeys, parents, schema);
 
-        schemaKeys.removeLast();
         parents.pop_back();
     }
 }
