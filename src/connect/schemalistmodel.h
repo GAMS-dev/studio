@@ -37,8 +37,11 @@ public:
     QStringList mimeTypes() const override;
     QMimeData *mimeData(const QModelIndexList &indexes) const override;
 
+signals:
+    void schemaItemChanged(const QString& schemaname) const;
+
 public slots:
-    void setToolTip(const QModelIndex &index);
+    void setToolTip(const QModelIndex& index);
 
 private:
     QStringList mSchema;

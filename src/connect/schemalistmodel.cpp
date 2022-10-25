@@ -66,6 +66,8 @@ QStringList SchemaListModel::mimeTypes() const
 
 QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
 {
+    emit schemaItemChanged(item(indexes.last().row())->text());
+
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
     QDataStream stream(&encodedData, QIODevice::WriteOnly);
@@ -73,11 +75,9 @@ QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
     for (const QModelIndex &index : indexes) {
         QStandardItem* sitem = item(index.row());
         QString text = QString("schema=%1").arg(sitem->data(Qt::DisplayRole).toString());
-        qDebug() << "1 setmimedata:("<< index.row() << "," << index.column() << ")" << text;
         stream << text;
         break;
     }
-    qDebug() << "2 setmimedata:"<< QString(encodedData.constData());
     mimeData->setData( "application/vnd.gams-connect.text", encodedData);
     return mimeData;
 }

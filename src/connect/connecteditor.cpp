@@ -152,6 +152,9 @@ bool ConnectEditor::init()
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
         schemaItemModel->setToolTip(index);
     });
+    connect(schemaItemModel, &SchemaListModel::schemaItemChanged, this, [=](const QString& schemaname) {
+        defmodel->loadSchemaFromName( schemaname );
+    });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
 
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
