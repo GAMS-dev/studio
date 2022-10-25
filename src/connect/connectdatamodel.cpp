@@ -629,6 +629,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     YAML::Node node = data->getRootNode();
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
+        QString listkey = schemaKeys.last();
         mapSeqData << QVariant::fromValue(index.row()+i);
         mapSeqData << "";
         mapSeqData << QVariant((int)DataCheckState::ListItem);
@@ -638,14 +639,12 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
         mapSeqData << QVariant(false);  // A2
         mapSeqData << QVariant(false);  // A3
         mapSeqData << "";  // A4
+        schemaKeys << "-";
+        keys       << "-";
         mapSeqData << QVariant(schemaKeys);
         ConnectDataItem* item = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(index.parent()));
         parents.last()->insertChild(index.row(), item );
         parents << item;
-        if (!keys.endsWith("-")) {
-            keys       << "-";
-            schemaKeys << "-";
-        }
 
         if (node[i].Type()==YAML::NodeType::Map) {
             qDebug() << " .... 1 " << keys;
@@ -664,7 +663,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
             itemData << QVariant(false); // A2
             itemData << QVariant(false); // A3
             itemData << ""; // A4
-            itemData << QVariant(schemaKeys);
+            itemData << ""; //QVariant(schemaKeys);
             parents.last()->appendChild(new ConnectDataItem(itemData, mItemIDCount++, parents.last()));
         }
     }
