@@ -51,7 +51,8 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
         return;
 
     QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-    if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
+    if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName    ||
+        checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::UnknownSchema    ) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         option->decorationPosition = QStyleOptionViewItem::Right;
         mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
