@@ -2844,7 +2844,8 @@ void CodeEdit::moveLines(bool moveLinesUp)
     }
     cursor.endEditBlock();
     setTextCursor(cursor);
-    mCompleter->suppressNextOpenTrigger();
+    if (mCompleter)
+        mCompleter->suppressNextOpenTrigger();
 }
 
 } // namespace studio
