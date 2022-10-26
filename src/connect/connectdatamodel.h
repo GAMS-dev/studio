@@ -39,9 +39,7 @@ enum class DataCheckState {
     ElementValue = 5,
     ElementMap   = 6,
     ListAppend   = 7,
-    MapAppend    = 8,
-    UnknownSchema= 9,
-    UnknownItem  = 10
+    MapAppend    = 8
 };
 
 enum class DataItemColumn {
@@ -54,7 +52,8 @@ enum class DataItemColumn {
     MoveDown     = 6,
     MoveUp       = 7,
     ElementID    = 8,
-    SchemaKey    = 9
+    SchemaKey    = 9,
+    Unknown      = 10
 };
 
 class ConnectDataModel : public QAbstractItemModel

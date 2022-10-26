@@ -116,6 +116,7 @@ bool ConnectEditor::init()
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ElementID, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaKey, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Unknown, true);
     ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
     headerRegister(ui->dataTreeView->header());
 
