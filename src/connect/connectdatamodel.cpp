@@ -1157,7 +1157,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                         indexSeqDummyData << QVariant();
                                         indexSeqDummyData << QVariant();
                                         indexSeqDummyData << QVariant();
-                                        indexSeqDummyData << QVariant(keys);
+                                        indexSeqDummyData << QVariant(QStringList());
                                         indexSeqDummyData << (schema ? QVariant(false) : QVariant(true));
                                         parents.last()->appendChild(new ConnectDataItem(indexSeqDummyData, mItemIDCount++, parents.last()));
 

@@ -287,6 +287,8 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
+            if (schema.last().compare("-")==0)
+                schema.removeLast();
             ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema);
             qDebug() << schemadata->str().c_str();
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
