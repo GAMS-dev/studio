@@ -68,6 +68,8 @@ private:
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
+    void autocomplete(NavigatorContent nc);
+    void fillFileSystemPath(NavigatorContent nc);
 
     ///
     /// \brief findClosestPath removes characters from the current string

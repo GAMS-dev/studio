@@ -241,6 +241,8 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
         NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
         fm = nc.fileMeta;
         fi = nc.fileInfo;
+        autocomplete(nc);
+
     } else { // line navigation in current file
         fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     }
@@ -273,8 +275,7 @@ void NavigatorDialog::selectItem(QModelIndex index)
     QModelIndex mappedIndex = mFilterModel->mapToSource(index);
 
     if (mCurrentMode == NavigatorMode::Line) {
-        // if different file then current, change file first
-        if (index.isValid() && !mInput->text().startsWith(":"))
+        // if different file then current, change fistsWith(":"))
             selectFileOrFolder(mNavModel->content().at(mappedIndex.row()));
 
         selectLineNavigation();
@@ -287,6 +288,38 @@ void NavigatorDialog::selectItem(QModelIndex index)
     if (mCurrentMode == NavigatorMode::Help)
         selectHelpContent(nc);
     else selectFileOrFolder(nc);
+}
+
+void NavigatorDialog::autocomplete(NavigatorContent nc)
+{
+    QRegularExpression preRegex("^(\\w) "); // starts with prefix
+    QRegularExpression postRegex(":(\\d*)$");
+
+    QRegularExpressionMatch preMatch = preRegex.match(mInput->text());
+    QRegularExpressionMatch postMatch = postRegex.match(mInput->text());
+    QString prefix;
+    QString postfix;
+    if (preMatch.hasMatch()) {
+        prefix = preMatch.captured(1) + " ";
+    }
+    if (postMatch.hasMatch()) {
+        postfix = ":" + postMatch.captured(1);
+    }
+
+    if (nc.fileMeta) {
+        mInput->setText(prefix + (nc.text.isEmpty() ? nc.fileInfo.fileName() : nc.text) + postfix);
+    } else {
+        fillFileSystemPath(nc);
+        mInput->setText(mInput->text() + postfix);
+    }
+}
+
+void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
+{
+    mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
+    mMain->navigatorInput()->setText(
+                "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
+    updateContent();
 }
 
 void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
@@ -302,10 +335,7 @@ void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
             mMain->openFileWithOption(nc.fileInfo.absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
-            mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
-            mMain->navigatorInput()->setText(
-                        "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
-            updateContent();
+            fillFileSystemPath(nc);
         }
     }
 }
