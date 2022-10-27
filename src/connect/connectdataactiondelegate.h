@@ -21,7 +21,6 @@
 #define GAMS_STUDIO_CONNECT_CONNECTDATAACTIONDELEGATE_H
 
 #include <QStyledItemDelegate>
-#include "connectdatamodel.h"
 
 namespace gams {
 namespace studio {
@@ -46,6 +45,7 @@ signals:
 private:
     mutable int mIconWidth;
     mutable int mIconHeight;
+    mutable int  mIconMargin;
 
     mutable QMap<QModelIndex, QRect> mDeleteActionPosition;
     mutable QMap<QModelIndex, QRect> mMoveUpActionPosition;

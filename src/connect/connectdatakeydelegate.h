@@ -22,8 +22,6 @@
 
 #include <QStyledItemDelegate>
 
-#include "connect.h"
-
 namespace gams {
 namespace studio {
 namespace connect {
@@ -60,6 +58,7 @@ private slots:
 private:
     mutable int mIconWidth;
     mutable int mIconHeight;
+    mutable int mIconMargin;
 
     mutable QMap<QString, QRect> mSchemaHelpPosition;
     mutable QMap<QModelIndex, QRect> mSchemaAppendPosition;

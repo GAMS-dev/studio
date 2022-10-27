@@ -22,6 +22,7 @@
 #include <QDebug>
 
 #include "connectdataactiondelegate.h"
+#include "connectdatamodel.h"
 
 namespace gams {
 namespace studio {
@@ -30,8 +31,9 @@ namespace connect {
 ConnectDataActionDelegate::ConnectDataActionDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
 {
-    mIconWidth = 16;
-    mIconHeight = 16;
+    mIconMargin = 2;
+    mIconWidth  = 16 + mIconMargin;
+    mIconHeight = 16 + mIconMargin;
 }
 
 ConnectDataActionDelegate::~ConnectDataActionDelegate()

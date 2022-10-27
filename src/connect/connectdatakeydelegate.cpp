@@ -33,8 +33,9 @@ namespace connect {
 ConnectDataKeyDelegate::ConnectDataKeyDelegate(QObject *parent)
     : QStyledItemDelegate{parent}
 {
-    mIconWidth = 16;
-    mIconHeight = 16;
+    mIconMargin = 2;
+    mIconWidth  = 16 + mIconMargin;
+    mIconHeight = 16 + mIconMargin;
 }
 
 ConnectDataKeyDelegate::~ConnectDataKeyDelegate()
@@ -51,7 +52,6 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
         return;
 
     QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-    QModelIndex unknown_index    = index.sibling(index.row(),(int)DataItemColumn::Unknown );
     if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaName) {
         option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
         option->decorationPosition = QStyleOptionViewItem::Right;
