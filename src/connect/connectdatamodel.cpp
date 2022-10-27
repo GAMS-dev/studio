@@ -1076,12 +1076,15 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  indexData << QVariant((int)DataCheckState::ListItem);
                  indexData << QVariant(QStringList());
                  indexData << QVariant(QStringList());
-                 indexData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
+                 QStringList Keys(dataKeys);
+                 if (Keys.last().compare("-")==0)
+                     Keys.removeLast();
+                 indexData << (schema ? QVariant(!schema->isRequired(Keys.join(":"))) : QVariant());
                  indexData << QVariant();
                  indexData << QVariant();
                  indexData << QVariant();
                  indexData << QVariant(schemaKeys);
-                 indexData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
+                 indexData << (schema ? (schema->contains(Keys.join(":")) ? QVariant(false) : QVariant(true))
                                       : QVariant(true));
                  parents.last()->appendChild(new ConnectDataItem(indexData, mItemIDCount++, parents.last()));
 
@@ -1118,12 +1121,15 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        indexSeqData << QVariant((int)DataCheckState::ListItem);
                                        indexSeqData << QVariant(QStringList());
                                        indexSeqData << QVariant(QStringList());
-                                       indexSeqData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
+                                       QStringList Keys(dataKeys);
+                                       if (Keys.last().compare("-")==0)
+                                           Keys.removeLast();
+                                       indexSeqData << (schema ? QVariant(!schema->isRequired(Keys.join(":"))) : QVariant());
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant(schemaKeys);
-                                       indexSeqData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
+                                       indexSeqData << (schema ? (schema->contains(Keys.join(":")) ? QVariant(false) : QVariant(true))
                                                                : QVariant(true));
                                        parents.last()->appendChild(new ConnectDataItem(indexSeqData, mItemIDCount++, parents.last()));
 
