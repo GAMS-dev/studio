@@ -232,6 +232,7 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 {
     FileMeta* fm = nullptr;
+    QFileInfo fi;
     QModelIndex index = ui->tableView->currentIndex();
 
     // chained file selection and line navigation
@@ -239,18 +240,26 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
         QModelIndex mappedIndex = mFilterModel->mapToSource(index);
         NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
         fm = nc.fileMeta;
+        fi = nc.fileInfo;
     } else { // line navigation in current file
         fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
     }
 
-    int lines = -1;
-    if (fm && fm->editors().count())
-        lines = mMain->linesInEditor(fm->editors().constFirst());
+    if (fm) {
+        // if has editors, get line number
+        if (fm->editors().count()) {
+            content.append(
+                        NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInEditor(
+                                                                fm->editors().constFirst())))
+                        );
+        } else {  // unknown line number
+            content.append(NavigatorContent(fm, "Max Lines: Unknown"));
+        }
 
-    if (lines > 0) // supported filetype
-        content.append(NavigatorContent(fm, "Max Lines: " + QString::number(lines)));
-    else
-        content.append(NavigatorContent(fm, "Max Lines: Unknown"));
+    } else {
+        // unkown files have no fileMeta, so use QFileInfo instead
+        content.append(NavigatorContent(fi, "Max Lines: Unknown"));
+    }
 }
 
 void NavigatorDialog::returnPressed()
