@@ -27,6 +27,10 @@ namespace gams {
 namespace studio {
 
 struct NavigatorContent {
+    NavigatorContent() {
+        valid = false;
+    }
+
     // known files
     NavigatorContent(FileMeta* file, QString additionalText) {
         fileMeta = file;
@@ -49,6 +53,7 @@ struct NavigatorContent {
 
     FileMeta* fileMeta = nullptr;
     QFileInfo fileInfo;
+    bool valid = true;
     QString text;
     QString additionalInfo;
     QString insertPrefix;

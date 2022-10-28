@@ -244,7 +244,13 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
         autocomplete(nc);
 
     } else { // line navigation in current file
-        fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+
+        if (mLastFile.valid) {
+            fm = mLastFile.fileMeta;
+            fi = mLastFile.fileInfo;
+        } else {
+            fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+        }
     }
 
     if (fm) {
@@ -268,6 +274,7 @@ void NavigatorDialog::returnPressed()
 {
     QModelIndex index = ui->tableView->currentIndex();
     selectItem(index);
+    mLastFile = NavigatorContent();
 }
 
 void NavigatorDialog::selectItem(QModelIndex index)
@@ -297,14 +304,13 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
 
     QRegularExpressionMatch preMatch = preRegex.match(mInput->text());
     QRegularExpressionMatch postMatch = postRegex.match(mInput->text());
-    QString prefix;
-    QString postfix;
-    if (preMatch.hasMatch()) {
+    QString prefix, postfix;
+
+    if (preMatch.hasMatch())
         prefix = preMatch.captured(1) + " ";
-    }
-    if (postMatch.hasMatch()) {
+
+    if (postMatch.hasMatch())
         postfix = ":" + postMatch.captured(1);
-    }
 
     if (nc.fileMeta) {
         mInput->setText(prefix + (nc.text.isEmpty() ? nc.fileInfo.fileName() : nc.text) + postfix);
@@ -312,13 +318,16 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
         fillFileSystemPath(nc);
         mInput->setText(mInput->text() + postfix);
     }
+
+    mLastFile = nc;
 }
 
 void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
 {
     mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
     mMain->navigatorInput()->setText(
-                "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
+                "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
+                + (nc.fileInfo.isDir() ? QDir::separator() : QString()));
     updateContent();
 }
 
