@@ -380,9 +380,9 @@ void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool re
     } else {
         SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
     }
-    QVariantMap projectEntry;
-    projectEntry.insert("project", fileName);
-    projects.append(projectEntry);
+//    QVariantMap nodeObject;
+    nodeObject.insert("project", fileName);
+    projects.append(nodeObject);
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
