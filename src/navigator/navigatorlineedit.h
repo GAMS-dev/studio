@@ -24,10 +24,12 @@
 #include <QFocusEvent>
 #include <QWidget>
 
+#include "filterlineedit.h"
+
 namespace gams {
 namespace studio {
 
-class NavigatorLineEdit : public QLineEdit
+class NavigatorLineEdit : public FilterLineEdit
 {
     Q_OBJECT
 

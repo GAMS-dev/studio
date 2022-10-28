@@ -239,7 +239,7 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     // filter prefix and extract relevant wildcard term
     QString filter = textInput.right(textInput.length() - textInput.lastIndexOf(QDir::separator()));
     filter.remove(QDir::separator());
-    mFilterModel->setFilterWildcard(filter);
+    setFilter(filter);
 
     QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
                                            QDir::NoDot | QDir::AllEntries,
@@ -420,6 +420,20 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
 {
     if (index.isValid())
         selectItem(index);
+}
+
+void NavigatorDialog::regexChanged(QRegExp regex)
+{
+    setFilter(regex.pattern());
+}
+
+void NavigatorDialog::setFilter(QString filter)
+{
+    if (mUseRegex) {
+        mFilterModel->setFilterRegExp(filter);
+    } else {
+        mFilterModel->setFilterWildcard(filter);
+    }
 }
 
 void NavigatorDialog::updatePosition()

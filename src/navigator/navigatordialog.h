@@ -73,6 +73,7 @@ private:
     void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
     void highlightCurrentFile();
+    void setFilter(QString filter);
 
     ///
     /// \brief findClosestPath removes characters from the current string
@@ -85,6 +86,7 @@ private:
 private slots:
     void returnPressed();
     void itemClicked(const QModelIndex& index);
+    void regexChanged(QRegExp regex);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;
@@ -98,6 +100,8 @@ private:
     QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
     QRegularExpression mPostfixRegex = QRegularExpression("(:\\d*)"); // has trailing line number
     NavigatorContent mLastSelectedItem;
+    bool mUseRegex = false;
+    bool mWholeWords = false;
 };
 
 }

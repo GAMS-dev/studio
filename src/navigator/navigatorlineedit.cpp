@@ -22,7 +22,7 @@
 namespace gams {
 namespace studio {
 
-NavigatorLineEdit::NavigatorLineEdit(QWidget* parent) : QLineEdit(parent)
+NavigatorLineEdit::NavigatorLineEdit(QWidget* parent) : FilterLineEdit(parent)
 { }
 
 void NavigatorLineEdit::mouseReleaseEvent(QMouseEvent* event)
