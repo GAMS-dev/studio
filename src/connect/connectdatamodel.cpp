@@ -436,7 +436,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 {
     Q_UNUSED(row);
     Q_UNUSED(parent)
-    qDebug() << "0 can drop ? :("  << row << "," << column << ") parent("  << parent.row() <<","<< parent.column() << ")" ;
     if (action != Qt::CopyAction)
         return false;
 
@@ -462,16 +461,66 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
     if (schemastrlist.size() <= 1)
         return false;
 
-    QStringList schemalist = schemastrlist[1].split(":");
-    qDebug() << schemalist;
-    if (row < 0 || column < 0)
-        return false;
-
     if (!parent.isValid())
         return false;
 
-    if (schemalist.size()==1 && parent.parent().isValid())
-        return false;
+    qDebug() << schemastrlist[1] << ", "
+            << index(row, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString() << ", ";
+    QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
+    QStringList schemaKey = (row < 0 || column < 0 ? parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString().split(":")
+                                                         : index(row, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":")           );
+    qDebug() << "tobeinsertSchemaKey=" << tobeinsertSchemaKey << " :: "
+             << "schemaKey=" << schemaKey;
+
+    int state = parent.sibling(parent.row(), (int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
+
+    if (row < 0 || column < 0) { // drop on to a row
+        if (state!=(int)DataCheckState::SchemaName) {  // drop on to a non-schemaname
+            qDebug() << "   >>> drop onto schema";
+            if (state!=(int)DataCheckState::ListItem) // not a ListItem
+                return false;
+            if (schemaKey.size()==tobeinsertSchemaKey.size()) // same size
+                return false;
+            if (tobeinsertSchemaKey.size()!=schemaKey.size()+1) // not immediate attribute to be inserted
+                return false;
+            if (existsUnderSameParent(schemastrlist[1],  parent)) // exists under the same parent
+                return false;
+        } else { // drop on to a schema name
+            if (hasChildren(parent)) { // schema name has a child
+                qDebug() << "   >>> has children";
+                if (!hasSameParent(tobeinsertSchemaKey, schemaKey,false)) // not immediate attribute of schemaname
+                    return false;
+                if (existsUnderSameParent(schemastrlist[1],  parent)) // attribute already exists
+                    return false;
+            } else {  // schema name without child
+                qDebug() << "   >>> has NO children";
+                if (schemaKey.size()==tobeinsertSchemaKey.size()) // has the same schema size
+                    return false;
+                if (hasSameParent(tobeinsertSchemaKey, schemaKey)!=0) // not same parent
+                    return false;
+                if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
+                    return false;
+            }
+        }
+    } else { // drop between row
+        qDebug() << "   >>> drop between row";
+        if (schemaKey.size() > 0 && schemaKey.at(0).isEmpty())
+            return false;
+
+        if (!hasSameParent(tobeinsertSchemaKey, schemaKey,true)) // does not have the same parent
+            return false;
+
+        if (tobeinsertSchemaKey.size()>1) {  // when insert attribute
+           // check if tobeinsertSchemaKey exists under the same parent
+           if (tobeinsertSchemaKey.size()!=schemaKey.size() ||
+               existsUnderSameParent(schemastrlist[1],  parent)) {
+               return false;
+           }
+        }
+    }
+
+    if (schemaKey.at(0).isEmpty())
+       return false;
 
     qDebug() << "00 can dropmimedata:";
      return true;
@@ -494,17 +543,10 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
        ++rows;
     }
     QStringList schemastrlist = newItems[0].split("=");
-    ConnectDataItem* parentItem;
     if (!parent.isValid()) {
-        qDebug() << "11 dropmimedata:("  << row << "," << column << ")";
-        parentItem = mRootItem;
-        QStringList schemalist = schemastrlist[1].split(":");
-        if (schemalist.size()==1 && row > -1 && column > -1) { // insert from shema name
-            emit fromSchemaInserted(schemalist.first(), row);
-            return true;
-        }
-        qDebug() << "2 dopmimedata: parent:" << parentItem->data((int)DataItemColumn::SchemaKey).toString();
+        return false;
     } else {
+
         qDebug() << "12 dropmimedata:("  << row << "," << column << ") ";
         qDebug() << "          parent(" << parent.row()<< "," << parent.column() << ")";
         int insertRow = -1;
@@ -515,17 +557,9 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             qDebug() << "122";
             insertRow = row-1;
         }
-        qDebug() << schemastrlist[1] << ", "
-                << index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString() << ", ";
         QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
-        QStringList insertSchemaKey = index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":");
-        qDebug() << "tobeinsertSchemaKey=" << tobeinsertSchemaKey << " :: "
-                 << "insertSchemaKey=" << insertSchemaKey;
-        if (tobeinsertSchemaKey.size() != insertSchemaKey.size())
-            return false;
-
-        if (!hasSameParent(tobeinsertSchemaKey, insertSchemaKey))
-            return false;
+        QStringList insertSchemaKey = (row < 0 || column < 0 ? parent.sibling(insertRow, (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString().split(":")
+                                                             : index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":")           );
 
         QString schemaname = tobeinsertSchemaKey.first();
         if (tobeinsertSchemaKey.size() == 1) {
@@ -534,10 +568,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             return true;
         }
 
-        // check if tobeinsertSchemaKey exists under the same parent
-        if (existsUnderSameParent(schemastrlist[1],  parent)) {
-            return false;
-         }
         ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey);
         qDebug() << "data=" << data->str().c_str();
         tobeinsertSchemaKey.removeFirst();
@@ -726,25 +756,43 @@ ConnectData *ConnectDataModel::getConnectData()
      return new ConnectData(root);
 }
 
-bool ConnectDataModel::hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey)
+bool ConnectDataModel::hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel) const
 {
-    bool sameParent = true;
-    for(int i = 0; i<schemaKey.size()-1; ++i) {
-        if (tobeinsertSchema.at(i).compare(schemaKey.at(i))!=0) {
-            sameParent = false;
-            break;
+    if (samelevel) {
+        if (tobeinsertSchema.size()!=schemaKey.size())
+            return false;
+        for(int i = 0; i<schemaKey.size()-1; ++i) {
+            qDebug() << "  1 check same parent ..." << tobeinsertSchema.at(i);
+            if (tobeinsertSchema.at(i).compare(schemaKey.at(i), Qt::CaseSensitive)!=0) {
+                qDebug() << " 11  check same parent ...";
+                return false;
+            }
+        }
+    } else {
+        if (tobeinsertSchema.size()<schemaKey.size())
+            return false;
+        for(int i = 0; i<schemaKey.size(); ++i) {
+            qDebug() << "  2 check same parent ..." << tobeinsertSchema.at(i);
+            if (tobeinsertSchema.at(i).compare(schemaKey.at(i), Qt::CaseSensitive)!=0) {
+                qDebug() << " 21  check same parent ...";
+                return false;
+            }
         }
     }
-    return sameParent;
+    return true;
 }
 
-bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex &parent)
+bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex &parent, bool samelevel) const
 {
-    qDebug() << "exit ? under" << parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString();
+    int level = tobeinsertSchema.split(":").size();
+    qDebug() << tobeinsertSchema << " exists ? under" << parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString();
     for (int i =0; i<rowCount(parent); ++i) {
-        qDebug() << " ... " << index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString();
-        if (tobeinsertSchema.compare(index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString())==0)
+        QString schemaKey = (index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString());
+        if (tobeinsertSchema.compare(schemaKey)==0)
             return true;
+        int keylevel = schemaKey.split(":").size();
+        if (!samelevel && qAbs(level-keylevel) != 1 )
+            return false;
     }
     return false;
 }
