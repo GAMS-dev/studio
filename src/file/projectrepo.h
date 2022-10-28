@@ -167,6 +167,7 @@ public slots:
 private:
     friend class PExProjectNode;
 
+    QVariantMap parseProjectFile(const QString &gspFile) const;
     bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);

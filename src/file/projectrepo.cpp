@@ -30,6 +30,7 @@
 #include "projecttreeview.h"
 #include "viewhelper.h"
 #include "settings.h"
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -262,6 +263,14 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
     bool res = true;
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
+
+        // if there is a valid project file, load it instead of the settings part
+        if (child.contains("project")) {
+            QString gspFile = child.value("project").toString();
+            QVariantMap data = parseProjectFile(gspFile);
+            if (!data.isEmpty()) child = data;
+        }
+
         QString name = child.value("name").toString();
         QString path = child.value("path").toString();
         if (path == "." || path.isEmpty())
@@ -355,7 +364,25 @@ void ProjectRepo::write(PExProjectNode *project, QVariantList &projects, bool re
     QVariantList subArray;
     writeProjectFiles(project, subArray, relativePaths);
     nodeObject.insert("nodes", subArray);
-    projects.append(nodeObject);
+    QString fileName = project->location() + '/' + project->name() + ".gsp";
+    if (QFile::exists(fileName)) {
+        if (QFile::exists(fileName + '~')) QFile::remove(fileName + '~');
+        QFile::rename(fileName, fileName + '~');
+    }
+    QFile file(fileName);
+    if (file.open(QFile::WriteOnly)) {
+        QVariantMap map;
+        QVariantList data;
+        data.append(nodeObject);
+        map.insert("projects", data);
+        file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
+        file.close();
+    } else {
+        SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
+    }
+    QVariantMap projectEntry;
+    projectEntry.insert("project", fileName);
+    projects.append(projectEntry);
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
@@ -796,6 +823,32 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
     }
     emit openRecentFile();
     project->setRunnableGms(runGms);
+}
+
+QVariantMap ProjectRepo::parseProjectFile(const QString &gspFile) const
+{
+    QJsonDocument json;
+    DEB() << gspFile;
+    QFile file(gspFile);
+    if (file.open(QFile::ReadOnly)) {
+        QJsonParseError parseResult;
+        json = QJsonDocument::fromJson(file.readAll(), &parseResult);
+        if (parseResult.error) {
+            if (SysLogLocator::systemLog())
+                SysLogLocator::systemLog()->append("Couldn't parse project from " + gspFile, LogMsgType::Error);
+            return QVariantMap();
+        }
+        file.close();
+        QVariantMap map = json.object().toVariantMap();
+        if (map.contains("projects")) {
+            QVariantList list = map.value("projects").toList();
+            map = list.at(0).toMap();
+        }
+        return map;
+    } else if (SysLogLocator::systemLog()) {
+        SysLogLocator::systemLog()->append("Couldn't open project " + gspFile, LogMsgType::Error);
+    }
+    return QVariantMap();
 }
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)

@@ -114,7 +114,7 @@ void PathRequest::showDirDialog(const QString &title, QLineEdit *lineEdit)
     dialog->setFileMode(QFileDialog::Directory);
     connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
         if (dialog->selectedFiles().count() == 1) {
-            QDir dir(dialog->selectedFiles().first().trimmed());
+            QDir dir(dialog->selectedFiles().at(0).trimmed());
             if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
         }
     });
