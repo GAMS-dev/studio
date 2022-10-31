@@ -38,9 +38,9 @@ public:
 
     ConnectData* loadDataFromFile(const QString& fileName);
 
-    ConnectData* createDataHolder(const QStringList& schemaNameList);
-    ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema);
-    ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist);
+    ConnectData* createDataHolder(const QStringList& schemaNameList, bool onlyRequiredAttribute=false);
+    ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema, bool onlyRequiredAttribute=false);
+    ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false);
 
     void addDataForAgent(ConnectData* data, const QString& schemaName);
 
@@ -52,12 +52,12 @@ public:
     ConnectError getError() const;
 
 private:
-    void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
-    void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue);
+    void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
+    void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
 
     YAML::Node getDefaultValueByType(Schema* schemaHelper);
 
-    YAML::Node createConnectData(const QString& schemaName);
+    YAML::Node createConnectData(const QString& schemaName, bool onlyRequiredAttribute=false);
     bool validate(const QString& schemaname, ConnectData& data);
 
     bool isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data);

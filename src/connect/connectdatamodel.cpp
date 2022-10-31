@@ -568,7 +568,7 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             return true;
         }
 
-        ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey);
+        ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, false);
         qDebug() << "data=" << data->str().c_str();
         tobeinsertSchemaKey.removeFirst();
         tobeinsertSchemaKey.removeLast();
