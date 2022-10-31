@@ -37,7 +37,61 @@
      <property name="handleWidth">
       <number>2</number>
      </property>
-     <widget class="QTreeView" name="dataTreeView"/>
+     <widget class="QWidget" name="dataWidget" native="true">
+      <layout class="QVBoxLayout" name="verticalLayout">
+       <property name="spacing">
+        <number>2</number>
+       </property>
+       <property name="leftMargin">
+        <number>2</number>
+       </property>
+       <property name="topMargin">
+        <number>0</number>
+       </property>
+       <property name="rightMargin">
+        <number>0</number>
+       </property>
+       <property name="bottomMargin">
+        <number>0</number>
+       </property>
+       <item>
+        <widget class="QTreeView" name="dataTreeView"/>
+       </item>
+       <item>
+        <widget class="QWidget" name="selectionWidget" native="true">
+         <layout class="QHBoxLayout" name="horizontalLayout_2">
+          <item>
+           <widget class="QCheckBox" name="onlyRequiredAttribute">
+            <property name="text">
+             <string>Add only required attributes</string>
+            </property>
+           </widget>
+          </item>
+          <item>
+           <spacer name="selectionHSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item>
+           <widget class="QPushButton" name="openAsTextButton">
+            <property name="text">
+             <string>Open As Text</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+      </layout>
+     </widget>
      <widget class="QListView" name="schemaControlListView"/>
      <widget class="QTreeView" name="helpTreeView"/>
     </widget>

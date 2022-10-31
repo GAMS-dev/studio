@@ -58,6 +58,7 @@ signals:
 
 public slots:
     bool saveConnectFile(const QString &location);
+    void on_openAsTextButton_clicked(bool checked = false);
 
 private slots:
     void fromSchemaInserted(const QString& schemaname, int position);
@@ -94,6 +95,7 @@ private:
     Connect*          mConnect;
     QString           mLocation;
 
+    MainWindow*       getMainWindow();
 
     void iterateModelItem(QModelIndex parent=QModelIndex());
 

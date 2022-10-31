@@ -27,6 +27,7 @@
 #include "schemadefinitionmodel.h"
 #include "schemalistmodel.h"
 #include "headerviewproxy.h"
+#include "mainwindow.h"
 #include "ui_connecteditor.h"
 
 namespace gams {
@@ -222,6 +223,7 @@ bool ConnectEditor::isModified() const
 void ConnectEditor::setModified(bool modified)
 {
     mModified = modified;
+    ui->openAsTextButton->setEnabled(!modified);
     qDebug() << "modified:" << mLocation << ":" << (mModified?"true":"false");
     emit modificationChanged( mModified );
 }
@@ -229,6 +231,21 @@ void ConnectEditor::setModified(bool modified)
 bool ConnectEditor::saveConnectFile(const QString &location)
 {
     return saveAs(location);
+}
+
+void ConnectEditor::on_openAsTextButton_clicked(bool checked)
+{
+    Q_UNUSED(checked);
+    MainWindow* main = getMainWindow();
+    if (!main) return;
+
+    emit main->projectRepo()->closeFileEditors(fileId());
+
+    FileMeta* fileMeta = main->fileRepo()->fileMeta(fileId());
+    PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
+    PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
+
+    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
 }
 
 void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
@@ -367,6 +384,14 @@ void ConnectEditor::restoreExpandedOnLevel(const QModelIndex &index)
         for(int row = 0; row < mDataModel->rowCount(index); ++row)
             restoreExpandedOnLevel( mDataModel->index(row,0, index) );
     }
+}
+
+MainWindow *ConnectEditor::getMainWindow()
+{
+    foreach(QWidget *widget, qApp->topLevelWidgets())
+        if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
+            return mainWindow;
+    return nullptr;
 }
 
 void ConnectEditor::iterateModelItem(QModelIndex parent)

@@ -577,6 +577,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
         connect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (connect::ConnectEditor* cEdit = ViewHelper::toGamsConnectEditor(edit)) {
+        connect(cEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         connect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -646,6 +648,8 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (efi::EfiEditor* efi = ViewHelper::toEfiEditor(edit)) {
         disconnect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (connect::ConnectEditor* cEdit = ViewHelper::toGamsConnectEditor(edit)) {
+        disconnect(cEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
