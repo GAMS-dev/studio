@@ -488,6 +488,8 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
         } else { // drop on to a schema name
             if (hasChildren(parent)) { // schema name has a child
                 qDebug() << "   >>> has children";
+                if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
+                    return false;
                 if (!hasSameParent(tobeinsertSchemaKey, schemaKey,false)) // not immediate attribute of schemaname
                     return false;
                 if (existsUnderSameParent(schemastrlist[1],  parent)) // attribute already exists
