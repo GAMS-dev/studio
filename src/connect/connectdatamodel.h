@@ -103,10 +103,12 @@ signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    void addFromSchema(gams::studio::connect::ConnectData* data, int insertPosition);
+    void addFromSchema(const QString& schemaname, int position);
     void appendMapElement(const QModelIndex& index);
     void appendMapElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, int position, const QModelIndex& index);
     void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
+
+    void onlyRequriedAttributedChanged(int state);
 
 protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
@@ -118,6 +120,7 @@ protected:
     void setupTreeItemModelData();
     void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents);
 
+    bool             mOnlyRequriedAttributesAdded;
     int              mItemIDCount;
     QString          mLocation;
     Connect*         mConnect;

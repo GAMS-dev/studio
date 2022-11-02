@@ -209,7 +209,7 @@ ConnectData *Connect::createDataHolder(const QStringList &schemaNameList, bool o
     YAML::Node data = YAML::Node(YAML::NodeType::Sequence);
     foreach(QString name, schemaNameList) {
         YAML::Node node = YAML::Node(YAML::NodeType::Map);
-        node[name.toStdString()] =  createConnectData(name);
+        node[name.toStdString()] =  createConnectData(name, onlyRequiredAttribute);
         data[i++] = node;
     }
     return new ConnectData(data);
@@ -229,8 +229,6 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
-    YAML::Emitter e;
-    e << schemanode;
     mapValue( schemanode, data, onlyRequiredAttribute );
     return new ConnectData(data);
 }
@@ -258,18 +256,9 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
     e << schemanode;
     qDebug() << "  __x_ 3 schemanode=" << e.c_str();
     YAML::Node value;
-    mapValue( schemanode, value,  onlyRequiredAttribute );
-    data[tobeinsertSchemaKey.last().toStdString()] = value;
+    if (mapValue( schemanode, value,  onlyRequiredAttribute ))
+        data[tobeinsertSchemaKey.last().toStdString()] = value;
     return new ConnectData(data);
-}
-
-void Connect::addDataForAgent(ConnectData *data, const QString &schemaName)
-{
-    Q_ASSERT(data->getRootNode().Type()==YAML::NodeType::Sequence);
-    int i = data->getRootNode().size();
-    YAML::Node node = YAML::Node(YAML::NodeType::Map);
-    node[schemaName.toStdString()] =  createConnectData(schemaName);
-    data[i] = node;
 }
 
 ConnectSchema *Connect::getSchema(const QString &schemaName)
@@ -295,7 +284,7 @@ ConnectError Connect::getError() const
     return mError;
 }
 
-void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
+bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
 {
     if (schemaValue["type"]) {
         if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
@@ -316,7 +305,8 @@ void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
                         if (it->second.Type() == YAML::NodeType::Map) {
                             //Key key;
                             YAML::Node value;
-                            mapValue( it->second, value, onlyRequiredAttribute );
+                            if (!mapValue( it->second, value, onlyRequiredAttribute ))
+                                continue;
                             try {
                                 int i = it->first.as<int>();
                                 node[i] = value;
@@ -338,11 +328,27 @@ void Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
             }
         }
     }
+    return true;
 }
 
-void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
+bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
 {
+    qDebug() << "mapValue : onlyRequired = " << (onlyRequiredAttribute?"YES":"NO");
     if (schemaValue.Type() == YAML::NodeType::Map) {
+        if (schemaValue["required"]) {
+            qDebug() << "map required 1 " << (onlyRequiredAttribute?"only required attr" : "any attr");
+//            if (schemaValue["required"].Type()!=YAML::NodeType::Scalar)
+//                return false;
+            qDebug() << "map required 2 " << (schemaValue["required"].as<bool>()?"required" : "not required");
+            if (!schemaValue["required"].as<bool>() && onlyRequiredAttribute)
+                return false;
+            qDebug() << "map required 3";
+        } else {
+            qDebug() << "map required 4";
+            if (onlyRequiredAttribute)
+                return false;
+            qDebug() << "map required 5";
+        }
         if (schemaValue["type"]) {
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
                 if (schemaValue["schema"]) {
@@ -360,7 +366,7 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                          dataValue = "[value]";
                     }
                 }
-            } else {
+            } else { // not sequence
                 std::string value = schemaValue["type"].as<std::string>() ;
                 if (value.compare("string") == 0) {
                     if (schemaValue["default"]) {
@@ -384,7 +390,8 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
                 } else if (value.compare("dict") == 0) {
                            if (schemaValue["schema"]) {
-                               mapValue(schemaValue["schema"], dataValue, onlyRequiredAttribute);
+                               if (!mapValue(schemaValue["schema"], dataValue, onlyRequiredAttribute))
+                                   return false;
                            } else {
                                dataValue["[key]"] = "[value]";
                            }
@@ -396,17 +403,19 @@ void Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                     dataValue = "[value]";
                 }
             }
-        } else {
+        } else { // not schema["type"]
             if (schemaValue["anyof"]) {
                 if (schemaValue["anyof"].Type()==YAML::NodeType::Sequence) {
                     YAML::Node anyofnode = schemaValue["anyof"][0];
                     if (anyofnode.Type() == YAML::NodeType::Map) {
-                        mapValue( anyofnode, dataValue );
+                        if (!mapValue( anyofnode, dataValue, onlyRequiredAttribute ))
+                            return false;
                     }
                 }
             }
         }
     }
+    return true;
 }
 
 YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
@@ -458,12 +467,14 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
 
 YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequiredAttribute)
 {
+    qDebug() << "createConnectData " << (onlyRequiredAttribute? "YES":"no");
     YAML::Node data = YAML::Node(YAML::NodeType::Map);
     ConnectSchema* s = mSchema[schemaName];
     for (YAML::const_iterator it = s->mRootNode.begin(); it != s->mRootNode.end(); ++it) {
         if (it->second.Type() == YAML::NodeType::Map) { // first level should be a map
             YAML::Node value;
-            mapValue( it->second, value, onlyRequiredAttribute );
+            if (!mapValue( it->second, value, onlyRequiredAttribute ))
+                continue;
             try {
                 int i = it->first.as<int>();
                 data[i] = value;

@@ -143,6 +143,9 @@ bool ConnectEditor::init()
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
     headerRegister(ui->helpTreeView->header());
 
+    ui->onlyRequiredAttribute->setCheckState(Qt::Unchecked);
+    ui->openAsTextButton->setEnabled(true);
+
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
@@ -160,6 +163,8 @@ bool ConnectEditor::init()
         defmodel->loadSchemaFromName( schemaname );
     });
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
+    connect(ui->openAsTextButton, &QPushButton::clicked, this, &ConnectEditor::openAsTextButton_clicked, Qt::UniqueConnection);
+    connect(ui->onlyRequiredAttribute, &QCheckBox::stateChanged, mDataModel, &ConnectDataModel::onlyRequriedAttributedChanged, Qt::UniqueConnection);
 
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
@@ -233,7 +238,7 @@ bool ConnectEditor::saveConnectFile(const QString &location)
     return saveAs(location);
 }
 
-void ConnectEditor::on_openAsTextButton_clicked(bool checked)
+void ConnectEditor::openAsTextButton_clicked(bool checked)
 {
     Q_UNUSED(checked);
     MainWindow* main = getMainWindow();
@@ -251,9 +256,7 @@ void ConnectEditor::on_openAsTextButton_clicked(bool checked)
 void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
 {
     setModified(true);
-    QStringList strlist;
-    strlist << schemaname;
-    mDataModel->addFromSchema( mConnect->createDataHolder(strlist), position );
+    mDataModel->addFromSchema( schemaname, position );
 }
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
@@ -303,12 +306,13 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
         QStringList schema = values_idx.data().toStringList();
+        qDebug() << "schema=" <<schema.join(":");
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
             if (schema.last().compare("-")==0)
                 schema.removeLast();
-            ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, false);
+            ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked));
             qDebug() << schemadata->str().c_str();
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
         }

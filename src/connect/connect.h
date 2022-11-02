@@ -42,8 +42,6 @@ public:
     ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema, bool onlyRequiredAttribute=false);
     ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false);
 
-    void addDataForAgent(ConnectData* data, const QString& schemaName);
-
     ConnectSchema* getSchema(const QString& schemaName);
     QStringList getSchemaNames() const;
 
@@ -52,8 +50,8 @@ public:
     ConnectError getError() const;
 
 private:
-    void listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
-    void mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
+    bool listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
+    bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
 
     YAML::Node getDefaultValueByType(Schema* schemaHelper);
 

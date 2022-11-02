@@ -22,7 +22,6 @@
 
 #include <QString>
 #include "connectagent.h"
-#include "yaml-cpp/yaml.h"
 
 namespace gams {
 namespace studio {

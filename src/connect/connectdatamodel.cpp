@@ -35,6 +35,7 @@ namespace connect {
 
 ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject *parent)
     : QAbstractItemModel{parent},
+      mOnlyRequriedAttributesAdded(false),
       mItemIDCount(0),
       mLocation(filename),
       mConnect(c)
@@ -567,25 +568,37 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         if (tobeinsertSchemaKey.size() == 1) {
             qDebug() << "tobeinsertSchemaKey.size() == 1 :: " << tobeinsertSchemaKey;
             emit fromSchemaInserted(schemaname, row);
-            return true;
+            qDebug() << "3 dropmimedata";
+        } else {
+            bool onlyRequired = mOnlyRequriedAttributesAdded;
+            if (tobeinsertSchemaKey.size() == 1 && row < 0)  // drop onto schemaname
+                onlyRequired = false;
+            qDebug() << " drop onto schemaname ? " << (onlyRequired?"YES":"NO");
+            ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, onlyRequired );
+            qDebug() << "data=" << data->str().c_str();
+            if (data->getRootNode().IsNull())
+                return false;
+            tobeinsertSchemaKey.removeFirst();
+            tobeinsertSchemaKey.removeLast();
+            appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
+            emit modificationChanged(true);
+            if (row < 0)
+                emit indexExpandedAndResized(index(parent.row(), (int)DataItemColumn::Key, parent));
+            else
+                emit indexExpandedAndResized(index(row, (int)DataItemColumn::Key, parent));
+            qDebug() << "4 dropmimedata";
         }
-
-        ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, false);
-        qDebug() << "data=" << data->str().c_str();
-        tobeinsertSchemaKey.removeFirst();
-        tobeinsertSchemaKey.removeLast();
-        appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
-        emit modificationChanged(true);
-        emit indexExpandedAndResized(index(row, (int)DataItemColumn::Key, parent));
-        qDebug() << "3 dropmimedata";
         return true;
     }
 
     return false;
 }
 
-void ConnectDataModel::addFromSchema(ConnectData* data, int position)
+void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
 {
+    QStringList strlist;
+    strlist << schemaname;
+    ConnectData* data = mConnect->createDataHolder( strlist, mOnlyRequriedAttributesAdded );
     qDebug() << data->str().c_str();
     qDebug() << "position=" << position  << ", rowCount()=" << rowCount()
              << ", schemaCount()=" << rowCount(index(0,0));
@@ -737,6 +750,11 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
 
     informDataChanged(parentIndex);
     qDebug() << "end appendListElement (" << index.row() << "," << index.column() << ") " << rowCount();
+}
+
+void ConnectDataModel::onlyRequriedAttributedChanged(int state)
+{
+     mOnlyRequriedAttributesAdded = (state==Qt::Checked);
 }
 
 ConnectData *ConnectDataModel::getConnectData()
@@ -1129,7 +1147,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  QStringList Keys(dataKeys);
                  if (Keys.last().compare("-")==0)
                      Keys.removeLast();
-                 indexData << (schema ? QVariant(!schema->isRequired(Keys.join(":"))) : QVariant());
+                 indexData << QVariant(true);
                  indexData << QVariant();
                  indexData << QVariant();
                  indexData << QVariant();
@@ -1174,7 +1192,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        QStringList Keys(dataKeys);
                                        if (Keys.last().compare("-")==0)
                                            Keys.removeLast();
-                                       indexSeqData << (schema ? QVariant(!schema->isRequired(Keys.join(":"))) : QVariant());
+                                       indexSeqData << QVariant(true);
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
