@@ -146,6 +146,9 @@ void NavigatorDialog::updateContent()
         mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
         mDirSelectionOngoing = false;
     }
+
+    if (!ui->tableView->currentIndex().isValid())
+        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
 }
 
 void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
@@ -244,21 +247,12 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     QModelIndex index = ui->tableView->currentIndex();
 
     // chained file selection and line navigation
-    if (index.isValid() && !mInput->text().startsWith(":")) {
+    if (index.isValid()) {
         QModelIndex mappedIndex = mFilterModel->mapToSource(index);
         NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
         fm = nc.GetFileMeta();
         fi = nc.FileInfo();
         autocomplete(nc);
-
-    } else { // line navigation in current file
-
-        if (mLastFile.isValid()) {
-            fm = mLastFile.GetFileMeta();
-            fi = mLastFile.FileInfo();
-        } else {
-            fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-        }
     }
 
     if (fm) {
@@ -284,7 +278,6 @@ void NavigatorDialog::returnPressed()
     if (!index.isValid()) return;
 
     selectItem(index);
-    mLastFile = NavigatorContent();
 }
 
 void NavigatorDialog::selectItem(QModelIndex index)
@@ -292,7 +285,8 @@ void NavigatorDialog::selectItem(QModelIndex index)
     QModelIndex mappedIndex = mFilterModel->mapToSource(index);
 
     if (mCurrentMode == NavigatorMode::Line) {
-        // if different file then current, change fistsWith(":"))
+        // if different file then current, change file first
+        if (index.isValid() && !mInput->text().startsWith(":"))
             selectFileOrFolder(mNavModel->content().at(mappedIndex.row()));
 
         selectLineNavigation();
@@ -310,7 +304,7 @@ void NavigatorDialog::selectItem(QModelIndex index)
 void NavigatorDialog::autocomplete(NavigatorContent nc)
 {
     QRegularExpression preRegex("^(\\w) "); // starts with prefix
-    QRegularExpression postRegex(":(\\d*)$");
+    QRegularExpression postRegex(":(\\d*)$"); // contains line navigation postfix
 
     QRegularExpressionMatch preMatch = preRegex.match(mInput->text());
     QRegularExpressionMatch postMatch = postRegex.match(mInput->text());
@@ -328,8 +322,6 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
         fillFileSystemPath(nc);
         mInput->setText(mInput->text() + postfix);
     }
-
-    mLastFile = nc;
 }
 
 void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)

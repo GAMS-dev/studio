@@ -90,7 +90,6 @@ private:
     NavigatorLineEdit* mInput = nullptr;
     QSortFilterProxyModel* mFilterModel = nullptr;
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
-    NavigatorContent mLastFile;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
     QRegularExpression mLineRegex = QRegularExpression(":(\\d*)$");
