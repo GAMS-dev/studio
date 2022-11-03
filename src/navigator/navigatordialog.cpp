@@ -71,6 +71,16 @@ void NavigatorDialog::showEvent(QShowEvent *e)
 
     updatePosition();
     inputChanged();
+
+    if (!mFilterModel) return;
+
+    if (FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor())) {
+        int index = mNavModel->findIndex(fm->location());
+        if (index >= 0)
+            ui->tableView->setCurrentIndex(mFilterModel->index(index, 0));
+    } else {
+        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+    }
 }
 
 void NavigatorDialog::inputChanged()
@@ -89,7 +99,7 @@ void NavigatorDialog::changeEvent(QEvent*)
 void NavigatorDialog::updateContent()
 {
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
-    QString input = mMain->navigatorInput()->text();
+    QString input = mInput->text();
 
     QRegularExpressionMatch match;
     NavigatorMode mode;
@@ -134,10 +144,6 @@ void NavigatorDialog::updateContent()
         mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
         mDirSelectionOngoing = false;
     }
-
-    // select first entry if user hasnt anything selected
-    if (mFilterModel && !ui->tableView->selectionModel()->hasSelection())
-        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
 }
 
 void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
@@ -239,15 +245,15 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     if (index.isValid() && !mInput->text().startsWith(":")) {
         QModelIndex mappedIndex = mFilterModel->mapToSource(index);
         NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
-        fm = nc.fileMeta;
-        fi = nc.fileInfo;
+        fm = nc.GetFileMeta();
+        fi = nc.FileInfo();
         autocomplete(nc);
 
     } else { // line navigation in current file
 
-        if (mLastFile.valid) {
-            fm = mLastFile.fileMeta;
-            fi = mLastFile.fileInfo;
+        if (mLastFile.isValid()) {
+            fm = mLastFile.GetFileMeta();
+            fi = mLastFile.FileInfo();
         } else {
             fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         }
@@ -312,8 +318,8 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
     if (postMatch.hasMatch())
         postfix = ":" + postMatch.captured(1);
 
-    if (nc.fileMeta) {
-        mInput->setText(prefix + (nc.text.isEmpty() ? nc.fileInfo.fileName() : nc.text) + postfix);
+    if (nc.GetFileMeta()) {
+        mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
     } else {
         fillFileSystemPath(nc);
         mInput->setText(mInput->text() + postfix);
@@ -324,24 +330,24 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
 
 void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
 {
-    mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
+    mSelectedDirectory = QDir(nc.FileInfo().absoluteFilePath());
     mMain->navigatorInput()->setText(
                 "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
-                + (nc.fileInfo.isDir() ? QDir::separator() : QString()));
+                + (nc.FileInfo().isDir() ? QDir::separator() : QString()));
     updateContent();
 }
 
 void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 {
-    if (FileMeta* fm = nc.fileMeta) {
+    if (FileMeta* fm = nc.GetFileMeta()) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
         else mMain->openFile(fm, true);
 
         close();
     } else {
-        if (nc.fileInfo.isFile()) {
-            mMain->openFileWithOption(nc.fileInfo.absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
+        if (nc.FileInfo().isFile()) {
+            mMain->openFileWithOption(nc.FileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
             fillFileSystemPath(nc);
@@ -351,7 +357,7 @@ void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 
 void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 {
-    mInput->setText(nc.insertPrefix);
+    mInput->setText(nc.Prefix());
     updateContent();
 }
 
@@ -431,7 +437,7 @@ bool NavigatorDialog::conditionallyClose()
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
 {
     foreach (NavigatorContent c, content) {
-        if (c.fileMeta == fm)
+        if (c.GetFileMeta() == fm)
             return true;
     }
     return false;

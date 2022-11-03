@@ -21,43 +21,10 @@
 #define NAVIGATORMODEL_H
 
 #include <QAbstractTableModel>
-#include "file/filemeta.h"
+#include "navigator/navigatorcontent.h"
 
 namespace gams {
 namespace studio {
-
-struct NavigatorContent {
-    NavigatorContent() {
-        valid = false;
-    }
-
-    // known files
-    NavigatorContent(FileMeta* file, QString additionalText) {
-        fileMeta = file;
-        if (file) fileInfo = QFileInfo(file->location());
-        additionalInfo = additionalText;
-    }
-
-    // unknown files
-    NavigatorContent(QFileInfo file, QString additionalText) {
-        fileInfo = file;
-        additionalInfo = additionalText;
-    }
-
-    // help content
-    NavigatorContent(QString txt, QString additionalText, QString prefix) {
-        text = txt;
-        additionalInfo = additionalText;
-        insertPrefix = prefix;
-    }
-
-    FileMeta* fileMeta = nullptr;
-    QFileInfo fileInfo;
-    bool valid = true;
-    QString text;
-    QString additionalInfo;
-    QString insertPrefix;
-};
 
 class NavigatorModel : public QAbstractTableModel
 {
@@ -71,6 +38,7 @@ public:
     QVector<NavigatorContent> content() const;
     QDir currentDir() const;
     void setCurrentDir(QDir dir);
+    int findIndex(const QString &file);
 
 private:
     QVector<NavigatorContent> mContent;
