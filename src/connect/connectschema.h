@@ -179,7 +179,7 @@ private:
 
     friend class Connect;
 
-    void createSchemaHelper(QString& key, const YAML::Node& node, int level, int rule=0);
+    void createSchemaHelper(QString& key, const YAML::Node& node, int level);
 
 public:
     ConnectSchema(const QString& inputFileName);

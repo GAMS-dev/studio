@@ -25,9 +25,8 @@ namespace studio {
 namespace connect {
 
 
-void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int level, int rule)
+void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int level)
 {
-//    if (rule)
     if (!mOrderedKeyList.contains(key))
         mOrderedKeyList << key;
 
@@ -128,16 +127,11 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
         YAML::Node node = it->second;
         if (node["anyof"]) {
-            qDebug() << "key=" << key;
-//            createSchemaHelper(key, it->second, 1, false);
             if (node["anyof"].Type()==YAML::NodeType::Sequence) {
-                qDebug() << "   sequence";
                 for(size_t i=0; i<node["anyof"].size(); i++) {
                    QString str = QString("%1[%2]").arg(key).arg(i);
-                   createSchemaHelper(str, node["anyof"][i], 1, true);
+                   createSchemaHelper(str, node["anyof"][i], 1);
                 }
-            } else {
-                qDebug() << "   NOT sequence";
             }
         } else {
            createSchemaHelper(key, it->second, 1);

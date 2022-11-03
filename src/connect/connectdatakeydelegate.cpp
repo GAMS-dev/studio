@@ -170,7 +170,6 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
 
 bool ConnectDataKeyDelegate::eventFilter(QObject *editor, QEvent *event)
 {
-    qDebug() << "evenFilter";
     if (!editor)
         return false;
 

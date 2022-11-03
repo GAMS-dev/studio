@@ -266,13 +266,6 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
     emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount(mDataModel->index(0,0)) );
 }
 
-void ConnectEditor::updateDataColumnSpan(const QModelIndex &modelIndex)
-{
-    Q_UNUSED(modelIndex);
-    qDebug() << "updateColumnSpan " << mDataModel->rowCount();
-    iterateModelItem( ui->dataTreeView->rootIndex());
-}
-
 void ConnectEditor::expandAndResizedToContents(const QModelIndex &index)
 {
     qDebug() << "expandAndResizedToContents: (" << index.row() << "," << index.column()
@@ -397,22 +390,6 @@ MainWindow *ConnectEditor::getMainWindow()
             return mainWindow;
     return nullptr;
 }
-
-void ConnectEditor::iterateModelItem(QModelIndex parent)
-{
-    for (int i=0; i<mDataModel->rowCount(parent); i++) {
-//        QModelIndex index = mDataModel->index(i, 0, parent);
-        if ( mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CheckState, parent), Qt::DisplayRole).toInt()<=(int)DataCheckState::ListItem ||
-             mDataModel->data( mDataModel->index(i, (int)DataItemColumn::CheckState, parent), Qt::DisplayRole).toInt()==(int)DataCheckState::MapAppend  )
-            ui->dataTreeView->setFirstColumnSpanned(i, parent, true);
-
-//        if (mDataModel->hasChildren(index)) {
-//            iterateModelItem(index);
-//        }
-    }
-}
-
-
 
 }
 }

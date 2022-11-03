@@ -336,18 +336,13 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
     qDebug() << "mapValue : onlyRequired = " << (onlyRequiredAttribute?"YES":"NO");
     if (schemaValue.Type() == YAML::NodeType::Map) {
         if (schemaValue["required"]) {
-            qDebug() << "map required 1 " << (onlyRequiredAttribute?"only required attr" : "any attr");
 //            if (schemaValue["required"].Type()!=YAML::NodeType::Scalar)
 //                return false;
-            qDebug() << "map required 2 " << (schemaValue["required"].as<bool>()?"required" : "not required");
             if (!schemaValue["required"].as<bool>() && onlyRequiredAttribute)
                 return false;
-            qDebug() << "map required 3";
         } else {
-            qDebug() << "map required 4";
             if (onlyRequiredAttribute)
                 return false;
-            qDebug() << "map required 5";
         }
         if (schemaValue["type"]) {
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
@@ -467,7 +462,6 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
 
 YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequiredAttribute)
 {
-    qDebug() << "createConnectData " << (onlyRequiredAttribute? "YES":"no");
     YAML::Node data = YAML::Node(YAML::NodeType::Map);
     ConnectSchema* s = mSchema[schemaName];
     for (YAML::const_iterator it = s->mRootNode.begin(); it != s->mRootNode.end(); ++it) {

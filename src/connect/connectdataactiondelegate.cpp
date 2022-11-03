@@ -64,7 +64,6 @@ void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, co
 
 bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    qDebug() << "editorEvent " << index.row() << "," << index.column();
     if (event->type()==QEvent::MouseButtonRelease) {
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()

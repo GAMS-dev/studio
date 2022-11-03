@@ -64,7 +64,6 @@ private slots:
     void fromSchemaInserted(const QString& schemaname, int position);
 
     void schemaDoubleClicked(const QModelIndex &modelIndex);
-    void updateDataColumnSpan(const QModelIndex &modelIndex);
 
     void expandAndResizedToContents(const QModelIndex &index);
 
@@ -73,7 +72,6 @@ private slots:
     void deleteDataItemRequested(const QModelIndex &index);
     void moveUpDatatItemRequested(const QModelIndex &index);
     void moveDownDatatItemRequested(const QModelIndex &index);
-//    void on_dataTreeSelectionChanged(const QItemSelection &, const QItemSelection &);
 
 private:
     bool init();
@@ -96,9 +94,6 @@ private:
     QString           mLocation;
 
     MainWindow*       getMainWindow();
-
-    void iterateModelItem(QModelIndex parent=QModelIndex());
-
 };
 
 }
