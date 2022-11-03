@@ -77,7 +77,9 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     if (FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor())) {
         int index = mNavModel->findIndex(fm->location());
         if (index >= 0)
-            ui->tableView->setCurrentIndex(mFilterModel->index(index, 0));
+            ui->tableView->setCurrentIndex(mFilterModel->mapFromSource(
+                                               mNavModel->index(index, 0))
+                                           );
     } else {
         ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
     }
@@ -279,6 +281,8 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = ui->tableView->currentIndex();
+    if (!index.isValid()) return;
+
     selectItem(index);
     mLastFile = NavigatorContent();
 }
