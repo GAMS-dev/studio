@@ -808,7 +808,11 @@ bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, co
     qDebug() << tobeinsertSchema << " exists ? under" << parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString();
     for (int i =0; i<rowCount(parent); ++i) {
         QString schemaKey = (index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString());
-        if (tobeinsertSchema.compare(schemaKey)==0)
+        QString tobeinsertedname = (tobeinsertSchema.contains("[") ? tobeinsertSchema.left(tobeinsertSchema.lastIndexOf("["))
+                                                                   : tobeinsertSchema);
+        QString keyname= (schemaKey.contains("[") ? schemaKey.left(tobeinsertSchema.lastIndexOf("["))
+                                                  : schemaKey);
+        if (tobeinsertedname.compare(keyname)==0)
             return true;
         int keylevel = schemaKey.split(":").size();
         if (!samelevel && qAbs(level-keylevel) != 1 )
