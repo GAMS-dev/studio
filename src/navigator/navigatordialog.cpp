@@ -110,7 +110,7 @@ void NavigatorDialog::updateContent()
         mFilterModel->setFilterWildcard("");
         collectHelpContent(content);
 
-    } else if (mLineRegex.match(input).hasMatch()) {
+    } else if (mPostfixRegex.match(input).hasMatch()) {
         mode = NavigatorMode::Line;
         mFilterModel->setFilterWildcard("");
         collectLineNavigation(content);
@@ -211,7 +211,7 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 {
     QString textInput = mMain->navigatorInput()->text();
-    textInput = textInput.remove(0, 2); // remove prefix
+    textInput.remove(mPrefixRegex);
 
     QDir dir(textInput);
     if (!mDirSelectionOngoing) {
@@ -303,11 +303,9 @@ void NavigatorDialog::selectItem(QModelIndex index)
 
 void NavigatorDialog::autocomplete(NavigatorContent nc)
 {
-    QRegularExpression preRegex("^(\\w) "); // starts with prefix
-    QRegularExpression postRegex(":(\\d*)$"); // contains line navigation postfix
 
-    QRegularExpressionMatch preMatch = preRegex.match(mInput->text());
-    QRegularExpressionMatch postMatch = postRegex.match(mInput->text());
+    QRegularExpressionMatch preMatch = mPrefixRegex.match(mInput->text());
+    QRegularExpressionMatch postMatch = mPostfixRegex.match(mInput->text());
     QString prefix, postfix;
 
     if (preMatch.hasMatch())
@@ -318,18 +316,19 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
 
     if (nc.GetFileMeta()) {
         mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
+    } else if (!nc.Prefix().isEmpty()) { // help content
+        FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+        if (fm) mInput->setText(prefix + fm->location() + postfix);
     } else {
-        fillFileSystemPath(nc);
-        mInput->setText(mInput->text() + postfix);
+        mInput->setText(prefix + nc.FileInfo().absoluteFilePath() + postfix);
     }
 }
 
 void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
 {
     mSelectedDirectory = QDir(nc.FileInfo().absoluteFilePath());
-    mMain->navigatorInput()->setText(
-                "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
-                + (nc.FileInfo().isDir() ? QDir::separator() : QString()));
+    mInput->setText("f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
+                         + (nc.FileInfo().isDir() ? QDir::separator() : QString()));
     updateContent();
 }
 
@@ -359,7 +358,7 @@ void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 
 void NavigatorDialog::selectLineNavigation()
 {
-    QRegularExpressionMatch match = mLineRegex.match(mInput->text());
+    QRegularExpressionMatch match = mPostfixRegex.match(mInput->text());
     if (!match.captured(1).isEmpty())
         mMain->jumpToLine(match.captured(1).toInt()-1);
 

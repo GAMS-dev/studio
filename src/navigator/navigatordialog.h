@@ -23,6 +23,7 @@
 #include <QDialog>
 #include "mainwindow.h"
 #include "navigator/navigatormodel.h"
+#include "qregularexpression.h"
 
 namespace Ui {
 class NavigatorDialog;
@@ -92,7 +93,8 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
-    QRegularExpression mLineRegex = QRegularExpression(":(\\d*)$");
+    QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
+    QRegularExpression mPostfixRegex = QRegularExpression(":(\\d*)$"); // has trailing line number
 };
 
 }
