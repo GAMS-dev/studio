@@ -177,11 +177,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
     bool isGucFile = fileNode && fileNode->file()->kind() == FileKind::Guc;
     bool isEfiFile = fileNode && fileNode->file()->kind() == FileKind::Efi;
-    bool isOpenableAsText = isOpenable && (isOptFile || isGucFile);
+    bool isGConnectFile = fileNode && fileNode->file()->kind() == FileKind::GCon;
+    bool isOpenableAsText = isOpenable && (isOptFile || isGucFile || isGConnectFile);
     bool isOpenWithSolverOptionEditor = false;
     bool isOpenWithGamsUserConfigEditor = false;
     bool isOpenWithEfiEditor = false;
-    bool isGConnectFile = fileNode && fileNode->file()->kind() == FileKind::GCon;
     bool isOpenWithGamsConnectEditor = false;
     if (fileNode) {
         for (QWidget *e : fileNode->file()->editors()) {
