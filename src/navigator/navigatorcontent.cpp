@@ -19,10 +19,12 @@ NavigatorContent::NavigatorContent(QFileInfo file, QString additionalText) {
 }
 
 // help content
-NavigatorContent::NavigatorContent(QString txt, QString additionalText, QString prefix) {
+NavigatorContent::NavigatorContent(QString txt, QString additionalText,
+                                   QString prefix, FileMeta* currentFile) {
     mText = txt;
     mAdditionalInfo = additionalText;
     mInsertPrefix = prefix;
+    mFileMeta = currentFile;
 }
 
 bool NavigatorContent::isValid()

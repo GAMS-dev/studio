@@ -117,17 +117,17 @@ void NavigatorDialog::updateContent()
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::InProject;
-        mFilterModel->setFilterWildcard(input.remove(0, 2));
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
         collectInProject(content);
 
     } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Tabs;
-        mFilterModel->setFilterWildcard(input.remove(0, 2));
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
         collectTabs(content);
 
     } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Logs;
-        mFilterModel->setFilterWildcard(input.remove(0, 2));
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
         collectLogs(content);
 
     } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
@@ -153,7 +153,8 @@ void NavigatorDialog::updateContent()
 
 void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append(NavigatorContent(":number", "jump to line number", ":"));
+    content.append(NavigatorContent(":number", "jump to line number", ":",
+                                    mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
     content.append(NavigatorContent("filename", "filter all files", ""));
     content.append(NavigatorContent("P filename", "filter files in current project", "P "));
     content.append(NavigatorContent("T filename", "filter open tabs", "T "));
@@ -303,7 +304,6 @@ void NavigatorDialog::selectItem(QModelIndex index)
 
 void NavigatorDialog::autocomplete(NavigatorContent nc)
 {
-
     QRegularExpressionMatch preMatch = mPrefixRegex.match(mInput->text());
     QRegularExpressionMatch postMatch = mPostfixRegex.match(mInput->text());
     QString prefix, postfix;
@@ -314,11 +314,11 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
     if (postMatch.hasMatch())
         postfix = ":" + postMatch.captured(1);
 
-    if (nc.GetFileMeta()) {
-        mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
-    } else if (!nc.Prefix().isEmpty()) { // help content
+    if (!nc.Prefix().isEmpty()) { // help content
         FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         if (fm) mInput->setText(prefix + fm->location() + postfix);
+    } else if (nc.GetFileMeta()) {
+        mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
     } else {
         mInput->setText(prefix + nc.FileInfo().absoluteFilePath() + postfix);
     }

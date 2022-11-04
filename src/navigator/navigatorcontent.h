@@ -12,7 +12,7 @@ public:
     NavigatorContent();
     NavigatorContent(FileMeta* file, QString additionalText);
     NavigatorContent(QFileInfo file, QString additionalText);
-    NavigatorContent(QString txt, QString additionalText, QString prefix);
+    NavigatorContent(QString txt, QString additionalText, QString prefix, FileMeta* currentFile = nullptr);
     bool isValid();
 
     FileMeta* GetFileMeta();
