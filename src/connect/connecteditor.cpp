@@ -28,6 +28,7 @@
 #include "schemalistmodel.h"
 #include "headerviewproxy.h"
 #include "mainwindow.h"
+#include "exception.h"
 #include "ui_connecteditor.h"
 
 namespace gams {
@@ -42,15 +43,33 @@ ConnectEditor::ConnectEditor(const QString& connectDataFileName,
     mCodec(codec),
     mLocation(connectDataFileName)
 {
-    init();
+    init(false);
 }
 
-bool ConnectEditor::init()
+bool ConnectEditor::init(bool quiet)
 {
+    mConnect = new Connect();
+
     ui->setupUi(this);
+    try {
+        mDataModel = new ConnectDataModel(mLocation, mConnect, this);
+    } catch(Exception& e) {
+        if (!quiet) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Unable to Open File");
+            msgBox.setText("Unable to open file: " + mLocation + ".\n"
+                           + "Error: file contents not recognized as a valid connect yaml file.\n"
+                           + "You can reopen the file using text editor to edit the content."
+                           );
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            if (msgBox.exec() == QMessageBox::Ok) {  }
+            EXCEPT() << e.what();
+        }
+    }
+
     setFocusProxy(ui->dataTreeView);
 
-    mConnect = new Connect();
     QStringList schema = mConnect->getSchemaNames();
 
     SchemaListModel* schemaItemModel = new SchemaListModel( mConnect->getSchemaNames(), this );
@@ -77,9 +96,7 @@ bool ConnectEditor::init()
     ui->connectHSplitter->setStretchFactor(1, 3);
     ui->connectHSplitter->setStretchFactor(2, 5);
 
-    mDataModel = new ConnectDataModel(mLocation, mConnect, this);
     ui->dataTreeView->setModel( mDataModel );
-
     ConnectDataValueDelegate* valuedelegate = new ConnectDataValueDelegate(ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn(1, valuedelegate );
 

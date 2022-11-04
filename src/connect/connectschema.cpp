@@ -19,6 +19,7 @@
  */
 #include <QDebug>
 #include "connectschema.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -122,7 +123,8 @@ ConnectSchema::~ConnectSchema()
 void ConnectSchema::loadFromFile(const QString &inputFileName)
 {
     ConnectAgent::loadFromFile(inputFileName);
-    Q_ASSERT(mRootNode.Type()==YAML::NodeType::Map);
+    if (mRootNode.Type()!=YAML::NodeType::Map)
+        EXCEPT() << "Error Loading from file : " << inputFileName;
     for (YAML::const_iterator it = mRootNode.begin(); it != mRootNode.end(); ++it) {
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
         YAML::Node node = it->second;
@@ -137,8 +139,6 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
            createSchemaHelper(key, it->second, 1);
         }
     }
-
-    qDebug() << mOrderedKeyList;
 }
 
 void ConnectSchema::loadFromString(const QString &input)

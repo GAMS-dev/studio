@@ -28,6 +28,7 @@
 #include "connectdatamodel.h"
 #include "theme.h"
 #include "commonpaths.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -40,12 +41,14 @@ ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject
       mLocation(filename),
       mConnect(c)
 {
-    mConnectData = mConnect->loadDataFromFile(mLocation);
-    qDebug() << mConnectData->str().c_str();
+    try {
+        mConnectData = mConnect->loadDataFromFile(mLocation);
+    } catch (std::exception &e) {
+        EXCEPT() << e.what();
+    }
 
-    qDebug() << "before setupTreeItemModelData";
+    qDebug() << mConnectData->str().c_str();
     setupTreeItemModelData();
-    qDebug() << "end setupTreeItemModelData";
 }
 
 ConnectDataModel::~ConnectDataModel()
@@ -477,7 +480,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 
     if (row < 0 || column < 0) { // drop on to a row
         if (state!=(int)DataCheckState::SchemaName) {  // drop on to a non-schemaname
-            qDebug() << "   >>> drop onto schema";
             if (state!=(int)DataCheckState::ListItem) // not a ListItem
                 return false;
             if (schemaKey.size()==tobeinsertSchemaKey.size()) // same size
@@ -488,7 +490,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                 return false;
         } else { // drop on to a schema name
             if (hasChildren(parent)) { // schema name has a child
-                qDebug() << "   >>> has children";
                 if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
                     return false;
                 if (!hasSameParent(tobeinsertSchemaKey, schemaKey,false)) // not immediate attribute of schemaname
@@ -496,7 +497,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                 if (existsUnderSameParent(schemastrlist[1],  parent)) // attribute already exists
                     return false;
             } else {  // schema name without child
-                qDebug() << "   >>> has NO children";
                 if (schemaKey.size()==tobeinsertSchemaKey.size()) // has the same schema size
                     return false;
                 if (hasSameParent(tobeinsertSchemaKey, schemaKey)!=0) // not same parent
@@ -506,7 +506,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
             }
         }
     } else { // drop between row
-        qDebug() << "   >>> drop between row";
         if (schemaKey.size() > 0 && schemaKey.at(0).isEmpty())
             return false;
 

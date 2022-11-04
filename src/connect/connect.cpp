@@ -41,9 +41,9 @@ Connect::Connect()
         }
     }
     if (mSchemaError.size()>0) {
-//        qDebug() << "Error reading schema : %s : %s" << filename << e.what();
         QStringList keys = mSchemaError.keys();
         QMessageBox msgBox;
+        msgBox.setWindowTitle("Unable to read Schema Definition File");
         msgBox.setText("Warning");
         msgBox.setIcon(QMessageBox::Warning);
         if (mSchemaError.size()==1) {

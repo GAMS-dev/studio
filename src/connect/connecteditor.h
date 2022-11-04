@@ -74,7 +74,7 @@ private slots:
     void moveDownDatatItemRequested(const QModelIndex &index);
 
 private:
-    bool init();
+    bool init(bool quiet=false);
 
     void saveExpandedState();
     void restoreExpandedState();

@@ -20,6 +20,7 @@
 #include <fstream>
 #include <QDebug>
 #include "connectagent.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -30,7 +31,7 @@ void ConnectAgent::loadFromFile(const QString &inputFileName)
     try {
         mRootNode = YAML::LoadFile(inputFileName.toStdString());
     } catch(const YAML::ParserException& e) {
-        qDebug() << "Error Load from file : " << inputFileName;
+        EXCEPT() << "Error parsing file : " << inputFileName;
     }
 }
 
@@ -39,7 +40,7 @@ void ConnectAgent::loadFromString(const QString &input)
     try {
         mRootNode = YAML::Load(input.toStdString());
     } catch(const YAML::ParserException& e) {
-        // ToDo
+        EXCEPT() << "Error Loading from string : " << input;
     }
 
 }
