@@ -29,6 +29,7 @@
 #include "headerviewproxy.h"
 #include "mainwindow.h"
 #include "exception.h"
+#include "treecellresizer.h"
 #include "ui_connecteditor.h"
 
 namespace gams {
@@ -107,14 +108,13 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveDown, actiondelegate);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::MoveUp, actiondelegate);
 
-//    ui->dataTreeView->header()->hide();
+    ui->dataTreeView->header()->hide();     // hide header
+    new TreeCellResizer(ui->dataTreeView);  // resize tree cell instead of header
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Interactive);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::Interactive);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
-    if (HeaderViewProxy::platformShouldDrawBorder())
-        ui->dataTreeView->header()->setStyle(HeaderViewProxy::instance());
     ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -127,7 +127,6 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->setDropIndicatorShown(true);
     ui->dataTreeView->setDragDropMode(QAbstractItemView::DropOnly);
     ui->dataTreeView->setDefaultDropAction(Qt::CopyAction);
-//    updateDataColumnSpan();
     ui->dataTreeView->expandAll();
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
