@@ -31,7 +31,7 @@ void ConnectAgent::loadFromFile(const QString &inputFileName)
     try {
         mRootNode = YAML::LoadFile(inputFileName.toStdString());
     } catch(const YAML::ParserException& e) {
-        EXCEPT() << "Error parsing file : " << inputFileName;
+        EXCEPT() << "Error : " << e.what() << " : " << inputFileName;
     }
 }
 
@@ -40,7 +40,7 @@ void ConnectAgent::loadFromString(const QString &input)
     try {
         mRootNode = YAML::Load(input.toStdString());
     } catch(const YAML::ParserException& e) {
-        EXCEPT() << "Error Loading from string : " << input;
+        EXCEPT() << "Error : " << e.what() << " : when loading from string : " << input;
     }
 
 }
