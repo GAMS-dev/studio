@@ -37,6 +37,7 @@ SUBDIRS +=                              \
            testoptionfile               \
            testsettings                 \
            testcompleter                \
+           testconnect                  \
            testservicelocators
 #           testsolverconfiginfo
 #           testfilemapper               \

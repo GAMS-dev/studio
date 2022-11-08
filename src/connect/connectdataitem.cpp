@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "connectdataitem.h"
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -32,6 +33,8 @@ ConnectDataItem::ConnectDataItem( const QList<QVariant> &data, int id, ConnectDa
 
 ConnectDataItem::~ConnectDataItem()
 {
+    for(int i=0; i<childCount(); ++i)
+        removeChildren(i, 1);
     qDeleteAll(mChildItems);
 }
 
@@ -110,9 +113,13 @@ bool ConnectDataItem::removeChildren(int position, int count)
     if (position < 0 || position + count > mChildItems.size())
         return false;
 
-    for (int row = 0; row < count; ++row)
-        delete mChildItems.takeAt(position);
-
+    for (int row = position+count-1; row >=position; --row) {
+        ConnectDataItem* item = mChildItems.takeAt(row);
+        for (int i = item->childCount(); i>=0; --i) {
+            item->removeChildren(i, 1);
+        }
+        delete item;
+    }
     return true;
 }
 
@@ -133,7 +140,7 @@ bool ConnectDataItem::isFirstChild() const
 
 bool ConnectDataItem::isLastChild() const
 {
-    return (childNumber()==mParentItem->childCount()-1);
+    return (childNumber()==(mParentItem ? mParentItem->childCount()-1: 0));
 }
 
 } // namespace connect

@@ -65,6 +65,7 @@ Connect::Connect()
 
 Connect::~Connect()
 {
+    mSchemaError.clear();
     if (mSchema.size()>0) {
        qDeleteAll( mSchema );
        mSchema.clear();
