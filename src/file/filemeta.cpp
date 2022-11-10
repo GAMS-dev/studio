@@ -721,15 +721,12 @@ void FileMeta::load(int codecMib, bool init)
         if (!textOptEditor)
             return;
     }
-    qDebug() << "load()";
     if (kind() == FileKind::GCon) {
         bool textEditor = true;
         for (QWidget *wid : qAsConst(mEditors)) {
-            qDebug() << "load() 1";
             if (connect::ConnectEditor *cyaml = ViewHelper::toGamsConnectEditor(wid)) {
-                qDebug() << "load() 2";
                 textEditor = false;
-//                cyaml->on_reloadGamsUserConfigFile(mCodec);
+                cyaml->on_reloadConnectFile(mCodec);
             }
         }
         if (!textEditor)

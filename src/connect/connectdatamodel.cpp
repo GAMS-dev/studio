@@ -756,6 +756,26 @@ void ConnectDataModel::onlyRequriedAttributedChanged(int state)
      mOnlyRequriedAttributesAdded = (state==Qt::Checked);
 }
 
+void ConnectDataModel::reloadConnectDataModel()
+{
+    try {
+        ConnectData* data = mConnect->loadDataFromFile(mLocation);
+        delete mConnectData;
+        mConnectData = data;
+    } catch (std::exception &e) {
+        EXCEPT() << e.what();
+    }
+
+    beginResetModel();
+    if (mRootItem)
+        delete mRootItem;
+
+    mItemIDCount = 0;
+
+    setupTreeItemModelData();
+    endResetModel();
+}
+
 ConnectData *ConnectDataModel::getConnectData()
 {
      YAML::Node root = YAML::Node(YAML::NodeType::Sequence);

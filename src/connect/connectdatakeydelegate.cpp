@@ -127,7 +127,6 @@ void ConnectDataKeyDelegate::commitAndCloseEditor()
 
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
-    qDebug() << "editorEvent";
     if (event->type()==QEvent::MouseButtonRelease) {
         QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
         if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
@@ -136,8 +135,6 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
         }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );
         const QPoint p = mouseevent->pos();  // ->globalPos()
-        qDebug() << "position(" << p.x() << "," << p.y() << ") " << mSchemaHelpPosition.size()
-                                                                 << mSchemaAppendPosition.size() << ":" ;
         bool found = false;
         QMap<QString, QRect>::const_iterator it;
         for (it= mSchemaHelpPosition.cbegin();  it != mSchemaHelpPosition.cend(); ++it) {
@@ -150,11 +147,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
         if (!found) {
             QMap<QModelIndex, QRect>::const_iterator it;
             for (it= mSchemaAppendPosition.cbegin();  it != mSchemaAppendPosition.cend(); ++it) {
-                qDebug() << "      2 check(" << it.value().x() << "," << it.value().y() << ") "
-                                            << "), index=(" << index.row() << "," <<index.column()<<")"
-                                            << "      equal?"<< (it.key() == index? "yes" : "no");
                 if (it.key()== index && it.value().contains(p)) {
-                    qDebug() << "Found idx! " << it.key().row() << "," << it.key().column();
                     emit requestAppendItem(index);
                     found = true;
                     break;

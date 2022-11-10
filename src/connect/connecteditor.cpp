@@ -59,7 +59,7 @@ bool ConnectEditor::init(bool quiet)
             QMessageBox msgBox;
             msgBox.setWindowTitle("Unable to Open File");
             msgBox.setText("Unable to open file: " + mLocation + ".\n"
-                           + "Error: file contents not recognized as a valid connect yaml file.\n"
+                           + e.what() + "\n"
                            + "You can reopen the file using text editor to edit the content."
                            );
             msgBox.setIcon(QMessageBox::Warning);
@@ -193,16 +193,22 @@ bool ConnectEditor::init(bool quiet)
     connect(mDataModel, &ConnectDataModel::rowsRemoved , [this]() { restoreExpandedState();  });
     connect(mDataModel, &ConnectDataModel::rowsMoved   , [this]() { restoreExpandedState();  });
     connect(mDataModel, &ConnectDataModel::modelReset, [this]() {
-        restoreExpandedState();
+        ui->dataTreeView->expandRecursively(mDataModel->index(0,0));
+        ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
+        ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key);
+        ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value);
     });
 
     connect(defmodel, &SchemaDefinitionModel::modelReset, [this]() {
         ui->helpTreeView->expandAll();
-        ui->helpTreeView->resizeColumnToContents(0);
-        ui->helpTreeView->resizeColumnToContents(1);
-        ui->helpTreeView->resizeColumnToContents(2);
-        ui->helpTreeView->resizeColumnToContents(3);
-        ui->helpTreeView->resizeColumnToContents(4);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Field);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Required);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Type);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::SchemaKey);
+        ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::DragEnabled);
     });
 
     setModified(false);
@@ -284,9 +290,6 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 
 void ConnectEditor::expandAndResizedToContents(const QModelIndex &index)
 {
-    qDebug() << "expandAndResizedToContents: (" << index.row() << "," << index.column()
-             <<") parent:(" << index.parent().row() << "," << index.parent().column() << ")";
-    qDebug() << "expandAndResizedToContents: valid index:" << (index.isValid()?"Y":"N");
     ui->dataTreeView->expandRecursively( index );
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
@@ -361,6 +364,26 @@ void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
     mDataModel->moveRows( index.parent(), index.row(), 1,
                           index.parent(), index.row()+2 );
     ui->dataTreeView->setUpdatesEnabled(true);
+}
+
+void ConnectEditor::on_reloadConnectFile(QTextCodec *codec)
+{
+    Q_UNUSED(codec);  // yaml-cpp supports only QTextCodec::codecForName("UTF-8")
+    try {
+       mDataModel->reloadConnectDataModel();
+       setModified(false);
+    } catch(Exception& e) {
+            QMessageBox msgBox;
+            msgBox.setWindowTitle("Unable to Reload File");
+            msgBox.setText("Unable to reload the contents from file : " + mLocation + ".\n"
+                           + e.what() + "\n"
+                           + "Contnue editing contents without reloading the file contents may cause data loss or conflict.\n"
+                           + "You can reopen the file using text editor to edit the contents."
+                           );
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setStandardButtons(QMessageBox::Ok);
+            if (msgBox.exec() == QMessageBox::Ok) {  }
+    }
 }
 
 void ConnectEditor::saveExpandedState()

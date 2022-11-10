@@ -109,6 +109,7 @@ public slots:
     void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
 
     void onlyRequriedAttributedChanged(int state);
+    void reloadConnectDataModel();
 
 protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;

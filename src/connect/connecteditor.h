@@ -59,12 +59,11 @@ signals:
 public slots:
     bool saveConnectFile(const QString &location);
     void openAsTextButton_clicked(bool checked = false);
+    void on_reloadConnectFile(QTextCodec* codec);
 
 private slots:
     void fromSchemaInserted(const QString& schemaname, int position);
-
     void schemaDoubleClicked(const QModelIndex &modelIndex);
-
     void expandAndResizedToContents(const QModelIndex &index);
 
     void schemaHelpRequested(const QString &schemaName);
