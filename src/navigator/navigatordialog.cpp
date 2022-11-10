@@ -370,7 +370,7 @@ void NavigatorDialog::selectLineNavigation()
 {
     QRegularExpressionMatch match = mPostfixRegex.match(mInput->text());
     if (!match.captured(1).isEmpty())
-        mMain->jumpToLine(match.captured(1).toInt()-1);
+        mMain->jumpToLine(match.captured(1).remove(0,1).toInt()-1); // remove leading colon from match
 
     close();
 }
