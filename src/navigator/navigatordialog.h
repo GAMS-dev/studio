@@ -72,6 +72,7 @@ private:
     void selectItem(QModelIndex index);
     void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
+    void highlightCurrentFile();
 
     ///
     /// \brief findClosestPath removes characters from the current string

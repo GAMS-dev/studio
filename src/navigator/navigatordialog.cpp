@@ -22,7 +22,6 @@
 #include <QApplication>
 #include <QAbstractItemModel>
 
-#include "qnamespace.h"
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -71,19 +70,25 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    inputChanged();
+    inputChanged();    
+}
 
+void NavigatorDialog::highlightCurrentFile()
+{
     if (!mFilterModel) return;
 
     if (FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor())) {
         int index = mNavModel->findIndex(fm->location());
-        if (index >= 0)
-            ui->tableView->setCurrentIndex(mFilterModel->mapFromSource(
-                                               mNavModel->index(index, 0))
-                                           );
-    } else {
-        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+        if (index >= 0) {
+            QModelIndex filterModelIndex = mFilterModel->mapFromSource(mNavModel->index(index, 0));
+
+            if (filterModelIndex.isValid()) {
+                ui->tableView->setCurrentIndex(filterModelIndex);
+                return;
+            }
+        }
     }
+    ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
 }
 
 void NavigatorDialog::inputChanged()
@@ -149,7 +154,7 @@ void NavigatorDialog::updateContent()
     }
 
     if (!ui->tableView->currentIndex().isValid())
-        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+        highlightCurrentFile();
 }
 
 void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
