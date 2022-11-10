@@ -49,6 +49,9 @@ void NavigatorLineEdit::keyPressEvent(QKeyEvent *event)
             event->key() == Qt::Key_Escape || event->key() == Qt::Key_Return ||
             event->key() == Qt::Key_Enter) {
         emit sendKeyEvent(event);
+    } else if ( event->key() == Qt::Key_Colon) {
+        QLineEdit::keyPressEvent(event);
+        emit autocompleteTriggered();
     } else {
         QLineEdit::keyPressEvent(event);
     }

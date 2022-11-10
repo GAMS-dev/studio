@@ -22,6 +22,7 @@
 
 #include <QDialog>
 #include "mainwindow.h"
+#include "navigator/navigatorcontent.h"
 #include "navigator/navigatormodel.h"
 #include "qregularexpression.h"
 
@@ -69,7 +70,7 @@ private:
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
-    void autocomplete(NavigatorContent nc);
+    void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
 
     ///
@@ -94,7 +95,8 @@ private:
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
     QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
-    QRegularExpression mPostfixRegex = QRegularExpression(":(\\d*)$"); // has trailing line number
+    QRegularExpression mPostfixRegex = QRegularExpression("(:\\d*)$"); // has trailing line number
+    NavigatorContent mLastSelectedItem;
 };
 
 }

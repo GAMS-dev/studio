@@ -56,6 +56,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
     connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::inputChanged);
+    connect(mInput, &NavigatorLineEdit::autocompleteTriggered, this, &NavigatorDialog::autocomplete);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -211,7 +212,7 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 {
-    QString textInput = mMain->navigatorInput()->text();
+    QString textInput = mInput->text();
     textInput.remove(mPrefixRegex);
 
     QDir dir(textInput);
@@ -248,13 +249,16 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     QModelIndex index = ui->tableView->currentIndex();
 
     // chained file selection and line navigation
+    NavigatorContent nc;
     if (index.isValid()) {
         QModelIndex mappedIndex = mFilterModel->mapToSource(index);
-        NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
-        fm = nc.GetFileMeta();
-        fi = nc.FileInfo();
-        autocomplete(nc);
+        nc = mNavModel->content().at(mappedIndex.row());
+
+    } else if (mLastSelectedItem.isValid()) {
+        nc = mLastSelectedItem;
     }
+    fm = nc.GetFileMeta();
+    fi = nc.FileInfo();
 
     if (fm) {
         // if has editors, get line number
@@ -302,8 +306,14 @@ void NavigatorDialog::selectItem(QModelIndex index)
     else selectFileOrFolder(nc);
 }
 
-void NavigatorDialog::autocomplete(NavigatorContent nc)
-{
+void NavigatorDialog::autocomplete()
+{ 
+    QModelIndex mappedIndex = mFilterModel->mapToSource(ui->tableView->currentIndex());
+    if (!mappedIndex.isValid() && !mLastSelectedItem.isValid()) return;
+
+    NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
+    mLastSelectedItem = nc;
+
     QRegularExpressionMatch preMatch = mPrefixRegex.match(mInput->text());
     QRegularExpressionMatch postMatch = mPostfixRegex.match(mInput->text());
     QString prefix, postfix;
@@ -312,7 +322,7 @@ void NavigatorDialog::autocomplete(NavigatorContent nc)
         prefix = preMatch.captured(1) + " ";
 
     if (postMatch.hasMatch())
-        postfix = ":" + postMatch.captured(1);
+        postfix = postMatch.captured(1);
 
     if (!nc.Prefix().isEmpty()) { // help content
         FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());

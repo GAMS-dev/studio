@@ -39,6 +39,7 @@ signals:
     void sendKeyEvent(QKeyEvent *keyEvent);
     void receivedFocus();
     void lostFocus();
+    void autocompleteTriggered();
 
 protected:
     void mouseReleaseEvent(QMouseEvent *event);
