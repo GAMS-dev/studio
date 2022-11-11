@@ -128,6 +128,10 @@ protected:
     ConnectData*     mConnectData;
     ConnectDataItem* mRootItem;
 
+    static const QString TooltipStrHeader;
+    static const QString TooltipStrFooter;
+    static const QString TooltipOpenedBoldStr;
+    static const QString TooltipClosedBoldStr;
 };
 
 } // namespace connect

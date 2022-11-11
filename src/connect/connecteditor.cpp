@@ -59,7 +59,7 @@ bool ConnectEditor::init(bool quiet)
             QMessageBox msgBox;
             msgBox.setWindowTitle("Unable to Open File");
             msgBox.setText("Unable to open file: " + mLocation + ".\n"
-                           + e.what() + "\n"
+                           + e.what() + ".\n"
                            + "You can reopen the file using text editor to edit the content."
                            );
             msgBox.setIcon(QMessageBox::Warning);
@@ -316,6 +316,9 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     qDebug() << "append item (" << index.row() <<"," << index.column() << ")";
     QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
+        if (index.parent().isValid() &&
+            index.parent().siblingAtColumn((int)DataItemColumn::Unknown).data(Qt::DisplayRole).toBool())
+            return;
         QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
         QStringList schema = values_idx.data().toStringList();
         qDebug() << "schema=" <<schema.join(":");
@@ -376,7 +379,7 @@ void ConnectEditor::on_reloadConnectFile(QTextCodec *codec)
             QMessageBox msgBox;
             msgBox.setWindowTitle("Unable to Reload File");
             msgBox.setText("Unable to reload the contents from file : " + mLocation + ".\n"
-                           + e.what() + "\n"
+                           + e.what() + ".\n"
                            + "Contnue editing contents without reloading the file contents may cause data loss or conflict.\n"
                            + "You can reopen the file using text editor to edit the contents."
                            );

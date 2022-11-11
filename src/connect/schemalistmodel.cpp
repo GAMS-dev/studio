@@ -39,11 +39,10 @@ SchemaListModel::SchemaListModel(const QStringList& schema, QObject *parent)
         sitem->setSelectable(true);
         sitem->setTextAlignment(Qt::AlignLeft);
         sitem->setForeground(Theme::color(Theme::Normal_Green));
-        if (row==0)
-            sitem->setToolTip(
-                        QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3.</p> <p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> <p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p></body></html>")
-                            .arg("Select or click to show", mSchema.at(row), "definition", "Double click to append", "data", "Drag and drop to insert")
-                   );
+        sitem->setToolTip(
+             QString("<html><head/><body><p>%1 <span style=' font-weight:600;'>%2</span> %3.</p> <p>%4 <span style=' font-weight:600;'>%2</span> %5 from %3.</p> <p>%6 <span style=' font-weight:600;'>%2</span> %5 from %3.</p></body></html>")
+                 .arg("Select or click to show", mSchema.at(row), "definition", "Double click to append", "data", "Drag and drop to insert")
+        );
         setItem(row, 0, sitem);
     }
 }
@@ -78,7 +77,7 @@ QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
         stream << text;
         break;
     }
-    mimeData->setData( "application/vnd.gams-connect.text", encodedData);
+    mimeData->setData( "application/vnd.gams-connect.schema.text", encodedData);
     return mimeData;
 }
 

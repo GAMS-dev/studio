@@ -116,8 +116,8 @@ FileType &FileType::from(const QString &fileName)
                return *ft;
             }
          } else if (ft->mKind == FileKind::GCon) {
-             if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) { // TODO: JP
-                     return *ft;
+             if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive)) {
+                return *ft;
              }
 
          } else if (ft->mKind == FileKind::Opt) {

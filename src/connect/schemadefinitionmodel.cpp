@@ -93,7 +93,11 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
     }
     case Qt::ToolTipRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        return item->data(index.column());
+        if (item->data(index.column()).toString().compare("schema", Qt::CaseInsensitive)!=0)
+            return (
+                QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert attribute data from definition.</body></html>")
+                       .arg(item->data(index.column()).toString())
+            );
     }
     default:
          break;
@@ -192,11 +196,9 @@ QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
     for (const QModelIndex &index : indexes) {
         QModelIndex sibling = index.sibling(index.row(), (int)SchemaItemColumn::SchemaKey);
         QString text = QString("schema=%1").arg(sibling.data(Qt::UserRole).toString());
-        qDebug() << "1 setmimedata:("<< index.row() << "," << index.column() << ")" << text;
         stream << text;
         break;
     }
-    qDebug() << "2 setmimedata:"<< QString(encodedData);
     mimeData->setData( "application/vnd.gams-connect.text", encodedData);
     return mimeData;
 }
@@ -334,7 +336,6 @@ void SchemaDefinitionModel::setupTreeItemModelData()
             }
             schemaKeys.removeLast();
         }
-        qDebug() << anyOfDefinedKeys;
     }
 }
 

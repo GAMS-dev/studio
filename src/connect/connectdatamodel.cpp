@@ -34,6 +34,11 @@ namespace gams {
 namespace studio {
 namespace connect {
 
+const QString ConnectDataModel::TooltipStrHeader = QString("<html><head/><body>");
+const QString ConnectDataModel::TooltipStrFooter = QString("</body></html>");
+const QString ConnectDataModel::TooltipOpenedBoldStr = QString("<span style=' font-weight:600;'>");
+const QString ConnectDataModel::TooltipClosedBoldStr = QString("</span>");
+
 ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject *parent)
     : QAbstractItemModel{parent},
       mOnlyRequriedAttributesAdded(false),
@@ -135,52 +140,38 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         if (item->data(index.column()).toBool()) {
             ConnectDataItem *parentItem = item->parentItem();
             QModelIndex data_index = index.sibling(index.row(),(int)DataItemColumn::Key );
-            if (parentItem == mRootItem) {
+            if (parentItem != mRootItem) {
                 if (index.column()==(int)DataItemColumn::Delete) {
-                    return QVariant( QString("delete \"%1\" data including all children").arg( data_index.data(Qt::DisplayRole).toString()) );
-                } else if (index.column()==(int)DataItemColumn::MoveUp) {
-                          return QVariant( QString("move \"%1\" data up including all children").arg( data_index.data(Qt::DisplayRole).toString()) );
+                    return QVariant( QString("%1 Delete %2%3%4 and all children, if there is any%5")
+                                     .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                 } else if (index.column()==(int)DataItemColumn::MoveDown) {
-                           return QVariant( QString("move \"%1\" data down including all it children").arg( data_index.data(Qt::DisplayRole).toString()) );
-                } else if (index.column()==(int)DataItemColumn::Key) {
-                          if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName) {
-                              if (!item->data( (int)DataItemColumn::Unknown ).toBool() ) {
-                                  return QVariant( QString("show help for \"%1\" schema").arg( data_index.data(Qt::DisplayRole).toString()) );
-                              } else {
-                                  QVariant data = index.data(index.column());
-                                  return QVariant( QString("Unknown schema name \"%1\".\nNote that name is case-sensitive.\nSee \"%2\" location for known schema definition.")
-                                                   .arg( data.toString() ).arg( QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir()) ) );
-                              }
-                          } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend) {
-                                    return QVariant("add schmea element");
-                          }
-                }
-            } else {
-                if (index.column()==(int)DataItemColumn::Delete) {
-                    return QVariant( QString("delete \"%1\" and all children, if there is any").arg( data_index.data(Qt::DisplayRole).toString()) );
-                } else if (index.column()==(int)DataItemColumn::MoveDown) {
-                          if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem &&
-                              item->data(0).toInt() < parentItem->childCount()-1)
-                              return QVariant( QString("move \"%1\" and all it children down").arg( data_index.data(Qt::DisplayRole).toString()) );
+                              return QVariant( QString("%1 Move %2%3%4 and all it children down %5")
+                                               .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                 } else if (index.column()==(int)DataItemColumn::MoveUp) {
-                          if (item->data(0).toInt() > 0 && item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListItem)
-                              return QVariant( QString("move \"%1\" and all it children up").arg( data_index.data(Qt::DisplayRole).toString()) );
+                              return QVariant( QString("%1 Move %2%3%4 and all it children up %5")
+                                               .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                 } else  if (index.column()==(int)DataItemColumn::Key) {
                            QVariant data = index.data(index.column());
                            if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName) {
                                if (!item->data( (int)DataItemColumn::Unknown ).toBool() ) {
-                                   return QVariant( QString("show help for \"%1\" schema").arg( data_index.data(Qt::DisplayRole).toString()) );
+                                   return QVariant( QString("%1 Show help for %2%3%4 schema %5")
+                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter) );
                                } else {
-                                   return QVariant( QString("Unknown schema name \"%1\".\nNote that name is case-sensitive.\nSee \"%2\" location for known schema definition.")
-                                                    .arg( data.toString() ).arg( QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir()) ) );
+                                   return QVariant( QString("%1 Unknown schema name %2%3%4.<br/>Note that name is case-sensitive.<br/>See %2%5%4 location for known schema definition.%6")
+                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir()),TooltipStrFooter ) );
                                }
                            } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend) {
-                               return QVariant( QString("add element to the list of \"%1\"").arg( data.toString() ) );
+                                      if (item->parentItem() && item->parentItem()->data((int)DataItemColumn::Unknown ).toBool())
+                                          return QVariant( QString("%1 Unable to add element to the list of the unknown %2%3%4<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive %5")
+                                                           .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter) );
+                                     return QVariant( QString("%1 Add element to the list of %2%3%4 %5")
+                                                      .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                            } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::MapAppend) {
-                                      return QVariant( QString("add element to \"%1\" dict").arg( data.toString() ) );
+                                      return QVariant( QString("%1 Add element to %2%3%4 dict %5")
+                                                       .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ) );
                            } else if (item->data( (int)DataItemColumn::Unknown).toBool()) {
-                                     return QVariant( QString("Unknown attribute name \"%1\".\nNote that name is case-sensitive")
-                                                           .arg( data.toString() ));
+                                     return QVariant( QString("%1 %2%3%4 attribute is unknown.<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive.%5")
+                                                           .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                            }
                 }
             }
@@ -446,10 +437,9 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
     if (!mimedata->hasFormat("application/vnd.gams-connect.text"))
         return false;
 
+    QStringList newItems;
     QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
     QDataStream stream(&encodedData, QIODevice::ReadOnly);
-
-    QStringList newItems;
     int rows = stream.atEnd()?-1:0;
     while (!stream.atEnd()) {
        QString text;
@@ -1132,7 +1122,6 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              bool isAnyofDefined = schema ? schema->isAnyOfDefined(key) : false;
              if (isAnyofDefined) {
                  QStringList anyofSchemaLlist = schema ? schema->getAllAnyOfKeys(key) : QStringList();
-                 qDebug() << "anyofschemalist=" << anyofSchemaLlist;
                  key += "[0]";
              }
              mapToSequenceKey = key;
