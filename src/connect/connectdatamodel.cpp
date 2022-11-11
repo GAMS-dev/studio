@@ -571,10 +571,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             tobeinsertSchemaKey.removeLast();
             appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
             emit modificationChanged(true);
-            if (row < 0)
-                emit indexExpandedAndResized(index(parent.row(), (int)DataItemColumn::Key, parent));
-            else
-                emit indexExpandedAndResized(index(row, (int)DataItemColumn::Key, parent));
             qDebug() << "4 dropmimedata";
         }
         return true;
@@ -675,13 +671,17 @@ void ConnectDataModel::appendMapElement(const QString& schemaname, QStringList& 
 
     informDataChanged(parentIndex);
     qDebug() << "end appendMapElement (" << position << ") " << rowCount();
+    if (position < 0)
+        emit indexExpandedAndResized(index(getItem(parentIndex)->childCount()-1, (int)DataItemColumn::Key, parentIndex));
+    else
+        emit indexExpandedAndResized(index(position, (int)DataItemColumn::Key, parentIndex));
 }
 
-void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList& keys, ConnectData* data, const QModelIndex &index)
+void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList& keys, ConnectData* data, const QModelIndex &idx)
 {
-    QModelIndex parentIndex = index.parent();
+    QModelIndex parentIndex = idx.parent();
     ConnectDataItem* parentItem = getItem(parentIndex);
-    qDebug() << "appendListElement (" << index.row() << "," << index.column() << ") " << parentItem->childCount();
+    qDebug() << "appendListElement (" << idx.row() << "," << idx.column() << ") " << parentItem->childCount();
 
     QList<ConnectDataItem*> parents;
     parents << parentItem;
@@ -689,14 +689,14 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     QStringList schemaKeys;
     schemaKeys << schemaname << keys;
 
-    beginInsertRows(parentIndex, index.row(), index.row()-1);
+    beginInsertRows(parentIndex, idx.row(), idx.row());
 
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
         QString listkey = schemaKeys.last();
-        mapSeqData << QVariant::fromValue(index.row()+i);
+        mapSeqData << QVariant::fromValue(idx.row()+i);
         mapSeqData << "";
         mapSeqData << QVariant((int)DataCheckState::ListItem);
         mapSeqData << QVariant(QStringList());
@@ -709,8 +709,8 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
         keys       << "-";
         mapSeqData << QVariant(schemaKeys);
         mapSeqData << (schema ?  QVariant(false) : QVariant(true));
-        ConnectDataItem* item = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(index.parent()));
-        parents.last()->insertChild(index.row(), item );
+        ConnectDataItem* item = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
+        parents.last()->insertChild(idx.row(), item );
         parents << item;
 
         if (node[i].Type()==YAML::NodeType::Map) {
@@ -718,7 +718,6 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
            insertSchemaData(schemaname, keys, new ConnectData(node[i]), -1, parents);
         } else if (node[i].Type()==YAML::NodeType::Scalar) {
             qDebug() << " .... 2 " << keys;
-//            schema = mConnect->getSchema(schemaname);
             QString key = QString::fromStdString(node[i].as<std::string>());
             QList<QVariant> itemData;
             itemData << key;
@@ -738,7 +737,8 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     endInsertRows();
 
     informDataChanged(parentIndex);
-    qDebug() << "end appendListElement (" << index.row() << "," << index.column() << ") " << rowCount();
+    qDebug() << "end appendListElement (" << idx.row() << "," << idx.column() << ") ";
+    emit indexExpandedAndResized(index(idx.row(), (int)DataItemColumn::Key, idx.parent()));
 }
 
 void ConnectDataModel::onlyRequriedAttributedChanged(int state)

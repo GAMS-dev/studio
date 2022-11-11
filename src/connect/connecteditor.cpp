@@ -334,7 +334,6 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);
     }
-    expandAndResizedToContents( index );
 }
 
 void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
