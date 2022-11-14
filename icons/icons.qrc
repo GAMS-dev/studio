@@ -10,6 +10,7 @@
         <file alias="engine">engine.svg</file>
         <file alias="engine-g">engine-g.svg</file>
         <file alias="file-alt">file-alt.svg</file>
+        <file alias="file-connect">file-connect.svg</file>
         <file alias="file-edit">file-edit.svg</file>
         <file alias="filter">filter.svg</file>
         <file alias="filter-off">filter-off.svg</file>
