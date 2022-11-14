@@ -77,7 +77,7 @@ QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
         stream << text;
         break;
     }
-    mimeData->setData( "application/vnd.gams-connect.schema.text", encodedData);
+    mimeData->setData( "application/vnd.gams-connect.text", encodedData);
     return mimeData;
 }
 
