@@ -87,8 +87,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
 //        mOrderedKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
-    Schema* s = new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined);
-    mSchemaHelper.insert(key, s);
+    mSchemaHelper.insert(key, new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
@@ -265,16 +264,16 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
 {
     QStringList strlist;
     if (contains(key)) {
-        foreach(ValueWrapper vw, mSchemaHelper[key]->allowedValues) { //[key]->allowedValues) {
-            int t = (int)vw.type;
+        for(int i=0; i<mSchemaHelper[key]->allowedValues.size(); ++i) {
+            int t = (int)mSchemaHelper[key]->allowedValues.at(i).type;
             if ( t==(int)SchemaValueType::Integer)
-                strlist << QString::number(vw.value.intval);
+                strlist << QString::number(mSchemaHelper[key]->allowedValues.at(i).value.intval);
             else if ( t==(int)SchemaValueType::Float)
-                    strlist << QString::number(vw.value.doubleval);
+                    strlist << QString::number(mSchemaHelper[key]->allowedValues.at(i).value.doubleval);
             else if (t==(int)SchemaValueType::String)
-                     strlist << QString(vw.value.stringval);
+                     strlist << QString::fromStdString(mSchemaHelper[key]->allowedValues.at(i).value.stringval);
             else if (t==(int)SchemaValueType::Boolean)
-                     strlist << QString(vw.value.boolval);
+                     strlist << (mSchemaHelper[key]->allowedValues.at(i).value.boolval?"true":"false");
         }
     }
     return strlist;

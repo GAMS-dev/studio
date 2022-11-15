@@ -221,6 +221,7 @@ bool ConnectEditor::init(bool quiet)
 ConnectEditor::~ConnectEditor()
 {
     delete ui;
+    mExpandIDs.clear();
     if (mDataModel)
         delete mDataModel;
     if (mConnect)
@@ -234,11 +235,15 @@ FileId ConnectEditor::fileId() const
 
 bool ConnectEditor::saveAs(const QString &location)
 {
-    setModified(false);
     bool successs = false;
     ConnectData* data = mDataModel->getConnectData();
-    qDebug()<< data->str().c_str();
-    data->unload(location);
+    if (data) {
+       setModified(false);
+       qDebug()<< data->str().c_str();
+       data->unload(location);
+       delete data;
+       data = NULL;
+    }
     return successs;
 }
 

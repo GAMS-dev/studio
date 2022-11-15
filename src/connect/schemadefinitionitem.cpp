@@ -13,6 +13,8 @@ SchemaDefinitionItem::SchemaDefinitionItem(const QString& name, const QList<QVar
 
 SchemaDefinitionItem::~SchemaDefinitionItem()
 {
+    for(int i=0; i<childCount(); ++i)
+        removeChildren(i, 1);
     qDeleteAll(mChildItems);
 }
 
@@ -84,8 +86,13 @@ bool SchemaDefinitionItem::removeChildren(int position, int count)
     if (position < 0 || position + count > mChildItems.size())
         return false;
 
-    for (int row = 0; row < count; ++row)
-        delete mChildItems.takeAt(position);
+    for (int row = position+count-1; row >=position; --row) {
+        SchemaDefinitionItem* item = mChildItems.takeAt(row);
+        for (int i = item->childCount(); i>=0; --i) {
+            item->removeChildren(i, 1);
+        }
+        delete item;
+    }
 
     return true;
 }

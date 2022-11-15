@@ -60,6 +60,8 @@ ConnectDataModel::~ConnectDataModel()
 {
     if (mRootItem)
         delete mRootItem;
+    if (mConnectData)
+        delete mConnectData;
 }
 
 QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
@@ -564,9 +566,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
                 onlyRequired = false;
             qDebug() << " drop onto schemaname ? " << (onlyRequired?"YES":"NO");
             ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, onlyRequired );
-            qDebug() << "data=" << data->str().c_str();
-            if (data->getRootNode().IsNull())
-                return false;
             tobeinsertSchemaKey.removeFirst();
             tobeinsertSchemaKey.removeLast();
             appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
@@ -629,7 +628,10 @@ void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
     }
 
     endInsertRows();
-
+    if (data) {
+        delete data;
+        data = NULL;
+    }
     informDataChanged( index(0,0).parent() );
     QModelIndex parent = indexForTreeItem( mRootItem->child(0) );
     emit indexExpandedAndResized(index(position-1, (int)DataItemColumn::Key, parent));
@@ -655,6 +657,13 @@ void ConnectDataModel::appendMapElement(const QModelIndex &index)
 
 void ConnectDataModel::appendMapElement(const QString& schemaname, QStringList& keys, ConnectData* data, int position, const QModelIndex& parentIndex)
 {
+    if (data->getRootNode().IsNull()) {
+        delete data;
+        data = NULL;
+        return;
+    }
+
+    qDebug() << "data=" << data->str().c_str();
     ConnectDataItem* parentItem = getItem(parentIndex);
 
     qDebug() << "appendMapElement (" << position << ") " << parentItem->childCount();
@@ -664,8 +673,9 @@ void ConnectDataModel::appendMapElement(const QString& schemaname, QStringList& 
     QStringList schemaKeys;
     schemaKeys << schemaname << keys;
 
+    qDebug() << schemaKeys;
     YAML::Node node = data->getRootNode();
-    beginInsertRows(parentIndex, position, position-1);
+    beginInsertRows(parentIndex, position, position);
     insertSchemaData(schemaname, keys, data, position, parents);
     endInsertRows();
 
@@ -736,6 +746,10 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     }
     endInsertRows();
 
+    if (data) {
+        delete data;
+        data = NULL;
+    }
     informDataChanged(parentIndex);
     qDebug() << "end appendListElement (" << idx.row() << "," << idx.column() << ") ";
     emit indexExpandedAndResized(index(idx.row(), (int)DataItemColumn::Key, idx.parent()));
@@ -1364,6 +1378,10 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                     dataKeys.removeLast();
                     schemaKeys.removeLast();
              }
+    }
+    if (data) {
+        delete data;
+        data = NULL;
     }
 }
 

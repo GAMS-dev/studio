@@ -121,6 +121,33 @@ struct ValueWrapper {
     ValueWrapper(double doubleval_)   : type(SchemaValueType::Float),   value(doubleval_) { }
     ValueWrapper(bool boolval_)       : type(SchemaValueType::Boolean), value(boolval_) { }
     ValueWrapper(std::string strval_) : type(SchemaValueType::String),  value(strval_) { }
+    ValueWrapper(const ValueWrapper& vw) : type(vw.type), value(vw.value) {
+        if (vw.type==SchemaValueType::String) {
+            value = vw.value.stringval;
+            assert(value.stringval != vw.value.stringval || vw.value.stringval == NULL);
+        }
+    }
+    ValueWrapper& operator=(const ValueWrapper& vw)
+    {
+        if (type==SchemaValueType::String) {
+            free(value.stringval);
+            value.stringval = NULL;
+        }
+        type = vw.type;
+        value = vw.value;
+        if (vw.type==SchemaValueType::String) {
+            value = vw.value.stringval;
+            assert(value.stringval != vw.value.stringval || vw.value.stringval == NULL);
+        }
+        return *this;
+    }
+
+    ~ValueWrapper() {
+        if (type==SchemaValueType::String) {
+            free(value.stringval);
+            value.stringval = NULL;
+        }
+    }
 };
 
 

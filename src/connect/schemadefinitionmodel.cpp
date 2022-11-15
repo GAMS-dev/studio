@@ -232,17 +232,17 @@ void SchemaDefinitionModel::addTypeList(QList<SchemaType>& typeList, QList<QVari
 void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<QVariant> &data)
 {
     QStringList valueStrList;
-    for(ValueWrapper& value :  valueList) {
-        if (value.type==SchemaValueType::NoValue) {
+    for(int i=0; i<valueList.size(); ++i) {
+        if (valueList.at(i).type==SchemaValueType::NoValue) {
             valueStrList << "";
-        } else if (value.type==SchemaValueType::Integer) {
-            valueStrList << QString::number(value.value.intval);
-        } else if (value.type==SchemaValueType::Float) {
-            valueStrList << QString::number(value.value.doubleval);
-        } else if (value.type==SchemaValueType::String) {
-            valueStrList << QString(value.value.stringval);
-        } else if (value.type==SchemaValueType::Boolean) {
-            valueStrList << QString(value.value.boolval);
+        } else if (valueList.at(i).type==SchemaValueType::Integer) {
+            valueStrList << QString::number(valueList.at(i).value.intval);
+        } else if (valueList.at(i).type==SchemaValueType::Float) {
+            valueStrList << QString::number(valueList.at(i).value.doubleval);
+        } else if (valueList.at(i).type==SchemaValueType::String) {
+            valueStrList << QString(valueList.at(i).value.stringval);
+        } else if (valueList.at(i).type==SchemaValueType::Boolean) {
+            valueStrList << QString(valueList.at(i).value.boolval);
         } else  {
             valueStrList << "";
         }
