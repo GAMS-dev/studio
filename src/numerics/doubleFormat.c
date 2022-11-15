@@ -300,7 +300,8 @@ char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen)
 } /* x2efmt */
 
 /* x2gfmt: use g-format, with nSigFigs digits of precision
- * if nSigFigs <= 0, we do shortest round-trip digits
+ * if nSigFigs <= 0, we do shortest round-trip digits and behave
+ *    as if squeeze=true (the squeeze input is ignored)
  * if squeeze is true, squeeze out trailing zeros.
  * the output is placed in outBuf, and *outLen gives the length of this buffer
  * On error, NULL is returned.
@@ -309,7 +310,7 @@ char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen)
 {
   char *p, *pEnd;
   char digBuf[32];              /* buffer for the digits */
-  int nDigits, decPt, isNeg;
+  int nDigits, decPt, isNeg, zCount;
   int sigFigs;                  /* max(digits returned, digits requested) */
   int mode = DTOA_MODE_EFMT;
 
@@ -329,9 +330,21 @@ char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen)
   nDigits = (int) (pEnd - p);
   zeroPatch(digBuf, &nDigits, &decPt);
   sigFigs = nDigits;
-  if (sigFigs < nSigFigs)
-    sigFigs = nSigFigs;
-  // if ((decPt < -3) || ((decPt-nDigits) >= 1) )
+#define MAXTRAILZEROS 5  /* reasonable options include 4 and 5 */
+  if (nSigFigs <= 0) {
+    // the user makes no specific precision/sigFigs request, so we create one
+    if (sigFigs < decPt) { /* x = 3100, nDigits = 2, digBuf = "31", decPt = 4 */
+      zCount = decPt - nDigits;
+      if (zCount > MAXTRAILZEROS)
+	zCount = MAXTRAILZEROS;
+      sigFigs += zCount;
+    }
+  }
+  else {
+    if (sigFigs < nSigFigs)
+      sigFigs = nSigFigs;
+  }
+  // the test below mirrors what fprint does
   if ((decPt < -3) || ((decPt-sigFigs) >= 1) ) {
     if (!dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen))
       return NULL;
