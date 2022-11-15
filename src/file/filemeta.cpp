@@ -1070,7 +1070,7 @@ void FileMeta::setModified(bool modified)
 
 bool FileMeta::isPinnable()
 {
-    QSet<FileKind> suppressedKinds {FileKind::Guc, FileKind::Opt, };
+    QSet<FileKind> suppressedKinds {FileKind::Guc, FileKind::Opt, FileKind::GCon, };
     return !suppressedKinds.contains(kind());
 }
 
