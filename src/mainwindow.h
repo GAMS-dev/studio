@@ -267,8 +267,8 @@ private slots:
     void on_actionSave_As_triggered();
     void on_actionSave_All_triggered();
     void on_actionNew_Project_triggered();
-    void on_actionImport_Project_triggered();
-    void on_actionExport_Project_triggered();
+    void on_actionMove_Project_triggered();
+    void on_actionClone_Project_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -419,8 +419,7 @@ private slots:
     void updateTabSize(int size);
     void openProject(const QString gspFile);
     void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
-    void importProjectDialog();
-    void exportProjectDialog(gams::studio::PExProjectNode *project);
+    void moveProjectDialog(gams::studio::PExProjectNode *project, bool cloneOnly);
     void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();

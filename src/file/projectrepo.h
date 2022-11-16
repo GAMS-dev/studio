@@ -111,9 +111,10 @@ public:
     bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir = QString());
     bool read(const QVariantList &data, const QString &sysWorkDir = QString());
     void write(QVariantList &projects) const;
-    void write(PExProjectNode *project, QVariantList &projects, bool relativePaths = false) const;
+    QVariantMap save(PExProjectNode *project, bool relativePaths = false) const;
 
     PExProjectNode *createProject(QString name, QString path, QString runFileName, QString workDir = QString());
+    void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());
@@ -171,7 +172,7 @@ private:
     bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
-    QString uniqueNodeName(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
+    QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);

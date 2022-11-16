@@ -90,6 +90,7 @@ ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
 {
     ui->setupUi(this);
     mSharedData = sharedData;
+    ui->edName->setEnabled(false);
     ui->edMainGms->setEnabled(false);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
@@ -224,7 +225,7 @@ void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit, QS
     dialog->setFileMode(QFileDialog::Directory);
     connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
         if (dialog->selectedFiles().count() == 1) {
-            QDir dir(dialog->selectedFiles().first().trimmed());
+            QDir dir(dialog->selectedFiles().at(0).trimmed());
             if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
         }
     });

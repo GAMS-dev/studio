@@ -42,7 +42,7 @@ namespace studio {
 PExGroupNode::PExGroupNode(QString name, QString location, NodeType type)
     : PExAbstractNode(name, type)
 {
-    setLocation(location);
+    PExGroupNode::setLocation(location);
 }
 
 PExGroupNode::~PExGroupNode()
@@ -215,6 +215,7 @@ PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta
     , mWorkDir(workDir)
     , mGamsProcess(new GamsProcess())
 {
+    mProjectFile = path + '/' + name + ".gsp";
     if (mWorkDir.isEmpty()) mWorkDir = path;
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
@@ -248,17 +249,46 @@ QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
     return projectRepo()->runAnimateIcon(mode, alpha);
 }
 
+QString PExProjectNode::name(NameModifier mod) const
+{
+    if (mod == NameModifier::withNameExt)
+        return PExGroupNode::name() + mNameExt;
+    return PExGroupNode::name(mod);
+}
+
 void PExProjectNode::setName(const QString &name)
 {
-    QString uniqueName = projectRepo()->uniqueNodeName(parentNode(), name, this);
-    PExGroupNode::setName(uniqueName);
+    if (name.compare(PExProjectNode::name()) == 0) return;
+    mNameExt = projectRepo()->uniqueNameExt(parentNode(), name, this);
+    PExGroupNode::setName(name);
     if (mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QString logName = workDir()+"/"+uniqueName+"."+suffix;
+        QString logName = workDir() + "/" + name + mNameExt + "." + suffix;
         mLogNode->file()->setLocation(logName);
         if (mLogNode->file()->editors().size())
             emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
     }
+}
+
+const QString &PExProjectNode::nameExt() const
+{
+    return mNameExt;
+}
+
+void PExProjectNode::setNameExt(const QString &newNameExt)
+{
+    mNameExt = newNameExt;
+    emit changed(id());
+}
+
+const QString &PExProjectNode::fileName() const
+{
+    return mProjectFile;
+}
+
+void PExProjectNode::setFileName(const QString &newProjectFile)
+{
+    mProjectFile = newProjectFile;
 }
 
 bool PExProjectNode::hasLogNode() const
@@ -280,6 +310,7 @@ void PExProjectNode::appendChild(PExAbstractNode *child)
     if (!mParameterHash.contains("gms") && file && file->file() && file->file()->kind() == FileKind::Gms) {
         setRunnableGms(file->file());
     }
+    setNeedSave();
 }
 
 void PExProjectNode::removeChild(PExAbstractNode *child)
@@ -288,7 +319,7 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
     bool gmsLost = false;
     PExFileNode *file = child->toFile();
     if (file) {
-        QList<QString> files = mParameterHash.keys(file->location());
+        const QList<QString> files = mParameterHash.keys(file->location());
         for (const QString &file: files) {
             mParameterHash.remove(file);
             if (file=="gms") gmsLost = true;
@@ -297,6 +328,7 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
     if (gmsLost) {
         setRunnableGms();
     }
+    setNeedSave();
 }
 
 QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create)
@@ -388,7 +420,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
                     locations << QDir::fromNativeSeparators(path) + "/inclib";
             }
             QString rawName = fName;
-            for (QString loc : locations) {
+            for (QString loc : qAsConst(locations)) {
                 if (!QDir::isAbsolutePath(loc))
                     loc = workDir() + '/' + loc;
                 fName = loc + '/' + rawName;
@@ -418,6 +450,16 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
         if (parts.size() > 2) col = parts.at(2).toInt();
     }
     return res;
+}
+
+bool PExProjectNode::needSave() const
+{
+    return mChanged;
+}
+
+void PExProjectNode::setNeedSave()
+{
+    mChanged = true;
 }
 
 PExLogNode *PExProjectNode::logNode()
@@ -642,7 +684,7 @@ QStringList PExProjectNode::getRunParametersHistory() const
 /// \param itemList list of options given by studio and user
 /// \return QStringList all arguments
 ///
-QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt, int &logOption)
+QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption)
 {
     bool ok;
     // set studio default parameters
@@ -653,7 +695,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     defaultArgumentList      << "logoption" << "ide" << "errorlog" << "errmsg" << "pagesize" << "lstTitleleftaligned" ;
     defaultArgumentValueList << "3"         << "1"   << "99"       << "1"      << "0"        << "1"                   ;
     int position = 0;
-    for (QString arg : defaultArgumentList) {
+    for (const QString &arg : qAsConst(defaultArgumentList)) {
         defaultArgumentIdList << opt->getOrdinalNumber(arg);
         if (defaultArgumentIdList.last() == opt->getOrdinalNumber("logoption")) {
             int lo = defaultArgumentValueList.at(position).toInt(&ok);
@@ -662,7 +704,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
         gamsArguments.insert(defaultArgumentIdList.last(), defaultArgumentValueList.at(position++));
     }
 
-    for(QString param: defaultParameters) {
+    for (const QString &param: defaultParameters) {
         QStringList list = param.split("=", Qt::SkipEmptyParts);
         if (list.count() != 2)
             continue;
@@ -679,7 +721,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     QStringList argumentList;
     QStringList argumentValueList;
     QList<int> argumentIdList = QList<int>();
-    for (option::OptionItem item : itemList) {
+    for (const option::OptionItem &item : itemList) {
         argumentList      << item.key;
         argumentIdList    << item.optionId;
         argumentValueList << item.value;
@@ -716,7 +758,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
 
     bool defaultOverride = false;
     // iterate options
-    for (option::OptionItem item : itemList) {
+    for (const option::OptionItem &item : itemList) {
         // convert to native seperator
         QString value = item.value;
         value = value.replace('\\', '/');
@@ -764,21 +806,21 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, QStrin
     QStringList output { CommonPaths::nativePathForProcess(gmsLocation) };
     // normalize gams parameter format
     position = 0;
-    for(int id : defaultArgumentIdList) {
+    for(int id : qAsConst(defaultArgumentIdList)) {
         if (defaultArgumentIdList.contains(id))
-            output.append( QString("%1=%2").arg(defaultArgumentList.at(position)).arg( defaultArgumentValueList.at(position)) );
+            output.append( QString("%1=%2").arg(defaultArgumentList.at(position), defaultArgumentValueList.at(position)));
         else
-            output.append( QString("%1=%2").arg(defaultArgumentList.at(position)).arg( gamsArguments.value(id)) );
+            output.append( QString("%1=%2").arg(defaultArgumentList.at(position), gamsArguments.value(id)));
         position++;
     }
     position = 0;
-    for(option::OptionItem item : itemList) {
+    for(const option::OptionItem &item : itemList) {
         if (item.recurrent) {
             if (item.recurrentIndices.first() == position) {
-                output.append( QString("%1=%2").arg(argumentList.at(position)).arg( gamsArguments.value(item.optionId)) );
+                output.append( QString("%1=%2").arg(argumentList.at(position), gamsArguments.value(item.optionId)));
             }
         } else {
-            output.append( QString("%1=%2").arg(argumentList.at(position)).arg(item.value) );
+            output.append( QString("%1=%2").arg(argumentList.at(position), item.value));
         }
         position++;
     }
@@ -882,10 +924,11 @@ bool PExProjectNode::hasParameter(const QString &kind) const
 void PExProjectNode::addNodesForSpecialFiles()
 {
     FileMeta* runFile = runnableGms();
-    for (QString loc : mParameterHash.values()) {
-
+    for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
+        QString loc = it.value();
         if (QFileInfo::exists(loc)) {
             PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
+            QTextCodec *codec = node->file()->codec();
             if (runFile)
                 node->file()->setCodec(runFile->codec());
             else {
@@ -893,6 +936,8 @@ void PExProjectNode::addNodesForSpecialFiles()
                 QTextCodec *codec = QTextCodec::codecForMib(codecMib);
                 if (codec) node->file()->setCodec(codec);
             }
+            if (codec != node->file()->codec())
+                setNeedSave();
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);
         }
@@ -921,15 +966,19 @@ void PExProjectNode::setParameter(const QString &kind, const QString &path)
         else
             DEB() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
     }
-
-    mParameterHash.insert(kind, fullPath);
+    if (mParameterHash.value(kind) != fullPath) {
+        mParameterHash.insert(kind, fullPath);
+        setNeedSave();
+    }
 }
 
 void PExProjectNode::clearParameters()
 {
+    bool willChange = mParameterHash.size() != 1 || !mParameterHash.contains("gms");
     QString gms = mParameterHash.value("gms");
     mParameterHash.clear();
     mParameterHash.insert("gms", gms);
+    if (willChange) setNeedSave();
 }
 
 QProcess::ProcessState PExProjectNode::gamsProcessState() const
@@ -939,7 +988,9 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 
 QString PExProjectNode::tooltip()
 {
-    QString res(QDir::toNativeSeparators(location()) + "\n\nWorking directory: " + QDir::toNativeSeparators(workDir()));
+    QString res(QDir::toNativeSeparators(fileName()) +
+                "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
+                "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
     if (runnableGms()) res.append("\nMain GMS file: ").append(runnableGms()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());

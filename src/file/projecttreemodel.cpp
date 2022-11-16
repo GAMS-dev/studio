@@ -158,6 +158,10 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
         return bool(node);
     }
+    case NameExtRole: {
+        PExProjectNode *node = mProjectRepo->node(ind)->toProject();
+        return node->nameExt();
+    }
     default:
         break;
     }

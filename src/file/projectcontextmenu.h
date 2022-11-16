@@ -52,9 +52,8 @@ signals:
     void openFilePath(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt, bool focus);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
-    void exportProject(PExProjectNode* group);
-    void importProject();
+    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void moveProject(PExProjectNode* project, bool cloneOnly);
     void newProject();
     void selectAll();
     void expandAll();
@@ -71,7 +70,8 @@ private slots:
     void onAddExisitingFile();
     void onAddNewFile();
     void onSetMainFile();
-    void onExportProject();
+    void onMoveProject();
+    void onCloneProject();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();

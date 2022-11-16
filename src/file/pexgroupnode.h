@@ -89,6 +89,7 @@ class PExProjectNode : public PExGroupNode
 public:
     virtual ~PExProjectNode() override;
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
+    QString name(NameModifier mod = NameModifier::raw) const override;
     void setName(const QString& name) override;
     bool hasLogNode() const;
     PExLogNode* logNode();
@@ -104,7 +105,7 @@ public:
     bool hasErrorText(int lstLine = -1);
     void addRunParametersHistory(QString option);
     QStringList getRunParametersHistory() const;
-    QStringList analyzeParameters(const QString &gmsLocation, QStringList defaultParameters, QList<option::OptionItem> itemList, option::Option *opt, int &logOption);
+    QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption);
     void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
     QString workDir() const;
@@ -120,6 +121,13 @@ public:
     void setProcess(std::unique_ptr<AbstractProcess> process);
     AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, PExFileNode *lstNode);
+
+    bool needSave() const;
+
+    const QString &fileName() const;
+
+    const QString &nameExt() const;
+    void setNameExt(const QString &newNameExt);
 
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
@@ -145,6 +153,7 @@ protected:
     friend class PExFileNode;
 
     PExProjectNode(QString name, QString path, FileMeta *runFileMeta, QString workDir);
+    void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
     void appendChild(PExAbstractNode *child) override;
@@ -152,17 +161,21 @@ protected:
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
+    QString mProjectFile;
     QString mWorkDir;
+    QString mNameExt;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectOptionsFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;
+    bool mChanged = false;
 
 private:
     QString cleanPath(QString path, QString file);
     void setLogLocation(QString path);
+    void setNeedSave();
 };
 
 

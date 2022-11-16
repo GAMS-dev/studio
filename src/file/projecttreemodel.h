@@ -36,7 +36,8 @@ public:
     enum ProjectRoles {
         LocationRole = Qt::UserRole,
         NodeIdRole = Qt::UserRole + 1,
-        IsProjectRole = Qt::UserRole + 2
+        IsProjectRole = Qt::UserRole + 2,
+        NameExtRole = Qt::UserRole + 3,
     };
 
 public:

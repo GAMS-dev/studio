@@ -96,7 +96,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>21</height>
+     <height>22</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -118,8 +118,8 @@
     <addaction name="actionSave_All"/>
     <addaction name="separator"/>
     <addaction name="actionNew_Project"/>
-    <addaction name="actionImport_Project"/>
-    <addaction name="actionExport_Project"/>
+    <addaction name="actionMove_Project"/>
+    <addaction name="actionClone_Project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
@@ -1510,19 +1510,25 @@
     <string>Ctrl+Shift+Down</string>
    </property>
   </action>
-  <action name="actionExport_Project">
-   <property name="text">
-    <string>Export Project</string>
-   </property>
-  </action>
-  <action name="actionImport_Project">
-   <property name="text">
-    <string>Import Project</string>
-   </property>
-  </action>
   <action name="actionNew_Project">
    <property name="text">
     <string>New Project</string>
+   </property>
+  </action>
+  <action name="actionMove_Project">
+   <property name="text">
+    <string>Move Project</string>
+   </property>
+   <property name="toolTip">
+    <string>Move Project</string>
+   </property>
+  </action>
+  <action name="actionClone_Project">
+   <property name="text">
+    <string>Clone Project</string>
+   </property>
+   <property name="toolTip">
+    <string>Clone Project</string>
    </property>
   </action>
   <action name="actionPin_Right">

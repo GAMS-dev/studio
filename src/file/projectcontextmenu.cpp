@@ -60,9 +60,9 @@ enum ContextAction {
     actGdxDiff,
     actGdxReset,
     actSep7,
-    actProjExport,
-    actProjImport,
-    actNewProject,
+    actProjectNew,
+    actProjectMove,
+    actProjectClone,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -102,7 +102,7 @@ ProjectContextMenu::ProjectContextMenu()
         QMap<QString, QString> solverDefFileNames = solverInfo.solverOptDefFileNames();
 
         if (solverDefFileNames.size()>0) { // when solver definition file information is available
-            for (QString solvername : solverDefFileNames.keys()) {
+            for (const QString &solvername : solverDefFileNames.keys()) {
                 if (optFiles.contains(solverDefFileNames.value(solvername))) { //there exists such a file
                     QAction* createSolverOption = newSolverOptionMenu->addAction(solvername.toLower());
                     connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
@@ -112,7 +112,7 @@ ProjectContextMenu::ProjectContextMenu()
                 }
             }
         } else { // when no information on solver option definition file names
-           for (QString &filename : optFiles) {
+           for (const QString &filename : optFiles) {
                QString solvername = filename.mid(QString("opt").length());
                solvername.replace(QRegExp(".def"), "");
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
@@ -135,9 +135,9 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actExpandAll, addAction("Expand all", this, &ProjectContextMenu::onExpandAll));
 
     mActions.insert(actSep6, addSeparator());
-    mActions.insert(actProjExport, addAction("&Export project",  this, &ProjectContextMenu::onExportProject));
-    mActions.insert(actProjImport, addAction("&Import project",  this, &ProjectContextMenu::importProject));
-    mActions.insert(actNewProject, addAction("&New project",  this, &ProjectContextMenu::newProject));
+    mActions.insert(actProjectNew, addAction("&New project",  this, &ProjectContextMenu::newProject));
+    mActions.insert(actProjectMove, addAction("&Move project",  this, &ProjectContextMenu::onMoveProject));
+    mActions.insert(actProjectClone, addAction("&Clone project",  this, &ProjectContextMenu::onCloneProject));
 
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
@@ -155,12 +155,12 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canExportProject = project && project->childCount();
+    bool canMoveProject = project && project->childCount();
     bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
-        if (!canExportProject) break;
+        if (!canMoveProject) break;
         if (node->assignedProject() != project)
-            canExportProject = false;
+            canMoveProject = false;
     }
     if (isProject && single) {
         PExProjectNode *project = mNodes.first()->toProject();
@@ -266,8 +266,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actOpenEfi]->setVisible(isProject);
     mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
-    mActions[actProjExport]->setVisible(!isFreeSpace);
-    mActions[actProjExport]->setEnabled(canExportProject);
+    mActions[actProjectMove]->setVisible(!isFreeSpace);
+    mActions[actProjectMove]->setEnabled(canMoveProject);
+
+    mActions[actProjectClone]->setVisible(!isFreeSpace);
+    mActions[actProjectClone]->setEnabled(canMoveProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
@@ -375,10 +378,16 @@ void ProjectContextMenu::onSetMainFile()
     if (file) emit setMainFile(file);
 }
 
-void ProjectContextMenu::onExportProject()
+void ProjectContextMenu::onMoveProject()
 {
     PExProjectNode *project = mNodes.first()->assignedProject();
-    emit exportProject(project);
+    emit moveProject(project, false);
+}
+
+void ProjectContextMenu::onCloneProject()
+{
+    PExProjectNode *project = mNodes.first()->assignedProject();
+    emit moveProject(project, true);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)

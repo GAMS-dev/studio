@@ -238,8 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
         if (node && handleFileChanges(node->file()))
             openFileNode(node, focus, codecMib, forcedAsTextEditor);
     });
-    connect(&mProjectContextMenu, &ProjectContextMenu::exportProject, this, &MainWindow::exportProjectDialog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::importProject, this, &MainWindow::importProjectDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::moveProject, this, &MainWindow::moveProjectDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, [this]() {
         on_actionNew_Project_triggered();
     });
@@ -2654,18 +2653,6 @@ void MainWindow::restoreFromSettings()
 
 }
 
-void MainWindow::importProjectDialog()
-{
-    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("Import Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptOpen);
-    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &fileName) { openProject(fileName); });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->open();
-}
-
 void MainWindow::openProject(const QString gspFile)
 {
     if (mOpenPermission == opNoGsp) {
@@ -2720,35 +2707,23 @@ void MainWindow::loadProject(const QVariantList data, const QString &name, const
     }
 }
 
-void MainWindow::exportProjectDialog(PExProjectNode *project)
+void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
 {
-    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()),
-                                          project->location()+'/'+project->name()+".gsp");
+    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()), project->fileName());
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());
     dialog->setDefaultSuffix("gsp");
     connect(dialog,&QFileDialog::directoryEntered, this, [dialog, project](const QString &) {
         if (dialog->directory() != QDir(project->location())) {
-            QToolTip::showText(QCursor::pos(), "<body><b>Warning!</b><br/>If the project is "
-                                               "stored outside of it's base, file locations are lost.</body>");
+            QToolTip::showText(QCursor::pos(), "<body><b>Warning!</b><br/>If the project is moved outside of it's "
+                                               "base directory, file references might get lost.</body>");
         } else {
             QToolTip::hideText();
         }
     });
-    connect(dialog, &QFileDialog::fileSelected, this, [this, project](const QString &fileName) {
-        QFile file(fileName);
-        if (file.open(QFile::WriteOnly)) {
-            QVariantMap map;
-            QVariantList data;
-            mProjectRepo.write(project, data, true);
-            map.insert("projects", data);
-            file.write(QJsonDocument(QJsonObject::fromVariantMap(map)).toJson());
-            file.close();
-        } else {
-            appendSystemLogError("Couldn't write project to " + fileName);
-        }
-
+    connect(dialog, &QFileDialog::fileSelected, this, [this, project, cloneOnly](const QString &fileName) {
+        mProjectRepo.moveProject(project, fileName, cloneOnly);
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
@@ -3556,7 +3531,7 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveProjectRunnable(), isRecentGroupRunning());
-    ui->actionExport_Project->setEnabled(mRecent.project() && mRecent.project()->childCount());
+    ui->actionMove_Project->setEnabled(mRecent.project() && mRecent.project()->childCount());
 }
 
 #ifdef QWEBENGINE
@@ -5665,16 +5640,18 @@ void MainWindow::on_actionNew_Project_triggered()
     newFileDialog(QVector<PExProjectNode*>(), "", true);
 }
 
-void MainWindow::on_actionImport_Project_triggered()
-{
-    importProjectDialog();
-}
-
-void MainWindow::on_actionExport_Project_triggered()
+void MainWindow::on_actionMove_Project_triggered()
 {
     PExProjectNode *project = mRecent.project();
     if (!project) return;
-    exportProjectDialog(project);
+    moveProjectDialog(project, false);
+}
+
+void MainWindow::on_actionClone_Project_triggered()
+{
+    PExProjectNode *project = mRecent.project();
+    if (!project) return;
+    moveProjectDialog(project, true);
 }
 
 void MainWindow::on_actionPin_Right_triggered()

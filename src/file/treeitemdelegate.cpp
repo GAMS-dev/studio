@@ -22,6 +22,7 @@
 #include "theme.h"
 #include <QPainter>
 #include <QLineEdit>
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -51,6 +52,20 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
         if (opt.state.testFlag(QStyle::State_MouseOver))
             act = true;
         Theme::icon(":/%1/cog").paint(painter, btRect, Qt::AlignCenter, act ? QIcon::Normal : QIcon::Disabled);
+        QString nameExt = index.model()->data(index, ProjectTreeModel::NameExtRole).toString();
+        if (!nameExt.isEmpty()) {
+            QRect nxRect = opt.rect;
+            nxRect.setLeft(nxRect.left() + opt.decorationSize.width() + 6);
+            nxRect = nxRect.marginsRemoved(QMargins(4,4,4,4));
+            QString name = index.model()->data(index, Qt::EditRole).toString();
+//            painter->setPen(Qt::blue);
+//            painter->drawText(nxRect, name);
+            int w = painter->fontMetrics().width(name + ' ');
+            nxRect.setLeft(nxRect.left() + w);
+            painter->setPen(Qt::gray);
+            painter->setFont(qvariant_cast<QFont>(index.model()->data(index, Qt::FontRole)));
+            painter->drawText(nxRect, nameExt);
+        }
     }
 }
 
