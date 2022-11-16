@@ -1,0 +1,96 @@
+build-deg:
+  stage: build
+  tags: [macos]
+  dependencies: [install-gams-deg]
+  variables:
+    qtpath: /Users/gitlab/Qt/5.15.2/clang_64/bin
+  script:
+    - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
+    - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
+    - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
+    - mkdir build
+    - cd build
+    - $qtpath/qmake ../gams-studio.pro CONFIG+=release && make -j4
+  artifacts:
+    name: studio-deg
+    expire_in: 2 hours
+    paths: [build/*]
+
+build-leg:
+  stage: build
+  tags: [linux]
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt5:latest
+    entrypoint: [""]   # prevent startup.sh
+  dependencies: [install-gams-leg]
+  variables:
+    DOLLAR_GAMS: $$$$GAMS_DISTRIB
+    qtpath: /opt/Qt/5.15.2/bin
+  script:
+    - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
+    - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
+    - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
+    - mkdir build
+    - cd build
+    - $qtpath/qmake ../gams-studio.pro CONFIG+=release && make -j4
+  artifacts:
+    name: studio-leg
+    expire_in: 2 hours
+    paths: [build/*]
+
+build-wei:
+  stage: build
+  tags: [windows]
+  dependencies: [install-gams-wei]
+  variables:
+     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+     qtpath: C:\Qt\5.15.2\msvc2019_64\bin\
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    entrypoint: [""]
+  script:
+    - '& $cmd_vcvars'
+    - $env:Path = "$qtpath;" + $env:Path
+    - $data = 
+      ('GAMS_DISTRIB=', $(Get-Location).ToString().Replace('\','/'), '/gamsdist' -join ""),
+      'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
+      'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
+    - $data | out-file -encoding ascii gamsinclude.pri
+    - mkdir build
+    - cd build
+    - qmake.exe ..\gams-studio.pro "CONFIG+=release"
+    - nmake.exe
+  artifacts:
+    name: studio-wei
+    expire_in: 2 hours
+    paths: [build/*]
+
+build-wei-debug:
+  stage: build
+  rules:
+    - if: $PF_WEI_DEBUG == "0"
+      when: never
+    - when: always
+  tags: [windows]
+  dependencies: [install-gams-wei]
+  variables:
+     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
+     qtpath: C:\Qt\5.15.2\msvc2019_64\bin\
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+  script:
+    - '& $cmd_vcvars'
+    - $env:Path = "$qtpath;" + $env:Path
+    - $data = 
+      ('GAMS_DISTRIB=', $(Get-Location).ToString().Replace('\','/'), '/gamsdist' -join ""),
+      'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
+      'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
+    - $data | out-file -encoding ascii gamsinclude.pri
+    - mkdir build-debug
+    - cd build-debug
+    - qmake.exe ..\gams-studio.pro "CONFIG+=debug"
+    - nmake.exe
+  artifacts:
+    name: studio-wei-debug
+    expire_in: 2 hours
+    paths: [build-debug/*]
