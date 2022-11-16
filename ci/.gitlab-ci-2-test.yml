@@ -1,0 +1,88 @@
+test-deg:
+  stage: test
+  tags: [macos]
+  dependencies: [install-gams-deg,build-deg]
+  variables:
+    qtpath: /Users/gitlab/Qt/5.15.2/clang_64/bin
+  script:
+    - GAMS_PATH=$(pwd)/gamsdist
+    - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
+    - cd build && mkdir reports
+    - REPORTS_DIR=$(pwd)/reports
+    - |+
+      set +e
+      cd tests/bin
+      for f in *
+      do
+        ./$f -xunitxml -o $REPORTS_DIR/$f.xml
+      done
+  artifacts:
+    name: unittest-results-deg
+    paths:
+      - build/src/bin/*
+    reports:
+      junit: build/reports/*
+
+test-leg:
+  stage: test
+  tags: [linux]
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt5:latest
+    entrypoint: [""]   # prevent startup.sh
+  dependencies: [install-gams-leg,build-leg]
+  variables:
+    qtpath: /opt/Qt/5.15.2/bin
+  script:
+    - GAMS_PATH=$(pwd)/gamsdist
+    - echo ${GAMS_LICENSE} > $GAMS_PATH/gamslice.txt
+    - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
+    - cd build && mkdir reports
+    - REPORTS_DIR=$(pwd)/reports
+    - |+
+      set +e
+      cd tests/bin
+      for f in *
+      do
+        xvfb-run -e /dev/stdout --auto-servernum --server-num=1 ./$f -xunitxml -o $REPORTS_DIR/$f.xml
+      done
+  artifacts:
+    name: unittest-results-deg
+    paths: 
+      - build/src/bin/*
+    reports:
+      junit: build/reports/*
+
+test-wei:
+  stage: test
+  tags: [windows]
+  allow_failure: true
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+  dependencies: [install-gams-wei,build-wei]
+  variables:
+    qtpath: C:\Qt\5.15.2\msvc2019_64\bin
+  script:
+    - $GAMS_PATH = ($(pwd), '\gamsdist') -join ""
+    - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII
+    - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
+    - $env:Path = "$qtpath;$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
+    - $env:GAMSDIR = "$GAMS_PATH;$GAMS_PATH\gbin"
+    - findthisgams -q
+    - cd build
+    - mkdir reports
+    - cd tests/bin
+    - |+
+      foreach ($testapp in $(Get-ChildItem -Name -Include *.exe)) {
+        try {
+          $test_args = @("-junitxml", "-o", "..\..\reports\$testapp.xml")
+          & ".\$testapp" $test_args
+        } catch {
+          $_
+        }
+      }
+  artifacts:
+    name: unittest-results-wei
+    paths:
+      - build/src/bin/*
+    reports:
+      junit: build/reports/*
