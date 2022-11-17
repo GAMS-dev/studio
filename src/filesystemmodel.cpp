@@ -286,8 +286,8 @@ int FileSystemModel::dirCheckState(const QString &path, bool filtered, bool isCo
     if (path.startsWith("..")) return Qt::Unchecked;
     QDir dir(path);
     int flag = 0;
-    QList<QFileInfo> fiList = filtered ? visibleFileInfoList(dir)
-                                       : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
+    const QList<QFileInfo> fiList = filtered ? visibleFileInfoList(dir)
+                                             : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
     if (fiList.isEmpty())
         return mSelectedFiles.contains(rootDirectory().relativeFilePath(path)) ? Qt::Checked : Qt::Unchecked;
 

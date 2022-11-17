@@ -314,6 +314,9 @@ bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
     if (cmp != 0) return cmp < 0;
     cmp = isGroup1 ? n1->toGroup()->location().compare(n2->toGroup()->location(), Qt::CaseInsensitive)
                    : n1->toFile()->location().compare(n2->toFile()->location(), Qt::CaseInsensitive);
+    if (cmp != 0) return cmp < 0;
+    cmp = isGroup1 ? n1->toGroup()->location().compare(n2->toGroup()->location())
+                   : n1->toFile()->location().compare(n2->toFile()->location());
     return cmp < 0;
 }
 

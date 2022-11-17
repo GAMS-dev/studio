@@ -199,10 +199,11 @@ public:
         return res;
     }
 
-    static QStringList dialogFileFilterAll() {
-        QStringList res("GAMS source (*.gms)");
+    static QStringList dialogFileFilterAll(bool addProject = false) {
+        QStringList res(addProject ? "GAMS source or project (*.gms *.gsp)" : "GAMS source (*.gms)");
         QStringList userTypes = FileType::userGamsTypes();
-        QString allGams("All GAMS files (*.gms *.gdx *.inc *.log *.lst *efi *.opt *.op* *.o *.ref *.dmp%1)");
+        QString allGams(QString("All GAMS files (*.gms%1 *.gdx *.inc *.log *.lst *efi *.opt *.op* *.o *.ref *.dmp%1)")
+                        .arg(addProject ? " *.gsp" : ""));
         if (!userTypes.isEmpty()) {
             res << allGams.arg(" *." + userTypes.join(" *."));
             res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");

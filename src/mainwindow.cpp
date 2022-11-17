@@ -2674,7 +2674,12 @@ void MainWindow::openProject(const QString gspFile)
         QString name = QFileInfo(gspFile).fileName();
         QString path = QFileInfo(file).path();
         QVariantMap map = json.object().toVariantMap();
-        QVariantList data = map.value("projects").toList();
+        QVariantList data;
+        if (map.contains("projects")) {
+            data = map.value("projects").toList();
+        } else {
+            data.append(map);
+        }
         loadProject(data, name, path, false);
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
@@ -3259,6 +3264,31 @@ int MainWindow::pinViewTabIndex()
     if (!fm || fm->editors().size() < 2) return -1;
     wid = fm->editors().at(0) == wid ? fm->editors().at(1) : fm->editors().at(0);
     return ui->mainTabs->indexOf(wid);
+}
+
+void MainWindow::openFiles(OpenGroupOption opt)
+{
+    QString path = currentPath();
+    const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,
+                                                            ViewHelper::dialogFileFilterAll(true).join(";;"),
+                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
+    if (files.isEmpty()) return;
+
+    PExFileNode *firstNode = nullptr;
+    PExFileNode *fileNode = nullptr;
+    for (const QString &fileName : files) {
+        if (fileName.endsWith(".gsp", Qt::CaseInsensitive)) {
+            openProject(fileName);
+        } else {
+            // detect if the file is already present at the scope
+            fileNode = openFileWithOption(fileName, nullptr, opt);
+            if (!firstNode) firstNode = fileNode;
+        }
+    }
+
+    // at last: activate the first node
+    if (firstNode)
+        openFileNode(firstNode, true);
 }
 
 void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt)
