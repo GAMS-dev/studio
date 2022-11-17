@@ -377,11 +377,14 @@ QVariantMap ProjectRepo::save(PExProjectNode *project, bool relativePaths) const
         QFile::rename(fileName, fileName + '~');
     }
     QFile file(fileName);
-    if (file.open(QFile::WriteOnly)) {
-        file.write(QJsonDocument(QJsonObject::fromVariantMap(projectObject)).toJson());
-        file.close();
-    } else {
-        SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
+    if (project->needSave()) {
+        if (file.open(QFile::WriteOnly)) {
+            file.write(QJsonDocument(QJsonObject::fromVariantMap(projectObject)).toJson());
+            file.close();
+            project->setNeedSave(false);
+        } else {
+            SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
+        }
     }
     return projectObject;
 }

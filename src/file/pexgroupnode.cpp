@@ -457,9 +457,9 @@ bool PExProjectNode::needSave() const
     return mChanged;
 }
 
-void PExProjectNode::setNeedSave()
+void PExProjectNode::setNeedSave(bool needSave)
 {
-    mChanged = true;
+    mChanged = needSave;
 }
 
 PExLogNode *PExProjectNode::logNode()
