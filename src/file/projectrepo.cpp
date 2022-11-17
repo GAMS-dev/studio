@@ -264,12 +264,14 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
         QString gspFile;
+        bool projectChangedMarker = false;
 
         // if there is a valid project file, load it instead of the settings part
         if (child.contains("project")) {
             gspFile = child.value("project").toString();
             QVariantMap data = parseProjectFile(gspFile);
             if (!data.isEmpty()) child = data;
+            projectChangedMarker = data.isEmpty();
         }
 
         QString name = child.value("name").toString();
@@ -295,10 +297,12 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
                 } else {
                     bool expand = child.contains("expand") ? child.value("expand").toBool() : true;
                     emit setNodeExpanded(mTreeModel->index(project), expand);
+                    if (projectChangedMarker)
+                        project->setNeedSave();
                 }
             }
             QVariantList optList = child.value("options").toList();
-            if (!optList.isEmpty() && project->toProject()) {
+            if (!optList.isEmpty() && project && project->toProject()) {
                 for (const QVariant &opt : qAsConst(optList)) {
                     PExProjectNode *prgn = project->toProject();
                     QString par = opt.toString();
@@ -344,7 +348,7 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        QVariantMap proData = save(project);
+        QVariantMap proData = save(project, true);
         QVariantMap data;
         data = proData; // TODO(JM) (when: November 2023) Remove assignment. This avoids that projects are stored internally too.
         data.insert("project", project->fileName());
@@ -372,12 +376,12 @@ QVariantMap ProjectRepo::save(PExProjectNode *project, bool relativePaths) const
     writeProjectFiles(project, subArray, relativePaths);
     projectObject.insert("nodes", subArray);
     QString fileName = project->fileName();
-    if (QFile::exists(fileName)) {
-        if (QFile::exists(fileName + '~')) QFile::remove(fileName + '~');
-        QFile::rename(fileName, fileName + '~');
-    }
-    QFile file(fileName);
     if (project->needSave()) {
+        if (QFile::exists(fileName)) {
+            if (QFile::exists(fileName + '~')) QFile::remove(fileName + '~');
+            QFile::rename(fileName, fileName + '~');
+        }
+        QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
             file.write(QJsonDocument(QJsonObject::fromVariantMap(projectObject)).toJson());
             file.close();

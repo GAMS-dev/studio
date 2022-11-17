@@ -175,7 +175,7 @@ private:
 private:
     QString cleanPath(QString path, QString file);
     void setLogLocation(QString path);
-    void setNeedSave();
+    void setNeedSave(bool needSave = true);
 };
 
 
