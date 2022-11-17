@@ -70,7 +70,7 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    inputChanged();    
+    inputChanged();
 }
 
 void NavigatorDialog::highlightCurrentFile()
@@ -84,11 +84,13 @@ void NavigatorDialog::highlightCurrentFile()
 
             if (filterModelIndex.isValid()) {
                 ui->tableView->setCurrentIndex(filterModelIndex);
+                ui->tableView->scrollTo(filterModelIndex);
                 return;
             }
         }
     }
     ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+    ui->tableView->scrollTo(mFilterModel->index(0, 0));
 }
 
 void NavigatorDialog::inputChanged()
@@ -312,7 +314,7 @@ void NavigatorDialog::selectItem(QModelIndex index)
 }
 
 void NavigatorDialog::autocomplete()
-{ 
+{
     QModelIndex mappedIndex = mFilterModel->mapToSource(ui->tableView->currentIndex());
     if (!mappedIndex.isValid() && !mLastSelectedItem.isValid()) return;
 
