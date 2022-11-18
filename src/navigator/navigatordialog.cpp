@@ -434,9 +434,13 @@ void NavigatorDialog::regexChanged(QRegExp regex)
 
 void NavigatorDialog::setFilter(QString filter)
 {
-    if (mInput->regExp().patternSyntax() == QRegExp::RegExp)
-        mFilterModel->setFilterRegExp(filter);
-    else mFilterModel->setFilterWildcard(filter);
+    QString regex = filter;
+    if (mInput->regExp().patternSyntax() != QRegExp::RegExp)
+        regex = QRegularExpression::escape(filter);
+
+    if (mInput->exactMatch()) regex = '^' + filter + '$';
+
+    mFilterModel->setFilterRegExp(regex);
 }
 
 void NavigatorDialog::updatePosition()

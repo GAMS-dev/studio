@@ -59,6 +59,7 @@ public:
     void setKeyColumn(int column);
     void hideOptions(FilterLineEditFlags options);
     int effectiveKeyColumn();
+    bool exactMatch();
 
 signals:
     void regExpChanged(QRegExp regExp);

@@ -69,6 +69,11 @@ int FilterLineEdit::effectiveKeyColumn()
     return buttonState(mAllColButton) ? -1 : mKeyColumn;
 }
 
+bool FilterLineEdit::exactMatch()
+{
+    return buttonState(mExactButton);
+}
+
 void FilterLineEdit::resizeEvent(QResizeEvent *event)
 {
     QLineEdit::resizeEvent(event);
