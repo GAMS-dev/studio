@@ -2,6 +2,7 @@ Version 1.12.2 *
 ==================
 - fixed crash when moving line in text file
 - added support for trailing ":NUMBER" when choosing files in Navigator
+- fixed crash when reloading an invalid gdx-file
 
 Version 1.12.1
 ==================
