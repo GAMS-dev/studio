@@ -56,6 +56,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::inputChanged);
     connect(mInput, &NavigatorLineEdit::autocompleteTriggered, this, &NavigatorDialog::autocomplete);
+    connect(mInput, &FilterLineEdit::regExpChanged, this, &NavigatorDialog::regexChanged);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -115,27 +116,27 @@ void NavigatorDialog::updateContent()
     NavigatorMode mode;
     if (input.startsWith("?")) {
         mode = NavigatorMode::Help;
-        mFilterModel->setFilterWildcard("");
+        setFilter("");
         collectHelpContent(content);
 
     } else if (mPostfixRegex.match(input).hasMatch()) {
         mode = NavigatorMode::Line;
-        mFilterModel->setFilterWildcard("");
+        setFilter("");
         collectLineNavigation(content);
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::InProject;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        setFilter(input.remove(mPrefixRegex));
         collectInProject(content);
 
     } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Tabs;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        setFilter(input.remove(mPrefixRegex));
         collectTabs(content);
 
     } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
         mode = NavigatorMode::Logs;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        setFilter(input.remove(mPrefixRegex));
         collectLogs(content);
 
     } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
@@ -144,7 +145,7 @@ void NavigatorDialog::updateContent()
 
     } else {
         mode = NavigatorMode::AllFiles;
-        mFilterModel->setFilterWildcard(input);
+        setFilter(input);
         collectAllFiles(content);
     }
 
@@ -424,16 +425,18 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
 
 void NavigatorDialog::regexChanged(QRegExp regex)
 {
-    setFilter(regex.pattern());
+    Q_UNUSED(regex)
+
+    // clicking outside the dialog closes it, but we dont want that for changing the regex
+    setVisible(true);
+    mInput->setFocus(Qt::FocusReason::PopupFocusReason);
 }
 
 void NavigatorDialog::setFilter(QString filter)
 {
-    if (mUseRegex) {
+    if (mInput->regExp().patternSyntax() == QRegExp::RegExp)
         mFilterModel->setFilterRegExp(filter);
-    } else {
-        mFilterModel->setFilterWildcard(filter);
-    }
+    else mFilterModel->setFilterWildcard(filter);
 }
 
 void NavigatorDialog::updatePosition()

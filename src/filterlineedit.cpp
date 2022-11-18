@@ -125,6 +125,7 @@ void FilterLineEdit::updateRegExp()
     filter.replace("\\?", ".");
     mRegExp = QRegExp(filter);
     mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
+    mRegExp.setPatternSyntax(buttonState(mRegExButton) ? QRegExp::RegExp : QRegExp::Wildcard);
     emit regExpChanged(mRegExp);
 }
 
