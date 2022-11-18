@@ -7,8 +7,6 @@ Please test the MR on
 - [ ] Windows (@cwestphal @lwestermann)
 - [ ] T.b.d. add the reporter and his platform to test the issue
 
-**Artefacts:** 
-
 **Review**
 - [ ] Code
 - [ ] CHANGELOG
