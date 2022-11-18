@@ -501,6 +501,7 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
         QFile file(oldFile);
         file.remove();
         treeModel()->sortChildNodes(project->parentNode());
+        emit changed();
     }
 }
 
