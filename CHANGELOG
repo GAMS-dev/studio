@@ -1,6 +1,7 @@
 Version 1.12.3 *
 ==================
 - fixed empty help view on some Linux distributions
+- unified Navigator input field with other search fields
 
 Version 1.12.2
 ==================
