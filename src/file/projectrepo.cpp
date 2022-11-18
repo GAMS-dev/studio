@@ -497,7 +497,6 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
         project->setFileName(oldFile);
         project->setName(fi.completeBaseName());
     } else {
-        // TODO(JM) update internal stored project reference
         QFile file(oldFile);
         file.remove();
         treeModel()->sortChildNodes(project->parentNode());
