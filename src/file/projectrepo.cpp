@@ -276,8 +276,12 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
 
         QString name = child.value("name").toString();
         QString path = child.value("path").toString();
-        if (path == "." || path.isEmpty())
-            path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+        if (path == "." || path.isEmpty()) {
+            if (!gspFile.isEmpty())
+                path = QFileInfo(gspFile).path();
+            if (path == "." || path.isEmpty())
+                path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+        }
         QDir localBaseDir(path);
         QString workDir = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("workDir").toString()));
         if (workDir.isEmpty()) workDir = path;
@@ -486,6 +490,7 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
     QFileInfo newFile(filePath);
     project->setFileName(filePath);
     project->setName(newFile.completeBaseName());
+    project->setNeedSave();
     save(project, true);
     if (cloneOnly) {
         QFileInfo fi(oldFile);
