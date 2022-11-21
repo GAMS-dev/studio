@@ -60,7 +60,7 @@ if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     mv $(find *dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.dmg"
     mv $(find *AppImage) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.AppImage"
     mv $(find *zip) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.zip"
-    ls -al
+    sleep 16
     parallel github-release --verbose upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
 fi
 
