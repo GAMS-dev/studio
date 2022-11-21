@@ -135,7 +135,6 @@ public:
     QWidgetList openEditors();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
-    QLineEdit *navigatorInput();
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
     bool readTabs(const QVariantMap &tabData);
@@ -156,7 +155,7 @@ public:
     void resetHistory();
     void clearHistory(FileMeta *file);
     void historyChanged();
-    int linesInCurrentEditor();
+    int linesInEditor(QWidget *editor = nullptr);
 
 
 #ifdef QWEBENGINE

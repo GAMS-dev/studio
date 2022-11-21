@@ -22,7 +22,6 @@
 #include <QApplication>
 #include <QAbstractItemModel>
 
-#include "qnamespace.h"
 #include "ui_navigatordialog.h"
 #include "navigator/navigatorlineedit.h"
 #include "navigatordialog.h"
@@ -55,7 +54,8 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
 
     connect(mInput, &QLineEdit::returnPressed, this, &NavigatorDialog::returnPressed);
     connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
-    connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::setInput);
+    connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::inputChanged);
+    connect(mInput, &NavigatorLineEdit::autocompleteTriggered, this, &NavigatorDialog::autocomplete);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -70,38 +70,35 @@ void NavigatorDialog::showEvent(QShowEvent *e)
     Q_UNUSED(e)
 
     updatePosition();
-    setInput(mMain->navigatorInput()->text());
+    inputChanged();
 }
 
-void NavigatorDialog::setInput(const QString &input)
+void NavigatorDialog::highlightCurrentFile()
+{
+    if (!mFilterModel) return;
+
+    if (FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor())) {
+        int index = mNavModel->findIndex(fm->location());
+        if (index >= 0) {
+            QModelIndex filterModelIndex = mFilterModel->mapFromSource(mNavModel->index(index, 0));
+
+            if (filterModelIndex.isValid()) {
+                ui->tableView->setCurrentIndex(filterModelIndex);
+                ui->tableView->scrollTo(filterModelIndex);
+                return;
+            }
+        }
+    }
+    ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+    ui->tableView->scrollTo(mFilterModel->index(0, 0));
+}
+
+void NavigatorDialog::inputChanged()
 {
     if (!isVisible())
         show();
 
-    QString filter = input;
-    NavigatorMode mode;
-    if (input.startsWith("?")) {
-        mode = NavigatorMode::Help;
-        mFilterModel->setFilterWildcard("");
-    } else if (input.startsWith(":", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Line;
-        mFilterModel->setFilterWildcard("");
-    } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::InProject;
-        mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Tabs;
-        mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Logs;
-        mFilterModel->setFilterWildcard(filter.remove(0, 2));
-    } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::FileSystem;
-    } else {
-        mode = NavigatorMode::AllFiles;
-        mFilterModel->setFilterWildcard(input);
-    }
-    updateContent(mode);
+    updateContent();
 }
 
 void NavigatorDialog::changeEvent(QEvent*)
@@ -109,34 +106,48 @@ void NavigatorDialog::changeEvent(QEvent*)
     conditionallyClose();
 }
 
-void NavigatorDialog::updateContent(NavigatorMode mode) {
+void NavigatorDialog::updateContent()
+{
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
-    switch (mode) {
-        case NavigatorMode::Help:
-            collectHelpContent(content);
-        break;
-        case NavigatorMode::Line:
-            collectLineNavigation(content);
-        break;
-        case NavigatorMode::AllFiles:
-            collectAllFiles(content);
-        break;
-        case NavigatorMode::InProject:
-            collectInProject(content);
-        break;
-        case NavigatorMode::Tabs:
-            collectTabs(content);
-        break;
-        case NavigatorMode::Logs:
-            collectLogs(content);
-        break;
-        case NavigatorMode::FileSystem:
-            collectFileSystem(content);
-        break;
-        default:
-            qWarning() << "Unhandled NavigatorMode";
-        break;
+    QString input = mInput->text();
+
+    QRegularExpressionMatch match;
+    NavigatorMode mode;
+    if (input.startsWith("?")) {
+        mode = NavigatorMode::Help;
+        mFilterModel->setFilterWildcard("");
+        collectHelpContent(content);
+
+    } else if (mPostfixRegex.match(input).hasMatch()) {
+        mode = NavigatorMode::Line;
+        mFilterModel->setFilterWildcard("");
+        collectLineNavigation(content);
+
+    } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
+        mode = NavigatorMode::InProject;
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        collectInProject(content);
+
+    } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
+        mode = NavigatorMode::Tabs;
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        collectTabs(content);
+
+    } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
+        mode = NavigatorMode::Logs;
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        collectLogs(content);
+
+    } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
+        mode = NavigatorMode::FileSystem;
+        collectFileSystem(content);
+
+    } else {
+        mode = NavigatorMode::AllFiles;
+        mFilterModel->setFilterWildcard(input);
+        collectAllFiles(content);
     }
+
     mNavModel->setContent(content);
     mCurrentMode = mode;
     if (mode != NavigatorMode::FileSystem) {
@@ -144,14 +155,14 @@ void NavigatorDialog::updateContent(NavigatorMode mode) {
         mDirSelectionOngoing = false;
     }
 
-    // select first entry if user hasnt anything selected
-    if (mFilterModel && !ui->tableView->selectionModel()->hasSelection())
-        ui->tableView->setCurrentIndex(mFilterModel->index(0, 0));
+    if (!ui->tableView->currentIndex().isValid())
+        highlightCurrentFile();
 }
 
 void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
 {
-    content.append(NavigatorContent(":number", "jump to line number", ":"));
+    content.append(NavigatorContent(":number", "jump to line number", ":",
+                                    mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
     content.append(NavigatorContent("filename", "filter all files", ""));
     content.append(NavigatorContent("P filename", "filter files in current project", "P "));
     content.append(NavigatorContent("T filename", "filter open tabs", "T "));
@@ -208,8 +219,8 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
 {
-    QString textInput = mMain->navigatorInput()->text();
-    textInput = textInput.remove(0, 2); // remove prefix
+    QString textInput = mInput->text();
+    textInput.remove(mPrefixRegex);
 
     QDir dir(textInput);
     if (!mDirSelectionOngoing) {
@@ -233,32 +244,68 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
                                            QDir::NoDot | QDir::AllEntries,
                                            QDir::Name | QDir::DirsFirst);
-    for (const QFileInfo &entry : localEntryInfoList) {
+    for (const QFileInfo &entry : qAsConst(localEntryInfoList)) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }
 
 void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 {
-    FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
-    content.append(NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInCurrentEditor())));
+    FileMeta* fm = nullptr;
+    QFileInfo fi;
+    QModelIndex index = ui->tableView->currentIndex();
+
+    // chained file selection and line navigation
+    NavigatorContent nc;
+    if (index.isValid()) {
+        QModelIndex mappedIndex = mFilterModel->mapToSource(index);
+        nc = mNavModel->content().at(mappedIndex.row());
+
+    } else if (mLastSelectedItem.isValid()) {
+        nc = mLastSelectedItem;
+    }
+    fm = nc.GetFileMeta();
+    fi = nc.FileInfo();
+
+    if (fm) {
+        // if has editors, get line number
+        if (fm->editors().count()) {
+            content.append(
+                        NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInEditor(
+                                                                fm->editors().constFirst())))
+                        );
+        } else {  // unknown line number
+            content.append(NavigatorContent(fm, "Max Lines: Unknown"));
+        }
+
+    } else {
+        // unkown files have no fileMeta, so use QFileInfo instead
+        content.append(NavigatorContent(fi, "Max Lines: Unknown"));
+    }
 }
 
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = ui->tableView->currentIndex();
+    if (!index.isValid()) return;
+
     selectItem(index);
 }
 
 void NavigatorDialog::selectItem(QModelIndex index)
 {
+    QModelIndex mappedIndex = mFilterModel->mapToSource(index);
+
     if (mCurrentMode == NavigatorMode::Line) {
+        // if different file then current, change file first
+        if (index.isValid() && !mInput->text().startsWith(":"))
+            selectFileOrFolder(mNavModel->content().at(mappedIndex.row()));
+
         selectLineNavigation();
         return;
     }
-    if (index.row() == -1) return;
 
-    QModelIndex mappedIndex = mFilterModel->mapToSource(index);
+    if (!mappedIndex.isValid()) return;
     NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
 
     if (mCurrentMode == NavigatorMode::Help)
@@ -266,40 +313,72 @@ void NavigatorDialog::selectItem(QModelIndex index)
     else selectFileOrFolder(nc);
 }
 
+void NavigatorDialog::autocomplete()
+{
+    QModelIndex mappedIndex = mFilterModel->mapToSource(ui->tableView->currentIndex());
+    if (!mappedIndex.isValid() && !mLastSelectedItem.isValid()) return;
+
+    NavigatorContent nc = mNavModel->content().at(mappedIndex.row());
+    mLastSelectedItem = nc;
+
+    QRegularExpressionMatch preMatch = mPrefixRegex.match(mInput->text());
+    QRegularExpressionMatch postMatch = mPostfixRegex.match(mInput->text());
+    QString prefix, postfix;
+
+    if (preMatch.hasMatch())
+        prefix = preMatch.captured(1) + " ";
+
+    if (postMatch.hasMatch())
+        postfix = postMatch.captured(1);
+
+    if (!nc.Prefix().isEmpty()) { // help content
+        FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
+        if (fm) mInput->setText(prefix + fm->location() + postfix);
+    } else if (nc.GetFileMeta()) {
+        mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
+    } else {
+        mInput->setText(prefix + nc.FileInfo().absoluteFilePath() + postfix);
+    }
+}
+
+void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
+{
+    mSelectedDirectory = QDir(nc.FileInfo().absoluteFilePath());
+    mInput->setText("f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
+                         + (nc.FileInfo().isDir() ? QDir::separator() : QString()));
+    updateContent();
+}
+
 void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 {
-    if (FileMeta* fm = nc.fileMeta) {
+    if (FileMeta* fm = nc.GetFileMeta()) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
         else mMain->openFile(fm, true);
 
         close();
     } else {
-        if (nc.fileInfo.isFile()) {
-            mMain->openFileWithOption(nc.fileInfo.absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
+        if (nc.FileInfo().isFile()) {
+            mMain->openFileWithOption(nc.FileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
-            mSelectedDirectory = QDir(nc.fileInfo.absoluteFilePath());
-            mMain->navigatorInput()->setText(
-                        "f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath()) + QDir::separator());
-            updateContent(NavigatorMode::FileSystem);
+            fillFileSystemPath(nc);
         }
     }
 }
 
 void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 {
-    mInput->setText(nc.insertPrefix);
-    setInput(nc.insertPrefix);
+    mInput->setText(nc.Prefix());
+    updateContent();
 }
 
 void NavigatorDialog::selectLineNavigation()
 {
-    QString inputText = mInput->text();
-    bool ok = false;
+    QRegularExpressionMatch match = mPostfixRegex.match(mInput->text());
+    if (!match.captured(1).isEmpty())
+        mMain->jumpToLine(match.captured(1).remove(0,1).toInt()-1); // remove leading colon from match
 
-    int lineNr = inputText.midRef(1).toInt(&ok);
-    if (ok) mMain->jumpToLine(lineNr-1);
     close();
 }
 
@@ -370,7 +449,7 @@ bool NavigatorDialog::conditionallyClose()
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
 {
     foreach (NavigatorContent c, content) {
-        if (c.fileMeta == fm)
+        if (c.GetFileMeta() == fm)
             return true;
     }
     return false;

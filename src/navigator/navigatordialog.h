@@ -22,7 +22,9 @@
 
 #include <QDialog>
 #include "mainwindow.h"
+#include "navigator/navigatorcontent.h"
 #include "navigator/navigatormodel.h"
+#include "qregularexpression.h"
 
 namespace Ui {
 class NavigatorDialog;
@@ -50,23 +52,27 @@ private:
     void keyPressEvent(QKeyEvent* e) override;
     void showEvent(QShowEvent* e) override;
     bool eventFilter(QObject* watched, QEvent* event) override;
-    void setInput(const QString& input);
+    void inputChanged();
     void changeEvent(QEvent*) override;
 
     void collectHelpContent(QVector<NavigatorContent> &content);
-    void collectLineNavigation(QVector<NavigatorContent> &content);
+    void handleLineNavigation(QVector<NavigatorContent> &content, int lineNr);
     void collectAllFiles(QVector<NavigatorContent> &content);
     void collectOpenFiles(QVector<NavigatorContent> &content);
     void collectInProject(QVector<NavigatorContent> &content);
     void collectTabs(QVector<NavigatorContent> &content);
     void collectLogs(QVector<NavigatorContent> &content);
     void collectFileSystem(QVector<NavigatorContent> &content);
+    void collectLineNavigation(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
-    void updateContent(NavigatorMode mode);
+    void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
+    void autocomplete();
+    void fillFileSystemPath(NavigatorContent nc);
+    void highlightCurrentFile();
 
     ///
     /// \brief findClosestPath removes characters from the current string
@@ -89,6 +95,9 @@ private:
     NavigatorMode mCurrentMode = NavigatorMode::AllFiles;
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
+    QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
+    QRegularExpression mPostfixRegex = QRegularExpression("(:\\d*)"); // has trailing line number
+    NavigatorContent mLastSelectedItem;
 };
 
 }

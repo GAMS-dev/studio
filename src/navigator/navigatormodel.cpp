@@ -49,6 +49,17 @@ void NavigatorModel::setCurrentDir(QDir dir)
     mCurrentDir.setPath(dir.canonicalPath());
 }
 
+int NavigatorModel::findIndex(const QString& file)
+{
+    int index = 0;
+    foreach (NavigatorContent nc, mContent) {
+        if (nc.FileInfo().filePath() == file)
+            return index;
+        index++;
+    }
+    return -1;
+}
+
 int NavigatorModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent);
@@ -65,11 +76,11 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
         NavigatorContent nc = mContent.at(index.row());
-        QFileInfo f = nc.fileInfo;
+        QFileInfo f = nc.FileInfo();
 
         if (index.column() == 0) { // file name: show text if available, otherwise fileinfo
-            if (!nc.text.isEmpty())
-                return nc.text;
+            if (!nc.Text().isEmpty())
+                return nc.Text();
             else return f.fileName();
 
         } else if (index.column() == 1) { // path: relative path if contains less than 4 .., otherwise absolute
@@ -85,7 +96,7 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
             if (f.fileName().contains("..")) // detect ".." and hide info
                 return QVariant();
 
-            return nc.additionalInfo;
+            return nc.AdditionalInfo();
         }
 
     } else if (role == Qt::TextAlignmentRole) {

@@ -205,6 +205,7 @@ SOURCES += \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    navigator/navigatorcontent.cpp \
     navigator/navigatordialog.cpp \
     navigator/navigatorlineedit.cpp \
     navigator/navigatormodel.cpp \
@@ -436,6 +437,7 @@ HEADERS += \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    navigator/navigatorcontent.h \
     navigator/navigatordialog.h \
     navigator/navigatorlineedit.h \
     navigator/navigatormodel.h \

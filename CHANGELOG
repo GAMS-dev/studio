@@ -2,6 +2,12 @@ Version 1.13.0
 ==================
 - improved numerical formatting of the GDX Viewer when using `g-format` with `Full` precision.
 
+Version 1.12.2
+==================
+- fixed crash when moving line in text file
+- added support for trailing ":NUMBER" when choosing files in Navigator
+- fixed crash when reloading an invalid GDX file
+
 Version 1.12.1
 ==================
 - fixed unexpected behavior when adding the main file to an efi file

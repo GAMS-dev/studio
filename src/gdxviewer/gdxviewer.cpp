@@ -225,9 +225,11 @@ void GdxViewer::invalidate()
         return;
     }
     if (isEnabled()) {
-        saveState();
-        delete mExportDialog;
-        mExportDialog = nullptr;
+        if (mIsInitialized) {
+            saveState();
+            delete mExportDialog;
+            mExportDialog = nullptr;
+        }
         setEnabled(false);
         releaseFile();
     }
@@ -236,6 +238,7 @@ void GdxViewer::invalidate()
 
 bool GdxViewer::dragInProgress()
 {
+    if (!mIsInitialized) return false;
     GdxSymbol *sym = selectedSymbol();
     if (sym) {
         if (GdxSymbolView *symView=symbolViewByName(sym->name()))
