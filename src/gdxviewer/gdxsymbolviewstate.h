@@ -21,7 +21,8 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLVIEWSTATE_H
 
 #include <QStringList>
-
+#include <QMap>
+#include <QObject>
 
 namespace gams {
 namespace studio {
@@ -103,6 +104,9 @@ public:
     bool autoResizeTV() const;
     void setAutoResizeTV(bool newAutoResizeTV);
 
+    void write(QVariantMap &map);
+    void read(const QVariantMap &map);
+
 private:
     bool mSqDefaults;
     bool mSqTrailingZeroes;
@@ -117,7 +121,7 @@ private:
     int mDim;
     int mType;
 
-    QVector<bool> showAttributes;
+    QVector<bool> mShowAttributes;
 
     // table view state
     int mTvColDim;

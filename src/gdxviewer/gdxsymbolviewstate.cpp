@@ -180,12 +180,12 @@ void GdxSymbolViewState::setValueFilterState(const QVector<ValueFilterState> &va
 
 QVector<bool> GdxSymbolViewState::getShowAttributes() const
 {
-    return showAttributes;
+    return mShowAttributes;
 }
 
 void GdxSymbolViewState::setShowAttributes(const QVector<bool> &value)
 {
-    showAttributes = value;
+    mShowAttributes = value;
 }
 
 QVector<int> GdxSymbolViewState::getTableViewColumnWidths() const
@@ -216,6 +216,41 @@ bool GdxSymbolViewState::autoResizeTV() const
 void GdxSymbolViewState::setAutoResizeTV(bool newAutoResizeTV)
 {
     mAutoResizeTV = newAutoResizeTV;
+}
+
+void GdxSymbolViewState::write(QVariantMap &map)
+{
+    int bools = mSqDefaults ? b : 0;
+    bools += mSqTrailingZeroes ? 2 : 0;
+    bools += mRestoreSqZeroes ? 4 : 0;
+    bools += mTableViewActive ? 8 : 0;
+    bools += mTableViewLoaded ? 16 : 0;
+    bools += mAutoResizeLV ? 32 : 0;
+    bools += mAutoResizeTV ? 64 : 0;
+    map.insert("boolValues", bools);
+
+    QString ints = QString::number(mNumericalPrecision);
+    ints += ',' + QString::number(mValFormatIndex);
+    ints += ',' + QString::number(mDim);
+    ints += ',' + QString::number(mType);
+    ints += ',' + QString::number(mTvColDim);
+    map.insert("intValues", ints);
+
+    QString showAttr;
+    for (bool a : mShowAttributes)
+        showAttr << (a ? '1' : '0');
+    map.insert("showAttributes", showAttr);
+
+    QString tvDimOrder;
+    for (int order : mTvDimOrder)
+        tvDimOrder << (tvDimOrder.isEmpty() ? "" : ",") + QString::number(order);
+    map.insert("tvDimOrder", tvDimOrder);
+
+}
+
+void GdxSymbolViewState::read(const QVariantMap &map)
+{
+
 }
 
 

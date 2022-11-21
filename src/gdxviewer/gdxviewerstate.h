@@ -50,6 +50,9 @@ public:
     bool selectedSymbolIsAlias() const;
     void setSelectedSymbolIsAlias(bool selectedSymbolIsAlias);
 
+    void write(QVariantMap &map);
+    void read(const QVariantMap &map);
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;

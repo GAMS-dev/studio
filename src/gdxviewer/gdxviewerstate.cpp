@@ -93,6 +93,21 @@ void GdxViewerState::setSelectedSymbolIsAlias(bool selectedSymbolIsAlias)
     mSelectedSymbolIsAlias = selectedSymbolIsAlias;
 }
 
+void GdxViewerState::write(QVariantMap &map)
+{
+    map.insert("header", mSymbolTableHeaderState.toBase64());
+    map.insert("selected", mSelectedSymbol);
+    map.insert("isAlias", mSelectedSymbolIsAlias);
+
+    QMap<QString, GdxSymbolViewState*> mSymbolViewState;
+
+}
+
+void GdxViewerState::read(const QVariantMap &map)
+{
+
+}
+
 
 } // namespace gdxviewer
 } // namespace studio
