@@ -459,6 +459,28 @@ QString ProjectRepo::uniqueNameExt(PExGroupNode *parentNode, const QString &name
     return res;
 }
 
+void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &name, const QString &path, PExAbstractNode *node)
+{
+    // Project name must be unique in a path, append number in case
+    if (!parentNode) return;
+    int nr = 0;
+    QString res;
+    bool conflict = true;
+    while (conflict) {
+        res = path + '/' + name + (nr>0 ? QString::number(nr) : "") + ".gsp";
+        conflict = false;
+        for (PExAbstractNode * n : parentNode->childNodes()) {
+            PExProjectNode *pro = n->toProject();
+            if (n != node && pro && pro->fileName().compare(res) == 0) {
+                ++nr;
+                conflict = true;
+                break;
+            }
+        }
+    }
+    name = name + (nr>0 ? QString::number(nr) : "");
+}
+
 PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, QString workDir)
 {
     PExGroupNode *root = mTreeModel->rootNode();
@@ -467,6 +489,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString r
     PExProjectNode* project = nullptr;
     FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
 
+    uniqueProjectFile(mTreeModel->rootNode(), name, path);
     project = new PExProjectNode(name, path, runFile, workDir);
     project->setNameExt(uniqueNameExt(mTreeModel->rootNode(), name));
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);

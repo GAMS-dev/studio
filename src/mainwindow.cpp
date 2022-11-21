@@ -3623,6 +3623,20 @@ void MainWindow::openDelayedFiles()
     openFiles(files, false);
 }
 
+void MainWindow::newProjectDialog()
+{
+    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
+    dialog->setAcceptMode(QFileDialog::AcceptSave);
+    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
+    dialog->setOption(QFileDialog::DontConfirmOverwrite, true);
+
+    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->open();
+}
+
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
     Q_UNUSED(old)
@@ -3653,7 +3667,7 @@ void MainWindow::createProject(QString projectPath)
 {
     // create empty project
     QFileInfo fi(projectPath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
+    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.path(), QString());
     openFileNode(project);
 }
 

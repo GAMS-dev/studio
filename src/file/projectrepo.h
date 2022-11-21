@@ -173,6 +173,7 @@ private:
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
     void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
     QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
+    void uniqueProjectFile(PExGroupNode *parentNode, QString &name, const QString &path, PExAbstractNode *node = nullptr);
 
     inline void addToIndex(PExAbstractNode* node) {
         mNodes.insert(node->id(), node);
