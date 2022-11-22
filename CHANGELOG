@@ -2,6 +2,7 @@ Version 1.12.3 *
 ==================
 - fixed empty help view on some Linux distributions
 - unified Navigator input field with other search fields
+- automatically check `Squeeze Trailing Zeroes` check box in GDX Viewer when using `g-format` or `e-format` with `Full` precision
 
 Version 1.12.2
 ==================
