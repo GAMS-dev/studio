@@ -92,11 +92,12 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         }
     }
     case Qt::ToolTipRole: {
-        SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        if (item->data(index.column()).toString().compare("schema", Qt::CaseInsensitive)!=0)
+        QModelIndex idx = index.sibling(index.row(), (int)SchemaItemColumn::Field);
+        SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(idx.internalPointer());
+        if (item->data((int)SchemaItemColumn::Field).toString().compare("schema", Qt::CaseInsensitive)!=0)
             return (
                 QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert attribute data from definition.</body></html>")
-                       .arg(item->data(index.column()).toString())
+                       .arg(item->data((int)SchemaItemColumn::Field).toString())
             );
     }
     default:
