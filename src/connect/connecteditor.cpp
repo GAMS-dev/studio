@@ -155,6 +155,7 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Default, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
     headerRegister(ui->helpTreeView->header());

@@ -96,7 +96,7 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(idx.internalPointer());
         if (item->data((int)SchemaItemColumn::Field).toString().compare("schema", Qt::CaseInsensitive)!=0)
             return (
-                QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert attribute data from definition.</body></html>")
+                QString("<html><head/><body>Drag and drop <span style=' font-weight:600;'>%1</span>  to insert the attribute from definition.</body></html>")
                        .arg(item->data((int)SchemaItemColumn::Field).toString())
             );
     }
@@ -224,7 +224,7 @@ void SchemaDefinitionModel::addTypeList(QList<SchemaType>& typeList, QList<QVari
         if (typeList.size() == 1)
            data << QString("%1").arg(schemaTypeList.at(0));
        else
-           data << QString("[%1]").arg(schemaTypeList.join(","));
+           data << QString("%1").arg(schemaTypeList.join(","));
     } else {
         data << "";
     }
@@ -252,7 +252,7 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
         if (valueList.size() == 1)
            data << QString("%1").arg(valueStrList.at(0));
        else
-           data << QString("[%1]").arg(valueStrList.join(","));
+           data << QString("%1").arg(valueStrList.join(","));
     } else {
         data << "";
     }

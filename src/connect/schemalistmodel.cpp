@@ -34,7 +34,6 @@ SchemaListModel::SchemaListModel(const QStringList& schema, QObject *parent)
     for(int row=0; row<mSchema.size(); row++) {
         QStandardItem *sitem = new QStandardItem();
         sitem->setData( mSchema.at(row), Qt::DisplayRole );
-        sitem->setIcon(Theme::icon(":/%1/plus",  QIcon::Mode::Disabled));
         sitem->setEditable(false);
         sitem->setSelectable(true);
         sitem->setTextAlignment(Qt::AlignLeft);
