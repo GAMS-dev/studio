@@ -79,6 +79,7 @@ SOURCES += \
     commandlineparser.cpp \
     commonpaths.cpp \
     confirmdialog.cpp \
+    connect/clickablelabel.cpp \
     connect/connect.cpp \
     connect/connectagent.cpp \
     connect/connectdata.cpp \
@@ -355,6 +356,7 @@ HEADERS += \
     common.h \
     commonpaths.h \
     confirmdialog.h \
+    connect/clickablelabel.h \
     connect/connect.h \
     connect/connectagent.h \
     connect/connectdata.h \

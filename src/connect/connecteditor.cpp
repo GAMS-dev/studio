@@ -19,6 +19,7 @@
  */
 #include <QDebug>
 #include <QStandardItemModel>
+#include <QBitmap>
 
 #include "connecteditor.h"
 #include "connectdatakeydelegate.h"
@@ -93,6 +94,8 @@ bool ConnectEditor::init(bool quiet)
 //    ui->schemaControlListView->viewport()->setPalette(palette);
     ui->schemaControlListView->setCurrentIndex(schemaItemModel->index(0,0));
 
+    ui->expandAllIcon->setPixmap(Theme::icon(":solid/triangle-down").pixmap(QSize(16, 16)));
+    ui->collapseAllIcon->setPixmap(Theme::icon(":solid/triangle-right").pixmap(QSize(16, 16)));
     ui->connectHSplitter->setStretchFactor(0, 4);
     ui->connectHSplitter->setStretchFactor(1, 3);
     ui->connectHSplitter->setStretchFactor(2, 5);
@@ -182,6 +185,10 @@ bool ConnectEditor::init(bool quiet)
     connect(ui->schemaControlListView, &QListView::doubleClicked, this, &ConnectEditor::schemaDoubleClicked, Qt::UniqueConnection);
     connect(ui->openAsTextButton, &QPushButton::clicked, this, &ConnectEditor::openAsTextButton_clicked, Qt::UniqueConnection);
     connect(ui->onlyRequiredAttribute, &QCheckBox::stateChanged, mDataModel, &ConnectDataModel::onlyRequriedAttributedChanged, Qt::UniqueConnection);
+    connect(ui->expandAllIcon, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
+    connect(ui->expandAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->expandAll(); });
+    connect(ui->collapseAllLabel, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
+    connect(ui->collapseAllIcon, &ClickableLabel::clicked, this, [=]() {  ui->dataTreeView->collapseAll(); });
 
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);

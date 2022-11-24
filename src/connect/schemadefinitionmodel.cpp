@@ -278,7 +278,7 @@ void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
 void SchemaDefinitionModel::setupTreeItemModelData()
 {
     QList<QVariant> rootData;
-    rootData << "Field" << "Required"  << "Type" << "default"
+    rootData << "Option" << "Required"  << "Type" << "default"
              << "Allowed Values"  << "min" /*<< "max"*/ << "SchemaKey" << "DragEnabled" ;
 
     foreach(const QString& schemaName, mConnect->getSchemaNames()) {
