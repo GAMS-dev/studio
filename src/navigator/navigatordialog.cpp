@@ -116,12 +116,12 @@ void NavigatorDialog::updateContent()
     NavigatorMode mode;
     if (input.startsWith("?")) {
         mode = NavigatorMode::Help;
-        setFilter("");
+        setFilter("", true);
         collectHelpContent(content);
 
     } else if (mPostfixRegex.match(input).hasMatch()) {
         mode = NavigatorMode::Line;
-        setFilter("");
+        setFilter("", true);
         collectLineNavigation(content);
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
@@ -432,13 +432,16 @@ void NavigatorDialog::regexChanged(QRegExp regex)
     mInput->setFocus(Qt::FocusReason::PopupFocusReason);
 }
 
-void NavigatorDialog::setFilter(QString filter)
+void NavigatorDialog::setFilter(QString filter, bool ignoreOptions)
 {
     QString regex = filter;
-    if (mInput->regExp().patternSyntax() != QRegExp::RegExp)
-        regex = QRegularExpression::escape(filter);
 
-    if (mInput->exactMatch()) regex = '^' + filter + '$';
+    if (!ignoreOptions) {
+        if (mInput->regExp().patternSyntax() != QRegExp::RegExp)
+            regex = QRegularExpression::escape(filter);
+
+        if (mInput->exactMatch()) regex = '^' + filter + '$';
+    }
 
     mFilterModel->setFilterRegExp(regex);
 }

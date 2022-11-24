@@ -73,7 +73,7 @@ private:
     void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
     void highlightCurrentFile();
-    void setFilter(QString filter);
+    void setFilter(QString filter, bool ignoreOptions = false);
 
     ///
     /// \brief findClosestPath removes characters from the current string
