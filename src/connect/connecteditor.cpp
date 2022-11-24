@@ -94,8 +94,8 @@ bool ConnectEditor::init(bool quiet)
 //    ui->schemaControlListView->viewport()->setPalette(palette);
     ui->schemaControlListView->setCurrentIndex(schemaItemModel->index(0,0));
 
-    ui->expandAllIcon->setPixmap(Theme::icon(":solid/triangle-down").pixmap(QSize(16, 16)));
-    ui->collapseAllIcon->setPixmap(Theme::icon(":solid/triangle-right").pixmap(QSize(16, 16)));
+    ui->expandAllIcon->setPixmap(Theme::icon(":solid/triangle-down").pixmap(QSize(12, 12)));
+    ui->collapseAllIcon->setPixmap(Theme::icon(":solid/triangle-right").pixmap(QSize(12, 12)));
     ui->connectHSplitter->setStretchFactor(0, 4);
     ui->connectHSplitter->setStretchFactor(1, 3);
     ui->connectHSplitter->setStretchFactor(2, 5);
