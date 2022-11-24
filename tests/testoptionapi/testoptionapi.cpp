@@ -126,7 +126,7 @@ void TestOptionAPI::testOptFileSuffix_data()
     QTest::newRow("efi")    << "xyz.efi"    << false << FileKind::Efi ;
 
     QTest::newRow("Guc")   << "gamsconfig.yaml"     << false << FileKind::Guc ;
-    QTest::newRow("yaml")  << "notAgamsconfig.yaml" << false << FileKind::None;
+    QTest::newRow("yaml")  << "notAgamsconfig.yaml" << false << FileKind::GCon;
     QTest::newRow("~op")   << "abc.~op"             << false << FileKind::None;
 
     QTest::newRow("-")           << "-"        << false << FileKind::PrO;

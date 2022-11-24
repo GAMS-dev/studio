@@ -53,7 +53,7 @@ void TestGamsUserConfig::testFileType()
     // given
     QFileInfo fi1(CommonPaths::gamsUserConfigDir(), "notAgamsconfig.yaml");
     // when, then
-    QCOMPARE( &FileType::from(fi1.fileName()), &FileType::from(FileKind::None));
+    QCOMPARE( &FileType::from(fi1.fileName()), &FileType::from(FileKind::GCon));
 
 }
 
