@@ -265,36 +265,56 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
         QVariantMap child = data.at(i).toMap();
         QString gspFile;
         bool projectChangedMarker = false;
+        QString projectPath;
 
         // if there is a valid project file, load it instead of the settings part
         if (child.contains("project")) {
             gspFile = child.value("project").toString();
-            QVariantMap data = parseProjectFile(gspFile);
-            if (!data.isEmpty()) child = data;
-            projectChangedMarker = data.isEmpty();
+            projectPath = QFileInfo(gspFile).canonicalPath();
+            if (QFile::exists(projectPath)) {
+                QVariantMap data = parseProjectFile(gspFile);
+                projectChangedMarker = data.isEmpty();
+                if (!data.isEmpty()) {
+                    child = data;
+                }
+            } else
+                projectPath = QString();
+        }
+        QDir projectDir(projectPath);
+
+        // try to fill missing data in baseDir
+        QString baseDir = child.value("path").toString();
+        if (baseDir.isEmpty()) {
+            if (projectPath.isEmpty())
+                baseDir = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+            else
+                baseDir = projectDir.canonicalPath();
         }
 
         QString name = child.value("name").toString();
-        QString path = child.value("path").toString();
-        if (path == "." || path.isEmpty()) {
-            if (!gspFile.isEmpty())
-                path = QFileInfo(gspFile).path();
-            if (path == "." || path.isEmpty())
-                path = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
-        }
-        QDir localBaseDir(path);
-        QString workDir = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("workDir").toString()));
-        if (workDir.isEmpty()) workDir = path;
+        QString workDir = QDir::cleanPath(projectDir.absoluteFilePath(child.value("workDir").toString()));
+        if (workDir.isEmpty()) workDir = projectPath;
 
-        QString file = QDir::cleanPath(localBaseDir.absoluteFilePath(child.value("file").toString()));
-        if (path.isEmpty()) path = QFileInfo(file).absolutePath();
+        QString runFile = QDir::cleanPath(projectDir.absoluteFilePath(child.value("file").toString()));
+
         QVariantList subChildren = child.value("nodes").toList();
-        if (!subChildren.isEmpty() && (!name.isEmpty() || !path.isEmpty())) {
-            PExProjectNode* project = createProject(name, path, file, workDir);
-            if (!gspFile.isEmpty())
+        if (!subChildren.isEmpty() && (!name.isEmpty() || !projectPath.isEmpty())) {
+            QString iniBaseDir = baseDir;
+            if (!projectPath.isEmpty()) {
+                // initial values for the project
+                QFileInfo fi(gspFile);
+                name = fi.completeBaseName();
+                iniBaseDir = fi.canonicalPath();
+            }
+            PExProjectNode* project = createProject(name, iniBaseDir, runFile, workDir);
+
+
+            if (!projectPath.isEmpty())
+                // ensure the base directory is adjusted if it differs from the project path
+                project->setLocation(baseDir);
                 project->setFileName(gspFile);
             if (project) {
-                if (!readProjectFiles(project, subChildren, localBaseDir.path()))
+                if (!readProjectFiles(project, subChildren, iniBaseDir))
                     res = false;
                 if (project->isEmpty()) {
                     closeGroup(project);
@@ -318,12 +338,12 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
     return res;
 }
 
-bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &workDir)
+bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir)
 {
     bool res = true;
     if (!project)
         EXCEPT() << "Missing project node, can't add file nodes";
-    QDir localBaseDir(workDir);
+    QDir localBaseDir(baseDir);
     for (int i = 0; i < children.size(); ++i) {
         QVariantMap child = children.at(i).toMap();
         QString name = child.value("name").toString();

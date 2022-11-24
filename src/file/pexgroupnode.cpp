@@ -289,6 +289,7 @@ const QString &PExProjectNode::fileName() const
 void PExProjectNode::setFileName(const QString &newProjectFile)
 {
     mProjectFile = newProjectFile;
+    emit changed(id());
 }
 
 bool PExProjectNode::hasLogNode() const

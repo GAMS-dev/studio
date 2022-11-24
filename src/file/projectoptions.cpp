@@ -35,6 +35,7 @@ namespace project {
 ProjectData::ProjectData(PExProjectNode *project)
 {
     mProject = project;
+    if (!mData.contains(file)) mData.insert(file, QDir::toNativeSeparators(project->fileName()));
     if (!mData.contains(name)) mData.insert(name, project->name());
     if (!mData.contains(workDir)) mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
     if (!mData.contains(baseDir)) mData.insert(baseDir, QDir::toNativeSeparators(project->location()));
@@ -62,8 +63,6 @@ QString ProjectData::fieldData(Field field)
 
 void ProjectData::save()
 {
-    if (mData.value(name).trimmed().compare(mProject->name()))
-        mProject->setName(mData.value(name).trimmed());
     QString path = QDir::fromNativeSeparators(mData.value(baseDir)).trimmed();
     if (path.compare(mProject->location(), FileType::fsCaseSense()))
         mProject->setLocation(path);
@@ -75,6 +74,8 @@ void ProjectData::save()
 void ProjectData::projectChanged(NodeId id)
 {
     if (mProject->id() != id) return;
+    if (fieldData(ProjectData::file) != QDir::toNativeSeparators(mProject->fileName()))
+        setFieldData(ProjectData::file, QDir::toNativeSeparators(mProject->fileName()));
     if (fieldData(ProjectData::name) != mProject->name())
         setFieldData(ProjectData::name, mProject->name());
     if (mProject->runnableGms())
@@ -83,6 +84,10 @@ void ProjectData::projectChanged(NodeId id)
         setFieldData(ProjectData::mainGms, "-no runnable-");
 }
 
+ProjectData *ProjectOptions::sharedData() const
+{
+    return mSharedData;
+}
 
 ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
     AbstractView(parent),
@@ -92,6 +97,7 @@ ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
     mSharedData = sharedData;
     ui->edName->setEnabled(false);
     ui->edMainGms->setEnabled(false);
+    ui->edProjectFile->setEnabled(false);
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
@@ -111,11 +117,6 @@ ProjectOptions::~ProjectOptions()
     delete ui;
 }
 
-ProjectData *ProjectOptions::sharedData() const
-{
-    return mSharedData;
-}
-
 bool ProjectOptions::isModified() const
 {
     return mModified;
@@ -129,9 +130,9 @@ void ProjectOptions::save()
 
 void ProjectOptions::on_edName_textChanged(const QString &text)
 {
-    if (text != mSharedData->fieldData(ProjectData::name))
-        mSharedData->setFieldData(ProjectData::name, text);
-    updateState();
+//    if (text != mSharedData->fieldData(ProjectData::name))
+//        mSharedData->setFieldData(ProjectData::name, text);
+//    updateState();
 }
 
 void ProjectOptions::on_edWorkDir_textChanged(const QString &text)
@@ -194,6 +195,9 @@ void ProjectOptions::on_bBaseDir_clicked()
 void ProjectOptions::projectChanged(NodeId id)
 {
     if (mSharedData->project()->id() != id) return;
+    if (mSharedData->fieldData(ProjectData::file) != QDir::toNativeSeparators(mSharedData->project()->fileName())) {
+        mSharedData->setFieldData(ProjectData::file, QDir::toNativeSeparators(mSharedData->project()->fileName()));
+    }
     if (mSharedData->fieldData(ProjectData::name) != mSharedData->project()->name()) {
         mSharedData->setFieldData(ProjectData::name, mSharedData->project()->name());
     }
@@ -206,6 +210,8 @@ void ProjectOptions::projectChanged(NodeId id)
 
 void ProjectOptions::updateData()
 {
+    if (ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
+        ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
     if (ui->edName->text() != mSharedData->fieldData(ProjectData::name))
         ui->edName->setText(mSharedData->fieldData(ProjectData::name));
     if (ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
