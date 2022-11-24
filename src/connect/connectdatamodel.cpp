@@ -561,11 +561,7 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             emit fromSchemaInserted(schemaname, row);
             qDebug() << "3 dropmimedata";
         } else {
-            bool onlyRequired = mOnlyRequriedAttributesAdded;
-            if (tobeinsertSchemaKey.size() == 1 && row < 0)  // drop onto schemaname
-                onlyRequired = false;
-            qDebug() << " drop onto schemaname ? " << (onlyRequired?"YES":"NO");
-            ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, onlyRequired );
+            ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, false);
             tobeinsertSchemaKey.removeFirst();
             tobeinsertSchemaKey.removeLast();
             appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);

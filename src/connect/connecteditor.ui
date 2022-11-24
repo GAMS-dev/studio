@@ -156,7 +156,7 @@
           <item>
            <widget class="QCheckBox" name="onlyRequiredAttribute">
             <property name="text">
-             <string>Add only required attributes</string>
+             <string>Only required options when adding new agent</string>
             </property>
            </widget>
           </item>
