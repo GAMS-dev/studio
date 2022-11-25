@@ -433,7 +433,7 @@ bool MainWindow::handleFileChanges(FileMeta* fc)
     int ret = QMessageBox::Discard;
     if (fc->editors().size() == 1 && fc->isModified()) {
         // only ask, if this is the last editor of this file
-        ret = showSaveChangesMsgBox(node->file()->name()+" has been modified.");
+        ret = showSaveChangesMsgBox(fc->name() + " has been modified.");
     }
     if (ret == QMessageBox::Cancel)
         return false;
@@ -444,6 +444,7 @@ bool MainWindow::handleFileChanges(FileMeta* fc)
         closeFileEditors(fc->id());
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        fc->setModified(false);
         closeFileEditors(fc->id());
     }
     return true;
@@ -4166,6 +4167,31 @@ void MainWindow::openFileNode(PExFileNode *node, bool focus, int codecMib, bool 
     if (!node) return;
     openFile(node->file(), focus, node->assignedProject(), codecMib, forcedAsTextEditor, tabStrategy);
 }
+
+//void MainWindow::reOpenFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
+//{
+//    FileMeta* fc = node->file();
+//    if (!fc) return;
+
+//    int ret = QMessageBox::Discard;
+//    if (fc->editors().size() == 1 && fc->isModified()) {
+//        // only ask, if this is the last editor of this file
+//        ret = showSaveChangesMsgBox(node->file()->name()+" has been modified.");
+//    }
+
+//    if (ret == QMessageBox::Save) {
+//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+//        fc->save();
+//        closeFileEditors(fc->id());
+//    } else if (ret == QMessageBox::Discard) {
+//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+//        closeFileEditors(fc->id());
+//    } else if (ret == QMessageBox::Cancel) {
+//        return;
+//    }
+
+//    openFileNode(node, focus, codecMib, forcedAsTextEditor);
+//}
 
 void MainWindow::closeProject(PExProjectNode* project)
 {
