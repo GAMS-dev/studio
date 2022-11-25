@@ -52,7 +52,7 @@ signals:
     void openFilePath(QString fileName, PExProjectNode* knownProject = nullptr, OpenGroupOption opt = ogNone, bool focus = false);
     void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void exportProject(PExProjectNode* group);
     void importProject();
     void newProject();

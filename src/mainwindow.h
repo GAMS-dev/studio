@@ -213,7 +213,6 @@ private slots:
     void createProject(QString projectPath);
     void openFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFileNode(PExFileNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -435,6 +434,7 @@ private:
     void initEnvironment();
     void initNavigator();
     void adjustFonts();
+    bool handleFileChanges(FileMeta *fc);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);
