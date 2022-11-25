@@ -33,7 +33,7 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
-enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, FileSystem };
+enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, FileSystem, QuickAction };
 
 class NavigatorDialog : public QDialog
 {
@@ -64,10 +64,12 @@ private:
     void collectLogs(QVector<NavigatorContent> &content);
     void collectFileSystem(QVector<NavigatorContent> &content);
     void collectLineNavigation(QVector<NavigatorContent> &content);
+    void collectQuickActions(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
     void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
+    void selectQuickAction(NavigatorContent nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
     void autocomplete();

@@ -97,6 +97,7 @@ class MainWindow : public QMainWindow
 {
     friend MainTabContextMenu;
     friend LogTabContextMenu;
+    friend NavigatorDialog;
 
     Q_OBJECT
 

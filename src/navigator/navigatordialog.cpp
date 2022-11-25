@@ -113,45 +113,48 @@ void NavigatorDialog::updateContent()
     QString input = mInput->text();
 
     QRegularExpressionMatch match;
-    NavigatorMode mode;
     if (input.startsWith("?")) {
-        mode = NavigatorMode::Help;
+        mCurrentMode = NavigatorMode::Help;
         setFilter("", true);
         collectHelpContent(content);
 
     } else if (mPostfixRegex.match(input).hasMatch()) {
-        mode = NavigatorMode::Line;
+        mCurrentMode = NavigatorMode::Line;
         setFilter("", true);
         collectLineNavigation(content);
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::InProject;
+        mCurrentMode = NavigatorMode::InProject;
         setFilter(input.remove(mPrefixRegex));
         collectInProject(content);
 
     } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Tabs;
+        mCurrentMode = NavigatorMode::Tabs;
         setFilter(input.remove(mPrefixRegex));
         collectTabs(content);
 
     } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Logs;
+        mCurrentMode = NavigatorMode::Logs;
         setFilter(input.remove(mPrefixRegex));
         collectLogs(content);
 
     } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::FileSystem;
+        mCurrentMode = NavigatorMode::FileSystem;
         collectFileSystem(content);
 
+    } else if (input.startsWith("x ", Qt::CaseInsensitive)) {
+        mCurrentMode = NavigatorMode::QuickAction;
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        collectQuickActions(content);
+
     } else {
-        mode = NavigatorMode::AllFiles;
         setFilter(input);
+        mFilterModel->setFilterWildcard(input);
         collectAllFiles(content);
     }
 
     mNavModel->setContent(content);
-    mCurrentMode = mode;
-    if (mode != NavigatorMode::FileSystem) {
+    if (mCurrentMode != NavigatorMode::FileSystem) {
         mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
         mDirSelectionOngoing = false;
     }
@@ -169,6 +172,7 @@ void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
     content.append(NavigatorContent("T filename", "filter open tabs", "T "));
     content.append(NavigatorContent("L filename", "filter logs", "L "));
     content.append(NavigatorContent("F filename", "files in filesystem", "F "));
+    content.append(NavigatorContent("X quick action", "", "X "));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
@@ -285,6 +289,18 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     }
 }
 
+void NavigatorDialog::collectQuickActions(QVector<NavigatorContent> &content)
+{
+    content.append(NavigatorContent("Open Settings",
+                                    std::bind(&MainWindow::on_actionSettings_triggered, mMain)));
+    content.append(NavigatorContent("Open Model Library Explorer",
+                                    std::bind(&MainWindow::on_actionGAMS_Library_triggered, mMain)));
+    content.append(NavigatorContent("Open Model Terminal",
+                                    std::bind(&MainWindow::on_actionTerminal_triggered, mMain)));
+    content.append(NavigatorContent("GDX Diff",
+                                    std::bind(&MainWindow::on_actionGDX_Diff_triggered, mMain)));
+}
+
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = ui->tableView->currentIndex();
@@ -311,6 +327,8 @@ void NavigatorDialog::selectItem(QModelIndex index)
 
     if (mCurrentMode == NavigatorMode::Help)
         selectHelpContent(nc);
+    else if (mCurrentMode == NavigatorMode::QuickAction)
+        selectQuickAction(nc);
     else selectFileOrFolder(nc);
 }
 
@@ -372,6 +390,13 @@ void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 {
     mInput->setText(nc.Prefix());
     updateContent();
+}
+
+void NavigatorDialog::selectQuickAction(NavigatorContent nc)
+{
+    nc.ExecuteQuickAction();
+    mInput->setText("");
+    close();
 }
 
 void NavigatorDialog::selectLineNavigation()

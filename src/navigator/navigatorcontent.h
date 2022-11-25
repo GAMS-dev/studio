@@ -13,6 +13,7 @@ public:
     NavigatorContent(FileMeta* file, QString additionalText);
     NavigatorContent(QFileInfo file, QString additionalText);
     NavigatorContent(QString txt, QString additionalText, QString prefix, FileMeta* currentFile = nullptr);
+    NavigatorContent(QString txt, std::function<void()> function);
     bool isValid();
 
     FileMeta* GetFileMeta();
@@ -20,6 +21,7 @@ public:
     QString Text();
     QString AdditionalInfo();
     QString Prefix();
+    void ExecuteQuickAction();
 
 private:
     FileMeta* mFileMeta = nullptr;
@@ -27,6 +29,7 @@ private:
     QString mText;
     QString mAdditionalInfo;
     QString mInsertPrefix;
+    std::function<void()> mFunction;
 };
 
 }
