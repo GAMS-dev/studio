@@ -5377,6 +5377,11 @@ void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
     mSearchWidgetPos = searchWidgetPos;
 }
 
+void MainWindow::toggleFullscreen()
+{
+    ui->actionFull_Screen->trigger();
+}
+
 void MainWindow::on_actionFull_Screen_triggered()
 {
     if (!ui->actionFull_Screen->isChecked()) {
@@ -5388,6 +5393,11 @@ void MainWindow::on_actionFull_Screen_triggered()
         mMaximizedBeforeFullScreen = isMaximized();
         showFullScreen();
     }
+}
+
+void MainWindow::toggleDistractionFreeMode()
+{
+    ui->actionDistraction_Free_Mode->toggle();
 }
 
 void MainWindow::on_actionDistraction_Free_Mode_toggled(bool checked)

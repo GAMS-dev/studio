@@ -172,7 +172,7 @@ void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
     content.append(NavigatorContent("T filename", "filter open tabs", "T "));
     content.append(NavigatorContent("L filename", "filter logs", "L "));
     content.append(NavigatorContent("F filename", "files in filesystem", "F "));
-    content.append(NavigatorContent("X quick action", "", "X "));
+    content.append(NavigatorContent("X quick action", "access often used Studio functions", "X "));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
@@ -291,14 +291,52 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectQuickActions(QVector<NavigatorContent> &content)
 {
+    // dialogs
     content.append(NavigatorContent("Open Settings",
                                     std::bind(&MainWindow::on_actionSettings_triggered, mMain)));
     content.append(NavigatorContent("Open Model Library Explorer",
                                     std::bind(&MainWindow::on_actionGAMS_Library_triggered, mMain)));
-    content.append(NavigatorContent("Open Model Terminal",
+    content.append(NavigatorContent("Open Terminal",
                                     std::bind(&MainWindow::on_actionTerminal_triggered, mMain)));
     content.append(NavigatorContent("GDX Diff",
                                     std::bind(&MainWindow::on_actionGDX_Diff_triggered, mMain)));
+
+    // projects and files
+    content.append(NavigatorContent("New Project",
+                                    std::bind(&MainWindow::on_actionNew_Project_triggered, mMain)));
+    content.append(NavigatorContent("Open...",
+                                    std::bind(&MainWindow::on_actionOpen_triggered, mMain)));
+    content.append(NavigatorContent("Open Folder...",
+                                    std::bind(&MainWindow::on_actionOpen_Folder_triggered, mMain)));
+    content.append(NavigatorContent("Save All",
+                                    std::bind(&MainWindow::on_actionSave_All_triggered, mMain)));
+    content.append(NavigatorContent("Close All",
+                                    std::bind(&MainWindow::on_actionClose_All_triggered, mMain)));
+    content.append(NavigatorContent("Clean scratch dirs",
+                                    std::bind(&MainWindow::on_actionDeleteScratchDirs_triggered, mMain)));
+    content.append(NavigatorContent("Edit Default GAMS Configuration",
+                                    std::bind(&MainWindow::on_actionEditDefaultConfig_triggered, mMain)));
+
+    // views
+    content.append(NavigatorContent("Toggle Fullscreen",
+                                    std::bind(&MainWindow::toggleFullscreen, mMain)));
+    content.append(NavigatorContent("Toggle Distraction-free mode",
+                                    std::bind(&MainWindow::toggleDistractionFreeMode, mMain)));
+
+    // run
+    content.append(NavigatorContent("Run GAMS",
+                                    std::bind(&MainWindow::on_actionRun_triggered, mMain)));
+    content.append(NavigatorContent("Run GAMS with GDX creation",
+                                    std::bind(&MainWindow::on_actionRun_with_GDX_Creation_triggered, mMain)));
+    content.append(NavigatorContent("Run NEOS",
+                                    std::bind(&MainWindow::on_actionRunNeos_triggered, mMain)));
+    content.append(NavigatorContent("Run GAMS Engine",
+                                    std::bind(&MainWindow::on_actionRunEngine_triggered, mMain)));
+
+    content.append(NavigatorContent("Run MIRO base mode",
+                                    std::bind(&MainWindow::on_actionBase_mode_triggered, mMain)));
+    content.append(NavigatorContent("Run MIRO configuration mode",
+                                    std::bind(&MainWindow::on_actionConfiguration_mode_triggered, mMain)));
 }
 
 void NavigatorDialog::returnPressed()
