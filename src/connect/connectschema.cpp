@@ -41,8 +41,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
             }
         } else if (node["type"].Type()==YAML::NodeType::Scalar) {
                   QString value(QString::fromStdString(node["type"].as<std::string>()));
-                  if (node["type"])
-                      types << getTypeFromValue(value);
+                  types << getTypeFromValue(value);
         }
     }
     bool required = false;
@@ -73,6 +72,8 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
             minvalue = ValueWrapper(node["min"].as<int>());
         } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
                   minvalue = ValueWrapper(node["min"].as<double>());
+        } else {
+            minvalue = ValueWrapper();
         }
     }
     ValueWrapper maxvalue;
@@ -81,6 +82,8 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
             maxvalue = ValueWrapper(node["max"].as<int>());
         } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
                   maxvalue = ValueWrapper(node["max"].as<double>());
+        } else {
+            maxvalue = ValueWrapper();
         }
     }
 //    if (!mOrderedKeyList.contains(key))
@@ -247,14 +250,18 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
     if (contains(key)) {
         foreach(SchemaType t, mSchemaHelper[key]->types) { // [key]->types) {
             int tt = (int)t;
-            if ( tt==(int)SchemaValueType::Integer)
+            if ( tt==(int)SchemaType::Integer)
                 strlist << "integer";
-            else if ( tt==(int)SchemaValueType::Float)
+            else if ( tt==(int)SchemaType::Float)
                     strlist << "float";
-            else if (tt==(int)SchemaValueType::String)
-                     strlist << "string";
-            else if (tt==(int)SchemaValueType::Boolean)
+            else if (tt==(int)SchemaType::Boolean)
                      strlist << "boolean";
+            else if (tt==(int)SchemaType::String)
+                     strlist << "string";
+            else if (tt==(int)SchemaType::List)
+                     strlist << "list";
+            else if (tt==(int)SchemaType::Dict)
+                     strlist << "dict";
         }
     }
     return strlist;

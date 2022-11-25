@@ -24,9 +24,10 @@
 #include <QStringListModel>
 #include <QKeyEvent>
 
+#include <QDebug>
+
 #include "connectdatavaluedelegate.h"
 #include "connectdatamodel.h"
-#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -44,12 +45,12 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     QCompleter* completer = new QCompleter(lineEdit);
 
     QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
-    QStringList allowedval_list = allowedval_index.data().toStringList();
-    if (allowedval_list.size() > 0) {
+    QStringList allowedval_list = allowedval_index.data().toString().split(",");
+    if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );
     } else {
         QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
-        QStringList type_list = type_index.data().toStringList();
+        QStringList type_list = type_index.data().toString().split(",");
         if (type_list.contains("boolean", Qt::CaseInsensitive)) {
             QStringList boolean_list({ "true", "false"});
             completer->setModel( new QStringListModel(boolean_list) );

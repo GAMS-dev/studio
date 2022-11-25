@@ -138,7 +138,8 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::AllowedValue, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ElementID, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::SchemaKey, true);
-    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Unknown, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Undefined, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::InvalidValue, true);
     ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
     headerRegister(ui->dataTreeView->header());
 
@@ -193,6 +194,7 @@ bool ConnectEditor::init(bool quiet)
     connect(mDataModel, &ConnectDataModel::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::fromSchemaInserted, this, &ConnectEditor::fromSchemaInserted, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::indexExpandedAndResized, this, &ConnectEditor::expandAndResizedToContents, Qt::UniqueConnection);
+    connect(mDataModel, &ConnectDataModel::dataChanged, mDataModel, &ConnectDataModel::onEditDataChanged, Qt::UniqueConnection);
 
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() { saveExpandedState(); });
     connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , [this]() { saveExpandedState(); });
@@ -264,7 +266,6 @@ void ConnectEditor::setModified(bool modified)
 {
     mModified = modified;
     ui->openAsTextButton->setEnabled(!modified);
-    qDebug() << "modified:" << mLocation << ":" << (mModified?"true":"false");
     emit modificationChanged( mModified );
 }
 
@@ -330,7 +331,7 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
     QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         if (index.parent().isValid() &&
-            index.parent().siblingAtColumn((int)DataItemColumn::Unknown).data(Qt::DisplayRole).toBool())
+            index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
             return;
         QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
         QStringList schema = values_idx.data().toStringList();

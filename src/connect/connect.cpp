@@ -238,7 +238,6 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
 
 ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlist, bool onlyRequiredAttribute)
 {
-    qDebug() << "  __x_ 0 schemstrlist=" << schemastrlist;
     QString schemaname = schemastrlist.first();
     ConnectSchema* s = mSchema[schemaname];
     YAML::Node data;
@@ -248,16 +247,13 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
     QStringList tobeinsertSchemaKey(schemastrlist);
     tobeinsertSchemaKey.removeFirst();
     QString schemastr = tobeinsertSchemaKey.join(":");
-    qDebug() << "  __x_ 1 schemastr=" << schemastr;
     Schema* schemaHelper = s->getSchema(schemastr);
     if (!schemaHelper)
         return new ConnectData(data);
 
-    qDebug() << "  __x_ 2 schemaHelper=" << schemaHelper->level;
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Emitter e;
     e << schemanode;
-    qDebug() << "  __x_ 3 schemanode=" << e.c_str();
     YAML::Node value;
     if (mapValue( schemanode, value,  onlyRequiredAttribute ))
         data[tobeinsertSchemaKey.last().toStdString()] = value;

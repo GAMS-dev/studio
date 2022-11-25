@@ -53,7 +53,8 @@ enum class DataItemColumn {
     MoveUp       = 7,
     ElementID    = 8,
     SchemaKey    = 9,
-    Unknown      = 10
+    Undefined    = 10,
+    InvalidValue = 11
 };
 
 class ConnectDataModel : public QAbstractItemModel
@@ -111,7 +112,10 @@ public slots:
     void onlyRequriedAttributedChanged(int state);
     void reloadConnectDataModel();
 
+    void onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+
 protected:
+    bool isIndexValueValid(int column, ConnectDataItem* item);
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
     bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent, bool samelevel=true) const;
 
