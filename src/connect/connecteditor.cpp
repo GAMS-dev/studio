@@ -355,7 +355,6 @@ void ConnectEditor::deleteDataItemRequested(const QModelIndex &index)
     setModified(true);
 
     ui->dataTreeView->setUpdatesEnabled(false);
-    qDebug() << "delete (" << index.row() <<"," << index.column() << ") and all its children";
     mDataModel->removeItem(index);
     ui->dataTreeView->setUpdatesEnabled(true);
 }
@@ -365,7 +364,6 @@ void ConnectEditor::moveUpDatatItemRequested(const QModelIndex &index)
     setModified(true);
 
     ui->dataTreeView->setUpdatesEnabled(false);
-    qDebug() << "move " << index.row() <<"," << index.column() << ") and all its children up";
     mDataModel->moveRows( index.parent(), index.row(), 1,
                           index.parent(), index.row()-1 );
     ui->dataTreeView->setUpdatesEnabled(true);
@@ -376,7 +374,6 @@ void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
     setModified(true);
 
     ui->dataTreeView->setUpdatesEnabled(false);
-    qDebug() << "move (" << index.row() <<"," << index.column() << ") and all its children down";
     mDataModel->moveRows( index.parent(), index.row(), 1,
                           index.parent(), index.row()+2 );
     ui->dataTreeView->setUpdatesEnabled(true);

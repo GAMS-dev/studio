@@ -119,6 +119,9 @@ protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
     bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent, bool samelevel=true) const;
 
+    QModelIndex getSchemaParentIndex(const QModelIndex& idx);
+    ConnectDataItem* getSchemaParentItem(ConnectDataItem* item);
+
     void getData(ConnectDataItem* item, YAML::Node& node);
     void informDataChanged(const QModelIndex& parent);
 
