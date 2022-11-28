@@ -196,7 +196,13 @@ QStringList ConnectSchema::getAllRequiredKeyList() const
 
 bool ConnectSchema::contains(const QString &key) const
 {
-    return (mSchemaHelper.contains(key));
+    if (mSchemaHelper.contains(key)) {
+        return true;
+    } else if (isAnyOfDefined(key)) {
+        return true;
+    } else {
+        return false;
+    }
 }
 
 QStringList ConnectSchema::getAllAnyOfKeys(const QString &key) const
