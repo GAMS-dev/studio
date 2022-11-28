@@ -259,9 +259,10 @@ Qt::ItemFlags ConnectDataModel::flags(const QModelIndex &index) const
                else
                    return Qt::ItemIsDropEnabled | Qt::NoItemFlags;
     } else if (index.column()==(int)DataItemColumn::Value) {
-              if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementKey   ||
-                  item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementMap      )
-                  return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
+              if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementKey)
+                  return Qt::NoItemFlags;
+              else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementMap)
+                       return Qt::ItemIsEditable | QAbstractItemModel::flags(index);
               else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue)
                       return Qt::ItemIsEditable | Qt::ItemIsDropEnabled | QAbstractItemModel::flags(index);
               else if (item->data( (int)DataItemColumn::CheckState ).toInt()<=(int)DataCheckState::ElementKey ||
