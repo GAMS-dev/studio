@@ -171,8 +171,12 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                            QVariant data = index.data(index.column());
                            if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName) {
                                if (!item->data( (int)DataItemColumn::Undefined ).toBool() ) {
-                                   return QVariant( QString("%1 Show help for %2%3%4 schema %5")
-                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter) );
+                                   if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0)
+                                       return QVariant( QString("%1%2%3%4 may contain an invalid or unknown attribute.<br/>Check schema definition for valid attribute name.<br/>Note that name is case-sensitive.%5")
+                                                             .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
+                                   else
+                                         return QVariant( QString("%1 Show help for %2%3%4 schema %5")
+                                                         .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter) );
                                } else {
                                    return QVariant( QString("%1 Unknown schema name %2%3%4.<br/>Note that name is case-sensitive.<br/>See %2%5%4 location for known schema definition.%6")
                                                     .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir()),TooltipStrFooter ) );
@@ -1213,7 +1217,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              itemData << QVariant(mit->second.as<std::string>().c_str());
              itemData << QVariant((int)DataCheckState::ElementValue);
-             int num = schema->getNumberOfAnyOfDefined(dataKeys.join(":"));
+             int num = (schema ? schema->getNumberOfAnyOfDefined(dataKeys.join(":")) : 0);
              if (num > 0) { // in case of concatenate:outputDimension
                  QString anyofkey = QString("%1[%2]").arg(key, QString::number(num-1));
                  dataKeys.removeLast();
