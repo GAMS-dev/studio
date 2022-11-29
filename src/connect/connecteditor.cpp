@@ -180,6 +180,10 @@ bool ConnectEditor::init(bool quiet)
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
         schemaItemModel->setToolTip(index);
     });
+    connect(ui->schemaControlListView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](const QModelIndex &current, const QModelIndex &previous) {
+        Q_UNUSED(previous);
+        defmodel->loadSchemaFromName( current.data(Qt::DisplayRole).toString() );
+    });
     connect(schemaItemModel, &SchemaListModel::schemaItemChanged, this, [=](const QString& schemaname) {
         defmodel->loadSchemaFromName( schemaname );
     });
