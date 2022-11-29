@@ -333,7 +333,6 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
 
 bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
 {
-//    qDebug() << "mapValue : onlyRequired = " << (onlyRequiredAttribute?"YES":"NO");
     if (schemaValue.Type() == YAML::NodeType::Map) {
         if (schemaValue["required"]) {
 //            if (schemaValue["required"].Type()!=YAML::NodeType::Scalar)

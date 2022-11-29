@@ -253,7 +253,6 @@ bool ConnectEditor::saveAs(const QString &location)
     ConnectData* data = mDataModel->getConnectData();
     if (data) {
        setModified(false);
-       qDebug()<< data->str().c_str();
        data->unload(location);
        delete data;
        data = NULL;
@@ -331,7 +330,6 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
 {
     setModified(true);
 
-    qDebug() << "append item (" << index.row() <<"," << index.column() << ")";
     QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         if (index.parent().isValid() &&
@@ -339,14 +337,12 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
             return;
         QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
         QStringList schema = values_idx.data().toStringList();
-        qDebug() << "schema=" <<schema.join(":");
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
             if (schema.last().compare("-")==0)
                 schema.removeLast();
             ConnectData* schemadata = mConnect->createDataHolderFromSchema(schemaname, schema, (ui->onlyRequiredAttribute->checkState()==Qt::Checked));
-            qDebug() << schemadata->str().c_str();
             mDataModel->appendListElement(schemaname, schema, schemadata, index);
         }
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
