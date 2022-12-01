@@ -74,7 +74,7 @@ FileMeta* SearchFileHandler::findOrCreateFile(QString filepath)
 }
 
 PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* knownProject) {
-    return mMain->openFileWithOption(fileName, knownProject);
+    return mMain->openFilePath(fileName, knownProject);
 }
 
 QVector<PExProjectNode *> SearchFileHandler::projects()

@@ -214,7 +214,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this, &MainWindow::openFileWithOption);
+    connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this,
+            [this](QString filePath, PExProjectNode* knownProject, OpenGroupOption opt, bool focus) {
+        openFilePath(filePath, knownProject, opt, focus);
+    });
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::expandAll, this, &MainWindow::on_expandAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
@@ -381,7 +384,9 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openFilePath, this, &MainWindow::openFilePath);
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
+        openFilePath(filePath, nullptr, ogFindGroup, true);
+    });
     if (Settings::settings()->toBool(skSkipWelcomePage))
         mWp->hide();
     else
@@ -3155,8 +3160,12 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt, bool focus)
+PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownProject, OpenGroupOption opt,
+                                            bool focus, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
+    if (!QFileInfo::exists(filePath))
+        EXCEPT() << "File not found: " << filePath;
+
     PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
     PExFileNode *fileNode = nullptr;
@@ -3164,7 +3173,7 @@ PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* kn
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
 
-    FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(fileName);
+    FileMeta *fileMeta = (opt == ogNewGroup) ? nullptr : mFileMetaRepo.fileMeta(filePath);
     if (opt == ogFindGroup) {
         if (fileMeta) {
             // found, prefer created or current group (over a third group)
@@ -3183,29 +3192,26 @@ PExFileNode* MainWindow::openFileWithOption(QString fileName, PExProjectNode* kn
     }
     // create the destination group if necessary
     if (!project && !fileNode) {
-        QFileInfo fi(fileName);
+        QFileInfo fi(filePath);
         project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
     }
 
     // create node if missing
     if (!fileNode) {
         if (project) {
-            if (fileMeta) {
+            if (fileMeta)
                 fileNode = mProjectRepo.findOrCreateFileNode(fileMeta, project);
-            } else {
-                fileNode = mProjectRepo.findOrCreateFileNode(fileName, project);
-            }
-        } else {
+            else
+                fileNode = mProjectRepo.findOrCreateFileNode(filePath, project);
+        } else
             DEB() << "OOPS, this shouldn't happen: Neither project nor fileNode defined!";
-        }
     }
 
     // open the detected file
-    if (fileNode) {
-        openFileNode(fileNode, focus);
-    } else {
+    if (fileNode)
+        openFileNode(fileNode, focus, -1, forcedAsTextEditor, tabStrategy);
+    else
         DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
-    }
 
     return fileNode;
 }
@@ -3222,7 +3228,7 @@ void MainWindow::openFiles(OpenGroupOption opt)
     PExFileNode *fileNode = nullptr;
     for (const QString &fileName : files) {
         // detect if the file is already present at the scope
-        fileNode = openFileWithOption(fileName, nullptr, opt);
+        fileNode = openFilePath(fileName, nullptr, opt);
         if (!firstNode) firstNode = fileNode;
     }
 
@@ -4331,21 +4337,6 @@ void MainWindow::closeFileEditors(const FileId fileId)
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
-void MainWindow::openFilePath(const QString &filePath, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
-{
-    if (!QFileInfo::exists(filePath)) {
-        EXCEPT() << "File not found: " << filePath;
-    }
-    PExFileNode *fileNode = mProjectRepo.findFile(filePath);
-    if (!fileNode) {
-        fileNode = mProjectRepo.findOrCreateFileNode(filePath);
-        if (!fileNode)
-            EXCEPT() << "Could not create node for file: " << filePath;
-    }
-
-    openFileNode(fileNode, focus, codecMib, forcedAsTextEditor, tabStrategy);
-}
-
 PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, PExProjectNode* project)
 {
     PExFileNode *node = nullptr;
@@ -4371,7 +4362,7 @@ void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
             PExProjectNode* project =  fn->assignedProject();
             mProjectRepo.findOrCreateFileNode(fi.absoluteFilePath(), project);
         }
-        openFilePath(fi.absoluteFilePath(), true);
+        openFilePath(fi.absoluteFilePath(), nullptr, ogNone, true);
         CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
         if (codeEdit) {
             int line = (item.lineNumber > 0 ? item.lineNumber-1 : 0);
@@ -4690,7 +4681,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo::exists(location)) {
-            openFilePath(location, true);
+            openFilePath(location, nullptr, ogNone, true);
             mOpenTabsList << location;
             curTab = location;
         } else if (location == "WELCOME_PAGE") {
@@ -4710,7 +4701,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     continue;
                 }
                 if (QFileInfo::exists(location)) {
-                    openFilePath(location, false, -1, false, tabStrategy);
+                    openFilePath(location, nullptr, ogFindGroup, false, false, tabStrategy);
                     mOpenTabsList << location;
                 }
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
@@ -5101,7 +5092,7 @@ void MainWindow::on_actionRestore_Recently_Closed_Tab_triggered()
     QFile file(mClosedTabs.last());
     mClosedTabs.removeLast();
     if (file.exists()) {
-        openFilePath(file.fileName());
+        openFilePath(file.fileName(), nullptr, ogFindGroup);
         ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), mClosedTabsIndexes.takeLast());
     } else
         on_actionRestore_Recently_Closed_Tab_triggered();
@@ -5483,11 +5474,11 @@ void MainWindow::restoreCursorPosition(CursorHistoryItem item)
     } else {
         if (!item.filePath.isEmpty()) {
             if (item.pinKind == pkNone) {
-                openFilePath(item.filePath, true);
+                openFilePath(item.filePath, nullptr, ogFindGroup, true);
             } else {
                 FileMeta *fm = mFileMetaRepo.fileMeta(item.filePath);
                 if (!fm->isOpen())
-                    openFilePath(item.filePath, false);
+                    openFilePath(item.filePath, nullptr, ogFindGroup, false);
                 int tabInd = ui->mainTabs->indexOf(fm->editors().first());
                 openPinView(tabInd, Qt::Orientation(item.pinKind));
                 if (mPinView->widget()) mPinView->widget()->setFocus();

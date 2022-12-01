@@ -78,7 +78,7 @@ void WelcomePage::historyChanged()
             tmpLabel->setToolTip(file.filePath());
             tmpLabel->setIconSize(QSize(16,16));
             tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.fileName()).kind()));
-            connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::linkActivated);
+            connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::openFilePath);
             ui->layout_lastFiles->addWidget(tmpLabel);
             j++;
         }
@@ -127,11 +127,6 @@ void WelcomePage::on_relayModLibLoad(QString lib)
 void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
 {
     emit relayDocOpen(doc, anchor);
-}
-
-void WelcomePage::linkActivated(const QString &link)
-{
-    emit openFilePath(link);
 }
 
 void WelcomePage::handleZoom(int delta)

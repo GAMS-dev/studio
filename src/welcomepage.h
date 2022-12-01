@@ -45,8 +45,7 @@ public:
     void zoomReset();
 
 signals:
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEdit = false,
-                      NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFilePath(const QString &filePath);
     void relayActionWp(QString action);
     void relayModLibLoad(QString lib, bool forceOverwrite = false);
     void relayDocOpen(QString doc, QString anchor);
@@ -58,7 +57,6 @@ public slots:
     void on_relayOpenDoc(QString doc, QString anchor);
 
 private slots:
-    void linkActivated(const QString &link);
     void handleZoom(int delta);
 
 protected:

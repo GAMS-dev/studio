@@ -83,7 +83,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
             originalversion.replace(mAutosavedFileMarker, "");
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
-            mMainWindow->openFilePath(destFile.fileName());
+            mMainWindow->openFilePath(destFile.fileName(), nullptr, ogFindGroup);
             if (srcFile.open(QIODevice::ReadWrite)) {
                 if (destFile.open(QIODevice::ReadWrite)) {
                     QTextStream in(&srcFile);

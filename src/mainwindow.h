@@ -169,10 +169,9 @@ public:
     void invalidateResultsView();
 
 public slots:
-    PExFileNode* openFileWithOption(QString fileName, PExProjectNode* knownProject = nullptr,
-                                    OpenGroupOption opt = ogNone, bool focus = false);
-    void openFilePath(const QString &filePath, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
-                      NewTabStrategy tabStrategy = tabAfterCurrent);
+    PExFileNode* openFilePath(QString filePath, PExProjectNode* knownProject = nullptr,
+                                    OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
+                                    NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
     void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);

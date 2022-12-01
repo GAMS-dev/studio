@@ -416,7 +416,7 @@ void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
         close();
     } else {
         if (nc.FileInfo().isFile()) {
-            mMain->openFileWithOption(nc.FileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
+            mMain->openFilePath(nc.FileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
             fillFileSystemPath(nc);
