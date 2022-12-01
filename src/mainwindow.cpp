@@ -1409,12 +1409,12 @@ void MainWindow::on_actionNew_triggered()
 
 void MainWindow::on_actionOpen_triggered()
 {
-    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup);
+    openFilesDialog(Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup);
 }
 
 void MainWindow::on_actionOpenAlternative_triggered()
 {
-    openFiles(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
+    openFilesDialog(Settings::settings()->toBool(skOpenInCurrent) ? ogNewGroup : ogCurrentGroup);
 }
 
 void MainWindow::on_actionOpen_Folder_triggered()
@@ -3216,7 +3216,7 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
     return fileNode;
 }
 
-void MainWindow::openFiles(OpenGroupOption opt)
+void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
     QString path = currentPath();
     const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,

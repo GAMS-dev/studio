@@ -447,7 +447,7 @@ private:
     neos::NeosProcess *createNeosProcess();
     bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
     void execution(PExProjectNode *project);
-    void openFiles(OpenGroupOption opt);
+    void openFilesDialog(OpenGroupOption opt);
     PExProjectNode *currentProject();
     int pinViewTabIndex();
 
