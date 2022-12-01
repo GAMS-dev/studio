@@ -192,7 +192,8 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="");
+    void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="",
+                       bool projectOnly = false);
     void updateCursorHistoryAvailability();
     void closeProject(PExProjectNode *project);
     void closeFileEditors(const FileId fileId);

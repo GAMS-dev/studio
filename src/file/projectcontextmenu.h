@@ -59,7 +59,7 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<PExProjectNode *> groups, const QString& solverName="");
+    void newFileDialog(QVector<PExProjectNode *> groups, const QString& solverName="", bool projectOnly = false);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
 

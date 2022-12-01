@@ -1308,27 +1308,30 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString& solverName)
+void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString& solverName, bool projectOnly)
 {
     QString path;
-    if (!projects.isEmpty()) {
-        path = projects.constFirst()->workDir();
-
-    } else if (mRecent.editFileId() >= 0) {
-        FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
-        if (fm) path = QFileInfo(fm->location()).path();
+    if (projectOnly) {
+        path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+    } else {
+        if (!projects.isEmpty()) {
+            path = projects.constFirst()->workDir();
+        } else if (mRecent.editFileId() >= 0) {
+            FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
+            if (fm) path = QFileInfo(fm->location()).path();
+        }
+        if (path.isEmpty()) path = currentPath();
+        if (path.isEmpty()) path = ".";
     }
-    if (path.isEmpty()) path = currentPath();
-    if (path.isEmpty()) path = ".";
 
+    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms";
     if (solverName.isEmpty()) {
         // find a free file name
         int nr = 1;
-        while (QFileInfo(path, QString("new%1.gms").arg(nr)).exists()) ++nr;
-        path += QString("/new%1.gms").arg(nr);
+        while (QFileInfo(path, QString("new%1.%2").arg(nr).arg(suffix)).exists()) ++nr;
+        path += QString("/new%1.%2").arg(nr).arg(suffix);
     } else {
         int nr = 1;
-        QString suffix = "opt";
         QString filename = QString("%1.%2").arg(solverName, suffix);
         while (QFileInfo(path, filename).exists()) {
             ++nr;  // note: "op1" is invalid
@@ -1338,28 +1341,31 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
             filename = QString("%1.%2%3").arg(solverName, suffix).arg(nr);
         }
         path += QString("/%1").arg(filename);
+        suffix = "opt";
     }
 
-    QString filePath = solverName.isEmpty()
-                             ? QFileDialog::getSaveFileName(this, "Create new file...",
-                                                            path,
-                                                            ViewHelper::dialogFileFilterUserCreated().join(";;"), nullptr, QFileDialog::DontConfirmOverwrite)
-                             : QFileDialog::getSaveFileName(this, QString("Create new %1 option file...").arg(solverName),
-                                                            path, ViewHelper::dialogOptFileFilter(solverName),
-                                                            nullptr, QFileDialog::DontConfirmOverwrite);
+    QString kind = projectOnly ? "Project" : "File";
+    QString kind2 = !solverName.isEmpty() ? QString("%1 option file").arg(solverName)
+                                          : kind.toLower();
+    QString filter = !solverName.isEmpty() ? ViewHelper::dialogOptFileFilter(solverName)
+                                           : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
+                                                         : ViewHelper::dialogFileFilterUserCreated().join(";;");
+    // TODO(JM) on switching to project files, only keep getSaveFileName
+    QString filePath = projectOnly ? QFileDialog::getExistingDirectory(this, QString("New %1...").arg(kind2), path)
+                                   : QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
+                                                                  filter, nullptr, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
-        filePath += (solverName.isEmpty() ? ".gms" : ".opt");
+        filePath += suffix;
 
     QFile file(filePath);
-    FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
 
-    if (file.exists()) {
+    if (!projectOnly && file.exists()) {
         QMessageBox msgBox;
-        msgBox.setWindowTitle("File already existing");
-        msgBox.setText("The file " + filePath + " already exists in your working directory.");
-        msgBox.setInformativeText("What do you want to do with the existing file?");
+        msgBox.setWindowTitle(QString("%1 already exists").arg(kind));
+        msgBox.setText(QString("The %1 ").arg(kind.toLower()) + filePath + " already exists in the selected directory.");
+        msgBox.setInformativeText(QString("What do you want to do with the existing %1?").arg(kind.toLower()));
         msgBox.setStandardButtons(QMessageBox::Abort);
         msgBox.addButton("Open", QMessageBox::ActionRole);
         msgBox.addButton("Replace", QMessageBox::ActionRole);
@@ -1370,8 +1376,12 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
             // do nothing and continue
             break;
         case 1: // replace
-            if (destFM)
-               closeFileEditors(destFM->id());
+            if (projectOnly) {
+                // TODO(JM) find project node and close it
+            } else {
+                if (FileMeta *destFM = mFileMetaRepo.fileMeta(filePath))
+                   closeFileEditors(destFM->id());
+            }
             file.open(QIODevice::WriteOnly); // create empty file
             file.close();
             break;
@@ -1383,7 +1393,9 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         file.close();
     }
 
-    if (!projects.isEmpty()) { // add file to each selected project
+    if (projectOnly) {
+        createProject(filePath);
+    } else if (!projects.isEmpty()) { // add file to each selected project
         for (PExProjectNode *project: projects)
             openFileNode(addNode("", filePath, project));
     } else { // create new project
