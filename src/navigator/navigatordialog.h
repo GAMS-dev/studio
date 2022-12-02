@@ -33,7 +33,7 @@ class NavigatorDialog;
 namespace gams {
 namespace studio {
 
-enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, FileSystem };
+enum class NavigatorMode { AllFiles, Line, Help, InProject, Tabs, Logs, FileSystem, QuickAction };
 
 class NavigatorDialog : public QDialog
 {
@@ -64,15 +64,18 @@ private:
     void collectLogs(QVector<NavigatorContent> &content);
     void collectFileSystem(QVector<NavigatorContent> &content);
     void collectLineNavigation(QVector<NavigatorContent> &content);
+    void collectQuickActions(QVector<NavigatorContent> &content);
     bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
     void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);
+    void selectQuickAction(NavigatorContent nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
     void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
     void highlightCurrentFile();
+    void setFilter(QString filter, bool ignoreOptions = false);
 
     ///
     /// \brief findClosestPath removes characters from the current string
@@ -85,6 +88,7 @@ private:
 private slots:
     void returnPressed();
     void itemClicked(const QModelIndex& index);
+    void regexChanged(QRegExp regex);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;
@@ -98,6 +102,8 @@ private:
     QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
     QRegularExpression mPostfixRegex = QRegularExpression("(:\\d*)"); // has trailing line number
     NavigatorContent mLastSelectedItem;
+    bool mUseRegex = false;
+    bool mWholeWords = false;
 };
 
 }

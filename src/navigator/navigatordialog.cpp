@@ -56,6 +56,7 @@ NavigatorDialog::NavigatorDialog(MainWindow *main, NavigatorLineEdit* inputField
     connect(ui->tableView, &QTableView::clicked, this, &NavigatorDialog::itemClicked);
     connect(mInput, &QLineEdit::textEdited, this, &NavigatorDialog::inputChanged);
     connect(mInput, &NavigatorLineEdit::autocompleteTriggered, this, &NavigatorDialog::autocomplete);
+    connect(mInput, &FilterLineEdit::regExpChanged, this, &NavigatorDialog::regexChanged);
 }
 
 NavigatorDialog::~NavigatorDialog()
@@ -112,45 +113,48 @@ void NavigatorDialog::updateContent()
     QString input = mInput->text();
 
     QRegularExpressionMatch match;
-    NavigatorMode mode;
     if (input.startsWith("?")) {
-        mode = NavigatorMode::Help;
-        mFilterModel->setFilterWildcard("");
+        mCurrentMode = NavigatorMode::Help;
+        setFilter("", true);
         collectHelpContent(content);
 
     } else if (mPostfixRegex.match(input).hasMatch()) {
-        mode = NavigatorMode::Line;
-        mFilterModel->setFilterWildcard("");
+        mCurrentMode = NavigatorMode::Line;
+        setFilter("", true);
         collectLineNavigation(content);
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::InProject;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        mCurrentMode = NavigatorMode::InProject;
+        setFilter(input.remove(mPrefixRegex));
         collectInProject(content);
 
     } else if (input.startsWith("t ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Tabs;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        mCurrentMode = NavigatorMode::Tabs;
+        setFilter(input.remove(mPrefixRegex));
         collectTabs(content);
 
     } else if (input.startsWith("l ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::Logs;
-        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        mCurrentMode = NavigatorMode::Logs;
+        setFilter(input.remove(mPrefixRegex));
         collectLogs(content);
 
     } else if (input.startsWith("f ", Qt::CaseInsensitive)) {
-        mode = NavigatorMode::FileSystem;
+        mCurrentMode = NavigatorMode::FileSystem;
         collectFileSystem(content);
 
+    } else if (input.startsWith("x ", Qt::CaseInsensitive)) {
+        mCurrentMode = NavigatorMode::QuickAction;
+        mFilterModel->setFilterWildcard(input.remove(mPrefixRegex));
+        collectQuickActions(content);
+
     } else {
-        mode = NavigatorMode::AllFiles;
+        setFilter(input);
         mFilterModel->setFilterWildcard(input);
         collectAllFiles(content);
     }
 
     mNavModel->setContent(content);
-    mCurrentMode = mode;
-    if (mode != NavigatorMode::FileSystem) {
+    if (mCurrentMode != NavigatorMode::FileSystem) {
         mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
         mDirSelectionOngoing = false;
     }
@@ -168,6 +172,7 @@ void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
     content.append(NavigatorContent("T filename", "filter open tabs", "T "));
     content.append(NavigatorContent("L filename", "filter logs", "L "));
     content.append(NavigatorContent("F filename", "files in filesystem", "F "));
+    content.append(NavigatorContent("X quick action", "access often used Studio functions", "X "));
 }
 
 void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
@@ -239,7 +244,7 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     // filter prefix and extract relevant wildcard term
     QString filter = textInput.right(textInput.length() - textInput.lastIndexOf(QDir::separator()));
     filter.remove(QDir::separator());
-    mFilterModel->setFilterWildcard(filter);
+    setFilter(filter);
 
     QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
                                            QDir::NoDot | QDir::AllEntries,
@@ -284,6 +289,56 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     }
 }
 
+void NavigatorDialog::collectQuickActions(QVector<NavigatorContent> &content)
+{
+    // dialogs
+    content.append(NavigatorContent("Open Settings",
+                                    std::bind(&MainWindow::on_actionSettings_triggered, mMain)));
+    content.append(NavigatorContent("Open Model Library Explorer",
+                                    std::bind(&MainWindow::on_actionGAMS_Library_triggered, mMain)));
+    content.append(NavigatorContent("Open Terminal",
+                                    std::bind(&MainWindow::on_actionTerminal_triggered, mMain)));
+    content.append(NavigatorContent("GDX Diff",
+                                    std::bind(&MainWindow::on_actionGDX_Diff_triggered, mMain)));
+
+    // projects and files
+    content.append(NavigatorContent("New Project",
+                                    std::bind(&MainWindow::on_actionNew_Project_triggered, mMain)));
+    content.append(NavigatorContent("Open...",
+                                    std::bind(&MainWindow::on_actionOpen_triggered, mMain)));
+    content.append(NavigatorContent("Open Folder...",
+                                    std::bind(&MainWindow::on_actionOpen_Folder_triggered, mMain)));
+    content.append(NavigatorContent("Save All",
+                                    std::bind(&MainWindow::on_actionSave_All_triggered, mMain)));
+    content.append(NavigatorContent("Close All",
+                                    std::bind(&MainWindow::on_actionClose_All_triggered, mMain)));
+    content.append(NavigatorContent("Clean scratch dirs",
+                                    std::bind(&MainWindow::on_actionDeleteScratchDirs_triggered, mMain)));
+    content.append(NavigatorContent("Edit Default GAMS Configuration",
+                                    std::bind(&MainWindow::on_actionEditDefaultConfig_triggered, mMain)));
+
+    // views
+    content.append(NavigatorContent("Toggle Fullscreen",
+                                    std::bind(&MainWindow::toggleFullscreen, mMain)));
+    content.append(NavigatorContent("Toggle Distraction-free mode",
+                                    std::bind(&MainWindow::toggleDistractionFreeMode, mMain)));
+
+    // run
+    content.append(NavigatorContent("Run GAMS",
+                                    std::bind(&MainWindow::on_actionRun_triggered, mMain)));
+    content.append(NavigatorContent("Run GAMS with GDX creation",
+                                    std::bind(&MainWindow::on_actionRun_with_GDX_Creation_triggered, mMain)));
+    content.append(NavigatorContent("Run NEOS",
+                                    std::bind(&MainWindow::on_actionRunNeos_triggered, mMain)));
+    content.append(NavigatorContent("Run GAMS Engine",
+                                    std::bind(&MainWindow::on_actionRunEngine_triggered, mMain)));
+
+    content.append(NavigatorContent("Run MIRO base mode",
+                                    std::bind(&MainWindow::on_actionBase_mode_triggered, mMain)));
+    content.append(NavigatorContent("Run MIRO configuration mode",
+                                    std::bind(&MainWindow::on_actionConfiguration_mode_triggered, mMain)));
+}
+
 void NavigatorDialog::returnPressed()
 {
     QModelIndex index = ui->tableView->currentIndex();
@@ -310,6 +365,8 @@ void NavigatorDialog::selectItem(QModelIndex index)
 
     if (mCurrentMode == NavigatorMode::Help)
         selectHelpContent(nc);
+    else if (mCurrentMode == NavigatorMode::QuickAction)
+        selectQuickAction(nc);
     else selectFileOrFolder(nc);
 }
 
@@ -373,6 +430,13 @@ void NavigatorDialog::selectHelpContent(NavigatorContent nc)
     updateContent();
 }
 
+void NavigatorDialog::selectQuickAction(NavigatorContent nc)
+{
+    nc.ExecuteQuickAction();
+    mInput->setText("");
+    close();
+}
+
 void NavigatorDialog::selectLineNavigation()
 {
     QRegularExpressionMatch match = mPostfixRegex.match(mInput->text());
@@ -420,6 +484,29 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
 {
     if (index.isValid())
         selectItem(index);
+}
+
+void NavigatorDialog::regexChanged(QRegExp regex)
+{
+    Q_UNUSED(regex)
+
+    // clicking outside the dialog closes it, but we dont want that for changing the regex
+    setVisible(true);
+    mInput->setFocus(Qt::FocusReason::PopupFocusReason);
+}
+
+void NavigatorDialog::setFilter(QString filter, bool ignoreOptions)
+{
+    QString regex = filter;
+
+    if (!ignoreOptions) {
+        if (mInput->regExp().patternSyntax() != QRegExp::RegExp)
+            regex = QRegularExpression::escape(filter);
+
+        if (mInput->exactMatch()) regex = '^' + filter + '$';
+    }
+
+    mFilterModel->setFilterRegExp(regex);
 }
 
 void NavigatorDialog::updatePosition()

@@ -27,9 +27,15 @@ NavigatorContent::NavigatorContent(QString txt, QString additionalText,
     mFileMeta = currentFile;
 }
 
+// quick actions
+NavigatorContent::NavigatorContent(QString txt, std::function<void()> function) {
+    mText = txt;
+    mFunction = function;
+}
+
 bool NavigatorContent::isValid()
 {
-    return !mAdditionalInfo.isEmpty();
+    return !mAdditionalInfo.isEmpty() || mFunction.target<void>();
 }
 
 FileMeta *NavigatorContent::GetFileMeta()
@@ -55,6 +61,11 @@ QString NavigatorContent::AdditionalInfo()
 QString NavigatorContent::Prefix()
 {
     return mInsertPrefix;
+}
+
+void NavigatorContent::ExecuteQuickAction()
+{
+    mFunction();
 }
 
 }

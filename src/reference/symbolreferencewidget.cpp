@@ -21,7 +21,6 @@
 #include "ui_symbolreferencewidget.h"
 #include "sortedfileheaderview.h"
 #include "filterlineedit.h"
-#include "logger.h"
 
 namespace gams {
 namespace studio {

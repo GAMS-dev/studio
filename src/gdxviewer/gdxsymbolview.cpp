@@ -399,15 +399,15 @@ void GdxSymbolView::updateNumericalPrecision()
         mPrecision->setSpecialValueText("");
     }
     if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
-        if (mSqZeroes->isChecked())
+        if (!mSqZeroes->isChecked())
             mRestoreSqZeroes = true;
-        mSqZeroes->setChecked(false);
+        mSqZeroes->setChecked(true);
         mSqZeroes->setEnabled(false);
     }
     else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
         mSqZeroes->setEnabled(true);
         if (mRestoreSqZeroes) {
-            mSqZeroes->setChecked(true);
+            mSqZeroes->setChecked(false);
             mRestoreSqZeroes = false;
         }
     }

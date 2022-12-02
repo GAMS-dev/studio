@@ -69,6 +69,11 @@ int FilterLineEdit::effectiveKeyColumn()
     return buttonState(mAllColButton) ? -1 : mKeyColumn;
 }
 
+bool FilterLineEdit::exactMatch()
+{
+    return buttonState(mExactButton);
+}
+
 void FilterLineEdit::resizeEvent(QResizeEvent *event)
 {
     QLineEdit::resizeEvent(event);
@@ -125,6 +130,7 @@ void FilterLineEdit::updateRegExp()
     filter.replace("\\?", ".");
     mRegExp = QRegExp(filter);
     mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
+    mRegExp.setPatternSyntax(buttonState(mRegExButton) ? QRegExp::RegExp : QRegExp::Wildcard);
     emit regExpChanged(mRegExp);
 }
 

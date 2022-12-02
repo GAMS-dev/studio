@@ -20,7 +20,6 @@
 #include <QKeyEvent>
 #include <QLineEdit>
 #include "commandline.h"
-#include "theme.h"
 #include "filterlineedit.h"
 
 namespace gams {
