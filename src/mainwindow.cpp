@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
     connect(ui->projectView, &ProjectTreeView::openProjectOptions, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
-        if (project) openProjectOptions(project);
+        if (project) openFileNode(project);
     });
 
     mProjectRepo.init(ui->projectView, &mFileMetaRepo, &mTextMarkRepo);
@@ -238,7 +238,9 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::exportProject, this, &MainWindow::exportProjectDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::importProject, this, &MainWindow::importProjectDialog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, &MainWindow::newProjectDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, [this]() {
+        on_actionNew_Project_triggered();
+    });
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);
@@ -1324,24 +1326,22 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         if (path.isEmpty()) path = ".";
     }
 
-    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms";
+    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "" : "gms"; // TODO(JM) for project files set "gsp"
+    QString suffixDot = suffix.isEmpty() ? "" : "."+suffix;
     if (solverName.isEmpty()) {
         // find a free file name
         int nr = 1;
-        while (QFileInfo(path, QString("new%1.%2").arg(nr).arg(suffix)).exists()) ++nr;
-        path += QString("/new%1.%2").arg(nr).arg(suffix);
+        while (QFileInfo(path, QString("new%1%2").arg(nr).arg(suffixDot)).exists()) ++nr;
+        path += QString("/new%1%2").arg(nr).arg(suffixDot);
     } else {
         int nr = 1;
         QString filename = QString("%1.%2").arg(solverName, suffix);
         while (QFileInfo(path, filename).exists()) {
             ++nr;  // note: "op1" is invalid
-            if (nr<10) suffix = "op";
-            else if (nr<100) suffix = "o";
-            else suffix = "";
-            filename = QString("%1.%2%3").arg(solverName, suffix).arg(nr);
+            QString subSuffix = (nr < 10) ? "op" : (nr < 100) ? "o" : "";
+            filename = QString("%1.%2%3").arg(solverName, subSuffix).arg(nr);
         }
         path += QString("/%1").arg(filename);
-        suffix = "opt";
     }
 
     QString kind = projectOnly ? "Project" : "File";
@@ -1357,7 +1357,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
-        filePath += suffix;
+        filePath += suffixDot;
 
     QFile file(filePath);
 
@@ -1388,17 +1388,19 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         case QMessageBox::Abort:
             return;
         }
-    } else {
+    } else if (!suffix.isEmpty()) {
         file.open(QIODevice::WriteOnly); // create empty file
         file.close();
     }
 
     if (projectOnly) {
         createProject(filePath);
-    } else if (!projects.isEmpty()) { // add file to each selected project
+    } else if (!projects.isEmpty()) {
+        // add file to each selected project
         for (PExProjectNode *project: projects)
             openFileNode(addNode("", filePath, project));
-    } else { // create new project
+    } else {
+        // create new project and add the new file
         PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
         PExFileNode* node = addNode("", filePath, project);
         openFileNode(node);
@@ -3601,18 +3603,18 @@ void MainWindow::openDelayedFiles()
     openFiles(files, false);
 }
 
-void MainWindow::newProjectDialog()
-{
-    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptOpen);
-    dialog->setFileMode(QFileDialog::DirectoryOnly);
+//void MainWindow::newProjectDialog()
+//{
+//    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
+//    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
+//    dialog->setAcceptMode(QFileDialog::AcceptOpen);
+//    dialog->setFileMode(QFileDialog::DirectoryOnly);
 
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->open();
-}
+//    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
+//    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+//    dialog->setModal(true);
+//    dialog->open();
+//}
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
@@ -3640,23 +3642,23 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     }
 }
 
-void MainWindow::openProjectOptions(PExProjectNode *project)
-{
-    if (!project) return;
-    FileMeta *fm = project->projectOptionsFileMeta();
-    if (!fm) {
-        fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
-        project->setProjectOptionsFileMeta(fm);
-    }
-    openFile(fm, true, project);
-}
+//void MainWindow::openProjectOptions(PExProjectNode *project)
+//{
+//    if (!project) return;
+//    FileMeta *fm = project->projectOptionsFileMeta();
+//    if (!fm) {
+//        fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
+//        project->setProjectOptionsFileMeta(fm);
+//    }
+//    openFile(fm, true, project);
+//}
 
 void MainWindow::createProject(QString projectPath)
 {
     // create empty project
     QFileInfo fi(projectPath);
     PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), projectPath, QString());
-    openProjectOptions(project);
+    openFileNode(project);
 }
 
 void MainWindow::on_actionRun_triggered()
@@ -4180,10 +4182,22 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     }
 }
 
-void MainWindow::openFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
+void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
-    openFile(node->file(), focus, node->assignedProject(), codecMib, forcedAsTextEditor, tabStrategy);
+    FileMeta *fm = nullptr;
+    PExFileNode *fileNode = node->toFile();
+    PExProjectNode *project = node->toProject();
+    if (fileNode) {
+        project = fileNode->assignedProject();
+        fm = fileNode->file();
+    } else if (project) {
+        fm = project->projectOptionsFileMeta();
+        if (!fm)
+            fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
+    } else
+        return;
+    openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 //void MainWindow::reOpenFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
@@ -5682,7 +5696,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionNew_Project_triggered()
 {
-    newProjectDialog();
+    newFileDialog(QVector<PExProjectNode*>(), "", true);
 }
 
 void MainWindow::on_actionImport_Project_triggered()
