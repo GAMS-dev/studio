@@ -3603,19 +3603,6 @@ void MainWindow::openDelayedFiles()
     openFiles(files, false);
 }
 
-//void MainWindow::newProjectDialog()
-//{
-//    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-//    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
-//    dialog->setAcceptMode(QFileDialog::AcceptOpen);
-//    dialog->setFileMode(QFileDialog::DirectoryOnly);
-
-//    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
-//    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-//    dialog->setModal(true);
-//    dialog->open();
-//}
-
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
     Q_UNUSED(old)
@@ -3641,17 +3628,6 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
         wid = wid->parentWidget();
     }
 }
-
-//void MainWindow::openProjectOptions(PExProjectNode *project)
-//{
-//    if (!project) return;
-//    FileMeta *fm = project->projectOptionsFileMeta();
-//    if (!fm) {
-//        fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
-//        project->setProjectOptionsFileMeta(fm);
-//    }
-//    openFile(fm, true, project);
-//}
 
 void MainWindow::createProject(QString projectPath)
 {
@@ -4199,31 +4175,6 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
         return;
     openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
 }
-
-//void MainWindow::reOpenFileNode(PExFileNode *node, bool focus, int codecMib, bool forcedAsTextEditor)
-//{
-//    FileMeta* fc = node->file();
-//    if (!fc) return;
-
-//    int ret = QMessageBox::Discard;
-//    if (fc->editors().size() == 1 && fc->isModified()) {
-//        // only ask, if this is the last editor of this file
-//        ret = showSaveChangesMsgBox(node->file()->name()+" has been modified.");
-//    }
-
-//    if (ret == QMessageBox::Save) {
-//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-//        fc->save();
-//        closeFileEditors(fc->id());
-//    } else if (ret == QMessageBox::Discard) {
-//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-//        closeFileEditors(fc->id());
-//    } else if (ret == QMessageBox::Cancel) {
-//        return;
-//    }
-
-//    openFileNode(node, focus, codecMib, forcedAsTextEditor);
-//}
 
 void MainWindow::closeProject(PExProjectNode* project)
 {
