@@ -178,7 +178,8 @@ enum OpenGroupOption {
     ogNone,
     ogFindGroup,
     ogCurrentGroup,
-    ogNewGroup
+    ogNewGroup,
+    ogProjects
 };
 
 template <typename T>

@@ -198,7 +198,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
-    connect(&mProjectRepo, &ProjectRepo::openProject, this, &MainWindow::openProject);
+    connect(&mProjectRepo, &ProjectRepo::openProject, this, //&MainWindow::openProject);
+            [this](const QString &gspFile) {
+        openFiles(QStringList() << gspFile, false, ogProjects);
+    });
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -3266,11 +3269,13 @@ int MainWindow::pinViewTabIndex()
     return ui->mainTabs->indexOf(wid);
 }
 
-void MainWindow::openFiles(OpenGroupOption opt)
+void MainWindow::openFilesDialog(OpenGroupOption opt)
 {
     QString path = currentPath();
-    const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,
-                                                            ViewHelper::dialogFileFilterAll(true).join(";;"),
+    QString text = (opt == ogProjects ? "Open project(s)" : "Open file(s)");
+    QString filter = (opt == ogProjects ? ViewHelper::dialogProjectFilter()
+                                        : ViewHelper::dialogFileFilterAll(true)).join(";;");
+    const QStringList files = QFileDialog::getOpenFileNames(this, text, path, filter,
                                                             nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (files.isEmpty()) return;
 
