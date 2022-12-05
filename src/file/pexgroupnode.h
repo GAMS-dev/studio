@@ -152,7 +152,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(QString name, QString path, FileMeta *runFileMeta, QString workDir);
+    PExProjectNode(QString filePath, QString basePath, FileMeta *runFileMeta, QString workDir);
     void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);

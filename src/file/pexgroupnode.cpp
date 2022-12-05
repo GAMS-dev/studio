@@ -210,13 +210,13 @@ void PExGroupNode::hasFile(QString fName, bool &exists)
     exists = findFile(fName);
 }
 
-PExProjectNode::PExProjectNode(QString name, QString path, FileMeta* runFileMeta, QString workDir)
-    : PExGroupNode(name, path, NodeType::project)
+PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* runFileMeta, QString workDir)
+    : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
+    , mProjectFile(filePath)
     , mWorkDir(workDir)
     , mGamsProcess(new GamsProcess())
 {
-    mProjectFile = path + '/' + name + ".gsp";
-    if (mWorkDir.isEmpty()) mWorkDir = path;
+    if (mWorkDir.isEmpty()) mWorkDir = basePath;
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);

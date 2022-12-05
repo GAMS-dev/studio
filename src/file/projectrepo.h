@@ -113,7 +113,7 @@ public:
     void write(QVariantList &projects) const;
     QVariantMap save(PExProjectNode *project, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString name, QString path, QString runFileName, QString workDir = QString());
+    PExProjectNode *createProject(QString filePath, QString path, QString runFileName, QString workDir = QString());
     void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr

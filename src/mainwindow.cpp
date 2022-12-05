@@ -3228,27 +3228,6 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
     return fileNode;
 }
 
-void MainWindow::openFilesDialog(OpenGroupOption opt)
-{
-    QString path = currentPath();
-    const QStringList files = QFileDialog::getOpenFileNames(this, "Open file(s)", path,
-                                                            ViewHelper::dialogFileFilterAll().join(";;"),
-                                                            nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
-    if (files.isEmpty()) return;
-
-    PExFileNode *firstNode = nullptr;
-    PExFileNode *fileNode = nullptr;
-    for (const QString &fileName : files) {
-        // detect if the file is already present at the scope
-        fileNode = openFilePath(fileName, nullptr, opt);
-        if (!firstNode) firstNode = fileNode;
-    }
-
-    // at last: activate the first node
-    if (firstNode)
-        openFileNode(firstNode, true);
-}
-
 PExProjectNode *MainWindow::currentProject()
 {
     PExFileNode* node = mProjectRepo.findFileNode(mRecent.editor());
@@ -3286,7 +3265,7 @@ void MainWindow::openFilesDialog(OpenGroupOption opt)
             openProject(fileName);
         } else {
             // detect if the file is already present at the scope
-            fileNode = openFileWithOption(fileName, nullptr, opt);
+            fileNode = openFilePath(fileName, nullptr, opt, true, false);
             if (!firstNode) firstNode = fileNode;
         }
     }
@@ -3626,20 +3605,6 @@ void MainWindow::openDelayedFiles()
     mDelayedFiles.clear();
     mOpenPermission = opAll;
     openFiles(files, false);
-}
-
-void MainWindow::newProjectDialog()
-{
-    QString path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
-    QFileDialog *dialog = new QFileDialog(this, QString("New Project"), path);
-    dialog->setAcceptMode(QFileDialog::AcceptSave);
-    dialog->setNameFilters(ViewHelper::dialogProjectFilter());
-    dialog->setOption(QFileDialog::DontConfirmOverwrite, true);
-
-    connect(dialog, &QFileDialog::fileSelected, this, [this](const QString &projectPath) { createProject(projectPath); });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->open();
 }
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
