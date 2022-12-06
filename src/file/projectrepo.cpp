@@ -277,23 +277,26 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
                 if (!data.isEmpty()) {
                     projectMap = data;
                 }
-            } else
-                projectPath = QString();
+            }
         }
 
         // read name and path from projectMap, and fill missing data
         QString name = projectMap.value("name").toString();
         QString baseDir = projectMap.value("path").toString();
+        if (gspFile.isEmpty()) {
+            if (baseDir.isEmpty())
+                baseDir = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
+            projectPath = baseDir;
+            gspFile = projectPath + '/' + name + ".gsp";
+        }
         if (baseDir.isEmpty()) {
             if (projectPath.isEmpty())
                 projectPath = sysWorkDir.isEmpty() ? CommonPaths::defaultWorkingDir() : sysWorkDir;
             baseDir = projectPath;
-        } else if (projectPath.isEmpty()) {
-            projectPath = baseDir;
         }
-        if (gspFile.isEmpty())
-             gspFile = projectPath + '/' + name + ".gsp";
         QDir projectDir(projectPath);
+        if (QDir(baseDir).isRelative())
+            baseDir = QDir::cleanPath(projectDir.absoluteFilePath(baseDir));
 
         QString workDir = QDir::cleanPath(projectDir.absoluteFilePath(projectMap.value("workDir").toString()));
         if (workDir.isEmpty()) workDir = projectPath;
@@ -302,21 +305,8 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
 
         QVariantList subChildren = projectMap.value("nodes").toList();
         if (!subChildren.isEmpty() && (!name.isEmpty() || !projectPath.isEmpty())) {
-            QString iniBaseDir = baseDir;
-            if (!projectPath.isEmpty()) {
-                // initial values for the project
-                QFileInfo fi(gspFile);
-                name = fi.completeBaseName();
-                iniBaseDir = fi.canonicalPath();
-            }
-            PExProjectNode* project = createProject(gspFile, baseDir, runFile, workDir);
-
-            if (!projectPath.isEmpty())
-                // ensure the base directory is adjusted if it differs from the project path
-                project->setLocation(baseDir);
-                project->setFileName(gspFile);
-            if (project) {
-                if (!readProjectFiles(project, subChildren, iniBaseDir))
+            if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, workDir)) {
+                if (!readProjectFiles(project, subChildren, projectPath))
                     res = false;
                 if (project->isEmpty()) {
                     closeGroup(project);
@@ -325,14 +315,14 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
                     emit setNodeExpanded(mTreeModel->index(project), expand);
                     if (projectChangedMarker)
                         project->setNeedSave();
-                }
-            }
-            QVariantList optList = projectMap.value("options").toList();
-            if (!optList.isEmpty() && project && project->toProject()) {
-                for (const QVariant &opt : qAsConst(optList)) {
-                    PExProjectNode *prgn = project->toProject();
-                    QString par = opt.toString();
-                    prgn->addRunParametersHistory(par);
+                    QVariantList optList = projectMap.value("options").toList();
+                    if (!optList.isEmpty()) {
+                        for (const QVariant &opt : qAsConst(optList)) {
+                            PExProjectNode *prgn = project->toProject();
+                            QString par = opt.toString();
+                            prgn->addRunParametersHistory(par);
+                        }
+                    }
                 }
             }
         }
@@ -374,33 +364,17 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        QVariantMap proData = save(project, true);
+        QVariantMap proData = getProjectMap(project, true);
+        save(project, proData);
         QVariantMap data;
-        data = proData; // TODO(JM) (when: November 2023) Remove assignment. This avoids that projects are stored internally too.
+        data = getProjectMap(project, false); // TODO(JM) (when: November 2023) Remove assignment. This avoids that projects are stored internally too.
         data.insert("project", project->fileName());
         projects.append(data);
     }
 }
 
-QVariantMap ProjectRepo::save(PExProjectNode *project, bool relativePaths) const
+void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
 {
-    if (!project) return QVariantMap();
-    QVariantMap projectObject;
-    bool expand = true;
-    QDir dir(project->location());
-    if (project->runnableGms()) {
-        QString filePath = project->toProject()->runnableGms()->location();
-        projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
-    }
-    projectObject.insert("path", relativePaths ? "." : project->location() );
-    projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
-    projectObject.insert("name", project->name());
-    projectObject.insert("options", project->toProject()->getRunParametersHistory());
-    emit isNodeExpanded(mTreeModel->index(project), expand);
-    if (!expand) projectObject.insert("expand", false);
-    QVariantList subArray;
-    writeProjectFiles(project, subArray, relativePaths);
-    projectObject.insert("nodes", subArray);
     QString fileName = project->fileName();
     if (project->needSave()) {
         if (QFile::exists(fileName)) {
@@ -409,19 +383,40 @@ QVariantMap ProjectRepo::save(PExProjectNode *project, bool relativePaths) const
         }
         QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
-            file.write(QJsonDocument(QJsonObject::fromVariantMap(projectObject)).toJson());
+            file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
             file.close();
             project->setNeedSave(false);
         } else {
             SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
         }
     }
+}
+
+QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePaths) const
+{
+    if (!project) return QVariantMap();
+    QVariantMap projectObject;
+    bool expand = true;
+    QDir dir(QFileInfo(project->fileName()).canonicalPath());
+    if (project->runnableGms()) {
+        QString filePath = project->toProject()->runnableGms()->location();
+        projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
+    }
+    projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
+    projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
+    projectObject.insert("name", project->name());
+    projectObject.insert("options", project->toProject()->getRunParametersHistory());
+    emit isNodeExpanded(mTreeModel->index(project), expand);
+    if (!expand) projectObject.insert("expand", false);
+    QVariantList subArray;
+    writeProjectFiles(project, subArray, relativePaths);
+    projectObject.insert("nodes", subArray);
     return projectObject;
 }
 
 void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList& childList, bool relativePaths) const
 {
-    QDir dir(project->location());
+    QDir dir(QFileInfo(project->fileName()).canonicalPath());
     for (PExFileNode *file : project->listFiles()) {
         QVariantMap nodeObject;
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
@@ -445,6 +440,8 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     if (withFolders) {
         QDir prjPath(project->location());
         QString relPath = prjPath.relativeFilePath(file->location());
+        DEB() << "PRJ-PATH: " << project->location();
+        DEB() << "REL-PATH: " << relPath;
         bool isAbs = QDir(relPath).isAbsolute();
         QStringList folders;
         folders = relPath.split('/');
@@ -536,7 +533,8 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
     project->setFileName(filePath);
     project->setName(newFile.completeBaseName());
     project->setNeedSave();
-    save(project, true);
+    QVariantMap proData = getProjectMap(project, true);
+    save(project, proData);
     if (cloneOnly) {
         QFileInfo fi(oldFile);
         project->setFileName(oldFile);

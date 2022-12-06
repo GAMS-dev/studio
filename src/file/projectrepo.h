@@ -111,7 +111,8 @@ public:
     bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir = QString());
     bool read(const QVariantList &data, const QString &sysWorkDir = QString());
     void write(QVariantList &projects) const;
-    QVariantMap save(PExProjectNode *project, bool relativePaths = false) const;
+    void save(PExProjectNode *project, const QVariantMap &data) const;
+    QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
 
     PExProjectNode *createProject(QString filePath, QString path, QString runFileName, QString workDir = QString());
     void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
