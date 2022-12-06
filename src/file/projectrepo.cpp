@@ -440,8 +440,6 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file, bool 
     if (withFolders) {
         QDir prjPath(project->location());
         QString relPath = prjPath.relativeFilePath(file->location());
-        DEB() << "PRJ-PATH: " << project->location();
-        DEB() << "REL-PATH: " << relPath;
         bool isAbs = QDir(relPath).isAbsolute();
         QStringList folders;
         folders = relPath.split('/');

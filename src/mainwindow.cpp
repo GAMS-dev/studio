@@ -4662,7 +4662,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo::exists(location)) {
-            openFilePath(location, nullptr, ogNone, true);
+            openFilePath(location, nullptr, ogFindGroup, true);
             mOpenTabsList << location;
             curTab = location;
         } else if (location == "WELCOME_PAGE") {
