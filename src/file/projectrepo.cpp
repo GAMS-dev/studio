@@ -311,24 +311,24 @@ bool ProjectRepo::read(const QVariantList &data, const QString &sysWorkDir)
         QString runFile = QDir::cleanPath(projectDir.absoluteFilePath(projectMap.value("file").toString()));
 
         QVariantList subChildren = projectMap.value("nodes").toList();
-        if (!subChildren.isEmpty() && (!name.isEmpty() || !projectPath.isEmpty())) {
+        if (!name.isEmpty() || !projectPath.isEmpty()) {
             if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, workDir)) {
                 if (!readProjectFiles(project, subChildren, projectPath))
                     res = false;
-                if (project->isEmpty()) {
-                    closeGroup(project);
-                } else {
-                    bool expand = projectMap.contains("expand") ? projectMap.value("expand").toBool() : true;
-                    emit setNodeExpanded(mTreeModel->index(project), expand);
-                    if (projectChangedMarker)
-                        project->setNeedSave();
-                    QVariantList optList = projectMap.value("options").toList();
-                    if (!optList.isEmpty()) {
-                        for (const QVariant &opt : qAsConst(optList)) {
-                            PExProjectNode *prgn = project->toProject();
-                            QString par = opt.toString();
-                            prgn->addRunParametersHistory(par);
-                        }
+//                if (project->isEmpty()) {
+//                    closeGroup(project);
+//                } else {
+//                }
+                bool expand = projectMap.contains("expand") ? projectMap.value("expand").toBool() : true;
+                emit setNodeExpanded(mTreeModel->index(project), expand);
+                if (projectChangedMarker)
+                    project->setNeedSave();
+                QVariantList optList = projectMap.value("options").toList();
+                if (!optList.isEmpty()) {
+                    for (const QVariant &opt : qAsConst(optList)) {
+                        PExProjectNode *prgn = project->toProject();
+                        QString par = opt.toString();
+                        prgn->addRunParametersHistory(par);
                     }
                 }
             }
