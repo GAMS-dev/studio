@@ -2327,24 +2327,6 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     }
 
     handleFileChanges(fc);
-
-//    int ret = QMessageBox::Discard;
-//    if (fc->isModified()) {
-//        // only ask, if this is the last editor of this file
-//        ret = showSaveChangesMsgBox(ui->mainTabs->tabText(index)+" has been modified.");
-//    }
-
-//    if (ret == QMessageBox::Save) {
-//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-//        fc->save();
-//        closeFileEditors(fc->id());
-//    } else if (ret == QMessageBox::Discard) {
-//        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-//        fc->setModified(false);
-//        closeFileEditors(fc->id());
-//    } else if (ret == QMessageBox::Cancel) {
-//        // do nothing
-//    }
     searchDialog()->updateDialogState();
 }
 
