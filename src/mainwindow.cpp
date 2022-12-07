@@ -1332,7 +1332,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         // find a free file name
         int nr = 1;
         while (QFileInfo(path, QString("new%1%2").arg(nr).arg(suffixDot)).exists()) ++nr;
-        path += QString("/new%1%2").arg(nr).arg(suffixDot);
+        if (!projectOnly)
+            path += QString("/new%1%2").arg(nr).arg(suffixDot);
     } else {
         int nr = 1;
         QString filename = QString("%1.%2").arg(solverName, suffix);
