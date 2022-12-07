@@ -67,6 +67,13 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
     connect(mTreeModel, &ProjectTreeModel::parentAssigned, this, &ProjectRepo::parentAssigned);
 }
 
+PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const
+{
+    PExGroupNode *root = mTreeModel->rootNode();
+    if (!root) return nullptr;
+    return root->findProject(projectFile);
+}
+
 PExProjectNode *ProjectRepo::findProject(NodeId nodeId) const
 {
     PExAbstractNode *node = mNodes.value(nodeId);

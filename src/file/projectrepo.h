@@ -47,6 +47,7 @@ public:
     ~ProjectRepo() override;
     void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
+    PExProjectNode *findProject(const QString &projectFile) const;
     PExProjectNode *findProject(NodeId nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
     PExProjectNode* findProjectForOptions(QWidget *projectOptionsWidget) const;

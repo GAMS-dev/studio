@@ -188,6 +188,7 @@ public:
     ProjectRepo *projectRepo() const override;
     FileMetaRepo *fileRepo() const override;
     TextMarkRepo *textMarkRepo() const override;
+    PExProjectNode *findProject(const QString &projectFile) const;
 
 private:
     friend class ProjectRepo;

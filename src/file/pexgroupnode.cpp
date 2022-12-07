@@ -1037,5 +1037,15 @@ TextMarkRepo *ProjectRootNode::textMarkRepo() const
     return mRepo ? mRepo->textMarkRepo() : nullptr;
 }
 
+PExProjectNode *ProjectRootNode::findProject(const QString &projectFile) const
+{
+    for (PExAbstractNode *node : childNodes()) {
+        PExProjectNode *project = node->toProject();
+        if (project && project->fileName().compare(projectFile, FileType::fsCaseSense()) == 0)
+            return project;
+    }
+    return nullptr;
+}
+
 } // namespace studio
 } // namespace gams

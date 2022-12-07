@@ -1330,14 +1330,14 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         if (path.isEmpty()) path = ".";
     }
 
-    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "" : "gms"; // TODO(JM) for project files set "gsp"
+    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms"; // TODO(JM) for project files set "gsp"
     QString suffixDot = suffix.isEmpty() ? "" : "."+suffix;
     if (solverName.isEmpty()) {
         // find a free file name
         int nr = 1;
-        while (QFileInfo(path, QString("new%1%2").arg(nr).arg(suffixDot)).exists()) ++nr;
-        if (!projectOnly)
-            path += QString("/new%1%2").arg(nr).arg(suffixDot);
+        while (QFileInfo(path, QString("%1%2%3").arg(projectOnly ? "project" : "new").arg(nr).arg(suffixDot)).exists())
+            ++nr;
+        path += QString("/%1%2%3").arg(projectOnly ? "project" : "new").arg(nr).arg(suffixDot);
     } else {
         int nr = 1;
         QString filename = QString("%1.%2").arg(solverName, suffix);
@@ -1355,10 +1355,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     QString filter = !solverName.isEmpty() ? ViewHelper::dialogOptFileFilter(solverName)
                                            : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
                                                          : ViewHelper::dialogFileFilterUserCreated().join(";;");
-    // TODO(JM) on switching to project files, only keep getSaveFileName
-    QString filePath = projectOnly ? QFileDialog::getExistingDirectory(this, QString("New %1...").arg(kind2), path)
-                                   : QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
-                                                                  filter, nullptr, QFileDialog::DontConfirmOverwrite);
+    QString filePath = QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
+                                                    filter, nullptr, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
@@ -1382,7 +1380,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
             break;
         case 1: // replace
             if (projectOnly) {
-                // TODO(JM) find project node and close it
+                if (PExProjectNode *project = mProjectRepo.findProject(filePath))
+                    closeProject(project);
             } else {
                 if (FileMeta *destFM = mFileMetaRepo.fileMeta(filePath))
                    closeFileEditors(destFM->id());
