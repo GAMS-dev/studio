@@ -1161,6 +1161,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             sharedData = new project::ProjectData(project);
         }
         project::ProjectOptions *prop = new project::ProjectOptions(sharedData, parent);
+        project->setProjectOptionsFileMeta(this);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent);

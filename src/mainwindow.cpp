@@ -1405,7 +1405,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
             openFileNode(addNode("", filePath, project));
     } else {
         // create new project and add the new file
-        PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+        QString projectFileName = fi.path() + '/' + fi.completeBaseName() + suffixDot;
+        PExProjectNode *project = mProjectRepo.createProject(projectFileName, fi.absolutePath(), "");
         PExFileNode* node = addNode("", filePath, project);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
@@ -4198,6 +4199,7 @@ void MainWindow::closeProject(PExProjectNode* project)
         for (PExFileNode *node: project->listFiles()) {
             mProjectRepo.closeNode(node);
         }
+
         PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();

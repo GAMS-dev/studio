@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, PExGroupNode* root)
+ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectRootNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
     Q_ASSERT_X(mProjectRepo, "ProjectTreeModel constructor", "The FileTreeModel needs a valid FileRepository");
@@ -173,7 +173,7 @@ QModelIndex ProjectTreeModel::rootModelIndex() const
     return createIndex(0, 0, quintptr(mRoot->id()));
 }
 
-PExGroupNode* ProjectTreeModel::rootNode() const
+ProjectRootNode* ProjectTreeModel::rootNode() const
 {
     return mRoot;
 }

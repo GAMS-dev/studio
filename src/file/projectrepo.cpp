@@ -69,7 +69,7 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
 
 PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const
 {
-    PExGroupNode *root = mTreeModel->rootNode();
+    ProjectRootNode *root = mTreeModel->rootNode();
     if (!root) return nullptr;
     return root->findProject(projectFile);
 }
@@ -509,6 +509,12 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
+
+    if (!filePath.endsWith(".gsp", FileType::fsCaseSense()))
+        filePath += ".gsp";
+    if (!filePath.contains('/')) {
+        filePath = path + '/' + filePath;
+    }
 
     PExProjectNode* project = nullptr;
     FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
