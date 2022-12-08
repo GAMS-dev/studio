@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "macospathfinder.h"
-#include "macoscocoabridge.h"
 
 #include <QDir>
 #include <QStandardPaths>
@@ -26,12 +25,15 @@
 QString MacOSPathFinder::systemDir()
 {
     auto sysdir = systemDir(false);
-    if (QStandardPaths::findExecutable("gams", {sysdir}).isEmpty()) {
-        sysdir = systemDir(true);
-        if (QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
-            return QString();
-    }
-    return QDir::cleanPath(sysdir);
+    if (!QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
+        return QDir::cleanPath(QFileInfo(sysdir).canonicalPath());
+    sysdir = systemDir(true);
+    if (!QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
+        return QDir::cleanPath(QFileInfo(sysdir).canonicalPath());
+    sysdir = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
+    if (!sysdir.isEmpty())
+        return QDir::cleanPath(sysdir);
+    return QString();
 }
 
 QString MacOSPathFinder::systemDir(bool current)

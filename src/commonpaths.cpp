@@ -110,9 +110,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
 
 bool CommonPaths::isSystemDirValid()
 {
-    if (QStandardPaths::findExecutable("gams", {SystemDir}).isEmpty())
-        return false;
-    return true;
+    return !QStandardPaths::findExecutable("gams", {SystemDir}).isEmpty();
 }
 
 QString CommonPaths::gamsDocumentsDir()

@@ -70,7 +70,14 @@ void TestMiroCommon::testPath()
 {
     QFETCH(QString, data);
     QFETCH(QString, result);
-    QCOMPARE(MiroCommon::path(data), result);
+    if (MiroCommon::path(data).isEmpty()) {
+        QCOMPARE(MiroCommon::path(data), result);
+    } else if (result.isEmpty()) {
+        auto expected = MiroCommon::path();
+        QCOMPARE(expected, MiroCommon::path(data));
+    } else {
+        QCOMPARE(MiroCommon::path(data), result);
+    }
 }
 
 void TestMiroCommon::testConfDirectory_data()
@@ -151,7 +158,6 @@ void TestMiroCommon::testAssemblyFileName2()
 {
     QFETCH(QString, name);
     QFETCH(QString, location);
-    QFETCH(QString, result);
     QCOMPARE(MiroCommon::assemblyFileName(location, name),
              mCurDir.absoluteFilePath(MiroCommon::assemblyFileName(name)));
 }

@@ -61,6 +61,9 @@ private slots:
 
     void testGamsLicenseFilePath_data();
     void testGamsLicenseFilePath();
+
+private:
+    QString getExpectedPath();
 };
 
 #endif // TESTCOMMONPATHS_H

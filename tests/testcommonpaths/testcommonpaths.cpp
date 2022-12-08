@@ -39,17 +39,17 @@ void TestCommonPaths::testSystemDir()
 
 void TestCommonPaths::testSetSystemDirNull()
 {
-    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
+    const QString expected = getExpectedPath();
     CommonPaths::setSystemDir(QString());
-    auto result = QDir(CommonPaths::systemDir()).canonicalPath();
+    auto result = CommonPaths::systemDir();
     QVERIFY(expected == result);
 }
 
 void TestCommonPaths::testSetSystemDirEmpty()
 {
-    const QString expected = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
+    const QString expected = getExpectedPath();
     CommonPaths::setSystemDir("");
-    auto result = QDir(CommonPaths::systemDir()).canonicalPath();
+    auto result = CommonPaths::systemDir();
     QVERIFY(expected == result);
 }
 
@@ -234,6 +234,20 @@ void TestCommonPaths::testGamsLicenseFilePath()
     auto actual = CommonPaths::gamsLicenseFilePath(dataPaths);
     QCOMPARE(QFileInfo(actual).canonicalFilePath(),
              QFileInfo(expected).canonicalFilePath());
+}
+
+QString TestCommonPaths::getExpectedPath()
+{
+#if __APPLE__
+    if (qgetenv("PATH").contains("gamsdist")) { // GitLab CI path
+        return QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
+    }
+    return QFileInfo(QStandardPaths::findExecutable("gams",
+                                                    {"/Library/Frameworks/GAMS.framework/Versions/Current/Resources"})).canonicalPath();
+#else
+
+    return QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
+#endif
 }
 
 QTEST_MAIN(TestCommonPaths)
