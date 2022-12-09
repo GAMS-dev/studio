@@ -414,6 +414,7 @@ protected:
     void initEdit(FileMeta *fileMeta, QWidget *edit);
 
 private slots:
+    void updateAndSaveSettings();
     void updateFonts(qreal fontSize = 0, QString fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
@@ -439,7 +440,6 @@ private:
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToOpenedFiles(QString filePath);
     bool terminateProcessesConditionally(QVector<PExProjectNode *> projects);
-    void updateAndSaveSettings();
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
@@ -498,6 +498,7 @@ private:
     SystemLogEdit *mSyslog = nullptr;
     StatusWidgets* mStatusWidgets;
     QTimer mWinStateTimer;
+    QTimer mSaveSettingsTimer;
     QPrinter mPrinter;
     QPrintDialog *mPrintDialog;
 

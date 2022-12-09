@@ -173,7 +173,7 @@ private:
     QVariantMap parseProjectFile(const QString &gspFile) const;
     bool readProjectFiles(PExProjectNode *project, const QVariantList &children, const QString &baseDir = QString());
     void writeProjectFiles(const PExProjectNode *project, QVariantList &childList, bool relativePaths = false) const;
-    void addToProject(PExProjectNode *project, PExFileNode *file, bool withFolders);
+    void addToProject(PExProjectNode *project, PExFileNode *file);
     QString uniqueNameExt(PExGroupNode *parentNode, const QString &name, PExAbstractNode *node = nullptr);
     void uniqueProjectFile(PExGroupNode *parentNode, QString &name, const QString &path, PExAbstractNode *node = nullptr);
 

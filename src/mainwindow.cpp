@@ -110,6 +110,11 @@ MainWindow::MainWindow(QWidget *parent)
     mWinStateTimer.setSingleShot(true);
     mWinStateTimer.setInterval(10);
     connect(&mWinStateTimer, &QTimer::timeout, this, &MainWindow::pushDockSizes);
+    mSaveSettingsTimer.setSingleShot(true);
+    connect(&mSaveSettingsTimer, &QTimer::timeout, this, [this]() {
+        mSaveSettingsTimer.stop();
+        updateAndSaveSettings();
+    });
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
@@ -287,7 +292,10 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
-    connect(&mProjectRepo, &ProjectRepo::childrenChanged, mSearchDialog, &search::SearchDialog::filesChanged);
+    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mSearchDialog->filesChanged();
+        mSaveSettingsTimer.start(50);
+    });
     connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));

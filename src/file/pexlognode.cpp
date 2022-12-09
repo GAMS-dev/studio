@@ -152,7 +152,7 @@ PExFileNode *PExLogNode::lstNode() const
     return mLstNode;
 }
 
-const ProjectRootNode *PExLogNode::root() const
+const PExRootNode *PExLogNode::root() const
 {
     if (mProject) return mProject->root();
     return nullptr;

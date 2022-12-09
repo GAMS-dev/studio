@@ -1010,34 +1010,34 @@ void PExProjectNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
     emit gamsProcessStateChanged(this);
 }
 
-ProjectRootNode::ProjectRootNode(ProjectRepo* repo)
+PExRootNode::PExRootNode(ProjectRepo* repo)
     : PExGroupNode("Root", "", NodeType::root), mRepo(repo)
 {
     if (!mRepo) EXCEPT() << "The ProjectRepo must not be null";
 }
 
-void ProjectRootNode::setParentNode(PExGroupNode *parent)
+void PExRootNode::setParentNode(PExGroupNode *parent)
 {
     Q_UNUSED(parent)
     EXCEPT() << "The root node has no parent";
 }
 
-ProjectRepo *ProjectRootNode::projectRepo() const
+ProjectRepo *PExRootNode::projectRepo() const
 {
     return mRepo;
 }
 
-FileMetaRepo *ProjectRootNode::fileRepo() const
+FileMetaRepo *PExRootNode::fileRepo() const
 {
     return mRepo ? mRepo->fileRepo() : nullptr;
 }
 
-TextMarkRepo *ProjectRootNode::textMarkRepo() const
+TextMarkRepo *PExRootNode::textMarkRepo() const
 {
     return mRepo ? mRepo->textMarkRepo() : nullptr;
 }
 
-PExProjectNode *ProjectRootNode::findProject(const QString &projectFile) const
+PExProjectNode *PExRootNode::findProject(const QString &projectFile) const
 {
     for (PExAbstractNode *node : childNodes()) {
         PExProjectNode *project = node->toProject();

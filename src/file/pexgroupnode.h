@@ -179,12 +179,12 @@ private:
 };
 
 
-class ProjectRootNode : public PExGroupNode
+class PExRootNode : public PExGroupNode
 {
     Q_OBJECT
 public:
-    ProjectRootNode(ProjectRepo *projectRepo);
-    ~ProjectRootNode() override {}
+    PExRootNode(ProjectRepo *projectRepo);
+    ~PExRootNode() override {}
     ProjectRepo *projectRepo() const override;
     FileMetaRepo *fileRepo() const override;
     TextMarkRepo *textMarkRepo() const override;

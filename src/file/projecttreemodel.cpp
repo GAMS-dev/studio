@@ -29,7 +29,7 @@
 namespace gams {
 namespace studio {
 
-ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, ProjectRootNode* root)
+ProjectTreeModel::ProjectTreeModel(ProjectRepo* parent, PExRootNode* root)
     : QAbstractItemModel(parent), mProjectRepo(parent), mRoot(root)
 {
     Q_ASSERT_X(mProjectRepo, "ProjectTreeModel constructor", "The FileTreeModel needs a valid FileRepository");
@@ -173,7 +173,7 @@ QModelIndex ProjectTreeModel::rootModelIndex() const
     return createIndex(0, 0, quintptr(mRoot->id()));
 }
 
-ProjectRootNode* ProjectTreeModel::rootNode() const
+PExRootNode* ProjectTreeModel::rootNode() const
 {
     return mRoot;
 }
@@ -276,7 +276,8 @@ bool ProjectTreeModel::removeChild(PExAbstractNode* child)
     } else {
         if (mDebug) DEB() << "removing NodeId " << child->id();
     }
-    QModelIndex parMi = index(child->parentNode());
+    PExGroupNode *parent = child->parentNode();
+    QModelIndex parMi = index(parent);
     if (!parMi.isValid()) return false;
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);

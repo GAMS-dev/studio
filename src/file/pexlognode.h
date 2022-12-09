@@ -40,7 +40,7 @@ public:
     void logDone();
 
     PExFileNode *lstNode() const;
-    const ProjectRootNode *root() const override;
+    const PExRootNode *root() const override;
     NodeId projectId() const override;
     PExProjectNode *assignedProject() override;
     void linkToProcess(AbstractProcess *process);

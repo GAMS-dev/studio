@@ -41,7 +41,7 @@ public:
     };
 
 public:
-    explicit ProjectTreeModel(ProjectRepo *parent, ProjectRootNode *root);
+    explicit ProjectTreeModel(ProjectRepo *parent, PExRootNode *root);
 
     QModelIndex index(int row, int column, const QModelIndex &parent) const override;
     QModelIndex parent(const QModelIndex &child) const override;
@@ -51,7 +51,7 @@ public:
 
     QModelIndex index(const PExAbstractNode *entry) const;
     QModelIndex rootModelIndex() const;
-    ProjectRootNode *rootNode() const;
+    PExRootNode *rootNode() const;
     bool removeRows(int row, int count, const QModelIndex &parent) override;
     void setDebugMode(bool debug);
     bool setData(const QModelIndex &index, const QVariant &value, int role) override;
@@ -95,7 +95,7 @@ private:
 
 private:
     ProjectRepo *mProjectRepo;
-    ProjectRootNode* mRoot = nullptr;
+    PExRootNode* mRoot = nullptr;
     bool mDebug = false;
     NodeId mCurrent;
     QVector<NodeId> mSelected;

@@ -64,7 +64,7 @@ void PExAbstractNode::setName(const QString& name)
     emit changed(mId);
 }
 
-const ProjectRootNode *PExAbstractNode::root() const
+const PExRootNode *PExAbstractNode::root() const
 {
     const PExAbstractNode* par = this;
     while (par->parentNode()) par = par->parentNode();
@@ -73,21 +73,21 @@ const ProjectRootNode *PExAbstractNode::root() const
 
 ProjectRepo *PExAbstractNode::projectRepo() const
 {
-    const ProjectRootNode* rootNode = root();
+    const PExRootNode* rootNode = root();
     if (rootNode) return rootNode->projectRepo();
     return nullptr;
 }
 
 FileMetaRepo *PExAbstractNode::fileRepo() const
 {
-    const ProjectRootNode* rootNode = root();
+    const PExRootNode* rootNode = root();
     if (rootNode) return rootNode->fileRepo();
     return nullptr;
 }
 
 TextMarkRepo *PExAbstractNode::textMarkRepo() const
 {
-    const ProjectRootNode* rootNode = root();
+    const PExRootNode* rootNode = root();
     if (rootNode) return rootNode->textMarkRepo();
     return nullptr;
 }
@@ -116,9 +116,9 @@ PExProjectNode *PExAbstractNode::assignedProject()
     return nullptr;
 }
 
-const ProjectRootNode *PExAbstractNode::toRoot() const
+const PExRootNode *PExAbstractNode::toRoot() const
 {
-    if (mType == NodeType::root) return static_cast<const ProjectRootNode*>(this);
+    if (mType == NodeType::root) return static_cast<const PExRootNode*>(this);
     return nullptr;
 }
 

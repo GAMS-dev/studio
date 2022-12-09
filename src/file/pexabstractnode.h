@@ -30,7 +30,7 @@
 namespace gams {
 namespace studio {
 
-class ProjectRootNode;
+class PExRootNode;
 class PExGroupNode;
 class PExProjectNode;
 class PExFileNode;
@@ -48,7 +48,7 @@ public:
 
     NodeId id() const;
 
-    virtual const ProjectRootNode *root() const;
+    virtual const PExRootNode *root() const;
     virtual ProjectRepo *projectRepo() const;
     virtual FileMetaRepo *fileRepo() const;
     virtual TextMarkRepo *textMarkRepo() const;
@@ -75,7 +75,7 @@ public:
     NodeType type() const;
     virtual QString tooltip()=0;
 
-    const ProjectRootNode *toRoot() const;
+    const PExRootNode *toRoot() const;
     const PExGroupNode* toGroup() const;
     PExGroupNode* toGroup();
     const PExProjectNode *toProject() const;

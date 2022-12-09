@@ -128,13 +128,6 @@ void ProjectOptions::save()
     updateState();
 }
 
-void ProjectOptions::on_edName_textChanged(const QString &text)
-{
-//    if (text != mSharedData->fieldData(ProjectData::name))
-//        mSharedData->setFieldData(ProjectData::name, text);
-//    updateState();
-}
-
 void ProjectOptions::on_edWorkDir_textChanged(const QString &text)
 {
     updateEditColor(ui->edWorkDir, text);

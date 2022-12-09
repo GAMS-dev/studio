@@ -80,7 +80,6 @@ public slots:
     void updateData();
 
 private slots:
-    void on_edName_textChanged(const QString &text);
     void on_edWorkDir_textChanged(const QString &text);
     void on_edBaseDir_textChanged(const QString &text);
     void on_bWorkDir_clicked();
