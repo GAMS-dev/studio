@@ -109,8 +109,9 @@ public:
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
 
-    bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &sysWorkDir = QString());
-    bool read(const QVariantList &data, const QString &sysWorkDir = QString());
+    bool checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &baseDir);
+    bool read(const QVariantList &projectsList);
+    bool read(const QVariantMap &projectMap, QString gspFile = QString());
     void write(QVariantList &projects) const;
     void save(PExProjectNode *project, const QVariantMap &data) const;
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;

@@ -2682,37 +2682,37 @@ void MainWindow::openProject(const QString gspFile)
         }
         file.close();
 
-        QString name = QFileInfo(gspFile).fileName();
-        QString path = QFileInfo(file).path();
         QVariantMap map = json.object().toVariantMap();
         QVariantList data;
         if (map.contains("projects")) {
             data = map.value("projects").toList();
+            mProjectRepo.read(data);
         } else {
             data.append(map);
+            loadProject(map, gspFile);
         }
-        loadProject(data, name, path, false);
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
     }
 }
 
-void MainWindow::loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles)
+void MainWindow::loadProject(const QVariantMap &data, const QString &filePath)
 {
     path::PathRequest *dialog = new path::PathRequest(this);
-    dialog->init(&mProjectRepo, name, basePath, data);
+    QString basePath = QFileInfo(filePath).path();
+    dialog->init(&mProjectRepo, filePath, basePath, data);
 
-    if (ignoreMissingFiles || dialog->checkProject()) {
+    if (dialog->checkProject()) {
         dialog->deleteLater();
-        mProjectRepo.read(data, basePath);
+        mProjectRepo.read(data, filePath);
     } else {
         connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
             dialog->deleteLater();
             mOpenPermission = opAll;
             QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
         });
-        connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog]() {
-            mProjectRepo.read(data, dialog->baseDir());
+        connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog, filePath]() {
+            mProjectRepo.read(data, filePath);
         });
         dialog->open();
 #ifdef __APPLE__

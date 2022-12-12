@@ -41,22 +41,14 @@ class PathRequest : public QDialog
 public:
     explicit PathRequest(QWidget *parent = nullptr);
     ~PathRequest() override;
-    void init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantList &data);
+    void init(ProjectRepo *repo, const QString &name, const QString &baseDir, const QVariantMap &data);
     bool checkProject();
-    QString baseDir() const;
-
-private slots:
-    void on_bDir_clicked();
-    void on_edBaseDir_textEdited(const QString &text);
-
-private:
-    void showDirDialog(const QString &title, QLineEdit *lineEdit);
-    void updateEditColor(QLineEdit *edit, const QString &text);
 
 private:
     Ui::PathRequest *ui;
     ProjectRepo *mProjectRepo = nullptr;
-    QVariantList mData;
+    QString mBaseDir;
+    QVariantMap mData;
     QString mInitialText;
 
 };

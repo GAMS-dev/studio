@@ -419,7 +419,7 @@ private slots:
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
-    void loadProject(const QVariantList data, const QString &name, const QString &basePath, bool ignoreMissingFiles);
+    void loadProject(const QVariantMap &data, const QString &filePath);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool cloneOnly);
     void closePinView();
     void on_actionPin_Right_triggered();
