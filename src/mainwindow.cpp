@@ -1369,22 +1369,38 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty())
         filePath += suffixDot;
+    if (fi.suffix().compare("gsp", Qt::CaseInsensitive) == 0) {
+        projectOnly = true;
+        kind = "Project";
+    }
 
     QFile file(filePath);
 
-    if (!projectOnly && file.exists()) {
+    if (file.exists()) {
+        bool isOpen = (projectOnly && mProjectRepo.findProject(filePath)) ||
+                      (!projectOnly && mProjectRepo.findFile(filePath));
         QMessageBox msgBox;
-        msgBox.setWindowTitle(QString("%1 already exists").arg(kind));
-        msgBox.setText(QString("The %1 ").arg(kind.toLower()) + filePath + " already exists in the selected directory.");
+        msgBox.setWindowTitle(QString("%1 already %2").arg(kind, isOpen ? "opened" : "exists"));
+        msgBox.setText(QString("The %1 ").arg(kind.toLower()) + filePath +
+                       QString(" already %1.").arg(isOpen ? "opened in the Project Explorer"
+                                                          : "exists in the selected directory"));
         msgBox.setInformativeText(QString("What do you want to do with the existing %1?").arg(kind.toLower()));
         msgBox.setStandardButtons(QMessageBox::Abort);
-        msgBox.addButton("Open", QMessageBox::ActionRole);
+        if (!isOpen) msgBox.addButton("Open", QMessageBox::ActionRole);
         msgBox.addButton("Replace", QMessageBox::ActionRole);
         int answer = msgBox.exec();
 
         switch(answer) {
         case 0: // open
-            // do nothing and continue
+            // for files do nothing and continue
+            if (projectOnly && !mProjectRepo.findProject(filePath)) {
+                openProject(filePath);
+                if (PExProjectNode *project = mProjectRepo.findProject(filePath)) {
+                    if (FileMeta *meta = project->runnableGms())
+                        openFile(meta, true, project);
+                }
+            }
+
             break;
         case 1: // replace
             if (projectOnly) {
@@ -1406,7 +1422,6 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     }
 
     if (projectOnly) {
-        createProject(filePath);
     } else if (!projects.isEmpty()) {
         // add file to each selected project
         for (PExProjectNode *project: projects)
@@ -1623,7 +1638,7 @@ void MainWindow::on_actionSave_As_triggered()
             openFileNode(newNode, true);
         }
     }
-    mProjectRepo.treeModel()->sortChildNodes(node->parentNode());
+    mProjectRepo.sortChildNodes(node->parentNode());
 }
 
 void MainWindow::on_actionSave_All_triggered()
@@ -3270,7 +3285,20 @@ void MainWindow::openFilesDialog(OpenGroupOption opt)
     PExFileNode *fileNode = nullptr;
     for (const QString &fileName : files) {
         if (fileName.endsWith(".gsp", Qt::CaseInsensitive)) {
-            openProject(fileName);
+            if (mProjectRepo.findProject(fileName))
+                QMessageBox::information(this, "Project already open",
+                                         QString("The project '%1' is already opened in the Project Explorer."));
+            else {
+                openProject(fileName);
+                if (PExProjectNode *project = mProjectRepo.findProject(fileName)) {
+                    if (FileMeta *meta = project->runnableGms()) {
+                        if (!firstNode)
+                            firstNode = mProjectRepo.findFile(meta, project);
+                        else
+                            openFile(meta, true, project);
+                    }
+                }
+            }
         } else {
             // detect if the file is already present at the scope
             fileNode = openFilePath(fileName, nullptr, opt, true, false);
@@ -3294,7 +3322,8 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
 
     if (!forceNew && files.size() == 1) {
         if (files.first().endsWith(".gsp", Qt::CaseInsensitive)) {
-            openProject(files.first());
+            if (!mProjectRepo.findProject(files.first()))
+                openProject(files.first());
             return;
         }
         FileMeta *file = mFileMetaRepo.fileMeta(files.first());
@@ -3317,7 +3346,8 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
 
         if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
-                openProject(item);
+                if (!mProjectRepo.findProject(files.first()))
+                    openProject(item);
             } else {
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);

@@ -467,7 +467,7 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
 
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
-    mTreeModel->sortChildNodes(project);
+    sortChildNodes(project);
     purgeGroup(oldParent);
 }
 
@@ -480,7 +480,9 @@ QString ProjectRepo::uniqueNameExt(PExGroupNode *parentNode, const QString &name
     bool conflict = true;
     while (conflict) {
         conflict = false;
+        DEB() << "CHECK " << name;
         for (PExAbstractNode * n : parentNode->childNodes()) {
+            DEB() << "  - " << n->name(NameModifier::withNameExt);
             if (n != node && n->name(NameModifier::withNameExt) == name + res) {
                 ++nr;
                 res = QString::number(nr);
@@ -530,7 +532,6 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
 
     uniqueProjectFile(mTreeModel->rootNode(), filePath, path);
     project = new PExProjectNode(filePath, path, runFile, workDir);
-    project->setNameExt(uniqueNameExt(mTreeModel->rootNode(), filePath));
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
     connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
@@ -541,7 +542,7 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
     mTreeView->setExpanded(mTreeModel->index(project), true);
-    mTreeModel->sortChildNodes(root);
+    sortChildNodes(root);
     return project;
 }
 
@@ -549,20 +550,16 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
 {
     if (filePath.compare(project->fileName(), FileType::fsCaseSense()) == 0) return;
     QString oldFile = project->fileName();
-    QFileInfo newFile(filePath);
     project->setFileName(filePath);
-    project->setName(newFile.completeBaseName());
     project->setNeedSave();
     QVariantMap proData = getProjectMap(project, true);
     save(project, proData);
     if (cloneOnly) {
-        QFileInfo fi(oldFile);
         project->setFileName(oldFile);
-        project->setName(fi.completeBaseName());
     } else {
         QFile file(oldFile);
         file.remove();
-        treeModel()->sortChildNodes(project->parentNode());
+        sortChildNodes(project->parentNode());
         emit changed();
     }
 }
@@ -587,7 +584,7 @@ PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *
     mTreeModel->insertChild(parentNode->childCount(), parentNode, folder);
     connect(folder, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);
     emit changed();
-    mTreeModel->sortChildNodes(parentNode);
+    sortChildNodes(parentNode);
     return folder;
 }
 
@@ -649,6 +646,11 @@ void ProjectRepo::purgeGroup(PExGroupNode *group)
         closeGroup(group);
         if (parGroup) purgeGroup(parGroup);
     }
+}
+
+void ProjectRepo::sortChildNodes(PExGroupNode *group)
+{
+    mTreeModel->sortChildNodes(group);
 }
 
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,

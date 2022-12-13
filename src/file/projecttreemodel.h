@@ -59,10 +59,10 @@ public:
     QModelIndex current() {return index(mCurrent);}
     QVector<NodeId> selectedIds() const;
     QMap<int, QVariant> itemData(const QModelIndex &index) const override;
-    void sortChildNodes(PExGroupNode *group);
 
 signals:
     void childrenChanged();
+    void updateProjectExts();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
 
 protected:
@@ -81,13 +81,14 @@ protected:
     void setCurrent(const QModelIndex& ind);
     bool isCurrentProject(const QModelIndex& ind) const;
     QModelIndex findProject(QModelIndex ind);
+    void sortChildNodes(PExGroupNode *group);
+    void updateProjectExtNums();
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
     void deselectAll();
     const QVector<QModelIndex> popDeclined();
     const QVector<QModelIndex> popAddProjects();
-
     void update(const QModelIndex& ind = QModelIndex());
 
 private:

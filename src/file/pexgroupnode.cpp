@@ -258,8 +258,6 @@ QString PExProjectNode::name(NameModifier mod) const
 
 void PExProjectNode::setName(const QString &name)
 {
-    if (name.compare(PExProjectNode::name()) == 0) return;
-    mNameExt = projectRepo()->uniqueNameExt(parentNode(), name, this);
     PExGroupNode::setName(name);
     if (mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
@@ -289,6 +287,7 @@ const QString &PExProjectNode::fileName() const
 void PExProjectNode::setFileName(const QString &newProjectFile)
 {
     mProjectFile = newProjectFile;
+    setName(QFileInfo(mProjectFile).completeBaseName());
     emit changed(id());
 }
 

@@ -132,6 +132,7 @@ public:
     void closeGroup(PExGroupNode* group);
     void closeNode(PExFileNode* node);
     void purgeGroup(PExGroupNode *group);
+    void sortChildNodes(PExGroupNode *group);
 
     void setDebugMode(bool debug);
     bool debugMode() const;

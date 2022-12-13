@@ -282,6 +282,8 @@ bool ProjectTreeModel::removeChild(PExAbstractNode* child)
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
     endRemoveRows();
+    if (parent == mRoot)
+        updateProjectExtNums();
     emit childrenChanged();
     return true;
 }
@@ -334,6 +336,27 @@ void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
             group->moveChildNode(row, i);
             endMoveRows();
         }
+    }
+    if (group == mRoot)
+        updateProjectExtNums();
+}
+
+void ProjectTreeModel::updateProjectExtNums()
+{
+    for (int i = 0; i < mRoot->childCount(); ++i) {
+        PExProjectNode *project = mRoot->childNode(i)->toProject();
+        if (!project) continue;
+        QString name = project->name();
+        QString ext;
+        int nr = 0;
+        for (int j = 0; j < i; ++j) {
+            PExProjectNode *other = mRoot->childNode(j)->toProject();
+            if (other->name(NameModifier::withNameExt) == name + ext) {
+                ++nr;
+                ext = QString::number(nr);
+            }
+        }
+        project->setNameExt(ext);
     }
 }
 
@@ -470,6 +493,7 @@ QVector<QModelIndex> ProjectTreeModel::gatherChildren(QModelIndex ind)
     }
     return res;
 }
+
 
 } // namespace studio
 } // namespace gams
