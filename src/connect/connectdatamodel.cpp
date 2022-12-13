@@ -619,7 +619,7 @@ void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
     QList<ConnectDataItem*> parents;
     parents << mRootItem << mRootItem->child(0);
 
-    beginInsertRows(indexForTreeItem(parents.last()), position, position+1);
+    beginInsertRows(indexForTreeItem(parents.last()), position, position);
     for(size_t i = 0; i<node.size(); i++) {
         for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
             QString schemaName = QString::fromStdString(it->first.as<std::string>());
