@@ -232,7 +232,10 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
-    mapValue( schemanode, data, onlyRequiredAttribute );
+    YAML::Node value;
+    if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
+        data = value;
+    }
     return new ConnectData(data);
 }
 
@@ -255,8 +258,9 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
     YAML::Emitter e;
     e << schemanode;
     YAML::Node value;
-    if (mapValue( schemanode, value,  onlyRequiredAttribute ))
+    if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
         data[tobeinsertSchemaKey.last().toStdString()] = value;
+    }
     return new ConnectData(data);
 }
 
@@ -283,28 +287,35 @@ ConnectError Connect::getError() const
     return mError;
 }
 
-bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
+bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool ignoreRequiredSchema, bool onlyRequiredAttribute)
 {
+    bool allowed = (ignoreRequiredSchema ? ignoreRequiredSchema
+                                         : schemaValue["required"] ? (onlyRequiredAttribute ? schemaValue["required"].as<bool>() : true)
+                                                                   : (onlyRequiredAttribute ? false : true)
+                   );
     if (schemaValue["type"]) {
         if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
             std::string str = schemaValue["type"][0].as<std::string>();
-            if (str.compare("integer") == 0) {
+            if (allowed && str.compare("integer") == 0) {
                 dataValue[0] = 0;
-            } else if (str.compare("boolean") == 0) {
+            } else if (allowed && str.compare("boolean") == 0) {
                      dataValue[0] = false;
             } else {
-                dataValue[0] = "[value]";
+                if (allowed)
+                    dataValue[0] = "[value]";
+                else
+                    return false;
             }
         }  else {
             std::string value = schemaValue["type"].as<std::string>() ;
-            if (value.compare("dict") == 0) {
+            if (allowed && value.compare("dict") == 0) {
                 if (schemaValue["schema"]) {
                     YAML::Node node;
                     for (YAML::const_iterator it = schemaValue["schema"].begin(); it != schemaValue["schema"].end(); ++it) {
                         if (it->second.Type() == YAML::NodeType::Map) {
                             //Key key;
                             YAML::Node value;
-                            if (!mapValue( it->second, value, onlyRequiredAttribute ))
+                            if (!mapValue( it->second, value, false, onlyRequiredAttribute ))
                                 continue;
                             try {
                                 int i = it->first.as<int>();
@@ -319,50 +330,56 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
                     }
                     dataValue[0] = node;
                 }
-            } else if (value.compare("string") == 0) {
+            } else if (allowed && value.compare("string") == 0) {
                        dataValue[0] = "[value]";
-            } else if (value.compare("integer") == 0) {
+            } else if (allowed && value.compare("integer") == 0) {
                        dataValue[0] = 0;
             } else {
-                dataValue[0] = "[value]";
+                if (allowed)
+                    dataValue[0] = "[value]";
+                else
+                    return false;
             }
         }
     }
     return true;
 }
 
-bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool onlyRequiredAttribute)
+bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool ignoreRequiredSchema, bool onlyRequiredAttribute)
 {
     if (schemaValue.Type() == YAML::NodeType::Map) {
-        if (schemaValue["required"]) {
-//            if (schemaValue["required"].Type()!=YAML::NodeType::Scalar)
-//                return false;
-            if (!schemaValue["required"].as<bool>() && onlyRequiredAttribute)
-                return false;
-        } else {
-            if (onlyRequiredAttribute)
-                return false;
-        }
+        bool allowed = (ignoreRequiredSchema ? ignoreRequiredSchema
+                                             : schemaValue["required"] ? (onlyRequiredAttribute ? schemaValue["required"].as<bool>() : true)
+                                                                       : (onlyRequiredAttribute ? false : true)
+                       );
         if (schemaValue["type"]) {
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
-                if (schemaValue["schema"]) {
-                    listValue(schemaValue["schema"], dataValue, onlyRequiredAttribute);
-                } else {
+/*                if (schemaValue["schema"]) {
+                    qDebug() << "schema sequence";
+                    YAML::Node data;
+                    if (listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
+                        dataValue = data;
+                    else
+                        return false;
+                } else { */
                     YAML::Node firsttype = schemaValue["type"][0];
                     std::string value = firsttype.as<std::string>() ;
-                    if (value.compare("list") == 0) {
+                    if (allowed &&value.compare("list") == 0) {
                         dataValue[0] = "[value]";
-                    } else if (value.compare("boolean") == 0) {
+                    } else if (allowed &&value.compare("boolean") == 0) {
                            dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
-                    } else if (value.compare("integer") == 0) {
+                    } else if (allowed &&value.compare("integer") == 0) {
                         dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);;
                     } else {
-                         dataValue = "[value]";
+                        if (allowed)
+                            dataValue = "[value]";
+                        else
+                            return false;
                     }
-                }
+//                }
             } else { // not sequence
                 std::string value = schemaValue["type"].as<std::string>() ;
-                if (value.compare("string") == 0) {
+                if (allowed && value.compare("string") == 0) {
                     if (schemaValue["default"]) {
                         dataValue = schemaValue["default"].as<std::string>();
                     } else  if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
@@ -378,23 +395,30 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                     } else {
                         dataValue = "[value]";
                     }
-                } else if (value.compare("integer") == 0) {
+                } else if (allowed && value.compare("integer") == 0) {
                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);
-                } else if (value.compare("boolean") == 0) {
+                } else if (allowed && value.compare("boolean") == 0) {
                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
-                } else if (value.compare("dict") == 0) {
+                } else if (allowed && value.compare("dict") == 0) {
                            if (schemaValue["schema"]) {
-                               if (!mapValue(schemaValue["schema"], dataValue, onlyRequiredAttribute))
+                               YAML::Node data;
+                               if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute))
+                                  dataValue = data;
+                               else
                                    return false;
                            } else {
                                dataValue["[key]"] = "[value]";
                            }
-                } else if (value.compare("list") == 0) {
+                } else if (allowed && value.compare("list") == 0) {
                            if (schemaValue["schema"]) {
-                               listValue(schemaValue["schema"], dataValue, onlyRequiredAttribute);
+                               if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
+                                   return false;
                            }
                 } else {
-                    dataValue = "[value]";
+                    if (allowed)
+                        dataValue = "[value]";
+                    else
+                        return false;
                 }
             }
         } else { // not schema["type"]
@@ -402,7 +426,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                 if (schemaValue["anyof"].Type()==YAML::NodeType::Sequence) {
                     YAML::Node anyofnode = schemaValue["anyof"][0];
                     if (anyofnode.Type() == YAML::NodeType::Map) {
-                        if (!mapValue( anyofnode, dataValue, onlyRequiredAttribute ))
+                        if (!mapValue( anyofnode, dataValue, false, onlyRequiredAttribute ))
                             return false;
                     }
                 }
@@ -466,7 +490,7 @@ YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequir
     for (YAML::const_iterator it = s->mRootNode.begin(); it != s->mRootNode.end(); ++it) {
         if (it->second.Type() == YAML::NodeType::Map) { // first level should be a map
             YAML::Node value;
-            if (!mapValue( it->second, value, onlyRequiredAttribute ))
+            if (!mapValue( it->second, value, false, onlyRequiredAttribute ))
                 continue;
             try {
                 int i = it->first.as<int>();

@@ -593,7 +593,7 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         if (tobeinsertSchemaKey.size() == 1) {
             emit fromSchemaInserted(schemaname, row);
         } else {
-            ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, false);
+            ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, mOnlyRequriedAttributesAdded);
             tobeinsertSchemaKey.removeFirst();
             tobeinsertSchemaKey.removeLast();
             appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);

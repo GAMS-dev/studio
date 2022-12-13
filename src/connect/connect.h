@@ -50,8 +50,8 @@ public:
     ConnectError getError() const;
 
 private:
-    bool listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
-    bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool onlyRequiredAttribute=false);
+    bool listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
+    bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
 
     YAML::Node getDefaultValueByType(Schema* schemaHelper);
 
