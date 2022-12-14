@@ -111,10 +111,6 @@ MainWindow::MainWindow(QWidget *parent)
     mWinStateTimer.setInterval(10);
     connect(&mWinStateTimer, &QTimer::timeout, this, &MainWindow::pushDockSizes);
     mSaveSettingsTimer.setSingleShot(true);
-    connect(&mSaveSettingsTimer, &QTimer::timeout, this, [this]() {
-        mSaveSettingsTimer.stop();
-        updateAndSaveSettings();
-    });
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
@@ -339,6 +335,16 @@ MainWindow::MainWindow(QWidget *parent)
     search::SearchLocator::provide(mSearchDialog->search());
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::initDelayedElements);
+
+    mHistory.files().clear();
+    const QVariantList joHistory = Settings::settings()->toList(skHistory);
+    for (const QVariant &jRef: joHistory) {
+        if (!jRef.canConvert(QVariant::Map)) continue;
+        QVariantMap map = jRef.toMap();
+        if (map.contains("file")) {
+            mHistory.files() << map.value("file").toString();
+        }
+    }
 
     if (Settings::settings()->toString(skMiroInstallPath).isEmpty()) {
         auto path = QDir::toNativeSeparators(miro::MiroCommon::path(""));
@@ -3622,19 +3628,16 @@ void MainWindow::initDelayedElements()
             openPinView(ind, Qt::Orientation(settings->toInt(skPinOrientation)));
         }
     }
-    mHistory.files().clear();
-    const QVariantList joHistory = settings->toList(skHistory);
-    for (const QVariant &jRef: joHistory) {
-        if (!jRef.canConvert(QVariant::Map)) continue;
-        QVariantMap map = jRef.toMap();
-        if (map.contains("file"))
-            mHistory.files() << map.value("file").toString();
-    }
     openDelayedFiles();
     watchProjectTree();
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
     historyChanged();
+    connect(&mSaveSettingsTimer, &QTimer::timeout, this, [this]() {
+        mSaveSettingsTimer.stop();
+        updateAndSaveSettings();
+    });
+
 }
 
 void MainWindow::openDelayedFiles()
@@ -3642,6 +3645,7 @@ void MainWindow::openDelayedFiles()
     QStringList files = mDelayedFiles;
     mDelayedFiles.clear();
     mOpenPermission = opAll;
+
     openFiles(files, false);
 }
 
