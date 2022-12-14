@@ -4,6 +4,11 @@ Version 1.13.0 *
 - added GAMS Connect editor
 - persist the state of each GDX file to restore in on restarting Studio
 - save projects to separate files (GSP - GAMS Studio Project)
+  - file menu and context menu now provide `New project`, `Move project`, and `Clone project`. (`Import project` and `Export project` were removed)
+  - each project is stored in a separate file, the settings get a "project" entry containing its filepath. (For backward compatibility the project is stored in the settings too for some time)
+  - to rename a project the file name needs to be renamed
+  - projects in different paths with the same name get a number added. This number is assigned in the "name and path" order, so changing the path of a project may change the assigned number
+
 
 Version 1.12.3
 ==================
