@@ -18,6 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "gdxviewerstate.h"
+#include "gdxsymbolviewstate.h"
+#include <QVariantMap>
 
 namespace gams {
 namespace studio {
@@ -97,15 +99,38 @@ void GdxViewerState::write(QVariantMap &map)
 {
     map.insert("header", mSymbolTableHeaderState.toBase64());
     map.insert("selected", mSelectedSymbol);
-    map.insert("isAlias", mSelectedSymbolIsAlias);
+    map.insert("isAlias", mSelectedSymbolIsAlias ? '1' : '0');
 
-    QMap<QString, GdxSymbolViewState*> mSymbolViewState;
-
+    QVariantList symViews;
+    QMap<QString, GdxSymbolViewState*>::ConstIterator it;
+    for (it = mSymbolViewState.constBegin(); it != mSymbolViewState.constEnd(); ++it) {
+        QVariantMap state;
+        it.value()->write(state);
+        state.insert("name", it.key());
+        symViews.append(state);
+    }
+    map.insert("symbolViewStates", symViews);
 }
 
 void GdxViewerState::read(const QVariantMap &map)
 {
+    mSymbolTableHeaderState = QByteArray::fromBase64(map.value("header").toByteArray());
+    mSelectedSymbol = map.value("selected").toString();
+    mSelectedSymbolIsAlias = map.value("isAlias").toString() != "0";
 
+    if (map.contains("symbolViewStates")) {
+        for (auto it = mSymbolViewState.begin(); it != mSymbolViewState.end();)
+            it = mSymbolViewState.erase(it);
+
+        const QVariantList symViews = map.value("symbolViewStates").toList();
+        for (const QVariant &value : symViews) {
+            QVariantMap map = value.toMap();
+            GdxSymbolViewState *symView = new GdxSymbolViewState();
+            symView->read(map);
+            mSymbolViewState.insert(map.value("name").toString(), symView);
+        }
+
+    }
 }
 
 
