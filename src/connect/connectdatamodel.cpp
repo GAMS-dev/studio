@@ -494,7 +494,7 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
        newItems << text;
        ++rows;
     }
-    if (column > 0) // not the first column
+    if (column > (int)DataItemColumn::Value) // not the first nor second column
         return false;
 
     QStringList schemastrlist = newItems[0].split("=");
@@ -659,7 +659,11 @@ void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
     }
     informDataChanged( index(0,0).parent() );
     QModelIndex parent = indexForTreeItem( mRootItem->child(0) );
-    emit indexExpandedAndResized(index(position-1, (int)DataItemColumn::Key, parent));
+    if (position <= 0)
+        emit indexExpandedAndResized(index(getItem(parent)->childCount()-1, (int)DataItemColumn::Key, parent));
+    else
+        emit indexExpandedAndResized(index(position-1, (int)DataItemColumn::Key, parent));
+
 }
 
 void ConnectDataModel::appendMapElement(const QModelIndex &index)
