@@ -505,12 +505,13 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
         return false;
 
     QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
-    QStringList schemaKey = (row < 0 || column < 0 ? parent.sibling(parent.row(), (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString().split(":")
-                                                         : index(row, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":")           );
-
-    int state = parent.sibling(parent.row(), (int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
-
-    if (row < 0 || column < 0) { // drop on to a row
+    QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
+                                                     : (row==rowCount(parent)) ? index(rowCount(parent)-1, (int)DataItemColumn::SchemaKey, parent)
+                                                                               : index(row, (int)DataItemColumn::SchemaKey, parent)
+                               );
+    QStringList schemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
+    int state = schemaIndex.siblingAtColumn((int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
+    if (row < 0 || column < 0) { // drop on to a row or end of the list
         if (state!=(int)DataCheckState::SchemaName) {  // drop on to a non-schemaname
             if (state!=(int)DataCheckState::ListItem) // not a ListItem
                 return false;
@@ -531,7 +532,7 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
             } else {  // schema name without child
                 if (schemaKey.size()==tobeinsertSchemaKey.size()) // has the same schema size
                     return false;
-                if (hasSameParent(tobeinsertSchemaKey, schemaKey)!=0) // not same parent
+                if (hasSameParent(tobeinsertSchemaKey, schemaKey,false)==0) // same parent at different level
                     return false;
                 if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
                     return false;
