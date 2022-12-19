@@ -114,10 +114,15 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->header()->hide();     // hide header
     new TreeCellResizer(ui->dataTreeView);  // resize tree cell instead of header
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Key, QHeaderView::Interactive);
-    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::Interactive);
+    ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Value, QHeaderView::Stretch);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::Delete, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveDown, QHeaderView::ResizeToContents);
     ui->dataTreeView->header()->setSectionResizeMode((int)DataItemColumn::MoveUp, QHeaderView::ResizeToContents);
+    ui->dataTreeView->header()->setMinimumSectionSize(16);
+    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::Delete,   16 /*width*/);
+    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::MoveDown, 16 /*width*/);
+    ui->dataTreeView->header()->resizeSection((int)DataItemColumn::MoveUp,   16 /*width*/);
+    ui->dataTreeView->header()->setStretchLastSection(false);
     ui->dataTreeView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
