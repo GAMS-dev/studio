@@ -160,6 +160,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }
     case NameExtRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
+        if (!node) return QString();
         return node->nameExt();
     }
     default:
@@ -351,7 +352,7 @@ void ProjectTreeModel::updateProjectExtNums()
         int nr = 0;
         for (int j = 0; j < i; ++j) {
             PExProjectNode *other = mRoot->childNode(j)->toProject();
-            if (other->name(NameModifier::withNameExt) == name + ext) {
+            if (other && other->name(NameModifier::withNameExt) == name + ext) {
                 ++nr;
                 ext = QString::number(nr);
             }

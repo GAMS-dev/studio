@@ -72,7 +72,7 @@ void Application::init()
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
-    mMainWindow->openFiles(mCmdParser.files(), false);
+    mMainWindow->openFiles(mCmdParser.files());
 
     mDistribValidator.start();
     listen();
@@ -147,7 +147,7 @@ void Application::newConnection()
 void Application::receiveFileArguments()
 {
     QLocalSocket* socket = static_cast<QLocalSocket*>(QObject::sender());
-    mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts), false);
+    mMainWindow->openFiles(QString(socket->readAll()).split("\n", Qt::SkipEmptyParts));
     socket->deleteLater();
     mMainWindow->setForegroundOSCheck();
 }
@@ -167,7 +167,7 @@ bool Application::event(QEvent *event)
     if (event->type() == QEvent::FileOpen) {
         // this is a macOS only event
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFiles({openEvent->url().path()}, false);
+        mMainWindow->openFiles({openEvent->url().path()});
         Q_FOREACH (auto window, allWindows()) {
             if (!window->isVisible())
                 continue;

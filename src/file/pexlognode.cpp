@@ -103,8 +103,8 @@ void PExLogNode::logDone()
         QFileInfo fi = QFileInfo(baseFile + ".log");
         QString path = fi.filePath();
         if (mLogOption == 2) {
-            if (PExProjectNode *pro = projectRepo()->asProject(projectId())) {
-                QDir dir = pro->location();
+            if (PExProjectNode *project = projectRepo()->asProject(projectId())) {
+                QDir dir = project->location();
                 path = dir.relativeFilePath(path);
             }
             message = QString("LOG:%1[FIL:\"%2\",0]").arg(path).arg(fi.filePath());

@@ -554,11 +554,11 @@ void PExProjectNode::unlinkProjectOptionsFileMeta()
 
 QString PExProjectNode::mainModelName(bool stripped) const
 {
-    FileMeta *fileMeta = toProject()->runnableGms();
+    FileMeta *fileMeta = runnableGms();
 
     if (!fileMeta) {
         SysLogLocator::systemLog()->append(QString("Could not find a runable gms file for project: %1")
-                .arg(toProject()->name()), LogMsgType::Error);
+                .arg(name()), LogMsgType::Error);
         return QString();
     }
 

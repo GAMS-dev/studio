@@ -201,7 +201,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
     connect(&mProjectRepo, &ProjectRepo::openProject, this, //&MainWindow::openProject);
             [this](const QString &gspFile) {
-        openFiles(QStringList() << gspFile, false, ogProjects);
+        openFiles(QStringList() << gspFile, ogProjects);
     });
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -1033,6 +1033,7 @@ void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
     if (mRecent.project() == group) updateRunState();
 
     PExProjectNode* project = group->toProject();
+    if (!project) return;
     PExLogNode* log = project->logNode();
 
     QTabBar::ButtonPosition closeSide = QTabBar::ButtonPosition(style()->styleHint(QStyle::SH_TabBar_CloseButtonPosition, nullptr, this));
@@ -2706,41 +2707,38 @@ void MainWindow::openProject(const QString gspFile)
         QVariantMap map = json.object().toVariantMap();
         QVariantList data;
         if (map.contains("projects")) {
+            // a list of project maps
             data = map.value("projects").toList();
             mProjectRepo.read(data);
         } else {
-            data.append(map);
-            loadProject(map, gspFile);
+            // only one project map
+            path::PathRequest *dialog = new path::PathRequest(this);
+            QString basePath = QFileInfo(gspFile).path();
+            dialog->init(&mProjectRepo, gspFile, basePath, map);
+
+            if (dialog->checkProject()) {
+                dialog->deleteLater();
+                mProjectRepo.read(map, gspFile);
+            } else {
+                connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
+                    dialog->deleteLater();
+                    mOpenPermission = opAll;
+                    QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
+                });
+                connect(dialog, &path::PathRequest::accepted, this, [this, map, dialog, gspFile]() {
+                    mProjectRepo.read(map, gspFile);
+                });
+                mOpenPermission = opNoGsp;
+                dialog->open();
+#ifdef __APPLE__
+                dialog->show();
+                dialog->raise();
+#endif
+            }
+
         }
     } else {
         appendSystemLogError("Couldn't open project " + gspFile);
-    }
-}
-
-void MainWindow::loadProject(const QVariantMap &data, const QString &filePath)
-{
-    path::PathRequest *dialog = new path::PathRequest(this);
-    QString basePath = QFileInfo(filePath).path();
-    dialog->init(&mProjectRepo, filePath, basePath, data);
-
-    if (dialog->checkProject()) {
-        dialog->deleteLater();
-        mProjectRepo.read(data, filePath);
-    } else {
-        connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
-            dialog->deleteLater();
-            mOpenPermission = opAll;
-            QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
-        });
-        connect(dialog, &path::PathRequest::accepted, this, [this, data, dialog, filePath]() {
-            mProjectRepo.read(data, filePath);
-        });
-        dialog->open();
-#ifdef __APPLE__
-        dialog->show();
-        dialog->raise();
-#endif
-        mOpenPermission = opNoGsp;
     }
 }
 
@@ -3177,7 +3175,7 @@ void MainWindow::dropEvent(QDropEvent* e)
 
         if (answer != QMessageBox::Open) return;
     }
-    openFiles(pathList, false);
+    openFiles(pathList);
 }
 
 bool MainWindow::eventFilter(QObject* sender, QEvent* event)
@@ -3317,7 +3315,7 @@ void MainWindow::openFilesDialog(OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
-void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt)
+void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
 {
     if (files.size() == 0) return;
     if (mOpenPermission == opNone) {
@@ -3326,7 +3324,7 @@ void MainWindow::openFiles(QStringList files, bool forceNew, OpenGroupOption opt
         return;
     }
 
-    if (!forceNew && files.size() == 1) {
+    if (files.size() == 1) {
         if (files.first().endsWith(".gsp", Qt::CaseInsensitive)) {
             if (!mProjectRepo.findProject(files.first()))
                 openProject(files.first());
@@ -3646,7 +3644,7 @@ void MainWindow::openDelayedFiles()
     mDelayedFiles.clear();
     mOpenPermission = opAll;
 
-    openFiles(files, false);
+    openFiles(files);
 }
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
@@ -4126,7 +4124,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             } else {
                 QFileInfo file(fileMeta->location());
                 project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
-                                                     file.absoluteFilePath())->toProject();
+                                                     file.absoluteFilePath());
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }

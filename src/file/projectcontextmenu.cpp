@@ -314,9 +314,11 @@ void ProjectContextMenu::onAddExisitingFile()
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
+        if (!project) continue;
         if (!projects.contains(project))
             projects << project;
     }
+    if (projects.isEmpty()) return;
 
     QString sourcePath = "";
     if (!projects.isEmpty()) sourcePath = projects.first()->location();
@@ -340,10 +342,12 @@ void ProjectContextMenu::onAddNewFile()
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
+        if (!project) continue;
         if (!projects.contains(project))
             projects << project;
     }
-    emit newFileDialog(projects);
+    if (!projects.isEmpty())
+        emit newFileDialog(projects);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -396,11 +400,12 @@ void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
+        if (!project) continue;
         if (!groups.contains(project))
             groups << project;
     }
-
-    emit newFileDialog(groups, solverName);
+    if (!groups.isEmpty())
+        emit newFileDialog(groups, solverName);
 }
 
 void ProjectContextMenu::onOpenTerminal()
@@ -503,6 +508,7 @@ void ProjectContextMenu::onOpenEfi()
 {
     if (mNodes.first()) {
         PExProjectNode *project = mNodes.first()->toProject();
+        if (!project) return;
         QString efi = getEfiName(project);
         if (!efi.isEmpty()) {
             QFile file(efi);
@@ -517,7 +523,7 @@ void ProjectContextMenu::onOpenEfi()
 
 QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
 {
-    if (!project->runnableGms()) return QString();
+    if (project && !project->runnableGms()) return QString();
     QFileInfo info(project->runnableGms()->location());
     return info.path() + '/' + info.completeBaseName() + ".efi";
 }

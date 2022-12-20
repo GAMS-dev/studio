@@ -337,9 +337,8 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             QVariantList optList = projectData.value("options").toList();
             if (!optList.isEmpty()) {
                 for (const QVariant &opt : qAsConst(optList)) {
-                    PExProjectNode *prgn = project->toProject();
                     QString par = opt.toString();
-                    prgn->addRunParametersHistory(par);
+                    project->addRunParametersHistory(par);
                 }
             }
         }
@@ -381,6 +380,7 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
+        if (!project) continue;
         QVariantMap proData = getProjectMap(project, true);
         save(project, proData);
         QVariantMap data;
@@ -416,13 +416,13 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     bool expand = true;
     QDir dir(QFileInfo(project->fileName()).absolutePath());
     if (project->runnableGms()) {
-        QString filePath = project->toProject()->runnableGms()->location();
+        QString filePath = project->runnableGms()->location();
         projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     projectObject.insert("name", project->name());
-    projectObject.insert("options", project->toProject()->getRunParametersHistory());
+    projectObject.insert("options", project->getRunParametersHistory());
     emit isNodeExpanded(mTreeModel->index(project), expand);
     if (!expand) projectObject.insert("expand", false);
     QVariantList subArray;
@@ -506,8 +506,8 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
         res = fi.path() + '/' + fi.completeBaseName() + (nr>0 ? QString::number(nr) : "") + ".gsp";
         conflict = false;
         for (PExAbstractNode * n : parentNode->childNodes()) {
-            PExProjectNode *pro = n->toProject();
-            if (pro && pro->fileName().compare(res) == 0) {
+            PExProjectNode *project = n->toProject();
+            if (project && project->fileName().compare(res) == 0) {
                 ++nr;
                 conflict = true;
                 break;
@@ -809,13 +809,6 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     }
 }
 
-//void ProjectRepo::markTexts(NodeId groupId, const QList<TextMark *> &marks, QStringList &result)
-//{
-//    PExProjectNode *project = asProject(groupId);
-//    if (project)
-//        project->markTexts(marks, result);
-//}
-
 void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result)
 {
     PExProjectNode *project = asProject(groupId);
@@ -1011,6 +1004,7 @@ QIcon ProjectRepo::runAnimateIcon(QIcon::Mode mode, int alpha)
 void ProjectRepo::gamsProcessStateChange(PExGroupNode *group)
 {
     PExProjectNode *project = group->toProject();
+    if (!project) return;
     QModelIndex ind = mTreeModel->index(project);
     if (project->process()->state() == QProcess::NotRunning) {
         mRunnigGroups.removeAll(project);

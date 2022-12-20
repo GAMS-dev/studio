@@ -107,7 +107,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, bool forceNew, OpenGroupOption opt = ogNone);
+    void openFiles(QStringList files, OpenGroupOption opt = ogNone);
     void jumpToTab(FileMeta* fm);
     void jumpToLine(int line);
     void watchProjectTree();
@@ -419,7 +419,6 @@ private slots:
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
-    void loadProject(const QVariantMap &data, const QString &filePath);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool cloneOnly);
     void closePinView();
     void on_actionPin_Right_triggered();
