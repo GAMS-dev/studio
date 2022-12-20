@@ -44,10 +44,6 @@ bool TreeCellResizer::eventFilter(QObject *object, QEvent *event)
             if (m_drag_in_progress) { // apply dragging
                int delta = 0;
                QHeaderView* header_view = m_view->header();
-               /*if (m_drag_orientation == Qt::Vertical) {
-                   delta = mouse_event->pos().y() - m_drag_previous_pos;
-                   m_drag_previous_pos = mouse_event->pos().y();
-               } else */
                if (m_drag_orientation == Qt::Horizontal) {
                    delta = mouse_event->pos().x() - m_drag_previous_pos;
                    m_drag_previous_pos = mouse_event->pos().x();
@@ -57,9 +53,6 @@ bool TreeCellResizer::eventFilter(QObject *object, QEvent *event)
                       qMax(m_sensibility * 2, header_view->sectionSize(m_drag_section) + delta));
                return true;
           } else { // set mouse cursor shape
-            /*if (index_resizable(mouse_event->pos(), Qt::Vertical).isValid()) {
-              m_view->viewport()->setCursor(Qt::SplitVCursor);
-            } else */
             if (index_resizable(mouse_event->pos(), Qt::Horizontal).isValid()) {
               m_view->viewport()->setCursor(Qt::SplitHCursor);
             } else {
@@ -69,13 +62,6 @@ bool TreeCellResizer::eventFilter(QObject *object, QEvent *event)
         } else if (mouse_event->type() == QEvent::MouseButtonPress &&
                    mouse_event->button() == Qt::LeftButton &&
                    !m_drag_in_progress) { // start dragging
-          /*if (index_resizable(mouse_event->pos(), Qt::Vertical).isValid()) {
-            m_drag_in_progress = true;
-            m_drag_orientation = Qt::Vertical;
-            m_drag_previous_pos = mouse_event->y();
-            m_drag_section = index_resizable(mouse_event->pos(), Qt::Vertical).row();
-            return true;
-          } else */
           if (index_resizable(mouse_event->pos(), Qt::Horizontal).isValid()) {
                m_drag_in_progress = true;
                m_drag_orientation = Qt::Horizontal;
@@ -103,12 +89,7 @@ QModelIndex TreeCellResizer::index_resizable(QPoint mouse_pos, Qt::Orientation o
               m_view->header()->sectionResizeMode(index.column()) == QHeaderView::Interactive) {
             return index;
           }
-        } /*else {
-          if (qAbs(m_view->visualRect(index).bottom() - mouse_pos.y()) < m_sensibility &&
-              m_view->header()->sectionResizeMode(index.row()) == QHeaderView::Interactive) {
-            return index;
-          }
-        }*/
+        }
      }
      return QModelIndex();
 }
