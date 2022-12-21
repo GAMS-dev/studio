@@ -37,6 +37,7 @@ ProjectData::ProjectData(PExProjectNode *project)
     mProject = project;
     if (!mData.contains(file)) mData.insert(file, QDir::toNativeSeparators(project->fileName()));
     if (!mData.contains(name)) mData.insert(name, project->name());
+    if (!mData.contains(nameExt)) mData.insert(nameExt, project->nameExt());
     if (!mData.contains(workDir)) mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
     if (!mData.contains(baseDir)) mData.insert(baseDir, QDir::toNativeSeparators(project->location()));
     if (!mData.contains(mainGms)) {
@@ -74,10 +75,19 @@ void ProjectData::save()
 void ProjectData::projectChanged(NodeId id)
 {
     if (mProject->id() != id) return;
+    bool updateTab = false;
     if (fieldData(ProjectData::file) != QDir::toNativeSeparators(mProject->fileName()))
         setFieldData(ProjectData::file, QDir::toNativeSeparators(mProject->fileName()));
-    if (fieldData(ProjectData::name) != mProject->name())
+    if (fieldData(ProjectData::name) != mProject->name()) {
         setFieldData(ProjectData::name, mProject->name());
+        updateTab = true;
+    }
+    if (fieldData(ProjectData::nameExt) != mProject->nameExt()) {
+        setFieldData(ProjectData::nameExt, mProject->nameExt());
+        updateTab = true;
+    }
+    if (updateTab)
+        emit tabNameChanged(mProject);
     if (mProject->runnableGms())
         setFieldData(ProjectData::mainGms, QDir::toNativeSeparators(mProject->runnableGms()->location()));
     else
@@ -87,6 +97,11 @@ void ProjectData::projectChanged(NodeId id)
 ProjectData *ProjectOptions::sharedData() const
 {
     return mSharedData;
+}
+
+QString ProjectOptions::tabName()
+{
+    return '[' + mSharedData->project()->name() + mSharedData->project()->nameExt() + ']';
 }
 
 ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
@@ -108,6 +123,9 @@ ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
     ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     adjustSize();
     connect(sharedData, &ProjectData::changed, this, &ProjectOptions::updateData);
+    connect(sharedData, &ProjectData::tabNameChanged, this, [this](PExProjectNode *project) {
+        project->refreshProjectTabName();
+    });
     updateData();
 }
 
@@ -159,7 +177,8 @@ void ProjectOptions::updateEditColor(QLineEdit *edit, const QString &text)
 void ProjectOptions::updateState()
 {
     bool isModified = false;
-    if (ui->edName->text().trimmed().compare(mSharedData->project()->name()))
+    QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
+    if (ui->edName->text().trimmed().compare(fullName))
         isModified = true;
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     if (path.endsWith("/")) path = path.left(path.length()-1);
@@ -205,8 +224,9 @@ void ProjectOptions::updateData()
 {
     if (ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
-    if (ui->edName->text() != mSharedData->fieldData(ProjectData::name))
-        ui->edName->setText(mSharedData->fieldData(ProjectData::name));
+    QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
+    if (ui->edName->text() != fullName)
+        ui->edName->setText(fullName);
     if (ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
     if (ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))

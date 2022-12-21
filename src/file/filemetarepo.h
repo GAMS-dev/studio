@@ -70,6 +70,7 @@ signals:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
+    void projectTabRenamed(QWidget *wid, const QString &newName);
 
 public slots:
     void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);

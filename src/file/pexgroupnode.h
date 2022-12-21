@@ -109,6 +109,7 @@ public:
     void setLocation(const QString &newLocation) override;
     void setWorkDir(const QString &workingDir);
     QString workDir() const;
+    void refreshProjectTabName();
 
     QString parameter(const QString& kind) const;
     bool hasParameter(const QString& kind) const;
@@ -180,6 +181,7 @@ private:
     QString cleanPath(QString path, QString file);
     void setLogLocation(QString path);
     void setNeedSave(bool needSave = true);
+    void updateLogName(const QString &name);
 };
 
 

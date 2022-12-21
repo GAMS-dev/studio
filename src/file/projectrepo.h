@@ -150,6 +150,7 @@ signals:
     void runnableChanged();
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);
+    void refreshProjectTabName(QWidget *wid);
     void openRecentFile();
     void parentAssigned(const PExAbstractNode *node);
     void closeFileEditors(FileId fileId);

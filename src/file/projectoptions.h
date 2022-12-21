@@ -39,7 +39,7 @@ class ProjectData : public QObject
 {
     Q_OBJECT
 public:
-    enum Field {file, name, workDir, baseDir, mainGms};
+    enum Field {file, name, nameExt, workDir, baseDir, mainGms};
 
     ProjectData(PExProjectNode *project);
     virtual ~ProjectData() override {}
@@ -50,6 +50,7 @@ public:
 
 signals:
     void changed(Field field);
+    void tabNameChanged(PExProjectNode *project);
 
 private slots:
     void projectChanged(NodeId id);
@@ -69,9 +70,9 @@ public:
     explicit ProjectOptions(ProjectData *sharedData, QWidget *parent = nullptr);
     ~ProjectOptions() override;
     ProjectData *sharedData() const;
+    QString tabName();
     bool isModified() const;
     void save();
-
 
 signals:
     void modificationChanged(bool modification);

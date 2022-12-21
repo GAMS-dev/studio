@@ -210,6 +210,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
     connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
     connect(&mProjectRepo, &ProjectRepo::logTabRenamed, this, &MainWindow::logTabRenamed);
+    connect(&mProjectRepo, &ProjectRepo::refreshProjectTabName, this, [this](QWidget *wid) {
+        project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(wid);
+        if (!proOpt) return;
+        int ind = ui->mainTabs->indexOf(proOpt);
+        if (ind < 0) return; // TODO(JM) check for PinView
+        ui->mainTabs->setTabText(ind, proOpt->tabName());
+    });
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);

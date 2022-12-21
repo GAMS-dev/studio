@@ -117,6 +117,7 @@ signals:
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void fontChangeRequest(FileMeta *fileMeta, QFont f);
+    void projectTabRenamed(FileMeta *fileMeta);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;

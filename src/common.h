@@ -74,6 +74,7 @@ enum class NameModifier {
     raw,
     editState,
     withNameExt,
+    editStateWithExt,
 };
 Q_ENUM_NS(NameModifier)
 

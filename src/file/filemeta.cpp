@@ -333,7 +333,8 @@ void FileMeta::modificationChanged(bool modiState)
     Q_UNUSED(modiState)
     if (!modiState && kind() == FileKind::PrO) {
         if (project::ProjectOptions *pro = ViewHelper::toProjectOptions(topEditor())) {
-            mName = '['+pro->sharedData()->fieldData(project::ProjectData::name)+']';
+            mName = '['+pro->sharedData()->fieldData(project::ProjectData::name)
+                    +pro->sharedData()->fieldData(project::ProjectData::nameExt)+']';
         }
     }
     emit changed(id());
@@ -483,7 +484,7 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
     if (event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) {
         const QFont *f = nullptr;
         QList<QWidget*> syncEdits;
-        for (QWidget *wid : mEditors) {
+        for (QWidget *wid : qAsConst(mEditors)) {
             if (lxiviewer::LxiViewer *lst = ViewHelper::toLxiViewer(wid)) {
                 if (lst->textView()->edit() == sender)
                     f = &lst->textView()->edit()->font();
@@ -502,7 +503,7 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
             }
         }
         if (f) {
-            for (QWidget *wid : syncEdits) {
+            for (QWidget *wid : qAsConst(syncEdits)) {
                 if (!wid->font().isCopyOf(*f))
                     wid->setFont(*f);
             }
@@ -1078,7 +1079,11 @@ bool FileMeta::isPinnable()
 
 void FileMeta::updateTabName(QTabWidget *tabWidget, int index)
 {
-    tabWidget->setTabText(index, name(NameModifier::raw));
+    if (kind() == FileKind::PrO) {
+        if (project::ProjectOptions *opt = ViewHelper::toProjectOptions(tabWidget->widget(index)))
+            tabWidget->setTabText(index, opt->tabName());
+    } else
+        tabWidget->setTabText(index, name());
     if (isPinnable())
         tabWidget->setTabToolTip(index, "<p style='white-space:pre'>"+QDir::toNativeSeparators(location()) +
                                  "<br>- Pin right <b>Ctrl+Click</b><br>- Pin below <b>Shift+Ctrl+Click</b></p>");

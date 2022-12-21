@@ -31,7 +31,9 @@
 #include "syntax.h"
 #include "option/option.h"
 #include "editors/sysloglocator.h"
+#include "projectoptions.h"
 #include "settings.h"
+#include "viewhelper.h"
 #include <QFileInfo>
 #include <QDir>
 #include <QDesktopServices>
@@ -259,13 +261,7 @@ QString PExProjectNode::name(NameModifier mod) const
 void PExProjectNode::setName(const QString &name)
 {
     PExGroupNode::setName(name);
-    if (mLogNode) {
-        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QString logName = workDir() + "/" + name + mNameExt + "." + suffix;
-        mLogNode->file()->setLocation(logName);
-        if (mLogNode->file()->editors().size())
-            emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
-    }
+    updateLogName(name);
 }
 
 const QString &PExProjectNode::nameExt() const
@@ -276,6 +272,7 @@ const QString &PExProjectNode::nameExt() const
 void PExProjectNode::setNameExt(const QString &newNameExt)
 {
     mNameExt = newNameExt;
+    updateLogName(name());
     emit changed(id());
 }
 
@@ -298,9 +295,12 @@ bool PExProjectNode::hasLogNode() const
 
 void PExProjectNode::setLogNode(PExLogNode* logNode)
 {
-    if (mLogNode)
+    if (!logNode) return;
+    if (mLogNode && mLogNode != logNode)
         EXCEPT() << "Reset the logNode is not allowed";
     mLogNode = logNode;
+    QFileInfo fi(mLogNode->location());
+    mLogNode->setName(fi.completeBaseName() + mNameExt);
 }
 
 void PExProjectNode::appendChild(PExAbstractNode *child)
@@ -472,6 +472,25 @@ void PExProjectNode::setNeedSave(bool needSave)
     mChanged = needSave;
 }
 
+void PExProjectNode::updateLogName(const QString &name)
+{
+    if (mLogNode) {
+        QString suffix = FileType::from(FileKind::Log).defaultSuffix();
+        QString logName = workDir() + "/" + name + mNameExt + "." + suffix;
+        mLogNode->file()->setLocation(logName);
+        if (mLogNode->file()->editors().size())
+            emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());
+    }
+}
+
+void PExProjectNode::refreshProjectTabName()
+{
+    if (mProjectOptionsFileMeta) {
+        for (QWidget *wid : mProjectOptionsFileMeta->editors())
+            emit projectRepo()->refreshProjectTabName(wid);
+    }
+}
+
 PExLogNode *PExProjectNode::logNode()
 {
     if (!mLogNode) {
@@ -503,6 +522,7 @@ void PExProjectNode::setLogLocation(QString path)
     }
 
     mLogNode->file()->setLocation(fullPath);
+    updateLogName(log.completeBaseName());
 }
 
 FileMeta* PExProjectNode::runnableGms() const
@@ -553,6 +573,7 @@ FileMeta *PExProjectNode::projectOptionsFileMeta() const
 
 void PExProjectNode::setProjectOptionsFileMeta(FileMeta *prOptMeta)
 {
+    if (prOptMeta == mProjectOptionsFileMeta) return;
     if (mProjectOptionsFileMeta) delete mProjectOptionsFileMeta;
     mProjectOptionsFileMeta = prOptMeta;
 }
