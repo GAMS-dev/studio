@@ -587,7 +587,6 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     }
 
     QFileInfo fi(filePath);
-
     PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
     project->setVirtual();
     PExFileNode *node = addNode("", filePath, project);
@@ -4733,6 +4732,16 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTabs->count() <= i)
                     return false;
+            }
+        }
+        for (const QString &file : qAsConst(skippedFiles)) {
+            if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
+                file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
+                QFileInfo fi(file);
+                PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+                project->setVirtual();
+                PExFileNode *node = addNode("", file, project);
+                openFileNode(node);
             }
         }
     }
