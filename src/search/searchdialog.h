@@ -37,7 +37,7 @@ class SearchDialog;
 
 class SearchDialog : public QDialog
 {
-    friend Search;
+    friend class Search;
     Q_OBJECT
 
 public:

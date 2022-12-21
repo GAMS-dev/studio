@@ -380,11 +380,12 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project) continue;
+        if (!project || project->isVirtual()) continue;
         QVariantMap proData = getProjectMap(project, true);
         save(project, proData);
+        // prepare projects data with absolute paths for Settings storage
         QVariantMap data;
-        data = getProjectMap(project, false); // TODO(JM) (when: November 2023) Remove assignment. This avoids that projects are stored internally too.
+        data = getProjectMap(project, false);
         data.insert("project", project->fileName());
         projects.append(data);
     }
@@ -394,10 +395,6 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
 {
     QString fileName = project->fileName();
     if (project->needSave()) {
-        if (QFile::exists(fileName)) {
-            if (QFile::exists(fileName + '~')) QFile::remove(fileName + '~');
-            QFile::rename(fileName, fileName + '~');
-        }
         QFile file(fileName);
         if (file.open(QFile::WriteOnly)) {
             file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());

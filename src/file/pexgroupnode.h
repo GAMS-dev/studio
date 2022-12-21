@@ -129,6 +129,9 @@ public:
     const QString &nameExt() const;
     void setNameExt(const QString &newNameExt);
 
+    bool isVirtual() const;
+    void setVirtual(bool isVirtual = true);
+
 signals:
     void gamsProcessStateChanged(PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
@@ -164,6 +167,7 @@ private:
     QString mProjectFile;
     QString mWorkDir;
     QString mNameExt;
+    bool mVirtual = false;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectOptionsFileMeta = nullptr;

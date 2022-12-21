@@ -452,9 +452,19 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     return res;
 }
 
+bool PExProjectNode::isVirtual() const
+{
+    return mVirtual;
+}
+
+void PExProjectNode::setVirtual(bool isVirtual)
+{
+    mVirtual = isVirtual;
+}
+
 bool PExProjectNode::needSave() const
 {
-    return mChanged;
+    return mChanged && !isVirtual();
 }
 
 void PExProjectNode::setNeedSave(bool needSave)

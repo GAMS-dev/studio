@@ -589,6 +589,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     QFileInfo fi(filePath);
 
     PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+    project->setVirtual();
     PExFileNode *node = addNode("", filePath, project);
     openFileNode(node);
 }
@@ -2277,8 +2278,8 @@ void MainWindow::on_actionAbout_Qt_triggered()
 void MainWindow::on_actionChangelog_triggered()
 {
     QString filePath = CommonPaths::changelog();
-    QFile changelog(filePath);
-    if (!changelog.exists()) {
+    QFileInfo fi(filePath);
+    if (!fi.exists()) {
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
         msgBox.setTextFormat(Qt::RichText);
@@ -2289,7 +2290,9 @@ void MainWindow::on_actionChangelog_triggered()
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
     fm->setKind(FileKind::TxtRO);
-    openFile(fm, true);
+    PExProjectNode *project = mProjectRepo.createProject(fi.fileName(), fi.absolutePath(), "");
+    project->setVirtual();
+    openFile(fm, true, project);
 }
 
 void MainWindow::on_actionUpdate_triggered()
@@ -3673,14 +3676,6 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
     }
 }
 
-void MainWindow::createProject(QString projectPath)
-{
-    // create empty project
-    QFileInfo fi(projectPath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.path(), QString());
-    openFileNode(project);
-}
-
 void MainWindow::on_actionRun_triggered()
 {
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), std::make_unique<GamsProcess>());
@@ -4703,9 +4698,12 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
     if (tabData.contains("mainTabRecent")) {
         QString location = tabData.value("mainTabRecent").toString();
         if (QFileInfo::exists(location)) {
-            openFilePath(location, nullptr, ogFindGroup, true);
-            mOpenTabsList << location;
-            curTab = location;
+            FileMeta *fm = mFileMetaRepo.fileMeta(location);
+            if (fm) {
+                openFilePath(location, nullptr, ogFindGroup, true);
+                mOpenTabsList << location;
+                curTab = location;
+            }
         } else if (location == "WELCOME_PAGE") {
             showWelcomePage();
         }
@@ -4714,10 +4712,16 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
     if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QVariant::List)) {
         NewTabStrategy tabStrategy = curTab.isEmpty() ? tabAtEnd : tabBeforeCurrent;
         QVariantList tabArray = tabData.value("mainTabs").toList();
+        QStringList skippedFiles;
         for (int i = 0; i < tabArray.size(); ++i) {
             QVariantMap tabObject = tabArray.at(i).toMap();
             if (tabObject.contains("location")) {
                 QString location = tabObject.value("location").toString();
+                FileMeta *fm = mFileMetaRepo.fileMeta(location);
+                if (!fm) {
+                    skippedFiles << location;
+                    continue;
+                }
                 if (curTab == location) {
                     tabStrategy = tabAtEnd;
                     continue;

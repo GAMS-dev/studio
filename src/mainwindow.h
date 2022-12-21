@@ -208,7 +208,6 @@ private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void updateRecentEdit(QWidget *old, QWidget *now);
-    void createProject(QString projectPath);
     void openFileNode(PExAbstractNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
                       NewTabStrategy tabStrategy = tabAfterCurrent);
     void codecChanged(QAction *action);
