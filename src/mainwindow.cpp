@@ -102,6 +102,7 @@ MainWindow::MainWindow(QWidget *parent)
     mPrintDialog = new QPrintDialog(&mPrinter, this);
 
     ui->setupUi(this);
+    ui->updateWidget->hide();
 
     // Timers
     mFileTimer.setSingleShot(true);
@@ -360,6 +361,12 @@ MainWindow::MainWindow(QWidget *parent)
         Settings::settings()->setString(skMiroInstallPath, path);
     }
     ui->menuMIRO->setEnabled(isMiroAvailable());
+
+    connect(ui->updateWidget, &support::UpdateWidget::openSettings,
+            this, [this]{
+                            on_actionSettings_triggered();
+                            mSettingsDialog->focusUpdateTab();
+                        });
 
     // Themes
     ViewHelper::changeAppearance();
@@ -2312,7 +2319,6 @@ void MainWindow::on_actionChangelog_triggered()
 void MainWindow::on_actionUpdate_triggered()
 {
     support::UpdateDialog updateDialog(this);
-    updateDialog.checkForUpdate();
     updateDialog.exec();
 }
 
@@ -4695,13 +4701,13 @@ void MainWindow::updateEditorLineWrapping()
 
 void MainWindow::updateTabSize(int size)
 {
-    for (QWidget* edit: openEditors()) {
+    Q_FOREACH (QWidget* edit, openEditors()) {
         if (AbstractEdit *ed = ViewHelper::toAbstractEdit(edit))
             ed->updateTabSize(size);
         else if (TextView *tv = ViewHelper::toTextView(edit))
             tv->edit()->updateTabSize(size);
     }
-    for (QWidget* log: openLogs()) {
+    Q_FOREACH (QWidget* log, openLogs()) {
         if (TextView *tv = ViewHelper::toTextView(log))
             tv->edit()->updateTabSize(size);
     }
@@ -4836,6 +4842,13 @@ int MainWindow::linesInEditor(QWidget* editor) {
 
     if (!tv && !codeEdit) return -1;
     return codeEdit ? codeEdit->blockCount() : tv ? tv->knownLines() : 1000000;
+}
+
+void MainWindow::showGamsUpdateWidget(const QString &text)
+{
+    if (text.isEmpty()) return;
+    ui->updateWidget->setText(text);
+    ui->updateWidget->show();
 }
 
 void MainWindow::on_actionRedo_triggered()

@@ -107,9 +107,8 @@ bool WelcomePage::event(QEvent *event)
         auto p = palette();
         p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
-        for (WpLabel* w : findChildren<WpLabel*>())
+        Q_FOREACH (WpLabel* w, findChildren<WpLabel*>())
             w->setPalette(p);
-
     }
     return AbstractView::event(event);
 }

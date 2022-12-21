@@ -41,6 +41,7 @@ public:
 signals:
     void newError(const QString&);
     void newWarning(const QString&);
+    void newGamsVersion(const QString &message);
 
 private:
     ///
@@ -53,6 +54,8 @@ private:
     /// \brief Check the GAMS Distribution to GAMS Studio compatibility.
     ///
     void checkCompatibility();
+
+    void checkForUpdates();
 };
 
 }

@@ -51,7 +51,7 @@ public:
     void setWorkingDirectory(const QString &workingDirectory);
 
 signals:
-    void deploy(bool test, MiroDeployMode mode);
+    void deploy(bool test, gams::studio::miro::MiroDeployMode mode);
     void newAssemblyFileData();
 
 protected:

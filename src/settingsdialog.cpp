@@ -24,7 +24,6 @@
 #include <QToolTip>
 #include "mainwindow.h"
 #include "theme.h"
-#include "colors/palettemanager.h"
 #include "settingsdialog.h"
 #include "settings.h"
 #include "ui_settingsdialog.h"
@@ -32,13 +31,16 @@
 #include "themewidget.h"
 #include "viewhelper.h"
 #include "miro/mirocommon.h"
+#include "support/updatechecker.h"
 
 namespace gams {
 namespace studio {
 
-
-SettingsDialog::SettingsDialog(MainWindow *parent) :
-    QDialog(parent), ui(new Ui::SettingsDialog), mMain(parent)
+SettingsDialog::SettingsDialog(MainWindow *parent)
+    : QDialog(parent)
+    , ui(new Ui::SettingsDialog)
+    , mMain(parent)
+    , mUpdateChecker(new support::UpdateChecker(this))
 {
     ui->setupUi(this);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -125,6 +127,13 @@ SettingsDialog::SettingsDialog(MainWindow *parent) :
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     adjustSize();
+
+    connect(ui->checkUpdateButton, &QPushButton::clicked,
+            this, &SettingsDialog::checkGamsUpdates);
+    connect(mUpdateChecker, &support::UpdateChecker::messageAvailable,
+            this, &SettingsDialog::checkGamsVersion);
+    connect(ui->updateIntervalBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
+            this, [this]{ ui->nextCheckLabel->setText(nextCheckDate().toString()); });
 
     ui->edUserGamsTypes->installEventFilter(this);
     ui->edAutoReloadTypes->installEventFilter(this);
@@ -217,6 +226,15 @@ void SettingsDialog::loadSettings()
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
     QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
+
+    // update page
+    ui->autoUpdateBox->setCheckState(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
+    auto interval = mSettings->toString(skUpdateInterval);
+    if (!interval.isEmpty())
+        ui->updateIntervalBox->setCurrentIndex(ui->updateIntervalBox->findText(interval));
+    mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
+    ui->lastCheckLabel->setText(mLastCheckDate.toString());
+    ui->nextCheckLabel->setText(nextCheckDate().toString());
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -263,7 +281,7 @@ bool SettingsDialog::hasDelayedBaseThemeChange()
     return mDelayedBaseThemeChange;
 }
 
-    // save settings from ui to qsettings
+// save settings from ui to qsettings
 void SettingsDialog::saveSettings()
 {
     // general page
@@ -349,6 +367,12 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skSoAddCommentAbove, ui->addCommentAboveCheckBox->isChecked());
     mSettings->setBool(skSoAddEOLComment, ui->addEOLCommentCheckBox->isChecked());
     mSettings->setBool(skSoDeleteCommentsAbove, ui->deleteCommentAboveCheckbox->isChecked());
+
+    // Check gams update
+    mSettings->setBool(skAutoUpdateCheck, ui->autoUpdateBox->isChecked());
+    mSettings->setString(skUpdateInterval, ui->updateIntervalBox->currentText());
+    mSettings->setDate(skLastUpdateCheckDate, mLastCheckDate);
+    mSettings->setDate(skNextUpdateCheckDate, nextCheckDate());
 
     // done
     mSettings->unblock();
@@ -473,6 +497,11 @@ void SettingsDialog::on_tb_userLibOpen_clicked()
 int SettingsDialog::engineInitialExpire() const
 {
     return mEngineInitialExpire;
+}
+
+void SettingsDialog::focusUpdateTab()
+{
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -786,6 +815,17 @@ QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, cons
     return commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts).join(newSeparator);
 }
 
+QDate SettingsDialog::nextCheckDate() const
+{// TODO (AF) enum?
+    if (!mLastCheckDate.isValid())
+        return QDate();
+    if (!ui->updateIntervalBox->currentText().compare("Daily", Qt::CaseInsensitive))
+        return mLastCheckDate.addDays(1);
+    if (!ui->updateIntervalBox->currentText().compare("Weekly", Qt::CaseInsensitive))
+        return mLastCheckDate.addDays(7);
+    return mLastCheckDate.addMonths(1);
+}
+
 void SettingsDialog::on_btn_resetHistory_clicked()
 {
     mMain->resetHistory();
@@ -862,10 +902,23 @@ void SettingsDialog::on_btExportTheme_clicked()
     fd->open();
 }
 
-
 void SettingsDialog::on_btEngineDialog_clicked()
 {
     emit reactivateEngineDialog();
+}
+
+void SettingsDialog::checkGamsUpdates()
+{
+    ui->updateBrowser->setText(tr("Checking for updates..."));
+    mUpdateChecker->start();
+}
+
+void SettingsDialog::checkGamsVersion(const QString &text)
+{
+    mLastCheckDate = QDate::currentDate();
+    ui->lastCheckLabel->setText(mLastCheckDate.toString());
+    ui->nextCheckLabel->setText(nextCheckDate().toString());
+    ui->updateBrowser->setText(text);
 }
 
 }

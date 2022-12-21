@@ -294,7 +294,9 @@ SOURCES += \
     support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
+    support/updatechecker.cpp \
     support/updatedialog.cpp \
+    support/updatewidget.cpp \
     svgengine.cpp \
     syntax/basehighlighter.cpp \
     syntax/blockdata.cpp \
@@ -576,7 +578,9 @@ HEADERS += \
     support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
+    support/updatechecker.h \
     support/updatedialog.h \
+    support/updatewidget.h \
     svgengine.h \
     syntax.h \
     syntax/basehighlighter.h \
@@ -696,6 +700,7 @@ FORMS += \
     settingsdialog.ui \
     support/gamslicensingdialog.ui \
     support/updatedialog.ui \
+    support/updatewidget.ui \
     tabdialog.ui \
     themewidget.ui \
     welcomepage.ui

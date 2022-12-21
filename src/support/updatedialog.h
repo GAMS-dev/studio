@@ -30,17 +30,23 @@ namespace Ui {
 class UpdateDialog;
 }
 
+class UpdateChecker;
+
 class UpdateDialog : public QDialog
 {
     Q_OBJECT
 
 public:
-    explicit UpdateDialog(QWidget *parent = nullptr, Qt::WindowFlags f = Qt::WindowFlags());
+    explicit UpdateDialog(QWidget *parent = nullptr,
+                          Qt::WindowFlags f = Qt::WindowFlags());
 
-    void checkForUpdate();
+private slots:
+    void anchorClicked(const QUrl &link);
+    void cancelupdateCheck();
 
 private:
     Ui::UpdateDialog *ui;
+    UpdateChecker *mUpdateChecker;
 };
 
 }

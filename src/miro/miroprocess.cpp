@@ -51,8 +51,8 @@ void MiroProcess::execute()
 QStringList MiroProcess::defaultParameters() const
 {
     return { QString("IDCGenerateJSON=\"%1/%2_io.json\"")
-                .arg(MiroCommon::confDirectory(modelName()))
-                .arg(modelName().toLower()),
+                .arg(MiroCommon::confDirectory(modelName()),
+                     modelName().toLower()),
              QString("IDCGenerateGDX=\"%1/default.gdx\"")
                 .arg(MiroCommon::dataDirectory(modelName())) };
 }

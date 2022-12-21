@@ -147,6 +147,12 @@ enum SettingsKey {
     skUserThemes,
 
     skSettingsKeyCount,
+
+    // check for GAMS update
+    skUpdateInterval,
+    skAutoUpdateCheck,
+    skLastUpdateCheckDate,
+    skNextUpdateCheckDate
 };
 
 class Settings
@@ -190,6 +196,7 @@ public:
     QByteArray toByteArray(SettingsKey key) const;
     QVariantMap toMap(SettingsKey key) const;
     QVariantList toList(SettingsKey key) const;
+    QDate toDate(SettingsKey key) const;
     void setBool(SettingsKey key, bool value) { setValue(key, value);}
     void setInt(SettingsKey key, int value) { setValue(key, value);}
     void setDouble(SettingsKey key, double value) { setValue(key, value);}
@@ -200,6 +207,7 @@ public:
     void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
     bool setMap(SettingsKey key, QVariantMap value);
     bool setList(SettingsKey key, QVariantList value);
+    bool setDate(SettingsKey key, QDate value);
 
     void importSettings(const QString &path);
     void exportSettings(const QString &path);

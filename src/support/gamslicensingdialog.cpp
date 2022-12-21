@@ -82,7 +82,7 @@ QString GamsLicensingDialog::gamsLicense()
 
     GamsProcess gproc;
     bool licenseLines = false;
-    for (auto line : gproc.aboutGAMS().split("\n")) {
+    Q_FOREACH(const auto &line, gproc.aboutGAMS().split("\n")) {
         if (licenseLines) {
             if (line.startsWith("#L")) {
                 continue;

@@ -24,6 +24,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
+
 #include "networkmanager.h"
 
 #include <iostream>
@@ -51,9 +52,11 @@ Application::Application(int& argc, char** argv)
 
     connect(&mServer, &QLocalServer::newConnection, this, &Application::newConnection);
     connect(&mDistribValidator, &support::DistributionValidator::newError,
-            this, &Application::logError);
+            this, &Application::error);
     connect(&mDistribValidator, &support::DistributionValidator::newWarning,
-            this, &Application::logWarning);
+            this, &Application::warning);
+    connect(&mDistribValidator, &support::DistributionValidator::newGamsVersion,
+            this, &Application::showGamsUpdateWidget);
 }
 
 Application::~Application()
@@ -152,12 +155,12 @@ void Application::receiveFileArguments()
     mMainWindow->setForegroundOSCheck();
 }
 
-void Application::logError(const QString &message)
+void Application::error(const QString &message)
 {
     SysLogLocator::systemLog()->append(message, LogMsgType::Error);
 }
 
-void Application::logWarning(const QString &message)
+void Application::warning(const QString &message)
 {
     SysLogLocator::systemLog()->append(message, LogMsgType::Warning);
 }
@@ -178,6 +181,11 @@ bool Application::event(QEvent *event)
         }
     }
     return QApplication::event(event);
+}
+
+void Application::showGamsUpdateWidget(const QString &text)
+{
+    if (mMainWindow) mMainWindow->showGamsUpdateWidget(text);
 }
 
 void Application::parseCmdArgs()

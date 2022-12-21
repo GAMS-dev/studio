@@ -28,7 +28,6 @@
 #include <QApplication>
 #include <QLocalServer>
 
-
 namespace gams {
 namespace studio {
 
@@ -72,7 +71,21 @@ public:
     ///
     QString serverName() const;
 
-public slots:
+protected:
+    ///
+    /// \brief Reimplemented QObject::event function.
+    /// \param e Event to handle.
+    /// \return <c>true</c> on success; otherwise <c>false</c>.
+    /// \remark This function if requried for macos, e.g. for file associations.
+    ///
+    bool event(QEvent *event) override;
+
+private slots:
+    void error(const QString &message);
+
+    void warning(const QString &message);
+
+    void showGamsUpdateWidget(const QString &text);
 
     ///
     /// \brief Bind a new connection for command line argument awareness
@@ -83,19 +96,6 @@ public slots:
     /// \brief Read command line arguments (files) send from another GAMS Studio instance and open them
     ///
     void receiveFileArguments();
-
-    void logError(const QString &message);
-
-    void logWarning(const QString &message);
-
-protected:
-    ///
-    /// \brief Reimplemented QObject::event function.
-    /// \param e Event to handle.
-    /// \return <c>true</c> on success; otherwise <c>false</c>.
-    /// \remark This function if requried for macos, e.g. for file associations.
-    ///
-    bool event(QEvent *event) override;
 
 private:
     void parseCmdArgs();

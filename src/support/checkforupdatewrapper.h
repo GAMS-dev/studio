@@ -57,7 +57,7 @@ public:
     /// \return c4u library messages as one string,
     ///         which is joined by <c>"\\n"</c>.
     ///
-    QString message() const;
+    QString message();
 
     ///
     /// \brief Clear all c4u library message.
@@ -71,6 +71,13 @@ public:
     /// \remark This function connects to <c>gams.com</c>.
     ///
     QString checkForUpdate();
+
+    ///
+    /// \brief Check for GAMS distribution updates.
+    /// \return The update check messages.
+    /// \remark This function connects to <c>gams.com</c>.
+    ///
+    QString checkForUpdateShort();
 
     ///
     /// \brief Get current GAMS distribution version as integer.

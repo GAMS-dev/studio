@@ -18,12 +18,17 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "distributionvalidator.h"
+#include "checkforupdatewrapper.h"
 #include "commonpaths.h"
 #include "process.h"
+#include "settings.h"
 
+#include <QDate>
 #include <QStringList>
 #include <QFileInfo>
 #include <QDir>
+
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -39,6 +44,7 @@ void DistributionValidator::run()
 {
     checkBitness();
     checkCompatibility();
+    checkForUpdates();
 }
 
 void DistributionValidator::checkBitness()
@@ -66,8 +72,8 @@ void DistributionValidator::checkCompatibility()
     QString about = gp.aboutGAMS();
     if (about.isEmpty()) {
         QString error = QString("Could not find GAMS. Please check your GAMS setup. %1\n%2")
-                                .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL")
-                                .arg("Current path to GAMS: " + CommonPaths::systemDir());
+                                .arg("The installation instructions can be found at www.gams.com/latest/docs/UG_MAIN.html#UG_INSTALL",
+                                     "Current path to GAMS: " + CommonPaths::systemDir());
         emit newError(error);
         return;
     }
@@ -82,13 +88,28 @@ void DistributionValidator::checkCompatibility()
             version.at(1).toInt() >= minVersion.at(1).toInt())
             return;
         QString error = QString("Found incompatible GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
-                .arg(regex.cap(regex.captureCount()))
-                .arg(GAMS_DISTRIB_VERSION_SHORT);
+                .arg(regex.cap(regex.captureCount()), GAMS_DISTRIB_VERSION_SHORT);
         emit newWarning(error);
     }
     else {
         emit newError("Could not validate GAMS Distribution version.");
     }
+}
+
+void DistributionValidator::checkForUpdates()
+{
+    if (!Settings::settings()->toBool(skAutoUpdateCheck))
+        return;
+    auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
+    if (QDate::currentDate() < nextCheckDate)
+        return;
+    QString message;
+    support::CheckForUpdateWrapper c4u;
+    if (!c4u.isValid())
+        return;
+    Settings::settings()->setDate(skLastUpdateCheckDate, QDate::currentDate());
+    message = c4u.checkForUpdateShort();
+    emit newGamsVersion(message);
 }
 
 }

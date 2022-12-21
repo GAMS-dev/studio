@@ -174,8 +174,6 @@ QStringList GamsLicenseInfo::gamsDataLocations()
         dataPaths << buffer+offset[i];
     }
 
-
-
     return dataPaths;
 }
 

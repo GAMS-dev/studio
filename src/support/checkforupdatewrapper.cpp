@@ -59,9 +59,11 @@ bool CheckForUpdateWrapper::isValid() const
     return mValid;
 }
 
-QString CheckForUpdateWrapper::message() const
+QString CheckForUpdateWrapper::message()
 {
-    return mMessages.join("\n");
+    auto msgs = mMessages.join("\n");
+    mMessages.clear();
+    return msgs;
 }
 
 void CheckForUpdateWrapper::clearMessages()
@@ -74,18 +76,31 @@ QString CheckForUpdateWrapper::checkForUpdate()
     if (!isValid())
         return QString();
 
-    char buffer[GMS_SSSIZE];
-    c4uReadLiceStd(mC4U, CommonPaths::systemDir().toStdString().c_str(), false);
+    c4uReadLiceStd(mC4U, CommonPaths::systemDir().toStdString().c_str(), true);
     c4uCreateMsg(mC4U);
 
     int messageIndex=0;
-    mMessages << "GAMS Distribution";
+    char buffer[GMS_SSSIZE];
+    mMessages << "<h1>GAMS Distribution</h1>";
     getMessages(messageIndex, buffer);
 
-    mMessages << "\nGAMS Studio";
+    mMessages << "<h1>GAMS Studio</h1>";
     c4uCheck4NewStudio2(mC4U, STUDIO_MAJOR_VERSION, STUDIO_MINOR_VERSION, STUDIO_PATCH_LEVEL);
     getMessages(messageIndex, buffer);
 
+    return message();
+}
+
+QString CheckForUpdateWrapper::checkForUpdateShort()
+{
+    if (!isValid())
+        return QString();
+    if (!c4uCheck4NewGAMS(mC4U, true))
+        return QString();
+    c4uCreateMsg(mC4U);
+    int messageIndex=0;
+    char buffer[GMS_SSSIZE];
+    getMessages(messageIndex, buffer);
     return message();
 }
 
@@ -159,8 +174,9 @@ char* CheckForUpdateWrapper::distribVersionString(char *version, size_t length)
 void CheckForUpdateWrapper::getMessages(int &messageIndex, char *buffer)
 {
     for (int c=c4uMsgCount(mC4U); messageIndex<c; ++messageIndex) {
-        if (c4uGetMsg(mC4U, messageIndex, buffer))
+        if (c4uGetMsg(mC4U, messageIndex, buffer)) {
             mMessages.append(buffer);
+        }
     }
 }
 

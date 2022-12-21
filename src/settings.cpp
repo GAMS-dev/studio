@@ -32,11 +32,9 @@
 #include "commonpaths.h"
 #include "version.h"
 #include "exception.h"
-#include "file/dynamicfile.h"
 #include "colors/palettemanager.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -59,7 +57,7 @@ QString sizeToString(QSize s) {
 }
 QList<int> toIntArray(QString s) {
     QList<int> res;
-    for (QString v : s.split(',')) res << v.toInt();
+    Q_FOREACH (QString v, s.split(',')) res << v.toInt();
     return res;
 }
 QPoint stringToPoint(QString s) {
@@ -189,7 +187,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             loadFile(scTheme);
 
             QDir location(settingsPath());
-            for (const QString &fileName: location.entryList({"*.lock"})) {
+            Q_FOREACH (const QString &fileName, location.entryList({"*.lock"})) {
                 QFile f(location.path() +  "/" + fileName);
                 f.remove();
             }
@@ -383,6 +381,12 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
         }
     }
 
+    // Check gams update
+    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
+    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, "Daily");
+    safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
+    safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
+
     return res;
 }
 
@@ -436,7 +440,7 @@ void Settings::save()
 {
     // ignore-settings argument -> no settings assigned
     if (!canWrite()) return;
-    for (const Scope &scope : mSettings.keys()) {
+    Q_FOREACH (const Scope &scope, mSettings.keys()) {
         saveFile(scope);
     }
     // Themes are stored dynamically in multiple files
@@ -474,6 +478,11 @@ QVariantList Settings::toList(SettingsKey key) const
     return value(key).toList();
 }
 
+QDate Settings::toDate(SettingsKey key) const
+{
+    return QDate::fromString(value(key).toString(), Qt::ISODate);
+}
+
 void Settings::setSize(SettingsKey key, const QSize &value)
 {
     setValue(key, sizeToString(value));
@@ -504,13 +513,18 @@ bool Settings::setList(SettingsKey key, QVariantList value)
     return setValue(key, value);
 }
 
+bool Settings::setDate(SettingsKey key, QDate value)
+{
+    return setValue(key, value.toString(Qt::ISODate));
+}
+
 bool Settings::isValidVersion(QString currentVersion)
 {
     for (const QChar &c: currentVersion)
         if (c != '.' && (c < '0' || c > '9')) return false;
     QStringList verList = currentVersion.split('.');
     if (verList.size() < 2) return false;
-    for (const QString &s: verList)
+    Q_FOREACH (const QString &s, verList)
         if (s.isEmpty()) return false;
     return true;
 }
@@ -674,7 +688,7 @@ void Settings::loadMap(Scope scope, QVariantMap map)
             // copy all elements
             QJsonObject joSrc = var.toJsonObject();
             QJsonObject joDest = mData.value(scope).value(it.key()).toJsonObject();
-            for (const QString &joKey : joSrc.keys()) {
+            Q_FOREACH (const QString &joKey, joSrc.keys()) {
                 joDest[joKey] = joSrc[joKey];
             }
             var = joDest;
@@ -702,7 +716,7 @@ void Settings::saveThemes()
 
     // remove previous theme files
     QDir dir(settingsPath());
-    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+    Q_FOREACH (const QFileInfo &fileInfo, dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
         QString fName = fileInfo.fileName();
         if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
             continue;

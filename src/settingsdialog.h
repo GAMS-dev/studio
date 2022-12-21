@@ -21,6 +21,7 @@
 #define SETTINGSDIALOG_H
 
 #include <QDialog>
+#include <QDate>
 
 namespace Ui {
 class SettingsDialog;
@@ -34,6 +35,10 @@ namespace studio {
 class MainWindow;
 class Settings;
 class ThemeWidget;
+
+namespace support {
+class UpdateChecker;
+}
 
 class SettingsDialog : public QDialog
 {
@@ -49,6 +54,8 @@ public:
     bool hasDelayedBaseThemeChange();
 
     int engineInitialExpire() const;
+
+    void focusUpdateTab();
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -102,6 +109,18 @@ private slots:
     void on_tb_userLibRemove_clicked();
     void on_tb_userLibOpen_clicked();
 
+    void checkGamsUpdates();
+    void checkGamsVersion(const QString &text);
+
+private:
+    void saveSettings();
+    void loadSettings();
+    void setModifiedStatus(bool status);
+    void initColorPage();
+    void setThemeEditable(bool editable);
+    void prependUserLib();
+    QString changeSeparators(const QString &commaSeparatedList, const QString &newSeparator);
+    QDate nextCheckDate() const;
 
 private:
     Ui::SettingsDialog *ui;
@@ -115,14 +134,8 @@ private:
     bool mDelayedBaseThemeChange = false;
     bool mMiroSettingsEnabled = true;
     int mEngineInitialExpire = 0;
-
-    void saveSettings();
-    void loadSettings();
-    void setModifiedStatus(bool status);
-    void initColorPage();
-    void setThemeEditable(bool editable);
-    void prependUserLib();
-    QString changeSeparators(const QString &commaSeparatedList, const QString &newSeparator);
+    support::UpdateChecker *mUpdateChecker;
+    QDate mLastCheckDate;
 };
 
 }

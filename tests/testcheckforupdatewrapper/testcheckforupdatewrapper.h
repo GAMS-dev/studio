@@ -39,6 +39,8 @@ private slots:
 
     void testCheckForUpdate();
 
+    void testcheckForUpdateShort();
+
     void testCurrentDistribVersion();
 
     void testCurrentDistribVersionShort();

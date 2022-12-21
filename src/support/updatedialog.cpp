@@ -19,29 +19,45 @@
  */
 #include "updatedialog.h"
 #include "ui_updatedialog.h"
-#include "checkforupdatewrapper.h"
-#include "exception.h"
+#include "updatechecker.h"
+
+#include <QAbstractButton>
+#include <QDesktopServices>
 
 namespace gams {
 namespace studio {
 namespace support {
 
 UpdateDialog::UpdateDialog(QWidget *parent, Qt::WindowFlags f)
-    : QDialog(parent, f),
-      ui(new Ui::UpdateDialog)
+    : QDialog(parent, f)
+    , ui(new Ui::UpdateDialog)
+    , mUpdateChecker(new UpdateChecker(this))
 {
     ui->setupUi(this);
+    ui->updateInfo->setText(tr("Checking for updates..."));
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    connect(ui->updateInfo, &QTextBrowser::anchorClicked,
+            this, &UpdateDialog::anchorClicked);
+    connect(mUpdateChecker, &UpdateChecker::messageAvailable,
+            ui->updateInfo, &QTextBrowser::setText);
+    connect(this, &QDialog::rejected,
+            this, &UpdateDialog::cancelupdateCheck);
+    connect(ui->buttonBox, &QDialogButtonBox::clicked,
+            this, &UpdateDialog::cancelupdateCheck);
+    mUpdateChecker->start();
 }
 
-void UpdateDialog::checkForUpdate()
+void UpdateDialog::anchorClicked(const QUrl &link)
 {
-    CheckForUpdateWrapper c4uWrapper;
-    if (c4uWrapper.isValid()) {
-        ui->updateInfo->setText(c4uWrapper.checkForUpdate());
-    } else {
-        EXCEPT() << c4uWrapper.message();
-    }
+    QDesktopServices::openUrl(QUrl("https://"+link.toString()));
+}
+
+void UpdateDialog::cancelupdateCheck()
+{
+    if (!mUpdateChecker->isRunning())
+        return;
+    mUpdateChecker->quit();
+    mUpdateChecker->wait();
 }
 
 }

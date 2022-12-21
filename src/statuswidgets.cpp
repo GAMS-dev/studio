@@ -111,7 +111,7 @@ void StatusWidgets::setPosAndAnchor(QPoint pos, QPoint anchor)
         if (!anchor.isNull() && anchor != pos) {
             estimated = (pos.y()<0 || anchor.y()<0) ? "~" : "";
             QString absLineDiff = QString::number(qAbs(qAbs(pos.y())-qAbs(anchor.y()))+1);
-            posText += QString(" (%1%2 / %3)").arg(estimated).arg(absLineDiff).arg(qAbs(pos.x()-anchor.x()));
+            posText += QString(" (%1%2 / %3)").arg(estimated, absLineDiff).arg(qAbs(pos.x()-anchor.x()));
         }
     }
     mEditPosAnsSel->setText(posText);

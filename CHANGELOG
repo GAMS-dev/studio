@@ -1,6 +1,7 @@
 Version 1.13.0 *
 ==================
 - improved numerical formatting of the GDX Viewer when using `g-format` with `Full` precision.
+- improved `Check for Update` dialog, including HTML output and text updates
 - added GAMS Connect editor
 - persist the state of each GDX file to restore in on restarting Studio
 - save projects to separate files (GSP - GAMS Studio Project)
