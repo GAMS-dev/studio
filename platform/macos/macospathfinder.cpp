@@ -26,10 +26,10 @@ QString MacOSPathFinder::systemDir()
 {
     auto sysdir = systemDir(false);
     if (!QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
-        return QDir::cleanPath(QFileInfo(sysdir).canonicalPath());
+        return QDir::cleanPath(sysdir);
     sysdir = systemDir(true);
     if (!QStandardPaths::findExecutable("gams", {sysdir}).isEmpty())
-        return QDir::cleanPath(QFileInfo(sysdir).canonicalPath());
+        return QDir::cleanPath(sysdir);
     sysdir = QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
     if (!sysdir.isEmpty())
         return QDir::cleanPath(sysdir);
