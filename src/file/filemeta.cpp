@@ -331,8 +331,8 @@ QWidget *FileMeta::topEditor() const
 void FileMeta::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState)
-    if (!modiState && kind() == FileKind::PrO) {
-        if (project::ProjectOptions *pro = ViewHelper::toProjectOptions(topEditor())) {
+    if (!modiState && kind() == FileKind::Gsp) {
+        if (project::ProjectEdit *pro = ViewHelper::toProjectEdit(topEditor())) {
             mName = '['+pro->sharedData()->fieldData(project::ProjectData::name)
                     +pro->sharedData()->fieldData(project::ProjectData::nameExt)+']';
         }
@@ -406,8 +406,7 @@ void FileMeta::zoomRequest(qreal delta)
 
 void FileMeta::reload()
 {
-    if (kind() != FileKind::PrO)
-        load(mCodec->mibEnum(), false);
+    load(mCodec->mibEnum(), false);
 }
 
 void FileMeta::updateView()
@@ -568,8 +567,8 @@ void FileMeta::addEditor(QWidget *edit)
             disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
-    } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
-        connect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
+        connect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
@@ -641,8 +640,8 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         disconnect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
-    } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
-       disconnect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
+       disconnect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
@@ -685,6 +684,10 @@ void FileMeta::load(int codecMib, bool init)
     mCodec = QTextCodec::codecForMib(codecMib);
     mData = Data(location(), mData.type);
 
+    if (kind() == FileKind::Gsp) {
+        // Project reload not supported
+        return;
+    }
     if (kind() == FileKind::Gdx) {
         for (QWidget *wid: qAsConst(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
@@ -821,8 +824,8 @@ void FileMeta::save(const QString &newLocation)
         out << document()->toPlainText();
         out.flush();
         file.close();
-    } else if (kind() == FileKind::PrO) {
-        project::ProjectOptions* prOp = ViewHelper::toProjectOptions(mEditors.first());
+    } else if (kind() == FileKind::Gsp) {
+        project::ProjectEdit* prOp = ViewHelper::toProjectEdit(mEditors.first());
         if (prOp) prOp->save();
     } else if (kind() == FileKind::Opt) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
@@ -975,9 +978,9 @@ bool FileMeta::isModified() const
 {
     if (mDocument) {
         return  mDocument->isModified();
-    } else if (kind() == FileKind::PrO) {
+    } else if (kind() == FileKind::Gsp) {
         for (QWidget *wid: mEditors) {
-            project::ProjectOptions *prOp = ViewHelper::toProjectOptions(wid);
+            project::ProjectEdit *prOp = ViewHelper::toProjectEdit(wid);
             if (prOp) return prOp->isModified();
         }
     } else if (kind() == FileKind::Opt) {
@@ -1079,8 +1082,8 @@ bool FileMeta::isPinnable()
 
 void FileMeta::updateTabName(QTabWidget *tabWidget, int index)
 {
-    if (kind() == FileKind::PrO) {
-        if (project::ProjectOptions *opt = ViewHelper::toProjectOptions(tabWidget->widget(index)))
+    if (kind() == FileKind::Gsp) {
+        if (project::ProjectEdit *opt = ViewHelper::toProjectEdit(tabWidget->widget(index)))
             tabWidget->setTabText(index, opt->tabName());
     } else
         tabWidget->setTabText(index, name());
@@ -1156,17 +1159,17 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
     if (codecMib == -1) codecMib = FileMeta::codecMib();
     if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     mCodec = QTextCodec::codecForMib(codecMib);
-    if (kind() == FileKind::PrO) {
+    if (kind() == FileKind::Gsp) {
         project::ProjectData *sharedData = nullptr;
-        project::ProjectOptions *otherProp = nullptr;
+        project::ProjectEdit *otherProp = nullptr;
         if (editors().size()) {
-            otherProp = ViewHelper::toProjectOptions(topEditor());
+            otherProp = ViewHelper::toProjectEdit(topEditor());
             sharedData = otherProp->sharedData();
         } else {
             sharedData = new project::ProjectData(project);
         }
-        project::ProjectOptions *prop = new project::ProjectOptions(sharedData, parent);
-        project->setProjectOptionsFileMeta(this);
+        project::ProjectEdit *prop = new project::ProjectEdit(sharedData, parent);
+        project->setProjectEditFileMeta(this);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent);
@@ -1268,7 +1271,7 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
     }
     int i = tabWidget->insertTab(atIndex, edit, name(NameModifier::editState));
     updateTabName(tabWidget, i);
-    if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::PrO && ViewHelper::toAbstractEdit(edit)) {
+    if (mEditors.size() == 1 && kind() != FileKind::Log && kind() != FileKind::Gsp && ViewHelper::toAbstractEdit(edit)) {
         try {
             load(codecMib);
         } catch (Exception &e) {
@@ -1285,6 +1288,8 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
 
 FileMeta::Data::Data(QString location, FileType *knownType)
 {
+    if (knownType == &FileType::from("-"))
+        knownType = nullptr;
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
 

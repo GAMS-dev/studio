@@ -95,9 +95,9 @@ public:
     PExLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
-    FileMeta *projectOptionsFileMeta() const;
-    void setProjectOptionsFileMeta(FileMeta *prOptMeta);
-    void unlinkProjectOptionsFileMeta();
+    FileMeta *projectEditFileMeta() const;
+    void setProjectEditFileMeta(FileMeta *prOptMeta);
+    void unlinkProjectEditFileMeta();
     QString mainModelName(bool stripped = true) const;
     QString tooltip() override;
     QString errorText(int lstLine) override;
@@ -171,7 +171,7 @@ private:
     bool mVirtual = false;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
-    FileMeta *mProjectOptionsFileMeta = nullptr;
+    FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;

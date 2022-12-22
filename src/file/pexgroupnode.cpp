@@ -31,7 +31,7 @@
 #include "syntax.h"
 #include "option/option.h"
 #include "editors/sysloglocator.h"
-#include "projectoptions.h"
+#include "projectedit.h"
 #include "settings.h"
 #include "viewhelper.h"
 #include <QFileInfo>
@@ -241,7 +241,7 @@ AbstractProcess *PExProjectNode::process() const
 
 PExProjectNode::~PExProjectNode()
 {
-    setProjectOptionsFileMeta(nullptr);
+    setProjectEditFileMeta(nullptr);
 }
 
 QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
@@ -485,8 +485,8 @@ void PExProjectNode::updateLogName(const QString &name)
 
 void PExProjectNode::refreshProjectTabName()
 {
-    if (mProjectOptionsFileMeta) {
-        for (QWidget *wid : mProjectOptionsFileMeta->editors())
+    if (mProjectEditFileMeta) {
+        for (QWidget *wid : mProjectEditFileMeta->editors())
             emit projectRepo()->refreshProjectTabName(wid);
     }
 }
@@ -566,21 +566,21 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     emit runnableChanged();
 }
 
-FileMeta *PExProjectNode::projectOptionsFileMeta() const
+FileMeta *PExProjectNode::projectEditFileMeta() const
 {
-    return mProjectOptionsFileMeta;
+    return mProjectEditFileMeta;
 }
 
-void PExProjectNode::setProjectOptionsFileMeta(FileMeta *prOptMeta)
+void PExProjectNode::setProjectEditFileMeta(FileMeta *prOptMeta)
 {
-    if (prOptMeta == mProjectOptionsFileMeta) return;
-    if (mProjectOptionsFileMeta) delete mProjectOptionsFileMeta;
-    mProjectOptionsFileMeta = prOptMeta;
+    if (prOptMeta == mProjectEditFileMeta) return;
+    if (mProjectEditFileMeta) delete mProjectEditFileMeta;
+    mProjectEditFileMeta = prOptMeta;
 }
 
-void PExProjectNode::unlinkProjectOptionsFileMeta()
+void PExProjectNode::unlinkProjectEditFileMeta()
 {
-    mProjectOptionsFileMeta = nullptr;
+    mProjectEditFileMeta = nullptr;
 }
 
 QString PExProjectNode::mainModelName(bool stripped) const

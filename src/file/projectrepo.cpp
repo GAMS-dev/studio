@@ -153,10 +153,10 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     return group->findFile(fileMeta);
 }
 
-PExProjectNode *ProjectRepo::findProjectForOptions(QWidget *projectOptionsWidget) const
+PExProjectNode *ProjectRepo::findProjectForPEdit(QWidget *projectEdit) const
 {
-    FileMeta *fileMeta = mFileRepo->fileMeta(projectOptionsWidget);
-    if (!fileMeta || fileMeta->kind() != FileKind::PrO) return nullptr;
+    FileMeta *fileMeta = mFileRepo->fileMeta(projectEdit);
+    if (!fileMeta || fileMeta->kind() != FileKind::Gsp) return nullptr;
     NodeId groupId = fileMeta->projectId();
     if (!groupId.isValid()) return nullptr;
     PExAbstractNode *node = mNodes.value(groupId);
@@ -942,7 +942,7 @@ QVariantMap ProjectRepo::parseProjectFile(const QString &gspFile) const
 
 void ProjectRepo::editorActivated(QWidget* edit, bool select)
 {
-    PExAbstractNode *node = findProjectForOptions(edit);
+    PExAbstractNode *node = findProjectForPEdit(edit);
     if (!node)
         node = findFileNode(edit);
     if (!node) return;

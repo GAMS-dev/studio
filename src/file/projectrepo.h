@@ -50,7 +50,7 @@ public:
     PExProjectNode *findProject(const QString &projectFile) const;
     PExProjectNode *findProject(NodeId nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
-    PExProjectNode* findProjectForOptions(QWidget *projectOptionsWidget) const;
+    PExProjectNode *findProjectForPEdit(QWidget *projectEdit) const;
     PExFileNode *findFile(QString filePath, PExGroupNode *fileGroup = nullptr) const;
     PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr) const;
 

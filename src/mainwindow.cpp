@@ -162,7 +162,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
-    connect(ui->projectView, &ProjectTreeView::openProjectOptions, this, [this](QModelIndex idx) {
+    connect(ui->projectView, &ProjectTreeView::openProjectEdit, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
         if (project) openFileNode(project);
     });
@@ -211,13 +211,13 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
     connect(&mProjectRepo, &ProjectRepo::logTabRenamed, this, &MainWindow::logTabRenamed);
     connect(&mProjectRepo, &ProjectRepo::refreshProjectTabName, this, [this](QWidget *wid) {
-        project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(wid);
-        if (!proOpt) return;
-        int ind = ui->mainTabs->indexOf(proOpt);
+        project::ProjectEdit *pEd = ViewHelper::toProjectEdit(wid);
+        if (!pEd) return;
+        int ind = ui->mainTabs->indexOf(pEd);
         if (mPinView->widget() == wid) {
-            mPinView->setTabName(proOpt->tabName(NameModifier::editState));
+            mPinView->setTabName(pEd->tabName(NameModifier::editState));
         } else if (ind < 0) return;
-        ui->mainTabs->setTabText(ind, proOpt->tabName());
+        ui->mainTabs->setTabText(ind, pEd->tabName());
     });
 
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
@@ -1706,7 +1706,7 @@ void MainWindow::codecReload(QAction *action)
 {
     if (!focusWidget()) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
-    if (fm && (fm->kind() == FileKind::Log || fm->kind() == FileKind::Guc || fm->kind() == FileKind::PrO))
+    if (fm && (fm->kind() == FileKind::Log || fm->kind() == FileKind::Guc || fm->kind() == FileKind::Gsp))
         return;
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
@@ -1835,8 +1835,8 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         if (mPinView->widget() == edit) {
             ViewHelper::setModified(edit, fm->isModified());
-            project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(edit);
-            QString tabName = proOpt ? proOpt->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
+            project::ProjectEdit *ePro = ViewHelper::toProjectEdit(edit);
+            QString tabName = ePro ? ePro->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
             mPinView->setFileName(tabName, QDir::toNativeSeparators(fm->location()));
         } else {
             int index = ui->mainTabs->indexOf(edit);
@@ -2141,7 +2141,7 @@ void MainWindow::postGamsLibRun()
         node = addNode(mLibProcess->workingDirectory(), mLibProcess->inputFile(), project);
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
-        if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::PrO)
+        if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::Gsp)
             node->file()->load(node->file()->codecMib());
     }
     openFileNode(node);
@@ -3491,7 +3491,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
             return false;
         } else if (msgBox.clickedButton() == discardButton) {
             for (FileMeta *file: qAsConst(modifiedFiles))
-                if (file->kind() != FileKind::Log && file->kind() != FileKind::PrO) {
+                if (file->kind() != FileKind::Log && file->kind() != FileKind::Gsp) {
                     try {
                         file->load(file->codecMib());
                     } catch (Exception&) {
@@ -4198,7 +4198,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    } else if (fileMeta->kind() == FileKind::PrO || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
+    } else if (fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
                || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {
@@ -4217,9 +4217,9 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
         project = fileNode->assignedProject();
         fm = fileNode->file();
     } else if (project) {
-        fm = project->projectOptionsFileMeta();
+        fm = project->projectEditFileMeta();
         if (!fm)
-            fm = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::PrO));
+            fm = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::Gsp));
     } else
         return;
     openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
@@ -4254,7 +4254,7 @@ void MainWindow::closeProject(PExProjectNode* project)
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
-        if (FileMeta *prOp = project->projectOptionsFileMeta()) {
+        if (FileMeta *prOp = project->projectEditFileMeta()) {
             closeFileEditors(prOp->id());
         }
         mProjectRepo.closeGroup(project);
@@ -4332,7 +4332,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     }
 
     // add to recently closed tabs
-    if (fm->kind() != FileKind::PrO)
+    if (fm->kind() != FileKind::Gsp)
         mClosedTabs << fm->location();
     int lastIndex = mWp->isVisible() ? 1 : 0;
 
@@ -4354,13 +4354,13 @@ void MainWindow::closeFileEditors(const FileId fileId)
         fm->removeEditor(edit);
         edit->deleteLater();
     }
-    if (fm->kind() != FileKind::PrO)
+    if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
-    if (fm->kind() == FileKind::PrO) {
-        fm->deleteLater();
-    }
+//    if (fm->kind() == FileKind::Gsp) {
+//        fm->deleteLater();
+//    }
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
@@ -4371,9 +4371,7 @@ PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, P
         QFileInfo fInfo(path, fileName);
         FileType fType = FileType::from(fInfo.fileName());
 
-        if (fType == FileKind::Gsp) {
-            // Placeholder to read the project and create all nodes for associated files
-        } else {
+        if (fType != FileKind::Gsp) {
             node = mProjectRepo.findOrCreateFileNode(fInfo.absoluteFilePath(), project);
         }
     }
@@ -4564,8 +4562,8 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     if (!pro) return;
     closePinView();
 
-    project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(wid);
-    QString tabName = proOpt ? proOpt->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
+    project::ProjectEdit *ePro = ViewHelper::toProjectEdit(wid);
+    QString tabName = ePro ? ePro->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(getEditorFont(fm->fontGroup()));
@@ -4768,7 +4766,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
-        if (!fm || fm->kind() == FileKind::PrO) continue;
+        if (!fm || fm->kind() == FileKind::Gsp) continue;
         QVariantMap tabObject;
         tabObject.insert("location", fm->location());
         tabArray << tabObject;
@@ -4777,7 +4775,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
 
     FileMeta *fm = mRecent.editor() ? mFileMetaRepo.fileMeta(mRecent.editor()) : nullptr;
     if (fm) {
-        if (fm->kind() == FileKind::PrO)
+        if (fm->kind() == FileKind::Gsp)
             fm = mFileMetaRepo.fileMeta(mRecent.persistentEditor());
         if (fm) tabData.insert("mainTabRecent", fm->location());
     } else if (ui->mainTabs->currentWidget() == mWp)

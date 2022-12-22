@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include "projectoptions.h"
-#include "ui_projectoptions.h"
+#include "projectedit.h"
+#include "ui_projectedit.h"
 #include "file/pexgroupnode.h"
 #include "file/filemeta.h"
 #include "theme.h"
@@ -94,20 +94,20 @@ void ProjectData::projectChanged(NodeId id)
         setFieldData(ProjectData::mainGms, "-no runnable-");
 }
 
-ProjectData *ProjectOptions::sharedData() const
+ProjectData *ProjectEdit::sharedData() const
 {
     return mSharedData;
 }
 
-QString ProjectOptions::tabName(NameModifier mod)
+QString ProjectEdit::tabName(NameModifier mod)
 {
     return '[' + mSharedData->project()->name() + mSharedData->project()->nameExt()
             + (mod == NameModifier::editState && isModified() ? "]*" : "]");
 }
 
-ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
+ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     AbstractView(parent),
-    ui(new Ui::ProjectOptions)
+    ui(new Ui::ProjectEdit)
 {
     ui->setupUi(this);
     mSharedData = sharedData;
@@ -123,31 +123,31 @@ ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
     adjustSize();
-    connect(sharedData, &ProjectData::changed, this, &ProjectOptions::updateData);
+    connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
     connect(sharedData, &ProjectData::tabNameChanged, this, [this](PExProjectNode *project) {
         project->refreshProjectTabName();
     });
     updateData();
 }
 
-ProjectOptions::~ProjectOptions()
+ProjectEdit::~ProjectEdit()
 {
-    if (mSharedData->project()) mSharedData->project()->unlinkProjectOptionsFileMeta();
+    if (mSharedData->project()) mSharedData->project()->unlinkProjectEditFileMeta();
     delete ui;
 }
 
-bool ProjectOptions::isModified() const
+bool ProjectEdit::isModified() const
 {
     return mModified;
 }
 
-void ProjectOptions::save()
+void ProjectEdit::save()
 {
     mSharedData->save();
     updateState();
 }
 
-void ProjectOptions::on_edWorkDir_textChanged(const QString &text)
+void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 {
     updateEditColor(ui->edWorkDir, text);
     if (text != mSharedData->fieldData(ProjectData::workDir))
@@ -155,7 +155,7 @@ void ProjectOptions::on_edWorkDir_textChanged(const QString &text)
     updateState();
 }
 
-void ProjectOptions::on_edBaseDir_textChanged(const QString &text)
+void ProjectEdit::on_edBaseDir_textChanged(const QString &text)
 {
     updateEditColor(ui->edBaseDir, text);
     if (text != mSharedData->fieldData(ProjectData::baseDir))
@@ -163,7 +163,7 @@ void ProjectOptions::on_edBaseDir_textChanged(const QString &text)
     updateState();
 }
 
-void ProjectOptions::updateEditColor(QLineEdit *edit, const QString &text)
+void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 {
     QDir dir(text.trimmed());
     if (!dir.exists()) {
@@ -175,7 +175,7 @@ void ProjectOptions::updateEditColor(QLineEdit *edit, const QString &text)
     }
 }
 
-void ProjectOptions::updateState()
+void ProjectEdit::updateState()
 {
     bool isModified = false;
     QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
@@ -195,17 +195,17 @@ void ProjectOptions::updateState()
     }
 }
 
-void ProjectOptions::on_bWorkDir_clicked()
+void ProjectEdit::on_bWorkDir_clicked()
 {
     showDirDialog("Select Working Directory", ui->edWorkDir, mSharedData->project()->workDir());
 }
 
-void ProjectOptions::on_bBaseDir_clicked()
+void ProjectEdit::on_bBaseDir_clicked()
 {
     showDirDialog("Select Base Directory", ui->edBaseDir, mSharedData->project()->location());
 }
 
-void ProjectOptions::projectChanged(NodeId id)
+void ProjectEdit::projectChanged(NodeId id)
 {
     if (mSharedData->project()->id() != id) return;
     if (mSharedData->fieldData(ProjectData::file) != QDir::toNativeSeparators(mSharedData->project()->fileName())) {
@@ -221,7 +221,7 @@ void ProjectOptions::projectChanged(NodeId id)
     updateState();
 }
 
-void ProjectOptions::updateData()
+void ProjectEdit::updateData()
 {
     if (ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
@@ -236,7 +236,7 @@ void ProjectOptions::updateData()
         ui->edMainGms->setText(mSharedData->fieldData(ProjectData::mainGms));
 }
 
-void ProjectOptions::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
+void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
 {
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     QDir dir(path);

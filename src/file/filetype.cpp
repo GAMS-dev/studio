@@ -33,7 +33,6 @@ namespace studio {
 const QStringList FileType::CInvalidUserTypes {"", "ref", "gdx", "log", "lst", "lxi", "opt", "yaml", "exe", "efi"};
 
 QList<FileType*> FileType::mFileTypes {
-    new FileType(FileKind::PrO, {""}, "Project Options", false),
     new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
     new FileType(FileKind::Gms, {"gms", "inc", "dmp"}, "GAMS Source Code", false),
     new FileType(FileKind::Txt, {"txt"}, "Text File (editable)", false),

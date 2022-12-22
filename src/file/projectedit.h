@@ -17,8 +17,8 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef GAMS_STUDIO_PROJECTOPTIONS_H
-#define GAMS_STUDIO_PROJECTOPTIONS_H
+#ifndef GAMS_STUDIO_PROJECTEDIT_H
+#define GAMS_STUDIO_PROJECTEDIT_H
 
 #include "abstractview.h"
 #include <QFrame>
@@ -32,7 +32,7 @@ class PExProjectNode;
 namespace project {
 
 namespace Ui {
-class ProjectOptions;
+class ProjectEdit;
 }
 
 class ProjectData : public QObject
@@ -61,14 +61,14 @@ private:
 };
 
 
-class ProjectOptions : public AbstractView
+class ProjectEdit : public AbstractView
 {
     Q_OBJECT
 
 public:
 
-    explicit ProjectOptions(ProjectData *sharedData, QWidget *parent = nullptr);
-    ~ProjectOptions() override;
+    explicit ProjectEdit(ProjectData *sharedData, QWidget *parent = nullptr);
+    ~ProjectEdit() override;
     ProjectData *sharedData() const;
     QString tabName(NameModifier mod = NameModifier::raw);
     bool isModified() const;
@@ -93,7 +93,7 @@ private:
     void updateState();
     void showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir);
 
-    Ui::ProjectOptions *ui;
+    Ui::ProjectEdit *ui;
     ProjectData *mSharedData;
     bool mModified = false;
     QString mName;
@@ -104,4 +104,4 @@ private:
 } // namespace project
 } // namespace studio
 } // namespace gams
-#endif // GAMS_STUDIO_PROJECTOPTIONS_H
+#endif // GAMS_STUDIO_PROJECTEDIT_H

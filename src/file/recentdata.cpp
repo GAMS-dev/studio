@@ -138,7 +138,7 @@ QWidget *RecentData::persistentEditor() const
 {
     for (int i = mEditList.size()-1; i >= 0; --i) {
         if (FileMeta *fm = mMetaList.at(i)) {
-            if (fm && fm->kind() != FileKind::PrO) return mEditList.at(i);
+            if (fm && fm->kind() != FileKind::Gsp) return mEditList.at(i);
         }
     }
     return nullptr;

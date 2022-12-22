@@ -168,7 +168,7 @@ SOURCES += \
     file/pexgroupnode.cpp \
     file/pexlognode.cpp \
     file/projectcontextmenu.cpp \
-    file/projectoptions.cpp \
+    file/projectedit.cpp \
     file/projectrepo.cpp \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
@@ -449,7 +449,7 @@ HEADERS += \
     file/pexgroupnode.h \
     file/pexlognode.h \
     file/projectcontextmenu.h \
-    file/projectoptions.h \
+    file/projectedit.h \
     file/projectrepo.h \
     file/projecttreemodel.h \
     file/projecttreeview.h \
@@ -668,7 +668,7 @@ FORMS += \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \
     file/pathrequest.ui \
-    file/projectoptions.ui \
+    file/projectedit.ui \
     filesystemwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \
     gdxviewer/columnfilterframe.ui \

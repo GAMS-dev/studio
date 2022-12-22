@@ -36,7 +36,7 @@ public:
 signals:
     void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,
                    QList<QModelIndex> &newSelection);
-    void openProjectOptions(QModelIndex idx);
+    void openProjectEdit(QModelIndex idx);
 
 protected:
     void focusOutEvent(QFocusEvent *event) override;

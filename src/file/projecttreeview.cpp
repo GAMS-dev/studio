@@ -160,7 +160,7 @@ void ProjectTreeView::mouseReleaseEvent(QMouseEvent *event)
     if (event->button() == Qt::LeftButton && model()->data(ind, ProjectTreeModel::IsProjectRole).toBool()) {
         QRect rect = visualRect(ind);
         if (rect.isValid() && event->pos().x() > rect.right() - rect.height()) {
-            emit openProjectOptions(ind);
+            emit openProjectEdit(ind);
         }
     }
     QTreeView::mouseReleaseEvent(event);

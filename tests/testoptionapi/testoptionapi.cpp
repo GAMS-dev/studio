@@ -128,11 +128,6 @@ void TestOptionAPI::testOptFileSuffix_data()
     QTest::newRow("Guc")   << "gamsconfig.yaml"     << false << FileKind::Guc ;
     QTest::newRow("yaml")  << "notAgamsconfig.yaml" << false << FileKind::GCon;
     QTest::newRow("~op")   << "abc.~op"             << false << FileKind::None;
-
-    QTest::newRow("-")           << "-"        << false << FileKind::PrO;
-    QTest::newRow("nosuffix")   << "noSuffix"  << false << FileKind::PrO;
-    QTest::newRow("empty")       << ""         << false << FileKind::PrO;
-    QTest::newRow("whitespace")  << " "        << false << FileKind::PrO;
 }
 
 void TestOptionAPI::testOptFileSuffix()
