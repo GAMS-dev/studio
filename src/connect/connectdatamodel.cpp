@@ -494,8 +494,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
        newItems << text;
        ++rows;
     }
-    if (column > (int)DataItemColumn::Value) // not the first nor second column
-        return false;
 
     QStringList schemastrlist = newItems[0].split("=");
     if (schemastrlist.size() <= 1)
