@@ -424,8 +424,11 @@ void ConnectEditor::restoreExpandedState()
 void ConnectEditor::saveExpandedOnLevel(const QModelIndex &index)
 {
     if (ui->dataTreeView->isExpanded(index)) {
-        if(index.isValid() && !mExpandIDs.contains(index.data(Qt::UserRole).toInt()))
-            mExpandIDs << index.data(Qt::UserRole).toInt();
+        if (index.isValid() && !mExpandIDs.contains(index.data(Qt::UserRole).toInt())) {
+            ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
+            if (item->childCount() > 0)
+                mExpandIDs << index.data(Qt::UserRole).toInt();
+        }
         for(int row = 0; row < mDataModel->rowCount(index); ++row)
             saveExpandedOnLevel( mDataModel->index(row,0, index) );
     }
@@ -437,6 +440,8 @@ void ConnectEditor::restoreExpandedOnLevel(const QModelIndex &index)
         ui->dataTreeView->setExpanded(index, true);
         for(int row = 0; row < mDataModel->rowCount(index); ++row)
             restoreExpandedOnLevel( mDataModel->index(row,0, index) );
+    } else {
+        ui->dataTreeView->setExpanded(index, false);
     }
 }
 
