@@ -432,8 +432,8 @@ void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 
 void NavigatorDialog::selectQuickAction(NavigatorContent nc)
 {
-    nc.ExecuteQuickAction();
     mInput->setText("");
+    nc.ExecuteQuickAction();
     close();
 }
 
