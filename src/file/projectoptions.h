@@ -70,7 +70,7 @@ public:
     explicit ProjectOptions(ProjectData *sharedData, QWidget *parent = nullptr);
     ~ProjectOptions() override;
     ProjectData *sharedData() const;
-    QString tabName();
+    QString tabName(NameModifier mod = NameModifier::raw);
     bool isModified() const;
     void save();
 

@@ -1285,8 +1285,6 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
 
 FileMeta::Data::Data(QString location, FileType *knownType)
 {
-    if (knownType == &FileType::from("-"))
-        knownType = nullptr;
     if (location.contains('\\'))
         location = QDir::fromNativeSeparators(location);
 
@@ -1301,11 +1299,6 @@ FileMeta::Data::Data(QString location, FileType *knownType)
         created = fi.birthTime();
         modified = fi.lastModified();
         type = (knownType ? knownType : &FileType::from(fi.fileName()));
-        if (type->kind() == FileKind::PrO) {
-            if (fi.exists() && fi.isFile()) {
-                type = &FileType::from(FileKind::Txt);
-            }
-        }
     }
 }
 

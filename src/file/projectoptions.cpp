@@ -99,9 +99,10 @@ ProjectData *ProjectOptions::sharedData() const
     return mSharedData;
 }
 
-QString ProjectOptions::tabName()
+QString ProjectOptions::tabName(NameModifier mod)
 {
-    return '[' + mSharedData->project()->name() + mSharedData->project()->nameExt() + ']';
+    return '[' + mSharedData->project()->name() + mSharedData->project()->nameExt()
+            + (mod == NameModifier::editState && isModified() ? "]*" : "]");
 }
 
 ProjectOptions::ProjectOptions(ProjectData *sharedData,  QWidget *parent) :

@@ -45,7 +45,8 @@ public:
     bool setWidget(QWidget *widget);
     void removeWidget();
     QWidget *widget();
-    void setFileName(const QString &fileName, const QString &filePath);
+    void setTabName(const QString &tabName);
+    void setFileName(const QString &tabName, const QString &filePath);
     void setFontGroup(FontGroup fontGroup);
     void setScrollLocked(bool lock);
     bool isScrollLocked();

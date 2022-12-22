@@ -214,7 +214,9 @@ MainWindow::MainWindow(QWidget *parent)
         project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(wid);
         if (!proOpt) return;
         int ind = ui->mainTabs->indexOf(proOpt);
-        if (ind < 0) return; // TODO(JM) check for PinView
+        if (mPinView->widget() == wid) {
+            mPinView->setTabName(proOpt->tabName(NameModifier::editState));
+        } else if (ind < 0) return;
         ui->mainTabs->setTabText(ind, proOpt->tabName());
     });
 
@@ -1833,7 +1835,9 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         if (mPinView->widget() == edit) {
             ViewHelper::setModified(edit, fm->isModified());
-            mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
+            project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(edit);
+            QString tabName = proOpt ? proOpt->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
+            mPinView->setFileName(tabName, QDir::toNativeSeparators(fm->location()));
         } else {
             int index = ui->mainTabs->indexOf(edit);
             if (index >= 0) {
@@ -4215,7 +4219,7 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
     } else if (project) {
         fm = project->projectOptionsFileMeta();
         if (!fm)
-            fm = mFileMetaRepo.findOrCreateFileMeta(project->location()+"/["+project->name()+"]", &FileType::from(FileKind::PrO));
+            fm = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::PrO));
     } else
         return;
     openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
@@ -4556,17 +4560,18 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     if (!wid) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(wid);
     if (!fm || !fm->isPinnable()) return;
-    PExGroupNode *group = mProjectRepo.asGroup(fm->projectId());
-    if (!group) return;
-    PExProjectNode *pro = group->assignedProject();
+    PExProjectNode *pro = mProjectRepo.asProject(fm->projectId());
     if (!pro) return;
     closePinView();
+
+    project::ProjectOptions *proOpt = ViewHelper::toProjectOptions(wid);
+    QString tabName = proOpt ? proOpt->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(getEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
     mPinView->setFontGroup(fm->fontGroup());
-    mPinView->setFileName(fm->name(NameModifier::editState), QDir::toNativeSeparators(fm->location()));
+    mPinView->setFileName(tabName, QDir::toNativeSeparators(fm->location()));
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
     initEdit(fm, newWid);

@@ -114,9 +114,14 @@ QWidget *PinViewWidget::widget()
     return mWidget;
 }
 
-void PinViewWidget::setFileName(const QString &fileName, const QString &filePath)
+void PinViewWidget::setTabName(const QString &tabName)
 {
-    ui->laFile->setText(fileName);
+    ui->laFile->setText(tabName);
+}
+
+void PinViewWidget::setFileName(const QString &tabName, const QString &filePath)
+{
+    ui->laFile->setText(tabName);
     ui->laFile->setToolTip(filePath);
 }
 
