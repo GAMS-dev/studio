@@ -183,7 +183,8 @@ QWidgetList FileMetaRepo::editors() const
 
 void FileMetaRepo::unwatch(const FileMeta *fileMeta)
 {
-    unwatch(fileMeta->location());
+    if (fileMeta->kind() != FileKind::Gsp)
+        unwatch(fileMeta->location());
 }
 
 void FileMetaRepo::unwatch(const QString &filePath)
@@ -196,6 +197,8 @@ void FileMetaRepo::unwatch(const QString &filePath)
 
 bool FileMetaRepo::watch(const FileMeta *fileMeta)
 {
+    if (fileMeta->kind() == FileKind::Log || fileMeta->kind() == FileKind::Gsp)
+        return true;
     if (fileMeta->exists(true)) {
         mWatcher.addPath(fileMeta->location());
         return true;

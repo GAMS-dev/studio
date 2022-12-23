@@ -657,7 +657,7 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
     }
 
-    if (mEditors.isEmpty()) {
+    if (mEditors.isEmpty() && kind() != FileKind::Gsp) {
         mFileRepo->textMarkRepo()->removeMarks(id(), QSet<TextMark::Type>() << TextMark::bookmark);
         mFileRepo->watch(this);
     }
@@ -866,7 +866,8 @@ void FileMeta::save(const QString &newLocation)
     setLocation(location);
     refreshType();
     setModified(false);
-    mFileRepo->watch(this);
+    if (kind() != FileKind::Gsp)
+        mFileRepo->watch(this);
 }
 
 void FileMeta::renameToBackup()

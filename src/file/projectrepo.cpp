@@ -477,9 +477,7 @@ QString ProjectRepo::uniqueNameExt(PExGroupNode *parentNode, const QString &name
     bool conflict = true;
     while (conflict) {
         conflict = false;
-        DEB() << "CHECK " << name;
         for (PExAbstractNode * n : parentNode->childNodes()) {
-            DEB() << "  - " << n->name(NameModifier::withNameExt);
             if (n != node && n->name(NameModifier::withNameExt) == name + res) {
                 ++nr;
                 res = QString::number(nr);
