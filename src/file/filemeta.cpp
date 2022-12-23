@@ -331,13 +331,13 @@ QWidget *FileMeta::topEditor() const
 void FileMeta::modificationChanged(bool modiState)
 {
     Q_UNUSED(modiState)
-    if (!modiState && kind() == FileKind::Gsp) {
+    if (kind() == FileKind::Gsp) {
         if (project::ProjectEdit *pro = ViewHelper::toProjectEdit(topEditor())) {
             mName = '['+pro->sharedData()->fieldData(project::ProjectData::name)
                     +pro->sharedData()->fieldData(project::ProjectData::nameExt)+']';
         }
     }
-    emit changed(id());
+    emit changed(mId);
 }
 
 void FileMeta::contentsChange(int from, int charsRemoved, int charsAdded)

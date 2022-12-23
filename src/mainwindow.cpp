@@ -1835,8 +1835,8 @@ void MainWindow::fileChanged(const FileId fileId)
     for (QWidget *edit: fm->editors()) {
         if (mPinView->widget() == edit) {
             ViewHelper::setModified(edit, fm->isModified());
-            project::ProjectEdit *ePro = ViewHelper::toProjectEdit(edit);
-            QString tabName = ePro ? ePro->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
+            project::ProjectEdit *pEd = ViewHelper::toProjectEdit(edit);
+            QString tabName = pEd ? pEd->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
             mPinView->setFileName(tabName, QDir::toNativeSeparators(fm->location()));
         } else {
             int index = ui->mainTabs->indexOf(edit);
@@ -4358,9 +4358,6 @@ void MainWindow::closeFileEditors(const FileId fileId)
         mClosedTabsIndexes << lastIndex;
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
-//    if (fm->kind() == FileKind::Gsp) {
-//        fm->deleteLater();
-//    }
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
@@ -4562,8 +4559,8 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     if (!pro) return;
     closePinView();
 
-    project::ProjectEdit *ePro = ViewHelper::toProjectEdit(wid);
-    QString tabName = ePro ? ePro->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
+    project::ProjectEdit *pEd = ViewHelper::toProjectEdit(wid);
+    QString tabName = pEd ? pEd->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
 
     QWidget *newWid = fm->createEdit(mPinView, pro);
     newWid->setFont(getEditorFont(fm->fontGroup()));
