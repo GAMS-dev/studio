@@ -443,7 +443,6 @@ bool ConnectDataModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
     ConnectDataItem* sourceParentItem = getItem(sourceParent);
     if (destParentItem != sourceParentItem)
         return false;
-
     if (destinationChild > sourceRow) { // move down
          beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
          for(int i=0; i<count; ++i) {
@@ -510,7 +509,22 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
     QStringList schemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
     int state = schemaIndex.siblingAtColumn((int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
     if (row < 0 || column < 0) { // drop on to a row or end of the list
-        if (state!=(int)DataCheckState::SchemaName) {  // drop on to a non-schemaname
+
+        if (schemaKey.size()>tobeinsertSchemaKey.size()) // same size
+            return false;
+        if (state==(int)DataCheckState::SchemaName) {
+           if (schemaKey.size()>tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
+               return false;
+           if (tobeinsertSchemaKey.size()-1 > schemaKey.size()) // not immediate level
+               return false;
+           if (!hasSameParent(tobeinsertSchemaKey, schemaKey, schemaKey.size()==tobeinsertSchemaKey.size())) // not immediate attribute of schemaname
+              return false;
+           if (existsUnderSameParent(schemastrlist[1],  parent)) // attribute already exists
+              return false;
+        } else {
+            if (schemaKey.size()==1 && schemaKey.first().isEmpty() &&
+               tobeinsertSchemaKey.size()==1 && !tobeinsertSchemaKey.isEmpty()) // special case; drop
+                return true;
             if (state!=(int)DataCheckState::ListItem) // not a ListItem
                 return false;
             if (schemaKey.size()==tobeinsertSchemaKey.size()) // same size
@@ -519,22 +533,6 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                 return false;
             if (existsUnderSameParent(schemastrlist[1],  parent)) // exists under the same parent
                 return false;
-        } else { // drop on to a schema name
-            if (hasChildren(parent)) { // schema name has a child
-                if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
-                    return false;
-                if (!hasSameParent(tobeinsertSchemaKey, schemaKey,false)) // not immediate attribute of schemaname
-                    return false;
-                if (existsUnderSameParent(schemastrlist[1],  parent)) // attribute already exists
-                    return false;
-            } else {  // schema name without child
-                if (schemaKey.size()==tobeinsertSchemaKey.size()) // has the same schema size
-                    return false;
-                if (hasSameParent(tobeinsertSchemaKey, schemaKey,false)==0) // same parent at different level
-                    return false;
-                if (schemaKey.size()+1!=tobeinsertSchemaKey.size()) // not immediate attribute of schemaname
-                    return false;
-            }
         }
     } else { // drop between row
         if (schemaKey.size() > 0 && schemaKey.at(0).isEmpty())
@@ -578,23 +576,24 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         return false;
     } else {
 
-        int insertRow = -1;
-        if (row >=0 && row < rowCount(parent)) {
-            insertRow = row;
-        } else { // append,  drop at the last row
-            insertRow = row-1;
-        }
         QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
-        QStringList insertSchemaKey = (row < 0 || column < 0 ? parent.sibling(insertRow, (int)DataItemColumn::SchemaKey).data(Qt::DisplayRole).toString().split(":")
-                                                             : index(insertRow, (int)DataItemColumn::SchemaKey, parent).data(Qt::DisplayRole).toString().split(":")           );
+        QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
+                                                         : (row==rowCount(parent)) ? index(rowCount(parent)-1, (int)DataItemColumn::SchemaKey, parent)
+                                                                                   : index(row, (int)DataItemColumn::SchemaKey, parent)
+                                   );
+        QStringList insertSchemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
 
         QString schemaname = tobeinsertSchemaKey.first();
+
         if (tobeinsertSchemaKey.size() == 1) {
-            emit fromSchemaInserted(schemaname, row);
+            addFromSchema(tobeinsertSchemaKey.first(), row < 0 ? (parent==index(0,0, QModelIndex()) ? rowCount(parent) : parent.row()+1)
+                                                               : row);
         } else {
             ConnectData* data = mConnect->createDataHolderFromSchema(tobeinsertSchemaKey, mOnlyRequriedAttributesAdded);
-            tobeinsertSchemaKey.removeFirst();
-            tobeinsertSchemaKey.removeLast();
+            if (!tobeinsertSchemaKey.isEmpty())
+               tobeinsertSchemaKey.removeFirst();
+            if (!tobeinsertSchemaKey.isEmpty())
+                tobeinsertSchemaKey.removeLast();
             appendMapElement(schemaname, tobeinsertSchemaKey, data,  row, parent);
             emit modificationChanged(true);
         }
@@ -690,7 +689,6 @@ void ConnectDataModel::appendMapElement(const QString& schemaname, QStringList& 
         data = NULL;
         return;
     }
-
     ConnectDataItem* parentItem = getItem(parentIndex);
 
     QList<ConnectDataItem*> parents;

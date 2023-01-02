@@ -310,12 +310,20 @@ void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
     emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount(mDataModel->index(0,0)) );
 }
 
-void ConnectEditor::expandAndResizedToContents(const QModelIndex &index)
+void ConnectEditor::expandAndResizedToContents(const QModelIndex &idx)
 {
-    ui->dataTreeView->expandRecursively( index );
+    if (!idx.isValid())
+        return;
+    if (idx.parent()!=ui->dataTreeView->model()->index(0,0, QModelIndex()) &&
+        !ui->dataTreeView->isExpanded(idx.parent())) {
+          ui->dataTreeView->expandRecursively( idx.parent() );
+    } else {
+        ui->dataTreeView->expandRecursively( idx );
+    }
     for (int i=0; i< ui->dataTreeView->model()->columnCount(); i++)
         ui->dataTreeView->resizeColumnToContents(i);
-    ui->dataTreeView->scrollTo(index);
+    ui->dataTreeView->scrollTo(idx);
+    saveExpandedState();
 }
 
 void ConnectEditor::schemaHelpRequested(const QString &schemaName)
