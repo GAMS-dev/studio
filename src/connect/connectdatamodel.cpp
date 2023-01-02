@@ -531,6 +531,8 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                 return false;
             if (tobeinsertSchemaKey.size()!=schemaKey.size()+1) // not immediate attribute to be inserted
                 return false;
+            if (!hasSameParent(tobeinsertSchemaKey, schemaKey, schemaKey.size()==tobeinsertSchemaKey.size())) // not immediate attribute of schemaname
+                return false;
             if (existsUnderSameParent(schemastrlist[1],  parent)) // exists under the same parent
                 return false;
         }
