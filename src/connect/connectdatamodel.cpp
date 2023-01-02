@@ -451,7 +451,7 @@ bool ConnectDataModel::moveRows(const QModelIndex &sourceParent, int sourceRow, 
          }
          endMoveRows();
     } else { // move up
-        beginMoveRows(sourceParent, sourceRow, sourceRow+count, destinationParent, destinationChild);
+        beginMoveRows(sourceParent, sourceRow, sourceRow, destinationParent, destinationChild);
         for(int i=0; i<count; ++i) {
             sourceParentItem->moveChildren(sourceRow+i, destinationChild);
         }
