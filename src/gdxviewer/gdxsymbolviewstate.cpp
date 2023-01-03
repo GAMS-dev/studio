@@ -373,14 +373,14 @@ void GdxSymbolViewState::read(const QVariantMap &map)
             ok = ok && assignIfValidDouble(valFilterState.max, stateStrings.at(1));
             ok = ok && stateStrings.at(2).length() == 8;
             if (ok) {
-                valFilterState.active = stateStrings.at(2).at(0) != 0;
-                valFilterState.exclude = stateStrings.at(2).at(1) != 0;
-                valFilterState.showUndef = stateStrings.at(2).at(2) != 0;
-                valFilterState.showNA = stateStrings.at(2).at(3) != 0;
-                valFilterState.showPInf = stateStrings.at(2).at(4) != 0;
-                valFilterState.showMInf = stateStrings.at(2).at(5) != 0;
-                valFilterState.showEps = stateStrings.at(2).at(6) != 0;
-                valFilterState.showAcronym = stateStrings.at(2).at(7) != 0;
+                valFilterState.active = stateStrings.at(2).at(0) != '0';
+                valFilterState.exclude = stateStrings.at(2).at(1) != '0';
+                valFilterState.showUndef = stateStrings.at(2).at(2) != '0';
+                valFilterState.showNA = stateStrings.at(2).at(3) != '0';
+                valFilterState.showPInf = stateStrings.at(2).at(4) != '0';
+                valFilterState.showMInf = stateStrings.at(2).at(5) != '0';
+                valFilterState.showEps = stateStrings.at(2).at(6) != '0';
+                valFilterState.showAcronym = stateStrings.at(2).at(7) != '0';
                 mValueFilterState << valFilterState;
             } else {
                 DEB() << "Error restoring GDX symbol view: invalid value filter state";
