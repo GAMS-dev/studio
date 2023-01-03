@@ -864,7 +864,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setAutoResizeTV(mAutoResizeTV);
 
     QVector<bool> showAttributes;
-    for (QCheckBox* cb : mShowValColActions)
+    for (QCheckBox* cb : qAsConst(mShowValColActions))
         showAttributes.append(cb->isChecked());
     symViewState->setShowAttributes(showAttributes);
 

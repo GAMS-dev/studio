@@ -342,6 +342,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     //GDX Viewer
     safelyAdd(res, skGdxDefaultSymbolView, scUser, {"gdxViewer","gdxDefaultSymbolView"}, 0);
+    safelyAdd(res, skGdxStateFiles, scSys, {"gdxViewer","states"}, QJsonObject());
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

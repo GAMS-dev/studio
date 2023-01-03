@@ -104,8 +104,8 @@ public:
     bool autoResizeTV() const;
     void setAutoResizeTV(bool newAutoResizeTV);
 
-    void write(QVariantMap &map);
     void read(const QVariantMap &map);
+    void write(QVariantMap &map) const;
 
 private:
     bool mSqDefaults;

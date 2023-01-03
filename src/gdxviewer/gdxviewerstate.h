@@ -50,7 +50,7 @@ public:
     bool selectedSymbolIsAlias() const;
     void setSelectedSymbolIsAlias(bool selectedSymbolIsAlias);
 
-    void write(QVariantMap &map);
+    void write(QVariantMap &map) const;
     void read(const QVariantMap &map);
 
 private:

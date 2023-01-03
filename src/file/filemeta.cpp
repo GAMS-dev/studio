@@ -640,9 +640,9 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         disconnect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
         disconnect(tv, &TextView::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
-    } if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
+    } else if (project::ProjectOptions* prOp = ViewHelper::toProjectOptions(edit)) {
        disconnect(prOp, &project::ProjectOptions::modificationChanged, this, &FileMeta::modificationChanged);
-    } if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
+    } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
        disconnect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::GamsConfigEditor* gucEdit = ViewHelper::toGamsConfigEditor(edit)) {
         disconnect(gucEdit, &option::GamsConfigEditor::modificationChanged, this, &FileMeta::modificationChanged);
@@ -650,6 +650,12 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(efi, &efi::EfiEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* cEdit = ViewHelper::toGamsConnectEditor(edit)) {
         disconnect(cEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
+    } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
+        QVariantMap map;
+        gdx->writeState(map);
+        QVariantMap states = Settings::settings()->toMap(skGdxStateFiles);
+        states.insert(location(), map);
+        Settings::settings()->setMap(skGdxStateFiles, states);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -1161,7 +1167,13 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
         project::ProjectOptions *prop = new project::ProjectOptions(sharedData, parent);
         res = ViewHelper::initEditorType(prop);
     } else if (kind() == FileKind::Gdx) {
-        res = ViewHelper::initEditorType(new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent));
+        gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent);
+        res = ViewHelper::initEditorType(gdx);
+        QVariantMap states = Settings::settings()->toMap(skGdxStateFiles);
+        if (states.contains(location())) {
+            QVariantMap map = states.value(location()).toMap();
+            gdx->readState(map);
+        }
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec, parent));
     } else if (kind() == FileKind::Log) {

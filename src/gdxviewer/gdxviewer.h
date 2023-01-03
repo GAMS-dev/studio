@@ -64,6 +64,8 @@ public:
     GdxSymbolView *symbolViewByName(QString name);
     QString gdxFile() const;
     GdxViewerState *state() const;
+    void readState(QVariantMap map);
+    void writeState(QVariantMap &map);
 
 public slots:
     void invalidate();

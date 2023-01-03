@@ -221,7 +221,7 @@ void GdxSymbolViewState::setAutoResizeTV(bool newAutoResizeTV)
     mAutoResizeTV = newAutoResizeTV;
 }
 
-void GdxSymbolViewState::write(QVariantMap &map)
+void GdxSymbolViewState::write(QVariantMap &map) const
 {
     int bools = mSqDefaults ? 1 : 0;
     bools += mSqTrailingZeroes ? 2 : 0;
@@ -240,36 +240,42 @@ void GdxSymbolViewState::write(QVariantMap &map)
     map.insert("intValues", ints);
 
     QString showAttr;
-    for (bool a : mShowAttributes)
+    for (bool a : qAsConst(mShowAttributes))
         showAttr += (a ? '1' : '0');
     map.insert("showAttributes", showAttr);
 
     QString tvDimOrder;
-    for (int order : mTvDimOrder)
+    for (int order : qAsConst(mTvDimOrder))
         tvDimOrder += (tvDimOrder.isEmpty() ? "" : ",") + QString::number(order);
     map.insert("tvDimOrder", tvDimOrder);
 
+    bool semicolon = false;
     QString labelLists;
-    for (const QStringList &list : mUncheckedLabels) {
+    for (const QStringList &list : qAsConst(mUncheckedLabels)) {
         QString labels;
+        bool comma = false;
         for (const QString &label : list) {
-            if (!labels.isEmpty()) labels += ',';
+            if (comma) labels += ',';
             labels += label.toUtf8().toBase64();
+            comma = true;
         }
-        if (!labelLists.isEmpty()) labelLists += ';';
+        if (semicolon) labelLists += ';';
         labelLists += labels;
+        semicolon = true;
     }
     map.insert("uncheckedLabels", labelLists);
 
+    semicolon = false;
     QString valFilterStates;
-    for (const ValueFilterState &state : mValueFilterState) {
+    for (const ValueFilterState &state : qAsConst(mValueFilterState)) {
         QString valFilterState = QString::number(state.min, 'g', QLocale::FloatingPointShortest);
         valFilterState += ',' + QString::number(state.max, 'g', QLocale::FloatingPointShortest) + ',';
-        valFilterState += (state.active ? '1' : '0') + (state.exclude ? '1' : '0') + (state.showUndef ? '1' : '0') +
-                (state.showNA ? '1' : '0') + (state.showPInf ? '1' : '0') + (state.showMInf ? '1' : '0') +
-                (state.showEps ? '1' : '0') + (state.showAcronym ? '1' : '0');
-        if (!valFilterStates.isEmpty()) valFilterStates += ';';
+        valFilterState += QString(state.active ? "1" : "0") + (state.exclude ? "1" : "0") +
+                (state.showUndef ? "1" : "0") + (state.showNA ? "1" : "0") + (state.showPInf ? "1" : "0") +
+                (state.showMInf ? "1" : "0") + (state.showEps ? "1" : "0") + (state.showAcronym ? "1" : "0");
+        if (semicolon) valFilterStates += ';';
         valFilterStates += valFilterState;
+        semicolon = true;
     }
     map.insert("valueFilterStates", valFilterStates);
 
@@ -277,7 +283,7 @@ void GdxSymbolViewState::write(QVariantMap &map)
     map.insert("tableViewFilterHeader", mTableViewFilterHeaderState.toBase64());
 
     QString tableViewColumns;
-    for (int columnWidth : mTableViewColumnWidths) {
+    for (int columnWidth : qAsConst(mTableViewColumnWidths)) {
         if (!tableViewColumns.isEmpty()) tableViewColumns += ',';
         tableViewColumns += QString::number(columnWidth);
     }
@@ -348,7 +354,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
         const QStringList labelLists = map.value("uncheckedLabels").toString().split(';');
         for (const QString &labels: labelLists) {
             QStringList uncheckedLabels;
-            const QStringList splitLabels = labels.split(',');
+            const QStringList splitLabels = labels.split(',', Qt::SkipEmptyParts);
             for (const QString &coded : splitLabels) {
                 uncheckedLabels << QByteArray::fromBase64(coded.toUtf8());
             }
@@ -358,7 +364,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
 
     if (map.contains("valueFilterStates")) {
         mValueFilterState.clear();
-        QStringList allFilterStates = map.value("valueFilterStates").toString().split(';');
+        const QStringList allFilterStates = map.value("valueFilterStates").toString().split(';');
         for (const QString &state : allFilterStates) {
             QStringList stateStrings = state.split(',');
             ValueFilterState valFilterState;
@@ -385,7 +391,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
     mListViewHeaderState = QByteArray::fromBase64(map.value("listViewHeader").toByteArray());
     mTableViewFilterHeaderState = QByteArray::fromBase64(map.value("tableViewFilterHeader").toByteArray());
 
-    QStringList tableViewColumns = map.value("tableViewColumnWidths").toString().split(',');
+    const QStringList tableViewColumns = map.value("tableViewColumnWidths").toString().split(',');
     for (const QString &columnWidth : tableViewColumns) {
         int value;
         bool ok = assignIfValidInt(value, columnWidth);

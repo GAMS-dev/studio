@@ -263,7 +263,7 @@ void GdxViewer::copySelectionToClipboard()
         return;
     std::sort(selection.begin(), selection.end());
     QString text;
-    for (QModelIndex idx : selection)
+    for (QModelIndex idx : qAsConst(selection))
         text += idx.data().toString() + ",";
     text = text.chopped(1);
 
@@ -355,7 +355,7 @@ void GdxViewer::freeSymbols()
     gdxClose(mGdx);
     locker.unlock();
 
-    for (GdxSymbolView* view : mSymbolViews) {
+    for (GdxSymbolView* view : qAsConst(mSymbolViews)) {
         if(view) {
             view->freeFilterMenu();
             delete view;
@@ -451,11 +451,11 @@ void GdxViewer::applyState()
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
     // delete symbols that do not exist anymore or differ in dimension or type
-    for (QString name : mState->symbolViewStates().keys()) {
-        GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(name);
-        GdxSymbolViewState* symViewState = mState->symbolViewState(name);
-        if (!sym || sym->dim() != symViewState->dim() || sym->type() != symViewState->type())
-            mState->deleteSymbolViewState(name);
+    auto svStates = mState->symbolViewStates();
+    for (auto it = svStates.constBegin() ; it != svStates.constEnd() ; ++it) {
+        GdxSymbol* sym = mGdxSymbolTable->getSymbolByName(it.key());
+        if (!sym || sym->dim() != it.value()->dim() || sym->type() != it.value()->type())
+            mState->deleteSymbolViewState(it.key());
     }
     if (this->isVisible())
         applySelectedSymbol();
@@ -502,6 +502,24 @@ void GdxViewer::showExportDialog()
 GdxViewerState *GdxViewer::state() const
 {
     return mState;
+}
+
+void GdxViewer::readState(QVariantMap map)
+{
+    if (!map.isEmpty()) {
+        if (!mState)
+            mState = new GdxViewerState();
+        mState->read(map);
+        applyState();
+    }
+}
+
+void GdxViewer::writeState(QVariantMap &map)
+{
+    map.clear();
+    saveState();
+    if (mState)
+        mState->write(map);
 }
 
 QString GdxViewer::gdxFile() const
