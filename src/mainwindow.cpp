@@ -2580,6 +2580,14 @@ void MainWindow::updateAndSaveSettings()
 
     settings->setList(SettingsKey::skUserThemes, Theme::instance()->writeUserThemes());
 
+    QVariantMap gdxStates = settings->toMap(skGdxStates);
+    for (auto it = gdxStates.begin(); it != gdxStates.end(); ) {
+        if (!mFileMetaRepo.fileMeta(it.key()))
+            it = gdxStates.erase(it);
+        else ++it;
+    }
+    settings->setMap(skGdxStates, gdxStates);
+
     // at last, save the settings
     settings->save();
 }

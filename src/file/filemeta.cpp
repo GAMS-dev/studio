@@ -653,9 +653,9 @@ void FileMeta::removeEditor(QWidget *edit)
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
         QVariantMap map;
         gdx->writeState(map);
-        QVariantMap states = Settings::settings()->toMap(skGdxStateFiles);
+        QVariantMap states = Settings::settings()->toMap(skGdxStates);
         states.insert(location(), map);
-        Settings::settings()->setMap(skGdxStateFiles, states);
+        Settings::settings()->setMap(skGdxStates, states);
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);
@@ -1169,7 +1169,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
     } else if (kind() == FileKind::Gdx) {
         gdxviewer::GdxViewer *gdx = new gdxviewer::GdxViewer(location(), CommonPaths::systemDir(), mCodec, parent);
         res = ViewHelper::initEditorType(gdx);
-        QVariantMap states = Settings::settings()->toMap(skGdxStateFiles);
+        QVariantMap states = Settings::settings()->toMap(skGdxStates);
         if (states.contains(location())) {
             QVariantMap map = states.value(location()).toMap();
             gdx->readState(map);

@@ -110,7 +110,7 @@ enum SettingsKey {
 
     // GDX Viewer
     skGdxDefaultSymbolView,
-    skGdxStateFiles,
+    skGdxStates,
 
     // MIRO settings page
     skMiroInstallPath,
