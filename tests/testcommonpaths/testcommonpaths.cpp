@@ -107,9 +107,13 @@ void TestCommonPaths::testDefaultWorkingDir()
 
 void TestCommonPaths::testGamsConnectSchemaDir()
 {
+    // given
+    QString systemdir = TestCommonPaths::getExpectedPath();
+    CommonPaths::setSystemDir(systemdir);
+    // when
     QString path = CommonPaths::gamsConnectSchemaDir();
-    qDebug() << path;
-    QVERIFY2(QDir(path).exists(), "The expected gams connect path does not exist.");
+    // then
+    QVERIFY2(QDir(path).exists(), QString("The expected gams connect path ["+path+"] does not exist undert ["+CommonPaths::systemDir() +"].").toLatin1());
 }
 
 void TestCommonPaths::testIsSystemDirValid()
