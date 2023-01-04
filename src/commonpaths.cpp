@@ -192,7 +192,7 @@ QString CommonPaths::gamsConnectSchemaDir()
 {
 #ifdef __APPLE__
     QString GamsConnectSchemaDir      = "../../../Resources/apifiles/Python/gams/gams_connect/agents/schema";
-    QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
+    QString GmsPythonConnectSchemaDir = "../../../Resources/GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
 #elif defined(__unix__)
      QString GamsConnectSchemaDir = "apifiles/Python/gams/gams_connect/agents/schema";
      QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
