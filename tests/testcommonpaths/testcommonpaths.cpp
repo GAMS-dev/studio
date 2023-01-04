@@ -105,6 +105,13 @@ void TestCommonPaths::testDefaultWorkingDir()
     QVERIFY(result.endsWith("/GAMS/Studio/workspace"));
 }
 
+void TestCommonPaths::testGamsConnectSchemaDir()
+{
+    QString path = CommonPaths::gamsConnectSchemaDir();
+    qDebug() << path;
+    QVERIFY2(QDir(path).exists(), "The expected gams connect path does not exist.");
+}
+
 void TestCommonPaths::testIsSystemDirValid()
 {
     CommonPaths::setSystemDir();

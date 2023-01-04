@@ -138,7 +138,6 @@ private:
     static const QString LicenseFile;
     static const QString UserLicensePath;
     static const QString GamsConfigPath;
-    static const QString GamsConnectSchemaDir;
 };
 
 }

@@ -178,7 +178,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                                          .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter) );
                                } else {
                                    return QVariant( QString("%1 Unknown schema name %2%3%4.<br/>Note that name is case-sensitive.<br/>See %2%5%4 location for known schema definition.%6")
-                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir()),TooltipStrFooter ) );
+                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr, CommonPaths::gamsConnectSchemaDir(),TooltipStrFooter ) );
                                }
                            } else if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ListAppend) {
                                       if (item->parentItem() && item->parentItem()->data((int)DataItemColumn::Undefined ).toBool())

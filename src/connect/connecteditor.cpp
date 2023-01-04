@@ -50,7 +50,16 @@ ConnectEditor::ConnectEditor(const QString& connectDataFileName,
 
 bool ConnectEditor::init(bool quiet)
 {
-    mConnect = new Connect();
+    try {
+       mConnect = new Connect();
+    } catch(Exception& e) {
+        ui->setupUi(this);
+        connect(ui->openAsTextButton, &QPushButton::clicked, this, &ConnectEditor::openAsTextButton_clicked, Qt::UniqueConnection);
+        mConnect = nullptr;
+        mDataModel = nullptr;
+        setModified(false);
+        return false;
+    }
 
     ui->setupUi(this);
     try {

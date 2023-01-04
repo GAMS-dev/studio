@@ -36,11 +36,9 @@ namespace studio {
 #if defined(__APPLE__)
     const QString CommonPaths::DocumentationDir = "../../../Resources/docs";
     const QString CommonPaths::ModlibsPrefixPath = "../../../Resources/";
-    const QString CommonPaths::GamsConnectSchemaDir = "../../../Resources/apifiles/Python/gams/gams_connect/agents/schema";
 #else
     const QString CommonPaths::DocumentationDir = "docs";
     const QString CommonPaths::ModlibsPrefixPath = "";
-    const QString CommonPaths::GamsConnectSchemaDir = "apifiles/Python/gams/gams_connect/agents/schema";
 #endif
 
 QString CommonPaths::SystemDir = QString();
@@ -192,7 +190,21 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
 
 QString CommonPaths::gamsConnectSchemaDir()
 {
-    return GamsConnectSchemaDir;
+#ifdef __APPLE__
+    QString GamsConnectSchemaDir      = "../../../Resources/apifiles/Python/gams/gams_connect/agents/schema";
+    QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
+#elif defined(__unix__)
+     QString GamsConnectSchemaDir = "apifiles/Python/gams/gams_connect/agents/schema";
+     QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
+#else
+    QString GamsConnectSchemaDir      = "apifiles/Python/gams/gams_connect/agents/schema";
+    QString GmsPythonConnectSchemaDir = "GMSPython/Lib/site-packages/gams/connect/agents/schema";
+#endif
+    QString dirpath = QDir::cleanPath(systemDir()+QDir::separator()+GmsPythonConnectSchemaDir);
+    if (QDir(dirpath).exists())
+        return dirpath;
+
+    return QDir::cleanPath(systemDir()+QDir::separator()+GamsConnectSchemaDir);
 }
 
 QString CommonPaths::defaultWorkingDir()

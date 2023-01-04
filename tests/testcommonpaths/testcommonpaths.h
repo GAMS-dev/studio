@@ -41,6 +41,7 @@ private slots:
     void testUserDocumentDir();
     void testUserModelLibraryDir();
     void testDefaultWorkingDir();
+    void testGamsConnectSchemaDir();
 
     void testIsSystemDirValid();
     void testIsSystemDirInValid();

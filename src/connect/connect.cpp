@@ -23,6 +23,7 @@
 
 #include "commonpaths.h"
 #include "connect.h"
+#include "exception.h"
 
 namespace gams {
 namespace studio {
@@ -30,7 +31,20 @@ namespace connect {
 
 Connect::Connect()
 {
-    QString connectPath = QDir::cleanPath(CommonPaths::systemDir()+QDir::separator()+ CommonPaths::gamsConnectSchemaDir());
+    QString connectPath = CommonPaths::gamsConnectSchemaDir();
+    if (!QDir(connectPath).exists()) {
+        QMessageBox msgBox;
+        msgBox.setWindowTitle("Unable to find Connect Schema Definition");
+        msgBox.setIcon(QMessageBox::Warning);
+        msgBox.setText(QString("%1\n%2").arg("The schema definition files could not be found from gams system directory.")
+                                            .arg("The connect editor is unable to function properly." ));
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        if (msgBox.exec() == QMessageBox::Ok) {
+            EXCEPT() << "Unable to find Schema Definition File";
+            return;
+        }
+    }
+
     QStringList schemaFiles = QDir(connectPath).entryList(QStringList() << "*.yaml" << "*.yml", QDir::Files);
     foreach(const QString& filename, schemaFiles) {
         try {
