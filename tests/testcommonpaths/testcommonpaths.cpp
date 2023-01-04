@@ -108,8 +108,7 @@ void TestCommonPaths::testDefaultWorkingDir()
 void TestCommonPaths::testGamsConnectSchemaDir()
 {
     // given
-    QString systemdir = TestCommonPaths::getExpectedPath();
-    CommonPaths::setSystemDir(systemdir);
+    CommonPaths::setSystemDir("");
     // when
     QString path = CommonPaths::gamsConnectSchemaDir();
     // then
