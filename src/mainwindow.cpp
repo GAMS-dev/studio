@@ -1354,7 +1354,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         if (path.isEmpty()) path = ".";
     }
 
-    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms"; // TODO(JM) for project files set "gsp"
+    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms";
     QString suffixDot = suffix.isEmpty() ? "" : "."+suffix;
     if (solverName.isEmpty()) {
         // find a free file name
@@ -1438,6 +1438,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     }
 
     if (projectOnly) {
+        QFileInfo fi(filePath);
+        mProjectRepo.createProject(filePath, fi.path(), "", onExist_AddNr);
     } else if (!projects.isEmpty()) {
         // add file to each selected project
         for (PExProjectNode *project: projects)
