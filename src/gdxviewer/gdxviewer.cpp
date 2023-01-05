@@ -28,6 +28,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "headerviewproxy.h"
+#include "settings.h"
 
 #include <QMutex>
 #include <QtConcurrent>
@@ -514,12 +515,16 @@ void GdxViewer::readState(QVariantMap map)
     }
 }
 
-void GdxViewer::writeState(QVariantMap &map)
+void GdxViewer::writeState(const QString &location)
 {
-    map.clear();
+    QVariantMap map;
     saveState();
     if (mState)
         mState->write(map);
+    QVariantMap states = Settings::settings()->toMap(skGdxStates);
+    states.insert(location, map);
+    Settings::settings()->setMap(skGdxStates, states);
+
 }
 
 QString GdxViewer::gdxFile() const

@@ -300,6 +300,7 @@ private slots:
     // Tools
     void on_actionGDX_Diff_triggered();
     void actionGDX_Diff_triggered(QString workingDirectory, QString input1="", QString input2="");
+    void actionResetGdxStates(const QStringList &files);
     void on_actionTerminal_triggered();
     void actionTerminalTriggered(const QString &workingDir);
 

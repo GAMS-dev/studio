@@ -65,7 +65,7 @@ public:
     QString gdxFile() const;
     GdxViewerState *state() const;
     void readState(QVariantMap map);
-    void writeState(QVariantMap &map);
+    void writeState(const QString &location);
 
 public slots:
     void invalidate();

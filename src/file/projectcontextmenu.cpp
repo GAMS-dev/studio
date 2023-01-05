@@ -58,6 +58,7 @@ enum ContextAction {
     actCollapseAll,
     actOpenTerminal,
     actGdxDiff,
+    actGdxReset,
     actSep7,
     actProjExport,
     actProjImport,
@@ -76,6 +77,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
     mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
+    mActions.insert(actGdxReset, addAction("&Reset GDX state", this, &ProjectContextMenu::onGdxReset));
     mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
     mActions.insert(actOpenEfi, addAction("Create &EFI file", this, &ProjectContextMenu::onOpenEfi));
 
@@ -213,6 +215,16 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
             isOpenableWithGdxDiff = isOpenableWithGdxDiff && fn && fn->file()->kind() == FileKind::Gdx;
         }
     }
+    bool hasGdx = false;
+    bool hasOpenGdx = false;
+    for (PExAbstractNode *node : qAsConst(mNodes)) {
+        PExFileNode *fileNode = node->toFile();
+        if (fileNode && fileNode->file()->kind() == FileKind::Gdx) {
+            hasGdx = true;
+            if (fileNode->file()->isOpen())
+                hasOpenGdx = true;
+        }
+    }
 
     QString file;
     if (fileNode && fileNode->assignedProject()) {
@@ -226,6 +238,9 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
     mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
+
+    mActions[actGdxReset]->setVisible(hasGdx);
+    mActions[actGdxReset]->setText(QString(hasOpenGdx ? "Close and " : "") + "&Reset GDX state");
 
     mActions[actOpen]->setEnabled(isOpenable);
     mActions[actOpen]->setVisible(isOpenable);
@@ -401,6 +416,18 @@ void ProjectContextMenu::onGdxDiff()
         emit openGdxDiffDialog(workingDir, mNodes.first()->toFile()->location());
     else if (mNodes.size() == 2)
         emit openGdxDiffDialog(workingDir, mNodes.first()->toFile()->location(), mNodes.last()->toFile()->location());
+}
+
+void ProjectContextMenu::onGdxReset()
+{
+    QStringList files;
+    for (PExAbstractNode *node : qAsConst(mNodes)) {
+        PExFileNode *fileNode = node->toFile();
+        if (fileNode && fileNode->file()->kind() == FileKind::Gdx)
+            files << fileNode->location();
+    }
+    if (!files.isEmpty())
+        emit resetGdxStates(files);
 }
 
 void ProjectContextMenu::onOpenFileLoc()

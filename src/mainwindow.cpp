@@ -224,6 +224,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::collapseAll, this, &MainWindow::on_collapseAll);
     connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
+    connect(&mProjectContextMenu, &ProjectContextMenu::resetGdxStates, this, &MainWindow::actionResetGdxStates);
     connect(mGotoDialog, &QDialog::finished, this, &MainWindow::goToLine);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
@@ -2582,11 +2583,20 @@ void MainWindow::updateAndSaveSettings()
 
     QVariantMap gdxStates = settings->toMap(skGdxStates);
     for (auto it = gdxStates.begin(); it != gdxStates.end(); ) {
-        if (!mFileMetaRepo.fileMeta(it.key()))
+        FileMeta *meta = mFileMetaRepo.fileMeta(it.key());
+        if (!meta)
             it = gdxStates.erase(it);
         else ++it;
     }
     settings->setMap(skGdxStates, gdxStates);
+    for (int i = 0; i < ui->mainTabs->count(); ++i) {
+        QWidget *wid = ui->mainTabs->widget(i);
+        if (!wid || wid == mWp) continue;
+        FileMeta *meta = mFileMetaRepo.fileMeta(wid);
+        if (!meta || meta->kind() != FileKind::Gdx) continue;
+        gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid);
+        if (gdx) gdx->writeState(meta->location());
+    }
 
     // at last, save the settings
     settings->save();
@@ -2809,6 +2819,19 @@ void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString inpu
     } else {
         mGdxDiffDialog->show();
     }
+}
+
+void MainWindow::actionResetGdxStates(const QStringList &files)
+{
+    QVariantMap map = Settings::settings()->toMap(skGdxStates);
+    for (const QString &file : files) {
+        FileMeta *meta = mFileMetaRepo.fileMeta(file);
+        if (!meta || meta->kind() != FileKind::Gdx) continue;
+        if (meta->isOpen()) closeFileEditors(meta->id());
+        map.remove(meta->location());
+    }
+    Settings::settings()->setMap(skGdxStates, map);
+    updateAndSaveSettings();
 }
 
 void MainWindow::on_actionBase_mode_triggered()

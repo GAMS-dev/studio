@@ -651,11 +651,7 @@ void FileMeta::removeEditor(QWidget *edit)
     } else if (connect::ConnectEditor* cEdit = ViewHelper::toGamsConnectEditor(edit)) {
         disconnect(cEdit, &connect::ConnectEditor::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit)) {
-        QVariantMap map;
-        gdx->writeState(map);
-        QVariantMap states = Settings::settings()->toMap(skGdxStates);
-        states.insert(location(), map);
-        Settings::settings()->setMap(skGdxStates, states);
+        gdx->writeState(location());
     }
     if (AbstractView* av = ViewHelper::toAbstractView(edit)) {
         disconnect(av, &AbstractView::zoomRequest, this, &FileMeta::zoomRequest);

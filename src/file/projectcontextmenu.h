@@ -62,6 +62,7 @@ signals:
     void newFileDialog(QVector<PExProjectNode *> groups, const QString& solverName="", bool projectOnly = false);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
+    void resetGdxStates(const QStringList &files);
 
 private slots:
     void onCloseGroup();
@@ -77,6 +78,7 @@ private slots:
     void onAddNewSolverOptionFile(const QString &solverName);
     void onOpenTerminal();
     void onGdxDiff();
+    void onGdxReset();
     void onOpenFileLoc();
     void onOpenFile();
     void onOpenFileAsText();
