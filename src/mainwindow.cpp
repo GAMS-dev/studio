@@ -1845,6 +1845,8 @@ void MainWindow::fileChanged(const FileId fileId)
             if (index >= 0) {
                 ViewHelper::setModified(edit, fm->isModified());
                 fm->updateTabName(ui->mainTabs, index);
+                if (fm->kind() == FileKind::Gsp)
+                    updateRunState();
             }
         }
     }
@@ -2428,7 +2430,7 @@ bool MainWindow::isActiveProjectRunnable()
        } else {
            if (!mRecent.project()) return false;
            PExProjectNode *project = mRecent.project()->assignedProject();
-           return project && project->runnableGms();
+           return project && project->runnableGms() && QFile::exists(project->workDir()) && QFile::exists(project->location());
        }
     }
     return false;
@@ -4205,7 +4207,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    } else if (fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
+    } else if (fileMeta->kind() == FileKind::Gsp || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
                || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {

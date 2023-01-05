@@ -825,8 +825,8 @@ void FileMeta::save(const QString &newLocation)
         out.flush();
         file.close();
     } else if (kind() == FileKind::Gsp) {
-        project::ProjectEdit* prOp = ViewHelper::toProjectEdit(mEditors.first());
-        if (prOp) prOp->save();
+        project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
+        if (PEd) PEd->save();
     } else if (kind() == FileKind::Opt) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
