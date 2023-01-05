@@ -35,6 +35,12 @@
 namespace gams {
 namespace studio {
 
+enum ProjectExistFlag {
+    onExist_Null,
+    onExist_Project,
+    onExist_AddNr,
+};
+
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
 /// QAbstractItemModel to provide a model for a QTreeView.
@@ -116,7 +122,8 @@ public:
     void save(PExProjectNode *project, const QVariantMap &data) const;
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString filePath, QString path, QString runFileName, QString workDir = QString());
+    PExProjectNode *createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
+                                  QString workDir = QString());
     void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr

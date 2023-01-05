@@ -199,9 +199,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
-    connect(&mProjectRepo, &ProjectRepo::openProject, this, //&MainWindow::openProject);
+    connect(&mProjectRepo, &ProjectRepo::openProject, this,
             [this](const QString &gspFile) {
-        openFiles(QStringList() << gspFile, ogProjects);
+        openFilesProcess(QStringList() << gspFile, ogProjects);
     });
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
@@ -596,7 +596,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
     }
 
     QFileInfo fi(filePath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
     project->setVirtual();
     PExFileNode *node = addNode("", filePath, project);
     openFileNode(node);
@@ -1445,7 +1445,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     } else {
         // create new project and add the new file
         QString projectFileName = fi.path() + '/' + fi.completeBaseName() + suffixDot;
-        PExProjectNode *project = mProjectRepo.createProject(projectFileName, fi.absolutePath(), "");
+        PExProjectNode *project = mProjectRepo.createProject(projectFileName, fi.absolutePath(), "", onExist_AddNr);
         PExFileNode* node = addNode("", filePath, project);
         openFileNode(node);
         setMainGms(node); // does nothing if file is not of type gms
@@ -1514,7 +1514,7 @@ void MainWindow::openFolder(QString path, PExProjectNode *project)
         if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
             project = mRecent.project();
         else
-            project = projectRepo()->createProject(dir.dirName(), path, "");
+            project = projectRepo()->createProject(dir.dirName(), path, "", onExist_Project);
     }
 
     foreach(QString file, allFiles)
@@ -2300,7 +2300,7 @@ void MainWindow::on_actionChangelog_triggered()
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
     fm->setKind(FileKind::TxtRO);
-    PExProjectNode *project = mProjectRepo.createProject(fi.fileName(), fi.absolutePath(), "");
+    PExProjectNode *project = mProjectRepo.createProject(fi.fileName(), fi.absolutePath(), "", onExist_Project);
     project->setVirtual();
     openFile(fm, true, project);
 }
@@ -3245,7 +3245,7 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
     // create the destination group if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
-        project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+        project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
     }
 
     // create node if missing
@@ -3256,7 +3256,7 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
             else
                 fileNode = mProjectRepo.findOrCreateFileNode(filePath, project);
         } else
-            DEB() << "OOPS, this shouldn't happen: Neither project nor fileNode defined!";
+            DEB() << "OOPS, this shouldn't happen: Neither project nor file defined!";
     }
 
     // open the detected file
@@ -3297,15 +3297,20 @@ void MainWindow::openFilesDialog(OpenGroupOption opt)
     const QStringList files = QFileDialog::getOpenFileNames(this, text, path, filter,
                                                             nullptr, DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (files.isEmpty()) return;
+    openFilesProcess(files, opt);
+}
 
+void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
+{
     PExFileNode *firstNode = nullptr;
     PExFileNode *fileNode = nullptr;
     for (const QString &fileName : files) {
         if (fileName.endsWith(".gsp", Qt::CaseInsensitive)) {
-            if (mProjectRepo.findProject(fileName))
+            if (mProjectRepo.findProject(fileName)) {
+                QString name = QFileInfo(fileName).completeBaseName();
                 QMessageBox::information(this, "Project already open",
-                                         QString("The project '%1' is already opened in the Project Explorer."));
-            else {
+                                         QString("The project '%1' is already opened in the Project Explorer.").arg(name));
+            } else {
                 openProject(fileName);
                 if (PExProjectNode *project = mProjectRepo.findProject(fileName)) {
                     if (FileMeta *meta = project->runnableGms()) {
@@ -4129,7 +4134,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             } else {
                 QFileInfo file(fileMeta->location());
                 project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
-                                                     file.absoluteFilePath());
+                                                     file.absoluteFilePath(), onExist_AddNr);
                 nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
             }
         }
@@ -4745,7 +4750,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
             if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
                 file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
                 QFileInfo fi(file);
-                PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "");
+                PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
                 project->setVirtual();
                 PExFileNode *node = addNode("", file, project);
                 openFileNode(node);

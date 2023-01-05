@@ -327,7 +327,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
-        if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, workDir)) {
+        if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
             if (!readProjectFiles(project, subChildren, projectPath))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
@@ -512,7 +512,7 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QString runFileName, QString workDir)
+PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode, QString workDir)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
@@ -523,10 +523,15 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
         filePath = path + '/' + filePath;
     }
 
-    PExProjectNode* project = nullptr;
-    FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
+    PExProjectNode* project = findProject(filePath);
+    if (project) {
+        if (mode == onExist_Project) return project;
+        if (mode == onExist_Null) return nullptr;
+    }
 
     uniqueProjectFile(mTreeModel->rootNode(), filePath);
+    FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
+
     project = new PExProjectNode(filePath, path, runFile, workDir);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
     connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
@@ -677,7 +682,7 @@ PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNod
         if (PExFileNode *pfn = findFile(fileMeta))
             project = pfn->assignedProject();
         else
-            project = createProject(groupName, fi.absolutePath(), fi.filePath());
+            project = createProject(groupName, fi.absolutePath(), fi.filePath(), onExist_Project);
 
         if (!project) {
             DEB() << "The project must not be null";
@@ -845,17 +850,24 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         PExAbstractNode *aNode = node(idx);
         project = aNode->assignedProject();
     } else {
-        QFileInfo firstFile(files.first());
-
-        QString name;
-        QString basePath;
-        if (firstFile.isFile())
-            basePath = firstFile.absolutePath();
-        else if (firstFile.isDir())
-            basePath = firstFile.filePath();
-
-        name = firstFile.completeBaseName();
-        project = createProject(name, basePath, files.first());
+        QString validFile;
+        for (const QString &filePath: qAsConst(files)) {
+            if (!filePath.endsWith(".gsp", Qt::CaseInsensitive)) {
+                validFile = filePath;
+                break;
+            }
+        }
+        if (!validFile.isEmpty()) {
+            QFileInfo file = validFile;
+            QString name;
+            QString basePath;
+            if (file.isFile())
+                basePath = file.absolutePath();
+            else if (file.isDir())
+                basePath = file.filePath();
+            name = file.completeBaseName();
+            project = createProject(name, basePath, files.first(), onExist_AddNr);
+        }
     }
 
     QStringList filesNotFound;

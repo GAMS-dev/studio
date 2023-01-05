@@ -444,6 +444,7 @@ private:
     bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
+    void openFilesProcess(const QStringList &files, OpenGroupOption opt);
     PExProjectNode *currentProject();
     int pinViewTabIndex();
 
