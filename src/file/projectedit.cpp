@@ -112,8 +112,11 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->setupUi(this);
     mSharedData = sharedData;
     ui->edName->setEnabled(false);
+    ui->edName->setToolTip("Name: the name of the project, this is always the filename");
     ui->edMainGms->setEnabled(false);
+    ui->edMainGms->setToolTip("Main file: this file will be excuted with GAMS");
     ui->edProjectFile->setEnabled(false);
+    ui->edProjectFile->setToolTip("Project file: this file contains all project information");
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
     ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
