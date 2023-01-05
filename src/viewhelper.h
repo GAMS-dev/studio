@@ -189,13 +189,14 @@ public:
         QStringList userTypes = FileType::userGamsTypes();
         if (!userTypes.isEmpty())
             res << ("Additional GAMS sources (*." + userTypes.join(" *.") + ")");
+        res << "GAMS project (*.gsp)";
         res << "GAMS Include files (*.inc)"
-        << "Option files (*.opt *.op* *.o*)"
-        << "GAMS Configuration file (gamsconfig.yaml)"
-        << "Gams Connect Yaml File (*.yaml)"
-        << "Text files (*.txt)"
-        << "External files (*.efi)"
-        << "All files (" + allFilesFilter + ")";
+            << "Option files (*.opt *.op* *.o*)"
+            << "GAMS Configuration file (gamsconfig.yaml)"
+            << "Gams Connect Yaml File (*.yaml)"
+            << "Text files (*.txt)"
+            << "External files (*.efi)"
+            << "All files (" + allFilesFilter + ")";
         return res;
     }
 
@@ -210,14 +211,14 @@ public:
         } else
             res << allGams.arg("");
         res << "GAMS Include files (*.inc)"
-        << "Option files (*.opt *.op* *.o*)"
-        << "GAMS Configuration file (gamsconfig.yaml)"
-        << "GAMS Connect yaml file (*.yaml)"
-        << "GAMS Data eXchange (*.gdx)"
-        << "Reference files (*.ref)"
-        << "Text files (*.txt)"
-        << "External files (*.efi)"
-        << "All files (" + allFilesFilter + ")";
+            << "Option files (*.opt *.op* *.o*)"
+            << "GAMS Configuration file (gamsconfig.yaml)"
+            << "GAMS Connect yaml file (*.yaml)"
+            << "GAMS Data eXchange (*.gdx)"
+            << "Reference files (*.ref)"
+            << "Text files (*.txt)"
+            << "External files (*.efi)"
+            << "All files (" + allFilesFilter + ")";
         return res;
     }
 
