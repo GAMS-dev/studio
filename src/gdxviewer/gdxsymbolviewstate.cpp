@@ -391,15 +391,19 @@ void GdxSymbolViewState::read(const QVariantMap &map)
     mListViewHeaderState = QByteArray::fromBase64(map.value("listViewHeader").toByteArray());
     mTableViewFilterHeaderState = QByteArray::fromBase64(map.value("tableViewFilterHeader").toByteArray());
 
-    const QStringList tableViewColumns = map.value("tableViewColumnWidths").toString().split(',');
-    for (const QString &columnWidth : tableViewColumns) {
-        int value;
-        bool ok = assignIfValidInt(value, columnWidth);
-        if (!ok) {
-            DEB() << "Error restoring GDX symbol view: invalid table column width";
-            break;
+    if (map.contains("tableViewColumnWidths")) {
+        const QStringList tableViewColumns = map.value("tableViewColumnWidths").toString().split(',');
+        for (const QString &columnWidth : tableViewColumns) {
+            int value;
+            if (!columnWidth.isEmpty()) {
+                bool ok = assignIfValidInt(value, columnWidth);
+                if (!ok) {
+                    DEB() << "Error restoring GDX symbol view: invalid table column width";
+                    break;
+                }
+                mTableViewColumnWidths << value;
+            }
         }
-        mTableViewColumnWidths << value;
     }
 }
 
