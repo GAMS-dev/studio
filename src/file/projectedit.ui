@@ -48,14 +48,14 @@
        <widget class="QLineEdit" name="edProjectFile"/>
       </item>
       <item row="4" column="0">
-       <widget class="QLabel" name="label_3">
+       <widget class="QLabel" name="laMainGms">
         <property name="text">
          <string>Main file</string>
         </property>
        </widget>
       </item>
       <item row="0" column="0">
-       <widget class="QLabel" name="label_2">
+       <widget class="QLabel" name="laProjectFile">
         <property name="text">
          <string>Project file</string>
         </property>
@@ -100,7 +100,7 @@
        </widget>
       </item>
       <item row="1" column="0">
-       <widget class="QLabel" name="label">
+       <widget class="QLabel" name="laName">
         <property name="text">
          <string>Name</string>
         </property>

@@ -2714,10 +2714,13 @@ void MainWindow::openProject(const QString gspFile)
     QFile file(gspFile);
     if (file.open(QFile::ReadOnly)) {
         QJsonParseError parseResult;
-        json = QJsonDocument::fromJson(file.readAll(), &parseResult);
-        if (parseResult.error) {
-            appendSystemLogError("Couldn't parse project from " + gspFile);
-            return;
+        QByteArray content = file.readAll();
+        if (!content.isEmpty()) {
+            json = QJsonDocument::fromJson(content, &parseResult);
+            if (parseResult.error) {
+                appendSystemLogError("Couldn't parse project from " + gspFile);
+                return;
+            }
         }
         file.close();
 

@@ -247,15 +247,16 @@ bool ProjectRepo::checkRead(const QVariantList &data, int &count, int &ignored, 
     missed.clear();
     for (int i = 0; i < data.size(); ++i) {
         QVariantMap child = data.at(i).toMap();
-        QString runName = QDir::cleanPath(baseDir.absoluteFilePath(child.value("file").toString()));
+        QString runFile = child.value("file").toString();
+        QString runPath = runFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(runFile));
 
         QVariantList children = child.value("nodes").toList();
         if (!children.isEmpty() && !basePath.isEmpty()) {
             for (int i = 0; i < children.size(); ++i) {
                 QVariantMap child = children.at(i).toMap();
                 QString fileName = QDir::cleanPath(baseDir.absoluteFilePath(child.value("file").toString()));
-                if (fileName.compare(runName, FileType::fsCaseSense()) == 0)
-                    runName = QString();
+                if (fileName.compare(runPath, FileType::fsCaseSense()) == 0)
+                    runPath = QString();
                 QFileInfo file(fileName);
                 if (!file.exists()) {
                     if (CIgnoreSuffix.contains('.'+file.suffix()+'.')) ++ignored;
@@ -264,8 +265,8 @@ bool ProjectRepo::checkRead(const QVariantList &data, int &count, int &ignored, 
                 ++count;
             }
         }
-        if (!runName.isEmpty())
-            missed << runName + " (main file missing in file list)";
+        if (!runPath.isEmpty())
+            missed << runPath + " (main file missing in file list)";
     }
     return missed.isEmpty();
 }

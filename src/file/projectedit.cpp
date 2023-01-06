@@ -121,10 +121,15 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
     ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
     ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
+    ui->laName->setToolTip(ui->edName->toolTip());
+    ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
+    ui->laMainGms->setToolTip(ui->edMainGms->toolTip());
     ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bBaseDir->setToolTip("Browse for base directory");
     ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bBaseDir->setToolTip("Browse for working directory");
     adjustSize();
     connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
     connect(sharedData, &ProjectData::tabNameChanged, this, [this](PExProjectNode *project) {
