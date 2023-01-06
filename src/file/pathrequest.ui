@@ -42,7 +42,7 @@
       <item row="0" column="0" colspan="2">
        <widget class="QLabel" name="laText">
         <property name="text">
-         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;%1 referenced in the project could not be found at its relative path. You can&lt;/p&gt;&lt;p&gt;- copy the project files to the matching relative path&lt;br/&gt;- change the base directory to match the relative path of the files&lt;br/&gt;- ignore missing files and proceed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+         <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;%1 referenced in the project could not be found at its relative path. You can&lt;/p&gt;&lt;p&gt;- copy the project files to the matching relative path&lt;br/&gt;- ignore missing files and proceed&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
         </property>
         <property name="wordWrap">
          <bool>true</bool>
