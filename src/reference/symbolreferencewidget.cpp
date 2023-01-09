@@ -158,7 +158,7 @@ void SymbolReferenceWidget::resetModel()
     QModelIndexList items = mSymbolTableModel->match(idx, Qt::DisplayRole,
                                                      mCurrentSymbolSelection, 1,
                                                      Qt::MatchExactly);
-    for(QModelIndex itemIdx : items) {
+    for(QModelIndex itemIdx : qAsConst(items)) {
         ui->symbolView->selectionModel()->select(
                     QItemSelection(
                         mSymbolTableModel->index(itemIdx.row(),0),

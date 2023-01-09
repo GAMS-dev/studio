@@ -40,14 +40,14 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
     QStringList filters { "*.gms", "*.txt" };
     QStringList autsaveFiles;
 
-    for (auto file : list) {
+    for (const auto &file : list) {
         QFileInfo fi(file);
         QString path = fi.absolutePath();
         if (!path.isEmpty()) {
             QDir dir(path);
             dir.setNameFilters(filters);
             QStringList files = dir.entryList(filters);
-            for (auto file : files) {
+            for (auto file : qAsConst(files)) {
                 if (file.startsWith(mAutosavedFileMarker)) {
                     QString autosaveFilePath = path+"/"+file;
                     file.replace(mAutosavedFileMarker, "");

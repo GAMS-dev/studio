@@ -189,7 +189,7 @@ public:
     );
 
     bool hasType(SchemaType tt) {
-       for (const SchemaType t : types) {
+       Q_FOREACH (const SchemaType t, types) {
           if (t==tt) return true;
        }
        return false;

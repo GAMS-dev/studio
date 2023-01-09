@@ -57,7 +57,7 @@ public slots:
     void expandResetModel();
     void resetModel();
     void initModel();
-    void initModel(Reference *ref);
+    void initModel(gams::studio::reference::Reference *ref);
     void jumpToFile(const QModelIndex &index);
     void jumpToReferenceItem(const QModelIndex &index);
     void updateSymbolSelection();

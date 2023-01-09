@@ -168,7 +168,7 @@ TextMark *TextMarkRepo::findBookmark(FileId fileId, int currentLine, bool back)
 void TextMarkRepo::removeBookmarks()
 {
     QVector<FileId> files = mBookmarkedFiles;
-    for (FileId fileId: files) {
+    for (const FileId &fileId: files) {
         removeMarks(fileId, QSet<TextMark::Type>() << TextMark::bookmark);
     }
 }
@@ -284,7 +284,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
             it.remove();
         }
     }
-    for (TextMark *mark: parked) {
+    for (TextMark *mark: qAsConst(parked)) {
         mark->setLine(lineShift<0 ? qMax(mark->line()+lineShift, firstLine): mark->line()+lineShift);
         marks->insert(mark->line(), mark);
     }
@@ -298,11 +298,11 @@ void TextMarkRepo::setDebugMode(bool debug)
     if (!debug) return;
     DEB() << "\n--------------- TextMarks ---------------";
     QList<int> keys;
-    for (FileId id: mMarks.keys()) {
+    for (const FileId &id: mMarks.keys()) {
         keys << int(id);
     }
     std::sort(keys.begin(), keys.end());
-    for (int key: keys) {
+    for (int key: qAsConst(keys)) {
         DEB() << key << ": " << mMarks.value(FileId(key))->size();
     }
 }

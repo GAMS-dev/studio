@@ -114,7 +114,7 @@ void TestDocLocation::testUrlLocalFile()
     QFileInfo fis(sysdir);
     if (fis.isSymLink()) {
         sysdir = fis.symLinkTarget();
-        QVERIFY2(QFileInfo(sysdir).exists(), QString("symlink resolved system directory: '%1' does not exist").arg(sysdir).toLatin1());
+        QVERIFY2(QFileInfo::exists(sysdir), QString("symlink resolved system directory: '%1' does not exist").arg(sysdir).toLatin1());
     } else {
         QVERIFY2(fis.exists(), QString("system directory: '%1' does not exist").arg(sysdir).toLatin1());
     }
@@ -124,7 +124,7 @@ void TestDocLocation::testUrlLocalFile()
     QFileInfo fid(sysdir);
     if (fid.isSymLink()) {
         helpdocdir = fid.symLinkTarget();
-        QVERIFY2(QFileInfo(helpdocdir).exists(), QString("symlink resolved doc directory: '%1' does not exist").arg(helpdocdir).toLatin1());
+        QVERIFY2(QFileInfo::exists(helpdocdir), QString("symlink resolved doc directory: '%1' does not exist").arg(helpdocdir).toLatin1());
     } else {
         QVERIFY2(fid.exists(), QString("doc directory: '%1' does not exist").arg(helpdocdir).toLatin1());
     }
@@ -220,8 +220,7 @@ void TestDocLocation::testLocalFileToOnlineUrl()
     // then
     QUrl expectUrl(expectedurlstr, QUrl::TolerantMode);
     QVERIFY2(expectUrl==onlineUrl, QString("Expect two urls:'%1' and '%2' to be equal")
-                                      .arg(expectUrl.toDisplayString())
-                                      .arg(onlineUrl.toDisplayString())
+                                      .arg(expectUrl.toDisplayString(), onlineUrl.toDisplayString())
                                    .toLatin1()
              );
 }
@@ -299,16 +298,14 @@ void TestDocLocation::testOnlineUrlToLocalFile()
     localUrl.setPath("/" + pathList.join("/"));
 
     QVERIFY2(QFileInfo(localUrl.toLocalFile())==QFileInfo(indexFile), QString("Expect two files:'%1' and '%2' to be equal")
-                                                                             .arg(localUrl.toLocalFile())
-                                                                             .arg(indexFile)
+                                                                             .arg(localUrl.toLocalFile(), indexFile)
                                                                      .toLatin1()
              );
 
     if (!url.fragment().isEmpty())
         localUrl.setFragment(url.fragment());
     QVERIFY2(fragment.compare(url.fragment(), Qt::CaseInsensitive)==0, QString("Expect two fragments:'%1' and '%2' to be the same")
-                                                                         .arg(url.fragment())
-                                                                         .arg(fragment)
+                                                                         .arg(url.fragment(), fragment)
                                                                        .toLatin1()
     );
 

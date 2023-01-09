@@ -69,7 +69,7 @@ signals:
     void symbolSelectionToBeUpdated();
 
 public slots:
-    void sortFileUsed(FileUsedSortOrder order =  FileUsedSortOrder::OriginalOrder);
+    void sortFileUsed(gams::studio::reference::SymbolTableModel::FileUsedSortOrder order =  FileUsedSortOrder::OriginalOrder);
     void setFilterPattern(const QRegExp &pattern);
 
 private:

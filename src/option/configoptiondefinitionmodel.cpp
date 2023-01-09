@@ -65,13 +65,13 @@ QMimeData *ConfigOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             if (parentItem == rootItem) {
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
                 QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
-                text = QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString())
-                                          .arg(data(defValueIndex, Qt::DisplayRole).toString())
-                                          .arg(data(optionIdIndex, Qt::DisplayRole).toString());
+                text = QString("%1=%2=%3").arg(data(index, Qt::DisplayRole).toString(),
+                                               data(defValueIndex, Qt::DisplayRole).toString(),
+                                               data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
-                text = QString("%1=%2=%3").arg(parentItem->data(index.column()).toString())
-                                          .arg(data(index, Qt::DisplayRole).toString())
-                                          .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
+                text = QString("%1=%2=%3").arg(parentItem->data(index.column()).toString(),
+                                               data(index, Qt::DisplayRole).toString(),
+                                               parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
             }
             stream << text;
         }
@@ -88,7 +88,7 @@ void ConfigOptionDefinitionModel::modifyOptionDefinitionItem(const ParamConfigIt
                                              Qt::DisplayRole,
                                              QString::number(optionItem->optionId) , 1);
     beginResetModel();
-    for(QModelIndex idx : indices) {
+    for(QModelIndex idx : qAsConst(indices)) {
         QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());

@@ -51,7 +51,7 @@ void Option::dumpAll()
     qDebug() << QString("mSynonymMap.size() = %1").arg(mSynonymMap.size());
     QMap<QString, QString>::iterator ssit;
     for (ssit = mSynonymMap.begin(); ssit != mSynonymMap.end(); ++ssit)
-        qDebug()  << QString("  [%1] = %2").arg(ssit.key()).arg(ssit.value());
+        qDebug()  << QString("  [%1] = %2").arg(ssit.key(), ssit.value());
 
     for( QMap<int, OptionGroup>::const_iterator it=mOptionGroup.cbegin(); it!=mOptionGroup.cend(); ++it) {
         OptionGroup group = it.value();
@@ -86,7 +86,10 @@ void Option::dumpAll()
         }
         for(int j =0; j< opt.valueList.size(); j++) {
             OptionValue enumValue = opt.valueList.at(j);
-            qDebug() <<QString("    %1_%2  Hidden:%3 %4").arg(mOptionTypeNameMap[opt.type]).arg(enumValue.value.toString()).arg(enumValue.hidden? "T" : "F").arg(enumValue.description);
+            qDebug() <<QString("    %1_%2  Hidden:%3 %4").arg(mOptionTypeNameMap[opt.type],
+                                                              enumValue.value.toString(),
+                                                              enumValue.hidden? "T" : "F",
+                                                              enumValue.description);
         }
     }
 }
@@ -157,7 +160,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
          bool isCorrectDataType = false;
          int n = value.toInt(&isCorrectDataType);
          if (isCorrectDataType) {
-            for (OptionValue optValue: getValueList(key)) {
+            for (const OptionValue &optValue: getValueList(key)) {
                if (optValue.value.toInt() == n) { // && !optValue.hidden) {
                    return OptionErrorType::No_Error;
                }
@@ -168,7 +171,7 @@ OptionErrorType Option::getValueErrorType(const QString &optionName, const QStri
          }
      }
      case optTypeEnumStr : {
-         for (OptionValue optValue: getValueList(key)) {
+         for (const OptionValue &optValue: getValueList(key)) {
            if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
                return OptionErrorType::No_Error;
            }
@@ -354,7 +357,7 @@ QStringList Option::getKeyAndSynonymList() const
 QStringList Option::getValuesList(const QString &optionName) const
 {
    QStringList valueList;
-   for ( OptionValue value: getValueList(optionName.toUpper()) )
+   for ( const OptionValue &value: getValueList(optionName.toUpper()) )
        valueList << value.value.toString();
 
    return valueList;
@@ -372,7 +375,7 @@ QStringList Option::getSynonymList(const QString &optionName) const
 QStringList Option::getNonHiddenValuesList(const QString &optionName) const
 {
     QStringList valueList;
-    for ( OptionValue value: getValueList(optionName.toUpper()) ) {
+    for ( const OptionValue &value: getValueList(optionName.toUpper()) ) {
         if (!value.hidden)
            valueList << value.value.toString();
     }
@@ -616,7 +619,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
                  opt.defaultValue = QVariant(sdefval);
                  if (modeltypes.contains(nameStr)) {
                      QStringList solvers = solverConfigInfo.solversForModelType( modeltypes[nameStr] );
-                     for (const QString &s : solvers) {
+                     for (const QString &s : qAsConst(solvers)) {
                          opt.valueList.append( OptionValue(QVariant(s), "", false, false ) );
                      }
                  }

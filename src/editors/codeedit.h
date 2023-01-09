@@ -145,7 +145,7 @@ protected:
     void jumpToCurrentLink(const QPoint &mousePos) override;
 
 signals:
-    void requestMarkHash(QHash<int, TextMark*>* marks, TextMark::Type filter);
+    void requestMarkHash(QHash<int, gams::studio::TextMark*>* marks, gams::studio::TextMark::Type filter);
     void requestMarksEmpty(bool* marksEmpty);
     void requestSyntaxKind(int position, int &intKind, int &flavor);
     void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);

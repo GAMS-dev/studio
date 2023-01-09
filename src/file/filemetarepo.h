@@ -66,23 +66,23 @@ public:
     void setAskBigFileEdit(bool askBigFileEdit);
 
 signals:
-    void fileEvent(FileEvent &e);
+    void fileEvent(gams::studio::FileEvent &e);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
-    void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
+    void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void projectTabRenamed(QWidget *wid, const QString &newName);
 
 public slots:
-    void openFile(FileMeta* fm, NodeId groupId, bool focus = true, int codecMib = -1);
-    void removeFile(FileMeta* fileMeta);
-    void toggleBookmark(FileId fileId, int lineNr, int posInLine);
-    void jumpToNextBookmark(bool back, FileId refFileId, int refLineNr);
+    void openFile(gams::studio::FileMeta* fm, gams::studio::NodeId groupId, bool focus = true, int codecMib = -1);
+    void removeFile(gams::studio::FileMeta* fileMeta);
+    void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
 
 private slots:
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();
-    void fontChangeRequest(FileMeta *fileMeta, QFont f);
+    void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
 
 private:
     void addFileMeta(FileMeta* fileMeta);

@@ -159,9 +159,9 @@ QStringList GamsLicenseInfo::gamsDataLocations()
                     systemDir.toStdString().c_str()))
         return dataPaths;
 
+#ifdef _WIN32
     auto currentPath = QDir::toNativeSeparators(QDir::currentPath());
     for (int i=0; i<nOffset && i<numdirs; i++) {
-#ifdef _WIN32
         QString path(buffer+offset[i]);
         if (path == currentPath) {
             continue;
@@ -170,9 +170,13 @@ QStringList GamsLicenseInfo::gamsDataLocations()
             dataPaths << QDir::toNativeSeparators(path);
             continue;
         }
-#endif
         dataPaths << buffer+offset[i];
     }
+#else
+    for (int i=0; i<nOffset && i<numdirs; i++) {
+        dataPaths << buffer+offset[i];
+    }
+#endif
 
     return dataPaths;
 }

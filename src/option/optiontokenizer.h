@@ -99,7 +99,7 @@ public:
 
 public slots:
     void formatTextLineEdit(QLineEdit* lineEdit, const QString &commandLineStr);
-    void formatItemLineEdit(QLineEdit* lineEdit, const QList<OptionItem> &optionItems);
+    void formatItemLineEdit(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem> &optionItems);
 
 private:
     Option* mOption = nullptr;

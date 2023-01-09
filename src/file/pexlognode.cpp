@@ -107,11 +107,11 @@ void PExLogNode::logDone()
                 QDir dir = project->location();
                 path = dir.relativeFilePath(path);
             }
-            message = QString("LOG:%1[FIL:\"%2\",0]").arg(path).arg(fi.filePath());
+            message = QString("LOG:%1[FIL:\"%2\",0]").arg(path, fi.filePath());
         } else {
             message = QString("LOG: no log (logoption=%1)").arg(mLogOption);
         }
-        tv->addProcessData(message.toUtf8());
+        emit tv->addProcessData(message.toUtf8());
     }
     mLogFinished = true;
     mLogCloser.start();

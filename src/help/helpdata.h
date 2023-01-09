@@ -186,18 +186,18 @@ public:
         if (keyword.isEmpty())
             return keyword;
         else
-            return QString("%1%2").arg("GAMSAO").arg(keyword.toLower());
+            return QString("%1%2").arg("GAMSAO", keyword.toLower());
     }
 
     inline static QString getDollarControlOptionAnchor(const QString &keyword) {
         if (keyword.isEmpty()) return keyword;
 
         if (keyword.toLower().startsWith("off"))
-            return QString("%1%2").arg("DOLLARon").arg(keyword.toLower());
+            return QString("%1%2").arg("DOLLARon", keyword.toLower());
         else if (keyword.toLower().startsWith("on"))
-               return QString("%1%2").arg("DOLLARonoff").arg(keyword.toLower().mid(2));
+               return QString("%1%2").arg("DOLLARonoff", keyword.toLower().mid(2));
         else
-           return QString("%1%2").arg("DOLLAR").arg(keyword.toLower());
+           return QString("%1%2").arg("DOLLAR", keyword.toLower());
     }
 
     inline static QString getKeywordIndexAnchor(const QString &keyword) {
@@ -211,7 +211,7 @@ public:
         str.replace(" ", "_");
         str.replace("/", "_");
         str.replace(".", "DOT");
-        return QString("%1%2").arg(solvername.toUpper()).arg(str);
+        return QString("%1%2").arg(solvername.toUpper(), str);
     }
 
     inline static QString getSolverChapterLocation(const QString &solverName) {
@@ -233,7 +233,7 @@ public:
     inline static int getURLIndexFrom(const QString &urlStr)  {
         int index = -1;
         QStringList pathList;
-        for(QString path : getPathList()) {
+        for(const QString &path : getPathList()) {
             index++;
             if (urlStr.lastIndexOf(path) > -1)
                return index;

@@ -90,7 +90,7 @@ public:
         return mSequence.contains(QKeySequence(searchkey));
     }
     inline bool contains(int keycode) const {
-        for (QKeySequence seq: mSequence) {
+        for (const QKeySequence &seq: mSequence) {
             for (int i = 0; i < seq.count(); ++i) {
                 int mask = seq[uint(i)] & ~Qt::KeyboardModifierMask;
                 if (mask == keycode) return true;

@@ -48,7 +48,7 @@ GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTex
 
 GdxSymbolTableModel::~GdxSymbolTableModel()
 {
-    for(auto gdxSymbol : mGdxSymbols) {
+    for(auto gdxSymbol : qAsConst(mGdxSymbols)) {
         mGdxSymbolByName.remove(gdxSymbol->name());
         delete gdxSymbol;
     }
@@ -137,7 +137,7 @@ void GdxSymbolTableModel::createSortIndex()
 
     mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
-    for (QPair<QString, int> p : l) {
+    for (const QPair<QString, int> &p : l) {
         mLabelCompIdx[p.second] = idx;
         idx++;
     }

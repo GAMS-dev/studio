@@ -90,7 +90,7 @@ QVariant GamsParameterTableModel::headerData(int index, Qt::Orientation orientat
             tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(index).key) );
             break;
         case OptionErrorType::Value_Out_Of_Range:
-            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index).value).arg(mOptionItem.at(index).key) );
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(index).value, mOptionItem.at(index).key) );
             break;
         case OptionErrorType::Deprecated_Option:
             tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index).key) );
@@ -160,7 +160,7 @@ QVariant GamsParameterTableModel::data(const QModelIndex &index, int role) const
             tooltipText.append( QString("Parameter key '%1' has a value of incorrect type").arg(mOptionItem.at(row).key) );
             break;
         case OptionErrorType::Value_Out_Of_Range:
-            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row).value).arg(mOptionItem.at(row).key) );
+            tooltipText.append( QString("Value '%1' for parameter key '%2' is out of range").arg(mOptionItem.at(row).value, mOptionItem.at(row).key) );
             break;
         case OptionErrorType::Deprecated_Option:
             tooltipText.append( QString("Parameter '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row).key) );
@@ -367,7 +367,7 @@ QMimeData *GamsParameterTableModel::mimeData(const QModelIndexList &indexes) con
             }
 
             QModelIndex valueIndex = index.sibling(index.row(), 1);
-            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString()).arg(data(valueIndex, Qt::DisplayRole).toString());
+            QString text = QString("%1=%2").arg(data(index, Qt::DisplayRole).toString(), data(valueIndex, Qt::DisplayRole).toString());
             stream << text;
         }
     }
@@ -421,14 +421,14 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
 
         QList<OptionItem> itemList;
         QList<int> overrideIdRowList;
-        for (const QString &text : newItems) {
+        for (const QString &text : qAsConst(newItems)) {
             QStringList textList = text.split("=");
             int optionid = mOption->getOptionDefinition(textList.at(0)).number;
             itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
             QModelIndexList indices = match(index(GamsParameterTableModel::COLUMN_OPTION_KEY, GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
-              for(QModelIndex idx : indices) { overrideIdRowList.append(idx.row()); }
+              for(QModelIndex idx : qAsConst(indices)) { overrideIdRowList.append(idx.row()); }
 //          }
          }
          std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
@@ -441,9 +441,9 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
              msgBox.setWindowTitle("Parameter Entry exists");
              msgBox.setText("Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()+ "' already exists.");
              msgBox.setInformativeText("How do you want to proceed?");
-             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(overrideIdRowList.at(0)))
-                     .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.")
-                     .arg("The value of all other entries except the last entry will be ignored."));
+             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(overrideIdRowList.at(0)),
+                    "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                    "The value of all other entries except the last entry will be ignored."));
              msgBox.setStandardButtons(QMessageBox::Abort);
              msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
              msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -470,8 +470,8 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
              for (int id : overrideIdRowList)
                  entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(id)));
              msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                      .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.")
-                      .arg("The value of all other entries except the last entry will be ignored."));
+                      .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
+                           "The value of all other entries except the last entry will be ignored."));
              msgBox.setText("Multiple entries of Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString() + "' already exist.");
              msgBox.setInformativeText("How do you want to proceed?");
              msgBox.setStandardButtons(QMessageBox::Abort);
@@ -536,7 +536,7 @@ QString GamsParameterTableModel::getParameterTableEntry(int row)
     QVariant optionKey = data(keyIndex, Qt::DisplayRole);
     QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
     QVariant optionValue = data(valueIndex, Qt::DisplayRole);
-    return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+    return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 }
 
 void GamsParameterTableModel::toggleActiveOptionItem(int index)

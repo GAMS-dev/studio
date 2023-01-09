@@ -70,14 +70,14 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void solverOptionModelChanged(const QList<SolverOptionItem *> &optionItem);
-    void solverOptionItemModelChanged(const SolverOptionItem* optionItem);
+    void solverOptionModelChanged(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
+    void solverOptionItemModelChanged(const gams::studio::option::SolverOptionItem* optionItem);
     void solverOptionItemRemoved();
     void columnSpanned(int row);
     void columnUnspanned(int row);
 
 public slots:
-    void reloadSolverOptionModel(const QList<SolverOptionItem *> &optionItem);
+    void reloadSolverOptionModel(const QList<gams::studio::option::SolverOptionItem *> &optionItem);
     void on_updateSolverOptionItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeSolverOptionItem();
     void on_toggleRowHeader(int logicalIndex);

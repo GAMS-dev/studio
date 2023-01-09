@@ -1074,7 +1074,7 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
     if (index.isValid()) {
         QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
         if (!list.contains(index)) return;
-        for (NodeId id: mProjectRepo.treeModel()->selectedIds()) {
+        for (const NodeId &id: mProjectRepo.treeModel()->selectedIds()) {
             nodes << mProjectRepo.node(id);
         }
         if (nodes.isEmpty()) {
@@ -2018,7 +2018,7 @@ void MainWindow::processFileEvents()
             mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
             break;
         case FileProcessKind::fileLocked: // file is locked: reschedule event
-            for (auto event: remainEvents.value(key))
+            for (const auto &event: remainEvents.value(key))
                 scheduledEvents << event;
             break;
         case FileProcessKind::fileBecameInvalid: // file is invalid: close it
@@ -2345,7 +2345,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setArguments({"-e", statement.arg(CommonPaths::systemDir()).arg(workingDir)});
 #elif defined(__unix__)
     QStringList terms = {"gnome-terminal", "konsole", "xfce-terminal", "xterm"};
-    for (auto term: terms) {
+    for (const auto &term: terms) {
         auto appPath = QStandardPaths::findExecutable(term);
         if (appPath.isEmpty()) {
             continue;
@@ -4085,7 +4085,7 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::rehighlightOpenFiles()
 {
-    for (const QString &fileName : mOpenTabsList) {
+    for (const QString &fileName : qAsConst(mOpenTabsList)) {
         FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
         if (meta->isOpen() && meta->highlighter())
             meta->highlighter()->rehighlight();

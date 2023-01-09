@@ -64,9 +64,9 @@ bool TabWidget::eventFilter(QObject *sender, QEvent *event)
             }
 
             if (delta > 0) {
-                if (!bLeft->isHidden()) bLeft->clicked();
+                if (!bLeft->isHidden()) emit bLeft->clicked();
             } else if (delta < 0) {
-                if (!bRight->isHidden()) bRight->clicked();
+                if (!bRight->isHidden()) emit bRight->clicked();
             }
             return true;
         }

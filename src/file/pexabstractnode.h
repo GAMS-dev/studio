@@ -87,7 +87,7 @@ public:
     bool debugMode() const;
 
 signals:
-    void changed(NodeId nodeId);
+    void changed(gams::studio::NodeId nodeId);
 
 protected:
     PExAbstractNode(QString name, NodeType type);

@@ -89,7 +89,7 @@ bool FilterUelModel::setData(const QModelIndex &index, const QVariant &value, in
     if (role==Qt::CheckStateRole)
         mChecked[index.row()] = value.toBool();
 
-    dataChanged(index, index);
+    emit dataChanged(index, index);
     return true;
 }
 
@@ -110,7 +110,7 @@ void FilterUelModel::filterLabels(QRegExp regExp)
             checkedNew = false;
         if(checkedNew != checkedOld) {
             mChecked[idx] = checkedNew;
-            dataChanged(index(int(idx),0), index(int(idx),0));
+            emit dataChanged(index(int(idx),0), index(int(idx),0));
         }
     }
 }

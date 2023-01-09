@@ -40,6 +40,11 @@ MiroDeployDialog::MiroDeployDialog(QWidget *parent)
     connect(ui->fsWidget, &gams::studio::fs::FileSystemWidget::createClicked, this, &MiroDeployDialog::createClicked);
 }
 
+MiroDeployDialog::~MiroDeployDialog()
+{
+    delete ui;
+}
+
 MiroTargetEnvironment MiroDeployDialog::targetEnvironment()
 {
     if (ui->targetEnvBox->currentText() == "Single user")

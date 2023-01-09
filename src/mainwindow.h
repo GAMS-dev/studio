@@ -170,12 +170,13 @@ public:
     void invalidateResultsView();
 
 public slots:
-    PExFileNode* openFilePath(QString filePath, PExProjectNode* knownProject = nullptr,
-                                    OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
-                                    NewTabStrategy tabStrategy = tabAfterCurrent);
+    gams::studio::PExFileNode* openFilePath(QString filePath, gams::studio::PExProjectNode* knownProject = nullptr,
+                                            gams::studio::OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
+                                            gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
-    void openFile(FileMeta *fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
-                  bool forcedTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFile(gams::studio::FileMeta *fileMeta, bool focus = true,
+                  gams::studio::PExProjectNode *project = nullptr, int codecMib = -1,
+                  bool forcedTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
     void receiveOpenDoc(QString doc, QString anchor);
@@ -186,22 +187,23 @@ public slots:
     void updateStatusLineCount();
     void updateStatusLoadAmount();
     void openRecentFile();
-    void setMainGms(PExFileNode *node);
+    void setMainGms(gams::studio::PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLogInfo(const QString &text) const;
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<PExProjectNode *> projects = QVector<PExProjectNode *>(), const QString& solverName="",
+    void newFileDialog(QVector<gams::studio::PExProjectNode*> projects = QVector<gams::studio::PExProjectNode *>(),
+                       const QString& solverName=QString(),
                        bool projectOnly = false);
     void updateCursorHistoryAvailability();
-    void closeProject(PExProjectNode *project);
-    void closeFileEditors(const FileId fileId);
+    void closeProject(gams::studio::PExProjectNode *project);
+    void closeFileEditors(const gams::studio::FileId fileId);
     void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
-    void setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
+    void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
 
@@ -209,38 +211,39 @@ private slots:
     void initDelayedElements();
     void openDelayedFiles();
     void updateRecentEdit(QWidget *old, QWidget *now);
-    void openFileNode(PExAbstractNode *node, bool focus = true, int codecMib = -1, bool forcedAsTextEditor = false,
-                      NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
+                      int codecMib = -1, bool forcedAsTextEditor = false,
+                      gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void tabBarClicked(int index);
-    void fileChanged(const FileId fileId);
-    void fileClosed(const FileId fileId);
-    void fileEvent(const FileEvent &e);
+    void fileChanged(const gams::studio::FileId fileId);
+    void fileClosed(const gams::studio::FileId fileId);
+    void fileEvent(const gams::studio::FileEvent &e);
     void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
-    void postGamsRun(NodeId origin, int exitCode);
+    void postGamsRun(gams::studio::NodeId origin, int exitCode);
     void postGamsLibRun();
-    void neosProgress(AbstractProcess *proc, ProcState progress);
-    void remoteProgress(AbstractProcess *proc, ProcState progress);
-    void closeNodeConditionally(PExFileNode *node);
-    void addToGroup(PExProjectNode *project, const QString &filepath);
+    void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
+    void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
+    void closeNodeConditionally(gams::studio::PExFileNode *node);
+    void addToGroup(gams::studio::PExProjectNode *project, const QString &filepath);
     void sendSourcePath(QString &source);
-    void changeToLog(PExAbstractNode* node, bool openOutput, bool createMissing);
+    void changeToLog(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
     void cloneBookmarkMenu(QMenu *menu);
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void newProcessCall(const QString &text, const QString &call);
     void printDocument();
-    void updateTabIcon(PExAbstractNode *node, int tabIndex);
+    void updateTabIcon(gams::studio::PExAbstractNode *node, int tabIndex);
     void updateTabIcons();
 
 
     // View
     void invalidateTheme();
     void rehighlightOpenFiles();
-    void gamsProcessStateChanged(PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);
     void mainTabContextMenuRequested(const QPoint& pos);
     void logTabContextMenuRequested(const QPoint& pos);

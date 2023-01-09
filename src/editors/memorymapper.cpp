@@ -474,7 +474,7 @@ void MemoryMapper::parseNewLine()
             int len = 0;
             while (line.size() > i+len+1 && line.at(i+len+1) >= '0' && line.at(i+len+1) <= '9') ++len;
             bool ok = false;
-            if (len > 0) mCurrentErrorNr = line.mid(i, len+1).toInt(&ok);
+            if (len > 0) mCurrentErrorNr = line.midRef(i, len+1).toInt(&ok);
             if (!ok) mCurrentErrorNr = -1;
         }
     }

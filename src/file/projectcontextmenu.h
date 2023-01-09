@@ -41,25 +41,25 @@ public:
     void setParent(QWidget *parent);
 
 signals:
-    void closeProject(PExProjectNode* project);
-    void project(PExProjectNode* group);
-    void runFile(PExFileNode *fc);
-    void setMainFile(PExFileNode *fc);
-    void closeFile(PExFileNode* fc);
-    void addExistingFile(PExProjectNode* group, const QString& file);
+    void closeProject(gams::studio::PExProjectNode* project);
+    void project(gams::studio::PExProjectNode* group);
+    void runFile(gams::studio::PExFileNode *fc);
+    void setMainFile(gams::studio::PExFileNode *fc);
+    void closeFile(gams::studio::PExFileNode* fc);
+    void addExistingFile(gams::studio::PExProjectNode* group, const QString& file);
     void getSourcePath(QString& source);
-    void openLogFor(PExAbstractNode* node, bool openOutput, bool createMissing);
-    void openFilePath(QString fileName, PExProjectNode* knownProject, OpenGroupOption opt, bool focus);
-    void openFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
-                  NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
-    void moveProject(PExProjectNode* project, bool cloneOnly);
+    void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
+    void openFilePath(QString fileName, gams::studio::PExProjectNode* knownProject, gams::studio::OpenGroupOption opt, bool focus);
+    void openFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
+                  gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
+    void reOpenFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
+    void moveProject(gams::studio::PExProjectNode* project, bool cloneOnly);
     void newProject();
     void openProject();
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<PExProjectNode *> groups, const QString& solverName="", bool projectOnly = false);
+    void newFileDialog(QVector<gams::studio::PExProjectNode *> groups, const QString& solverName="", bool projectOnly = false);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
     void resetGdxStates(const QStringList &files);

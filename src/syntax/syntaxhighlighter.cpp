@@ -382,7 +382,6 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
     int flavor = block.state.flavor;
     SyntaxKind kind = block.syntax->kind();
     SyntaxKind postKind = block.next;
-    QString namedBlock;
 
     bool inBlock = false;
     if (kind == SyntaxKind::Embedded) {

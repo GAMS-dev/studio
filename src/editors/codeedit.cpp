@@ -2257,7 +2257,7 @@ QString CodeEdit::BlockEdit::blockText()
     if (qMin(mStartLine, mCurrentLine) == qMax(mStartLine, mCurrentLine)) {
         QString text = block.text();
         if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
-        res.append(text.mid(from, to-from));
+        res.append(text.midRef(from, to-from));
     } else {
         for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
             QString text = block.text();

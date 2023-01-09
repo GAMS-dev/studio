@@ -46,7 +46,7 @@ void TestOptionAPI::initTestCase()
     QString optdef = "optminos.def";
     if (optReadDefinition(mOPTHandle, QDir(CommonPaths::systemDir()).filePath(optdef).toLatin1())) {
         optdefRead = false;
-        QFAIL( QString("Fail to read option file '%1' from '%2'").arg(optdef).arg(CommonPaths::systemDir()).toLatin1() );
+        QFAIL( QString("Fail to read option file '%1' from '%2'").arg(optdef, CommonPaths::systemDir()).toLatin1() );
     } else {
         optdefRead = true;
     }
@@ -234,7 +234,7 @@ void TestOptionAPI::testReadFromStr_data()
 void TestOptionAPI::testReadFromStr()
 {
     QFETCH(QString, optionStr);
-    QFETCH(QString, optionName);
+    //QFETCH(QString, optionName);
     QFETCH(bool, defined);
     QFETCH(bool, recentlyDefined);
     QFETCH(QString, optionValue);

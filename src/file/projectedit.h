@@ -49,11 +49,11 @@ public:
     void save();
 
 signals:
-    void changed(Field field);
-    void tabNameChanged(PExProjectNode *project);
+    void changed(gams::studio::project::ProjectData::Field field);
+    void tabNameChanged(gams::studio::PExProjectNode *project);
 
 private slots:
-    void projectChanged(NodeId id);
+    void projectChanged(gams::studio::NodeId id);
 
 private:
     QHash<Field, QString> mData;

@@ -115,7 +115,7 @@ void GdxSymbolHeaderView::paintSection(QPainter *painter, const QRect &rect, int
 void GdxSymbolHeaderView::mousePressEvent(QMouseEvent *event)
 {
     if (Qt::LeftButton == event->button() && pointFilterIconCollision(event->pos()))
-        this->customContextMenuRequested(event->pos());
+        emit this->customContextMenuRequested(event->pos());
     else
         QHeaderView::mousePressEvent(event);
 }

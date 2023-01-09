@@ -38,6 +38,7 @@ class MiroDeployDialog : public QDialog
     Q_OBJECT
 public:
     MiroDeployDialog(QWidget *parent = nullptr);
+    ~MiroDeployDialog();
 
     MiroTargetEnvironment targetEnvironment();
     void setDefaults();
@@ -72,7 +73,7 @@ private:
     Ui::MiroDeployDialog *ui;
     QString mModelAssemblyFile;
     QString mModelName;
-    bool mValidAssemblyFile;
+    bool mValidAssemblyFile = false;
 };
 
 }

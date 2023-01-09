@@ -65,25 +65,25 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
             QModelIndex descriptionIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DESCIPTION);
             if (parentItem == rootItem) {
                 if (settings && settings->toBool(skSoAddCommentAbove)) {
-                    stream << QString("%1 %2").arg(lineComment).arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                    stream << QString("%1 %2").arg(lineComment, data(descriptionIndex, Qt::DisplayRole).toString());
                 }
                 QModelIndex defValueIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_DEF_VALUE);
                 QModelIndex optionIdIndex = index.sibling(index.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
-                stream << QString("%1=%2=%3=%4").arg(data(index, Qt::DisplayRole).toString())
-                                                .arg(data(defValueIndex, Qt::DisplayRole).toString())
-                                                .arg(data(descriptionIndex, Qt::DisplayRole).toString())
-                                                .arg(data(optionIdIndex, Qt::DisplayRole).toString());
+                stream << QString("%1=%2=%3=%4").arg(data(index, Qt::DisplayRole).toString(),
+                                                     data(defValueIndex, Qt::DisplayRole).toString(),
+                                                     data(descriptionIndex, Qt::DisplayRole).toString(),
+                                                     data(optionIdIndex, Qt::DisplayRole).toString());
             } else {
                 if (settings && settings->toBool(skSoAddCommentAbove)) {
-                    stream << QString("%1 %2").arg(lineComment).arg(parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
-                    stream << QString("%1 %2 - %3").arg(lineComment)
-                                                   .arg(data(index, Qt::DisplayRole).toString())
-                                                   .arg(data(descriptionIndex, Qt::DisplayRole).toString());
+                    stream << QString("%1 %2").arg(lineComment, parentItem->data(OptionDefinitionModel::COLUMN_DESCIPTION).toString());
+                    stream << QString("%1 %2 - %3").arg(lineComment,
+                                                        data(index, Qt::DisplayRole).toString(),
+                                                        data(descriptionIndex, Qt::DisplayRole).toString());
                 }
-                stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString())
-                                                .arg(data(index, Qt::DisplayRole).toString())
-                                                .arg(data(descriptionIndex, Qt::DisplayRole).toString())
-                                                .arg(parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
+                stream << QString("%1=%2=%3=%4").arg(parentItem->data(OptionDefinitionModel::COLUMN_OPTION_NAME).toString(),
+                                                     data(index, Qt::DisplayRole).toString(),
+                                                     data(descriptionIndex, Qt::DisplayRole).toString(),
+                                                     parentItem->data(OptionDefinitionModel::COLUMN_ENTRY_NUMBER).toString());
             }
         }
     }
@@ -98,7 +98,7 @@ void SolverOptionDefinitionModel::modifyOptionDefinitionItem(const SolverOptionI
                                              Qt::DisplayRole,
                                              QString::number(optionItem->optionId) , 1);
     beginResetModel();
-    for(const QModelIndex &idx : indices) {
+    for(const QModelIndex &idx : qAsConst(indices)) {
         QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());

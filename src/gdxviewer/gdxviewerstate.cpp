@@ -32,7 +32,7 @@ GdxViewerState::GdxViewerState()
 
 GdxViewerState::~GdxViewerState()
 {
-    for (QString name : mSymbolViewState.keys()) {
+    for (const QString &name : mSymbolViewState.keys()) {
         deleteSymbolViewState(name);
     }
 }

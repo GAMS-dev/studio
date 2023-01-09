@@ -24,12 +24,11 @@ namespace studio {
 namespace connect {
 
 ClickableLabel::ClickableLabel(QWidget *parent, Qt::WindowFlags f)
-    : QLabel(parent) {  }
+    : QLabel(parent, f) {  }
 
 ClickableLabel::ClickableLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
-    : QLabel(parent)
+    : QLabel(text, parent, f)
 {
-    setText(text);
 }
 
 ClickableLabel::~ClickableLabel() { }

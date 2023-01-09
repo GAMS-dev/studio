@@ -121,7 +121,7 @@ void LxiViewer::resetView()
 
 void LxiViewer::loadLxi()
 {
-    if (QFileInfo(mLxiFile).exists() && QFileInfo(mLxiFile).size() > 0) {
+    if (QFileInfo::exists(mLxiFile) && QFileInfo(mLxiFile).size() > 0) {
         ui->splitter->widget(0)->show();
         LxiTreeModel* model = LxiParser::parseFile(mLxiFile);
         LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());

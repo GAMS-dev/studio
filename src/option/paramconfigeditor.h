@@ -57,7 +57,7 @@ signals:
 public slots:
     QString getSelectedParameterName(QWidget* widget) const;
     void parameterItemCommitted(QWidget *editor);
-    void on_reloadGamsUserConfigFile(const QList<ConfigItem *> &initParams);
+    void on_reloadGamsUserConfigFile(const QList<gams::studio::option::ConfigItem *> &initParams);
 
     void selectAll();
     void deSelect();
@@ -65,10 +65,10 @@ public slots:
     void setModified(bool modified);
     bool isModified() const;
 
-    QList<ConfigItem *> parameterConfigItems();
+    QList<gams::studio::option::ConfigItem *> parameterConfigItems();
 
 private slots:
-    void init(const QList<ConfigItem *> &initParams);
+    void init(const QList<gams::studio::option::ConfigItem *> &initParams);
 
     void initActions();
     void updateActionsState(const QModelIndex &index);

@@ -50,7 +50,7 @@ public:
     void updateStyle();
 
 signals:
-    void jumpTo(ReferenceItem item);
+    void jumpTo(gams::studio::reference::ReferenceItem item);
 
 public slots:
     void on_referenceFileChanged(QTextCodec* codec);

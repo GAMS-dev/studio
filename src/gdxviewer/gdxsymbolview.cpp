@@ -733,7 +733,7 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
 
     for(int r=minRow; r<maxRow+1; r++) {
         if (copyLabels) { // copy labels as well in table view mode
-            for (QString label:tv->model()->headerData(r, Qt::Vertical).toStringList())
+            for (const QString &label:tv->model()->headerData(r, Qt::Vertical).toStringList())
                 sList << label << separator;
         }
         for(int c=minCol; c<maxCol+1; c++) {

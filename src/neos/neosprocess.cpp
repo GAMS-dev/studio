@@ -315,8 +315,7 @@ void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
     }
     QString newLstEntry("\n--- switch to NEOS .%1%2%1solve.lst[LS2:\"%3\"]%4\n");
     QString name = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last();
-    emit newStdChannelData(newLstEntry.arg(QDir::separator()).arg(name).arg(mOutPath+"/solve.lst")
-                           .arg(credentials).toUtf8());
+    emit newStdChannelData(newLstEntry.arg(QDir::separator(), name, mOutPath+"/solve.lst", credentials).toUtf8());
     // TODO(JM) store jobnumber and password for later resuming
 
     // monitoring starts automatically after successfull submission

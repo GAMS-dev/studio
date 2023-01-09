@@ -82,8 +82,8 @@ signals:
     void cloneBookmarkMenu(QMenu *menu);
     void scrolled(QWidget *widget, int dx, int dy);
     void zoomRequest(int delta);
-    void getProjectId(NodeId &projectId) const;
-    void getFileId(FileId &fileId) const;
+    void getProjectId(gams::studio::NodeId &projectId) const;
+    void getFileId(gams::studio::FileId &fileId) const;
 
 public slots:
     virtual void updateExtraSelections();

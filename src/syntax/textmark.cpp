@@ -97,7 +97,7 @@ void TextMark::unsetRefMark(TextMark* refMark)
 void TextMark::clearBackRefs()
 {
     if (mReference) mReference->unsetRefMark(this);
-    for (TextMark* backRef: mBackRefs) {
+    for (TextMark* backRef: qAsConst(mBackRefs)) {
         backRef->unsetRefMark(this);
     }
     mBackRefs.clear();
@@ -168,7 +168,7 @@ void TextMark::flatten()
 QString TextMark::dump()
 {
     QStringList refs;
-    for (TextMark* mark: mBackRefs) {
+    for (TextMark* mark: qAsConst(mBackRefs)) {
         refs << QString::number(mark->mId);
     }
     return QString("(%3,%4,%5)[%1%2] ").arg(mId)

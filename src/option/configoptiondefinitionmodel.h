@@ -35,8 +35,8 @@ public:
     QMimeData* mimeData(const QModelIndexList & indexes) const override;
 
 public slots:
-    void modifyOptionDefinitionItem(const ParamConfigItem* optionItem);
-    void modifyOptionDefinition(const QList<ParamConfigItem *> &optionItems);
+    void modifyOptionDefinitionItem(const gams::studio::option::ParamConfigItem* optionItem);
+    void modifyOptionDefinition(const QList<gams::studio::option::ParamConfigItem *> &optionItems);
 };
 
 } // namespace option

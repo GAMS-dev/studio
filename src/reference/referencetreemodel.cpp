@@ -60,9 +60,9 @@ QVariant ReferenceTreeModel::data(const QModelIndex &index, int role) const
         if (parentItem == mRootItem) {
             QString name = item->data(columnCount()-1).toString();
             QString description = ReferenceDataType::from(name).description();
-            return QString("%1 : %2").arg(name).arg(description);
+            return QString("%1 : %2").arg(name, description);
         } else {
-            return QString("%1 : Line %2 : Column %3").arg(item->data(0).toString()).arg(item->data(1).toString()).arg(item->data(2).toString());
+            return QString("%1 : Line %2 : Column %3").arg(item->data(0).toString(), item->data(1).toString(), item->data(2).toString());
         }
     }
     case Qt::TextAlignmentRole: {
@@ -238,7 +238,7 @@ void ReferenceTreeModel::updateSelectedSymbol(const QString &symbolName)
 void ReferenceTreeModel::insertSymbolReference(QList<ReferenceItemModel*>& parents, const QList<ReferenceItem *>& referenceItemList, const QString& referenceType)
 {  
     QList<QVariant> columnData;
-    columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType).arg((referenceItemList.size()==0)?"":"in")
+    columnData <<  QString("(%1) %2 %3").arg(referenceItemList.size()).arg(referenceType, (referenceItemList.size()==0)?"":"in")
                 << "" << ""  << referenceType;
     parents.last()->appendChild(new ReferenceItemModel(columnData, parents.last()));
 

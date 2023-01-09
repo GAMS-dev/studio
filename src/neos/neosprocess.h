@@ -64,7 +64,7 @@ public:
     void setStarting();
 
 signals:
-    void procStateChanged(AbstractProcess *proc, ProcState progress);
+    void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(QString errorMessage);
 

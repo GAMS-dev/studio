@@ -63,7 +63,7 @@ public:
 
 signals:
     void newTableRowDropped(const QModelIndex &index);
-    void optionModelChanged(const QList<OptionItem> &optionItem);
+    void optionModelChanged(const QList<gams::studio::option::OptionItem> &optionItem);
     void optionNameChanged(const QString &from, const QString &to);
     void optionValueChanged(const QModelIndex &index);
 

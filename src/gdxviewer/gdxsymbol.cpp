@@ -577,7 +577,7 @@ void GdxSymbol::resetSortFilter()
     }
     unregisterAllFilters();
     mFilterRecCount = mLoadedRecCount;
-    layoutChanged();
+    emit layoutChanged();
 }
 
 bool GdxSymbol::isAllDefault(int valColIdx)
@@ -671,7 +671,7 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
         for (int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;
     }
-    layoutChanged();
+    emit layoutChanged();
     filterRows();
 }
 

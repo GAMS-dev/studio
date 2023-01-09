@@ -134,9 +134,9 @@ public:
     void setVirtual(bool isVirtual = true);
 
 signals:
-    void gamsProcessStateChanged(PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
-    void baseDirChanged(PExProjectNode *project);
+    void baseDirChanged(gams::studio::PExProjectNode *project);
     void runnableChanged();
 
 public slots:

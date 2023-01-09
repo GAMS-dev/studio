@@ -122,15 +122,15 @@ void TestGamsUserConfig::testReadDefaultGamsConfigFile()
     // then
     QVERIFY(guc->isAvailable());
     QVERIFY(guc->readCommandLineParameters().size()==4);
-    QCOMPARE(guc->readCommandLineParameters().first()->key, "pySetup");
-    QCOMPARE(guc->readCommandLineParameters().first()->value, "0");
-    QCOMPARE(guc->readCommandLineParameters().first()->minVersion, "23");
-    QCOMPARE(guc->readCommandLineParameters().first()->maxVersion, "30.2");
-    QCOMPARE(guc->readCommandLineParameters().last()->key, "CNS");
-    QCOMPARE(guc->readCommandLineParameters().last()->value, "y");
+    QCOMPARE(guc->readCommandLineParameters().constFirst()->key, "pySetup");
+    QCOMPARE(guc->readCommandLineParameters().constFirst()->value, "0");
+    QCOMPARE(guc->readCommandLineParameters().constFirst()->minVersion, "23");
+    QCOMPARE(guc->readCommandLineParameters().constFirst()->maxVersion, "30.2");
+    QCOMPARE(guc->readCommandLineParameters().constLast()->key, "CNS");
+    QCOMPARE(guc->readCommandLineParameters().constLast()->value, "y");
     QVERIFY(guc->readEnvironmentVariables().size()==1);
-    QCOMPARE(guc->readEnvironmentVariables().first()->key, "PYTHON38");
-    QCOMPARE(guc->readEnvironmentVariables().first()->value, "blah");
+    QCOMPARE(guc->readEnvironmentVariables().constFirst()->key, "PYTHON38");
+    QCOMPARE(guc->readEnvironmentVariables().constFirst()->value, "blah");
 
     // cleanup
     if (guc) delete  guc;

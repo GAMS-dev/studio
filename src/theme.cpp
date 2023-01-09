@@ -43,7 +43,7 @@ Theme::Theme(QObject *parent) : QObject(parent)
 
 Theme::~Theme()
 {
-    for (SvgEngine *eng: mEngines)
+    for (SvgEngine *eng: qAsConst(mEngines))
         eng->unbind();
     mEngines.clear();
 }
@@ -355,7 +355,6 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
     if (!file.open(QFile::ReadOnly)) return QByteArray();
     QByteArray data = file.readAll();
     file.close();
-    QString alphaString;
 
     int end = data.indexOf("</style");
     if (end < 0) return data;

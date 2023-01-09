@@ -86,7 +86,7 @@ QString CommandLineParser::gamsDir() const
 inline QStringList CommandLineParser::getFileArgs()
 {
     QStringList absoluteFilePaths;
-    for (auto file : positionalArguments())
+    for (const auto &file : positionalArguments())
         absoluteFilePaths << CommonPaths::absolutFilePath(file);
     return absoluteFilePaths;
 }

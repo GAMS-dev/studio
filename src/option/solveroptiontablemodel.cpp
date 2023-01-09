@@ -64,9 +64,9 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
         if (mOptionItem.at(index)->disabled) {
             if (mOptionItem.at(index)->key.startsWith(lineComment))
-                return QString("%1 %2").arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString());
+                return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
             else
-                return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key).arg(mOptionItem.at(index)->value.toString()); //->text);
+                return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
         } else {
             QString tooltipText = "";
             switch(mOptionItem.at(index)->error) {
@@ -77,7 +77,7 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString()).arg(mOptionItem.at(index)->key));
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString(), mOptionItem.at(index)->key));
                 break;
             case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
@@ -180,7 +180,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString()).arg(mOptionItem.at(row)->key) );
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString(), mOptionItem.at(row)->key) );
                 break;
             case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
@@ -286,7 +286,7 @@ bool SolverOptionTableModel::setData(const QModelIndex &index, const QVariant &v
             if (mOptionItem[index.row()]->disabled) {
                 QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
                 if (!dataValue.startsWith(lineComment))
-                    mOptionItem[index.row()]->key = QString("%1 %2").arg(lineComment).arg(dataValue);
+                    mOptionItem[index.row()]->key = QString("%1 %2").arg(lineComment, dataValue);
                 else
                     mOptionItem[index.row()]->key = dataValue;
             } else {
@@ -439,7 +439,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 
         QList<SolverOptionItem *> itemList;
         QList<int> overrideIdRowList;
-        for (const QString &text : newItems) {
+        for (const QString &text : qAsConst(newItems)) {
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (text.startsWith(lineComment)) {
                 itemList.append(new SolverOptionItem(-1, text, "", "", true));
@@ -454,7 +454,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
                 if (settings && settings->toBool(skSoOverrideExisting)) {
-                    for(const QModelIndex &idx : indices) { overrideIdRowList.append(idx.row()); }
+                    for(const QModelIndex &idx : qAsConst(indices)) { overrideIdRowList.append(idx.row()); }
                 }
             }
         }
@@ -469,8 +469,8 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             msgBox.setText(QString("Option '%1' already exists in your option file.").arg(data(index(overrideIdRowList.at(0), COLUMN_OPTION_KEY)).toString()));
             msgBox.setInformativeText("How do you want to proceed?");
             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(overrideIdRowList.at(0)))
-                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
-                    .arg("The value of all other entries except the last entry will be ignored."));
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                         "The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -498,8 +498,8 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             for (int id : overrideIdRowList)
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(id)));
             msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                     .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
-                     .arg("The value of all other entries except the last entry will be ignored."));
+                     .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                          "The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -534,7 +534,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             }
         } // else entry not exist
 
-        for (SolverOptionItem * item : itemList) {
+        for (SolverOptionItem * item : qAsConst(itemList)) {
             if (item->disabled) {
                 insertRows(beginRow, 1, QModelIndex());
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
@@ -578,19 +578,19 @@ QString SolverOptionTableModel::getOptionTableEntry(int row)
     QModelIndex keyIndex = index(row, COLUMN_OPTION_KEY);
     QVariant optionKey = data(keyIndex, Qt::DisplayRole);
     if (Qt::CheckState(headerData(row, Qt::Vertical, Qt::CheckStateRole).toInt())==Qt::PartiallyChecked) {
-        return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#")
-                               .arg(optionKey.toString());
+        return QString("%1 %2").arg(mOptionTokenizer->getOption()->isEOLCharDefined() ? QString(mOptionTokenizer->getOption()->getEOLChars().at(0)) :"#",
+                                    optionKey.toString());
     } else {
         QModelIndex valueIndex = index(row, COLUMN_OPTION_VALUE);
         QVariant optionValue = data(valueIndex, Qt::DisplayRole);
         QModelIndex commentIndex = index(row, COLUMN_EOL_COMMENT);
         QVariant optionComment = data(commentIndex, Qt::DisplayRole);
         if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
-            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString())
-                                           .arg(QString(mOptionTokenizer->getOption()->getEOLChars().at(0)))
-                                           .arg(optionComment.toString());
+            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString(),
+                                                QString(mOptionTokenizer->getOption()->getEOLChars().at(0)),
+                                                optionComment.toString());
         } else {
-            return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+            return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
         }
    }
 }
@@ -736,17 +736,22 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         QString key;
         if (mOptionItem.at(logicalIndex)->value.toString().isEmpty()) {
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
-                key = QString("%1 %2 %3").arg(mOptionItem.at(logicalIndex)->key)
-                                          .arg(mOptionTokenizer->getEOLCommentChar())
-                                          .arg(mOptionItem.at(logicalIndex)->text);
+                key = QString("%1 %2 %3").arg(mOptionItem.at(logicalIndex)->key,
+                                              mOptionTokenizer->getEOLCommentChar(),
+                                              mOptionItem.at(logicalIndex)->text);
             else
                 key = QString("%1").arg(mOptionItem.at(logicalIndex)->key);
         } else {
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
-                key = QString("%1%2%3 %4 %5").arg(mOptionItem.at(logicalIndex)->key).arg(mOption->getDefaultSeparator()).arg(mOptionItem.at(logicalIndex)->value.toString())
-                                              .arg(mOptionTokenizer->getEOLCommentChar()).arg(mOptionItem.at(logicalIndex)->text);
+                key = QString("%1%2%3 %4 %5").arg(mOptionItem.at(logicalIndex)->key,
+                                                  mOption->getDefaultSeparator(),
+                                                  mOptionItem.at(logicalIndex)->value.toString(),
+                                                  mOptionTokenizer->getEOLCommentChar(),
+                                                  mOptionItem.at(logicalIndex)->text);
             else
-                key = QString("%1%2%3").arg(mOptionItem.at(logicalIndex)->key).arg(mOption->getDefaultSeparator()).arg(mOptionItem.at(logicalIndex)->value.toString());
+                key = QString("%1%2%3").arg(mOptionItem.at(logicalIndex)->key,
+                                            mOption->getDefaultSeparator(),
+                                            mOptionItem.at(logicalIndex)->value.toString());
        }
         mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";
@@ -769,13 +774,13 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
 void SolverOptionTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
-    for(SolverOptionItem* item : mOptionItem) {
+    for(SolverOptionItem* item : qAsConst(mOptionItem)) {
         idList << item->optionId;
     }
-    for(SolverOptionItem* item : mOptionItem) {
+    for(SolverOptionItem* item : qAsConst(mOptionItem)) {
         item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
     }
-    headerDataChanged(Qt::Vertical, 0, mOptionItem.size());
+    emit headerDataChanged(Qt::Vertical, 0, mOptionItem.size());
 }
 
 void SolverOptionTableModel::setRowCount(int rows)

@@ -71,8 +71,7 @@ void MiroDeployProcess::completed(int exitCode)
                 .arg(exitCode).arg(workingDirectory());
     else if (!mTestDeployment)
         msg = QString("\n%1 successfully deployed to location \n--- %2[DIR:\"%2\"]")
-                .arg(MiroCommon::deployFileName(modelName()))
-                .arg(workingDirectory());
+                .arg(MiroCommon::deployFileName(modelName()), workingDirectory());
     emit newStdChannelData(msg.toLatin1());
 
     AbstractProcess::completed(exitCode);

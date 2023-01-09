@@ -34,7 +34,7 @@ public:
     static const QString ItemModelDataType;
 
 signals:
-    void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction,
+    void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction,
                    QList<QModelIndex> &newSelection);
     void openProjectEdit(QModelIndex idx);
 

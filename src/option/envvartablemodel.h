@@ -60,7 +60,7 @@ signals:
     void envVarItemRemoved();
 
 public slots:
-    void on_reloadEnvVarModel(const QList<EnvVarConfigItem *> &configItem);
+    void on_reloadEnvVarModel(const QList<gams::studio::option::EnvVarConfigItem *> &configItem);
     void on_updateEnvVarItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeEnvVarItem();
 
@@ -68,7 +68,7 @@ private slots:
     void setRowCount(int rows);
     void updateCheckState();
 
-    bool isThereAnError(EnvVarConfigItem* item) const;
+    bool isThereAnError(gams::studio::option::EnvVarConfigItem* item) const;
     bool isConformatVersion(const QString &version) const;
 
 private:

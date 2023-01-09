@@ -22,7 +22,6 @@
 #include "theme.h"
 #include <QPainter>
 #include <QLineEdit>
-#include "logger.h"
 
 namespace gams {
 namespace studio {

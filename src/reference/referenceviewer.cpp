@@ -50,7 +50,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(
                     QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
-                              .arg(mReference->getFileLocation()).arg(errorLine),
+                              .arg(mReference->getFileLocation(), errorLine),
                     LogMsgType::Error);
     }
 
@@ -109,7 +109,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     }
     setFocusProxy(ui->tabWidget);
 
-    for (QHeaderView *header : headers) {
+    for (QHeaderView *header : qAsConst(headers)) {
         headerRegister(header);
     }
 
@@ -142,7 +142,7 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(
                     QString("Error while reloading: %1%2, the file content might be corrupted or incorrectly overwritten")
-                               .arg(mReference->getFileLocation()).arg(errorLine),
+                               .arg(mReference->getFileLocation(), errorLine),
                     LogMsgType::Error);
     }
 }

@@ -37,7 +37,7 @@ SystemLogHighlighter::SystemLogHighlighter(QObject *parent)
 
 void SystemLogHighlighter::highlightBlock(const QString &text)
 {
-    for (const HighlightingRule &rule : mHighlightingRules) {
+    for (const HighlightingRule &rule : qAsConst(mHighlightingRules)) {
         QRegularExpressionMatchIterator matchIterator = rule.pattern().globalMatch(text);
         while (matchIterator.hasNext()) {
             QRegularExpressionMatch match = matchIterator.next();

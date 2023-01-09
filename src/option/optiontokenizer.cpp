@@ -226,7 +226,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
 
     QList<int> idList;
     QList<OptionItem> itemList;
-    for (OptionItem item : items) {
+    for (const OptionItem &item : items) {
         if (item.disabled) {
             QTextLayout::FormatRange fr;
             fr.start = item.keyPosition;
@@ -334,7 +334,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                     case optTypeEnumInt :
                        n = value.toInt(&isCorrectDataType);
                        if (isCorrectDataType) {
-                         for (OptionValue optValue: mOption->getValueList(key)) {
+                         for (const OptionValue &optValue: mOption->getValueList(key)) {
                             if (optValue.value.toInt() == n) { // && !optValue.hidden) {
                                 foundError = false;
                                 break;
@@ -343,7 +343,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                        }
                        break;
                     case optTypeEnumStr :
-                       for (OptionValue optValue: mOption->getValueList(key)) {
+                       for (const OptionValue &optValue: mOption->getValueList(key)) {
                            if (QString::compare(optValue.value.toString(), value, Qt::CaseInsensitive)==0) { //&& !optValue.hidden) {
                                foundError = false;
                                break;
@@ -362,7 +362,7 @@ QList<OptionError> OptionTokenizer::format(const QList<OptionItem> &items)
                        QString errorMessage = value + " (unknown value for option \""+keyStr+"\")";
                        if (mOption->getValueList(key).size() > 0) {
                           errorMessage += ", Possible values are ";
-                          for (OptionValue optValue: mOption->getValueList(key)) {
+                          for (const OptionValue &optValue: mOption->getValueList(key)) {
                              if (optValue.hidden)
                                 continue;
                              errorMessage += optValue.value.toString();
@@ -479,8 +479,7 @@ QString OptionTokenizer::normalize(const QString &commandLineStr)
 QString OptionTokenizer::normalize(const QList<OptionItem> &items)
 {
     QStringList strList;
-    for (OptionItem item : items) {
-
+    for (auto item : items) {
         if ( item.key.isEmpty() )
             item.key = keyGeneratedStr;
         if ( item.value.isEmpty() )
@@ -615,7 +614,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
             if (value.isEmpty())
                 return QString("");
             else
-                return QString("%1 %2").arg(mLineComments.at(0)).arg(value);
+                return QString("%1 %2").arg(mLineComments.at(0), value);
         } else {
             if (mLineComments.contains(key.at(0))) {
                if (key.mid(1).simplified().isEmpty())
@@ -623,12 +622,12 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
                if (value.isEmpty())
                    return QString("%1").arg(key);
                else
-                   return QString("%1%2%3").arg(key).arg(separator).arg(value);
+                   return QString("%1%2%3").arg(key, separator, value);
             } else {
                 if (value.isEmpty())
-                    return QString("%1 %2").arg(mLineComments.at(0)).arg(key);
+                    return QString("%1 %2").arg(mLineComments.at(0), key);
                 else
-                    return QString("%1 %2%3%4").arg(mLineComments.at(0)).arg(key).arg(separator).arg(value);
+                    return QString("%1 %2%3%4").arg(mLineComments.at(0)).arg(key, separator, value);
             }
         }
     }
@@ -649,10 +648,10 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
     }
     QString returnStr(key.simplified());
     if (!value.isEmpty())
-       returnStr.append(QString("%1%2").arg(separator).arg(value));
+       returnStr.append(QString("%1%2").arg(separator, value));
 
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       returnStr.append(QString(" %1 %2").arg(mEOLCommentChar).arg(text));
+       returnStr.append(QString(" %1 %2").arg(mEOLCommentChar, text));
 
     return returnStr;
 }
@@ -967,9 +966,9 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
     QString str = "";
     QString separator = " ";
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       str = QString("%1%2%3  %4 %5").arg(key).arg(separator).arg(value).arg(mEOLCommentChar).arg(text);
+       str = QString("%1%2%3  %4 %5").arg(key).arg(separator, value, mEOLCommentChar, text);
     else
-       str = QString("%1%2%3").arg(key).arg(separator).arg(value);
+       str = QString("%1%2%3").arg(key, separator, value);
 
     optResetAll( mOPTHandle );
     if (str.simplified().isEmpty() || mLineComments.contains(str.at(0))) {
@@ -1107,7 +1106,7 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
             key = line.mid( line.toUpper().indexOf(hintKey.toUpper()), hintKey.size() );
         }
     } else {
-        for (QString synonym : mOption->getSynonymList(hintKey)) {
+        for (const QString &synonym : mOption->getSynonymList(hintKey)) {
             if (line.contains(synonym, Qt::CaseInsensitive)) {
                 key = line.mid( line.indexOf(synonym, Qt::CaseInsensitive)).simplified();
                 if (key.endsWith(mOption->getDefaultSeparator()))
@@ -1208,12 +1207,12 @@ QString OptionTokenizer::getQuotedStringValue(const QString &line, const QString
 {
     int startValuePosition = line.indexOf(value);
     int size = value.size();
-    QString regexpstr = QString("%1%2").arg(value).arg("\"");
+    QString regexpstr = QString("%1%2").arg(value, "\"");
     if (line.indexOf( QRegularExpression(regexpstr), startValuePosition) >= 0) {
         size++;
     }
 
-    regexpstr = QString("%1%2").arg("\"").arg(value);
+    regexpstr = QString("%1%2").arg("\"", value);
     if (line.indexOf( QRegularExpression(regexpstr), 0) >= 0) {
        startValuePosition--;
        size++;
@@ -1319,7 +1318,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
                 hasBeenLogged = true;
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key).arg(item->value.toString()),
+                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key, item->value.toString()),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
@@ -1329,7 +1328,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
                 hasBeenLogged = true;
                 break;
             case OptionErrorType::Override_Option:
-                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key).arg(item->value.toString()),
+                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key, item->value.toString()),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
@@ -1525,7 +1524,7 @@ void OptionTokenizer::formatLineEdit(QLineEdit* lineEdit, const QList<OptionErro
             errorMessage.append("\n\n");
     }
 
-    lineEdit->setToolTip(QString("%1%2").arg(errorMessage).arg(warningMessage));
+    lineEdit->setToolTip(QString("%1%2").arg(errorMessage, warningMessage));
 
     QInputMethodEvent event(QString(), attributes);
     QCoreApplication::sendEvent(lineEdit, &event);

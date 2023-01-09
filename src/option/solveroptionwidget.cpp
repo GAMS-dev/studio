@@ -119,7 +119,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
-    for(OptionGroup group : optionGroupList) {
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
         if (group.hidden)
             continue;
         else
@@ -131,7 +131,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
     groupModel->setItem(0, 1, new QStandardItem("0"));
     groupModel->setItem(0, 2, new QStandardItem("All Options"));
-    for(OptionGroup group : optionGroupList) {
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
         if (group.hidden)
             continue;
         ++i;
@@ -190,7 +190,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
         QString msg1 = QString("Unable to open %1 Properly").arg(mLocation);
         QString msg2 = QString("'%1' is not a valid solver name").arg(mSolverName);
-        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1).arg(msg2), LogMsgType::Error);
+        mOptionTokenizer->logger()->append(QString("%1. %2").arg(msg1, msg2), LogMsgType::Error);
         mOptionTokenizer->logger()->append(QString("An operation on the file contents might not be saved. Try 'Save As' or 'Open As Text' instead."), LogMsgType::Warning);
 
         return false;
@@ -242,14 +242,14 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
 
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     QModelIndexList selection = ui->solverOptionTableView->selectionModel()->selectedRows();
     bool thereIsARowSelection = isThereARowSelection();
     bool viewIsCompact = isViewCompact();
     bool thereIsAnOptionSelection = false;
-    for (const QModelIndex &s : selection) {
+    for (const QModelIndex &s : qAsConst(selection)) {
         QVariant data = ui->solverOptionTableView->model()->headerData(s.row(), Qt::Vertical,  Qt::CheckStateRole);
         if (Qt::CheckState(data.toUInt())!=Qt::PartiallyChecked) {
             thereIsAnOptionSelection = true;
@@ -261,7 +261,7 @@ void SolverOptionWidget::showOptionContextMenu(const QPoint &pos)
     if ( thereIsARowSelection ) {
        QList<QAction*> ret;
        getMainWindow()->getAdvancedActions(&ret);
-       for(QAction *action : ret) {
+       for(QAction *action : qAsConst(ret)) {
           if (action->objectName().compare("actionComment")==0) {
               menu.addAction(action);
               menu.addSeparator();
@@ -316,7 +316,7 @@ void SolverOptionWidget::showDefinitionContextMenu(const QPoint &pos)
 
     bool hasSelectionBeenAdded = (selection.size()>0);
     // assume single selection
-    for (const QModelIndex &idx : selection) {
+    for (const QModelIndex &idx : qAsConst(selection)) {
         QModelIndex parentIdx = ui->solverOptionTreeView->model()->parent(idx);
         QVariant data = (parentIdx.row() < 0) ?  ui->solverOptionTreeView->model()->data(idx, Qt::CheckStateRole)
                                               : ui->solverOptionTreeView->model()->data(parentIdx, Qt::CheckStateRole);
@@ -377,7 +377,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                                             optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
         ui->solverOptionTableView->clearSelection();
         QItemSelection selection;
-        for(const QModelIndex &idx: indices) {
+        for(const QModelIndex &idx: qAsConst(indices)) {
             QModelIndex leftIndex  = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_OPTION_KEY);
             QModelIndex rightIndex = ui->solverOptionTableView->model()->index(idx.row(), GamsParameterTableModel::COLUMN_ENTRY_NUMBER);
             QItemSelection rowSelection(leftIndex, rightIndex);
@@ -393,8 +393,8 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             msgBox.setText("Option '" + optionNameData+ "' already exists.");
             msgBox.setInformativeText("How do you want to proceed?");
             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(indices.at(0).row()))
-                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
-                    .arg("The value of all other entries except the last entry will be ignored."));
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                         "The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -424,11 +424,11 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             msgBox.setInformativeText("How do you want to proceed?");
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
-            for (const QModelIndex &idx : indices)
+            for (const QModelIndex &idx : qAsConst(indices))
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(idx.row())));
             msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.")
-                    .arg("The value of all other entries except the last entry will be ignored."));
+                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                         "The value of all other entries except the last entry will be ignored."));
             msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exist.");
             msgBox.setInformativeText("How do you want to proceed?");
             msgBox.setStandardButtons(QMessageBox::Abort);
@@ -581,7 +581,7 @@ void SolverOptionWidget::on_dataItemChanged(const QModelIndex &topLeft, const QM
                                                                          ui->solverOptionTableView->model()->data( topLeft, Qt::DisplayRole), 1);
     }
 
-    for(const QModelIndex &item : toDefinitionItems) {
+    for(const QModelIndex &item : qAsConst(toDefinitionItems)) {
         if (Qt::CheckState(ui->solverOptionTableView->model()->headerData(item.row(), Qt::Vertical, Qt::CheckStateRole).toUInt())==Qt::PartiallyChecked)
             continue;
         ui->solverOptionTreeView->selectionModel()->select(
@@ -602,7 +602,7 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
 void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
 {
      if (mCodec != codec)
-         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding").arg(mLocation).arg(QString(codec->name())), LogMsgType::Info);
+         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding").arg(mLocation, QString(codec->name())), LogMsgType::Info);
      else if (mFileHasChangedExtern)
               mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
      else
@@ -721,7 +721,7 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
          QModelIndexList indices = ui->solverOptionTreeView->model()->match(ui->solverOptionTreeView->model()->index(0, OptionDefinitionModel::COLUMN_ENTRY_NUMBER),
                                                                                Qt::DisplayRole,
                                                                                optionId, 1, Qt::MatchExactly|Qt::MatchRecursive);
-         for(const QModelIndex &idx : indices) {
+         for(const QModelIndex &idx : qAsConst(indices)) {
              QModelIndex  parentIndex =  ui->solverOptionTreeView->model()->parent(idx);
              QModelIndex optionIdx = ui->solverOptionTreeView->model()->index(idx.row(), OptionDefinitionModel::COLUMN_OPTION_NAME);
 
@@ -744,7 +744,7 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
         }
     }
     ui->solverOptionTreeView->selectionModel()->clearSelection();
-    for(const QModelIndex &idx : selectIndices) {
+    for(const QModelIndex &idx : qAsConst(selectIndices)) {
         QItemSelection selection = ui->solverOptionTreeView->selectionModel()->selection();
         QModelIndex  parentIdx =  ui->solverOptionTreeView->model()->parent(idx);
         if (parentIdx.row() < 0) {
@@ -796,7 +796,7 @@ void SolverOptionWidget::showOptionRecurrence()
         return;
     }
 
-    for(int row : rowList) {
+    for(int row : qAsConst(rowList)) {
         QItemSelection rowSelection = ui->solverOptionTableView->selectionModel()->selection();
         rowSelection.select(ui->solverOptionTableView->model()->index(row, 0),
                             ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_ENTRY_NUMBER));
@@ -863,7 +863,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
     ui->solverOptionTableView->clearSelection();
     ui->solverOptionTableView->clearFocus();
     QItemSelection selection;
-    for(const QModelIndex &i :indices) {
+    for(const QModelIndex &i :qAsConst(indices)) {
         QModelIndex valueIndex = ui->solverOptionTableView->model()->index(i.row(), SolverOptionTableModel::COLUMN_OPTION_VALUE);
         QString value =  ui->solverOptionTableView->model()->data( valueIndex, Qt::DisplayRole).toString();
         bool selected = false;
@@ -891,7 +891,7 @@ void SolverOptionWidget::findAndSelectionOptionFromDefinition()
 void SolverOptionWidget::toggleCommentOption()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -982,7 +982,7 @@ void SolverOptionWidget::insertOption()
     }
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
             return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -1055,7 +1055,7 @@ void SolverOptionWidget::insertComment()
     }
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         if (mOptionCompleter->currentEditedIndex().isValid() && mOptionCompleter->currentEditedIndex().row()==index.row())
             return;
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
@@ -1143,7 +1143,7 @@ void SolverOptionWidget::deleteOption()
     }
 
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
@@ -1192,7 +1192,7 @@ void SolverOptionWidget::deleteOption()
 void SolverOptionWidget::moveOptionUp()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -1219,7 +1219,7 @@ void SolverOptionWidget::moveOptionUp()
 void SolverOptionWidget::moveOptionDown()
 {
     QModelIndexList indexSelection = ui->solverOptionTableView->selectionModel()->selectedIndexes();
-    for(const QModelIndex &index : indexSelection) {
+    for(const QModelIndex &index : qAsConst(indexSelection)) {
         ui->solverOptionTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -1274,7 +1274,7 @@ QList<int> SolverOptionWidget::getRecurrentOption(const QModelIndex &index)
     QModelIndexList indices = ui->solverOptionTableView->model()->match(ui->solverOptionTableView->model()->index(0, mOptionTableModel->getColumnEntryNumber()),
                                                                         Qt::DisplayRole,
                                                                         optionId, -1);
-    for(const QModelIndex &idx : indices) {
+    for(const QModelIndex &idx : qAsConst(indices)) {
         if (idx.row() == index.row())
             continue;
         else
@@ -1289,7 +1289,7 @@ QString SolverOptionWidget::getOptionTableEntry(int row)
     QVariant optionKey = ui->solverOptionTableView->model()->data(keyIndex, Qt::DisplayRole);
     QModelIndex valueIndex = ui->solverOptionTableView->model()->index(row, GamsParameterTableModel::COLUMN_OPTION_VALUE);
     QVariant optionValue = ui->solverOptionTableView->model()->data(valueIndex, Qt::DisplayRole);
-    return QString("%1%2%3").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString());
+    return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());
 }
 
 bool SolverOptionWidget::isEditing()
@@ -1514,7 +1514,7 @@ void SolverOptionWidget::on_newTableRowDropped(const QModelIndex &index)
                                                                      Qt::DisplayRole,
                                                                      optionName, 1);
     mOptionTokenizer->getOption()->setModified(optionName, true);
-    for(const QModelIndex &item : definitionItems) {
+    for(const QModelIndex &item : qAsConst(definitionItems)) {
         ui->solverOptionTreeView->model()->setData(item, Qt::CheckState(Qt::Checked), Qt::CheckStateRole);
     }
 
@@ -1544,13 +1544,13 @@ bool SolverOptionWidget::saveAs(const QString &location)
         bool warning = false;
         if (QString::compare(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).completeBaseName(), Qt::CaseInsensitive)!=0 ) {
             mOptionTokenizer->logger()->append(QString("Solver option file name '%1' has been changed. Saved options into '%2' may cause solver option editor to display the contents improperly.")
-                                                       .arg(QFileInfo(mLocation).completeBaseName()).arg(QFileInfo(location).fileName())
+                                                       .arg(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).fileName())
                                                , LogMsgType::Warning);
             warning = true;
         }
         if (FileType::from(FileKind::Opt) != FileType::from(QFileInfo(location).fileName())) {
             mOptionTokenizer->logger()->append(QString("Unrecognized file suffix '%1'. Saved options into '%2' may cause solver option editor to display the contents improperly.")
-                                                       .arg(QFileInfo(location).fileName()).arg(QFileInfo(location).fileName())
+                                                       .arg(QFileInfo(location).fileName(), QFileInfo(location).fileName())
                                                , LogMsgType::Warning);
             warning = true;
         }

@@ -225,7 +225,7 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
             mSortIdxMap[static_cast<size_t>(rec)] = static_cast<size_t>(idxList.at(rec).first);
         }
         filterRows();
-        layoutChanged();
+        emit layoutChanged();
         emit symbolSelectionToBeUpdated();
         break;
     }
@@ -265,13 +265,13 @@ void SymbolTableModel::sort(int column, Qt::SortOrder order)
                 mSortIdxMap[static_cast<size_t>(rec)] = static_cast<size_t>(idxList.at(rec).first);
             }
             filterRows();
-            layoutChanged();
+            emit layoutChanged();
         } else {
             for(int rec=0; rec<items.size(); rec++) {
                 mSortIdxMap[static_cast<size_t>(rec)] = static_cast<size_t>(idxList.at(rec).first);
             }
             filterRows();
-            layoutChanged();
+            emit layoutChanged();
             emit symbolSelectionToBeUpdated();
         }
         break;
@@ -364,7 +364,7 @@ void SymbolTableModel::toggleSearchColumns(bool checked)
             mFilteredKeyColumn = 1;
     }
     filterRows();
-    layoutChanged();
+    emit layoutChanged();
     emit symbolSelectionToBeUpdated();
 }
 
@@ -372,7 +372,7 @@ void SymbolTableModel::setFilterPattern(const QRegExp &pattern)
 {
     mFilteredPattern = pattern;
     filterRows();
-    layoutChanged();
+    emit layoutChanged();
     emit symbolSelectionToBeUpdated();
 }
 
@@ -418,7 +418,7 @@ void SymbolTableModel::sortFileUsed(FileUsedSortOrder order)
         mSortIdxMap[static_cast<size_t>(rec)] = static_cast<size_t>(idxList.at(rec).first);
     }
     filterRows();
-    layoutChanged();
+    emit layoutChanged();
 }
 
 SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const

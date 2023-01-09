@@ -616,7 +616,7 @@ void TestGamsOption::testOptionGroup()
 {
     QFETCH(QString, optionName);
     QFETCH(int, groupNumber);
-    QFETCH(QString, optionGroupName);
+    //QFETCH(QString, optionGroupName);
     QFETCH(QString, optionGroupDescription);
     QFETCH(QString, optionType);
 

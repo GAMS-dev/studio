@@ -97,7 +97,7 @@ bool NeosManager::submitJob(QString fileName, QString eMail, QString params, boo
     mLogOffset = 0;
     QString sData = data.toBase64();
     QString prio = (prioShort?"short":"long");
-    QString jobData = mRawJob.arg(sData).arg(params).arg(prio).arg(wantGdx?"yes":"").arg(eMail);
+    QString jobData = mRawJob.arg(sData, params, prio, wantGdx?"yes":"", eMail);
     emit submitCall("submitJob", QVariantList() << jobData);
     return true;
 }

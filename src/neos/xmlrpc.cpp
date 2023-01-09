@@ -57,7 +57,7 @@ bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
         xml.writeStartElement("array");
         xml.writeStartElement("data");
         QVariantList list = var.toList();
-        for (QVariant v : list) {
+        for (const QVariant &v : qAsConst(list)) {
             if (!putVariant(xml, v, errorText)) return false;
         }
         xml.writeEndElement();
@@ -114,7 +114,7 @@ QByteArray XmlRpc::prepareCall(const QString &method, const QVariantList &params
     xml.writeTextElement("methodName", method);
     if (!params.isEmpty()) {
         xml.writeStartElement("params");
-        for (QVariant var : params) {
+        for (const QVariant &var : params) {
             xml.writeStartElement("param");
             if (!putVariant(xml, var, errorText)) return errorText;
             xml.writeEndElement();

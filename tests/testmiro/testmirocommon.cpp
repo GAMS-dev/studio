@@ -249,7 +249,7 @@ void TestMiroCommon::testWriteAssemblyFile()
         QFile file(fileName);
         if (file.open(QIODevice::ReadOnly)) {
             QStringList data;
-            for (auto item: QString(file.readAll()).split('\n', Qt::SkipEmptyParts))
+            for (const auto &item: QString(file.readAll()).split('\n', Qt::SkipEmptyParts))
                 data << item.trimmed();
             sort(data.begin(), data.end());
             sort(selectedFiles.begin(), selectedFiles.end());

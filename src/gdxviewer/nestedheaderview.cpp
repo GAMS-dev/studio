@@ -286,7 +286,7 @@ void NestedHeaderView::updateSectionWidths()
         sectionWidth.resize(dimension);
         for (int i=0; i<dimension; i++) {
             QVector<QList<QString>> labelsInRows = sym()->labelsInRows();
-            for (QString label : labelsInRows.at(i))
+            for (const QString &label : labelsInRows.at(i))
                 sectionWidth.replace(i, qMax(sectionWidth.at(i), fm.horizontalAdvance(label)));
         }
         for (int i=0; i<dimension; i++)
@@ -295,7 +295,7 @@ void NestedHeaderView::updateSectionWidths()
         QMap<QString, int> labelWidth;
         sectionWidth.resize(this->model()->columnCount());
         for (int i=0; i<this->model()->columnCount(); i++) {
-            for (QString label : model()->headerData(i, Qt::Horizontal).toStringList()) {
+            for (const QString &label : model()->headerData(i, Qt::Horizontal).toStringList()) {
                 if (!labelWidth.contains(label))
                     labelWidth.insert(label, fm.horizontalAdvance(label));
                 sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));
@@ -335,8 +335,8 @@ void NestedHeaderView::dropEvent(QDropEvent *event)
     sym()->setTableView(newColDim, tvDims);
     event->accept();
 
-    (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
-    (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
+    emit (static_cast<QTableView*>(this->parent()))->horizontalHeader()->geometriesChanged();
+    emit (static_cast<QTableView*>(this->parent()))->verticalHeader()->geometriesChanged();
 
     GdxSymbolView *symView = static_cast<GdxSymbolView*>(parent()->parent());
     symView->moveTvFilterColumns(dimIdxStart, dimIdxEnd);

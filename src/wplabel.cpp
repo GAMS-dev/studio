@@ -115,7 +115,7 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
     if (mInactive || event->button() == Qt::RightButton) return;
 
     if (!mLink.isNull()) { // file history
-        QLabel::linkActivated(mLink);
+        emit QLabel::linkActivated(mLink);
 
     // added via designer from here on
     } else if (!this->property("link").isNull()) { // web- or file links, open directly

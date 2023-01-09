@@ -51,7 +51,7 @@ signals:
 
 public slots:
     void parameterItemCommitted(QWidget *editor);
-    void on_reloadGamsUserConfigFile(const QList<EnvVarConfigItem *> &initItems);
+    void on_reloadGamsUserConfigFile(const QList<gams::studio::option::EnvVarConfigItem *> &initItems);
 
     void selectAll();
     void deSelect();
@@ -59,10 +59,10 @@ public slots:
     void setModified(bool modified);
     bool isModified() const;
 
-    QList<EnvVarConfigItem *> envVarConfigItems();
+    QList<gams::studio::option::EnvVarConfigItem *> envVarConfigItems();
 
 private slots:
-    void init(const QList<EnvVarConfigItem *> &initItems);
+    void init(const QList<gams::studio::option::EnvVarConfigItem *> &initItems);
 
     void initActions();
     void updateActionsState(const QModelIndex &index);

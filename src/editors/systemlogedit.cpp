@@ -54,7 +54,7 @@ void SystemLogEdit::mouseMoveEvent(QMouseEvent *event)
     QTextCursor cursor = cursorForPosition(event->pos());
     int pos = cursor.positionInBlock();
     Qt::CursorShape shape = Qt::IBeamCursor;
-    for (QTextLayout::FormatRange range : cursor.block().layout()->formats()) {
+    for (const QTextLayout::FormatRange &range : cursor.block().layout()->formats()) {
         if (range.format.isAnchor() && pos >= range.start && pos <= range.start + range.length) {
             shape = Qt::PointingHandCursor;
         }
@@ -74,7 +74,7 @@ void SystemLogEdit::mousePressEvent(QMouseEvent *event)
     int pos = cursor.positionInBlock();
 
     if (event->button() & Qt::LeftButton) {
-        for (QTextLayout::FormatRange range : cursor.block().layout()->formats()) {
+        for (const QTextLayout::FormatRange &range : cursor.block().layout()->formats()) {
             if (range.format.isAnchor() && pos >= range.start && pos <= range.start + range.length) {
                 QString link = cursor.block().text().mid(range.start, range.length);
                 QDesktopServices::openUrl(link);

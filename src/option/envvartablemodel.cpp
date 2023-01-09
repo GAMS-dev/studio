@@ -66,10 +66,10 @@ QVariant EnvVarTableModel::headerData(int index, Qt::Orientation orientation, in
            tooltipText.append( QString("%1Empty environment variable Value.").arg( tooltipText.isEmpty() ? "" : "\n") );
         if (!mEnvVarItem.at(index)->minVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->minVersion))
            tooltipText.append( QString("%1minVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
-                               .arg( tooltipText.isEmpty() ? "" : "\n").arg( mEnvVarItem.at(index)->minVersion ) );
+                               .arg(tooltipText.isEmpty() ? "" : "\n", mEnvVarItem.at(index)->minVersion));
         if (!mEnvVarItem.at(index)->maxVersion.simplified().isEmpty() && !isConformatVersion(mEnvVarItem.at(index)->maxVersion))
            tooltipText.append( QString("%1maxVersion '%2' must be a version number that is conformed to [x[.y[.z]]] format.")
-                               .arg( tooltipText.isEmpty() ? "" : "\n").arg( mEnvVarItem.at(index)->maxVersion ) );
+                               .arg(tooltipText.isEmpty() ? "" : "\n", mEnvVarItem.at(index)->maxVersion));
         return tooltipText;
     }
     return QVariant();

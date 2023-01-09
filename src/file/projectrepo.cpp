@@ -1047,7 +1047,7 @@ void ProjectRepo::fileChanged(FileId fileId)
         }
         nodeChanged(node->id());
     }
-    for (PExGroupNode *group: groups) {
+    for (PExGroupNode *group: qAsConst(groups)) {
         nodeChanged(group->id());
     }
 }

@@ -434,7 +434,7 @@ void CodeCompleterModel::setActiveNameSuffix(QString suffix)
     QStringList addData;
     int lastAddedDescIndex = -1;
     for (int i = 0; i < mData.length(); ++i) {
-        for (const QString &keyword: suffAssigns) {
+        for (const QString &keyword: qAsConst(suffAssigns)) {
             if (mData.at(i).compare(keyword, Qt::CaseInsensitive) == 0) {
                 addData << mData.at(i) + '.' + suffName;
                 if (lastAddedDescIndex != i) {
@@ -798,7 +798,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
                     || syntax.first == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
                     const QString sys("system.");
-                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
+                    if (peekStart >= sys.length() && sys.compare(line.midRef(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
                         validStart -= sys.length();
                         if (validStart > 0 && line.at(validStart-1) == '%')
                             --validStart;

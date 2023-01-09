@@ -58,7 +58,7 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
             if (mHideUncommon && text.startsWith("225")) return false;
             if (!filterRegExp().isEmpty()) {
                 QDir dir(srcModel->filePath(idx));
-                for (QFileInfo info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
+                for (const QFileInfo &info : dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot)) {
                     QModelIndex child = srcModel->index(info.filePath());
                     if (filterAcceptsRow(child.row(), idx)) return true;
                 }
@@ -166,7 +166,7 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
         indices << idx;
     }
     if (idx.isValid()) {
-        for (const QModelIndex &idx: indices) {
+        for (const QModelIndex &idx: qAsConst(indices)) {
             emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
         }
         emit selectionCountChanged(mSelectedFiles.count());
@@ -191,7 +191,7 @@ void FileSystemModel::clearSelection()
 {
     QSet<QModelIndex> indices;
     QSet<QString> remove;
-    for (const QString &file : mSelectedFiles) {
+    for (const QString &file : qAsConst(mSelectedFiles)) {
         QModelIndex idx = index(rootDirectory().absoluteFilePath(file));
         bool filtered;
         emit isFiltered(idx, filtered);
@@ -203,10 +203,10 @@ void FileSystemModel::clearSelection()
             }
         }
     }
-    for (const QString &file: remove)
+    for (const QString &file: qAsConst(remove))
         mSelectedFiles.remove(file);
     invalidateDirStates();
-    for (const QModelIndex &idx : indices)
+    for (const QModelIndex &idx : qAsConst(indices))
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
     emit selectionCountChanged(mSelectedFiles.count());
 }
@@ -214,7 +214,7 @@ void FileSystemModel::clearSelection()
 QStringList FileSystemModel::selectedFiles(bool addWriteBackState)
 {
     QStringList selection;
-    for (auto file: mSelectedFiles)
+    for (const auto &file: qAsConst(mSelectedFiles))
         selection << file;
     if (addWriteBackState) {
         for (int i = 0; i < selection.count(); ++i) {
@@ -238,11 +238,11 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
             mSelectedFiles << file;
     }
     QStringList missFiles;
-    for (const QString &file : mSelectedFiles) {
+    for (const QString &file : qAsConst(mSelectedFiles)) {
         if (!QFileInfo::exists(rootDirectory().absoluteFilePath(file)))
             missFiles << file;
     }
-    for (const QString &file: missFiles) {
+    for (const QString &file: qAsConst(missFiles)) {
         mSelectedFiles.remove(file);
     }
     if (missFiles.count()) emit missingFiles(missFiles);

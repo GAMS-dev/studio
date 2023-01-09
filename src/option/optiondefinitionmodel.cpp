@@ -307,7 +307,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         case optTypeEnumStr : {
             QString range("");
             QList<OptionValue> valueList;
-            for(const OptionValue &value : optdef.valueList) {
+            for(const OptionValue &value : qAsConst(optdef.valueList)) {
                 if (!value.hidden)
                     valueList.append( value );
             }
@@ -334,7 +334,7 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
         case optTypeEnumInt : {
             QString range("");
             QList<OptionValue> valueList;
-            for(const OptionValue &value : optdef.valueList) {
+            for(const OptionValue &value : qAsConst(optdef.valueList)) {
                 if (!value.hidden)
                     valueList.append( value );
             }

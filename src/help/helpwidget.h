@@ -55,7 +55,7 @@ public:
 
 public slots:
     void on_urlOpened(const QUrl& location);
-    void on_helpContentRequested(const DocumentType &type, const QString& keyword, const QString &submoduleName = "");
+    void on_helpContentRequested(const gams::studio::help::DocumentType &type, const QString& keyword, const QString &submoduleName = "");
     void on_bookmarkNameUpdated(const QString& location, const QString& name);
     void on_bookmarkLocationUpdated(const QString& oldLocation, const QString& newLocation, const QString& name);
     void on_bookmarkRemoved(const QString& location, const QString& name);
