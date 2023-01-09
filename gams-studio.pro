@@ -21,9 +21,7 @@
 TEMPLATE = subdirs
 
 SUBDIRS += src      \
-           uitests  \
            tests
 
 src.file = src/studio.pro
 tests.depends = src
-uitests.depends = src
