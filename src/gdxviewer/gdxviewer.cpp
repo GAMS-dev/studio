@@ -424,6 +424,7 @@ void GdxViewer::saveState()
 
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
+    mState->setSymbolFilter(ui->lineEdit->text());
     for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
         if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
@@ -451,6 +452,7 @@ void GdxViewer::applyState()
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(false);
     ui->tvSymbols->resizeColumnsToContents();
     ui->tvSymbols->horizontalHeader()->setStretchLastSection(true);
+    ui->lineEdit->setText(mState->symbolFilter());
     // delete symbols that do not exist anymore or differ in dimension or type
     auto svStates = mState->symbolViewStates();
     for (auto it = svStates.constBegin() ; it != svStates.constEnd() ; ++it) {

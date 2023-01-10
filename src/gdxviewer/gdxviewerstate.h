@@ -53,11 +53,15 @@ public:
     void write(QVariantMap &map) const;
     void read(const QVariantMap &map);
 
+    QString symbolFilter() const;
+    void setSymbolFilter(const QString &newSymbolFilter);
+
 private:
     QByteArray mSymbolTableHeaderState;
     QMap<QString, GdxSymbolViewState*> mSymbolViewState;
-    QString mSelectedSymbol = "";
+    QString mSelectedSymbol;
     bool mSelectedSymbolIsAlias = false;
+    QString mSymbolFilter;
 };
 
 } // namespace gdxviewer

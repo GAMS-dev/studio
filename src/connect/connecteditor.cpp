@@ -52,7 +52,7 @@ bool ConnectEditor::init(bool quiet)
 {
     try {
        mConnect = new Connect();
-    } catch(Exception& e) {
+    } catch(Exception &) {
         ui->setupUi(this);
         connect(ui->openAsTextButton, &QPushButton::clicked, this, &ConnectEditor::openAsTextButton_clicked, Qt::UniqueConnection);
         mConnect = nullptr;

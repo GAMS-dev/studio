@@ -95,11 +95,23 @@ void GdxViewerState::setSelectedSymbolIsAlias(bool selectedSymbolIsAlias)
     mSelectedSymbolIsAlias = selectedSymbolIsAlias;
 }
 
+QString GdxViewerState::symbolFilter() const
+{
+    return mSymbolFilter;
+}
+
+void GdxViewerState::setSymbolFilter(const QString &newSymbolFilter)
+{
+    mSymbolFilter = newSymbolFilter;
+}
+
+
 void GdxViewerState::write(QVariantMap &map) const
 {
     map.insert("header", mSymbolTableHeaderState.toBase64());
     map.insert("selected", mSelectedSymbol);
     map.insert("isAlias", mSelectedSymbolIsAlias ? 1 : 0);
+    map.insert("symbolFilter", mSymbolFilter.toUtf8().toBase64());
 
     QVariantList symViews;
     QMap<QString, GdxSymbolViewState*>::ConstIterator it;
@@ -117,6 +129,7 @@ void GdxViewerState::read(const QVariantMap &map)
     mSymbolTableHeaderState = QByteArray::fromBase64(map.value("header").toByteArray());
     mSelectedSymbol = map.value("selected").toString();
     mSelectedSymbolIsAlias = map.value("isAlias").toInt();
+    mSymbolFilter = QByteArray::fromBase64(map.value("symbolFilter").toByteArray());
 
     if (map.contains("symbolViewStates")) {
         for (auto it = mSymbolViewState.begin(); it != mSymbolViewState.end();)

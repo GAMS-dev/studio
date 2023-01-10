@@ -190,7 +190,7 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
                     }
                     validType = true;
                     break;
-                } catch (const YAML::BadConversion& e) {
+                } catch (const YAML::BadConversion &) {
                     validType=false;
                 }
            }

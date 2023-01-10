@@ -23,10 +23,10 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ClickableLabel::ClickableLabel(QWidget *parent, Qt::WindowFlags f)
+ClickableLabel::ClickableLabel(QWidget *parent)
     : QLabel(parent) {  }
 
-ClickableLabel::ClickableLabel(const QString &text, QWidget *parent, Qt::WindowFlags f)
+ClickableLabel::ClickableLabel(const QString &text, QWidget *parent)
     : QLabel(parent)
 {
     setText(text);
