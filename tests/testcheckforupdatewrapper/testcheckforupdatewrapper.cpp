@@ -62,7 +62,14 @@ void TestCheckForUpdateWrapper::testCheckForUpdate()
 void TestCheckForUpdateWrapper::testcheckForUpdateShort()
 {
     CheckForUpdateWrapper c4uWrapper;
-    QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
+    if (c4uWrapper.isValid()) {
+        if (c4uWrapper.usingLatestGams())
+            QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
+        else
+            QVERIFY(!c4uWrapper.checkForUpdateShort().isEmpty());
+    } else {
+        QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
+    }
 }
 
 void TestCheckForUpdateWrapper::testCurrentDistribVersion()

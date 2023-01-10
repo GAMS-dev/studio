@@ -28,8 +28,6 @@
 #include <QFileInfo>
 #include <QDir>
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace support {
@@ -55,7 +53,7 @@ void DistributionValidator::checkBitness()
     bool is64 = (sizeof(void*) == 8);
     QStringList messages;
     if (gamsPath.isEmpty())
-        return; //we can check the bitness of GAMS if no GAMS was found
+        return; //we can not check the bitness of GAMS if no GAMS was found
     if (!is64 && joat64.exists())
         messages << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
                  << gamsPath;
@@ -108,8 +106,19 @@ void DistributionValidator::checkForUpdates()
     if (!c4u.isValid())
         return;
     Settings::settings()->setDate(skLastUpdateCheckDate, QDate::currentDate());
+    Settings::settings()->setDate(skNextUpdateCheckDate, nextCheckUpdate());
     message = c4u.checkForUpdateShort();
     emit newGamsVersion(message);
+}
+
+QDate DistributionValidator::nextCheckUpdate()
+{
+    auto interval = static_cast<UpdateCheckInterval>(Settings::settings()->toInt(skUpdateInterval));
+    if (interval == UpdateCheckInterval::Daily)
+        return QDate::currentDate().addDays(1);
+    if (interval == UpdateCheckInterval::Weekly)
+        return QDate::currentDate().addDays(7);
+    return QDate::currentDate().addMonths(1);
 }
 
 }

@@ -313,7 +313,6 @@ private slots:
     void on_actionAbout_Studio_triggered();
     void on_gamsLicensing_triggered();
     void on_actionAbout_Qt_triggered();
-    void on_actionUpdate_triggered();
 
     // View
     void on_actionProcess_Log_triggered(bool checked);

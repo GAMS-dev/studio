@@ -49,7 +49,6 @@
 #include "search/searchresultmodel.h"
 #include "search/resultsview.h"
 #include "gotodialog.h"
-#include "support/updatedialog.h"
 #include "autosavehandler.h"
 #include "tabdialog.h"
 #include "help/helpdata.h"
@@ -365,11 +364,16 @@ MainWindow::MainWindow(QWidget *parent)
     }
     ui->menuMIRO->setEnabled(isMiroAvailable());
 
+    connect(ui->actionUpdate, &QAction::triggered,
+            this, [this]{
+        on_actionSettings_triggered();
+        mSettingsDialog->focusUpdateTab(true);
+    });
     connect(ui->updateWidget, &support::UpdateWidget::openSettings,
             this, [this]{
-                            on_actionSettings_triggered();
-                            mSettingsDialog->focusUpdateTab();
-                        });
+        on_actionSettings_triggered();
+        mSettingsDialog->focusUpdateTab(false);
+    });
 
     // Themes
     ViewHelper::changeAppearance();
@@ -2317,12 +2321,6 @@ void MainWindow::on_actionChangelog_triggered()
     PExProjectNode *project = mProjectRepo.createProject(fi.fileName(), fi.absolutePath(), "", onExist_Project);
     project->setVirtual();
     openFile(fm, true, project);
-}
-
-void MainWindow::on_actionUpdate_triggered()
-{
-    support::UpdateDialog updateDialog(this);
-    updateDialog.exec();
 }
 
 void MainWindow::on_actionTerminal_triggered()

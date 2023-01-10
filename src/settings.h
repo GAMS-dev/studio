@@ -155,6 +155,13 @@ enum SettingsKey {
     skNextUpdateCheckDate
 };
 
+enum UpdateCheckInterval
+{
+    Daily,
+    Weekly,
+    Monthly
+};
+
 class Settings
 {
 public:

@@ -56,6 +56,8 @@ private:
     void checkCompatibility();
 
     void checkForUpdates();
+
+    QDate nextCheckUpdate();
 };
 
 }

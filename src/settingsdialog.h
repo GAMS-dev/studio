@@ -55,7 +55,7 @@ public:
 
     int engineInitialExpire() const;
 
-    void focusUpdateTab();
+    void focusUpdateTab(bool checkUpdate);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -111,6 +111,7 @@ private slots:
 
     void checkGamsUpdates();
     void checkGamsVersion(const QString &text);
+    void anchorClicked(const QUrl &link);
 
 private:
     void saveSettings();

@@ -25,6 +25,7 @@
 #include "gclgms.h"
 #include "c4umcc.h"
 
+#include <QDir>
 #include <cstring>
 
 namespace gams {
@@ -59,6 +60,11 @@ bool CheckForUpdateWrapper::isValid() const
     return mValid;
 }
 
+bool CheckForUpdateWrapper::usingLatestGams() const
+{
+    return c4uLastRel(mC4U) <= c4uThisRel(mC4U);
+}
+
 QString CheckForUpdateWrapper::message()
 {
     auto msgs = mMessages.join("\n");
@@ -76,7 +82,8 @@ QString CheckForUpdateWrapper::checkForUpdate()
     if (!isValid())
         return QString();
 
-    c4uReadLiceStd(mC4U, CommonPaths::systemDir().toStdString().c_str(), true);
+    auto sysdir = QDir::toNativeSeparators(CommonPaths::systemDir());
+    c4uReadLiceStd(mC4U, sysdir.toStdString().c_str(), true);
     c4uCreateMsg(mC4U);
 
     int messageIndex=0;
@@ -97,7 +104,6 @@ QString CheckForUpdateWrapper::checkForUpdateShort()
         return QString();
     if (!c4uCheck4NewGAMS(mC4U, true))
         return QString();
-    c4uCreateMsg(mC4U);
     int messageIndex=0;
     char buffer[GMS_SSSIZE];
     getMessages(messageIndex, buffer);

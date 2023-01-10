@@ -383,7 +383,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // Check gams update
     safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
-    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, "Daily");
+    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
     safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
     safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
 

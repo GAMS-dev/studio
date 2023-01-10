@@ -126,6 +126,8 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
+    connect(ui->updateBrowser, &QTextBrowser::anchorClicked, this, &SettingsDialog::anchorClicked);
+    connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){ ui->updateIntervalBox->setEnabled(checked); });
     adjustSize();
 
     connect(ui->checkUpdateButton, &QPushButton::clicked,
@@ -229,9 +231,8 @@ void SettingsDialog::loadSettings()
 
     // update page
     ui->autoUpdateBox->setCheckState(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
-    auto interval = mSettings->toString(skUpdateInterval);
-    if (!interval.isEmpty())
-        ui->updateIntervalBox->setCurrentIndex(ui->updateIntervalBox->findText(interval));
+    ui->updateIntervalBox->setEnabled(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
+    ui->updateIntervalBox->setCurrentIndex(mSettings->toInt(skUpdateInterval));
     mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
     ui->nextCheckLabel->setText(nextCheckDate().toString());
@@ -370,7 +371,7 @@ void SettingsDialog::saveSettings()
 
     // Check gams update
     mSettings->setBool(skAutoUpdateCheck, ui->autoUpdateBox->isChecked());
-    mSettings->setString(skUpdateInterval, ui->updateIntervalBox->currentText());
+    mSettings->setInt(skUpdateInterval, ui->updateIntervalBox->currentIndex());
     mSettings->setDate(skLastUpdateCheckDate, mLastCheckDate);
     mSettings->setDate(skNextUpdateCheckDate, nextCheckDate());
 
@@ -499,8 +500,9 @@ int SettingsDialog::engineInitialExpire() const
     return mEngineInitialExpire;
 }
 
-void SettingsDialog::focusUpdateTab()
+void SettingsDialog::focusUpdateTab(bool checkUpdate)
 {
+    if (checkUpdate) checkGamsUpdates();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
 }
 
@@ -816,7 +818,7 @@ QString SettingsDialog::changeSeparators(const QString &commaSeparatedList, cons
 }
 
 QDate SettingsDialog::nextCheckDate() const
-{// TODO (AF) enum?
+{
     if (!mLastCheckDate.isValid())
         return QDate();
     if (!ui->updateIntervalBox->currentText().compare("Daily", Qt::CaseInsensitive))
@@ -919,6 +921,17 @@ void SettingsDialog::checkGamsVersion(const QString &text)
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
     ui->nextCheckLabel->setText(nextCheckDate().toString());
     ui->updateBrowser->setText(text);
+}
+
+void SettingsDialog::anchorClicked(const QUrl &link)
+{
+    auto urlStr = link.url(QUrl::DecodeReserved);
+    if (urlStr.startsWith("https://www.gams.com")) {
+        QDesktopServices::openUrl(QUrl(urlStr));
+    } else {
+        auto path = QDir::toNativeSeparators(QFileInfo(urlStr).absoluteFilePath().toLatin1());
+        QDesktopServices::openUrl(QUrl::fromLocalFile(path));
+    }
 }
 
 }

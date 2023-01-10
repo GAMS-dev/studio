@@ -53,6 +53,12 @@ public:
     bool isValid() const;
 
     ///
+    /// \brief Checks if the latest GAMS version is used.
+    /// \return <c>true</c> if the latest GAMS version is used; otherwise <c>false</c>.
+    ///
+    bool usingLatestGams() const;
+
+    ///
     /// \brief Get c4u library messages.
     /// \return c4u library messages as one string,
     ///         which is joined by <c>"\\n"</c>.
