@@ -5740,6 +5740,11 @@ void MainWindow::on_actionNew_Project_triggered()
     newFileDialog(QVector<PExProjectNode*>(), "", true);
 }
 
+void MainWindow::on_actionOpen_Project_triggered()
+{
+    openFilesDialog(ogProjects);
+}
+
 void MainWindow::on_actionMove_Project_triggered()
 {
     PExProjectNode *project = mRecent.project();
@@ -5769,6 +5774,7 @@ void MainWindow::on_actionNavigator_triggered()
     mNavigatorDialog->show();
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
+
 
 }
 }

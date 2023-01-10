@@ -125,6 +125,7 @@
     <addaction name="actionSave_All"/>
     <addaction name="separator"/>
     <addaction name="actionNew_Project"/>
+    <addaction name="actionOpen_Project"/>
     <addaction name="actionMove_Project"/>
     <addaction name="actionClone_Project"/>
     <addaction name="separator"/>
@@ -1519,20 +1520,25 @@
   </action>
   <action name="actionNew_Project">
    <property name="text">
-    <string>New Project</string>
+    <string>New Project...</string>
+   </property>
+  </action>
+  <action name="actionOpen_Project">
+   <property name="text">
+    <string>Open Project...</string>
    </property>
   </action>
   <action name="actionMove_Project">
    <property name="text">
-    <string>Move Project</string>
+    <string>Move Project...</string>
    </property>
    <property name="toolTip">
-    <string>Move Project</string>
+    <string>Moves/Renames Project file</string>
    </property>
   </action>
   <action name="actionClone_Project">
    <property name="text">
-    <string>Clone Project</string>
+    <string>Clone Project...</string>
    </property>
    <property name="toolTip">
     <string>Clone Project</string>

@@ -425,6 +425,8 @@ private slots:
     void on_actionPin_Below_triggered();
     void on_actionNavigator_triggered();
 
+    void on_actionOpen_Project_triggered();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();

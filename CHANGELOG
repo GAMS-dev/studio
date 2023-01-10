@@ -1,3 +1,7 @@
+Version 1.13.1  *
+==================
+- added "Open project..." to main menu
+
 Version 1.13.0
 ==================
 - improved numerical formatting of the GDX Viewer when using `g-format` with `Full` precision.
