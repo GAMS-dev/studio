@@ -4,6 +4,10 @@ Version 1.13.1  *
 
 Version 1.13.0
 ==================
+- added symbol filter to gdx state and persist it
+
+Version 1.13.0
+==================
 - improved numerical formatting of the GDX Viewer when using `g-format` with `Full` precision.
 - improved `Check for Update` dialog, including HTML output and text updates
 - added GAMS Connect editor
