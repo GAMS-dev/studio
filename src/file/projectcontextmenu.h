@@ -55,6 +55,7 @@ signals:
     void reOpenFile(PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void moveProject(PExProjectNode* project, bool cloneOnly);
     void newProject();
+    void openProject();
     void selectAll();
     void expandAll();
     void collapseAll();

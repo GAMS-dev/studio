@@ -256,6 +256,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, [this]() {
         on_actionNew_Project_triggered();
     });
+    connect(&mProjectContextMenu, &ProjectContextMenu::openProject, this, [this]() {
+        openFilesDialog(ogProjects);
+    });
 
     connect(ui->dockProjectView, &QDockWidget::visibilityChanged, this, &MainWindow::projectViewVisibiltyChanged);
     connect(ui->dockProcessLog, &QDockWidget::visibilityChanged, this, &MainWindow::outputViewVisibiltyChanged);

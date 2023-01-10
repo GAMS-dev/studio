@@ -61,6 +61,7 @@ enum ContextAction {
     actGdxReset,
     actSep7,
     actProjectNew,
+    actProjectOpen,
     actProjectMove,
     actProjectClone,
 };
@@ -112,7 +113,7 @@ ProjectContextMenu::ProjectContextMenu()
                 }
             }
         } else { // when no information on solver option definition file names
-           for (const QString &filename : optFiles) {
+           for (const QString &filename : qAsConst(optFiles)) {
                QString solvername = filename.mid(QString("opt").length());
                solvername.replace(QRegExp(".def"), "");
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
@@ -136,6 +137,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep6, addSeparator());
     mActions.insert(actProjectNew, addAction("&New project",  this, &ProjectContextMenu::newProject));
+    mActions.insert(actProjectOpen, addAction("&Open project",  this, &ProjectContextMenu::openProject));
     mActions.insert(actProjectMove, addAction("&Move project",  this, &ProjectContextMenu::onMoveProject));
     mActions.insert(actProjectClone, addAction("&Clone project",  this, &ProjectContextMenu::onCloneProject));
 
