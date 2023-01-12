@@ -300,10 +300,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
-    connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
-        mSearchDialog->filesChanged();
-        mSaveSettingsTimer.start(50);
-    });
     connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
@@ -392,8 +388,12 @@ MainWindow::MainWindow(QWidget *parent)
 
 void MainWindow::watchProjectTree()
 {
-    connect(&mProjectRepo, &ProjectRepo::changed, this, &MainWindow::storeTree);
+    connect(&mProjectRepo, &ProjectRepo::changed, this, [this]() {
+        updateAndSaveSettings();
+    });
     connect(&mProjectRepo, &ProjectRepo::childrenChanged, this, [this]() {
+        mSearchDialog->filesChanged();
+        mSaveSettingsTimer.start(50);
         // to update the project if changed
         mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
@@ -2645,6 +2645,7 @@ void MainWindow::updateAndSaveSettings()
         else ++it;
     }
     settings->setMap(skGdxStates, gdxStates);
+
     for (int i = 0; i < ui->mainTabs->count(); ++i) {
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;

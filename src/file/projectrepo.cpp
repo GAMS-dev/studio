@@ -404,7 +404,9 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
         } else {
             SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
         }
-    }
+        DEB() << "Saved: " << project->name(NameModifier::editStateWithExt) << "  children: " << project->childCount();
+    } else
+        DEB() << "Unchanged: " << project->name(NameModifier::editStateWithExt) << "  children: " << project->childCount();
 }
 
 QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePaths) const
