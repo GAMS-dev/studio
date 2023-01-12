@@ -2800,7 +2800,17 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
         }
     });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project, cloneOnly](const QString &fileName) {
-        mProjectRepo.moveProject(project, fileName, cloneOnly);
+        if (cloneOnly) {
+            QStringList srcFiles;
+            QStringList dstFiles;
+            QStringList missFiles;
+            QStringList collideFiles;
+            if (!mProjectRepo.getClonePaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles)) {
+                // TODO(JM) open warning and decision dialog
+            }
+            // TODO(JM) call mProjectRepo.moveProject eventually
+        } else
+            mProjectRepo.moveProject(project, fileName, cloneOnly);
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
