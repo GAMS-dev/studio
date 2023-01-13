@@ -626,7 +626,6 @@ void Search::replaceAll(QString replacementText)
     if (msgBox.clickedButton() == ok) {
 
         mSearchDialog->setSearchStatus(Search::Replacing);
-        QApplication::processEvents(QEventLoop::AllEvents, 10); // to show change in UI
         setParameters(true);
 
         for (FileMeta* fm : qAsConst(opened))

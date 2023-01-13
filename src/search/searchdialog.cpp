@@ -172,7 +172,7 @@ void SearchDialog::updateDialogState()
 
     if (!searching) updateComponentAvailability();
 
-    QApplication::processEvents(QEventLoop::ExcludeUserInputEvents);
+    repaint();
 }
 
 QSet<FileMeta*> SearchDialog::getFilesByScope(bool ignoreReadOnly)
@@ -605,6 +605,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         ui->lbl_nrResults->setText("Collecting files...");
         break;
     }
+    repaint();
 }
 
 void SearchDialog::insertHistory()
