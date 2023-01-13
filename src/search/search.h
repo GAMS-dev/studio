@@ -115,6 +115,7 @@ private:
     QHash<QString, QList<Result>> mResultHash;
     QSet<FileMeta*> mFiles;
     QRegularExpression mRegex;
+    QString mSearchTerm;
     QFlags<QTextDocument::FindFlag> mOptions;
     Scope mScope;
     AbstractSearchFileHandler* mFileHandler;

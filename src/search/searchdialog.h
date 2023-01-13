@@ -50,6 +50,7 @@ public:
     bool regex();
     bool caseSens();
     bool wholeWords();
+    QString searchTerm();
 
     Search::Scope selectedScope();
     void setSelectedScope(int index);

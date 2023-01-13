@@ -2,6 +2,7 @@ Version 1.13.1  *
 ==================
 - added "Open project..." to main menu and Project Explorer context menu
 - added symbol filter to gdx state and persist it
+- adjusted Search Dialog Replace All to show search term in clear text instead of internal representation
 
 Version 1.13.0
 ==================

@@ -45,6 +45,7 @@ void Search::setParameters(bool ignoreReadonly, bool searchBackwards)
 {
     mFiles = mSearchDialog->getFilesByScope(ignoreReadonly);
     mRegex = mSearchDialog->createRegex();
+    mSearchTerm = mSearchDialog->searchTerm();
     mOptions = QFlags<QTextDocument::FindFlag>();
 
     // this is needed for document->find as that is not using the regexes case sensitivity setting:
@@ -586,7 +587,6 @@ void Search::replaceAll(QString replacementText)
     }
 
     // user interaction
-    QString searchTerm = mRegex.pattern();
     QString replaceTerm = replacementText;
     QMessageBox msgBox;
     if (mFiles.size() == 0) {
@@ -596,15 +596,15 @@ void Search::replaceAll(QString replacementText)
         return;
 
     } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + mSearchTerm
                        + "' with '" + replaceTerm + "' in file " + searchFiles.first()->name() + "?");
     } else if (mSearchDialog->selectedScope() == Search::Selection) {
-        msgBox.setText("Are you sure you want to replace all occurrences of '" + searchTerm
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + mSearchTerm
                        + "' with '" + replaceTerm + "' in the selected text in file "
                        + searchFiles.first()->name() + "?");
     } else {
         msgBox.setText("Are you sure you want to replace all occurrences of '" +
-                       searchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
+                       mSearchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
                        "This action cannot be undone!");
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
@@ -645,9 +645,9 @@ void Search::replaceAll(QString replacementText)
 
     QMessageBox ansBox;
     if (hits == 1)
-        ansBox.setText("1 occurrences of '" + searchTerm + "' was replaced with '" + replaceTerm + "'.");
+        ansBox.setText("1 occurrences of '" + mSearchTerm + "' was replaced with '" + replaceTerm + "'.");
     else
-        ansBox.setText(QString::number(hits) + " occurrences of '" + searchTerm
+        ansBox.setText(QString::number(hits) + " occurrences of '" + mSearchTerm
                         + "' were replaced with '" + replaceTerm + "'.");
     ansBox.addButton(QMessageBox::Ok);
     ansBox.exec();
