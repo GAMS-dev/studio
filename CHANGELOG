@@ -4,6 +4,7 @@ Version 1.13.1 *
 - added symbol filter to gdx state and persist it
 - adjusted Search Dialog Replace All to show search term in clear text instead of internal representation
 - improved GAMS update check and check for a new GAMS version when Studio starts
+- fixed projects not always stored properly
 
 Version 1.13.0
 ==================
