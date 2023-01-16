@@ -522,6 +522,7 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
         }
     }
     emit editorLineWrappingChanged();
+    mSettings->unblock();
 }
 
 bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
@@ -589,7 +590,6 @@ void SettingsDialog::delayBaseThemeChange(bool valid)
 
 SettingsDialog::~SettingsDialog()
 {
-    mSettings->unblock();
     delete ui;
 }
 
