@@ -464,12 +464,23 @@ void PExProjectNode::setVirtual(bool isVirtual)
 
 bool PExProjectNode::needSave() const
 {
-    return mChanged && !isVirtual();
+    return mChangeState == csChanged && !isVirtual();
+}
+
+bool PExProjectNode::isClosing() const
+{
+    return mChangeState == csClosing;
 }
 
 void PExProjectNode::setNeedSave(bool needSave)
 {
-    mChanged = needSave;
+    if (mChangeState != csClosing)
+        mChangeState = needSave ? csChanged : csNone;
+}
+
+void PExProjectNode::setIsClosing()
+{
+    mChangeState = csClosing;
 }
 
 void PExProjectNode::updateLogName(const QString &name)

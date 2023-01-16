@@ -381,7 +381,7 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project || project->isVirtual()) continue;
+        if (!project || project->isVirtual() || project->isClosing()) continue;
         QVariantMap proData = getProjectMap(project, true);
         save(project, proData);
         // prepare projects data with absolute paths for Settings storage
@@ -404,9 +404,7 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
         } else {
             SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
         }
-        DEB() << "Saved: " << project->name(NameModifier::editStateWithExt) << "  children: " << project->childCount();
-    } else
-        DEB() << "Unchanged: " << project->name(NameModifier::editStateWithExt) << "  children: " << project->childCount();
+    }
 }
 
 QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePaths) const

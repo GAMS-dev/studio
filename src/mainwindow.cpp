@@ -2586,6 +2586,8 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
 
 void MainWindow::updateAndSaveSettings()
 {
+    if (mShutDown) return;
+
     Settings *settings = Settings::settings();
 
     QScreen *screen = window()->screen();
@@ -3073,6 +3075,7 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (!terminateProcessesConditionally(mProjectRepo.projects())) {
         event->setAccepted(false);
     } else if (requestCloseChanged(oFiles)) {
+        mShutDown = true;
         on_actionClose_All_triggered();
         closeHelpView();
         mTextMarkRepo.clear();
@@ -4250,6 +4253,7 @@ void MainWindow::closeProject(PExProjectNode* project)
     if (!project) return;
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
+    project->setIsClosing();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (PExFileNode *node: project->listFiles()) {

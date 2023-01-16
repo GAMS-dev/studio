@@ -526,6 +526,7 @@ private:
 
     bool mDebugMode = false;
     bool mStartedUp = false;
+    bool mShutDown = false;
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;

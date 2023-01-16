@@ -123,7 +123,10 @@ public:
     AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, PExFileNode *lstNode);
 
+    void setNeedSave(bool needSave = true);
     bool needSave() const;
+    void setIsClosing();
+    bool isClosing() const;
 
     const QString &fileName() const;
 
@@ -165,6 +168,7 @@ protected:
     QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
+    enum ChangeState {csNone, csChanged, csClosing};
     QString mProjectFile;
     QString mWorkDir;
     QString mNameExt;
@@ -175,12 +179,11 @@ private:
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;
-    bool mChanged = false;
+    ChangeState mChangeState = csNone;
 
 private:
     QString cleanPath(QString path, QString file);
     void setLogLocation(QString path);
-    void setNeedSave(bool needSave = true);
     void updateLogName(const QString &name);
 };
 
