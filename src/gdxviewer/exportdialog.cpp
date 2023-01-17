@@ -24,6 +24,7 @@
 #include "gdxsymbolview.h"
 #include "gdxviewer.h"
 #include "ui_exportdialog.h"
+#include "valuefilter.h"
 
 #include <headerviewproxy.h>
 #include <settings.h>
@@ -105,6 +106,7 @@ QString ExportDialog::generateInstructions()
     QString output = ui->leExcel->text().trimmed();
     QString inst;
     inst += generateGdxReader();
+    inst += generateFilters();
     inst += generateProjections();
     inst += generatePDExcelWriter(output);
     return inst;
@@ -136,7 +138,7 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
     inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
     inst += "    symbols:\n";
     for (GdxSymbol* sym: mExportModel->selectedSymbols()) {
-        QString name = sym->name();
+        QString name = hasActiveFilter(sym) ? sym->name() + FILTER_SUFFIX : sym->name();
         QString range = sym->name() + "!A1";
         int rowDimension = sym->dim();
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
@@ -172,12 +174,18 @@ QString ExportDialog::generateProjections()
         QString dom = generateDomains(sym);
         QString domNew = generateDomainsNew(sym);
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            name = sym->name() + dom;
+            if (hasActiveFilter(sym))
+                name = sym->name() + FILTER_SUFFIX + dom;
+            else
+                name = sym->name() + dom;
             newName = sym->name() + PROJ_SUFFIX + dom;
             asParameter = true;
         }
         if (dom != domNew) {
-            name = sym->name() + dom;
+            if (hasActiveFilter(sym))
+                name = sym->name() + FILTER_SUFFIX  + dom;
+            else
+                name = sym->name() + dom;
             newName = sym->name() + PROJ_SUFFIX + domNew;
             domOrderChanged = true;
         }
@@ -192,6 +200,62 @@ QString ExportDialog::generateProjections()
                 inst += "    code: |\n";
                 inst += "      r = connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records\n";
                 inst += "      connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records=r.sort_values([c for c in r.columns])\n";
+            }
+        }
+    }
+    return inst;
+}
+
+QString ExportDialog::generateFilters()
+{
+    QString inst;
+    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+        if (hasActiveFilter(sym)) {
+            QString name = sym->name();
+            QString newName = name + FILTER_SUFFIX;
+            inst += "- Filter:\n";
+            inst += "    name: " + name + "\n";
+            inst += "    newName: " + newName + "\n";
+
+            // label filters
+            if (hasActiveLabelFilter(sym)) {
+                inst += "    labelFilters:\n";
+                for (int d=0; d<sym->dim(); d++) {
+                    if (sym->filterActive(d)) {
+                        inst += "      - column: " + QString::number(d+1) + "\n";
+                        inst += "        keep: [";
+                        bool *showUels = sym->showUelInColumn().at(d);
+                        std::vector<int> uels = *sym->uelsInColumn().at(d);
+                        for(int uel: uels) {
+                            if (showUels[uel])
+                                inst += "'" + mSymbolTableModel->uel2Label(uel) + "', ";
+                        }
+                        int pos = inst.lastIndexOf(QChar(','));
+                        inst.remove(pos, 2);
+                        inst += "]\n";
+                    }
+                }
+            }
+
+            if (hasActiveValueFilter(sym)) {
+                // value filters
+                inst += "    valueFilters:\n";
+                for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
+                    if (sym->filterActive(d)) {
+                        int valColIndex = d-sym->dim();
+                        QStringList valColumns;
+                        ValueFilter *vf = sym->valueFilter(valColIndex);
+                        valColumns << "level", "marginal", "lower", "upper", "scale";
+                        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+                            inst += "      - column: " + valColumns[valColIndex] + "\n";
+                        else // parameters
+                            inst += "      - column: value\n";
+                        if (sym->valueFilter(valColIndex)->exclude()) {
+                            inst += "        rule: (x<" + QString::number(vf->currentMin()) + ") | (x>" + QString::number(vf->currentMax()) + ")\n";
+                        } else
+                            inst += "        rule: (x>=" + QString::number(vf->currentMin()) + ") & (x<=" + QString::number(vf->currentMax()) + ")\n";
+                    }
+                }
             }
         }
     }
@@ -253,6 +317,27 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
             return generateDomains(sym);
     }
     return dom;
+}
+
+bool ExportDialog::hasActiveLabelFilter(GdxSymbol *sym)
+{
+    for (int i=0; i<sym->dim(); i++)
+        if (sym->filterActive(i))
+            return true;
+    return false;
+}
+
+bool ExportDialog::hasActiveValueFilter(GdxSymbol *sym)
+{
+    for (int i=sym->dim(); i<sym->filterColumnCount(); i++)
+        if (sym->filterActive(i))
+            return true;
+    return false;
+}
+
+bool ExportDialog::hasActiveFilter(GdxSymbol *sym)
+{
+    return hasActiveLabelFilter(sym) || hasActiveValueFilter(sym);
 }
 
 void ExportDialog::on_pbBrowseExcel_clicked()

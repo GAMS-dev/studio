@@ -67,13 +67,19 @@ private:
     void setControlsEnabled(bool enabled);
 
     const QString PROJ_SUFFIX = "_proj_";
+    const QString FILTER_SUFFIX = "_filter_";
     QString generateInstructions();
     QString generateGdxReader();
     QString generatePDExcelWriter(QString excelFile);
     QString generateProjections();
+    QString generateFilters();
 
     QString generateDomains(GdxSymbol *sym);
     QString generateDomainsNew(GdxSymbol *sym);
+
+    bool hasActiveLabelFilter(GdxSymbol *sym);
+    bool hasActiveValueFilter(GdxSymbol *sym);
+    bool hasActiveFilter(GdxSymbol *sym);
 
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
