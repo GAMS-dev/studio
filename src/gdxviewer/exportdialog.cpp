@@ -244,16 +244,28 @@ QString ExportDialog::generateFilters()
                     if (sym->filterActive(d)) {
                         int valColIndex = d-sym->dim();
                         QStringList valColumns;
+                        valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
                         ValueFilter *vf = sym->valueFilter(valColIndex);
-                        valColumns << "level", "marginal", "lower", "upper", "scale";
                         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
                             inst += "      - column: " + valColumns[valColIndex] + "\n";
                         else // parameters
                             inst += "      - column: value\n";
-                        if (sym->valueFilter(valColIndex)->exclude()) {
+                        if (vf->exclude()) {
                             inst += "        rule: (x<" + QString::number(vf->currentMin()) + ") | (x>" + QString::number(vf->currentMax()) + ")\n";
                         } else
                             inst += "        rule: (x>=" + QString::number(vf->currentMin()) + ") & (x<=" + QString::number(vf->currentMax()) + ")\n";
+
+                        //special values
+                        if (!vf->showEps())
+                            inst += "        eps: false\n";
+                        if (!vf->showPInf())
+                            inst += "        infinity: false\n";
+                        if (!vf->showMInf())
+                            inst += "        negativeInfinity: false\n";
+                        if (!vf->showNA())
+                            inst += "        na: false\n";
+                        if (!vf->showUndef())
+                            inst += "        undf: false\n";
                     }
                 }
             }
