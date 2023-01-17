@@ -222,12 +222,24 @@ QString ExportDialog::generateFilters()
                 inst += "    labelFilters:\n";
                 for (int d=0; d<sym->dim(); d++) {
                     if (sym->filterActive(d)) {
-                        inst += "      - column: " + QString::number(d+1) + "\n";
-                        inst += "        keep: [";
                         bool *showUels = sym->showUelInColumn().at(d);
                         std::vector<int> uels = *sym->uelsInColumn().at(d);
-                        for(int uel: uels) {
+                        inst += "      - column: " + QString::number(d+1) + "\n";
+
+                        // switch between keep and reject for improved performance
+                        int uelCount = uels.size();
+                        int showUelCount = 0;
+                        for (int uel: uels) {
                             if (showUels[uel])
+                                showUelCount++;
+                        }
+                        bool useReject = showUelCount > uelCount/2;
+                        if (useReject)
+                            inst += "        reject: [";
+                        else
+                            inst += "        keep: [";
+                        for (int uel: uels) {
+                            if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) )
                                 inst += "'" + mSymbolTableModel->uel2Label(uel) + "', ";
                         }
                         int pos = inst.lastIndexOf(QChar(','));
