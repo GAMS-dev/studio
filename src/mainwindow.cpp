@@ -2800,21 +2800,60 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
         }
     });
     connect(dialog, &QFileDialog::fileSelected, this, [this, project, cloneOnly](const QString &fileName) {
-        if (cloneOnly) {
+        bool pathChanged = QFileInfo(project->fileName()).absolutePath().compare(
+                    QFileInfo(fileName).absolutePath(), FileType::fsCaseSense()) != 0;
+        if (cloneOnly && pathChanged) {
             QStringList srcFiles;
             QStringList dstFiles;
             QStringList missFiles;
             QStringList collideFiles;
-            if (!mProjectRepo.getClonePaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles)) {
-                // TODO(JM) open warning and decision dialog
+            MultiCopyCheck mcs = mProjectRepo.getClonePaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
+            if (mcs == mcsOk) {
+                mProjectRepo.moveProject(project, fileName, cloneOnly);
+            } else if (mcs == mcsMissAll) {
+                SysLogLocator::systemLog()->append("No files to copy");
+            } else {
+                moveProjectCollideDialog(mcs, project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
             }
-            // TODO(JM) call mProjectRepo.moveProject eventually
-        } else
+        } else {
             mProjectRepo.moveProject(project, fileName, cloneOnly);
+        }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
+}
+
+void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *project, const QString &fileName,
+                                          const QStringList &srcFiles, const QStringList &dstFiles,
+                                          QStringList &missFiles, QStringList &collideFiles)
+{
+    QMessageBox *box = new QMessageBox(this);
+    int missMore = 0;
+    while (missFiles.count() > 5) {
+        missFiles.removeLast();
+        ++missMore;
+    }
+    int collideMore = 0;
+    while (collideFiles.count() > 5) {
+        collideFiles.removeLast();
+        ++collideMore;
+    }
+    box->setWindowTitle(mcs==mcsMiss ? "Missing Files" : mcs==mcsCollide ? "Overwrite Warning" : "Missing/Overwrite Warning");
+    QString text;
+    if (mcs != mcsCollide) text = "Can't copy these missing files:\n - " + missFiles.join("\n - ")
+            + (missMore ? QString(" and %1 more").arg(missMore) : QString());
+    if (mcs != mcsMiss) text += "The following files already exists and would be overwritten:\n - " + collideFiles.join("\n - ")
+            + (collideMore ? QString(" and %1 more").arg(collideMore) : QString());
+    box->setText(text);
+    box->setStandardButtons(QMessageBox::Apply | QMessageBox::Abort);
+    connect(box, &QMessageBox::finished, this, [this, box, project, fileName](int result) {
+        if (result == QMessageBox::Apply) {
+            mProjectRepo.moveProject(project, fileName, true);
+        }
+        box->deleteLater();
+    });
+    box->open();
 }
 
 void MainWindow::closePinView()

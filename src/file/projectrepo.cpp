@@ -377,7 +377,7 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project || project->isVirtual() || project->isClosing()) continue;
+        if (!project || project->isVirtual()) continue;
         QVariantMap proData = getProjectMap(project, true);
         save(project, proData);
         // prepare projects data with absolute paths for Settings storage
@@ -544,28 +544,31 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
     return project;
 }
 
-bool ProjectRepo::getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles,
-                                QStringList &dstFiles, QStringList &missFiles, QStringList &collideFiles)
+MultiCopyCheck ProjectRepo::getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles,
+                                          QStringList &dstFiles, QStringList &missFiles, QStringList &collideFiles)
 {
-    bool res = true;
     QDir srcDir = QFileInfo(project->fileName()).path();
     QDir dstDir = QFileInfo(filePath).path();
     const QVector<PExFileNode*> nodes = project->listFiles();
     for (const PExFileNode *node : nodes) {
         QString source = node->location();
         if (!QFile::exists(source)) {
-            res = false;
             missFiles << source;
         } else {
             QString relPath = srcDir.relativeFilePath(source);
             QString dest = dstDir.absoluteFilePath(relPath);
             if (QFile::exists(dest)) {
-                res = false;
                 collideFiles << dest;
             }
             srcFiles << source;
             dstFiles << dest;
         }
+    }
+    MultiCopyCheck res = mcsOk;
+    if (missFiles.count() == nodes.count()) res = mcsMissAll;
+    else {
+        if (missFiles.count()) res = mcsMiss;
+        if (collideFiles.count()) res = (res==mcsMiss ? mcsMissCollide : mcsCollide);
     }
     return res;
 }

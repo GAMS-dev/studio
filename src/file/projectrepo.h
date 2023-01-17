@@ -40,6 +40,13 @@ enum ProjectExistFlag {
     onExist_Project,
     onExist_AddNr,
 };
+enum MultiCopyCheck {
+    mcsOk,
+    mcsMiss,
+    mcsCollide,
+    mcsMissCollide,
+    mcsMissAll,
+};
 
 ///
 /// The ProjectRepo handles all open and assigned nodes of projects or simple gms-runables. It is based on an
@@ -114,7 +121,8 @@ public:
 
     PExProjectNode *createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
                                   QString workDir = QString());
-    bool getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &collideFiles);
+    MultiCopyCheck getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles,
+                                 QStringList &dstFiles, QStringList &missFiles, QStringList &collideFiles);
     void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
