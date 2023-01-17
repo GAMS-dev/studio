@@ -2587,7 +2587,6 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
 void MainWindow::updateAndSaveSettings()
 {
     if (mShutDown) return;
-
     Settings *settings = Settings::settings();
 
     QScreen *screen = window()->screen();
@@ -4250,7 +4249,10 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
 
 void MainWindow::closeProject(PExProjectNode* project)
 {
+
     if (!project) return;
+    if (project->name() == "abel")
+        SysLogLocator::systemLog()->append("Closing project");
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     project->setIsClosing();

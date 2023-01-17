@@ -234,7 +234,7 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
     return mTextMarkRepo;
 }
 
-bool ProjectRepo::checkRead(const QVariantList &data, int &count, int &ignored, QStringList &missed, const QString &basePath)
+bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QStringList &missed, const QString &basePath)
 {
     if (basePath.isEmpty())
         EXCEPT() << "Base path not defined. Can't open project.";
@@ -245,28 +245,27 @@ bool ProjectRepo::checkRead(const QVariantList &data, int &count, int &ignored, 
     count = 0;
     ignored = 0;
     missed.clear();
-    for (int i = 0; i < data.size(); ++i) {
-        QVariantMap child = data.at(i).toMap();
-        QString runFile = child.value("file").toString();
-        QString runPath = runFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(runFile));
+    QString runFile = map.value("file").toString();
+    QString runPath = runFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(runFile));
 
-        QVariantList children = child.value("nodes").toList();
-        if (!children.isEmpty() && !basePath.isEmpty()) {
-            for (int i = 0; i < children.size(); ++i) {
-                QVariantMap child = children.at(i).toMap();
-                QString fileName = QDir::cleanPath(baseDir.absoluteFilePath(child.value("file").toString()));
-                if (fileName.compare(runPath, FileType::fsCaseSense()) == 0)
-                    runPath = QString();
-                QFileInfo file(fileName);
-                if (!file.exists()) {
-                    if (CIgnoreSuffix.contains('.'+file.suffix()+'.')) ++ignored;
-                    else missed << fileName;
-                }
-                ++count;
+    QVariantList children = map.value("nodes").toList();
+    if (!children.isEmpty() && !basePath.isEmpty()) {
+        for (int i = 0; i < children.size(); ++i) {
+            QVariantMap child = children.at(i).toMap();
+            QString fileName = QDir::cleanPath(baseDir.absoluteFilePath(child.value("file").toString()));
+            if (fileName.compare(runPath, FileType::fsCaseSense()) == 0)
+                runPath = QString();
+            QFileInfo file(fileName);
+            if (!file.exists()) {
+                if (CIgnoreSuffix.contains('.'+file.suffix()+'.')) ++ignored;
+                else missed << fileName;
             }
+            ++count;
         }
-        if (!runPath.isEmpty())
-            missed << runPath + " (main file missing in file list)";
+    }
+    if (!runPath.isEmpty()) {
+        missed << runPath + " (main file missing in file list)";
+        ++count;
     }
     return missed.isEmpty();
 }
@@ -289,18 +288,33 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QVariantMap projectData = projectMap;
 
     // if there is a valid project file, load it instead of the settings part
-    if (!gspFile.isEmpty() && projectMap.contains("project"))
+    if (gspFile.isEmpty() && projectMap.contains("project"))
         gspFile = projectMap.value("project").toString();
 
     if (!gspFile.isEmpty()) {
         projectPath = QFileInfo(gspFile).absolutePath();
-        if (QFile::exists(projectPath)) {
+        if (QFile::exists(gspFile)) {
             QVariantMap data = parseProjectFile(gspFile);
             projectChangedMarker = data.isEmpty();
             if (!data.isEmpty()) {
                 projectData = data;
             }
-        } else projectChangedMarker = true;
+        } else {
+            QString message;
+            int count;
+            int ignored;
+            QStringList missed;
+            checkRead(projectMap, count, ignored, missed, projectPath);
+            if (count == ignored + missed.count()) {
+                message = "Couldn't restore missing project " + gspFile;
+                SysLogLocator::systemLog()->append(message);
+                return false;
+            } else {
+                message = "Restoring missing project:\n" + gspFile;
+                SysLogLocator::systemLog()->append(message, LogMsgType::Info);
+            }
+            projectChangedMarker = true;
+        }
     }
 
     // read name and path from projectData, and fill missing data

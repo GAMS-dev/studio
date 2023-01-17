@@ -58,9 +58,7 @@ bool PathRequest::checkProject()
     int count;
     int ignored;
     QStringList missed;
-    QVariantList map;
-    map.append(mData);
-    int ok = mProjectRepo->checkRead(map, count, ignored, missed, mBaseDir);
+    int ok = mProjectRepo->checkRead(mData, count, ignored, missed, mBaseDir);
     if (ok) {
         if (ignored)
             ui->laText->setText(QString("All referenced necessary files found, %1 ignored.")
