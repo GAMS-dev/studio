@@ -7,6 +7,7 @@ Version 1.13.1 *
 - fixed projects not always stored properly
 - fixed highlighting of new DCO $save[.keepCode]
 - reduced requests to GAMS Engine server
+- added support for label and value filters in GDX Viewer export functionality
 
 Version 1.13.0
 ==================
