@@ -2871,7 +2871,7 @@ void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFi
             else ++count;
         }
     }
-    SysLogLocator::systemLog()->append(QString::number(count) + "files cloned", LogMsgType::Info);
+    SysLogLocator::systemLog()->append(QString::number(count) + " file" +(count<2 ? "":"s") + "copied", LogMsgType::Info);
 }
 
 void MainWindow::closePinView()
