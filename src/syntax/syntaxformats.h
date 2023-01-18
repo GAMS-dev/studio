@@ -140,9 +140,11 @@ enum DcoFlavor {
     flavorInc = 15,
     flavorAbort = 16,
     flavorCall = 17,
-    flavorEval = 18,
-    flavorEmbed1 = 19,
-    flavorEmbed0 = 20,
+    flavorSave = 18,
+    flavorEval = 19,
+
+    flavorEmbed1 = 21,
+    flavorEmbed0 = 22,
 };
 const QString cFlavorChars("TtCcPpIiOoFfUu");
 

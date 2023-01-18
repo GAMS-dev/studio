@@ -232,6 +232,7 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("abort").toLower(), flavorAbort);
     mFlavors.insert(QString("call").toLower(), flavorCall);
     mFlavors.insert(QString("hiddenCall").toLower(), flavorCall);
+    mFlavors.insert(QString("save").toLower(), flavorSave);
     mFlavors.insert(QString("eval").toLower(), flavorEval);
     mFlavors.insert(QString("evalLocal").toLower(), flavorEval);
     mFlavors.insert(QString("evalGlobal").toLower(), flavorEval);
@@ -264,6 +265,7 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mSpecialKinds.insert(QString("abort").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("call").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("hiddenCall").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("save").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("eval").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalLocal").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalGlobal").toLower(), SyntaxKind::SubDCO);
@@ -718,6 +720,8 @@ SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, SyntaxState state, co
         subDCOs << "noerror";
     else if (state.flavor == flavorCall)
         subDCOs = mSubDCOs;
+    else if (state.flavor == flavorSave)
+        subDCOs << "keepCode";
     else if (state.flavor == flavorEval)
         subDCOs << "set";
 
