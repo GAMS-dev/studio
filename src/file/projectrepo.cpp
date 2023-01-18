@@ -550,8 +550,12 @@ MultiCopyCheck ProjectRepo::getClonePaths(PExProjectNode *project, const QString
     QDir srcDir = QFileInfo(project->fileName()).path();
     QDir dstDir = QFileInfo(filePath).path();
     const QVector<PExFileNode*> nodes = project->listFiles();
-    for (const PExFileNode *node : nodes) {
-        QString source = node->location();
+    QStringList srcAll;
+    srcAll << project->fileName();
+    foreach (const PExFileNode *node, nodes)
+        srcAll << node->location();
+
+    foreach (const QString &source, srcAll) {
         if (!QFile::exists(source)) {
             missFiles << source;
         } else {

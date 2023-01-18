@@ -2809,11 +2809,11 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
             QStringList collideFiles;
             MultiCopyCheck mcs = mProjectRepo.getClonePaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
             if (mcs == mcsOk) {
-                mProjectRepo.moveProject(project, fileName, cloneOnly);
+                copyFiles(srcFiles, dstFiles);
             } else if (mcs == mcsMissAll) {
                 SysLogLocator::systemLog()->append("No files to copy");
             } else {
-                moveProjectCollideDialog(mcs, project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
+                moveProjectCollideDialog(mcs, srcFiles, dstFiles, missFiles, collideFiles);
             }
         } else {
             mProjectRepo.moveProject(project, fileName, cloneOnly);
@@ -2824,7 +2824,7 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
     dialog->open();
 }
 
-void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *project, const QString &fileName,
+void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs,
                                           const QStringList &srcFiles, const QStringList &dstFiles,
                                           QStringList &missFiles, QStringList &collideFiles)
 {
@@ -2847,13 +2847,26 @@ void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *pr
             + (collideMore ? QString(" and %1 more").arg(collideMore) : QString());
     box->setText(text);
     box->setStandardButtons(QMessageBox::Apply | QMessageBox::Abort);
-    connect(box, &QMessageBox::finished, this, [this, box, project, fileName](int result) {
+    connect(box, &QMessageBox::finished, this, [this, box, srcFiles, dstFiles](int result) {
         if (result == QMessageBox::Apply) {
-            mProjectRepo.moveProject(project, fileName, true);
+            copyFiles(srcFiles, dstFiles);
         }
         box->deleteLater();
     });
     box->open();
+}
+
+void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFiles)
+{
+    if (srcFiles.count() != dstFiles.count()) return;
+
+    for (int i = 0; i < srcFiles.count(); ++i) {
+        QFile src(srcFiles.at(i));
+        if (src.exists()) {
+            if (!src.copy(dstFiles.at(i)))
+                SysLogLocator::systemLog()->append("Failed to copy " + srcFiles.at(i));
+        }
+    }
 }
 
 void MainWindow::closePinView()
