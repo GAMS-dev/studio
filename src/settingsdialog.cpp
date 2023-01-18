@@ -63,7 +63,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 #endif
 
     mSettings = Settings::settings();
-    mSettings->block(); // prevent changes from outside this dialog
     initColorPage();
     loadSettings();
     QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
@@ -79,6 +78,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     // TODO(JM) Disabled until feature #1145 is implemented
     ui->cb_linewrap_process->setVisible(false);
 
+    connect(this, &SettingsDialog::finished, this, []() {
+       Settings::settings()->unblock();
+    });
     // connections to track modified status
     connect(ui->txt_workspace, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
     connect(ui->cb_skipwelcome, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -521,8 +523,8 @@ void SettingsDialog::closeEvent(QCloseEvent *event) {
             event->setAccepted(false);
         }
     }
-    emit editorLineWrappingChanged();
     mSettings->unblock();
+    emit editorLineWrappingChanged();
 }
 
 bool SettingsDialog::eventFilter(QObject *watched, QEvent *event)
@@ -586,6 +588,12 @@ void SettingsDialog::keyPressEvent(QKeyEvent *event)
 void SettingsDialog::delayBaseThemeChange(bool valid)
 {
     mDelayedBaseThemeChange = valid;
+}
+
+void SettingsDialog::open()
+{
+    QDialog::open();
+    mSettings->block(); // prevent changes from outside this dialog
 }
 
 SettingsDialog::~SettingsDialog()

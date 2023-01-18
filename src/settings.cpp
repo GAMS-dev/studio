@@ -440,11 +440,23 @@ void Settings::save()
 {
     // ignore-settings argument -> no settings assigned
     if (!canWrite()) return;
-    Q_FOREACH (const Scope &scope, mSettings.keys()) {
+    for (const Scope &scope : mSettings.keys()) {
         saveFile(scope);
     }
     // Themes are stored dynamically in multiple files
     saveFile(Scope::scTheme);
+}
+
+void Settings::block()
+{
+    DEB() << "block";
+    mBlock = true;
+}
+
+void Settings::unblock()
+{
+    DEB() << "unblock";
+    mBlock = false;
 }
 
 QSize Settings::toSize(SettingsKey key) const

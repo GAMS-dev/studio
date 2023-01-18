@@ -190,8 +190,8 @@ public:
 
     void loadFile(Scope scopeFilter);
     void save();
-    void block() { mBlock = true; }
-    void unblock() { mBlock = false; }
+    void block();
+    void unblock();
 
     bool toBool(SettingsKey key) const { return value(key).toBool(); }
     int toInt(SettingsKey key) const { return value(key).toInt(); }

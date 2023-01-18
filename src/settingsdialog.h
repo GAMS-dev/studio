@@ -52,7 +52,6 @@ public:
     void setMiroSettingsEnabled(bool enabled);
     bool preventThemeChanging();
     bool hasDelayedBaseThemeChange();
-
     int engineInitialExpire() const;
 
     void focusUpdateTab(bool checkUpdate);
@@ -74,6 +73,7 @@ signals:
 
 public slots:
     void delayBaseThemeChange(bool valid);
+    void open() override;
 
 private slots:
     void setModified();
