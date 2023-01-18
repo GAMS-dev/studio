@@ -103,6 +103,9 @@ signals:
     void releaseGdxFile(const QString &gdxFilePath);
     void reloadGdxFile(const QString &gdxFilePath);
 
+public slots:
+    void setPollSlow(bool pollSlow);
+
 protected slots:
     void completed(int exitCode) override;
     void rePing(const QString &value);
@@ -167,6 +170,8 @@ private:
     QString mJobPassword;
     ProcState mProcState;
     QTimer mPollTimer;
+    int mPollCounter = 0;
+    bool mPollSlow = false;
     AbstractGamsProcess *mSubProc = nullptr;
 
     enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};

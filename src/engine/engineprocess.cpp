@@ -453,8 +453,8 @@ void EngineProcess::getVersions()
 
 void EngineProcess::completed(int exitCode)
 {
-    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     mPollTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     mManager->cleanup();
     setProcState(ProcIdle);
     mQueuedTimer.invalidate();
@@ -606,8 +606,8 @@ void EngineProcess::jobIsQueued()
 
 void EngineProcess::reGetOutputFile(const QByteArray &data)
 {
-    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     mPollTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     if (data.isEmpty()) {
         emit newStdChannelData("\nEmpty result received\n");
         completed(-1);
@@ -631,8 +631,8 @@ void EngineProcess::reGetOutputFile(const QByteArray &data)
 
 void EngineProcess::reError(const QString &errorText)
 {
-    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     mPollTimer.stop();
+    disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
 }
@@ -650,9 +650,11 @@ void EngineProcess::reAuthorize(const QString &token)
 
 void EngineProcess::pollStatus()
 {
-    if (mProcState > Proc3Queued) mManager->getLog();
-    mManager->getJobStatus();
+
+    if (mProcState > Proc3Queued && (!mPollSlow || mPollCounter==0)) mManager->getLog();
+    if (mPollCounter==0) mManager->getJobStatus();
     mPollTimer.start();
+    mPollCounter = (mPollCounter+1) % 5;
 }
 
 void EngineProcess::setProcState(ProcState newState)
@@ -998,6 +1000,11 @@ void EngineProcess::setForceGdx(bool forceGdx)
 void EngineProcess::abortRequests()
 {
     mManager->abortRequests();
+}
+
+void EngineProcess::setPollSlow(bool pollSlow)
+{
+    mPollSlow = pollSlow;
 }
 
 } // namespace engine
