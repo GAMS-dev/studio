@@ -2811,12 +2811,14 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
             if (mcs == mcsOk) {
                 copyFiles(srcFiles, dstFiles);
             } else if (mcs == mcsMissAll) {
-                SysLogLocator::systemLog()->append("No files to copy");
+                SysLogLocator::systemLog()->append("No files to copy", LogMsgType::Info);
             } else {
                 moveProjectCollideDialog(mcs, srcFiles, dstFiles, missFiles, collideFiles);
             }
         } else {
             mProjectRepo.moveProject(project, fileName, cloneOnly);
+            SysLogLocator::systemLog()->append("Project file " + QString(cloneOnly ? "cloned" : "renamed") + " to " + fileName,
+                                               LogMsgType::Info);
         }
     });
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
@@ -2860,13 +2862,16 @@ void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFi
 {
     if (srcFiles.count() != dstFiles.count()) return;
 
+    int count = 0;
     for (int i = 0; i < srcFiles.count(); ++i) {
         QFile src(srcFiles.at(i));
         if (src.exists()) {
             if (!src.copy(dstFiles.at(i)))
                 SysLogLocator::systemLog()->append("Failed to copy " + srcFiles.at(i));
+            else ++count;
         }
     }
+    SysLogLocator::systemLog()->append(QString::number(count) + "files cloned", LogMsgType::Info);
 }
 
 void MainWindow::closePinView()
