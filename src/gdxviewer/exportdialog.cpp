@@ -35,6 +35,7 @@
 #include <QMessageBox>
 
 #include <process/connectprocess.h>
+#include <numerics/doubleformatter.h>
 
 namespace gams {
 namespace studio {
@@ -262,10 +263,12 @@ QString ExportDialog::generateFilters()
                             inst += "      - column: " + valColumns[valColIndex] + "\n";
                         else // parameters
                             inst += "      - column: value\n";
+                        QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
+                        QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
                         if (vf->exclude()) {
-                            inst += "        rule: (x<" + QString::number(vf->currentMin()) + ") | (x>" + QString::number(vf->currentMax()) + ")\n";
+                            inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
                         } else
-                            inst += "        rule: (x>=" + QString::number(vf->currentMin()) + ") & (x<=" + QString::number(vf->currentMax()) + ")\n";
+                            inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
 
                         //special values
                         if (!vf->showEps())
