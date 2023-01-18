@@ -652,7 +652,10 @@ void EngineProcess::pollStatus()
 {
 
     if (mProcState > Proc3Queued && (!mPollSlow || mPollCounter==0)) mManager->getLog();
+
+    //TODO(JM) From popJobLogsSignal() use summary.getGamsReturnCode() instead of extra getJobStatus()
     if (mPollCounter==0) mManager->getJobStatus();
+
     mPollTimer.start();
     mPollCounter = (mPollCounter+1) % 5;
 }

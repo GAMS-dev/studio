@@ -210,6 +210,7 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](OAILog_piece summary) {
         if (!mQueueFinished) {
             mQueueFinished = summary.isQueueFinished();
+            //TODO(JM) Use summary.getGamsReturnCode() instead of extra getJobStatus() - see pollStatus()
             emit reGetLog(summary.getMessage().toUtf8());
         }
     });
