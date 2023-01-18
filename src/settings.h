@@ -279,7 +279,7 @@ private:
     bool addToMap(QVariantMap &group, const QString &key, QVariant value);
     QString keyText(SettingsKey key);
 
-    bool isValidVersion(QString currentVersion);
+    bool isValidVersion(const QString currentVersion);
     int compareVersion(QString currentVersion, QString otherVersion);
 };
 

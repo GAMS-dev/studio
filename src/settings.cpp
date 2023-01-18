@@ -57,7 +57,7 @@ QString sizeToString(QSize s) {
 }
 QList<int> toIntArray(QString s) {
     QList<int> res;
-    Q_FOREACH (QString v, s.split(',')) res << v.toInt();
+    for (QString v: s.split(',')) res << v.toInt();
     return res;
 }
 QPoint stringToPoint(QString s) {
@@ -187,7 +187,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             loadFile(scTheme);
 
             QDir location(settingsPath());
-            Q_FOREACH (const QString &fileName, location.entryList({"*.lock"})) {
+            for (const QString &fileName: location.entryList({"*.lock"})) {
                 QFile f(location.path() +  "/" + fileName);
                 f.remove();
             }
@@ -449,13 +449,11 @@ void Settings::save()
 
 void Settings::block()
 {
-    DEB() << "block";
     mBlock = true;
 }
 
 void Settings::unblock()
 {
-    DEB() << "unblock";
     mBlock = false;
 }
 
@@ -530,13 +528,13 @@ bool Settings::setDate(SettingsKey key, QDate value)
     return setValue(key, value.toString(Qt::ISODate));
 }
 
-bool Settings::isValidVersion(QString currentVersion)
+bool Settings::isValidVersion(const QString currentVersion)
 {
     for (const QChar &c: currentVersion)
         if (c != '.' && (c < '0' || c > '9')) return false;
-    QStringList verList = currentVersion.split('.');
+    const QStringList verList = currentVersion.split('.');
     if (verList.size() < 2) return false;
-    Q_FOREACH (const QString &s, verList)
+    for (const QString &s: verList)
         if (s.isEmpty()) return false;
     return true;
 }
@@ -700,7 +698,7 @@ void Settings::loadMap(Scope scope, QVariantMap map)
             // copy all elements
             QJsonObject joSrc = var.toJsonObject();
             QJsonObject joDest = mData.value(scope).value(it.key()).toJsonObject();
-            Q_FOREACH (const QString &joKey, joSrc.keys()) {
+            for (const QString &joKey : joSrc.keys()) {
                 joDest[joKey] = joSrc[joKey];
             }
             var = joDest;
@@ -728,7 +726,8 @@ void Settings::saveThemes()
 
     // remove previous theme files
     QDir dir(settingsPath());
-    Q_FOREACH (const QFileInfo &fileInfo, dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+    const auto entries = dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase);
+    for (const QFileInfo &fileInfo : entries) {
         QString fName = fileInfo.fileName();
         if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
             continue;
@@ -768,7 +767,8 @@ void Settings::loadThemes()
     QStringList themeNames;
 
     QDir dir(settingsPath());
-    for (const QFileInfo &fileInfo : dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase)) {
+    const auto entries = dir.entryInfoList(QDir::Filter::Files, QDir::Name | QDir::IgnoreCase);
+    for (const QFileInfo &fileInfo : entries) {
         QString fName = fileInfo.fileName();
         if (!fName.startsWith(CThemePrefix, Qt::CaseInsensitive) || !fName.endsWith(CThemeSufix, Qt::CaseInsensitive)) {
             continue;

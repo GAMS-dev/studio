@@ -3418,8 +3418,8 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
 
 void MainWindow::jumpToTab(FileMeta *fm)
 {
-    QList<QWidget*> logs = openLogs();
-    foreach (QWidget* w, logs) {
+    const QList<QWidget*> logs = openLogs();
+    for (const QWidget* w : logs) {
         if (fm->location() == ViewHelper::location(w)) {
             ui->logTabs->setCurrentIndex(ui->logTabs->indexOf(w));
             return;
