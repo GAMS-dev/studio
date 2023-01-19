@@ -489,6 +489,7 @@ private:
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
     QHash<FontGroup, qreal> mGroupFontSize;
+    NodeId mFocussedLog;
 
     WelcomePage *mWp;
     search::SearchDialog *mSearchDialog = nullptr;

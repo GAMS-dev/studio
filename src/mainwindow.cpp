@@ -1840,7 +1840,20 @@ void MainWindow::tabBarClicked(int index)
 {
     Q_UNUSED(index)
     QTabWidget *tabs = sender() == ui->mainTabs ? ui->mainTabs : sender() == ui->logTabs ? ui->logTabs : nullptr;
-    if (tabs && tabs->currentWidget()) tabs->currentWidget()->setFocus();
+    if (tabs && tabs->currentWidget()) {
+        tabs->currentWidget()->setFocus();
+
+        if (tabs == ui->logTabs && ViewHelper::toTextView(tabs->currentWidget()) &&
+                mFileMetaRepo.fileMeta(tabs->currentWidget())) {
+            for (PExProjectNode *project : mProjectRepo.projects()) {
+                if (!project->process()) continue;
+                engine::EngineProcess *engine = qobject_cast<engine::EngineProcess*>(project->process());
+                if (!engine) continue;
+                if (!project->logNode() || !project->logNode()->file()) continue;
+                engine->setPollSlow(!project->logNode()->file()->editors().contains(tabs->currentWidget()));
+            }
+        }
+    }
 }
 
 void MainWindow::fileChanged(const FileId fileId)

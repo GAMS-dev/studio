@@ -650,14 +650,14 @@ void EngineProcess::reAuthorize(const QString &token)
 
 void EngineProcess::pollStatus()
 {
-
-    if (mProcState > Proc3Queued && (!mPollSlow || mPollCounter==0)) mManager->getLog();
-
-    //TODO(JM) From popJobLogsSignal() use summary.getGamsReturnCode() instead of extra getJobStatus()
-    if (mPollCounter==0) mManager->getJobStatus();
-
+    if (!mPollSlow || mPollCounter == 0) {
+        if (mProcState == Proc3Queued)
+            mManager->getJobStatus();
+        else if (mProcState > Proc3Queued)
+            mManager->getLog();
+    }
     mPollTimer.start();
-    mPollCounter = (mPollCounter+1) % 5;
+    mPollCounter = (mPollCounter+1) % 10;
 }
 
 void EngineProcess::setProcState(ProcState newState)

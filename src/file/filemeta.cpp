@@ -318,7 +318,7 @@ FontGroup FileMeta::fontGroup()
     return FontGroup::fgTable;
 }
 
-QWidgetList FileMeta::editors() const
+const QWidgetList FileMeta::editors() const
 {
     return mEditors;
 }

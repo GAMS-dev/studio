@@ -210,9 +210,10 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](OAILog_piece summary) {
         if (!mQueueFinished) {
             mQueueFinished = summary.isQueueFinished();
-            //TODO(JM) Use summary.getGamsReturnCode() instead of extra getJobStatus() - see pollStatus()
             emit reGetLog(summary.getMessage().toUtf8());
         }
+        if (summary.is_gams_return_code_Set() || mQueueFinished)
+            getJobStatus();
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {

@@ -199,24 +199,6 @@ PExAbstractNode *ProjectRepo::previous(PExAbstractNode *node)
     return node;
 }
 
-inline PExLogNode *ProjectRepo::asLogNode(NodeId id) const
-{
-    PExAbstractNode* res = mNodes.value(id, nullptr);
-    return (res && res->type() == NodeType::log) ? static_cast<PExLogNode*>(res) : nullptr;
-}
-
-PExLogNode* ProjectRepo::asLogNode(PExAbstractNode* node)
-{
-    if (!node) return nullptr;
-    PExGroupNode* group = node->toGroup();
-    if (!group) group = node->parentNode();
-    while (group && !group->toProject())
-        group = group->parentNode();
-    if (group && group->toProject() && group->toProject()->hasLogNode())
-        return group->toProject()->logNode();
-    return nullptr;
-}
-
 ProjectTreeModel*ProjectRepo::treeModel() const
 {
     return mTreeModel;
@@ -763,7 +745,7 @@ QVector<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId 
     return res;
 }
 
-QVector<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) const
+const QVector<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) const
 {
     QVector<PExProjectNode *> res;
     QHashIterator<NodeId, PExAbstractNode*> i(mNodes);
@@ -787,7 +769,7 @@ QVector<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) const
     return res;
 }
 
-QVector<AbstractProcess*> ProjectRepo::listProcesses()
+const QVector<AbstractProcess *> ProjectRepo::listProcesses()
 {
     QVector<AbstractProcess*> res;
     QHashIterator<NodeId, PExAbstractNode*> i(mNodes);
@@ -1073,7 +1055,7 @@ void ProjectRepo::setDebugMode(bool debug)
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
     for (PExAbstractNode *node: mNodes.values()) {
-        PExLogNode *log = asLogNode(node);
+        PExLogNode *log = logNode(node);
         if (log && log->file()->editors().size()) {
             TextView *tv = ViewHelper::toTextView(log->file()->editors().first());
             if (tv) tv->setDebugMode(debug);

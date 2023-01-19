@@ -101,16 +101,6 @@ public:
     PExAbstractNode* next(PExAbstractNode* node);
     PExAbstractNode* previous(PExAbstractNode* node);
 
-    /// Get the <c>PExLogNode</c> related to a <c>NodeId</c>.
-    /// \param id The NodeId pointing to the <c>PExLogNode</c>.
-    /// \return The associated <c>PExLogNode</c> or a <c>nullptr</c>.
-    inline PExLogNode* asLogNode(NodeId id) const;
-
-    /// \brief Get the <c>PExLogNode</c> related to a parent or sibling <c>PExAbstractNode</c>.
-    /// \param node The <c>PExAbstractNode</c> to find the associated <c>PExLogNode</c> for.
-    /// \return The associated <c>PExLogNode</c> or a <c>nullptr</c>.
-    PExLogNode* asLogNode(PExAbstractNode* node);
-
     ProjectTreeModel* treeModel() const;
     FileMetaRepo* fileRepo() const;
     TextMarkRepo* textMarkRepo() const;
@@ -130,8 +120,8 @@ public:
             , QString explicitName = QString());
     PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, QString explicitName = QString());
     QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
-    QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
-    QVector<AbstractProcess*> listProcesses();
+    const QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
+    const QVector<AbstractProcess*> listProcesses();
     void editorActivated(QWidget *edit, bool select);
 
     PExLogNode *logNode(PExAbstractNode *node);
