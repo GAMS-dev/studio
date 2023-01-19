@@ -5,6 +5,7 @@ Version 1.13.1 *
 - adjusted Search Dialog Replace All to show search term in clear text instead of internal representation
 - improved GAMS update check and check for a new GAMS version when Studio starts
 - fixed projects not always stored properly
+- fixed highlighting of new DCO $save.keepCode
 
 Version 1.13.0
 ==================
