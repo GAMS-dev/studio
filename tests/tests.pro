@@ -31,6 +31,7 @@ SUBDIRS +=                              \
            testgamslicenseinfo          \
            testgamsoption               \
            testgamsuserconfig           \
+           testgdxviewer                \
            testmemorymapper             \
            testmiro                     \
            testoptionapi                \
