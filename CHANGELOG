@@ -6,6 +6,7 @@ Version 1.13.1 *
 - improved GAMS update check and check for a new GAMS version when Studio starts
 - fixed projects not always stored properly
 - fixed highlighting of new DCO $save[.keepCode]
+- reduced requests to GAMS Engine server
 
 Version 1.13.0
 ==================
