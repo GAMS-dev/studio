@@ -52,7 +52,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     QMenu* m = new QMenu();
-    mSaveAction = m->addAction("Save", [this]() { ui->toolButton->setDefaultAction(mSaveAction), ExportDialog::save(); });
+    mSaveAction = m->addAction("Save", this, [this]() { ui->toolButton->setDefaultAction(mSaveAction), ExportDialog::save(); });
     mExportAction = m->addAction("Export", this, [this]() { ui->toolButton->setDefaultAction(mExportAction); ExportDialog::saveAndExecute(); });
     ui->toolButton->setMenu(m);
     ui->toolButton->setDefaultAction(mExportAction);
@@ -81,7 +81,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    connect(mProc.get(), &ConnectProcess::finished, [this]() {  exportDone(); });
+    connect(mProc.get(), &ConnectProcess::finished, this, [this]() {  exportDone(); });
 }
 
 ExportDialog::~ExportDialog()
@@ -119,17 +119,19 @@ QString ExportDialog::generateGdxReader()
     inst += "- GDXReader:\n";
     inst += "    file: " + QDir::toNativeSeparators(mGdxFile) + "\n";
     inst += "    symbols: \n";
-    for(GdxSymbol* sym: mExportModel->selectedSymbols())
-        inst += "      - name: " + sym->aliasedSymbol()->name() + "\n";
-    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+    QString instNames = "";
+    QString instProjections = "";
+    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
+        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
+        instNames += "      - name: " + sym->aliasedSymbol()->name() + "\n";
         if (sym->type() == GMS_DT_ALIAS) {
             QString dom = generateDomains(sym);
-            inst += "- Projection:\n";
-            inst += "    name: " + sym->aliasedSymbol()->name() + dom + "\n";
-            inst += "    newName: " + sym->name() + dom + "\n";
+            instProjections += "- Projection:\n";
+            instProjections += "    name: " + sym->aliasedSymbol()->name() + dom + "\n";
+            instProjections += "    newName: " + sym->name() + dom + "\n";
         }
     }
-    return inst;
+    return inst + instNames + instProjections;
 }
 
 QString ExportDialog::generatePDExcelWriter(QString excelFile)
@@ -138,9 +140,9 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
     inst += "    file: " + excelFile + "\n";
     inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
     inst += "    symbols:\n";
-    for (GdxSymbol* sym: mExportModel->selectedSymbols()) {
+    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
+        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name = hasActiveFilter(sym) ? sym->name() + FILTER_SUFFIX : sym->name();
-        QString range = sym->name() + "!A1";
         int rowDimension = sym->dim();
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
@@ -167,7 +169,8 @@ QString ExportDialog::generatePDExcelWriter(QString excelFile)
 QString ExportDialog::generateProjections()
 {
     QString inst;
-    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
+        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name;
         QString newName;
         bool asParameter = false;
@@ -210,7 +213,8 @@ QString ExportDialog::generateProjections()
 QString ExportDialog::generateFilters()
 {
     QString inst;
-    for(GdxSymbol* sym: mExportModel->selectedSymbols()) {
+    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
+        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         if (hasActiveFilter(sym)) {
             QString name = sym->name();
             QString newName = name + FILTER_SUFFIX;
@@ -465,7 +469,7 @@ bool ExportDialog::save(QString connectFile, bool fileExistsWarning)
         msgBox.exec();
         return false;
     }
-    if (fileExistsWarning && QFileInfo(output).exists()) {
+    if (fileExistsWarning && QFileInfo::exists(output)) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Overwrite Existing File");
         msgBox.setText(QFileInfo(output).fileName() + " already exists.\nDo you want to overwrite it?");
