@@ -245,7 +245,11 @@ void CodeCompleterModel::initData()
     mType.insert(mData.size()-1, ccDcoStrt);
 
     mData << "$abort.noError";
-    mDescription << "abort without error";
+    mDescription << "Abort without error";
+    mType.insert(mData.size()-1, ccDcoStrt);
+
+    mData << "$save.keepCode";
+    mDescription << "Create save also with unexecuted execution code";
     mType.insert(mData.size()-1, ccDcoStrt);
 
     // system data
