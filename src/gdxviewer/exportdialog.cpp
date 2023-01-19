@@ -348,6 +348,8 @@ QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
 
 bool ExportDialog::hasActiveLabelFilter(GdxSymbol *sym)
 {
+    if (!ui->cbFilter->isChecked())
+        return false;
     for (int i=0; i<sym->dim(); i++)
         if (sym->filterActive(i))
             return true;
@@ -356,6 +358,8 @@ bool ExportDialog::hasActiveLabelFilter(GdxSymbol *sym)
 
 bool ExportDialog::hasActiveValueFilter(GdxSymbol *sym)
 {
+    if (!ui->cbFilter->isChecked())
+        return false;
     for (int i=sym->dim(); i<sym->filterColumnCount(); i++)
         if (sym->filterActive(i))
             return true;
@@ -364,6 +368,8 @@ bool ExportDialog::hasActiveValueFilter(GdxSymbol *sym)
 
 bool ExportDialog::hasActiveFilter(GdxSymbol *sym)
 {
+    if (!ui->cbFilter->isChecked())
+        return false;
     return hasActiveLabelFilter(sym) || hasActiveValueFilter(sym);
 }
 
@@ -498,6 +504,7 @@ void ExportDialog::cancelProcess(int waitMSec)
 void ExportDialog::setControlsEnabled(bool enabled)
 {
     ui->toolButton->setEnabled(enabled);
+    ui->cbFilter->setEnabled(enabled);
     ui->leConnect->setEnabled(enabled);
     ui->leExcel->setEnabled(enabled);
     ui->pbBrowseConnect->setEnabled(enabled);
