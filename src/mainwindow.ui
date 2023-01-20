@@ -1542,10 +1542,10 @@
   </action>
   <action name="actionMove_Project">
    <property name="text">
-    <string>Move Project...</string>
+    <string>Move Project File...</string>
    </property>
    <property name="toolTip">
-    <string>Moves/Renames Project file</string>
+    <string>Moves/Renames the project file</string>
    </property>
   </action>
   <action name="actionClone_Project">

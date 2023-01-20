@@ -138,7 +138,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSep6, addSeparator());
     mActions.insert(actProjectNew, addAction("&New project",  this, &ProjectContextMenu::newProject));
     mActions.insert(actProjectOpen, addAction("&Open project",  this, &ProjectContextMenu::openProject));
-    mActions.insert(actProjectMove, addAction("&Move project",  this, &ProjectContextMenu::onMoveProject));
+    mActions.insert(actProjectMove, addAction("&Move project file",  this, &ProjectContextMenu::onMoveProject));
     mActions.insert(actProjectClone, addAction("&Clone project",  this, &ProjectContextMenu::onCloneProject));
 
     mActions.insert(actSep7, addSeparator());
