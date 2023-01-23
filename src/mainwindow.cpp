@@ -166,8 +166,8 @@ MainWindow::MainWindow(QWidget *parent)
         QVector<PExAbstractNode*> nodes = selectedNodes();
         bool projectCanMove = (nodes.count() == 1);
         if (projectCanMove) {
-            if (PExProjectNode *project = nodes.first()->toProject())
-                projectCanMove = !project->isVirtual();
+            if (PExProjectNode *project = nodes.first()->assignedProject())
+                projectCanMove = project && !project->isVirtual();
             else projectCanMove = false;
         }
 
