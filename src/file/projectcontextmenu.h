@@ -53,7 +53,7 @@ signals:
     void openFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
                   gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
-    void moveProject(gams::studio::PExProjectNode* project, bool cloneOnly);
+    void moveProject(gams::studio::PExProjectNode* project, bool fullCopy);
     void newProject();
     void openProject();
     void selectAll();
@@ -72,7 +72,7 @@ private slots:
     void onAddNewFile();
     void onSetMainFile();
     void onMoveProject();
-    void onCloneProject();
+    void onCopyProject();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();

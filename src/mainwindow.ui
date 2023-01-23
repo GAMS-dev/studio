@@ -139,7 +139,7 @@
     <addaction name="actionNew_Project"/>
     <addaction name="actionOpen_Project"/>
     <addaction name="actionMove_Project"/>
-    <addaction name="actionClone_Project"/>
+    <addaction name="actionCopy_Project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
@@ -1548,12 +1548,12 @@
     <string>Moves/Renames the project file</string>
    </property>
   </action>
-  <action name="actionClone_Project">
+  <action name="actionCopy_Project">
    <property name="text">
-    <string>Clone Project...</string>
+    <string>Copy Project...</string>
    </property>
    <property name="toolTip">
-    <string>Clone Project</string>
+    <string>Copy Project</string>
    </property>
   </action>
   <action name="actionPin_Right">

@@ -160,7 +160,21 @@ MainWindow::MainWindow(QWidget *parent)
     ui->projectView->setItemDelegate(new TreeItemDelegate(ui->projectView));
     ui->projectView->setIconSize(QSize(iconSize, iconSize));
     ui->projectView->setContextMenuPolicy(Qt::CustomContextMenu);
-    connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, &mProjectRepo, &ProjectRepo::selectionChanged);
+    connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
+            [this](const QItemSelection &selected, const QItemSelection &deselected) {
+        mProjectRepo.selectionChanged(selected, deselected);
+        QVector<PExAbstractNode*> nodes = selectedNodes();
+        bool projectCanMove = (nodes.count() == 1);
+        if (projectCanMove) {
+            if (PExProjectNode *project = nodes.first()->toProject())
+                projectCanMove = !project->isVirtual();
+            else projectCanMove = false;
+        }
+
+        ui->actionMove_Project->setEnabled(projectCanMove);
+        ui->actionCopy_Project->setEnabled(projectCanMove);
+    });
+
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
     connect(ui->projectView, &ProjectTreeView::openProjectEdit, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
@@ -472,6 +486,20 @@ void MainWindow::adjustFonts()
 
     f.setPointSizeF(f.pointSizeF() * fontFactorStatusbar);
     ui->statusBar->setFont(f);
+}
+
+QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
+{
+    QVector<PExAbstractNode*> nodes;
+    QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
+    if (index.isValid() && !list.contains(index)) return nodes;
+    for (const NodeId &id: mProjectRepo.treeModel()->selectedIds())
+        nodes << mProjectRepo.node(id);
+    if (index.isValid() && nodes.isEmpty()) {
+        PExAbstractNode *node = mProjectRepo.node(index);
+        if (node) nodes << node;
+    }
+    return nodes;
 }
 
 bool MainWindow::handleFileChanges(FileMeta* fc)
@@ -1074,18 +1102,7 @@ void MainWindow::gamsProcessStateChanged(PExGroupNode* group)
 void MainWindow::projectContextMenuRequested(const QPoint& pos)
 {
     QModelIndex index = ui->projectView->indexAt(pos);
-    QVector<PExAbstractNode*> nodes;
-    if (index.isValid()) {
-        QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
-        if (!list.contains(index)) return;
-        for (const NodeId &id: mProjectRepo.treeModel()->selectedIds()) {
-            nodes << mProjectRepo.node(id);
-        }
-        if (nodes.isEmpty()) {
-            PExAbstractNode *node = mProjectRepo.node(index);
-            if (node) nodes << node;
-        }
-    }
+    QVector<PExAbstractNode*> nodes = selectedNodes(index);
     mProjectContextMenu.setNodes(nodes);
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
@@ -2784,7 +2801,7 @@ void MainWindow::openProject(const QString gspFile)
     }
 }
 
-void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
+void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
 {
     QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()), project->fileName());
     dialog->setProperty("warned", false);
@@ -2799,15 +2816,15 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
             QToolTip::hideText();
         }
     });
-    connect(dialog, &QFileDialog::fileSelected, this, [this, project, cloneOnly](const QString &fileName) {
+    connect(dialog, &QFileDialog::fileSelected, this, [this, project, fullCopy](const QString &fileName) {
         bool pathChanged = QFileInfo(project->fileName()).absolutePath().compare(
                     QFileInfo(fileName).absolutePath(), FileType::fsCaseSense()) != 0;
-        if (cloneOnly && pathChanged) {
+        if (fullCopy && pathChanged) {
             QStringList srcFiles;
             QStringList dstFiles;
             QStringList missFiles;
             QStringList collideFiles;
-            MultiCopyCheck mcs = mProjectRepo.getClonePaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
+            MultiCopyCheck mcs = mProjectRepo.getCopyPaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
             if (mcs == mcsOk) {
                 copyFiles(srcFiles, dstFiles);
             } else if (mcs == mcsMissAll) {
@@ -2816,8 +2833,8 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool cloneOnly)
                 moveProjectCollideDialog(mcs, srcFiles, dstFiles, missFiles, collideFiles);
             }
         } else {
-            mProjectRepo.moveProject(project, fileName, cloneOnly);
-            SysLogLocator::systemLog()->append("Project file " + QString(cloneOnly ? "cloned" : "renamed") + " to " + fileName,
+            mProjectRepo.moveProject(project, fileName, fullCopy);
+            SysLogLocator::systemLog()->append("Project file " + QString(fullCopy ? "copied" : "renamed") + " to " + fileName,
                                                LogMsgType::Info);
         }
     });
@@ -3702,7 +3719,6 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveProjectRunnable(), isRecentGroupRunning());
-    ui->actionMove_Project->setEnabled(mRecent.project() && mRecent.project()->childCount());
 }
 
 #ifdef QWEBENGINE
@@ -5840,7 +5856,7 @@ void MainWindow::on_actionMove_Project_triggered()
     moveProjectDialog(project, false);
 }
 
-void MainWindow::on_actionClone_Project_triggered()
+void MainWindow::on_actionCopy_Project_triggered()
 {
     PExProjectNode *project = mRecent.project();
     if (!project) return;

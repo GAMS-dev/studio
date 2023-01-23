@@ -63,7 +63,7 @@ enum ContextAction {
     actProjectNew,
     actProjectOpen,
     actProjectMove,
-    actProjectClone,
+    actProjectCopy,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -139,7 +139,7 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actProjectNew, addAction("&New project",  this, &ProjectContextMenu::newProject));
     mActions.insert(actProjectOpen, addAction("&Open project",  this, &ProjectContextMenu::openProject));
     mActions.insert(actProjectMove, addAction("&Move project file",  this, &ProjectContextMenu::onMoveProject));
-    mActions.insert(actProjectClone, addAction("&Clone project",  this, &ProjectContextMenu::onCloneProject));
+    mActions.insert(actProjectCopy, addAction("&Copy project",  this, &ProjectContextMenu::onCopyProject));
 
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
@@ -271,8 +271,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actProjectMove]->setVisible(!isFreeSpace);
     mActions[actProjectMove]->setEnabled(canMoveProject);
 
-    mActions[actProjectClone]->setVisible(!isFreeSpace);
-    mActions[actProjectClone]->setEnabled(canMoveProject);
+    mActions[actProjectCopy]->setVisible(!isFreeSpace);
+    mActions[actProjectCopy]->setEnabled(canMoveProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
@@ -390,7 +390,7 @@ void ProjectContextMenu::onMoveProject()
     emit moveProject(project, false);
 }
 
-void ProjectContextMenu::onCloneProject()
+void ProjectContextMenu::onCopyProject()
 {
     PExProjectNode *project = mNodes.first()->assignedProject();
     emit moveProject(project, true);

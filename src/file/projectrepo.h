@@ -121,8 +121,8 @@ public:
 
     PExProjectNode *createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
                                   QString workDir = QString());
-    MultiCopyCheck getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
-    void moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly);
+    MultiCopyCheck getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
+    void moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
             , QString explicitName = QString());

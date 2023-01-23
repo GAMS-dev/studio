@@ -271,7 +271,7 @@ private slots:
     void on_actionSave_All_triggered();
     void on_actionNew_Project_triggered();
     void on_actionMove_Project_triggered();
-    void on_actionClone_Project_triggered();
+    void on_actionCopy_Project_triggered();
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -421,7 +421,7 @@ private slots:
     void updateEditorLineWrapping();
     void updateTabSize(int size);
     void openProject(const QString gspFile);
-    void moveProjectDialog(gams::studio::PExProjectNode *project, bool cloneOnly);
+    void moveProjectDialog(gams::studio::PExProjectNode *project, bool fullCopy);
     void moveProjectCollideDialog(MultiCopyCheck mcs,
                                   const QStringList &srcFiles, const QStringList &dstFiles,
                                   QStringList &missFiles, QStringList &collideFiles);
@@ -440,6 +440,7 @@ private:
     void initEnvironment();
     void initNavigator();
     void adjustFonts();
+    QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);

@@ -544,7 +544,7 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
     return project;
 }
 
-MultiCopyCheck ProjectRepo::getClonePaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles,
+MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles,
                                           QStringList &dstFiles, QStringList &missFiles, QStringList &collideFiles)
 {
     QDir srcDir = QFileInfo(project->fileName()).path();
@@ -577,7 +577,7 @@ MultiCopyCheck ProjectRepo::getClonePaths(PExProjectNode *project, const QString
     return res;
 }
 
-void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, bool cloneOnly)
+void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy)
 {
     if (filePath.compare(project->fileName(), FileType::fsCaseSense()) == 0) return;
     QString oldFile = project->fileName();
@@ -585,7 +585,7 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
     project->setNeedSave();
     QVariantMap proData = getProjectMap(project, true);
     save(project, proData);
-    if (cloneOnly) {
+    if (fullCopy) {
         project->setFileName(oldFile);
     } else {
         QFile file(oldFile);
@@ -948,9 +948,8 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
     FileMeta *runGms = project->runnableGms();
-    for (PExFileNode *file: qAsConst(files)) {
+    for (PExFileNode *file: qAsConst(files))
         addToProject(project, file);
-    }
     emit openRecentFile();
     project->setRunnableGms(runGms);
 }
