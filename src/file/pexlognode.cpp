@@ -164,6 +164,11 @@ NodeId PExLogNode::projectId() const
     return NodeId();
 }
 
+const PExProjectNode *PExLogNode::assignedProject() const
+{
+    return mProject;
+}
+
 PExProjectNode *PExLogNode::assignedProject()
 {
     return mProject;

@@ -106,6 +106,16 @@ void PExAbstractNode::setParentNode(PExGroupNode* parent)
     }
 }
 
+const PExProjectNode *PExAbstractNode::assignedProject() const
+{
+    const PExAbstractNode* node = this;
+    while (node && !node->toProject()) {
+        node = node->parentNode();
+    }
+    if (node) return node->toProject();
+    return nullptr;
+}
+
 PExProjectNode *PExAbstractNode::assignedProject()
 {
     PExAbstractNode* node = this;

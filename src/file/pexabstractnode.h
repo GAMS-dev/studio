@@ -68,6 +68,7 @@ public:
 
     virtual void setParentNode(PExGroupNode *parent);
     PExGroupNode* parentNode() const;
+    virtual const PExProjectNode *assignedProject() const;
     virtual PExProjectNode *assignedProject();
 
     /// \brief File node type.

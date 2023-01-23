@@ -42,7 +42,8 @@ public:
     PExFileNode *lstNode() const;
     const PExRootNode *root() const override;
     NodeId projectId() const override;
-    PExProjectNode *assignedProject() override;
+    const gams::studio::PExProjectNode *assignedProject() const override;
+    gams::studio::PExProjectNode *assignedProject() override;
     void linkToProcess(AbstractProcess *process);
 
 public slots:

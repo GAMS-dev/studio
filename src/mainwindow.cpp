@@ -163,12 +163,20 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             [this](const QItemSelection &selected, const QItemSelection &deselected) {
         mProjectRepo.selectionChanged(selected, deselected);
+        bool projectCanMove = false;
         QVector<PExAbstractNode*> nodes = selectedNodes();
-        bool projectCanMove = (nodes.count() == 1);
-        if (projectCanMove) {
-            if (PExProjectNode *project = nodes.first()->assignedProject())
-                projectCanMove = project && !project->isVirtual();
-            else projectCanMove = false;
+        if (nodes.count() > 0) {
+            bool onlyOneProject = false;
+            const PExProjectNode *project = nullptr;
+            for (const PExAbstractNode *node : nodes) {
+                if (!project) {
+                    project = node->assignedProject();
+                    onlyOneProject = project;
+                } else if (node->assignedProject() && project != node->assignedProject()) {
+                    onlyOneProject = false;
+                }
+            }
+            projectCanMove = project && onlyOneProject && !project->isVirtual();
         }
 
         ui->actionMove_Project->setEnabled(projectCanMove);
