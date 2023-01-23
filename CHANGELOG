@@ -8,7 +8,8 @@ Version 1.13.1 *
 - fixed highlighting of new DCO $save[.keepCode]
 - reduced requests to GAMS Engine server
 - added support for label and value filters in GDX Viewer export functionality
-- improved "Clone project" to copy all referenced files to the destination if the project location changed
+- changed "Clone project" to "Copy project" and extended it to copy all referenced files to the destination if the project location changed
+- changed "Move project" to "Move project file" to clarify this only moves the project file itself and adapts contained file references
 
 Version 1.13.0
 ==================
