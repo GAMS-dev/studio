@@ -164,7 +164,7 @@ MainWindow::MainWindow(QWidget *parent)
             [this](const QItemSelection &selected, const QItemSelection &deselected) {
         mProjectRepo.selectionChanged(selected, deselected);
         bool projectCanMove = false;
-        QVector<PExAbstractNode*> nodes = selectedNodes();
+        const QVector<PExAbstractNode*> nodes = selectedNodes();
         if (nodes.count() > 0) {
             bool onlyOneProject = false;
             const PExProjectNode *project = nullptr;
@@ -2811,7 +2811,8 @@ void MainWindow::openProject(const QString gspFile)
 
 void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
 {
-    QFileDialog *dialog = new QFileDialog(this, QString("Export Project %1").arg(project->name()), project->fileName());
+    QFileDialog *dialog = new QFileDialog(this, QString("%1 Project %2").arg(fullCopy ? "Copy" : "Move", project->name()),
+                                          project->fileName());
     dialog->setProperty("warned", false);
     dialog->setAcceptMode(QFileDialog::AcceptSave);
     dialog->setNameFilters(ViewHelper::dialogProjectFilter());

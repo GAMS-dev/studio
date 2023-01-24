@@ -75,23 +75,23 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep1, addSeparator());
 
-    mActions.insert(actExplorer, addAction("&Open location", this, &ProjectContextMenu::onOpenFileLoc));
-    mActions.insert(actOpenTerminal, addAction("&Open terminal", this, &ProjectContextMenu::onOpenTerminal));
+    mActions.insert(actExplorer, addAction("&Open Location", this, &ProjectContextMenu::onOpenFileLoc));
+    mActions.insert(actOpenTerminal, addAction("&Open Terminal", this, &ProjectContextMenu::onOpenTerminal));
     mActions.insert(actGdxDiff, addAction("&Open in GDX Diff", this, &ProjectContextMenu::onGdxDiff));
-    mActions.insert(actGdxReset, addAction("&Reset GDX state", this, &ProjectContextMenu::onGdxReset));
-    mActions.insert(actLogTab, addAction("&Open log tab", this, &ProjectContextMenu::onOpenLog));
-    mActions.insert(actOpenEfi, addAction("Create &EFI file", this, &ProjectContextMenu::onOpenEfi));
+    mActions.insert(actGdxReset, addAction("&Reset GDX State", this, &ProjectContextMenu::onGdxReset));
+    mActions.insert(actLogTab, addAction("&Open Log Tab", this, &ProjectContextMenu::onOpenLog));
+    mActions.insert(actOpenEfi, addAction("Create &EFI File", this, &ProjectContextMenu::onOpenEfi));
 
     mActions.insert(actSep2, addSeparator());
-    mActions.insert(actSetMain, addAction("&Set as main file", this, &ProjectContextMenu::onSetMainFile));
+    mActions.insert(actSetMain, addAction("&Set as Main File", this, &ProjectContextMenu::onSetMainFile));
 
     mActions.insert(actSep3, addSeparator());
 
-    mActions.insert(actAddExisting, addAction("Add &existing file", this, &ProjectContextMenu::onAddExisitingFile));
+    mActions.insert(actAddExisting, addAction("Add &Existing File", this, &ProjectContextMenu::onAddExisitingFile));
 
-    mActions.insert(actAddNewGms, addAction("Add &new file", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(actAddNewGms, addAction("Add &New File", this, &ProjectContextMenu::onAddNewFile));
 
-    QMenu* newSolverOptionMenu = addMenu( "Add new solver option file" );
+    QMenu* newSolverOptionMenu = addMenu( "Add new Solver Option File" );
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
@@ -131,15 +131,15 @@ ProjectContextMenu::ProjectContextMenu()
     }
 
     mActions.insert(actSep5, addSeparator());
-    mActions.insert(actSelectAll, addAction("Select &all", this, &ProjectContextMenu::onSelectAll));
-    mActions.insert(actCollapseAll, addAction("Collapse all projects", this, &ProjectContextMenu::onCollapseAll));
-    mActions.insert(actExpandAll, addAction("Expand all", this, &ProjectContextMenu::onExpandAll));
+    mActions.insert(actSelectAll, addAction("Select &All", this, &ProjectContextMenu::onSelectAll));
+    mActions.insert(actCollapseAll, addAction("Collapse all Projects", this, &ProjectContextMenu::onCollapseAll));
+    mActions.insert(actExpandAll, addAction("Expand All", this, &ProjectContextMenu::onExpandAll));
 
     mActions.insert(actSep6, addSeparator());
-    mActions.insert(actProjectNew, addAction("&New project",  this, &ProjectContextMenu::newProject));
-    mActions.insert(actProjectOpen, addAction("&Open project",  this, &ProjectContextMenu::openProject));
-    mActions.insert(actProjectMove, addAction("&Move project file",  this, &ProjectContextMenu::onMoveProject));
-    mActions.insert(actProjectCopy, addAction("&Copy project",  this, &ProjectContextMenu::onCopyProject));
+    mActions.insert(actProjectNew, addAction("&New Project...",  this, &ProjectContextMenu::newProject));
+    mActions.insert(actProjectOpen, addAction("&Open Project...",  this, &ProjectContextMenu::openProject));
+    mActions.insert(actProjectMove, addAction("&Move Project File...",  this, &ProjectContextMenu::onMoveProject));
+    mActions.insert(actProjectCopy, addAction("&Copy Project...",  this, &ProjectContextMenu::onCopyProject));
 
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
@@ -169,7 +169,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
         QString efi = getEfiName(project);
         isProjectEfi = !efi.isEmpty();
         if (isProjectEfi && QFileInfo::exists(efi))
-            mActions[actOpenEfi]->setText("Open &EFI file");
+            mActions[actOpenEfi]->setText("Open &EFI File");
     }
 
     PExFileNode *fileNode = mNodes.size() ? mNodes.first()->toFile() : nullptr;
@@ -242,7 +242,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
 
     mActions[actGdxReset]->setVisible(hasGdx);
-    mActions[actGdxReset]->setText(QString(hasOpenGdx ? "Close and " : "") + "&Reset GDX state");
+    mActions[actGdxReset]->setText(QString(hasOpenGdx ? "Close and " : "") + "&Reset GDX State");
 
     mActions[actOpen]->setEnabled(isOpenable);
     mActions[actOpen]->setVisible(isOpenable);
