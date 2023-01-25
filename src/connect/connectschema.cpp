@@ -106,6 +106,31 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                       }
                     }
         } // else  'schema' with niether 'type:list' nor 'type:dict' ?
+    } else if (node["oneof_schema"] ? true : false) {
+        if (node["oneof_schema"].Type()==YAML::NodeType::Sequence) {
+            ++level;
+            for(size_t i=0; i<node["oneof_schema"].size(); i++) {
+               QString str = QString("%1:[%2]").arg(key).arg(i);
+               if (node["oneof_schema"][i].Type()==YAML::NodeType::Map) {
+                   createSchemaHelper(str, node["oneof_schema"][i], level);
+                  for (YAML::const_iterator it=node["oneof_schema"][i].begin(); it != node["oneof_schema"][i].end(); ++it) {
+                      if (it->second.Type() == YAML::NodeType::Map) {
+
+                          QString nodestr = str + ":" + QString::fromStdString( it->first.as<std::string>() );
+                          createSchemaHelper(nodestr, it->second, level+1);
+                      }
+                 }
+               }
+            }
+        }
+    } else  if (node["anyof"] ? true : false) {
+        if (node["anyof"].Type()==YAML::NodeType::Sequence) {
+            for(size_t i=0; i<node["anyof"].size(); i++) {
+               QString str = QString("%1[%2]").arg(key).arg(i);
+               createSchemaHelper(str, node["anyof"][i], 1);
+            }
+        }
+
     }
 }
 
@@ -152,7 +177,6 @@ void ConnectSchema::loadFromString(const QString &input)
         YAML::Node node = it->second;
         createSchemaHelper(key, it->second, 1);
     }
-
 }
 
 QStringList ConnectSchema::getlKeyList() const
@@ -177,8 +201,9 @@ const QStringList ConnectSchema::getFirstLevelKeyList() const
 QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
 {
     QStringList keyList;
+    int size = key.split(":").size();
     for(const QString& k : mOrderedKeyList) {
-        if (k.startsWith(key+":"))
+        if (k.startsWith(key+":") && k.split(":").size()== size+1)
             keyList << k;
     }
     return keyList;

@@ -68,6 +68,8 @@ private:
     void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
     void addValue(ValueWrapper& value, QList<QVariant>& data);
 
+    void setupOneofSchemaTree(const QString& schemaName, const QString& key,
+                              QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupAnyofSchemaTree(const QString& schemaName, const QString& key,
                               QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupSchemaTree(const QString& schemaName, const QString& key,
