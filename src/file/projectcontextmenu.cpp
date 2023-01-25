@@ -132,7 +132,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep5, addSeparator());
     mActions.insert(actSelectAll, addAction("Select &All", this, &ProjectContextMenu::onSelectAll));
-    mActions.insert(actCollapseAll, addAction("Collapse all Projects", this, &ProjectContextMenu::onCollapseAll));
+    mActions.insert(actCollapseAll, addAction("Collapse All Projects", this, &ProjectContextMenu::onCollapseAll));
     mActions.insert(actExpandAll, addAction("Expand All", this, &ProjectContextMenu::onExpandAll));
 
     mActions.insert(actSep6, addSeparator());
