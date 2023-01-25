@@ -99,9 +99,9 @@ private:
     QWidget *mParent = nullptr;
 
     // Strings
-    QString mTxtCloseGroup = "Close files in this &folder";
-    QString mTxtCloseProject = "Close &project";
-    QString mTxtCloseFile = "Close &file";
+    QString mTxtCloseGroup = "Close Files in This &Folder";
+    QString mTxtCloseProject = "Close &Project";
+    QString mTxtCloseFile = "Close &File";
 };
 
 } // namespace studio

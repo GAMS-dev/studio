@@ -69,7 +69,7 @@ enum ContextAction {
 ProjectContextMenu::ProjectContextMenu()
 {
     mActions.insert(actOpen, addAction("&Open File", this, &ProjectContextMenu::onOpenFile));
-    mActions.insert(actOpenAsText, addAction("&Open File As Text", this, &ProjectContextMenu::onOpenFileAsText));
+    mActions.insert(actOpenAsText, addAction("&Open File as Text", this, &ProjectContextMenu::onOpenFileAsText));
     mActions.insert(actReOpen, addAction("&Reopen File using Editor", this, &ProjectContextMenu::onReOpenFile));
     mActions.insert(actReOpenAsText, addAction("Reopen File as Text", this, &ProjectContextMenu::onReOpenFileAsText));
 
@@ -91,7 +91,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actAddNewGms, addAction("Add &New File", this, &ProjectContextMenu::onAddNewFile));
 
-    QMenu* newSolverOptionMenu = addMenu( "Add new Solver Option File" );
+    QMenu* newSolverOptionMenu = addMenu( "Add New Solver Option File" );
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
 
