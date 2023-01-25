@@ -10,6 +10,7 @@ Version 1.13.1
 - fixed highlighting of new DCO `$save[.keepCode]`
 - improved GAMS update check and check for a new GAMS version when Studio starts
 - improved request behavior of GAMS Engine server communication
+- adjusted capitalization in several menu entries
 
 Version 1.13.0
 ==================
