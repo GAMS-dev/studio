@@ -3,6 +3,7 @@ Version 1.13.1
 - added `Open project...` to main menu and Project Explorer context menu
 - added symbol filter to GDX state and persist it
 - added support for label and value filters in GDX Viewer export functionality
+- adjusted capitalization in several menu entries
 - adjusted Search Dialog `Replace All` to show search term in clear text instead of internal representation
 - changed `Clone project` to `Copy project` and extended it to copy all referenced files to the destination if the project location changed
 - changed `Move project` to `Move project file` to clarify this only moves the project file itself and adapts contained file references
@@ -10,7 +11,6 @@ Version 1.13.1
 - fixed highlighting of new DCO `$save[.keepCode]`
 - improved GAMS update check and check for a new GAMS version when Studio starts
 - improved request behavior of GAMS Engine server communication
-- adjusted capitalization in several menu entries
 
 Version 1.13.0
 ==================
