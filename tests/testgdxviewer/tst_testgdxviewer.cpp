@@ -20,6 +20,10 @@ private slots:
     void initTestCase();
     void cleanupTestCase();
     void test_createGdxViewer();
+    void test_export();
+
+private:
+    void createGdxFile(QString model);
 
 };
 
@@ -44,28 +48,71 @@ void TestGdxViewer::cleanupTestCase()
 
 }
 
-void TestGdxViewer::test_createGdxViewer()
+void TestGdxViewer::createGdxFile(QString model)
 {
-    // create GDX file
     QProcess *proc = new QProcess(this);
     proc->setProgram(QDir::toNativeSeparators(QDir(CommonPaths::systemDir()).absoluteFilePath("gamslib")));
-    QStringList args { "trnsport", QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()) };
+    QStringList args { model, QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()) };
     proc->setArguments(args);
     proc->start();
     proc->waitForFinished();
 
     proc->setProgram(QDir::toNativeSeparators(QDir(CommonPaths::systemDir()).absoluteFilePath("gams")));
-    args = QStringList { "trnsport.gms",  "gdx=trnsport.gdx" };
+    args = QStringList { model + ".gms", "gdx", model + ".gdx" };
     proc->setArguments(args);
     proc->setWorkingDirectory(QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()));
     proc->start();
     proc->waitForFinished();
+}
+
+void TestGdxViewer::test_createGdxViewer()
+{
+    createGdxFile("trnsport");
 
     // create GdxViewer instance
     int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
     QTextCodec *mCodec = QTextCodec::codecForMib(codecMib);
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
     GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), mCodec);
+    delete gdxViewer;
+    gdxViewer = nullptr;
+}
+
+void TestGdxViewer::test_export()
+{
+    createGdxFile("trnsport");
+
+    // create GdxViewer instance
+    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+    QTextCodec *mCodec = QTextCodec::codecForMib(codecMib);
+    QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
+    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), mCodec);
+
+    ExportModel *exportModel = new ExportModel(gdxViewer, this);
+    exportModel->selectAll();
+
+    ExportDriver *exportDriver = new ExportDriver(gdxViewer, exportModel, this);
+    exportDriver->saveAndExecute(QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.yaml")),
+                                 QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.xlsx")),
+                                 CommonPaths::defaultWorkingDir(),
+                                 true);
+
+    // wait 10s for the ExportDriver to finish
+    QTimer timer;
+    timer.setSingleShot(true);
+    QEventLoop loop;
+    connect(exportDriver, &ExportDriver::exportDone, &loop, &QEventLoop::quit);
+    connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
+    timer.start(10000);
+    loop.exec();
+
+    if(!timer.isActive())
+        QVERIFY2(false, "Timeout in test_export");
+
+    delete exportDriver;
+    exportDriver = nullptr;
+    delete exportModel;
+    exportModel = nullptr;
     delete gdxViewer;
     gdxViewer = nullptr;
 }

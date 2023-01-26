@@ -41,6 +41,7 @@ SOURCES += \
     $$SRCPATH/gdxviewer/columnfilter.cpp \
     $$SRCPATH/gdxviewer/columnfilterframe.cpp \
     $$SRCPATH/gdxviewer/exportdialog.cpp \
+    $$SRCPATH/gdxviewer/exportdriver.cpp \
     $$SRCPATH/gdxviewer/exportmodel.cpp \
     $$SRCPATH/gdxviewer/filteruelmodel.cpp \
     $$SRCPATH/gdxviewer/gdxsymbol.cpp \
@@ -84,6 +85,7 @@ HEADERS += \
     $$SRCPATH/gdxviewer/columnfilter.h \
     $$SRCPATH/gdxviewer/columnfilterframe.h \
     $$SRCPATH/gdxviewer/exportdialog.h \
+    $$SRCPATH/gdxviewer/exportdriver.h \
     $$SRCPATH/gdxviewer/exportmodel.h \
     $$SRCPATH/gdxviewer/filteruelmodel.h \
     $$SRCPATH/gdxviewer/gdxsymbol.h \
