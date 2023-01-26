@@ -156,7 +156,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }
     case IsProjectRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
-        return bool(node);
+        return bool(node && node->type() == PExProjectNode::tCommon);
     }
     case NameExtRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();

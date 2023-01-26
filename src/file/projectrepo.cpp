@@ -36,6 +36,7 @@ namespace gams {
 namespace studio {
 
 const QString ProjectRepo::CIgnoreSuffix(".lst.lxi.log.");
+const QString CGamsSystemProjectName("-GAMS-System-");
 
 ProjectRepo::ProjectRepo(QObject* parent)
     : QObject(parent), mNextId(0), mTreeModel(new ProjectTreeModel(this, new PExRootNode(this)))
@@ -197,6 +198,12 @@ PExAbstractNode *ProjectRepo::previous(PExAbstractNode *node)
         if (!group) return node;
     }
     return node;
+}
+
+PExProjectNode *ProjectRepo::gamsSystemProject()
+{
+    PExProjectNode *res = findProject(CGamsSystemProjectName);
+    return res && res->type() == PExProjectNode::tGams ? res : nullptr;
 }
 
 ProjectTreeModel*ProjectRepo::treeModel() const
@@ -377,10 +384,13 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project || project->isVirtual()) continue;
-        QVariantMap proData = getProjectMap(project, true);
-        save(project, proData);
-        // prepare projects data with absolute paths for Settings storage
+        if (!project || project->type() != PExProjectNode::tCommon) continue;
+        if (project->needSave()) {
+            // store to file with relative paths
+            QVariantMap proData = getProjectMap(project, true);
+            save(project, proData);
+        }
+        // store to Settings with absolute paths
         QVariantMap data;
         data = getProjectMap(project, false);
         data.insert("project", project->fileName());
@@ -391,15 +401,13 @@ void ProjectRepo::write(QVariantList &projects) const
 void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
 {
     QString fileName = project->fileName();
-    if (project->needSave()) {
-        QFile file(fileName);
-        if (file.open(QFile::WriteOnly)) {
-            file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
-            file.close();
-            project->setNeedSave(false);
-        } else {
-            SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
-        }
+    QFile file(fileName);
+    if (file.open(QFile::WriteOnly)) {
+        file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
+        file.close();
+        project->setNeedSave(false);
+    } else {
+        SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
     }
 }
 
@@ -444,21 +452,22 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
     PExGroupNode *oldParent = nullptr;
     if (mNodes.contains(file->id()))
         oldParent = file->parentNode()->toGroup();
-    else
-        addToIndex(file);
+    else addToIndex(file);
+
     // create missing group node for folders
     PExGroupNode *newParent = project;
-    QDir prjPath(project->location());
-    QString relPath = prjPath.relativeFilePath(file->location());
-    bool isAbs = QDir(relPath).isAbsolute();
-    QStringList folders;
-    folders = relPath.split('/');
-    folders.removeLast();
-    for (const QString &folderName : qAsConst(folders)) {
-        newParent = findOrCreateFolder(folderName, newParent, isAbs);
-        isAbs = false;
+    if (project->type() == PExProjectNode::tCommon) {
+        QDir prjPath(project->location());
+        QString relPath = prjPath.relativeFilePath(file->location());
+        bool isAbs = QDir(relPath).isAbsolute();
+        QStringList folders;
+        folders = relPath.split('/');
+        folders.removeLast();
+        for (const QString &folderName : qAsConst(folders)) {
+            newParent = findOrCreateFolder(folderName, newParent, isAbs);
+            isAbs = false;
+        }
     }
-
     // add to (new) destination
     mTreeModel->insertChild(newParent->childCount(), newParent, file);
     sortChildNodes(project);
@@ -509,15 +518,20 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode, QString workDir)
+PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
+                                           QString workDir, PExProjectNode::Type type)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
 
-    if (!filePath.endsWith(".gsp", FileType::fsCaseSense()))
-        filePath += ".gsp";
-    if (!filePath.contains('/')) {
-        filePath = path + '/' + filePath;
+    if (type == PExProjectNode::tGams) {
+        filePath = CGamsSystemProjectName;
+    } else if (type == PExProjectNode::tCommon) {
+        if (!filePath.endsWith(".gsp", FileType::fsCaseSense()))
+            filePath += ".gsp";
+        if (!filePath.contains('/')) {
+            filePath = path + '/' + filePath;
+        }
     }
 
     PExProjectNode* project = findProject(filePath);
@@ -526,15 +540,19 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
         if (mode == onExist_Null) return nullptr;
     }
 
-    uniqueProjectFile(mTreeModel->rootNode(), filePath);
-    FileMeta* runFile = runFileName.isEmpty() ? nullptr : mFileRepo->findOrCreateFileMeta(runFileName);
+    if (type != PExProjectNode::tGams)
+        uniqueProjectFile(mTreeModel->rootNode(), filePath);
 
-    project = new PExProjectNode(filePath, path, runFile, workDir);
-    connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
-    connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
-    connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
-    connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
-    connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
+    FileMeta* runFile = runFileName.isEmpty() || type != PExProjectNode::tCommon ? nullptr
+                                                                                 : mFileRepo->findOrCreateFileMeta(runFileName);
+    project = new PExProjectNode(filePath, path, runFile, workDir, type);
+    if (type == PExProjectNode::tCommon) {
+        connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
+        connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
+        connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
+        connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
+        connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
+    }
     addToIndex(project);
     mTreeModel->insertChild(root->childCount(), root, project);
     connect(project, &PExGroupNode::changed, this, &ProjectRepo::nodeChanged);

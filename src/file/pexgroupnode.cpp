@@ -212,11 +212,12 @@ void PExGroupNode::hasFile(QString fName, bool &exists)
     exists = findFile(fName);
 }
 
-PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* runFileMeta, QString workDir)
+PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* runFileMeta, QString workDir, Type type)
     : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
     , mProjectFile(filePath)
     , mWorkDir(workDir)
     , mGamsProcess(new GamsProcess())
+    , mType(type)
 {
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
@@ -452,19 +453,14 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     return res;
 }
 
-bool PExProjectNode::isVirtual() const
+PExProjectNode::Type PExProjectNode::type() const
 {
-    return mVirtual;
-}
-
-void PExProjectNode::setVirtual(bool isVirtual)
-{
-    mVirtual = isVirtual;
+    return mType;
 }
 
 bool PExProjectNode::needSave() const
 {
-    return mChangeState == csChanged && !isVirtual();
+    return mChangeState == csChanged;
 }
 
 bool PExProjectNode::isClosing() const
@@ -474,7 +470,7 @@ bool PExProjectNode::isClosing() const
 
 void PExProjectNode::setNeedSave(bool needSave)
 {
-    if (mChangeState != csClosing)
+    if (mChangeState != csClosing && type() != PExProjectNode::tSearch)
         mChangeState = needSave ? csChanged : csNone;
 }
 

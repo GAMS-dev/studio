@@ -107,6 +107,7 @@ public:
 
     PExAbstractNode* next(PExAbstractNode* node);
     PExAbstractNode* previous(PExAbstractNode* node);
+    PExProjectNode* gamsSystemProject();
 
     ProjectTreeModel* treeModel() const;
     FileMetaRepo* fileRepo() const;
@@ -120,7 +121,7 @@ public:
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
 
     PExProjectNode *createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
-                                  QString workDir = QString());
+                                  QString workDir = QString(), PExProjectNode::Type type = PExProjectNode::tCommon);
     MultiCopyCheck getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
     void moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy);
     PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);

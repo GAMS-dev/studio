@@ -176,7 +176,7 @@ MainWindow::MainWindow(QWidget *parent)
                     onlyOneProject = false;
                 }
             }
-            projectCanMove = project && onlyOneProject && !project->isVirtual();
+            projectCanMove = project && onlyOneProject && project->type() == PExProjectNode::tCommon;
         }
 
         ui->actionMove_Project->setEnabled(projectCanMove);
@@ -646,9 +646,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
         file.close();
     }
 
-    QFileInfo fi(filePath);
-    PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
-    project->setVirtual();
+    PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
     PExFileNode *node = addNode("", filePath, project);
     openFileNode(node);
 }
@@ -2357,8 +2355,9 @@ void MainWindow::on_actionChangelog_triggered()
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
     fm->setKind(FileKind::TxtRO);
-    PExProjectNode *project = mProjectRepo.createProject(fi.fileName(), fi.absolutePath(), "", onExist_Project);
-    project->setVirtual();
+
+    PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
+    mProjectRepo.findOrCreateFileNode(fm, project);
     openFile(fm, true, project);
 }
 
@@ -4258,7 +4257,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
                 QFileInfo file(fileMeta->location());
                 project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
                                                      file.absoluteFilePath(), onExist_AddNr);
-                nodes.append(mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project));
+                mProjectRepo.findOrCreateFileNode(file.absoluteFilePath(), project);
             }
         }
         try {
@@ -4488,8 +4487,18 @@ void MainWindow::closeFileEditors(const FileId fileId)
     }
     if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;
+
+
     // if the file has been removed, remove nodes
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
+
+    if (PExProjectNode *project = mProjectRepo.gamsSystemProject()) {
+        if (PExFileNode *node = project->findFile(fm))
+            mProjectRepo.closeNode(node);
+        if (project->isEmpty())
+            mProjectRepo.closeGroup(project);
+    }
+
     NavigationHistoryLocator::navigationHistory()->startRecord();
 }
 
@@ -4876,9 +4885,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
         for (const QString &file : qAsConst(skippedFiles)) {
             if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
                 file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
-                QFileInfo fi(file);
-                PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
-                project->setVirtual();
+                PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
                 PExFileNode *node = addNode("", file, project);
                 openFileNode(node);
             }
