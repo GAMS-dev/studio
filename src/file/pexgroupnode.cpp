@@ -1026,9 +1026,14 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 
 QString PExProjectNode::tooltip()
 {
-    QString res(QDir::toNativeSeparators(fileName()) +
-                "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
-                "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
+    QString res(QDir::toNativeSeparators(fileName()));
+    if (mType == PExProjectNode::tCommon)
+        res.append( "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
+                    "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
+    else if (mType == PExProjectNode::tSearch)
+        res.append( "\n\nResults from searching in\n" + QDir::toNativeSeparators(location()));
+    else
+        res.append( "\n\nContaining special GAMS system files");
     if (runnableGms()) res.append("\nMain GMS file: ").append(runnableGms()->name());
     if (!parameter("lst").isEmpty())
         res.append("\nLast output file: ").append(QFileInfo(parameter("lst")).fileName());

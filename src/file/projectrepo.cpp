@@ -540,7 +540,7 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
         if (mode == onExist_Null) return nullptr;
     }
 
-    if (type != PExProjectNode::tGams)
+    if (type == PExProjectNode::tCommon)
         uniqueProjectFile(mTreeModel->rootNode(), filePath);
 
     FileMeta* runFile = runFileName.isEmpty() || type != PExProjectNode::tCommon ? nullptr
