@@ -21,9 +21,9 @@
 #define GAMS_STUDIO_GDXVIEWER_EXPORTDIALOG_H
 
 #include "exportmodel.h"
+#include "exportdriver.h"
 #include <QDialog>
 #include <QSortFilterProxyModel>
-#include <process/connectprocess.h>
 
 namespace gams {
 namespace studio {
@@ -42,50 +42,33 @@ class ExportDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTableModel, QWidget *parent = nullptr);
+    explicit ExportDialog(GdxViewer *gdxViewer, QWidget *parent = nullptr);
     ~ExportDialog();
 
 private slots:
     void on_pbCancel_clicked();
     void on_pbBrowseExcel_clicked();
     void on_pbBrowseConnect_clicked();
-    void save();
-    void saveAndExecute();
 
 protected:
     void closeEvent(QCloseEvent *e) override;
 
 private slots:
-    void exportDone();
     void on_pbSelectAll_clicked();
     void on_pbDeselectAll_clicked();
 
 private:
-    bool save(QString connectFile, bool fileExistsWarning=true);
+    bool save(bool fileExistsWarning=true);
+    void saveAndExecute();
     void execute(QString connectFile);
-    void cancelProcess(int waitMSec=0);
     void setControlsEnabled(bool enabled);
-
-    const QString PROJ_SUFFIX = "_proj_";
-    const QString FILTER_SUFFIX = "_filter_";
-    QString generateInstructions();
-    QString generateGdxReader();
-    QString generatePDExcelWriter(QString excelFile);
-    QString generateProjections();
-    QString generateFilters();
-
-    QString generateDomains(GdxSymbol *sym);
-    QString generateDomainsNew(GdxSymbol *sym);
-
-    bool hasActiveLabelFilter(GdxSymbol *sym);
-    bool hasActiveValueFilter(GdxSymbol *sym);
-    bool hasActiveFilter(GdxSymbol *sym);
 
     GdxViewer *mGdxViewer = nullptr;
     GdxSymbolTableModel *mSymbolTableModel = nullptr;
-    std::unique_ptr<ConnectProcess> mProc = nullptr;
+
     Ui::ExportDialog *ui;
     ExportModel *mExportModel = nullptr;
+    ExportDriver *mExportDriver = nullptr;
     QSortFilterProxyModel* mProxyModel = nullptr;
     QString mRecentPath;
     QString mGdxFile;

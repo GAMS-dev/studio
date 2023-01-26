@@ -22,16 +22,15 @@
 #include "gdxsymboltablemodel.h"
 #include "gdxsymbol.h"
 
-#include <QDebug>
-
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ExportModel::ExportModel(GdxViewer* gdxViewer, GdxSymbolTableModel *symbolTableModel, QObject *parent)
-    : QAbstractTableModel(parent), mGdxViewer(gdxViewer), mSymbolTableModel(symbolTableModel)
+ExportModel::ExportModel(GdxViewer* gdxViewer, QObject *parent)
+    : QAbstractTableModel(parent),
+      mGdxViewer(gdxViewer)
 {
-    mChecked.resize(mSymbolTableModel->symbolCount()+1);
+    mChecked.resize(mGdxViewer->gdxSymbolTable()->symbolCount()+1);
 }
 
 ExportModel::~ExportModel()
@@ -48,7 +47,7 @@ QVariant ExportModel::headerData(int section, Qt::Orientation orientation, int r
             }
         }
     }
-    return mSymbolTableModel->headerData(section-1, orientation, role);
+    return mGdxViewer->gdxSymbolTable()->headerData(section-1, orientation, role);
 }
 
 int ExportModel::rowCount(const QModelIndex &parent) const
@@ -56,7 +55,7 @@ int ExportModel::rowCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return mSymbolTableModel->rowCount(parent);
+    return mGdxViewer->gdxSymbolTable()->rowCount(parent);
 }
 
 int ExportModel::columnCount(const QModelIndex &parent) const
@@ -64,7 +63,7 @@ int ExportModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return 0;
 
-    return mSymbolTableModel->columnCount(parent) + 1;
+    return mGdxViewer->gdxSymbolTable()->columnCount(parent) + 1;
 }
 
 QVariant ExportModel::data(const QModelIndex &index, int role) const
@@ -81,8 +80,8 @@ QVariant ExportModel::data(const QModelIndex &index, int role) const
         }
         return QVariant();
     }
-    QModelIndex idx = mSymbolTableModel->index(index.row(), index.column()-1);
-    return mSymbolTableModel->data(idx, role);
+    QModelIndex idx = mGdxViewer->gdxSymbolTable()->index(index.row(), index.column()-1);
+    return mGdxViewer->gdxSymbolTable()->data(idx, role);
     return QVariant();
 }
 
@@ -110,23 +109,23 @@ Qt::ItemFlags ExportModel::flags(const QModelIndex &index) const
 QList<GdxSymbol *> ExportModel::selectedSymbols()
 {
     QList<GdxSymbol*> l = QList<GdxSymbol*>();
-    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) { // r=1 to skip universe symbol
+    for (int r=1; r<mGdxViewer->gdxSymbolTable()->symbolCount()+1; r++) { // r=1 to skip universe symbol
         if (mChecked[r])
-            l.append(mSymbolTableModel->gdxSymbols().at(r));
+            l.append(mGdxViewer->gdxSymbolTable()->gdxSymbols().at(r));
     }
     return l;
 }
 
 void ExportModel::selectAll()
 {
-    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) // r=1 to skip universe symbol
+    for (int r=1; r<mGdxViewer->gdxSymbolTable()->symbolCount()+1; r++) // r=1 to skip universe symbol
         mChecked[r] = true;
     emit dataChanged(index(0, 0), index(rowCount()-1, 0));
 }
 
 void ExportModel::deselectAll()
 {
-    for (int r=1; r<mSymbolTableModel->symbolCount()+1; r++) // r=1 to skip universe symbol
+    for (int r=1; r<mGdxViewer->gdxSymbolTable()->symbolCount()+1; r++) // r=1 to skip universe symbol
         mChecked[r] = false;
     emit dataChanged(index(0, 0), index(rowCount()-1, 0));
 }

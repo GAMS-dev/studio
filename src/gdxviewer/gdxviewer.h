@@ -67,6 +67,8 @@ public:
     void readState(QVariantMap map);
     void writeState(const QString &location);
 
+    GdxSymbolTableModel *gdxSymbolTable() const;
+
 public slots:
     void invalidate();
     int reload(QTextCodec* codec, bool quiet=false, bool triggerReload=true);

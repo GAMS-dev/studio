@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "exportdialog.h"
-#include "exportmodel.h"
 #include "gdxsymbol.h"
 #include "gdxsymboltablemodel.h"
 #include "gdxsymbolview.h"
@@ -34,25 +33,26 @@
 #include <QHeaderView>
 #include <QMessageBox>
 
-#include <process/connectprocess.h>
 #include <numerics/doubleformatter.h>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTableModel, QWidget *parent) :
+ExportDialog::ExportDialog(GdxViewer *gdxViewer, QWidget *parent) :
     QDialog(parent),
     mGdxViewer(gdxViewer),
-    mSymbolTableModel(symbolTableModel),
-    mProc(new ConnectProcess(this)),
     ui(new Ui::ExportDialog)
 {
     ui->setupUi(this);
+    mSymbolTableModel = mGdxViewer->gdxSymbolTable();
+    mExportModel = new ExportModel(gdxViewer, this);
+    mExportDriver = new ExportDriver(mGdxViewer, mExportModel, this);
+    connect(mExportDriver, &ExportDriver::exportDone, this, [this]() { setControlsEnabled(true); accept(); });
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     QMenu* m = new QMenu();
-    mSaveAction = m->addAction("Save", this, [this]() { ui->toolButton->setDefaultAction(mSaveAction), ExportDialog::save(); });
+    mSaveAction = m->addAction("Save", this, [this]() { ui->toolButton->setDefaultAction(mSaveAction), ExportDialog::save(false); setControlsEnabled(true); });
     mExportAction = m->addAction("Export", this, [this]() { ui->toolButton->setDefaultAction(mExportAction); ExportDialog::saveAndExecute(); });
     ui->toolButton->setMenu(m);
     ui->toolButton->setDefaultAction(mExportAction);
@@ -66,7 +66,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->leExcel->setText(QDir::toNativeSeparators(excelFile));
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
-    mExportModel = new ExportModel(gdxViewer, mSymbolTableModel, this);
+
     mProxyModel = new QSortFilterProxyModel(this);
     mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
     mProxyModel->setSourceModel(mExportModel);
@@ -80,16 +80,16 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, GdxSymbolTableModel *symbolTabl
     ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
     ui->tableView->verticalHeader()->setMinimumSectionSize(1);
     ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
-
-    connect(mProc.get(), &ConnectProcess::finished, this, [this]() {  exportDone(); });
 }
 
 ExportDialog::~ExportDialog()
 {
-    cancelProcess(50);
+    mExportDriver->cancelProcess(50);
     mProxyModel->setSourceModel(nullptr);
     delete mProxyModel;
     mProxyModel = nullptr;
+    delete mExportDriver;
+    mExportDriver = nullptr;
     delete mExportModel;
     mExportModel = nullptr;
     delete ui;
@@ -97,284 +97,8 @@ ExportDialog::~ExportDialog()
 
 void ExportDialog::on_pbCancel_clicked()
 {
-    cancelProcess();
+    mExportDriver->cancelProcess();
     reject();
-}
-
-
-QString ExportDialog::generateInstructions()
-{
-    QString output = ui->leExcel->text().trimmed();
-    QString inst;
-    inst += generateGdxReader();
-    inst += generateFilters();
-    inst += generateProjections();
-    inst += generatePDExcelWriter(output);
-    return inst;
-}
-
-QString ExportDialog::generateGdxReader()
-{
-    QString inst;
-    inst += "- GDXReader:\n";
-    inst += "    file: " + QDir::toNativeSeparators(mGdxFile) + "\n";
-    inst += "    symbols: \n";
-    QString instNames = "";
-    QString instProjections = "";
-    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
-        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        instNames += "      - name: " + sym->aliasedSymbol()->name() + "\n";
-        if (sym->type() == GMS_DT_ALIAS) {
-            QString dom = generateDomains(sym);
-            instProjections += "- Projection:\n";
-            instProjections += "    name: " + sym->aliasedSymbol()->name() + dom + "\n";
-            instProjections += "    newName: " + sym->name() + dom + "\n";
-        }
-    }
-    return inst + instNames + instProjections;
-}
-
-QString ExportDialog::generatePDExcelWriter(QString excelFile)
-{
-    QString inst = "- PandasExcelWriter:\n";
-    inst += "    file: " + excelFile + "\n";
-    inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
-    inst += "    symbols:\n";
-    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
-        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        QString name = hasActiveFilter(sym) ? sym->name() + FILTER_SUFFIX : sym->name();
-        int rowDimension = sym->dim();
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-            name = sym->name() + PROJ_SUFFIX;
-        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
-        GdxViewerState *state = mGdxViewer->state();
-        GdxSymbolViewState *symViewState = nullptr;
-        if (state)
-            symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
-        if (symView && symView->isTableViewActive())
-            rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
-        else if (symViewState && symViewState->tableViewActive())
-            rowDimension = sym->dim() - symViewState->tvColDim();
-        else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
-            rowDimension = sym->dim() - 1;
-        if (generateDomains(sym) != generateDomainsNew(sym))
-            name = sym->name() + PROJ_SUFFIX;
-        inst += "      - name: " + name + "\n";
-        inst += "        range: " + sym->name() + "!A1\n";
-        inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
-    }
-    return inst;
-}
-
-QString ExportDialog::generateProjections()
-{
-    QString inst;
-    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
-        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        QString name;
-        QString newName;
-        bool asParameter = false;
-        bool domOrderChanged = false;
-        QString dom = generateDomains(sym);
-        QString domNew = generateDomainsNew(sym);
-        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            if (hasActiveFilter(sym))
-                name = sym->name() + FILTER_SUFFIX + dom;
-            else
-                name = sym->name() + dom;
-            newName = sym->name() + PROJ_SUFFIX + dom;
-            asParameter = true;
-        }
-        if (dom != domNew) {
-            if (hasActiveFilter(sym))
-                name = sym->name() + FILTER_SUFFIX  + dom;
-            else
-                name = sym->name() + dom;
-            newName = sym->name() + PROJ_SUFFIX + domNew;
-            domOrderChanged = true;
-        }
-        if (!name.isEmpty()) {
-            inst += "- Projection:\n";
-            inst += "    name: " + name + "\n";
-            inst += "    newName: " + newName + "\n";
-            if (asParameter)
-                inst += "    asParameter: true\n";
-            if (domOrderChanged) {
-                inst += "- PythonCode:\n";
-                inst += "    code: |\n";
-                inst += "      r = connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records\n";
-                inst += "      connect.container.data['" + sym->name() + PROJ_SUFFIX + "'].records=r.sort_values([c for c in r.columns])\n";
-            }
-        }
-    }
-    return inst;
-}
-
-QString ExportDialog::generateFilters()
-{
-    QString inst;
-    for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
-        GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
-        if (hasActiveFilter(sym)) {
-            QString name = sym->name();
-            QString newName = name + FILTER_SUFFIX;
-            inst += "- Filter:\n";
-            inst += "    name: " + name + "\n";
-            inst += "    newName: " + newName + "\n";
-
-            // label filters
-            if (hasActiveLabelFilter(sym)) {
-                inst += "    labelFilters:\n";
-                for (int d=0; d<sym->dim(); d++) {
-                    if (sym->filterActive(d)) {
-                        bool *showUels = sym->showUelInColumn().at(d);
-                        std::vector<int> uels = *sym->uelsInColumn().at(d);
-                        inst += "      - column: " + QString::number(d+1) + "\n";
-
-                        // switch between keep and reject for improved performance
-                        int uelCount = uels.size();
-                        int showUelCount = 0;
-                        for (int uel: uels) {
-                            if (showUels[uel])
-                                showUelCount++;
-                        }
-                        bool useReject = showUelCount > uelCount/2;
-                        if (useReject)
-                            inst += "        reject: [";
-                        else
-                            inst += "        keep: [";
-                        for (int uel: uels) {
-                            if ( (!useReject && showUels[uel]) || (useReject && !showUels[uel]) )
-                                inst += "'" + mSymbolTableModel->uel2Label(uel) + "', ";
-                        }
-                        int pos = inst.lastIndexOf(QChar(','));
-                        inst.remove(pos, 2);
-                        inst += "]\n";
-                    }
-                }
-            }
-
-            if (hasActiveValueFilter(sym)) {
-                // value filters
-                inst += "    valueFilters:\n";
-                for (int d=sym->dim(); d<sym->filterColumnCount(); d++) {
-                    if (sym->filterActive(d)) {
-                        int valColIndex = d-sym->dim();
-                        QStringList valColumns;
-                        valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
-                        ValueFilter *vf = sym->valueFilter(valColIndex);
-                        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-                            inst += "      - column: " + valColumns[valColIndex] + "\n";
-                        else // parameters
-                            inst += "      - column: value\n";
-                        QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
-                        if (vf->exclude()) {
-                            inst += "        rule: (x<" + min + ") | (x>" + max + ")\n";
-                        } else
-                            inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
-
-                        //special values
-                        if (!vf->showEps())
-                            inst += "        eps: false\n";
-                        if (!vf->showPInf())
-                            inst += "        infinity: false\n";
-                        if (!vf->showMInf())
-                            inst += "        negativeInfinity: false\n";
-                        if (!vf->showNA())
-                            inst += "        na: false\n";
-                        if (!vf->showUndef())
-                            inst += "        undf: false\n";
-                    }
-                }
-            }
-        }
-    }
-    return inst;
-}
-
-QString ExportDialog::generateDomains(GdxSymbol *sym)
-{
-    QString dom;
-    sym = sym->aliasedSymbol();
-    if (sym->dim() > 0) {
-        dom = "(";
-        for (int i=0; i<sym->dim(); i++)
-            dom += QString::number(i) + ",";
-        dom.truncate(dom.length()-1);
-        dom += ")";
-    }
-    return dom;
-}
-
-QString ExportDialog::generateDomainsNew(GdxSymbol *sym)
-{
-    QString dom;
-    sym = sym->aliasedSymbol();
-    if (sym->dim() > 0) {
-        GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
-        GdxViewerState *state = mGdxViewer->state();
-        GdxSymbolViewState *symViewState = nullptr;
-        if (state)
-            symViewState = state->symbolViewState(sym->name());
-        QVector<int> dimOrder;
-        if (symView) {
-            if (symView->isTableViewActive())
-                dimOrder = symView->getTvModel()->tvDimOrder();
-            else
-                dimOrder = symView->listViewDimOrder();
-        } else if (symViewState) {
-            if (symViewState->tableViewActive())
-                dimOrder = symViewState->tvDimOrder();
-            else {
-                QHeaderView *dummyHeader = new QHeaderView(Qt::Horizontal);
-                dummyHeader->restoreState(symViewState->listViewHeaderState());
-                for (int i=0; i<sym->columnCount(); i++) {
-                    int idx = dummyHeader->logicalIndex(i);
-                    if (idx<sym->dim())
-                        dimOrder << idx;
-                }
-                delete dummyHeader;
-            }
-        }
-        if (!dimOrder.isEmpty()) {
-            dom = "(";
-            for (int i=0; i<sym->dim(); i++)
-                dom += QString::number(dimOrder.at(i)) + ",";
-            dom.truncate(dom.length()-1);
-            dom += ")";
-            return dom;
-        } else
-            return generateDomains(sym);
-    }
-    return dom;
-}
-
-bool ExportDialog::hasActiveLabelFilter(GdxSymbol *sym)
-{
-    if (!ui->cbFilter->isChecked())
-        return false;
-    for (int i=0; i<sym->dim(); i++)
-        if (sym->filterActive(i))
-            return true;
-    return false;
-}
-
-bool ExportDialog::hasActiveValueFilter(GdxSymbol *sym)
-{
-    if (!ui->cbFilter->isChecked())
-        return false;
-    for (int i=sym->dim(); i<sym->filterColumnCount(); i++)
-        if (sym->filterActive(i))
-            return true;
-    return false;
-}
-
-bool ExportDialog::hasActiveFilter(GdxSymbol *sym)
-{
-    if (!ui->cbFilter->isChecked())
-        return false;
-    return hasActiveLabelFilter(sym) || hasActiveValueFilter(sym);
 }
 
 void ExportDialog::on_pbBrowseExcel_clicked()
@@ -405,38 +129,10 @@ void ExportDialog::on_pbBrowseConnect_clicked()
     }
 }
 
-void ExportDialog::save()
+bool ExportDialog::save(bool fileExistsWarning)
 {
     setControlsEnabled(false);
     QString connectFile = ui->leConnect->text().trimmed();
-    save(connectFile, false);
-    setControlsEnabled(true);
-}
-
-void ExportDialog::saveAndExecute()
-{
-    setControlsEnabled(false);
-    QString connectFile = ui->leConnect->text().trimmed();
-    if (save(connectFile))
-        execute(connectFile);
-    else
-        setControlsEnabled(true);
-}
-
-void ExportDialog::closeEvent(QCloseEvent *e)
-{
-    Q_UNUSED(e)
-    on_pbCancel_clicked();
-}
-
-void ExportDialog::exportDone()
-{
-    setControlsEnabled(true);
-    accept();
-}
-
-bool ExportDialog::save(QString connectFile, bool fileExistsWarning)
-{
     QString output = ui->leExcel->text().trimmed();
     if (output.isEmpty()) {
         QMessageBox msgBox;
@@ -478,31 +174,27 @@ bool ExportDialog::save(QString connectFile, bool fileExistsWarning)
         if (msgBox.exec() == QMessageBox::No)
             return false;
     }
-
     mRecentPath = QFileInfo(output).path();
     ui->leExcel->setText(output);
-
-    QFile f(connectFile);
-    if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions().toUtf8());
-        f.close();
-    }
-    return true;
+    bool rc =  mExportDriver->save(connectFile, ui->leExcel->text().trimmed(), ui->cbFilter->isChecked());
+    setControlsEnabled(true);
+    return rc;
 }
 
-void ExportDialog::execute(QString connectFile)
+void ExportDialog::saveAndExecute()
 {
-    QStringList l;
-    l << connectFile;
-    mProc->setParameters(l);
-    mProc->setWorkingDirectory(mRecentPath);
-    mProc->execute();
+    setControlsEnabled(false);
+    QString connectFile = ui->leConnect->text().trimmed();
+    if (save())
+        mExportDriver->execute(connectFile, mRecentPath);
+    else
+        setControlsEnabled(true);
 }
 
-void ExportDialog::cancelProcess(int waitMSec)
+void ExportDialog::closeEvent(QCloseEvent *e)
 {
-    if (mProc->state() != QProcess::NotRunning)
-        mProc->stop(waitMSec);
+    Q_UNUSED(e)
+    on_pbCancel_clicked();
 }
 
 void ExportDialog::setControlsEnabled(bool enabled)

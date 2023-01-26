@@ -498,8 +498,13 @@ void GdxViewer::applySelectedSymbol()
 void GdxViewer::showExportDialog()
 {
     if (!mExportDialog)
-        mExportDialog = new ExportDialog(this, mGdxSymbolTable, this);
+        mExportDialog = new ExportDialog(this, this);
     mExportDialog->show();
+}
+
+GdxSymbolTableModel *GdxViewer::gdxSymbolTable() const
+{
+    return mGdxSymbolTable;
 }
 
 GdxViewerState *GdxViewer::state() const

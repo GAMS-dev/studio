@@ -187,6 +187,7 @@ SOURCES += \
     gdxviewer/columnfilter.cpp \
     gdxviewer/columnfilterframe.cpp \
     gdxviewer/exportdialog.cpp \
+    gdxviewer/exportdriver.cpp \
     gdxviewer/exportmodel.cpp \
     gdxviewer/filteruelmodel.cpp \
     gdxviewer/gdxsymbol.cpp \
@@ -469,6 +470,7 @@ HEADERS += \
     gdxviewer/columnfilter.h \
     gdxviewer/columnfilterframe.h \
     gdxviewer/exportdialog.h \
+    gdxviewer/exportdriver.h \
     gdxviewer/exportmodel.h \
     gdxviewer/filteruelmodel.h \
     gdxviewer/gdxsymbol.h \
