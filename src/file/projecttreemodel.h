@@ -80,7 +80,7 @@ protected:
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
     bool isCurrentProject(const QModelIndex& ind) const;
-    QModelIndex findProject(QModelIndex ind);
+    QModelIndex findProject(QModelIndex ind, bool *locked);
     void sortChildNodes(PExGroupNode *group);
     void updateProjectExtNums();
 

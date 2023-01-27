@@ -541,6 +541,7 @@ FileMeta* PExProjectNode::runnableGms() const
 
 void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
+    if (mType != PExProjectNode::tCommon) return;
     PExFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file

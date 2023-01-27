@@ -400,12 +400,17 @@ bool ProjectTreeModel::isCurrentProject(const QModelIndex& ind) const
     return false;
 }
 
-QModelIndex ProjectTreeModel::findProject(QModelIndex ind)
+QModelIndex ProjectTreeModel::findProject(QModelIndex ind, bool *locked)
 {
+    if (locked) *locked = false;
     if (ind.isValid()) {
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
         PExProjectNode *project = node->assignedProject();
+        if (project->type() != PExProjectNode::tCommon) {
+            if (locked) *locked = true;
+            return QModelIndex();
+        }
         ind = index(project);
     }
     return ind;

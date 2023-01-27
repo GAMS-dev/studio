@@ -136,9 +136,11 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
             event->ignore();
             return;
         }
-        QModelIndex groupInd = treeModel->findProject(ind);
-        selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
-        event->accept();
+        bool locked;
+        QModelIndex groupInd = treeModel->findProject(ind, &locked);
+        if (groupInd.isValid())
+            selectionModel()->select(groupInd, QItemSelectionModel::ClearAndSelect);
+        (locked) ? event->ignore() : event->accept();
     } else {
         event->ignore();
     }
