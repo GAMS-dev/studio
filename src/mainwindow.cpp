@@ -2162,7 +2162,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         QString lstFile = project->parameter("ls2");
         mProjectRepo.findOrCreateFileNode(lstFile, project);
         lstFile = project->parameter("lst");
-        bool doFocus = (project == mRecent.project());
+        bool doFocus = (project == mRecent.project(false));
         PExFileNode* lstNode = mProjectRepo.findOrCreateFileNode(lstFile, project);
 
         if (lstNode)
@@ -2473,9 +2473,9 @@ bool MainWindow::isActiveProjectRunnable()
        if (!fm) { // assuming a welcome page here
            return false;
        } else {
-           if (!mRecent.project()) return false;
-           PExProjectNode *project = mRecent.project()->assignedProject();
-           return project && project->runnableGms() && QFile::exists(project->workDir()) && QFile::exists(project->location());
+           PExProjectNode *project = mRecent.project(false);
+           if (!project) return false;
+           return project->runnableGms() && QFile::exists(project->workDir()) && QFile::exists(project->location());
        }
     }
     return false;
@@ -2483,8 +2483,7 @@ bool MainWindow::isActiveProjectRunnable()
 
 bool MainWindow::isRecentGroupRunning()
 {
-    if (!mRecent.project()) return false;
-    PExProjectNode *project = mRecent.project()->assignedProject();
+    PExProjectNode *project = mRecent.project(false);
     if (!project) return false;
     return (project->gamsProcessState() != QProcess::NotRunning);
 }
@@ -3021,19 +3020,16 @@ void MainWindow::on_actionDeploy_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    QString assemblyFile = mRecent.project()->workDir() + "/" +
-                           miro::MiroCommon::assemblyFileName(mRecent.project()->mainModelName());
+    PExProjectNode *project = mRecent.project();
+    if (!project) return;
 
     QStringList checkedFiles;
-    if (mRecent.project()) {
-        checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile,
-                                                                mRecent.project()->mainModelName(false));
-    }
-
+    QString assemblyFile = project->workDir() + "/" + miro::MiroCommon::assemblyFileName(project->mainModelName());
+    checkedFiles = miro::MiroCommon::unifiedAssemblyFileContent(assemblyFile, project->mainModelName(false));
     mMiroDeployDialog->setDefaults();
     mMiroDeployDialog->setAssemblyFileName(assemblyFile);
-    mMiroDeployDialog->setWorkingDirectory(mRecent.project()->workDir());
-    mMiroDeployDialog->setModelName(mRecent.project()->mainModelName());
+    mMiroDeployDialog->setWorkingDirectory(project->workDir());
+    mMiroDeployDialog->setModelName(project->mainModelName());
     mMiroDeployDialog->setSelectedFiles(checkedFiles);
     mMiroDeployDialog->exec();
 }
@@ -3061,7 +3057,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     if (!mRecent.project())
         return;
 
-    auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess);
+    auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess());
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.project()->workDir());
     process->setModelName(mRecent.project()->mainModelName());
@@ -4472,8 +4468,7 @@ void MainWindow::closeFileEditors(const FileId fileId)
     while (!fm->editors().isEmpty()) {
         QWidget *edit = fm->editors().constFirst();
         if (mRecent.editor() == edit) {
-            if (mRecent.project()) {
-               PExProjectNode *project = mRecent.project()->assignedProject();
+            if (PExProjectNode *project = mRecent.project(false)) {
                project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
             }
         }
@@ -5868,14 +5863,14 @@ void MainWindow::on_actionOpen_Project_triggered()
 
 void MainWindow::on_actionMove_Project_triggered()
 {
-    PExProjectNode *project = mRecent.project();
+    PExProjectNode *project = mRecent.project(false);
     if (!project) return;
     moveProjectDialog(project, false);
 }
 
 void MainWindow::on_actionCopy_Project_triggered()
 {
-    PExProjectNode *project = mRecent.project();
+    PExProjectNode *project = mRecent.project(false);
     if (!project) return;
     moveProjectDialog(project, true);
 }

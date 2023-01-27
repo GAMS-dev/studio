@@ -39,7 +39,7 @@ public:
 
     FileMeta* fileMeta() const;
     QWidget* editor() const;
-    PExProjectNode* project() const;
+    PExProjectNode* project(bool skipGamsSystem = true) const;
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
     QWidget* persistentEditor() const;
