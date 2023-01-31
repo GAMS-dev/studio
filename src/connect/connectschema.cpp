@@ -259,6 +259,37 @@ bool ConnectSchema::isAnyOfDefined(const QString &key) const
     return (getNumberOfAnyOfDefined(key) > 0);
 }
 
+QStringList ConnectSchema::getAllOneOfSchemaKeys(const QString &key) const
+{
+    QStringList keyslist;
+    QString pattern = "^"+key+":-:\\[\\d\\d?\\]";
+    QRegExp rx(pattern);
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        if (rx.exactMatch(it.key()) && !keyslist.contains(it.key()))
+            keyslist << it.key();
+    }
+    return keyslist;
+}
+
+int ConnectSchema::getNumberOfOneOfSchemaDefined(const QString &key) const
+{
+    int num=0;
+    QString keystr;
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        keystr = QString("%1:-:[%2]").arg(key).arg(num);
+//        qDebug() << "    " << it.key() << " :: " << keystr;
+        if (keystr.compare(it.key())==0)
+            ++num;
+    }
+//    qDebug() << "    num=" << num;
+    return num;
+}
+
+bool ConnectSchema::isOneOfSchemaDefined(const QString &key) const
+{
+    return (getNumberOfOneOfSchemaDefined(key) > 0);
+}
+
 Schema *ConnectSchema::getSchema(const QString &key) const
 {
     if (contains(key))

@@ -224,6 +224,10 @@ public:
     QStringList getAllAnyOfKeys(const QString& key) const;
     int getNumberOfAnyOfDefined(const QString& key) const;
     bool isAnyOfDefined(const QString& key) const;
+
+    QStringList getAllOneOfSchemaKeys(const QString& key) const;
+    int getNumberOfOneOfSchemaDefined(const QString& key) const;
+    bool isOneOfSchemaDefined(const QString& key) const;
     Schema* getSchema(const QString& key) const;
 
     QList<SchemaType> getType(const QString& key) const;
