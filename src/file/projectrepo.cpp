@@ -948,7 +948,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         DEB() << "Files not found:\n" << filesNotFound.join("\n");
     }
     if (project && !project->runnableGms() && !gmsFiles.isEmpty()) {
-        project->setParameter("gms", gmsFiles.first()->location());
+        project->setRunnableGms(gmsFiles.first()->file());
     }
     if (act & Qt::MoveAction) {
         for (const NodeId &nodeId: qAsConst(knownIds)) {

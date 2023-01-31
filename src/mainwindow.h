@@ -187,7 +187,7 @@ public slots:
     void updateStatusLineCount();
     void updateStatusLoadAmount();
     void openRecentFile();
-    void setMainGms(gams::studio::PExFileNode *node);
+    void setMainFile(gams::studio::PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLogInfo(const QString &text) const;

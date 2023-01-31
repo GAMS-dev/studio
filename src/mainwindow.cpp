@@ -100,6 +100,7 @@ MainWindow::MainWindow(QWidget *parent)
 
     mPrintDialog = new QPrintDialog(&mPrinter, this);
 
+
     ui->setupUi(this);
     ui->updateWidget->hide();
 
@@ -248,7 +249,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
-    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainGms);
+    connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this,
             [this](QString filePath, PExProjectNode* knownProject, OpenGroupOption opt, bool focus) {
@@ -1488,7 +1489,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         PExProjectNode *project = mProjectRepo.createProject(projectFileName, fi.absolutePath(), "", onExist_AddNr);
         PExFileNode* node = addNode("", filePath, project);
         openFileNode(node);
-        setMainGms(node); // does nothing if file is not of type gms
+        setMainFile(node); // does nothing if file is not of type gms
     }
 }
 
@@ -3460,20 +3461,6 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
         mDelayedFiles.append(files);
         return;
     }
-
-    if (files.size() == 1) {
-        if (files.first().endsWith(".gsp", Qt::CaseInsensitive)) {
-            if (!mProjectRepo.findProject(files.first()))
-                openProject(files.first());
-            return;
-        }
-        FileMeta *file = mFileMetaRepo.fileMeta(files.first());
-        if (file) {
-            openFile(file);
-            return;
-        }
-    }
-
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
 
@@ -3503,7 +3490,8 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
     }
     // find runnable gms, for now take first one found
     if (gmsFiles.size() > 0) {
-        if (project) project->setParameter("gms", gmsFiles.first()->location());
+        if (project && !project->runnableGms() && !gmsFiles.isEmpty())
+            project->setRunnableGms(gmsFiles.first()->file());
     }
 
     if (!filesNotFound.empty()) {
@@ -3733,7 +3721,7 @@ help::HelpWidget *MainWindow::helpWidget() const
 }
 #endif
 
-void MainWindow::setMainGms(PExFileNode *node)
+void MainWindow::setMainFile(PExFileNode *node)
 {
     PExProjectNode *project = node->assignedProject();
     if (project) {
