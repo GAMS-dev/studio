@@ -163,6 +163,10 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (!node) return QString();
         return node->nameExt();
     }
+    case IsGamsSys: {
+        PExProjectNode *node = mProjectRepo->node(ind)->assignedProject();
+        return (node && node->type() == PExProjectNode::tGams);
+    }
     default:
         break;
     }

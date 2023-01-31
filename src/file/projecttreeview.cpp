@@ -119,6 +119,14 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
 void ProjectTreeView::updateDrag(QDragMoveEvent *event)
 {
     bool isIntern = event->mimeData()->formats().contains(ItemModelDataType);
+    if (isIntern) {
+        for (QModelIndex index : mSelectionBeforeDrag.indexes()) {
+            if (index.isValid() && index.data(ProjectTreeModel::IsGamsSys).toBool()) {
+                event->ignore();
+                return;
+            }
+        }
+    }
     if ((event->mimeData()->hasUrls() || isIntern) && !event->mouseButtons().testFlag(Qt::RightButton)) {
         if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
             startAutoScroll();

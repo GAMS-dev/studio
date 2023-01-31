@@ -38,6 +38,7 @@ public:
         NodeIdRole = Qt::UserRole + 1,
         IsProjectRole = Qt::UserRole + 2,
         NameExtRole = Qt::UserRole + 3,
+        IsGamsSys = Qt::UserRole + 4,
     };
 
 public:
