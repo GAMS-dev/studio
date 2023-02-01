@@ -111,7 +111,7 @@ bool ConnectEditor::init(bool quiet)
 
     ui->dataTreeView->setModel( mDataModel );
     ConnectDataValueDelegate* valuedelegate = new ConnectDataValueDelegate(ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn(1, valuedelegate );
+    ui->dataTreeView->setItemDelegateForColumn((int)DataItemColumn::Value, valuedelegate );
 
     ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate( ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Key, keydelegate);

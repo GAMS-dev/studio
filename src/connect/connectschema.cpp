@@ -276,7 +276,7 @@ int ConnectSchema::getNumberOfOneOfSchemaDefined(const QString &key) const
     int num=0;
     QString keystr;
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
-        keystr = QString("%1:-:[%2]").arg(key).arg(num);
+        keystr = (!key.endsWith("-") ? QString("%1:-:[%2]").arg(key).arg(num) : QString("%1:[%2]").arg(key).arg(num));
 //        qDebug() << "    " << it.key() << " :: " << keystr;
         if (keystr.compare(it.key())==0)
             ++num;

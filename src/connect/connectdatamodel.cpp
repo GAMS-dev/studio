@@ -740,16 +740,31 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
         mapSeqData << QVariant();
         schemaKeys << "-";
         keys       << "-";
-        mapSeqData << QVariant(schemaKeys);
-        mapSeqData << (schema ?  QVariant(false) : QVariant(true));
-        mapSeqData << QVariant(0);
-        ConnectDataItem* item = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
-        parents.last()->insertChild(idx.row(), item );
-        parents << item;
 
         if (node[i].Type()==YAML::NodeType::Map) {
-           insertSchemaData(schemaname, keys, new ConnectData(node[i]), -1, parents);
+            ConnectSchema* schema = mConnect->getSchema(schemaname);
+            if (schema && schema->getNumberOfOneOfSchemaDefined(keys.join(":"))) {
+                int n = whichOneOfSchema(data->getRootNode(), schema, keys.first());
+                QString oneofstrindex = "[" + QString::number(n) + "]";
+                keys   << oneofstrindex;
+                schemaKeys << oneofstrindex;
+            }
+            mapSeqData << QVariant(schemaKeys);
+            mapSeqData << (schema ?  QVariant(false) : QVariant(true));
+            mapSeqData << QVariant(0);
+            ConnectDataItem* listitem = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
+            parents.last()->insertChild(idx.row(), listitem );
+            parents << listitem;
+
+            insertSchemaData(schemaname, keys, new ConnectData(node[i]), -1, parents);
         } else if (node[i].Type()==YAML::NodeType::Scalar) {
+            mapSeqData << QVariant(schemaKeys);
+            mapSeqData << (schema ?  QVariant(false) : QVariant(true));
+            mapSeqData << QVariant(0);
+            ConnectDataItem* listitem = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
+            parents.last()->insertChild(idx.row(), listitem );
+            parents << listitem;
+
             QString key = QString::fromStdString(node[i].as<std::string>());
             QList<QVariant> itemData;
             itemData << key;
@@ -869,7 +884,6 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
            }
        }
     }
-
 
     QString newdata = (column==(int)DataItemColumn::Value
                            ? item->data((int)DataItemColumn::Value).toString()
@@ -1223,18 +1237,22 @@ void ConnectDataModel::setupTreeItemModelData()
 
 void ConnectDataModel::insertSchemaData(const QString& schemaName, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents)
 {
-    QStringList dataKeys(keys);
     ConnectSchema* schema = mConnect->getSchema(schemaName);
+    QStringList dataKeys(keys);
 
     QStringList schemaKeys;
     schemaKeys << schemaName;
     if (!dataKeys.isEmpty())
         schemaKeys << dataKeys;
-
     for (YAML::const_iterator mit = data->getRootNode().begin(); mit != data->getRootNode().end(); ++mit) {
          QString mapToSequenceKey = "";
          if (mit->second.Type()==YAML::NodeType::Scalar) {
              QString key = QString::fromStdString(mit->first.as<std::string>());
+             QStringList keyslist(dataKeys);
+             keyslist << key;
+             if (schema && schema->isAnyOfDefined(keyslist.join(":"))) {
+                 key += "[0]";
+             }
              dataKeys << key;
              schemaKeys << key;
              QList<QVariant> itemData;
@@ -1488,6 +1506,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              mapToSequenceKey = key;
              dataKeys   << key;
              schemaKeys << key;
+             if (isOneofSchemaDefined) {
+                 schemaKeys << "-";
+             }
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              itemData << "";
@@ -1527,7 +1548,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  parents << parents.last()->child(position);
              }
              dataKeys   << "-";
-             schemaKeys << "-";
+             if (!isOneofSchemaDefined)
+                 schemaKeys << "-";
              for(size_t k = 0; k<mit->second.size(); k++) {
                  if (isOneofSchemaDefined) {
                      int n = whichOneOfSchema(mit->second[k], schema, key);
@@ -1812,8 +1834,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              schemaKeys.removeLast();
               QList<QVariant> sequenceDummyData;
               sequenceDummyData << mapToSequenceKey;
-              sequenceDummyData << "";
-              sequenceDummyData << QVariant((int)DataCheckState::ListAppend);
+              sequenceDummyData << QVariant(isOneofSchemaDefined ? "schema[0]" : "");
+              sequenceDummyData << QVariant(isOneofSchemaDefined ? (int)DataCheckState::SchemaAppend : (int)DataCheckState::ListAppend);
               QStringList keys(dataKeys);
               keys.insert(0,schemaName);
               sequenceDummyData << QVariant(QString());
