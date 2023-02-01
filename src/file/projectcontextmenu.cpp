@@ -158,6 +158,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
     bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
+    bool isGamsSys = project && project->type() == PExProjectNode::tGams;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         if (!canMoveProject) break;
@@ -235,8 +236,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     }
 
     mActions[actExplorer]->setEnabled(single);
-    mActions[actExplorer]->setVisible(!isFreeSpace);
-    mActions[actOpenTerminal]->setVisible(!isFreeSpace);
+    mActions[actExplorer]->setVisible(!isFreeSpace && !isGamsSys);
+    mActions[actOpenTerminal]->setVisible(!isFreeSpace && !isGamsSys);
 
     mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
     mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
@@ -245,7 +246,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actGdxReset]->setText(QString(hasOpenGdx ? "Close and " : "") + "&Reset GDX State");
 
     mActions[actOpen]->setEnabled(isOpenable);
-    mActions[actOpen]->setVisible(isOpenable);
+    mActions[actOpen]->setVisible(isOpenable && !isGamsSys);
     mActions[actOpenAsText]->setEnabled(isOpenableAsText);
     mActions[actOpenAsText]->setVisible(isOpenableAsText);
 
@@ -262,10 +263,10 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
     mActions[actReOpenAsText]->setVisible(isReOpenableAsText);
 
-    mActions[actLogTab]->setVisible(isProject);
+    mActions[actLogTab]->setVisible(isProject && !isGamsSys);
     mActions[actLogTab]->setEnabled(single);
 
-    mActions[actOpenEfi]->setVisible(isProject);
+    mActions[actOpenEfi]->setVisible(isProject && !isGamsSys);
     mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
     mActions[actProjectMove]->setVisible(!isFreeSpace);
@@ -278,8 +279,8 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
 //    mActions[actSetMain]->setEnabled(single);
 
-    mActions[actAddNewGms]->setVisible(isProject);
-    mActions[actAddExisting]->setVisible(isProject);
+    mActions[actAddNewGms]->setVisible(isProject && !isGamsSys);
+    mActions[actAddExisting]->setVisible(isProject && !isGamsSys);
 
     mActions[actCloseProject]->setVisible(isProject);
     mActions[actCloseGroup]->setVisible(isGroup);
@@ -297,7 +298,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
-    mActions[actAddNewOpt]->setVisible(isProject);
+    mActions[actAddNewOpt]->setVisible(isProject && !isGamsSys);
     for (QAction* action : qAsConst(mSolverOptionActions))
         action->setVisible(isProject);
 }
