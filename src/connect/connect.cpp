@@ -250,6 +250,9 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
     if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
         data = value;
     }
+    YAML::Emitter e;
+    e << data;
+   qDebug() << "DATA=" << e.c_str();
     return new ConnectData(data);
 }
 
@@ -420,7 +423,8 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                         dataValue = "[value]";
                     }
                 } else if (allowed && value.compare("integer") == 0) {
-                          dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);
+                          dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :
+                                                                schemaValue["min"] ? schemaValue["min"].as<int>() : 0);
                 } else if (allowed && value.compare("boolean") == 0) {
                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
                 } else if (allowed && value.compare("dict") == 0) {
