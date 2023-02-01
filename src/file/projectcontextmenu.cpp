@@ -158,10 +158,12 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
     bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
-    bool isGamsSys = project && project->type() == PExProjectNode::tGams;
+    bool isGamsSys = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
-        if (!canMoveProject) break;
+        if (PExProjectNode *project = node->toProject())
+            if (project->type() == PExProjectNode::tGams)
+                isGamsSys = true;
         if (node->assignedProject() != project)
             canMoveProject = false;
     }
@@ -237,6 +239,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     mActions[actExplorer]->setEnabled(single);
     mActions[actExplorer]->setVisible(!isFreeSpace && !isGamsSys);
+    mActions[actOpenTerminal]->setEnabled(single);
     mActions[actOpenTerminal]->setVisible(!isFreeSpace && !isGamsSys);
 
     mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
