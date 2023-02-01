@@ -230,7 +230,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
-    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, &MainWindow::closeFileEditors);
+    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, [this](FileId fileId){ closeFileEditors(fileId);});
     connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
     connect(&mProjectRepo, &ProjectRepo::logTabRenamed, this, &MainWindow::logTabRenamed);
     connect(&mProjectRepo, &ProjectRepo::refreshProjectTabName, this, [this](QWidget *wid) {
@@ -271,7 +271,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this,
             [this](PExFileNode* node, bool focus, int codecMib, bool forcedAsTextEditor) {
-        if (node && handleFileChanges(node->file()))
+        if (node && handleFileChanges(node->file(), true))
             openFileNode(node, focus, codecMib, forcedAsTextEditor);
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::moveProject, this, &MainWindow::moveProjectDialog);
@@ -512,7 +512,7 @@ QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
     return nodes;
 }
 
-bool MainWindow::handleFileChanges(FileMeta* fc)
+bool MainWindow::handleFileChanges(FileMeta* fc, bool willReopen)
 {
     if (!fc) return true;
 
@@ -527,11 +527,11 @@ bool MainWindow::handleFileChanges(FileMeta* fc)
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->save();
-        closeFileEditors(fc->id());
+        closeFileEditors(fc->id(), willReopen);
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fc->setModified(false);
-        closeFileEditors(fc->id());
+        closeFileEditors(fc->id(), willReopen);
     }
     return true;
 }
@@ -2424,7 +2424,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         return;
     }
 
-    handleFileChanges(fc);
+    handleFileChanges(fc, false);
     searchDialog()->updateDialogState();
 }
 
@@ -4436,7 +4436,7 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
 /// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
-void MainWindow::closeFileEditors(const FileId fileId)
+void MainWindow::closeFileEditors(const FileId fileId, bool willReopen)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
@@ -4476,10 +4476,12 @@ void MainWindow::closeFileEditors(const FileId fileId)
     if (!fm->exists(true)) fileDeletedExtern(fm->id());
 
     if (PExProjectNode *project = mProjectRepo.gamsSystemProject()) {
-        if (PExFileNode *node = project->findFile(fm))
-            mProjectRepo.closeNode(node);
-        if (project->isEmpty())
-            mProjectRepo.closeGroup(project);
+        if (!willReopen) {
+            if (PExFileNode *node = project->findFile(fm))
+                mProjectRepo.closeNode(node);
+            if (project->isEmpty())
+                mProjectRepo.closeGroup(project);
+        }
     }
 
     NavigationHistoryLocator::navigationHistory()->startRecord();

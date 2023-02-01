@@ -199,7 +199,7 @@ public slots:
                        bool projectOnly = false);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
-    void closeFileEditors(const gams::studio::FileId fileId);
+    void closeFileEditors(const gams::studio::FileId fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
@@ -441,7 +441,7 @@ private:
     void initNavigator();
     void adjustFonts();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
-    bool handleFileChanges(FileMeta *fc);
+    bool handleFileChanges(FileMeta *fc, bool willReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);
