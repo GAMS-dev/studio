@@ -570,10 +570,10 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
     const QVector<PExFileNode*> nodes = project->listFiles();
     QStringList srcAll;
     srcAll << project->fileName();
-    foreach (const PExFileNode *node, nodes)
+    for (const PExFileNode *node : nodes)
         srcAll << node->location();
 
-    foreach (const QString &source, srcAll) {
+    for (const QString &source : qAsConst(srcAll)) {
         if (!QFile::exists(source)) {
             missFiles << source;
         } else {

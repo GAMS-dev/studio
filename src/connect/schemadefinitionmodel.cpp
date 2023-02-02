@@ -281,7 +281,7 @@ void SchemaDefinitionModel::setupTreeItemModelData()
     rootData << "Option" << "Required"  << "Type" << "default"
              << "Allowed Values"  << "min" /*<< "max"*/ << "SchemaKey" << "DragEnabled" ;
 
-    foreach(const QString& schemaName, mConnect->getSchemaNames()) {
+    for (const QString& schemaName : mConnect->getSchemaNames()) {
         SchemaDefinitionItem* rootItem = new SchemaDefinitionItem(schemaName, rootData);
         mRootItems[schemaName] = rootItem;
 
@@ -292,7 +292,7 @@ void SchemaDefinitionModel::setupTreeItemModelData()
         QStringList schemaKeys;
         schemaKeys << schemaName;
         QStringList anyOfDefinedKeys;
-        foreach(const QString& key, schema->getFirstLevelKeyList()) {
+        for (const QString& key : schema->getFirstLevelKeyList()) {
             if (schemaKeys.contains(key) || anyOfDefinedKeys.contains(key))
                 continue;
             QList<QVariant> columnData;
@@ -383,10 +383,10 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         listData << QVariant(false);
         parents.last()->appendChild(new SchemaDefinitionItem(schemaName, listData, parents.last()));
 
-        QStringList nextlevelList = schema->getNextLevelKeyList(prefix);
+        const QStringList nextlevelList = schema->getNextLevelKeyList(prefix);
         if (nextlevelList.size() > 0) {
             parents << parents.last()->child(parents.last()->childCount()-1);
-            foreach(const QString& k,  nextlevelList) {
+            for (const QString& k :  nextlevelList) {
                 schemaHelper = schema->getSchema(k);
                 QString schemaKeyStr = k.mid(prefix.length()+1);
                 if (k.endsWith(":-")) {

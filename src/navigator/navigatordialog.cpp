@@ -181,7 +181,7 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
     collectInProject(content);
     collectLogs(content);
 
-    foreach (FileMeta* fm, mMain->fileRepo()->fileMetas()) {
+    for (FileMeta* fm : mMain->fileRepo()->fileMetas()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
             content.append(NavigatorContent(fm, "Known Files"));
         }
@@ -203,7 +203,7 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
-    foreach (FileMeta* fm, mMain->fileRepo()->openFiles()) {
+    for (FileMeta* fm : mMain->fileRepo()->openFiles()) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
             content.append(NavigatorContent(fm, "Open Tabs"));
         }
@@ -212,7 +212,7 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 {
-    foreach (PExProjectNode* project, mMain->projectRepo()->projects()) {
+    for (PExProjectNode* project : mMain->projectRepo()->projects()) {
         PExLogNode* log = project->logNode();
 
         FileMeta* fm = log->file();
@@ -535,7 +535,7 @@ bool NavigatorDialog::conditionallyClose()
 
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
 {
-    foreach (NavigatorContent c, content) {
+    for (NavigatorContent c : content) {
         if (c.GetFileMeta() == fm)
             return true;
     }

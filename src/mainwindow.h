@@ -133,7 +133,9 @@ public:
     TextMarkRepo* textMarkRepo();
     QWidget *currentEdit();
 
+    const QWidgetList constOpenEditors();
     QWidgetList openEditors();
+    const QList<QWidget *> constOpenLogs();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
     RecentData *recent();

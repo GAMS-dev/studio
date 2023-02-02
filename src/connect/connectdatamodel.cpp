@@ -875,12 +875,12 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                            ? item->data((int)DataItemColumn::Value).toString()
                            : item->data((int)DataItemColumn::Key).toString());
 
-    QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
+    const QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
     QString values = item->data((int)DataItemColumn::AllowedValue).toString();
-    QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
+    const QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
 
     bool valid = false;
-    foreach (const QString& t, types ) {
+    for (const QString& t : types ) {
        if (allowedValues.isEmpty()) {
             if (t.compare("string")==0 || t.compare("dict")==0 || t.compare("list")==0) {
                 valid = true;
@@ -915,7 +915,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                        }
             } // else if (t.compare("float")==0) { }
          } else {
-            foreach (const QString& v, allowedValues) {
+            for (const QString& v : allowedValues) {
                 if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
                     valid = true;
                     break;

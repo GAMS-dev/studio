@@ -130,7 +130,8 @@ bool Application::checkForOtherInstance()
 
     if(socket.waitForConnected()) {
         QByteArray buffer;
-        Q_FOREACH (auto f, mCmdParser.files())
+        const auto files = mCmdParser.files();
+        for (const auto &f : files)
             buffer.append(f.toUtf8() + "\n");
         socket.write(buffer);
         socket.waitForBytesWritten();

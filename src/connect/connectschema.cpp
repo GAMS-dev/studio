@@ -160,7 +160,7 @@ QStringList ConnectSchema::getlKeyList() const
     return mOrderedKeyList;
 }
 
-QStringList ConnectSchema::getFirstLevelKeyList() const
+const QStringList ConnectSchema::getFirstLevelKeyList() const
 {
     QStringList keyList;
     for(const QString& key : mOrderedKeyList) {
@@ -254,7 +254,7 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
 {
     QStringList strlist;
     if (contains(key)) {
-        foreach(SchemaType t, mSchemaHelper[key]->types) { // [key]->types) {
+        for (SchemaType t : qAsConst(mSchemaHelper[key]->types)) {
             int tt = (int)t;
             if ( tt==(int)SchemaType::Integer)
                 strlist << "integer";

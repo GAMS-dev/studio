@@ -43,7 +43,7 @@ public:
     ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false);
 
     ConnectSchema* getSchema(const QString& schemaName);
-    QStringList getSchemaNames() const;
+    const QStringList getSchemaNames() const;
 
     bool isSchemaAvaiablel() const;
 
@@ -58,7 +58,7 @@ private:
     YAML::Node createConnectData(const QString& schemaName, bool onlyRequiredAttribute=false);
     bool validate(const QString& schemaname, ConnectData& data);
 
-    bool isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data);
+    bool isTypeValid(const QList<SchemaType> &typeList, const YAML::Node &data);
 
     QMap<QString, ConnectSchema*> mSchema;
     QMap<QString, QString> mSchemaError;

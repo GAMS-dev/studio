@@ -45,8 +45,8 @@ Connect::Connect()
         }
     }
 
-    QStringList schemaFiles = QDir(connectPath).entryList(QStringList() << "*.yaml" << "*.yml", QDir::Files);
-    foreach(const QString& filename, schemaFiles) {
+    const QStringList schemaFiles = QDir(connectPath).entryList(QStringList() << "*.yaml" << "*.yml", QDir::Files);
+    for (const QString& filename : schemaFiles) {
         try {
            mSchema[QFileInfo(filename).baseName()] = new ConnectSchema(QDir(connectPath).filePath(filename));
         } catch (std::exception &e) {
@@ -160,8 +160,8 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
             }
 
             bool validType = false;
-            QList<SchemaType> typeList = getSchema(schemaname)->getType(key);
-            foreach (SchemaType type, typeList) {
+            const QList<SchemaType> typeList = getSchema(schemaname)->getType(key);
+            for (SchemaType type : typeList) {
                 try {
                     if (type==SchemaType::Integer) {
                         if (it->second.Type()==YAML::NodeType::Scalar)
@@ -202,7 +202,7 @@ bool Connect::validate(const QString &schemaname, ConnectData &data)
                } else {
                    str += "[";
                    int i = 0;
-                   foreach(auto const& t, typeList) {
+                   for (auto const& t : typeList) {
                        ++i;
                        str += ConnectSchema::typeToString(t);
                        if (i < typeList.size())
@@ -224,7 +224,7 @@ ConnectData *Connect::createDataHolder(const QStringList &schemaNameList, bool o
 {
     int i = 0;
     YAML::Node data = YAML::Node(YAML::NodeType::Sequence);
-    foreach(QString name, schemaNameList) {
+    for (const QString &name : schemaNameList) {
         YAML::Node node = YAML::Node(YAML::NodeType::Map);
         node[name.toStdString()] =  createConnectData(name, onlyRequiredAttribute);
         data[i++] = node;
@@ -286,7 +286,7 @@ ConnectSchema *Connect::getSchema(const QString &schemaName)
         return nullptr;
 }
 
-QStringList Connect::getSchemaNames() const
+const QStringList Connect::getSchemaNames() const
 {
     return mSchema.keys();
 }
@@ -521,10 +521,10 @@ YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequir
     return data;
 }
 
-bool Connect::isTypeValid(QList<SchemaType>& typeList, const YAML::Node &data)
+bool Connect::isTypeValid(const QList<SchemaType>& typeList, const YAML::Node &data)
 {
     bool validType = false;
-    foreach (SchemaType t, typeList) {
+    for (SchemaType t : typeList) {
         try {
             if (t==SchemaType::Integer) {
                 if (data.Type()!=YAML::NodeType::Scalar)

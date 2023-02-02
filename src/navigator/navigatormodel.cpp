@@ -52,7 +52,7 @@ void NavigatorModel::setCurrentDir(QDir dir)
 int NavigatorModel::findIndex(const QString& file)
 {
     int index = 0;
-    foreach (NavigatorContent nc, mContent) {
+    for (NavigatorContent nc : qAsConst(mContent)) {
         if (nc.FileInfo().filePath() == file)
             return index;
         index++;

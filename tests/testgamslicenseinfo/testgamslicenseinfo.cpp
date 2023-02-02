@@ -202,9 +202,9 @@ void TestGamsLicenseInfo::testSolverLicense()
 {
     bool test = true;
     GamsLicenseInfo gamsLicenseInfo;
-    auto solverKeys = gamsLicenseInfo.solverNames().keys();
+    const auto solverKeys = gamsLicenseInfo.solverNames().keys();
     QVERIFY(gamsLicenseInfo.solvers() >= solverKeys.size());
-    Q_FOREACH(auto solverId, solverKeys) {
+    for(const auto solverId : solverKeys) {
         auto solverName = gamsLicenseInfo.solverName(solverId);
         auto result = gamsLicenseInfo.solverLicense(solverName, solverId);
         test = result.contains("Demo") || result.contains("Full") ||

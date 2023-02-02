@@ -464,7 +464,8 @@ void ConnectEditor::restoreExpandedOnLevel(const QModelIndex &index)
 
 MainWindow *ConnectEditor::getMainWindow()
 {
-    foreach(QWidget *widget, qApp->topLevelWidgets())
+    const QWidgetList widgets = qApp->topLevelWidgets();
+    for (QWidget *widget : widgets)
         if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
             return mainWindow;
     return nullptr;

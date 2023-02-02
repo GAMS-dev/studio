@@ -189,7 +189,7 @@ public:
     );
 
     bool hasType(SchemaType tt) {
-       Q_FOREACH (const SchemaType t, types) {
+       for (const SchemaType t : qAsConst(types)) {
           if (t==tt) return true;
        }
        return false;
@@ -216,7 +216,7 @@ public:
     void loadFromString(const QString& input);
 
     QStringList getlKeyList() const;
-    QStringList getFirstLevelKeyList() const;
+    const QStringList getFirstLevelKeyList() const;
     QStringList getNextLevelKeyList(const QString& key) const;
     QStringList getAllRequiredKeyList() const;
     bool contains(const QString& key) const;

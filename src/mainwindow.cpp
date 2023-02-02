@@ -884,6 +884,11 @@ TextMarkRepo *MainWindow::textMarkRepo()
     return  &mTextMarkRepo;
 }
 
+const QWidgetList MainWindow::constOpenEditors()
+{
+    return openEditors();
+}
+
 QWidgetList MainWindow::openEditors()
 {
     QWidgetList res;
@@ -891,6 +896,11 @@ QWidgetList MainWindow::openEditors()
         res << ui->mainTabs->widget(i);
     }
     return res;
+}
+
+const QList<QWidget*> MainWindow::constOpenLogs()
+{
+    return openLogs();
 }
 
 QList<QWidget*> MainWindow::openLogs()
@@ -1564,7 +1574,7 @@ void MainWindow::openFolder(QString path, PExProjectNode *project)
             project = projectRepo()->createProject(dir.dirName(), path, "", onExist_Project);
     }
 
-    foreach(QString file, allFiles)
+    for (const QString &file : qAsConst(allFiles))
         projectRepo()->findOrCreateFileNode(file, project);
 }
 
@@ -4815,13 +4825,13 @@ void MainWindow::updateEditorLineWrapping()
 
 void MainWindow::updateTabSize(int size)
 {
-    Q_FOREACH (QWidget* edit, openEditors()) {
+    for (QWidget* edit : constOpenEditors()) {
         if (AbstractEdit *ed = ViewHelper::toAbstractEdit(edit))
             ed->updateTabSize(size);
         else if (TextView *tv = ViewHelper::toTextView(edit))
             tv->edit()->updateTabSize(size);
     }
-    Q_FOREACH (QWidget* log, openLogs()) {
+    for (QWidget* log : constOpenLogs()) {
         if (TextView *tv = ViewHelper::toTextView(log))
             tv->edit()->updateTabSize(size);
     }
