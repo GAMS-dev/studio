@@ -54,6 +54,13 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
 GdxDiffDialog::~GdxDiffDialog()
 {
     cancelProcess(50);
+    const QValidator *v = ui->lineEdit_4->validator();
+    ui->lineEdit_4->setValidator(nullptr);
+    delete v;
+    v = ui->lineEdit_5->validator();
+    ui->lineEdit_5->setValidator(nullptr);
+    delete v;
+    mProc.release();
     delete ui;
 }
 

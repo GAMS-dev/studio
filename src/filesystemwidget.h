@@ -46,6 +46,7 @@ class FileSystemWidget : public QGroupBox
     Q_OBJECT
 public:
     FileSystemWidget(QWidget *parent = nullptr);
+    ~FileSystemWidget() override;
     void setInfo(const QString &message, bool valid);
     void setModelName(const QString &modelName);
     QStringList selectedFiles();

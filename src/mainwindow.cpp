@@ -442,6 +442,7 @@ MainWindow::~MainWindow()
     delete mNavigatorDialog;
     delete mNavigatorInput;
     delete mPrintDialog;
+    delete mMiroDeployDialog.take();
     FileType::clear();
     HeaderViewProxy::deleteInstance();
 }

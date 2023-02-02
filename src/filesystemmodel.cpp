@@ -25,6 +25,10 @@ namespace gams {
 namespace studio {
 namespace fs {
 
+FilteredFileSystemModel::FilteredFileSystemModel(QObject *parent)
+    : QSortFilterProxyModel(parent)
+{ }
+
 bool FilteredFileSystemModel::isDir(const QModelIndex &index) const
 {
     return static_cast<FileSystemModel*>(sourceModel())->isDir(mapToSource(index));

@@ -70,7 +70,7 @@ HelpWidget::HelpWidget(QWidget *parent) :
     bookmarkToolButton->setPopupMode(QToolButton::MenuButtonPopup);
     bookmarkToolButton->setMenu(mBookmarkMenu);
 
-    QMenu* helpMenu = new QMenu;
+    QMenu* helpMenu = new QMenu(this);
     ui->actionOnlineHelp->setText("View This Page Online");
     ui->actionOnlineHelp->setStatusTip("View This Page Online");
     ui->actionOnlineHelp->setCheckable(true);

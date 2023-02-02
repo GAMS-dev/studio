@@ -48,7 +48,7 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     connect(mFileSystemModel, &FileSystemModel::selectionCountChanged, this, &FileSystemWidget::selectionCountChanged);
     connect(mFileSystemModel, &FileSystemModel::missingFiles, this, [this](QStringList files) {
         mMissingFiles = files;
-        emit selectionCountChanged(mFileSystemModel->selectionCount());
+        selectionCountChanged(mFileSystemModel->selectionCount());
     });
     connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegExp regExp) {
         regExp.setCaseSensitivity(FileType::fsCaseSense());
@@ -58,6 +58,14 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     });
     mUncommonFiles << "*.log" << "*.log~*" << "*.lxi" << "*.lst" << "*.efi"
                    << "%1_files.txt" << "conf_%1" << "data_%1" << "static_%1" << "renderer_%1";
+}
+
+FileSystemWidget::~FileSystemWidget()
+{
+    delete mDelegate;
+    delete mFilterModel;
+    delete mFileSystemModel;
+    delete ui;
 }
 
 void FileSystemWidget::setInfo(const QString &message, bool valid) {

@@ -40,7 +40,7 @@ class FilteredFileSystemModel : public QSortFilterProxyModel
     QRegExp mUncommonRegEx;
     Q_OBJECT
 public:
-    FilteredFileSystemModel(QObject *parent = nullptr) { Q_UNUSED(parent) }
+    FilteredFileSystemModel(QObject *parent = nullptr);
     bool isDir(const QModelIndex &index) const;
     void setHideUncommonFiles(bool hide) { mHideUncommon = hide; invalidateFilter(); }
     void setUncommonRegExp(QRegExp rex) { mUncommonRegEx = rex; invalidateFilter(); }

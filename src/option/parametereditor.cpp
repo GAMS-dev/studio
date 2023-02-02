@@ -1020,7 +1020,7 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionRunNeos = aRunNeos;
     actionRunEngine = aRunEngine;
 
-    QMenu* runMenu = new QMenu;
+    QMenu* runMenu = new QMenu(this);
     runMenu->addAction(actionRun);
     runMenu->addAction(actionRun_with_GDX_Creation);
     runMenu->addSeparator();
@@ -1048,7 +1048,7 @@ void ParameterEditor::setInterruptActionGroup(QAction *aInterrupt, QAction *aSto
     actionStop = aStop;
     actionStop->setShortcutVisibleInContextMenu(true);
 
-    QMenu* interruptMenu = new QMenu();
+    QMenu* interruptMenu = new QMenu(this);
     interruptMenu->addAction(actionInterrupt);
     interruptMenu->addAction(actionStop);
 

@@ -69,7 +69,7 @@ GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec
     if (errNr < 0)
         EXCEPT() << "Could not open invalid GDX file: " << gdxFile;
 
-    QAction* cpAction = new QAction("Copy");
+    QAction* cpAction = new QAction("Copy", this);
 //    cpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
 //    cpAction->setShortcut(QKeySequence(tr("Ctrl+C")));
     ui->tvSymbols->addAction(cpAction);

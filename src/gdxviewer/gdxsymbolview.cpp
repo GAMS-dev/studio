@@ -99,8 +99,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
-    QVBoxLayout* vLayout = new QVBoxLayout();
-    mPreferencesWidget = new QWidget();
+    QVBoxLayout* vLayout = new QVBoxLayout(this);
+    mPreferencesWidget = new QWidget(this);
     mPreferencesWidget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
     vLayout->addWidget(mSqDefaults);
@@ -110,7 +110,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QGridLayout* gridLayout = new QGridLayout();
+    QGridLayout* gridLayout = new QGridLayout(this);
 
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
@@ -193,8 +193,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
 GdxSymbolView::~GdxSymbolView()
 {
-    delete mSqDefaults;
-    delete mSqZeroes;
     if (mTvModel)
         delete mTvModel;
     delete ui;
