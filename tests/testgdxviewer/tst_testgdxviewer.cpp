@@ -94,7 +94,7 @@ void TestGdxViewer::test_export()
     ExportDriver *exportDriver = new ExportDriver(gdxViewer, exportModel, this);
     exportDriver->saveAndExecute(QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.yaml")),
                                  QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.xlsx")),
-                                 CommonPaths::defaultWorkingDir(),
+                                 QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()),
                                  true);
 
     // wait 10s for the ExportDriver to finish
