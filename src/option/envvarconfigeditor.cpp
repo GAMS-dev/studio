@@ -326,7 +326,8 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     int rowToBeInserted = -1;
     if (isThereARowSelection()) {
         QList<int> rows;
-        for(QModelIndex idx : ui->EnvVarConfigTableView->selectionModel()->selectedRows()) {
+        const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+        for(QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -378,7 +379,8 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
         QItemSelection selection( ui->EnvVarConfigTableView->selectionModel()->selection() );
 
         QList<int> rows;
-        for(const QModelIndex & index : ui->EnvVarConfigTableView->selectionModel()->selectedRows()) {
+        const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedRows();
+        for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }
 
@@ -447,7 +449,8 @@ void EnvVarConfigEditor::on_actionMoveDown_triggered()
 void EnvVarConfigEditor::on_actionSelect_Current_Row_triggered()
 {
    QList<int> rowList;
-   for(QModelIndex idx : ui->EnvVarConfigTableView->selectionModel()->selectedIndexes()) {
+   const auto indexes = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
+   for(QModelIndex idx : indexes) {
        if (!rowList.contains(idx.row())) {
            on_selectRow(idx.row());
            rowList << idx.row();

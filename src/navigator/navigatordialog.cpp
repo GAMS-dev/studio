@@ -203,7 +203,8 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
-    for (FileMeta* fm : mMain->fileRepo()->openFiles()) {
+    const auto files = mMain->fileRepo()->openFiles();
+    for (FileMeta* fm : files) {
         if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
             content.append(NavigatorContent(fm, "Open Tabs"));
         }
@@ -212,7 +213,8 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 
 void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
 {
-    for (PExProjectNode* project : mMain->projectRepo()->projects()) {
+    const auto projects = mMain->projectRepo()->projects();
+    for (PExProjectNode* project : projects) {
         PExLogNode* log = project->logNode();
 
         FileMeta* fm = log->file();

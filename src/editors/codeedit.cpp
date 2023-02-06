@@ -1576,7 +1576,8 @@ void dumpClipboard()
     const QMimeData * mime = clip->mimeData();
     DEB() << "----------------- Clipboard --------------------" ;
     DEB() << "  C " << clip->ownsClipboard()<< "  F " << clip->ownsFindBuffer()<< "  S " << clip->ownsSelection();
-    for (const QString &fmt: mime->formats()) {
+    const auto formats = mime->formats();
+    for (const QString &fmt: formats) {
         DEB() << "   -- " << fmt << "   L:" << mime->data(fmt).length()
               << "\n" << mime->data(fmt)
               << "\n" << QString(mime->data(fmt).toHex(' '));
@@ -2676,7 +2677,8 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;
     for (const QString &s: texts) {
-        for (const QStringRef &ref: s.splitRef('\n')) {
+        const auto refs = s.splitRef('\n');
+        for (const QStringRef &ref: refs) {
             if (insertWidth < ref.length()) insertWidth = ref.length();
         }
     }

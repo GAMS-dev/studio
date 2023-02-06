@@ -1021,6 +1021,7 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
 void ProjectRepo::closeNodeById(NodeId nodeId)
 {
     PExAbstractNode *aNode = node(nodeId);
+    if (!aNode) return;
     PExGroupNode *group = aNode ? aNode->parentNode() : nullptr;
     if (aNode->toFile()) closeNode(aNode->toFile());
     if (aNode->toGroup()) closeGroup(aNode->toGroup());
@@ -1084,7 +1085,8 @@ bool ProjectRepo::debugMode() const
 void ProjectRepo::fileChanged(FileId fileId)
 {
     QVector<PExGroupNode*> groups;
-    for (PExFileNode *node: fileNodes(fileId)) {
+    const auto nodes = fileNodes(fileId);
+    for (PExFileNode *node: nodes) {
         PExGroupNode *group = node->parentNode();
         while (group && group != mTreeModel->rootNode()) {
             if (groups.contains(group)) break;
@@ -1104,8 +1106,9 @@ void ProjectRepo::setDebugMode(bool debug)
     mTreeModel->setDebugMode(debug);
     mFileRepo->setDebugMode(debug);
     mTextMarkRepo->setDebugMode(debug);
-    for (PExAbstractNode *node: mNodes.values()) {
-        PExLogNode *log = logNode(node);
+
+    for (auto it = mNodes.constBegin() ; it != mNodes.constEnd() ; ++it) {
+        PExLogNode *log = logNode(it.value());
         if (log && log->file()->editors().size()) {
             TextView *tv = ViewHelper::toTextView(log->file()->editors().first());
             if (tv) tv->setDebugMode(debug);

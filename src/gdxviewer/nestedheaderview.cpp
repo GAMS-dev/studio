@@ -295,7 +295,8 @@ void NestedHeaderView::updateSectionWidths()
         QMap<QString, int> labelWidth;
         sectionWidth.resize(this->model()->columnCount());
         for (int i=0; i<this->model()->columnCount(); i++) {
-            for (const QString &label : model()->headerData(i, Qt::Horizontal).toStringList()) {
+            const auto data = model()->headerData(i, Qt::Horizontal).toStringList();
+            for (const QString &label : data) {
                 if (!labelWidth.contains(label))
                     labelWidth.insert(label, fm.horizontalAdvance(label));
                 sectionWidth.replace(i, qMax(sectionWidth.at(i), labelWidth[label]));

@@ -245,7 +245,8 @@ void OptionDefinitionModel::setupTreeItemModelData(Option* option, OptionDefinit
     QList<OptionDefinitionItem*> parents;
     parents << parent;
 
-    for(auto it = option->getOption().cbegin(); it != option->getOption().cend(); ++it)  {
+    auto optList = option->getOption();
+    for(auto it = optList.cbegin(); it != optList.cend(); ++it)  {
         OptionDefinition optdef =  it.value();
 
         if ((optdef.deprecated) || (!optdef.valid))

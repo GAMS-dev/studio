@@ -74,12 +74,12 @@ public:
 
     void zoomIn(int range = 1);
     void zoomOut(int range = 1);
+    bool isModified() const;
 
 signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    bool isModified() const;
     void setModified(bool modified);
 
     bool saveConfigFile(const QString &location);

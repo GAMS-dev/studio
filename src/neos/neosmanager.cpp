@@ -189,7 +189,8 @@ void NeosManager::received(QString name, QVariant data)
     case _getJobInfo:
         if (list.size() > 0) {
             QStringList dat;
-            for (const QVariant &var : list.at(0).toList()) {
+            const auto vars = list.at(0).toList();
+            for (const QVariant &var : vars) {
                 dat << var.toString();
             }
             if (dat.size() > 4) {

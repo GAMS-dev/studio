@@ -62,7 +62,7 @@ Connect::Connect()
         msgBox.setIcon(QMessageBox::Warning);
         if (mSchemaError.size()==1) {
             msgBox.setText("Schema \""+ QFileInfo(keys.first()).baseName() + "\" read from \""
-                                      + QDir(connectPath).filePath(mSchemaError.keys().first()) + "\" contains an unsupported/invalid rule. \n"
+                                      + QDir(connectPath).filePath(keys.first()) + "\" contains an unsupported/invalid rule. \n"
                            + "Data using a schema from this file may not display correctly.\n"+
                            + "You can reopen the file using text editor to edit the content."    );
         } else {
@@ -110,7 +110,7 @@ bool Connect::validateData(const QString &inputFileName, bool checkSchema)
                         invalidSchema = true;
                         break;
                     }
-                    if (mSchema.keys().contains( key )) {
+                    if (mSchema.contains( key )) {
                         if (checkSchema) {
                             ConnectData data = node[i];
                             invalidSchema = (validate( key, data )? false: true);

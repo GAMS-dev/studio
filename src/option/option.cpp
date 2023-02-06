@@ -68,7 +68,7 @@ void Option::dumpAll()
     for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
         OptionDefinition opt = it.value();
         qDebug() << QString(" [%1:%2] %3 [%4] type_%5 %6 range_[%7,%8] group_%9 %10").arg(i++).arg(it.key())
-                            .arg(opt.name).arg(opt.synonym).arg(mOptionTypeNameMap[opt.type]).arg(opt.description)
+                            .arg(opt.name).arg(opt.synonym).arg(mOptionTypeNameMap[opt.type], opt.description)
                             .arg( opt.lowerBound.canConvert<int>() ? opt.lowerBound.toInt() : opt.lowerBound.toDouble() )
                             .arg( opt.upperBound.canConvert<int>() ? opt.upperBound.toInt() : opt.upperBound.toDouble() )
                             .arg( opt.groupNumber ).arg( opt.valid ? "SHOWN": "HIDDEN");
@@ -292,7 +292,7 @@ QString Option::getDescription(const QString &optionName) const
     return mOption[optionName.toUpper()].description;
 }
 
-QList<OptionValue> Option::getValueList(const QString &optionName) const
+const QList<OptionValue> Option::getValueList(const QString &optionName) const
 {
     return mOption[optionName.toUpper()].valueList;
 }
@@ -568,7 +568,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
              opt.valid = (helpContextNr != 0);
              QStringList synonymList;
              if (synonym.contains(nameStr)) {
-                 QMap<QString, QString>::const_iterator it = synonym.find(nameStr);
+                 QMap<QString, QString>::iterator it = synonym.find(nameStr);
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
                        if (!isDeprecated(it.value()))
                           synonymList << it.value();

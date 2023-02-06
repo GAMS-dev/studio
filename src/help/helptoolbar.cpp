@@ -99,7 +99,7 @@ void HelpToolBar::on_webActionEnabledChanged(QWebEnginePage::WebAction webAction
 
 void HelpToolBar::createWebActionTrigger(QAction *action, QWebEnginePage::WebAction webAction)
 {
-    connect(action, &QAction::triggered, [this, webAction](bool checked){
+    connect(action, &QAction::triggered, this, [this, webAction](bool checked){
         emit webActionTriggered(webAction, checked);
     });
 }

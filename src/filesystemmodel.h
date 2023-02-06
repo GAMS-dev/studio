@@ -98,7 +98,7 @@ private:
 
     void setChildSelection(const QModelIndex &idx, bool remove);
     void selectAllFiles(const QDir &dir);
-    QList<QFileInfo> visibleFileInfoList(const QDir &dir) const;
+    const QList<QFileInfo> visibleFileInfoList(const QDir &dir) const;
 
     QString subPath(const QModelIndex &idx) const;
     QString subPath(const QString &path) const;

@@ -103,12 +103,12 @@ ProjectContextMenu::ProjectContextMenu()
         QMap<QString, QString> solverDefFileNames = solverInfo.solverOptDefFileNames();
 
         if (solverDefFileNames.size()>0) { // when solver definition file information is available
-            for (const QString &solvername : solverDefFileNames.keys()) {
-                if (optFiles.contains(solverDefFileNames.value(solvername))) { //there exists such a file
-                    QAction* createSolverOption = newSolverOptionMenu->addAction(solvername.toLower());
-                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
+            for (auto it = solverDefFileNames.constBegin() ; it != solverDefFileNames.constEnd() ; ++it) {
+                if (optFiles.contains(solverDefFileNames.value(it.key()))) { //there exists such a file
+                    QAction* createSolverOption = newSolverOptionMenu->addAction(it.key().toLower());
+                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(it.key().toLower()); });
 
-                    mAvailableSolvers << solvername;
+                    mAvailableSolvers << it.key();
                     mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
                 }
             }
@@ -529,7 +529,7 @@ void ProjectContextMenu::onOpenEfi()
 
 QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
 {
-    if (project && !project->runnableGms()) return QString();
+    if (!project || !project->runnableGms()) return QString();
     QFileInfo info(project->runnableGms()->location());
     return info.path() + '/' + info.completeBaseName() + ".efi";
 }

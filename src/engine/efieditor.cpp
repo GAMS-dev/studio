@@ -99,7 +99,8 @@ void EfiEditor::save(const QString &fileName)
 {
     QFile file(fileName);
     if (file.open(QFile::WriteOnly | QFile::Text)) {
-        for (const QString &line : ui->fsWidget->selectedFiles()) {
+        const QStringList lines = ui->fsWidget->selectedFiles();
+        for (const QString &line : lines) {
             file.write(line.toUtf8());
             file.write("\n");
         }

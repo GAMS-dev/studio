@@ -427,7 +427,8 @@ bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 
 void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    for (const QModelIndex &ind: deselected.indexes()) {
+    const auto dInds = deselected.indexes();
+    for (const QModelIndex &ind: dInds) {
         NodeId id = nodeId(ind);
         if (id.isValid() && mSelected.contains(id)) {
             mSelected.removeAll(id);
@@ -440,7 +441,8 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
     PExAbstractNode *first = mProjectRepo->node(firstId);
     mAddProjects.clear();
     int selKind = !first ? 0 : first->toProject() ? 1 : 2;
-    for (const QModelIndex &ind: selected.indexes()) {
+    const auto sInds = selected.indexes();
+    for (const QModelIndex &ind: sInds) {
         NodeId id = nodeId(ind);
         PExAbstractNode *node = mProjectRepo->node(id);
         int nodeKind = !node ? 0 : node->toProject() ? 1 : 2;

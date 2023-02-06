@@ -181,7 +181,7 @@ public:
     QVariant getLowerBound(const QString &optionName) const;
     QVariant getDefaultValue(const QString &optionName) const;
     QString getDescription(const QString &optionName) const;
-    QList<OptionValue> getValueList(const QString &optionName) const;
+    const QList<OptionValue> getValueList(const QString &optionName) const;
 
     QString getEOLChars() const;
     bool isEOLCharDefined() const;

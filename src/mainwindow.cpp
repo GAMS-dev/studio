@@ -138,10 +138,8 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionToggle_Extended_Parameter_Editor->setToolTip("<html><head/><body><p>Show Extended Parameter Editor (<span style=\"font-weight:600;\">"+ui->actionToggle_Extended_Parameter_Editor->shortcut().toString()+"</span>)</p></body></html>");
 
     new QShortcut(QKeySequence("Ctrl+="), this, SLOT(on_actionZoom_In_triggered()));
-    ui->actionGoForward->setShortcut(QKeySequence(QKeySequence::Forward));
-    ui->actionGoBack->setShortcut(QKeySequence(QKeySequence::Back));
-    ui->actionGoForward->shortcuts().append(QKeySequence(Qt::ForwardButton));
-    ui->actionGoBack->shortcuts().append(QKeySequence(Qt::BackButton));
+    ui->actionGoForward->setShortcuts(QList<QKeySequence>() << QKeySequence(QKeySequence::Forward) << QKeySequence(Qt::ForwardButton));
+    ui->actionGoBack->setShortcuts(QList<QKeySequence>() << QKeySequence(QKeySequence::Back) << QKeySequence(Qt::BackButton));
 
     // PinView
     ui->splitter->setCollapsible(0, false);
@@ -509,7 +507,8 @@ QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
     QVector<PExAbstractNode*> nodes;
     QModelIndexList list = ui->projectView->selectionModel()->selectedIndexes();
     if (index.isValid() && !list.contains(index)) return nodes;
-    for (const NodeId &id: mProjectRepo.treeModel()->selectedIds())
+    const auto ids = mProjectRepo.treeModel()->selectedIds();
+    for (const NodeId &id: ids)
         nodes << mProjectRepo.node(id);
     if (index.isValid() && nodes.isEmpty()) {
         PExAbstractNode *node = mProjectRepo.node(index);
@@ -627,7 +626,8 @@ void MainWindow::updateToolbar(QWidget* current)
     // deactivate save for welcome page
     bool activateSave = (current != mWp);
 
-    for (QAction *a : ui->toolBar->actions()) {
+    const auto actions = ui->toolBar->actions();
+    for (QAction *a : actions) {
         if (a->text() == "&Save") a->setEnabled(activateSave);
     }
 }
@@ -1022,7 +1022,8 @@ search::SearchDialog* MainWindow::searchDialog() const
 QStringList MainWindow::encodingNames()
 {
     QStringList res;
-    for (QAction *act: ui->menuconvert_to->actions()) {
+    const auto actions = ui->menuconvert_to->actions();
+    for (QAction *act: actions) {
         if (!act->data().isNull()) {
             QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
             if (!codec) continue;
@@ -1035,16 +1036,17 @@ QStringList MainWindow::encodingNames()
 QString MainWindow::encodingMIBsString()
 {
     QStringList res;
-    for (QAction *act: ui->menuconvert_to->actions()) {
+    const auto actions = ui->menuconvert_to->actions();
+    for (QAction *act: actions)
         if (!act->data().isNull()) res << act->data().toString();
-    }
     return res.join(",");
 }
 
 QList<int> MainWindow::encodingMIBs()
 {
     QList<int> res;
-    for (QAction *act: mCodecGroupReload->actions())
+    const auto actions = mCodecGroupReload->actions();
+    for (QAction *act: actions)
         if (!act->data().isNull()) res << act->data().toInt();
     return res;
 }
@@ -1092,12 +1094,14 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
 
 void MainWindow::setActiveMIB(int active)
 {
-    for (QAction *act: ui->menuconvert_to->actions())
+    const auto actions = ui->menuconvert_to->actions();
+    for (QAction *act: actions)
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
 
-    for (QAction *act: ui->menureload_with->actions())
+    const auto actions2 = ui->menureload_with->actions();
+    for (QAction *act: actions2)
         if (!act->data().isNull()) {
             act->setChecked(act->data().toInt() == active);
         }
@@ -1716,7 +1720,8 @@ void MainWindow::on_actionSave_As_triggered()
 
 void MainWindow::on_actionSave_All_triggered()
 {
-    for (FileMeta* fm: mFileMetaRepo.openFiles())
+    const auto files = mFileMetaRepo.openFiles();
+    for (FileMeta* fm: files)
         fm->save();
 }
 
@@ -2066,21 +2071,21 @@ void MainWindow::processFileEvents()
     }
 
     // Then ask what to do with the files of each remainKind
-    for (auto key: remainEvents.keys()) {
-        switch (key) {
+    for (auto it = remainEvents.constBegin() ; it != remainEvents.constEnd() ; ++it) {
+        switch (it.key()) {
         case FileProcessKind::changedExternOnly: // changed externally but unmodified internally
         case FileProcessKind::changedConflict: // changed externally and modified internally
-            mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(key));
+            mFileEventHandler->process(FileEventHandler::Change, remainEvents.value(it.key()));
             break;
         case FileProcessKind::removedExtern: // removed externally
-            mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(key));
+            mFileEventHandler->process(FileEventHandler::Deletion, remainEvents.value(it.key()));
             break;
         case FileProcessKind::fileLocked: // file is locked: reschedule event
-            for (const auto &event: remainEvents.value(key))
+            for (const auto &event: remainEvents.value(it.key()))
                 scheduledEvents << event;
             break;
         case FileProcessKind::fileBecameInvalid: // file is invalid: close it
-            for (const FileEventData &ed : remainEvents.value(key)) {
+            for (const FileEventData &ed : remainEvents.value(it.key())) {
                 closeFileEditors(ed.fileId);
             }
             break;
@@ -2386,7 +2391,6 @@ void MainWindow::on_actionTerminal_triggered()
 
 void MainWindow::actionTerminalTriggered(const QString &workingDir)
 {
-    auto environment = QProcessEnvironment::systemEnvironment();
 
     QProcess process;
 #if defined(__APPLE__)
@@ -2408,6 +2412,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
         }
     }
     process.setWorkingDirectory(workingDir);
+    auto environment = QProcessEnvironment::systemEnvironment();
     environment.insert("PATH", QDir::toNativeSeparators(CommonPaths::systemDir()) + ":" + environment.value("PATH"));
     environment.insert("LD_PRELOAD", "");
     environment.insert("LD_LIBRARY_PATH", "");
@@ -2417,7 +2422,6 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setProgram("cmd.exe");
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
-    auto gamsDir = QDir::toNativeSeparators(CommonPaths::systemDir());
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
     {
         args->flags |= CREATE_NEW_CONSOLE;
@@ -2571,7 +2575,8 @@ void MainWindow::historyChanged()
 {
     if (mWp) mWp->historyChanged();
     QVariantList joHistory;
-    for (const QString &file : mHistory.files()) {
+    const auto files = mHistory.files();
+    for (const QString &file : files) {
         if (file.isEmpty()) break;
         QVariantMap joOpenFile;
         joOpenFile["file"] = file;
@@ -4206,7 +4211,8 @@ void MainWindow::ensureInScreen()
                      appFGeo.right() - appGeo.right(), appFGeo.bottom() - appGeo.bottom());
     QRect screenGeo = QGuiApplication::primaryScreen()->availableVirtualGeometry();
     QVector<QRect> frames;
-    for (QScreen *screen : QGuiApplication::screens()) {
+    const auto screens = QGuiApplication::screens();
+    for (QScreen *screen : screens) {
         QRect rect = screen->availableGeometry();
         QRect sect = rect.intersected(appGeo);
         if (100*sect.height()*sect.width() / (appGeo.height()*appGeo.width()) > 3)
@@ -4728,12 +4734,12 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString f
     }
     QFont f = getEditorFont(fontGroup, fontFamily, fontSize);
     if (fontGroup == fgLog) {
-        for (QWidget* log: openLogs()) {
+        for (QWidget* log: constOpenLogs()) {
             log->setFont(f);
         }
         mSyslog->setFont(f);
     } else {
-        for (QWidget* edit: openEditors()) {
+        for (QWidget* edit: constOpenEditors()) {
             if (fontGroup == fgText) {
                 if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
                     ae->setFont(f);
@@ -5346,7 +5352,8 @@ void MainWindow::resetViews()
     mGamsParameterEditor->setEditorExtended(false);
     ui->toolBar->setVisible(true);
     addDockWidget(Qt::TopDockWidgetArea, mGamsParameterEditor->extendedEditor());
-    for (QWidget * wid : mFileMetaRepo.editors()) {
+    const auto editors = mFileMetaRepo.editors();
+    for (QWidget * wid : editors) {
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid))
             lxi->resetView();
     }

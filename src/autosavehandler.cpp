@@ -109,11 +109,10 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 
 void AutosaveHandler::saveChangedFiles()
 {
-    for (auto editor : mMainWindow->openEditors()) {
+    for (auto editor : mMainWindow->constOpenEditors()) {
         PExFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
         if (!node) continue; // skips unassigned widgets like the welcome-page
         QString filepath = QFileInfo(node->location()).path();
-        QString filename = filepath+node->name();
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
         if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt)) {
             QFile file(autosaveFile);
@@ -130,7 +129,8 @@ void AutosaveHandler::saveChangedFiles()
 
 void AutosaveHandler::clearAutosaveFiles(const QStringList &openTabs)
 {
-    for (const auto& file : checkForAutosaveFiles(openTabs))
+    const QStringList files = checkForAutosaveFiles(openTabs);
+    for (const auto& file : files)
         QFile::remove(file);
 }
 

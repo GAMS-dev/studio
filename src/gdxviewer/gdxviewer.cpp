@@ -137,7 +137,8 @@ GdxSymbol *GdxViewer::selectedSymbol()
 void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
 {
     GdxSymbolView* symView = new GdxSymbolView(this);
-    for (QHeaderView *header : symView->headers()) {
+    const auto headers = symView->headers();
+    for (QHeaderView *header : headers) {
         headerRegister(header);
     }
 

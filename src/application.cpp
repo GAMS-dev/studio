@@ -24,7 +24,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-
+#include "colors/palettemanager.h"
 #include "networkmanager.h"
 
 #include <iostream>
@@ -63,6 +63,7 @@ Application::~Application()
 {
     NetworkManager::cleanup();
     Settings::releaseSettings();
+    PaletteManager::deleteInstance();
 }
 
 void Application::init()

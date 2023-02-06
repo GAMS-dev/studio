@@ -758,7 +758,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
             QStringList dataKeysforTypes(keys);
             dataKeysforTypes.removeLast();
             itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
-            itemData << QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(","));
+            itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
             itemData << QVariant(false);
             itemData << QVariant(false);
             itemData << QVariant();

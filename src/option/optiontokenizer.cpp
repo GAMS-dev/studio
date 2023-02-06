@@ -1416,8 +1416,8 @@ void OptionTokenizer::validateOption(QList<ParamConfigItem *> &items)
         if (item->disabled)
             continue;
 
-        QString key = item->key;
-        QString value = item->value;
+//        QString key = item->key;
+//        QString value = item->value;
 
         idList << item->optionId;
         item->error = OptionErrorType::No_Error;

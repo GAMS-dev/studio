@@ -56,7 +56,7 @@ public:
         return mApplication;
     }
 
-    QStringList parameters() const;
+    const QStringList parameters() const;
     virtual void setParameters(const QStringList &parameters);
 
     virtual QStringList defaultParameters() const {

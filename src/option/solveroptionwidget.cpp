@@ -200,7 +200,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionTableView, &QTableView::customContextMenuRequested, this, &SolverOptionWidget::showOptionContextMenu, Qt::UniqueConnection);
         connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 
-        connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, [this, proxymodel]() {
+        connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, this, [this, proxymodel]() {
             proxymodel->setFilterRegExp(ui->solverOptionSearch->regExp());
         });
 
@@ -208,7 +208,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionTreeView, &QAbstractItemView::doubleClicked, this, &SolverOptionWidget::addOptionFromDefinition);
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
 
-        connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), [=](int index) {
+        connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
              optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
         });
 
@@ -1391,13 +1391,13 @@ void SolverOptionWidget::addActions()
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(deleteThisOptionAction);
 
-    QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy option name\tCtrl+C",
+    QAction* copyDefinitionOptionNameAction = mContextMenu.addAction("Copy option name\tCtrl+C", this,
                                                                      [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_OPTION_NAME ); });
     copyDefinitionOptionNameAction->setObjectName("actionCopyDefinitionOptionName");
     copyDefinitionOptionNameAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionOptionNameAction);
 
-    QAction* copyDefinitionOptionDescriptionAction = mContextMenu.addAction("Copy option description",
+    QAction* copyDefinitionOptionDescriptionAction = mContextMenu.addAction("Copy option description", this,
                                                                             [this]() { copyDefinitionToClipboard( SolverOptionDefinitionModel::COLUMN_DESCIPTION ); });
     copyDefinitionOptionDescriptionAction->setObjectName("actionCopyDefinitionOptionDescription");
     copyDefinitionOptionDescriptionAction->setShortcut( QKeySequence("Shift+C") );
@@ -1405,7 +1405,7 @@ void SolverOptionWidget::addActions()
     copyDefinitionOptionDescriptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionOptionDescriptionAction);
 
-    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy definition text",
+    QAction* copyDefinitionTextAction = mContextMenu.addAction("Copy definition text", this,
                                                                [this]() { copyDefinitionToClipboard( -1 ); });
     copyDefinitionTextAction->setObjectName("actionCopyDefinitionText");
     copyDefinitionTextAction->setShortcut( QKeySequence("Ctrl+Shift+C") );
@@ -1413,21 +1413,21 @@ void SolverOptionWidget::addActions()
     copyDefinitionTextAction->setShortcutContext(Qt::WidgetShortcut);
     ui->solverOptionTreeView->addAction(copyDefinitionTextAction);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("Show option definition", [this]() { showOptionDefinition(true); });
+    QAction* showDefinitionAction = mContextMenu.addAction("Show option definition", this, [this]() { showOptionDefinition(true); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
     showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDefinitionAction);
 
-    QAction* showDuplicationAction = mContextMenu.addAction("Show all options of the same definition", [this]() { showOptionRecurrence(); });
+    QAction* showDuplicationAction = mContextMenu.addAction("Show all options of the same definition", this, [this]() { showOptionRecurrence(); });
     showDuplicationAction->setObjectName("actionShowRecurrence_option");
     showDuplicationAction->setShortcut( QKeySequence("Shift+F1") );
     showDuplicationAction->setShortcutVisibleInContextMenu(true);
     showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->solverOptionTableView->addAction(showDuplicationAction);
 
-    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
+    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", this, [this]() { resizeColumnsToContents(); });
     resizeColumns->setObjectName("actionResize_columns");
     resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
     resizeColumns->setShortcutVisibleInContextMenu(true);
@@ -1464,7 +1464,8 @@ bool SolverOptionWidget::isThereARowSelection() const
 
 MainWindow *SolverOptionWidget::getMainWindow()
 {
-    for(QWidget *widget : qApp->topLevelWidgets())
+    const auto widgets = qApp->topLevelWidgets();
+    for(QWidget *widget : widgets)
         if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
             return mainWindow;
     return nullptr;

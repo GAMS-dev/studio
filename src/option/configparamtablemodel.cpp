@@ -571,7 +571,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
     }
 }
 
-QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
+const QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
 {
     return mOptionItem;
 }

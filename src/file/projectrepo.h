@@ -145,36 +145,36 @@ public:
     QIcon runAnimateIcon(QIcon::Mode mode = QIcon::Normal, int alpha = 100);
 
 signals:
-    void gamsProcessStateChanged(PExGroupNode* group);
+    void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void setNodeExpanded(const QModelIndex &mi, bool expanded = true);
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openProject(const QString &gspFile);
-    void openFile(FileMeta* fileMeta, bool focus = true, PExProjectNode *project = nullptr, int codecMib = -1,
-                  bool forcedAsTextEditor = false, NewTabStrategy tabStrategy = tabAfterCurrent);
-    void openFolder(QString path, PExProjectNode* project);
+    void openFile(gams::studio::FileMeta* fileMeta, bool focus = true, gams::studio::PExProjectNode *project = nullptr,
+                  int codecMib = -1, bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
+    void openFolder(QString path, gams::studio::PExProjectNode* project);
     void changed();
     void runnableChanged();
     void childrenChanged();
     void logTabRenamed(QWidget *wid, const QString &newName);
     void refreshProjectTabName(QWidget *wid);
     void openRecentFile();
-    void parentAssigned(const PExAbstractNode *node);
-    void closeFileEditors(FileId fileId);
+    void parentAssigned(const gams::studio::PExAbstractNode *node);
+    void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);
 
 public slots:
-    void gamsProcessStateChange(PExGroupNode* group);
-    void fileChanged(FileId fileId);
-    void nodeChanged(NodeId nodeId);
-    void closeNodeById(NodeId nodeId);
+    void gamsProcessStateChange(gams::studio::PExGroupNode* group);
+    void fileChanged(gams::studio::FileId fileId);
+    void nodeChanged(gams::studio::NodeId nodeId);
+    void closeNodeById(gams::studio::NodeId nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 //    void markTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
-    void errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
     void stepRunAnimation();
-    void dropFiles(QModelIndex idx, QStringList files, QList<NodeId> knownIds, Qt::DropAction act,
+    void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
-    void reassignFiles(PExProjectNode *project);
+    void reassignFiles(gams::studio::PExProjectNode *project);
 
 private:
     friend class PExProjectNode;

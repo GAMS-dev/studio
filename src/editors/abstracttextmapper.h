@@ -154,7 +154,7 @@ public:
     virtual qint64 size() const;
     virtual QByteArray& delimiter() const { return mDelimiter; }
 
-    virtual bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
+    bool setMappingSizes(int visibleLines = 20, int chunkSizeInBytes = 1024*1024, int chunkOverlap = 1024);
     virtual void setVisibleLineCount(int visibleLines);
     virtual int visibleLineCount() const;
     int reducedVisibleLineCount();
@@ -214,7 +214,7 @@ protected:
     QByteArray rawLines(int localLineNrFrom, int lineCount, int chunkBorder, int &borderLine) const;
     virtual Chunk *getChunk(int chunkNr, bool cache = true) const = 0;
     void initDelimiter(Chunk *chunk) const;
-    virtual bool updateMaxTop();
+    bool updateMaxTop();
     qint64 lastTopAbsPos();
     void invalidateLineOffsets(Chunk *chunk, bool cutRemain = false) const;
     void updateLineOffsets(Chunk *chunk) const;
