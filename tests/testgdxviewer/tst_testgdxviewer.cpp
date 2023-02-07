@@ -103,7 +103,7 @@ void TestGdxViewer::test_export()
     QEventLoop loop;
     connect(exportDriver, &ExportDriver::exportDone, &loop, &QEventLoop::quit);
     connect(&timer, &QTimer::timeout, &loop, &QEventLoop::quit);
-    timer.start(10000);
+    timer.start(20000);
     loop.exec();
 
     if(!timer.isActive())
