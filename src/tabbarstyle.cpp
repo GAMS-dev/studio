@@ -96,7 +96,7 @@ QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOptio
 {
     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
-    if (widget == mMainTabs->tabBar()) {
+    if (tabWidget && widget == mMainTabs->tabBar()) {
         if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
             if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
                 QStyleOptionTabV4 opt(*tab);

@@ -66,10 +66,10 @@ Connect::Connect()
                            + "Data using a schema from this file may not display correctly.\n"+
                            + "You can reopen the file using text editor to edit the content."    );
         } else {
-            QString msg("An unsupported/invalid schema read from [" + keys.join(",")
-                                                                    + "] contains an unsupported/invalid rule. \n"
-                           + "Data using a schema from this file may not display correctly.\n"+
-                           + "You can reopen the file using text editor to edit the content."    );
+//            QString msg("An unsupported/invalid schema read from [" + keys.join(",")
+//                                                                    + "] contains an unsupported/invalid rule. \n"
+//                           + "Data using a schema from this file may not display correctly.\n"+
+//                           + "You can reopen the file using text editor to edit the content."    );
         }
         msgBox.setStandardButtons(QMessageBox::Ok);
         if (msgBox.exec() == QMessageBox::Ok)

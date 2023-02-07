@@ -233,11 +233,11 @@ void FileMetaRepo::setDebugMode(bool debug)
         }
     }
 
-    for (auto it = edits.constBegin() ; it != edits.constEnd() ; ++it) {
-        FileMeta* fm = fileMeta(FileId(it.key()));
-        QString nam = (fm ? fm->name() : "???");
+//    for (auto it = edits.constBegin() ; it != edits.constEnd() ; ++it) {
+//        FileMeta* fm = fileMeta(FileId(it.key()));
+//        QString nam = (fm ? fm->name() : "???");
 //        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
-    }
+//    }
     mCompleter.setDebugMode(debug);
 }
 

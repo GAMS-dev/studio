@@ -296,7 +296,7 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
             return false;
 
         if (index.column() == COLUMN_PARAM_KEY) { // key
-            QString from = data(index, Qt::DisplayRole).toString();
+//            QString from = data(index, Qt::DisplayRole).toString();
             mOptionItem[index.row()]->key = dataValue;
         } else if (index.column() == COLUMN_PARAM_VALUE) { // value
                   mOptionItem[index.row()]->value = dataValue;

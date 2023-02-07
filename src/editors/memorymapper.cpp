@@ -636,7 +636,6 @@ void MemoryMapper::addProcessData(const QByteArray &data)
                 chunk = mChunks.last();
                 appendLineData(midData, chunk, remote);
             }
-            start = i;
             while (i < data.length() && (data.at(i) == '\r' || data.at(i) == '\n')) {
                 if (data.at(i) == '\n') {
                     cleaned = ensureSpace(1);

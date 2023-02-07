@@ -67,8 +67,8 @@ void Option::dumpAll()
     int i = 0;
     for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
         OptionDefinition opt = it.value();
-        qDebug() << QString(" [%1:%2] %3 [%4] type_%5 %6 range_[%7,%8] group_%9 %10").arg(i++).arg(it.key())
-                            .arg(opt.name, opt.synonym, mOptionTypeNameMap[opt.type], opt.description)
+        qDebug() << QString(" [%1:%2] %3 [%4] type_%5 %6 range_[%7,%8] group_%9 %10").arg(i++).arg(it.key(),
+                            opt.name, opt.synonym, mOptionTypeNameMap[opt.type], opt.description)
                             .arg( opt.lowerBound.canConvert<int>() ? opt.lowerBound.toInt() : opt.lowerBound.toDouble() )
                             .arg( opt.upperBound.canConvert<int>() ? opt.upperBound.toInt() : opt.upperBound.toDouble() )
                             .arg( opt.groupNumber ).arg( opt.valid ? "SHOWN": "HIDDEN");

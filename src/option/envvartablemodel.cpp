@@ -181,7 +181,7 @@ bool EnvVarTableModel::setData(const QModelIndex &index, const QVariant &value, 
             return false;
         QString dataValue = value.toString();
         if (index.column() == COLUMN_PARAM_KEY) { // key
-            QString from = data(index, Qt::DisplayRole).toString();
+//            QString from = data(index, Qt::DisplayRole).toString();
             mEnvVarItem[index.row()]->key = dataValue;
         } else if (index.column() == COLUMN_PARAM_VALUE) { // value
                   mEnvVarItem[index.row()]->value = dataValue;

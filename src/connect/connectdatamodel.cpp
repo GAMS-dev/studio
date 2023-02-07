@@ -728,7 +728,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     YAML::Node node = data->getRootNode();
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
-        QString listkey = schemaKeys.last();
+//        QString listkey = schemaKeys.last();
         mapSeqData << QVariant::fromValue(idx.row()+i);
         mapSeqData << "";
         mapSeqData << QVariant((int)DataCheckState::ListItem);
@@ -854,17 +854,17 @@ void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QMod
 bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
 {
     ConnectDataItem* parentitem = item;
-    if (item) {
+    if (parentitem) {
         // if immediate child of agent is undefined
         if (item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1 == 1)
             if (item->data((int)DataItemColumn::Undefined).toBool())
                 return false;
        for(int i = item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1; i>1; --i) {
            parentitem = parentitem->parentItem();
+           // Need handling of the case when parentitem == nullptr?
+           // Maybe:   if (!parentitem) break;
            // skip check item if parent who is not schemaagent name is already invalid
-           if (parentitem
-                   && parentitem != item
-                   && parentitem && parentitem->data((int)DataItemColumn::InvalidValue).toInt()>0) {
+           if (parentitem && parentitem != item && parentitem->data((int)DataItemColumn::InvalidValue).toInt()>0) {
                   return true;
            }
        }

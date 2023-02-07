@@ -206,7 +206,7 @@ QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
 
 void SchemaDefinitionModel::loadSchemaFromName(const QString &name)
 {
-    if (!mRootItems.keys().contains(name))
+    if (!mRootItems.contains(name))
         return;
 
     mCurrentSchemaName = name;

@@ -867,7 +867,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setShowAttributes(showAttributes);
 
     symViewState->setTableViewLoaded(mTvModel != nullptr);
-    if (symViewState->tableViewLoaded()) {
+    if (mTvModel && symViewState->tableViewLoaded()) {
         symViewState->setTvColDim(mTvModel->tvColDim());
         symViewState->setTvDimOrder(mTvModel->tvDimOrder());
         symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());

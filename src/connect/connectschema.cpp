@@ -187,7 +187,8 @@ QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
 QStringList ConnectSchema::getAllRequiredKeyList() const
 {
     QStringList keyList;
-    for(const QString& key : mSchemaHelper.keys()) {
+    const QStringList keys = mSchemaHelper.keys();
+    for(const QString& key : keys) {
         if (mSchemaHelper[key]->required)
             keyList << key;
     }

@@ -700,7 +700,8 @@ void Settings::loadMap(Scope scope, QVariantMap map)
             // copy all elements
             QJsonObject joSrc = var.toJsonObject();
             QJsonObject joDest = mData.value(scope).value(it.key()).toJsonObject();
-            for (const QString &joKey : joSrc.keys()) {
+            const QStringList srcKeys = joSrc.keys();
+            for (const QString &joKey : srcKeys) {
                 joDest[joKey] = joSrc[joKey];
             }
             var = joDest;

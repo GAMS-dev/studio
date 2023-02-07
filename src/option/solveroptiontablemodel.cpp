@@ -142,7 +142,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
         if (col==COLUMN_OPTION_KEY) {
             QString text = mOptionItem.at(row)->key;
-            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+//            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (!text.isEmpty()) {
                 if (mOptionTokenizer->isValidLineCommentChar(text.at(0)))
                     text = mOptionItem.at(row)->key.mid(1);
