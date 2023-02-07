@@ -479,7 +479,8 @@ QString OptionTokenizer::normalize(const QString &commandLineStr)
 QString OptionTokenizer::normalize(const QList<OptionItem> &items)
 {
     QStringList strList;
-    for (auto item : items) {
+    for (const auto &it : items) {
+        OptionItem item = it;
         if ( item.key.isEmpty() )
             item.key = keyGeneratedStr;
         if ( item.value.isEmpty() )
@@ -627,7 +628,7 @@ QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
                 if (value.isEmpty())
                     return QString("%1 %2").arg(mLineComments.at(0), key);
                 else
-                    return QString("%1 %2%3%4").arg(mLineComments.at(0)).arg(key, separator, value);
+                    return QString("%1 %2%3%4").arg(mLineComments.at(0), key, separator, value);
             }
         }
     }
@@ -966,7 +967,7 @@ bool OptionTokenizer::updateOptionItem(const QString &key, const QString &value,
     QString str = "";
     QString separator = " ";
     if (mOption->isEOLCharDefined() && !item->text.isEmpty() && !mEOLCommentChar.isNull())
-       str = QString("%1%2%3  %4 %5").arg(key).arg(separator, value, mEOLCommentChar, text);
+       str = QString("%1%2%3  %4 %5").arg(key, separator, value, mEOLCommentChar, text);
     else
        str = QString("%1%2%3").arg(key, separator, value);
 

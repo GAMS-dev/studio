@@ -30,7 +30,6 @@ namespace reference {
 class SymbolTableModel : public QAbstractTableModel
 {
     Q_OBJECT
-    Q_ENUMS(FileUsedSortOrder)
 
 public:
     enum FileUsedSortOrder
@@ -39,6 +38,7 @@ public:
         DescendingOrder = 1,
         OriginalOrder = 2
     };
+    Q_ENUM(FileUsedSortOrder)
 
     explicit SymbolTableModel(SymbolDataType::SymbolType type, QObject *parent = nullptr);
 

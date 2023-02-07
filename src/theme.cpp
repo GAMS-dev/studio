@@ -316,34 +316,34 @@ QHash<QString, QStringList> Theme::iconCodes() const
 {
     QHash<QString, QStringList> set;
     const ColorTheme &theme = mColorThemes.at(mTheme);
-    for (ColorSlot &slot: theme.keys()) {
-        QString slotName = name(slot);
+    for (auto it = theme.constBegin() ; it != theme.constEnd() ; ++it) {
+        QString slotName = name(it.key());
         if (slotName.startsWith("Icon_")) {
             QString key = slotName.mid(5, slotName.length()-5);
             set.insert(key, QStringList());
             for (int i = 0 ; i < 4 ; ++i)
-                set[key] << theme.value(slot).color.name();
+                set[key] << theme.value(it.key()).color.name();
             set[key] << theme.value(Normal_Red).color.name();
             set[key] << theme.value(Normal_Green).color.name();
             set[key] << theme.value(Normal_Blue).color.name();
         }
     }
-    for (ColorSlot &slot: theme.keys()) {
-        QString slotName = name(slot);
+    for (auto it = theme.constBegin() ; it != theme.constEnd() ; ++it) {
+        QString slotName = name(it.key());
         if (slotName.startsWith("Disable_")) {
             QString key = slotName.mid(8, slotName.length()-8);
             if (set.contains(key))
-                set[key].replace(1, theme.value(slot).color.name());
+                set[key].replace(1, theme.value(it.key()).color.name());
         }
         if (slotName.startsWith("Active_")) {
             QString key = slotName.mid(7, slotName.length()-7);
             if (set.contains(key))
-                set[key].replace(2, theme.value(slot).color.name());
+                set[key].replace(2, theme.value(it.key()).color.name());
         }
         if (slotName.startsWith("Select_")) {
             QString key = slotName.mid(7, slotName.length()-7);
             if (set.contains(key))
-                set[key].replace(3, theme.value(slot).color.name());
+                set[key].replace(3, theme.value(it.key()).color.name());
         }
     }
     return set;
@@ -567,7 +567,7 @@ void Theme::readUserThemes(const QVariantList &sourceThemes)
     while (mColorThemes.size() > 2) mColorThemes.removeLast();
 
     // add new user defined themes
-    for (QVariant vSource: sourceThemes) {
+    for (const QVariant &vSource: sourceThemes) {
         QVariantMap tSource = vSource.toMap();
         if (tSource.isEmpty() || !tSource.contains("name") || !tSource.contains("theme")) continue;
         QString name = tSource.value("name").toString();

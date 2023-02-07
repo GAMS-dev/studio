@@ -68,7 +68,7 @@ void Option::dumpAll()
     for( QMap<QString, OptionDefinition>::const_iterator it=mOption.cbegin(); it!=mOption.cend(); ++it) {
         OptionDefinition opt = it.value();
         qDebug() << QString(" [%1:%2] %3 [%4] type_%5 %6 range_[%7,%8] group_%9 %10").arg(i++).arg(it.key())
-                            .arg(opt.name).arg(opt.synonym).arg(mOptionTypeNameMap[opt.type], opt.description)
+                            .arg(opt.name, opt.synonym, mOptionTypeNameMap[opt.type], opt.description)
                             .arg( opt.lowerBound.canConvert<int>() ? opt.lowerBound.toInt() : opt.lowerBound.toDouble() )
                             .arg( opt.upperBound.canConvert<int>() ? opt.upperBound.toInt() : opt.upperBound.toDouble() )
                             .arg( opt.groupNumber ).arg( opt.valid ? "SHOWN": "HIDDEN");
@@ -297,7 +297,7 @@ const QList<OptionValue> Option::getValueList(const QString &optionName) const
     return mOption[optionName.toUpper()].valueList;
 }
 
-QString Option::getEOLChars() const
+const QString Option::getEOLChars() const
 {
     return mEOLChars;
 }
@@ -363,7 +363,7 @@ QStringList Option::getValuesList(const QString &optionName) const
    return valueList;
 }
 
-QStringList Option::getSynonymList(const QString &optionName) const
+const QStringList Option::getSynonymList(const QString &optionName) const
 {
     QStringList synonymList;
     if (mSynonymMap.contains(optionName.toUpper())) {

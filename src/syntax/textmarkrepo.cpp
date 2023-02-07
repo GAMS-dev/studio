@@ -298,8 +298,8 @@ void TextMarkRepo::setDebugMode(bool debug)
     if (!debug) return;
     DEB() << "\n--------------- TextMarks ---------------";
     QList<int> keys;
-    for (const FileId &id: mMarks.keys()) {
-        keys << int(id);
+    for (auto it = mMarks.constBegin() ; it != mMarks.constEnd() ; ++it) {
+        keys << int(it.key());
     }
     std::sort(keys.begin(), keys.end());
     for (int key: qAsConst(keys)) {

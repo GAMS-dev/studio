@@ -63,7 +63,7 @@ SymbolReferenceWidget::SymbolReferenceWidget(Reference* ref, SymbolDataType::Sym
             ui->symbolView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     }
 
-    QAction* resizeColumn = mContextMenu.addAction("Auto Resize Columns", [this]() { resizeColumnToContents(); }, QKeySequence("Ctrl+R"));
+    QAction* resizeColumn = mContextMenu.addAction("Auto Resize Columns", this, [this]() { resizeColumnToContents(); }, QKeySequence("Ctrl+R"));
     resizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     resizeColumn->setShortcutVisibleInContextMenu(true);
     ui->symbolView->addAction(resizeColumn);
@@ -235,7 +235,8 @@ void SymbolReferenceWidget::showContextMenu(QPoint p)
 
     if (mSymbolTableModel->rowCount()>0 && ui->symbolView->horizontalHeader()->logicalIndexAt(p)>=0) {
         QMenu m(this);
-        for(QAction* action : ui->symbolView->actions()) {
+        const auto actions = ui->symbolView->actions();
+        for(QAction* action : actions) {
             action->setEnabled(true);
             m.addAction(action);
         }

@@ -1141,7 +1141,8 @@ void ParamConfigEditor::on_actionSelect_Current_Row_triggered()
     if (!ui->actionSelect_Current_Row->isEnabled())
         return;
     QList<int> rowList;
-    for(QModelIndex idx : ui->paramCfgTableView->selectionModel()->selectedIndexes()) {
+    const auto indexes = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    for(const QModelIndex &idx : indexes) {
         if (!rowList.contains(idx.row())) {
             on_selectRow(idx.row());
             rowList << idx.row();
