@@ -119,6 +119,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cbEngineExpireType, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
 
     connect(ui->cb_gdxDefaultSymbolView, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
+    connect(ui->rb_decSepStudio, &QRadioButton::toggled, this, &SettingsDialog::setModified);
+    connect(ui->rb_decSepLocale, &QRadioButton::toggled, this, &SettingsDialog::setModified);
+    connect(ui->rb_decSepCustom, &QRadioButton::toggled, this, &SettingsDialog::setModified);
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -216,6 +219,14 @@ void SettingsDialog::loadSettings()
 
     // GDX Viewer
     ui->cb_gdxDefaultSymbolView->setCurrentIndex(mSettings->toInt(skGdxDefaultSymbolView));
+    int decimalSeparator = mSettings->toInt(skGdxDecimalPointCopy);
+    switch (decimalSeparator) {
+        case 0: ui->rb_decSepStudio->setChecked(true); break;
+        case 1: ui->rb_decSepLocale->setChecked(true); break;
+        case 2: ui->rb_decSepCustom->setChecked(true); break;
+        default: ui->rb_decSepStudio->setChecked(true); break;
+    }
+    ui->le_decSepCustom->setText(mSettings->toString(skGdxCustomDecimalPoint));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -347,6 +358,15 @@ void SettingsDialog::saveSettings()
 
     // GDX Viewer
     mSettings->setInt(skGdxDefaultSymbolView, ui->cb_gdxDefaultSymbolView->currentIndex());
+    int decimalSeparator = 0;
+    if (ui->rb_decSepStudio->isChecked())
+        decimalSeparator = 0;
+    else if (ui->rb_decSepLocale->isChecked())
+        decimalSeparator = 1;
+    else if (ui->rb_decSepCustom->isChecked())
+        decimalSeparator = 2;
+    mSettings->setInt(skGdxDecimalPointCopy, decimalSeparator);
+    mSettings->setString(skGdxCustomDecimalPoint, ui->le_decSepCustom->text());
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());

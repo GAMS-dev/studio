@@ -745,7 +745,13 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
         sList << "\n";
     }
     sList.pop_back();  // remove last newline
-    return sList.join("");
+    QString ret = sList.join("");
+    switch (Settings::settings()->toInt(SettingsKey::skGdxDecimalPointCopy)) {
+    case DecimalSeparator::studio: return ret;
+    case DecimalSeparator::system: return ret.replace('.', QLocale().decimalPoint());
+    case DecimalSeparator::custom: return ret.replace('.', Settings::settings()->toString(skGdxCustomDecimalPoint));
+    default: return ret;
+    }
 }
 
 bool GdxSymbolView::isTableViewActive() const
