@@ -652,6 +652,9 @@
             </item>
             <item>
              <widget class="QLineEdit" name="le_decSepCustom">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
               <property name="sizePolicy">
                <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
                 <horstretch>0</horstretch>
@@ -660,7 +663,7 @@
               </property>
               <property name="maximumSize">
                <size>
-                <width>30</width>
+                <width>25</width>
                 <height>16777215</height>
                </size>
               </property>

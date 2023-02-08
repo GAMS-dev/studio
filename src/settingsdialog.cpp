@@ -962,5 +962,23 @@ void SettingsDialog::anchorClicked(const QUrl &link)
     }
 }
 
+void SettingsDialog::on_rb_decSepCustom_toggled(bool checked)
+{
+    if (checked)
+        ui->le_decSepCustom->setEnabled(true);
+}
+
+void SettingsDialog::on_rb_decSepLocale_toggled(bool checked)
+{
+    if (checked)
+        ui->le_decSepCustom->setEnabled(false);
+}
+
+void SettingsDialog::on_rb_decSepStudio_toggled(bool checked)
+{
+    if (checked)
+        ui->le_decSepCustom->setEnabled(false);
+}
+
 }
 }

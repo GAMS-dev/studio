@@ -113,6 +113,12 @@ private slots:
     void checkGamsVersion(const QString &text);
     void anchorClicked(const QUrl &link);
 
+    void on_rb_decSepCustom_toggled(bool checked);
+
+    void on_rb_decSepLocale_toggled(bool checked);
+
+    void on_rb_decSepStudio_toggled(bool checked);
+
 private:
     void saveSettings();
     void loadSettings();
