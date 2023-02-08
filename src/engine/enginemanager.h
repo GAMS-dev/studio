@@ -24,8 +24,7 @@
 #include <QObject>
 #include <QMetaEnum>
 #include <QNetworkReply>
-#include "client/OAIModel_auth_token.h"
-
+#include <OAIModel_auth_token.h>
 
 namespace OpenAPI {
 class OAIAuthApi;

@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engineprocess.h"
-#include "client/OAIJobsApi.h"
+#include <OAIJobsApi.h>
 #include "enginemanager.h"
 #include "logger.h"
 #include "commonpaths.h"
