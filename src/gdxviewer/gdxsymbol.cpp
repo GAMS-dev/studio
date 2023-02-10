@@ -460,9 +460,15 @@ void GdxSymbol::updateDecSepCopy()
     mDecSepCopy = '.';
     QLocale locale;
     switch (Settings::settings()->toInt(SettingsKey::skGdxDecSepCopy)) {
-    case DecimalSeparator::studio: break;
-    case DecimalSeparator::system: mDecSepCopy = locale.decimalPoint(); break;
-    case DecimalSeparator::custom: mDecSepCopy = Settings::settings()->toString(skGdxCustomDecSepCopy).front(); break;
+    case DecimalSeparator::studio:
+        break;
+    case DecimalSeparator::system:
+        mDecSepCopy = locale.decimalPoint();
+        break;
+    case DecimalSeparator::custom:
+        if (!Settings::settings()->toString(skGdxCustomDecSepCopy).isEmpty())
+            mDecSepCopy = Settings::settings()->toString(skGdxCustomDecSepCopy).front();
+        break;
     default: break;
     }
 }
