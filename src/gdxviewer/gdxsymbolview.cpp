@@ -671,11 +671,12 @@ void GdxSymbolView::setDragInProgress(bool dragInProgress)
 
 QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
 {
+    mSym->updateDecimalPoint();
     if (!ui->tvListView->model())
         return "" ;
     // row -> column -> QModelIndex
     QMap<int, QMap<int, QString>> sortedSelection;
-    QTableView *tv;
+    QTableView *tv = nullptr;
     if (mTableView)
         tv = ui->tvTableView;
     else {
@@ -699,7 +700,7 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
             continue;
 
         currentCol = tv->horizontalHeader()->visualIndex(currentCol);
-        QString currenText = idx.data().toString();
+        QString currenText = idx.data(Qt::EditRole).toString();
         if (currenText.contains(separator)) {
             if (currenText.contains("\'"))
                 currenText = "\"" + currenText + "\"";
@@ -745,13 +746,7 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
         sList << "\n";
     }
     sList.pop_back();  // remove last newline
-    QString ret = sList.join("");
-    switch (Settings::settings()->toInt(SettingsKey::skGdxDecimalPointCopy)) {
-    case DecimalSeparator::studio: return ret;
-    case DecimalSeparator::system: return ret.replace('.', QLocale().decimalPoint());
-    case DecimalSeparator::custom: return ret.replace('.', Settings::settings()->toString(skGdxCustomDecimalPoint));
-    default: return ret;
-    }
+    return sList.join("");
 }
 
 bool GdxSymbolView::isTableViewActive() const

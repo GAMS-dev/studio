@@ -45,6 +45,8 @@ class GdxSymbol : public QAbstractTableModel
     friend class TableViewModel;
 
 public:
+    enum DecimalSeparator {studio, system, custom};
+
     explicit GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr,
                        GdxSymbolTableModel* gdxSymbolTable, QObject *parent = nullptr);
     ~GdxSymbol() override;
@@ -105,6 +107,8 @@ public:
 
     GdxSymbol *aliasedSymbol();
 
+    void updateDecimalPoint();
+
 
 signals:
     void loadFinished();
@@ -117,7 +121,7 @@ private:
     void loadMetaData();
     void loadDomains();
     double specVal2SortVal(double val);
-    QVariant formatValue(double val) const;
+    QVariant formatValue(double val, bool dynamicDecSep=false) const;
 
 private:
     void initNumericalBounds();
@@ -169,6 +173,8 @@ private:
     std::vector<ColumnFilter*> mColumnFilters;
     std::vector<ValueFilter*> mValueFilters;
     int mNumericalColumnCount;
+
+    QChar mDecimalPointCopy;
 };
 
 } // namespace gdxviewer

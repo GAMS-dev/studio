@@ -116,7 +116,7 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    else if (role == Qt::DisplayRole) {
+    if (role == Qt::DisplayRole || role == Qt::EditRole) {
         QVector<uint> keys;
         if (mNeedDummyRow)
             keys = mTvColHeaders[index.column()];
@@ -128,10 +128,11 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
             double val = mSym->mValues[size_t(mTvKeysToValIdx[keys])];
             if (mSym->mType == GMS_DT_SET)
                 return mGdxSymbolTable->getElementText(int(val));
-            else
-                return mSym->formatValue(val);
-        } else
-            return QVariant();
+            if (role == Qt::EditRole)  // copy action
+                return mSym->formatValue(val, true);
+            return mSym->formatValue(val);
+        }
+        return QVariant();
     }
     else if (role == Qt::TextAlignmentRole) {
         return QVariant(Qt::AlignRight | Qt::AlignVCenter);

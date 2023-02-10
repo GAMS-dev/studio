@@ -49,7 +49,6 @@ class GdxSymbolView : public QWidget
 
 public:
     enum DefaultSymbolView {listView, tableView };
-    enum DecimalSeparator {studio, system, custom};
 
     explicit GdxSymbolView(QWidget *parent = nullptr);
     ~GdxSymbolView() override;

@@ -26,6 +26,7 @@
 
 #include <QMutex>
 #include <QSet>
+#include <settings.h>
 
 #include <cmath>
 
@@ -164,7 +165,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
     if (!index.isValid())
         return QVariant();
 
-    else if (role == Qt::DisplayRole) {
+    else if (role == Qt::DisplayRole || role == Qt::EditRole) {
         int row = mRecSortIdx[mRecFilterIdx[index.row()]];
         if (index.column() < mDim)
             return mGdxSymbolTable->uel2Label(mKeys[row*mDim + index.column()]);
@@ -176,8 +177,9 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 val = mValues[row*GMS_DT_MAX + (index.column()-mDim)];
             if (mType == GMS_DT_SET)
                 return mGdxSymbolTable->getElementText((int) val);
-            else
-                return formatValue(val);
+            if (role == Qt::EditRole)  // copy action
+                return formatValue(val, true);
+            return formatValue(val);
         }
     }
     else if (role == Qt::TextAlignmentRole) {
@@ -397,10 +399,13 @@ double GdxSymbol::specVal2SortVal(double val)
         return val; // should be an acronym
 }
 
-QVariant GdxSymbol::formatValue(double val) const
+QVariant GdxSymbol::formatValue(double val, bool dynamicDecSep) const
 {
-    if (val<GMS_SV_UNDEF)
+    if (val<GMS_SV_UNDEF) {
+        if (dynamicDecSep)
+            return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes, mDecimalPointCopy);
         return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes);
+    }
     if (val == GMS_SV_UNDEF)
         return "UNDF";
     if (val == GMS_SV_NA)
@@ -448,6 +453,18 @@ GdxSymbol *GdxSymbol::aliasedSymbol()
         return sym;
     } else
         return this;
+}
+
+void GdxSymbol::updateDecimalPoint()
+{
+    mDecimalPointCopy = '.';
+    QLocale locale;
+    switch (Settings::settings()->toInt(SettingsKey::skGdxDecimalPointCopy)) {
+    case DecimalSeparator::studio: break;
+    case DecimalSeparator::system: mDecimalPointCopy = locale.decimalPoint(); break;
+    case DecimalSeparator::custom: mDecimalPointCopy = Settings::settings()->toString(skGdxCustomDecimalPoint).front(); break;
+    default: break;
+    }
 }
 
 bool GdxSymbol::hasInvalidUel() const
