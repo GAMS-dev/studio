@@ -22,6 +22,7 @@
 #include <QMessageBox>
 #include <QScrollArea>
 #include <QToolTip>
+#include <QLocale>
 #include "mainwindow.h"
 #include "theme.h"
 #include "settingsdialog.h"
@@ -48,6 +49,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->tb_userLibRemove->setIcon(Theme::icon(":/%1/delete-all"));
     ui->tb_userLibOpen->setIcon(Theme::icon(":/%1/forward"));
+
+    // Load decimal seperator from system language settings
+    ui->le_decSepSystem->setText(QLocale().decimalPoint());
 
     // Themes
     ui->cbThemes->clear();

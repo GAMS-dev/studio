@@ -625,33 +625,48 @@
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
-           <widget class="QRadioButton" name="rb_decSepStudio">
-            <property name="text">
-             <string>Use Studio default</string>
-            </property>
-            <property name="checked">
-             <bool>true</bool>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <widget class="QRadioButton" name="rb_decSepLocale">
-            <property name="text">
-             <string>Follow system language</string>
-            </property>
-           </widget>
-          </item>
-          <item>
-           <layout class="QHBoxLayout" name="horizontalLayout_3">
-            <item>
-             <widget class="QRadioButton" name="rb_decSepCustom">
+           <layout class="QFormLayout" name="formLayout">
+            <item row="0" column="0">
+             <widget class="QRadioButton" name="rb_decSepStudio">
               <property name="text">
-               <string>Use custom character:</string>
+               <string>Use Studio default:</string>
+              </property>
+              <property name="checked">
+               <bool>true</bool>
               </property>
              </widget>
             </item>
-            <item>
-             <widget class="QLineEdit" name="le_decSepCustom">
+            <item row="0" column="1">
+             <widget class="QLineEdit" name="le_decSepStudio">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
+               <size>
+                <width>25</width>
+                <height>16777215</height>
+               </size>
+              </property>
+              <property name="text">
+               <string>.</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="0">
+             <widget class="QRadioButton" name="rb_decSepLocale">
+              <property name="text">
+               <string>Follow system language:</string>
+              </property>
+             </widget>
+            </item>
+            <item row="1" column="1">
+             <widget class="QLineEdit" name="le_decSepSystem">
               <property name="enabled">
                <bool>false</bool>
               </property>
@@ -672,18 +687,34 @@
               </property>
              </widget>
             </item>
-            <item>
-             <spacer name="horizontalSpacer_8">
-              <property name="orientation">
-               <enum>Qt::Horizontal</enum>
+            <item row="2" column="0">
+             <widget class="QRadioButton" name="rb_decSepCustom">
+              <property name="text">
+               <string>Use custom character:</string>
               </property>
-              <property name="sizeHint" stdset="0">
+             </widget>
+            </item>
+            <item row="2" column="1">
+             <widget class="QLineEdit" name="le_decSepCustom">
+              <property name="enabled">
+               <bool>false</bool>
+              </property>
+              <property name="sizePolicy">
+               <sizepolicy hsizetype="Minimum" vsizetype="Fixed">
+                <horstretch>0</horstretch>
+                <verstretch>0</verstretch>
+               </sizepolicy>
+              </property>
+              <property name="maximumSize">
                <size>
-                <width>40</width>
-                <height>20</height>
+                <width>25</width>
+                <height>16777215</height>
                </size>
               </property>
-             </spacer>
+              <property name="maxLength">
+               <number>1</number>
+              </property>
+             </widget>
             </item>
            </layout>
           </item>
