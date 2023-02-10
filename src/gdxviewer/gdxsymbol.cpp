@@ -403,7 +403,7 @@ QVariant GdxSymbol::formatValue(double val, bool dynamicDecSep) const
 {
     if (val<GMS_SV_UNDEF) {
         if (dynamicDecSep)
-            return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes, mDecimalPointCopy);
+            return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes, mDecSepCopy);
         return numerics::DoubleFormatter::format(val, mNumericalFormat, mNumericalPrecision, mSqueezeTrailingZeroes);
     }
     if (val == GMS_SV_UNDEF)
@@ -455,14 +455,14 @@ GdxSymbol *GdxSymbol::aliasedSymbol()
         return this;
 }
 
-void GdxSymbol::updateDecimalPoint()
+void GdxSymbol::updateDecSepCopy()
 {
-    mDecimalPointCopy = '.';
+    mDecSepCopy = '.';
     QLocale locale;
-    switch (Settings::settings()->toInt(SettingsKey::skGdxDecimalPointCopy)) {
+    switch (Settings::settings()->toInt(SettingsKey::skGdxDecSepCopy)) {
     case DecimalSeparator::studio: break;
-    case DecimalSeparator::system: mDecimalPointCopy = locale.decimalPoint(); break;
-    case DecimalSeparator::custom: mDecimalPointCopy = Settings::settings()->toString(skGdxCustomDecimalPoint).front(); break;
+    case DecimalSeparator::system: mDecSepCopy = locale.decimalPoint(); break;
+    case DecimalSeparator::custom: mDecSepCopy = Settings::settings()->toString(skGdxCustomDecSepCopy).front(); break;
     default: break;
     }
 }

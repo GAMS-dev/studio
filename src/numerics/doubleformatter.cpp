@@ -26,17 +26,17 @@ namespace numerics {
 
 const int DoubleFormatter::gFormatFull = 0;
 
-QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze, QChar decimalPoint)
+QString DoubleFormatter::format(double v, DoubleFormatter::Format format, int precision, int squeeze, QChar decSep)
 {
     char outBuf[32];
     int outLen;
     char* p = nullptr;
     if (format == Format::g)
-        p = x2gfmt(v, precision, squeeze, outBuf, &outLen, decimalPoint.toLatin1());
+        p = x2gfmt(v, precision, squeeze, outBuf, &outLen, decSep.toLatin1());
     else if (format == Format::f)
-        p = x2fixed(v, precision, squeeze, outBuf, &outLen, decimalPoint.toLatin1());
+        p = x2fixed(v, precision, squeeze, outBuf, &outLen, decSep.toLatin1());
     else if (format == Format::e)
-        p = x2efmt(v, precision, squeeze, outBuf, &outLen, decimalPoint.toLatin1());
+        p = x2efmt(v, precision, squeeze, outBuf, &outLen, decSep.toLatin1());
     if (!p)
         return "FORMAT_ERROR";
     else

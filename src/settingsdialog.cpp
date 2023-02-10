@@ -219,14 +219,14 @@ void SettingsDialog::loadSettings()
 
     // GDX Viewer
     ui->cb_gdxDefaultSymbolView->setCurrentIndex(mSettings->toInt(skGdxDefaultSymbolView));
-    int decimalSeparator = mSettings->toInt(skGdxDecimalPointCopy);
+    int decimalSeparator = mSettings->toInt(skGdxDecSepCopy);
     switch (decimalSeparator) {
         case 0: ui->rb_decSepStudio->setChecked(true); break;
         case 1: ui->rb_decSepLocale->setChecked(true); break;
         case 2: ui->rb_decSepCustom->setChecked(true); break;
         default: ui->rb_decSepStudio->setChecked(true); break;
     }
-    ui->le_decSepCustom->setText(mSettings->toString(skGdxCustomDecimalPoint));
+    ui->le_decSepCustom->setText(mSettings->toString(skGdxCustomDecSepCopy));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -365,8 +365,8 @@ void SettingsDialog::saveSettings()
         decimalSeparator = 1;
     else if (ui->rb_decSepCustom->isChecked())
         decimalSeparator = 2;
-    mSettings->setInt(skGdxDecimalPointCopy, decimalSeparator);
-    mSettings->setString(skGdxCustomDecimalPoint, ui->le_decSepCustom->text());
+    mSettings->setInt(skGdxDecSepCopy, decimalSeparator);
+    mSettings->setString(skGdxCustomDecSepCopy, ui->le_decSepCustom->text());
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());

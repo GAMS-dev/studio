@@ -107,7 +107,7 @@ public:
 
     GdxSymbol *aliasedSymbol();
 
-    void updateDecimalPoint();
+    void updateDecSepCopy();
 
 
 signals:
@@ -174,7 +174,7 @@ private:
     std::vector<ValueFilter*> mValueFilters;
     int mNumericalColumnCount;
 
-    QChar mDecimalPointCopy;
+    QChar mDecSepCopy;
 };
 
 } // namespace gdxviewer

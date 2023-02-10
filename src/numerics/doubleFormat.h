@@ -26,11 +26,11 @@
 extern "C" {
 #endif
 
-char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen, char decPtChar);
+char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen, char decSep);
 
-char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decPtChar);
+char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decSep);
 
-char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decPtChar);
+char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decSep);
 
 #ifdef __cplusplus
 };

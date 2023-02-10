@@ -66,7 +66,7 @@ static void zeroPatch(char digBuf[], int *nDigits, int *decPt)
  */
 static char* dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
                     int nSigFigs, int zeroPad,
-                    char outBuf[], int *bufLen, char decPtChar)
+                    char outBuf[], int *bufLen, char decSep)
 {
   char *d;
   const char *s;
@@ -82,7 +82,7 @@ static char* dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
   s = digits;
   *d++ = *s++;
   if (*s || (zeroPad && (k > 0)))
-    *d++ = decPtChar;
+    *d++ = decSep;
   while (*s)
     *d++ = *s++;
   if (zeroPad && (k > 0)) {
@@ -118,7 +118,7 @@ static char* dig2Exp(const char digits[], int nDigits, int decPt, int isNeg,
  */
 static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
                        int nDecimals, int zeroPad,
-                       char outBuf[], int *bufLen, char decPtChar)
+                       char outBuf[], int *bufLen, char decSep)
 {
   char *p;
   int k;
@@ -137,7 +137,7 @@ static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
     (void) memset (p+nDigits, '0', decPt - nDigits);
     p += decPt;
     if (zeroPad && (nDecimals > 0)) {
-      *p++ = decPtChar;
+      *p++ = decSep;
       (void) memset (p, '0', nDecimals);
       p += nDecimals;
     }
@@ -148,7 +148,7 @@ static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
     (void) strcpy (p, digits);
     p += decPt;
     if (zeroPad && (nDecimals > 0)) {
-      *p++ = decPtChar;
+      *p++ = decSep;
       (void) memset (p, '0', nDecimals);
       p += nDecimals;
       *p = '\0';
@@ -159,7 +159,7 @@ static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
     k = nDigits - decPt;         /* nonzero digits past the decimal point */
     (void) memcpy (p, digits, decPt);
     p += decPt;
-    *p++ = decPtChar;
+    *p++ = decSep;
     (void) strcpy (p, digits+decPt);
     p += k;
     if (zeroPad && (k < nDecimals)) {
@@ -172,7 +172,7 @@ static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
   }
   else if (0 == decPt) {
     *p++ = '0';
-    *p++ = decPtChar;
+    *p++ = decSep;
     (void) strcpy (p, digits);
     p += nDigits;
     if (zeroPad && (nDigits < nDecimals)) {
@@ -185,7 +185,7 @@ static char* dig2Fixed (const char digits[], int nDigits, int decPt, int isNeg,
   }
   else {                        /* decPt < 0 */
     *p++ = '0';
-    *p++ = decPtChar;
+    *p++ = decSep;
     (void) memset (p, '0', -decPt);
     p -= decPt;
     (void) memcpy (p, digits, nDigits);
@@ -221,7 +221,7 @@ static double pow10[] = {
  * the output is placed in outBuf, and *outLen gives the length of this buffer
  * On error, NULL is returned.
  */
-char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen, char decPtChar)
+char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen, char decSep)
 {
   char *p, *pEnd;
   char digBuf[32];              /* buffer for the digits */
@@ -246,7 +246,7 @@ char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen,
       return NULL;
     else {
       nDigits = (int) (pEnd - p);
-      if (!dig2Exp(digBuf, nDigits, decPt, isNeg, 17, !squeeze, outBuf, outLen, decPtChar))
+      if (!dig2Exp(digBuf, nDigits, decPt, isNeg, 17, !squeeze, outBuf, outLen, decSep))
         return NULL;
     }
     return outBuf;
@@ -259,7 +259,7 @@ char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen,
   else {
     nDigits = (int)(pEnd - p);
     zeroPatch(digBuf, &nDigits, &decPt);
-    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nDecimals, !squeeze, outBuf, outLen, decPtChar))
+    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nDecimals, !squeeze, outBuf, outLen, decSep))
       return NULL;
   }
   return outBuf;
@@ -271,7 +271,7 @@ char *x2fixed (double v, int nDecimals, int squeeze, char outBuf[], int *outLen,
  * the output is placed in outBuf, and *outLen gives the length of this buffer
  * On error, NULL is returned.
  */
-char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decPtChar)
+char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decSep)
 {
   char *p, *pEnd;
   char digBuf[32];              /* buffer for the digits */
@@ -293,7 +293,7 @@ char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, c
     return NULL;
   nDigits = (int) (pEnd - p);
   zeroPatch(digBuf, &nDigits, &decPt);
-  if (!dig2Exp(digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen, decPtChar))
+  if (!dig2Exp(digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen, decSep))
     return NULL;
 
   return outBuf;
@@ -306,7 +306,7 @@ char *x2efmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, c
  * the output is placed in outBuf, and *outLen gives the length of this buffer
  * On error, NULL is returned.
  */
-char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decPtChar)
+char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, char decSep)
 {
   char *p, *pEnd;
   char digBuf[32];              /* buffer for the digits */
@@ -346,11 +346,11 @@ char *x2gfmt (double v, int nSigFigs, int squeeze, char outBuf[], int *outLen, c
   }
   // the test below mirrors what fprint does
   if ((decPt < -3) || ((decPt-sigFigs) >= 1) ) {
-    if (!dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen, decPtChar))
+    if (!dig2Exp (digBuf, nDigits, decPt, isNeg, nSigFigs, !squeeze, outBuf, outLen, decSep))
       return NULL;
   }
   else {
-    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nSigFigs-decPt, !squeeze, outBuf, outLen, decPtChar))
+    if (!dig2Fixed (digBuf, nDigits, decPt, isNeg, nSigFigs-decPt, !squeeze, outBuf, outLen, decSep))
       return NULL;
   }
 

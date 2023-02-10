@@ -341,8 +341,8 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     //GDX Viewer
     safelyAdd(res, skGdxDefaultSymbolView, scUser, {"gdxViewer","gdxDefaultSymbolView"}, 0);
     safelyAdd(res, skGdxStates, scSys, {"gdxViewer","states"}, QJsonObject());
-    safelyAdd(res, skGdxDecimalPointCopy, scUser, {"gdxViewer","gdxDecimalPointCopy"}, 0);
-    safelyAdd(res, skGdxCustomDecimalPoint, scUser, {"gdxViewer","gdxCustomDecimalPoint"}, "");
+    safelyAdd(res, skGdxDecSepCopy, scUser, {"gdxViewer","gdxDecSepCopy"}, 0);
+    safelyAdd(res, skGdxCustomDecSepCopy, scUser, {"gdxViewer","gdxCustomDecSepCopy"}, "");
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

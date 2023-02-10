@@ -671,7 +671,7 @@ void GdxSymbolView::setDragInProgress(bool dragInProgress)
 
 QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
 {
-    mSym->updateDecimalPoint();
+    mSym->updateDecSepCopy();
     if (!ui->tvListView->model())
         return "" ;
     // row -> column -> QModelIndex

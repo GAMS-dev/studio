@@ -35,7 +35,7 @@ public:
         e = 2
     };
     static const int gFormatFull;
-    static QString format(double v, Format format, int precision, int squeeze, QChar decimalPoint = '.');
+    static QString format(double v, Format format, int precision, int squeeze, QChar decSep = '.');
 
 private:
     DoubleFormatter() {};

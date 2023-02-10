@@ -621,7 +621,7 @@
        <item>
         <widget class="QGroupBox" name="groupBox_6">
          <property name="title">
-          <string>Decimal Point in Copied Data</string>
+          <string>Decimal Separator in Copied Data</string>
          </property>
          <layout class="QVBoxLayout" name="verticalLayout_6">
           <item>
