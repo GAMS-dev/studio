@@ -82,7 +82,6 @@ QVariant ExportModel::data(const QModelIndex &index, int role) const
     }
     QModelIndex idx = mGdxViewer->gdxSymbolTable()->index(index.row(), index.column()-1);
     return mGdxViewer->gdxSymbolTable()->data(idx, role);
-    return QVariant();
 }
 
 bool ExportModel::setData(const QModelIndex &index, const QVariant &value, int role)
