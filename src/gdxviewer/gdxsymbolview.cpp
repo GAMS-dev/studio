@@ -325,11 +325,9 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
-    if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
-        connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
-        showDefaultView(symViewState);
-    }
+    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
+    connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+    showDefaultView(symViewState);
     ui->tvListView->setModel(mSym);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
