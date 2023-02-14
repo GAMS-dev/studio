@@ -88,7 +88,7 @@ void TestGdxViewer::test_export()
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
     GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), mCodec);
 
-    ExportModel *exportModel = new ExportModel(gdxViewer, this);
+    ExportModel *exportModel = new ExportModel(gdxViewer->gdxSymbolTable(), this);
     exportModel->selectAll();
 
     ExportDriver *exportDriver = new ExportDriver(gdxViewer, exportModel, this);

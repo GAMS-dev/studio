@@ -35,7 +35,7 @@ class ExportModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit ExportModel(GdxViewer* gdxViewer, QObject *parent = nullptr);
+    explicit ExportModel(GdxSymbolTableModel* mGdxSymbolTableModel, QObject *parent = nullptr);
 
     ~ExportModel();
 
@@ -55,7 +55,7 @@ public:
     void deselectAll();
 
 private:
-    GdxViewer *mGdxViewer = nullptr;
+    GdxSymbolTableModel *mGdxSymbolTableModel = nullptr;
     QVector<bool> mChecked;
 };
 

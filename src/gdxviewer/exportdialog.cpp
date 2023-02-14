@@ -46,7 +46,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, QWidget *parent) :
 {
     ui->setupUi(this);
     mSymbolTableModel = mGdxViewer->gdxSymbolTable();
-    mExportModel = new ExportModel(gdxViewer, this);
+    mExportModel = new ExportModel(mSymbolTableModel, this);
     mExportDriver = new ExportDriver(mGdxViewer, mExportModel, this);
     connect(mExportDriver, &ExportDriver::exportDone, this, [this]() { setControlsEnabled(true); accept(); });
     setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
