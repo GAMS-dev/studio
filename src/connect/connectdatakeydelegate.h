@@ -22,6 +22,8 @@
 
 #include <QStyledItemDelegate>
 
+#include "connect.h"
+
 namespace gams {
 namespace studio {
 namespace connect {
@@ -30,7 +32,7 @@ class ConnectDataKeyDelegate : public QStyledItemDelegate
 {
     Q_OBJECT
 public:
-    explicit ConnectDataKeyDelegate(QObject *parent = nullptr);
+    explicit ConnectDataKeyDelegate(Connect* connect, QObject *parent = nullptr);
     ~ConnectDataKeyDelegate() override;
     void initStyleOption(QStyleOptionViewItem *option, const QModelIndex &index) const override;
 
@@ -49,6 +51,7 @@ protected:
 signals:
     void requestSchemaHelp(const QString &schemaname);
     void requestAppendItem(const QModelIndex &index);
+    void requestInsertSchemaItem(const int position, const QModelIndex &index);
 
     void modificationChanged(bool modifiedState);
 
@@ -65,6 +68,8 @@ private:
 
     mutable bool mIsLastEditorClosed;
     mutable QWidget* mLastEditor;
+
+    Connect* mConnect;
 };
 
 } // namespace connect

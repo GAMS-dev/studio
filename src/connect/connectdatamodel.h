@@ -39,7 +39,8 @@ enum class DataCheckState {
     ElementValue = 5,
     ElementMap   = 6,
     ListAppend   = 7,
-    MapAppend    = 8
+    MapAppend    = 8,
+    SchemaAppend = 9,
 };
 
 enum class DataItemColumn {
@@ -109,6 +110,7 @@ public slots:
     void appendMapElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, int position, const QModelIndex& index);
     void appendListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
 
+    void insertLastListElement(const QString& schemaname, QStringList& keys, gams::studio::connect::ConnectData* data, const QModelIndex& index);
     void onlyRequriedAttributedChanged(int state);
     void reloadConnectDataModel();
 

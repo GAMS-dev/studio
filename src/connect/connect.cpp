@@ -250,9 +250,6 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
     if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
         data = value;
     }
-    YAML::Emitter e;
-    e << data;
-   qDebug() << "DATA=" << e.c_str();
     return new ConnectData(data);
 }
 
@@ -272,11 +269,15 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
-    YAML::Emitter e;
-    e << schemanode;
     YAML::Node value;
-    if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
-        data[tobeinsertSchemaKey.last().toStdString()] = value;
+    QString pattern = "^\\[\\d\\d?\\]";
+    QRegExp rx(pattern);
+    if (mapValue(schemanode, value, true, onlyRequiredAttribute )) {
+       if (rx.exactMatch(tobeinsertSchemaKey.last())) {
+           data[0] = value; //listnode;
+       } else {
+            data[tobeinsertSchemaKey.last().toStdString()] = value;
+       }
     }
     return new ConnectData(data);
 }
@@ -462,7 +463,6 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                     }
                 }
             } else {
-                int i=0;
                 for (YAML::const_iterator it = schemaValue.begin(); it != schemaValue.end(); ++it) {
                     if (it->second.Type() == YAML::NodeType::Map) {
                         YAML::Node value;

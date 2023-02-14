@@ -22,8 +22,6 @@
 
 #include <QStyledItemDelegate>
 
-#include "connect.h"
-
 namespace gams {
 namespace studio {
 namespace connect {
