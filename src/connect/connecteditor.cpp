@@ -176,6 +176,7 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Default, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::min, true );
     headerRegister(ui->helpTreeView->header());
 
     ui->onlyRequiredAttribute->setCheckState(Qt::Unchecked);
