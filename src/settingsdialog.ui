@@ -647,7 +647,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>15</width>
+              <width>20</width>
               <height>16777215</height>
              </size>
             </property>
@@ -668,7 +668,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>409</width>
+              <width>404</width>
               <height>20</height>
              </size>
             </property>
@@ -694,7 +694,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>15</width>
+              <width>20</width>
               <height>16777215</height>
              </size>
             </property>
@@ -715,7 +715,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>409</width>
+              <width>404</width>
               <height>20</height>
              </size>
             </property>
@@ -741,7 +741,7 @@
             </property>
             <property name="maximumSize">
              <size>
-              <width>15</width>
+              <width>20</width>
               <height>16777215</height>
              </size>
             </property>
@@ -762,7 +762,7 @@
             </property>
             <property name="sizeHint" stdset="0">
              <size>
-              <width>409</width>
+              <width>404</width>
               <height>20</height>
              </size>
             </property>
