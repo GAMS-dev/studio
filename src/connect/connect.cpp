@@ -393,15 +393,30 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                     if (allowed &&value.compare("list") == 0) {
                         dataValue[0] = "[value]";
                     } else if (allowed &&value.compare("boolean") == 0) {
-                           dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
+                              dataValue = (schemaValue["default"] ? schemaValue["default"].as<bool>() : false);
                     } else if (allowed &&value.compare("integer") == 0) {
-                        dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);;
+                              dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);
+                    } else if (allowed && value.compare("dict") == 0) {
+                               if (schemaValue["schema"]) {
+                                   YAML::Node data;
+                                   if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute))
+                                      dataValue = data;
+                                   else
+                                       return false;
+                               } else {
+                                   dataValue["[key]"] = "[value]";
+                               }
+                    } else if (allowed && value.compare("list") == 0) {
+                               if (schemaValue["schema"]) {
+                                   if (!listValue(schemaValue["schema"], dataValue, false, onlyRequiredAttribute))
+                                       return false;
+                               } else {
+                                    dataValue[0] = 0;
+                               }
                     } else {
                         if (allowed)
                             dataValue = "[value]";
                         else
-                            if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
-                                return false;
                             return false;
                     }
 //                }
@@ -443,7 +458,6 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
                                    return false;
                            } else {
-                               if (allowed)
                                    dataValue[0] = 0;
                            }
                 } else {
