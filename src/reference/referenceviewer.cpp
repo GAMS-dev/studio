@@ -88,6 +88,10 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
     ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::File).size())) );
     headers << fileRefWidget->headers();
 
+    SymbolReferenceWidget* macroRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Macro, this);
+    ui->tabWidget->addTab(macroRefWidget, QString("Macro (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Macro).size())) );
+    headers << macroRefWidget->headers();
+
     SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this);
     ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Funct).size())) );
     headers << functRefWidget->headers();
@@ -173,6 +177,7 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(6, QString("Model (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Model).size()));
         ui->tabWidget->setTabText(7, QString("File (%1)").arg(mReference->findReferenceFromType(SymbolDataType::File).size()));
         ui->tabWidget->setTabText(8, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
+        ui->tabWidget->setTabText(8, QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size()));
         ui->tabWidget->setTabText(9, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
         ui->tabWidget->setTabText(10, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
     } else {
@@ -185,6 +190,7 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(6, QString("Model (?)"));
         ui->tabWidget->setTabText(7, QString("File (?)"));
         ui->tabWidget->setTabText(8, QString("Function (?)"));
+        ui->tabWidget->setTabText(8, QString("Macro (?)"));
         ui->tabWidget->setTabText(9, QString("Unused (?)"));
         ui->tabWidget->setTabText(10, QString("File Used (?)"));
         ui->tabWidget->setCurrentIndex(0);

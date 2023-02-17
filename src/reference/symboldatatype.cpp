@@ -73,6 +73,7 @@ const QList<SymbolDataType*> SymbolDataType::list()
         mList << new SymbolDataType(Equation, "EQU,EQUATIONS,Equation");
         mList << new SymbolDataType(Model, "MODEL,MODELS,Model");
         mList << new SymbolDataType(File, "FILE,FILES,File");
+        mList << new SymbolDataType(Macro, "MACRO,MACROS,Macro");
         mList << new SymbolDataType(Unused, "UNUSED,,Unused");
     }
     return mList;

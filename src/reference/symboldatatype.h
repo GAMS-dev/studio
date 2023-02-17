@@ -44,7 +44,8 @@ public:
         Variable = 5,
         Equation = 6,
         Model = 7,
-        File = 8,
+        File  = 8,
+        Macro = 9,
         FileUsed = 99,
         Unused = 100
     };
