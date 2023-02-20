@@ -213,9 +213,12 @@ bool Reference::parseFile(QString referenceFile)
     }
     recordList.removeFirst();
     int size = recordList.first().toInt();
+    int expectedLineread = size+lineread;
     while (!in.atEnd()) {
         recordList = in.readLine().split(QRegExp("\\s+"), Qt::SkipEmptyParts);
         lineread++;
+        if (lineread > expectedLineread)  // ignore the rest of the file contents
+            break;
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
             mLastErrorLine=lineread;
             return false;
