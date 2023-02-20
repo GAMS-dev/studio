@@ -162,7 +162,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
         if (PExProjectNode *project = node->toProject())
-            if (project->type() == PExProjectNode::tGams)
+            if (project->type() != PExProjectNode::tCommon)
                 isGamsSys = true;
         if (node->assignedProject() != project)
             canMoveProject = false;
