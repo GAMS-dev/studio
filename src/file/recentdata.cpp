@@ -67,8 +67,11 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     if (PExFileNode* node = mMainWindow->projectRepo()->findFileNode(edit)) {
         PExProjectNode *project = node->assignedProject();
         mEditFileId = node->file()->id();
-        if (project && project->type() != PExProjectNode::tGams)
+        if (project && project->type() != PExProjectNode::tGams) {
             mPath = QFileInfo(node->location()).path();
+            if (project->type() == PExProjectNode::tCommon)
+                mLastValidProjectId = project->id();
+        }
     } else {
         mEditFileId = fileMeta ? fileMeta->id() : FileId();
         if (!mEditFileId.isValid())
@@ -140,6 +143,13 @@ PExProjectNode *RecentData::project(bool skipGamsSystem) const
         return nullptr;
     }
     return (fileMeta() ? mMainWindow->projectRepo()->asProject(fileMeta()->projectId()) : nullptr);
+}
+
+PExProjectNode *RecentData::lastProject() const
+{
+    if (mLastValidProjectId.isValid())
+        return mMainWindow->projectRepo()->asProject(mLastValidProjectId);
+    return nullptr;
 }
 
 QWidget *RecentData::persistentEditor() const
