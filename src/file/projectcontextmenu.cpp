@@ -279,7 +279,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actProjectCopy]->setEnabled(canMoveProject);
 
     mActions[actSep1]->setVisible(isProject);
-    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
+    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
 //    mActions[actSetMain]->setEnabled(single);
 
     mActions[actAddNewGms]->setVisible(isProject && !isGamsSys);
