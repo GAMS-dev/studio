@@ -554,7 +554,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                     else
                         data << strlist.join(",");
                     data << "";
-                    data << QVariant(schemaKeys);
+                    data << QVariant(schemaDataKeys);
                     data << QVariant(!schema->isAnyOfDefined(key));
                     parents.last()->appendChild(new SchemaDefinitionItem(schemaName, data, parents.last()));
                }

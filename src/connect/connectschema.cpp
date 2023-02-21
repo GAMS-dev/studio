@@ -277,11 +277,9 @@ int ConnectSchema::getNumberOfOneOfSchemaDefined(const QString &key) const
     QString keystr;
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
         keystr = (!key.endsWith("-") ? QString("%1:-:[%2]").arg(key).arg(num) : QString("%1:[%2]").arg(key).arg(num));
-//        qDebug() << "    " << it.key() << " :: " << keystr;
         if (keystr.compare(it.key())==0)
             ++num;
     }
-//    qDebug() << "    num=" << num;
     return num;
 }
 
@@ -370,7 +368,7 @@ ValueWrapper ConnectSchema::getMin(const QString &key) const
 ValueWrapper ConnectSchema::getMax(const QString &key) const
 {
     if (contains(key)) {
-        return mSchemaHelper[key]->min; // [key]->max;
+        return mSchemaHelper[key]->max; // [key]->max;
     } else {
         return ValueWrapper();
     }

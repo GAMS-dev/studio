@@ -95,7 +95,7 @@ void ConnectDataValueDelegate::setModelData(QWidget *editor, QAbstractItemModel 
 {
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        model->setData( index, lineEdit->text() ) ;
+        model->setData( index, lineEdit->text(), Qt::EditRole ) ;
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
