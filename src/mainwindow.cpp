@@ -3992,7 +3992,9 @@ void MainWindow::showEngineStartDialog()
     // prepare dialog
     engine::EngineStartDialog *dialog = new engine::EngineStartDialog(this);
     dialog->initData(Settings::settings()->toString(SettingsKey::skEngineUrl),
+                     Settings::settings()->toInt(SettingsKey::skEngineAuthMethod),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
+                     Settings::settings()->toString(SettingsKey::skEngineUserToken),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
@@ -4004,6 +4006,7 @@ void MainWindow::showEngineStartDialog()
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setBool(SettingsKey::skEngineIsSelfCert, dialog->isCertAccepted());
+        Settings::settings()->setInt(SettingsKey::skEngineAuthMethod, dialog->authMethod());
         if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
             Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
         else

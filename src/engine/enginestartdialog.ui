@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>500</width>
-    <height>309</height>
+    <width>599</width>
+    <height>315</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -114,38 +114,51 @@
    <item row="2" column="0">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="pageLogin">
       <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
        <property name="topMargin">
         <number>0</number>
        </property>
-       <item row="1" column="1">
-        <widget class="QLineEdit" name="edUser">
-         <property name="placeholderText">
-          <string>user</string>
-         </property>
-        </widget>
-       </item>
        <item row="1" column="0">
-        <widget class="QLabel" name="laUser">
+        <widget class="QLabel" name="label">
          <property name="text">
-          <string>Username</string>
+          <string>Login via</string>
          </property>
         </widget>
        </item>
-       <item row="2" column="0">
-        <widget class="QLabel" name="laPassword">
-         <property name="text">
-          <string>Password</string>
-         </property>
+       <item row="1" column="1">
+        <widget class="QComboBox" name="cbLoginMethod">
+         <item>
+          <property name="text">
+           <string>Username / Password</string>
+          </property>
+         </item>
+         <item>
+          <property name="text">
+           <string>JWT Token</string>
+          </property>
+         </item>
         </widget>
        </item>
-       <item row="2" column="1">
-        <widget class="QLineEdit" name="edPassword">
-         <property name="echoMode">
-          <enum>QLineEdit::Password</enum>
+       <item row="5" column="1">
+        <spacer name="verticalSpacer">
+         <property name="orientation">
+          <enum>Qt::Vertical</enum>
+         </property>
+         <property name="sizeHint" stdset="0">
+          <size>
+           <width>20</width>
+           <height>4</height>
+          </size>
+         </property>
+        </spacer>
+       </item>
+       <item row="4" column="1">
+        <widget class="QCheckBox" name="cbAcceptCert">
+         <property name="text">
+          <string>Accept self-signed certificate (HTTPS)</string>
          </property>
         </widget>
        </item>
@@ -159,11 +172,91 @@
          </property>
         </widget>
        </item>
-       <item row="3" column="1">
-        <widget class="QCheckBox" name="cbAcceptCert">
-         <property name="text">
-          <string>Accept self-signed certificate (HTTPS)</string>
+       <item row="2" column="0" colspan="2">
+        <widget class="QStackedWidget" name="stackLoginInput">
+         <property name="currentIndex">
+          <number>1</number>
          </property>
+         <widget class="QWidget" name="pageUserPw">
+          <layout class="QGridLayout" name="gridLayout_5">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="laUser">
+             <property name="text">
+              <string>Username</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="edUser">
+             <property name="placeholderText">
+              <string>user</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="0">
+            <widget class="QLabel" name="laPassword">
+             <property name="text">
+              <string>Password</string>
+             </property>
+            </widget>
+           </item>
+           <item row="1" column="1">
+            <widget class="QLineEdit" name="edPassword">
+             <property name="echoMode">
+              <enum>QLineEdit::Password</enum>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="pageToken">
+          <layout class="QGridLayout" name="gridLayout_6">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="label_2">
+             <property name="text">
+              <string>JWT Token</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QPlainTextEdit" name="edToken">
+             <property name="sizePolicy">
+              <sizepolicy hsizetype="Expanding" vsizetype="Ignored">
+               <horstretch>0</horstretch>
+               <verstretch>0</verstretch>
+              </sizepolicy>
+             </property>
+             <property name="tabChangesFocus">
+              <bool>true</bool>
+             </property>
+            </widget>
+           </item>
+          </layout>
+         </widget>
         </widget>
        </item>
        <item row="0" column="0">
@@ -172,19 +265,6 @@
           <string>Engine URL</string>
          </property>
         </widget>
-       </item>
-       <item row="4" column="1">
-        <spacer name="verticalSpacer">
-         <property name="orientation">
-          <enum>Qt::Vertical</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>20</width>
-           <height>40</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </widget>
@@ -280,7 +360,6 @@
             </property>
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -293,7 +372,6 @@
            <widget class="QLabel" name="nUser">
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -324,7 +402,6 @@
            <widget class="QLabel" name="nJobCount">
             <property name="font">
              <font>
-              <weight>75</weight>
               <bold>true</bold>
              </font>
             </property>
@@ -376,7 +453,6 @@
               <widget class="QLabel" name="laAvailDisk">
                <property name="font">
                 <font>
-                 <weight>75</weight>
                  <bold>true</bold>
                 </font>
                </property>
@@ -389,7 +465,6 @@
               <widget class="QLabel" name="laAvailVolume">
                <property name="font">
                 <font>
-                 <weight>75</weight>
                  <bold>true</bold>
                 </font>
                </property>
@@ -499,8 +574,6 @@
  </widget>
  <tabstops>
   <tabstop>edUrl</tabstop>
-  <tabstop>edUser</tabstop>
-  <tabstop>edPassword</tabstop>
   <tabstop>cbAcceptCert</tabstop>
   <tabstop>cbForceGdx</tabstop>
   <tabstop>bOk</tabstop>

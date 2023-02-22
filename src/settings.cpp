@@ -366,6 +366,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 
     // GAMS Engine settings
     safelyAdd(res, skEngineUrl, scSys, {"engine","page"}, "");
+    safelyAdd(res, skEngineAuthMethod, scSys, {"engine","authMethod"}, 0);
     safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);

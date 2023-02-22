@@ -133,6 +133,7 @@ enum SettingsKey {
 
     // GAMS Engine settings
     skEngineUrl,
+    skEngineAuthMethod,
     skEngineUser,
     skEngineUserToken,
     skEngineStoreUserToken,

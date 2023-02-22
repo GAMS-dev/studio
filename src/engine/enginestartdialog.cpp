@@ -52,11 +52,13 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edToken, &QPlainTextEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
 
     ui->stackedWidget->setCurrentIndex(0);
+    ui->stackLoginInput->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
     ui->cbAcceptCert->setVisible(false);
     ui->bOk->setText("Login");
@@ -152,13 +154,15 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert,
-                                 const QString &_nSpace, const QString &_userInst, bool _forceGdx)
+void EngineStartDialog::initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+                                 int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
-    if (mProc) mProc->initUsername(_user.trimmed());
+    ui->stackLoginInput->setCurrentIndex(authMethod);
+    if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
+    if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
     if (selfCert) {
@@ -199,7 +203,8 @@ QString EngineStartDialog::user() const
 
 QString EngineStartDialog::authToken() const
 {
-    return mProc ? mProc->authToken() : QString();
+    if (mProc) return mProc->authToken();
+    return ui->edToken->document()->toPlainText().trimmed();
 }
 
 bool EngineStartDialog::forceGdx() const
@@ -210,9 +215,11 @@ bool EngineStartDialog::forceGdx() const
 void EngineStartDialog::focusEmptyField()
 {
     if (inLogin()) {
+        int method = ui->cbLoginMethod->currentIndex();
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
-        else if (user().isEmpty()) ui->edUser->setFocus();
-        else if (ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+        else if (method == 1 && authToken().isEmpty()) ui->edToken->setFocus();
+        else if (method == 0 && user().isEmpty()) ui->edUser->setFocus();
+        else if (method == 0 && ui->edPassword->isVisible() && ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
         else ui->bOk->setFocus();
     } else {
         if (ui->cbNamespace->count() > 1) ui->cbNamespace->setFocus();
@@ -223,6 +230,11 @@ void EngineStartDialog::focusEmptyField()
 void EngineStartDialog::setEngineVersion(QString version)
 {
     ui->laEngineVersion->setText(version);
+}
+
+int EngineStartDialog::authMethod()
+{
+    return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count());
 }
 
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
@@ -302,6 +314,7 @@ void EngineStartDialog::ensureOpened()
 void EngineStartDialog::bLogoutClicked()
 {
     ui->edPassword->setText("");
+    ui->edToken->document()->clear();
     mProc->setAuthToken("");
     mProc->initUsername("");
     emit mProc->authorized("");
@@ -321,7 +334,17 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     ui->bAlways->setEnabled(false);
 
     if (inLogin() && button == ui->bOk) {
-        mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
+        switch (authMethod()) {
+        case 0:
+            mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
+            break;
+        case 1:
+            mProc->setAuthToken(ui->edToken->document()->toPlainText().trimmed());
+            authorizeChanged(mProc->authToken());
+            break;
+        default:
+            break;
+        }
         return;
     }
     mAlways = button == ui->bAlways;
@@ -361,8 +384,9 @@ void EngineStartDialog::getVersion()
 void EngineStartDialog::setCanLogin(bool value)
 {
     value = value && !ui->edUrl->text().isEmpty()
-            && !user().isEmpty()
-            && (!ui->edPassword->text().isEmpty() || !mProc->authToken().isEmpty())
+            && (!mProc->authToken().isEmpty() ||
+                  (authMethod()==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
+               || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty()))
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
@@ -772,6 +796,14 @@ QString EngineStartDialog::cleanUrl(const QString url)
             res.replace(":443/", "/");
     }
     return res;
+}
+
+
+void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
+{
+    if (ui->cbLoginMethod->currentIndex() < 2) {
+        ui->stackLoginInput->setCurrentIndex(ui->cbLoginMethod->currentIndex());
+    }
 }
 
 } // namespace engine

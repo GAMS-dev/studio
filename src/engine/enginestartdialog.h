@@ -66,7 +66,7 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const QString &_user, int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
+    void initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
@@ -76,6 +76,7 @@ public:
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);
+    int authMethod();
 
 signals:
     void submit(bool start);
@@ -122,6 +123,8 @@ private slots:
     void selfSignedCertFound(int sslError);
     void certAcceptChanged();
     void hideCert();
+
+    void on_cbLoginMethod_currentIndexChanged(int index);
 
 private:
     Ui::EngineStartDialog *ui;
