@@ -1,5 +1,6 @@
 Version 1.13.2
 ==================
+- added support for Macro symbol to reference file viewer
 - fixed crash when reloading an empty GDX symbol in table view mode
 - enable controls for empty symbols in GDX Viewer as well
 - fixed several memory leaks
