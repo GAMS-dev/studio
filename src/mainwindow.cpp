@@ -452,7 +452,13 @@ void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
     connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
-        openFilePath(filePath, nullptr, ogNone, true);
+        PExProjectNode *project = nullptr;
+        if (Settings::settings()->toBool(skOpenInCurrent)) {
+            project = mRecent.lastProject();
+            if (project->type() != PExProjectNode::tCommon)
+                project = nullptr;
+        }
+        openFilePath(filePath, project, ogNone, true);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
         mWp->hide();
@@ -3338,7 +3344,7 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
     if (!QFileInfo::exists(filePath))
         EXCEPT() << "File not found: " << filePath;
 
-    PExProjectNode *curProject = mRecent.lastProject();
+    PExProjectNode *curProject = mRecent.project();
     PExProjectNode *project = knownProject;
     PExFileNode *fileNode = nullptr;
 

@@ -67,10 +67,10 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     if (PExFileNode* node = mMainWindow->projectRepo()->findFileNode(edit)) {
         PExProjectNode *project = node->assignedProject();
         mEditFileId = node->file()->id();
-        if (project && project->type() != PExProjectNode::tGams) {
-            mPath = QFileInfo(node->location()).path();
-            if (project->type() == PExProjectNode::tCommon)
-                mLastValidProjectId = project->id();
+        if (project) {
+            mLastValidProjectId = project->id();
+            if (project->type() != PExProjectNode::tGams)
+                mPath = QFileInfo(node->location()).path();
         }
     } else {
         mEditFileId = fileMeta ? fileMeta->id() : FileId();
