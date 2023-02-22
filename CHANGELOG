@@ -1,7 +1,8 @@
 Version 1.13.2
 ==================
-- Fixed crash when reloading an empty GDX symbol in table view mode
-- Enable controls for empty symbols in GDX Viewer as well
+- fixed crash when reloading an empty GDX symbol in table view mode
+- enable controls for empty symbols in GDX Viewer as well
+- fixed several memory leaks
 
 Version 1.13.1
 ==================
