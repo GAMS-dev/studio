@@ -58,8 +58,18 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
-    connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
-    connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
+    connect(mManager, &EngineManager::reListJobs, this, [this](qint32 count) {
+        if (mAuthPollJobs) {
+            mAuthPollJobs = false;
+            listNamespaces();
+            setProcState(ProcCheck);
+        }
+        emit EngineProcess::reListJobs(count);
+    });
+    connect(mManager, &EngineManager::reListJobsError, this, [this](const QString &error) {
+        mAuthPollJobs = false;
+        emit EngineProcess::reListJobsError(error);
+    });
     connect(mManager, &EngineManager::reListNamspaces, this, &EngineProcess::reListNamspaces);
     connect(mManager, &EngineManager::reListNamespacesError, this, &EngineProcess::reListNamespacesError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
@@ -398,6 +408,15 @@ void EngineProcess::authorize(const QString &username, const QString &password, 
     setProcState(ProcCheck);
 }
 
+void EngineProcess::authorize(const QString &authToken)
+{
+    setAuthToken(authToken);
+    if (!authToken.isEmpty()) {
+        mAuthPollJobs = true;
+        listJobs();
+    }
+}
+
 void EngineProcess::initUsername(const QString &user)
 {
     mManager->initUsername(user);
@@ -439,7 +458,7 @@ void EngineProcess::listNamespaces()
 
 void EngineProcess::sendPostLoginRequests()
 {
-    mManager->listNamespaces();
+    listNamespaces();
     if (mInKubernetes) {
         mManager->getUserInstances();
         mManager->getQuota();
@@ -639,10 +658,11 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::reAuthorize(const QString &token)
 {
+    mAuthToken = token;
     mManager->setAuthToken(token);
     if (!token.isEmpty()) {
-        mManager->listJobs();
-        mManager->listNamespaces();
+        listJobs();
+        listNamespaces();
         setProcState(ProcCheck);
     }
     emit authorized(token);

@@ -65,6 +65,7 @@ public:
     bool setUrl(const QString &url);
     QUrl url();
     void authorize(const QString &username, const QString &password, int expireMinutes);
+    void authorize(const QString &authToken);
     void initUsername(const QString &user);
     void setAuthToken(const QString &bearerToken);
     QString authToken() const { return mAuthToken; }
@@ -172,6 +173,7 @@ private:
     QTimer mPollTimer;
     int mPollCounter = 0;
     bool mPollSlow = false;
+    bool mAuthPollJobs = false;
     AbstractGamsProcess *mSubProc = nullptr;
 
     enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};

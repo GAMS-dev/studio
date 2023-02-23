@@ -343,8 +343,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
             mProc->authorize(user(), ui->edPassword->text(), mAuthExpireMinutes);
             break;
         case 1:
-            mProc->setAuthToken(ui->edToken->document()->toPlainText().trimmed());
-            emit mProc->authorized(mProc->authToken());
+            mProc->authorize(ui->edToken->document()->toPlainText().trimmed());
             break;
         default:
             break;
