@@ -52,12 +52,15 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->edToken, &QPlainTextEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edToken, &QPlainTextEdit::textChanged, this, [this]() {
+        updateLoginStates();
+    });
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
 
     ui->stackedWidget->setCurrentIndex(0);
+    ui->cbLoginMethod->setCurrentIndex(0);
     ui->stackLoginInput->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
     ui->cbAcceptCert->setVisible(false);
@@ -160,6 +163,7 @@ void EngineStartDialog::initData(const QString &_url, const int authMethod, cons
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
+    ui->cbLoginMethod->setCurrentIndex(authMethod);
     ui->stackLoginInput->setCurrentIndex(authMethod);
     if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
     if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
@@ -340,7 +344,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
             break;
         case 1:
             mProc->setAuthToken(ui->edToken->document()->toPlainText().trimmed());
-            authorizeChanged(mProc->authToken());
+            emit mProc->authorized(mProc->authToken());
             break;
         default:
             break;
@@ -453,8 +457,12 @@ void EngineStartDialog::reListJobs(qint32 count)
 void EngineStartDialog::reListJobsError(const QString &error)
 {
     DEB() << "ERROR: " << error;
-    if (!inLogin())
+    if (!inLogin()) {
         showLogin();
+    } else if (authMethod() == 1) {
+        ui->laWarn->setText("Invalid access token");
+        ui->edToken->setFocus();
+    }
 }
 
 void EngineStartDialog::reListNamespaces(const QStringList &list)
