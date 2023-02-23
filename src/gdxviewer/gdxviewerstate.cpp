@@ -33,6 +33,7 @@ GdxViewerState::GdxViewerState()
 GdxViewerState::~GdxViewerState()
 {
     for (auto it = mSymbolViewState.begin() ; it != mSymbolViewState.end() ; ) {
+        delete it.value();
         it = mSymbolViewState.erase(it);
     }
 }
