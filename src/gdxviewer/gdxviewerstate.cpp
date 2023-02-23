@@ -20,6 +20,7 @@
 #include "gdxviewerstate.h"
 #include "gdxsymbolviewstate.h"
 #include <QVariantMap>
+#include <QDebug>
 
 namespace gams {
 namespace studio {
@@ -32,8 +33,8 @@ GdxViewerState::GdxViewerState()
 
 GdxViewerState::~GdxViewerState()
 {
-    for (auto it = mSymbolViewState.constBegin() ; it != mSymbolViewState.constEnd() ; ++it) {
-        deleteSymbolViewState(it.key());
+    for (auto it = mSymbolViewState.begin() ; it != mSymbolViewState.end() ; ) {
+        it = mSymbolViewState.erase(it);
     }
 }
 
