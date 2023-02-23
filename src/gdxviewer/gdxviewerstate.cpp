@@ -20,7 +20,6 @@
 #include "gdxviewerstate.h"
 #include "gdxsymbolviewstate.h"
 #include <QVariantMap>
-#include <QDebug>
 
 namespace gams {
 namespace studio {

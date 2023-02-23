@@ -99,7 +99,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
-    QVBoxLayout* vLayout = new QVBoxLayout(this);
+    QVBoxLayout* vLayout = new QVBoxLayout();
     mPreferencesWidget = new QWidget(this);
     mPreferencesWidget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
@@ -110,7 +110,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mSqZeroes->setChecked(true);
     vLayout->addWidget(mSqZeroes);
 
-    QGridLayout* gridLayout = new QGridLayout(this);
+    QGridLayout* gridLayout = new QGridLayout();
 
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
