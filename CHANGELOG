@@ -4,6 +4,8 @@ Version 1.13.2
 - fixed crash when reloading an empty GDX symbol in table view mode
 - enable controls for empty symbols in GDX Viewer as well
 - fixed several memory leaks
+- added a special group -GAMS-System- on project level to carry system files like Changelog and gamsconfig.yaml
+- for system and search groups disallow dragging files into them, disabled main file, and fixed tooltips
 
 Version 1.13.1
 ==================
