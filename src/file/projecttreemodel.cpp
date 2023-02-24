@@ -156,12 +156,16 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }
     case IsProjectRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
-        return bool(node);
+        return bool(node && node->type() == PExProjectNode::tCommon);
     }
     case NameExtRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
         if (!node) return QString();
         return node->nameExt();
+    }
+    case IsGamsSys: {
+        PExProjectNode *node = mProjectRepo->node(ind)->assignedProject();
+        return (node && node->type() == PExProjectNode::tGams);
     }
     default:
         break;
@@ -400,12 +404,17 @@ bool ProjectTreeModel::isCurrentProject(const QModelIndex& ind) const
     return false;
 }
 
-QModelIndex ProjectTreeModel::findProject(QModelIndex ind)
+QModelIndex ProjectTreeModel::findProject(QModelIndex ind, bool *locked)
 {
+    if (locked) *locked = false;
     if (ind.isValid()) {
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
         PExProjectNode *project = node->assignedProject();
+        if (project->type() != PExProjectNode::tCommon) {
+            if (locked) *locked = true;
+            return QModelIndex();
+        }
         ind = index(project);
     }
     return ind;
@@ -418,7 +427,8 @@ bool ProjectTreeModel::isSelected(const QModelIndex& ind) const
 
 void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QItemSelection &deselected)
 {
-    for (const QModelIndex &ind: deselected.indexes()) {
+    const auto dInds = deselected.indexes();
+    for (const QModelIndex &ind: dInds) {
         NodeId id = nodeId(ind);
         if (id.isValid() && mSelected.contains(id)) {
             mSelected.removeAll(id);
@@ -431,7 +441,8 @@ void ProjectTreeModel::selectionChanged(const QItemSelection &selected, const QI
     PExAbstractNode *first = mProjectRepo->node(firstId);
     mAddProjects.clear();
     int selKind = !first ? 0 : first->toProject() ? 1 : 2;
-    for (const QModelIndex &ind: selected.indexes()) {
+    const auto sInds = selected.indexes();
+    for (const QModelIndex &ind: sInds) {
         NodeId id = nodeId(ind);
         PExAbstractNode *node = mProjectRepo->node(id);
         int nodeKind = !node ? 0 : node->toProject() ? 1 : 2;

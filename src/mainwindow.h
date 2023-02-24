@@ -133,7 +133,9 @@ public:
     TextMarkRepo* textMarkRepo();
     QWidget *currentEdit();
 
+    const QWidgetList constOpenEditors();
     QWidgetList openEditors();
+    const QList<QWidget *> constOpenLogs();
     QList<QWidget *> openLogs();
     search::SearchDialog* searchDialog() const;
     RecentData *recent();
@@ -187,7 +189,7 @@ public slots:
     void updateStatusLineCount();
     void updateStatusLoadAmount();
     void openRecentFile();
-    void setMainGms(gams::studio::PExFileNode *node);
+    void setMainFile(gams::studio::PExFileNode *node);
     void currentDocumentChanged(int from, int charsRemoved, int charsAdded);
     void getAdvancedActions(QList<QAction *> *actions);
     void appendSystemLogInfo(const QString &text) const;
@@ -199,7 +201,7 @@ public slots:
                        bool projectOnly = false);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
-    void closeFileEditors(const gams::studio::FileId fileId);
+    void closeFileEditors(const gams::studio::FileId fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
@@ -422,7 +424,7 @@ private slots:
     void updateTabSize(int size);
     void openProject(const QString gspFile);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool fullCopy);
-    void moveProjectCollideDialog(MultiCopyCheck mcs,
+    void moveProjectCollideDialog(gams::studio::MultiCopyCheck mcs,
                                   const QStringList &srcFiles, const QStringList &dstFiles,
                                   QStringList &missFiles, QStringList &collideFiles);
     void copyFiles(const QStringList &srcFiles, const QStringList &dstFiles);
@@ -441,7 +443,7 @@ private:
     void initNavigator();
     void adjustFonts();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
-    bool handleFileChanges(FileMeta *fc);
+    bool handleFileChanges(FileMeta *fc, bool willReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(FileId fileId);
     FileProcessKind fileDeletedExtern(FileId fileId);

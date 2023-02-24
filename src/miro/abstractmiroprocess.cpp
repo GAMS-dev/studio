@@ -39,14 +39,14 @@ AbstractMiroProcess::AbstractMiroProcess(const QString &application, QObject *pa
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
     connect(&mProcess, &QProcess::readyReadStandardOutput, this, &AbstractMiroProcess::readStdOut);
     connect(&mProcess, &QProcess::readyReadStandardError, this, &AbstractMiroProcess::readStdErr);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(subProcessCompleted(int)));
+    connect(&mProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(subProcessCompleted(int)));
 
     // MIRO connections
     connect(this, &AbstractMiroProcess::executeMiro, this, &AbstractMiroProcess::executeNext);
     connect(&mMiro, &QProcess::stateChanged, this, &AbstractMiroProcess::stateChanged);
     connect(&mMiro, &QProcess::readyReadStandardOutput, this, &AbstractMiroProcess::readStdOut);
     connect(&mMiro, &QProcess::readyReadStandardError, this, &AbstractMiroProcess::readStdErr);
-    connect(&mMiro, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
+    connect(&mMiro, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 void AbstractMiroProcess::execute()

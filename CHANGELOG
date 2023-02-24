@@ -2,6 +2,15 @@ Version 1.14.0
 ==================
 - Add new GDX Viewer setting to control decimal separator used when copying data
 
+Version 1.13.2
+==================
+- added support for macro symbol in Reference File Viewer
+- fixed crash when reloading an empty GDX symbol in table view mode
+- enabled controls for empty symbols in GDX Viewer as well
+- fixed several memory leaks
+- added a special group -GAMS-System- on project level to bundle files like Changelog and gamsconfig.yaml
+- disallowed dragging files into system and search groups, disabled main file, fixed tooltips
+
 Version 1.13.1
 ==================
 - added `Open project...` to main menu and Project Explorer context menu

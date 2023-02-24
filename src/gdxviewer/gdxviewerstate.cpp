@@ -32,8 +32,9 @@ GdxViewerState::GdxViewerState()
 
 GdxViewerState::~GdxViewerState()
 {
-    for (const QString &name : mSymbolViewState.keys()) {
-        deleteSymbolViewState(name);
+    for (auto it = mSymbolViewState.begin() ; it != mSymbolViewState.end() ; ) {
+        delete it.value();
+        it = mSymbolViewState.erase(it);
     }
 }
 

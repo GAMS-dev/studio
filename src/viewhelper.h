@@ -133,7 +133,7 @@ public:
         return (editorType(w) == EditorType::gdx) ? static_cast<gdxviewer::GdxViewer*>(w) : nullptr;
     }
     inline static lxiviewer::LxiViewer* toLxiViewer(QWidget* w) {
-        if (editorType(w) == EditorType::lxiLstChild)
+        if (editorType(w) == EditorType::lxiLstChild && w && w->parentWidget() && w->parentWidget()->parentWidget())
             return static_cast<lxiviewer::LxiViewer*>(w->parentWidget()->parentWidget());
         if (editorType(w) == EditorType::lxiLst)
             return static_cast<lxiviewer::LxiViewer*>(w);

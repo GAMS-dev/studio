@@ -68,6 +68,7 @@ private slots:
     void setRowCount(int rows);
     void updateCheckState();
 
+private:
     bool isThereAnError(gams::studio::option::EnvVarConfigItem* item) const;
     bool isConformatVersion(const QString &version) const;
 

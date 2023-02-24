@@ -45,6 +45,7 @@ public:
     explicit EnvVarConfigEditor(const QList<EnvVarConfigItem *> &initItems, QWidget *parent = nullptr);
     ~EnvVarConfigEditor() override;
     QList<QHeaderView*> headers();
+    bool isModified() const;
 
 signals:
     void modificationChanged(bool modifiedState);
@@ -57,7 +58,6 @@ public slots:
     void deSelect();
 
     void setModified(bool modified);
-    bool isModified() const;
 
     QList<gams::studio::option::EnvVarConfigItem *> envVarConfigItems();
 
@@ -74,11 +74,6 @@ private slots:
     void on_selectRow(int logicalIndex);
     void on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
 
-    bool isThereARow() const;
-    bool isThereAnIndexSelection() const;
-    bool isThereARowSelection() const;
-    bool isEverySelectionARow() const;
-
     void on_actionInsert_triggered();
     void on_actionDelete_triggered();
     void on_actionMoveUp_triggered();
@@ -86,6 +81,12 @@ private slots:
     void on_actionSelect_Current_Row_triggered();
     void on_actionSelectAll_triggered();
     void on_actionResize_Columns_To_Contents_triggered();
+
+private:
+    bool isThereARow() const;
+    bool isThereAnIndexSelection() const;
+    bool isThereARowSelection() const;
+    bool isEverySelectionARow() const;
 
 private:
     friend class GamsConfigEditor;

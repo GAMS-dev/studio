@@ -97,7 +97,6 @@ void PExLogNode::logDone()
     QString baseFile = location().left(location().lastIndexOf('.'));
     if (mLogOption < 3) {
         QString message;
-        QDir dir = location();
         QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
         TextView *tv = ViewHelper::toTextView(wid);
         QFileInfo fi = QFileInfo(baseFile + ".log");

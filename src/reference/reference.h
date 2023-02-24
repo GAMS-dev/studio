@@ -199,6 +199,7 @@ private:
     QList<SymbolReferenceItem *> mFileReference;
     QList<SymbolReferenceItem *> mModelReference;
     QList<SymbolReferenceItem *> mFunctionReference;
+    QList<SymbolReferenceItem *> mMacroReference;
     QList<SymbolReferenceItem *> mUnusedReference;
 
     QMap<QString, SymbolId> mSymbolNameMap;

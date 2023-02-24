@@ -99,6 +99,7 @@ private slots:
 
 private:
     void parseCmdArgs();
+    void triggerOpenFile(QString path);
 
     ///
     /// \brief Start listening
@@ -109,6 +110,7 @@ private:
     std::unique_ptr<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
     support::DistributionValidator mDistribValidator;
+    QString mOpenPathOnInit;
     QString mServerName;
     QLocalServer mServer;
 };

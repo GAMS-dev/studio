@@ -32,7 +32,7 @@ public:
     NavigatorContent(QString txt, std::function<void()> function);
     bool isValid();
 
-    FileMeta* GetFileMeta();
+    FileMeta *GetFileMeta();
     QFileInfo FileInfo();
     QString Text();
     QString AdditionalInfo();

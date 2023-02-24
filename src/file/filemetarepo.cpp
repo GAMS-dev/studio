@@ -233,11 +233,11 @@ void FileMetaRepo::setDebugMode(bool debug)
         }
     }
 
-    for (int key: edits.keys()) {
-        FileMeta* fm = fileMeta(FileId(key));
-        QString nam = (fm ? fm->name() : "???");
+//    for (auto it = edits.constBegin() ; it != edits.constEnd() ; ++it) {
+//        FileMeta* fm = fileMeta(FileId(it.key()));
+//        QString nam = (fm ? fm->name() : "???");
 //        DEB() << key << ": " << edits.value(key)->size() << "    " << nam;
-    }
+//    }
     mCompleter.setDebugMode(debug);
 }
 
@@ -279,7 +279,8 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
         QFileInfo fi(i.value()->location());
         if (changed.contains(fi.suffix(), Qt::CaseInsensitive)) {
             i.value()->refreshType();
-            for (PExAbstractNode *node : mProjectRepo->fileNodes(i.value()->id()))
+            const auto nodes = mProjectRepo->fileNodes(i.value()->id());
+            for (PExAbstractNode *node : nodes)
                 if (!projects.contains(node->assignedProject())) projects << node->assignedProject();
         }
     }

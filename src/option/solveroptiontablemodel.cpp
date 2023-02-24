@@ -66,7 +66,7 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
             if (mOptionItem.at(index)->key.startsWith(lineComment))
                 return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
             else
-                return QString("%1 %2 %3").arg(lineComment).arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
+                return QString("%1 %2 %3").arg(lineComment, mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
         } else {
             QString tooltipText = "";
             switch(mOptionItem.at(index)->error) {
@@ -142,7 +142,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
         if (col==COLUMN_OPTION_KEY) {
             QString text = mOptionItem.at(row)->key;
-            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
+//            QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (!text.isEmpty()) {
                 if (mOptionTokenizer->isValidLineCommentChar(text.at(0)))
                     text = mOptionItem.at(row)->key.mid(1);
@@ -586,8 +586,8 @@ QString SolverOptionTableModel::getOptionTableEntry(int row)
         QModelIndex commentIndex = index(row, COLUMN_EOL_COMMENT);
         QVariant optionComment = data(commentIndex, Qt::DisplayRole);
         if (mOptionTokenizer->getOption()->isEOLCharDefined() && !optionComment.toString().isEmpty()) {
-            return QString("%1%2%3  %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator()).arg(optionValue.toString(),
-                                                QString(mOptionTokenizer->getOption()->getEOLChars().at(0)),
+            return QString("%1%2%3  %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
+                                                optionValue.toString(), QString(mOptionTokenizer->getOption()->getEOLChars().at(0)),
                                                 optionComment.toString());
         } else {
             return QString("%1%2%3").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(), optionValue.toString());

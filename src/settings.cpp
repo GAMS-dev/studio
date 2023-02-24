@@ -57,7 +57,8 @@ QString sizeToString(QSize s) {
 }
 QList<int> toIntArray(QString s) {
     QList<int> res;
-    for (QString v: s.split(',')) res << v.toInt();
+    const QStringList list = s.split(',');
+    for (const QString &v: list) res << v.toInt();
     return res;
 }
 QPoint stringToPoint(QString s) {
@@ -187,7 +188,8 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             loadFile(scTheme);
 
             QDir location(settingsPath());
-            for (const QString &fileName: location.entryList({"*.lock"})) {
+            const QStringList list = location.entryList({"*.lock"});
+            for (const QString &fileName: list) {
                 QFile f(location.path() +  "/" + fileName);
                 f.remove();
             }
@@ -442,8 +444,8 @@ void Settings::save()
 {
     // ignore-settings argument -> no settings assigned
     if (!canWrite()) return;
-    for (const Scope &scope : mSettings.keys()) {
-        saveFile(scope);
+    for (auto it = mSettings.constBegin() ; it != mSettings.constEnd() ; ++it) {
+        saveFile(it.key());
     }
     // Themes are stored dynamically in multiple files
     saveFile(Scope::scTheme);
@@ -700,7 +702,8 @@ void Settings::loadMap(Scope scope, QVariantMap map)
             // copy all elements
             QJsonObject joSrc = var.toJsonObject();
             QJsonObject joDest = mData.value(scope).value(it.key()).toJsonObject();
-            for (const QString &joKey : joSrc.keys()) {
+            const QStringList srcKeys = joSrc.keys();
+            for (const QString &joKey : srcKeys) {
                 joDest[joKey] = joSrc[joKey];
             }
             var = joDest;

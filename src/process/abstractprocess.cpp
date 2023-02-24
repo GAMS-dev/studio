@@ -62,7 +62,7 @@ void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
     mWorkingDirectory = workingDirectory;
 }
 
-QStringList AbstractProcess::parameters() const
+const QStringList AbstractProcess::parameters() const
 {
     return mParameters;
 }
@@ -144,7 +144,7 @@ AbstractGamsProcess::AbstractGamsProcess(const QString &application, QObject *pa
     : AbstractSingleProcess(application, parent)
 {
     connect(&mProcess, &QProcess::stateChanged, this, &AbstractProcess::stateChanged);
-    connect(&mProcess, SIGNAL(finished(int, QProcess::ExitStatus)), this, SLOT(completed(int)));
+    connect(&mProcess, SIGNAL(finished(int,QProcess::ExitStatus)), this, SLOT(completed(int)));
 }
 
 QString AbstractGamsProcess::nativeAppPath()

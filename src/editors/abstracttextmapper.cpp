@@ -803,7 +803,7 @@ void AbstractTextMapper::removeChunk(int chunkNr)
 
     if (mFindChunk > chunkNr) --mFindChunk;
 
-    chunk = getChunk(chunkNr, true);
+    getChunk(chunkNr, true);
 
     // move stored ChunkLines data
     const ChunkMetrics &clRem = mChunkMetrics.at(chunkNr);
@@ -925,7 +925,8 @@ QPoint AbstractTextMapper::convertPosLocal(const CursorPosition &pos) const
     int chunkNr = mTopLine.chunkNr;
     while (pos.chunkNr >= chunkNr) {
         // count forward
-        lineNr += (pos.chunkNr > chunkNr) ? chunkMetrics(chunkNr)->lineCount : pos.localLine;
+        ChunkMetrics *cm = chunkMetrics(chunkNr);
+        lineNr += (cm && pos.chunkNr > chunkNr) ? cm->lineCount : pos.localLine;
         if (lineNr > visibleLineCount()) {
             // position is beyond the end of the buffer
             return QPoint(lines(visibleLineCount(), 1).length(), cursorBeyondEnd);

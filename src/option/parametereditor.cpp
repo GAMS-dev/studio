@@ -62,8 +62,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     QString normalizedText = mOptionTokenizer->normalize(optionItem);
     mParameterTableModel = new GamsParameterTableModel(normalizedText, mOptionTokenizer, this);
     ui->gamsParameterTableView->setModel( mParameterTableModel );
-    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr),  Qt::UniqueConnection);
-    connect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr,  Qt::UniqueConnection);
+    connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->gamsParameterTableView);
     ui->gamsParameterTableView->setItemDelegate( mOptionCompleter );
@@ -190,7 +190,8 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
-    for (const option::OptionItem &item : getOptionTokenizer()->tokenize( commandLineStr)) {
+    const auto items = getOptionTokenizer()->tokenize( commandLineStr);
+    for (const option::OptionItem &item : items) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
         if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
@@ -267,7 +268,8 @@ void ParameterEditor::showParameterContextMenu(const QPoint &pos)
     bool thereIsARow = (ui->gamsParameterTableView->model()->rowCount() > 0);
 
     QMenu menu(this);
-    for(QAction* action : ui->gamsParameterTableView->actions()) {
+    const auto actions = ui->gamsParameterTableView->actions();
+    for(QAction* action : actions) {
         if (action->objectName().compare("actionInsert_option")==0) {
             if (!thereIsARow || thereIsARowSelection)
                 menu.addAction(action);
@@ -330,7 +332,8 @@ void ParameterEditor::showDefinitionContextMenu(const QPoint &pos)
     }
 
     QMenu menu(this);
-    for(QAction* action : ui->gamsParameterTreeView->actions()) {
+    const auto actions = ui->gamsParameterTreeView->actions();
+    for(QAction* action : actions) {
         if (action->objectName().compare("actionAddThisOption")==0) {
             if ( !hasSelectionBeenAdded && ui->gamsParameterTableView->selectionModel()->selectedRows().size() <= 0)
                 menu.addAction(action);
@@ -483,8 +486,8 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
             mOptionTokenizer, &OptionTokenizer::formatTextLineEdit);
     disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
             this, &ParameterEditor::updateParameterTableModel );
-    disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr));
-    disconnect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+    disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr);
+    disconnect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
     ui->gamsParameterTreeView->clearSelection();
     ui->gamsParameterTreeView->collapseAll();
@@ -503,8 +506,8 @@ void ParameterEditor::loadCommandLine(const QStringList &history)
             mOptionTokenizer, &OptionTokenizer::formatTextLineEdit, Qt::UniqueConnection);
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
             this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection);
-    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr), Qt::UniqueConnection);
-    connect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr, Qt::UniqueConnection);
+    connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 
     if (history.isEmpty()) {
         ui->gamsParameterTreeView->clearSelection();
@@ -711,19 +714,20 @@ void ParameterEditor::deleteParameter()
 
     disconnect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition);
 
-    QModelIndex index = selection.at(0);
-    QModelIndex removeTableIndex = ui->gamsParameterTableView->model()->index(index.row(), 0);
-    QVariant optionName = ui->gamsParameterTableView->model()->data(removeTableIndex, Qt::DisplayRole);
+//    QModelIndex index = selection.at(0);
+//    QModelIndex removeTableIndex = ui->gamsParameterTableView->model()->index(index.row(), 0);
+//    QVariant optionName = ui->gamsParameterTableView->model()->data(removeTableIndex, Qt::DisplayRole);
 
-    QModelIndexList items = ui->gamsParameterTableView->model()->match(ui->gamsParameterTableView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                     Qt::DisplayRole,
-                                                                     optionName, -1);
-    QModelIndexList definitionItems = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
-                                                                     Qt::DisplayRole,
-                                                                     optionName, 1);
+//    QModelIndexList items = ui->gamsParameterTableView->model()->match(ui->gamsParameterTableView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+//                                                                     Qt::DisplayRole,
+//                                                                     optionName, -1);
+//    QModelIndexList definitionItems = ui->gamsParameterTreeView->model()->match(ui->gamsParameterTreeView->model()->index(0, OptionDefinitionModel::COLUMN_OPTION_NAME),
+//                                                                     Qt::DisplayRole,
+//                                                                     optionName, 1);
 
     QList<int> rows;
-    for(const QModelIndex & index : ui->gamsParameterTableView->selectionModel()->selectedRows()) {
+    const auto indexes = ui->gamsParameterTableView->selectionModel()->selectedRows();
+    for(const QModelIndex & index : indexes) {
         rows.append( index.row() );
     }
     std::sort(rows.begin(), rows.end());
@@ -982,15 +986,15 @@ void ParameterEditor::on_parameterTableModelChanged(const QString &commandLineSt
 {
     disconnect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
             this, &ParameterEditor::updateParameterTableModel );
-    disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr));
-    disconnect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+    disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr);
+    disconnect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
 
     mParameterTableModel->on_ParameterTableModelChanged(commandLineStr);
 
     connect(ui->gamsParameterCommandLine, &CommandLine::commandLineChanged,
             this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection);
-    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, static_cast<void(ParameterEditor::*)(const QList<OptionItem> &)> (&ParameterEditor::updateCommandLineStr), Qt::UniqueConnection);
-    connect(this, static_cast<void(ParameterEditor::*)(QLineEdit*, const QList<OptionItem> &)>(&ParameterEditor::commandLineChanged), mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr, Qt::UniqueConnection);
+    connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
 }
 
 void ParameterEditor::resizeColumnsToContents()
@@ -1020,7 +1024,7 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionRunNeos = aRunNeos;
     actionRunEngine = aRunEngine;
 
-    QMenu* runMenu = new QMenu;
+    QMenu* runMenu = new QMenu(this);
     runMenu->addAction(actionRun);
     runMenu->addAction(actionRun_with_GDX_Creation);
     runMenu->addSeparator();
@@ -1048,7 +1052,7 @@ void ParameterEditor::setInterruptActionGroup(QAction *aInterrupt, QAction *aSto
     actionStop = aStop;
     actionStop->setShortcutVisibleInContextMenu(true);
 
-    QMenu* interruptMenu = new QMenu();
+    QMenu* interruptMenu = new QMenu(this);
     interruptMenu->addAction(actionInterrupt);
     interruptMenu->addAction(actionStop);
 
@@ -1076,56 +1080,56 @@ void ParameterEditor::setInterruptActionsEnabled(bool enable)
 
 void ParameterEditor::addActions()
 {
-    QAction* insertParameterAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new parameter", [this]() { insertParameter(); });
+    QAction* insertParameterAction = mContextMenu.addAction(Theme::icon(":/%1/insert"), "Insert new parameter", this, [this]() { insertParameter(); });
     insertParameterAction->setObjectName("actionInsert_option");
     insertParameterAction->setShortcut( QKeySequence("Ctrl+Return") );
     insertParameterAction->setShortcutVisibleInContextMenu(true);
     insertParameterAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(insertParameterAction);
 
-    QAction* deleteAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete selection", [this]() { deleteParameter(); });
+    QAction* deleteAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete selection", this, [this]() { deleteParameter(); });
     deleteAction->setObjectName("actionDelete_option");
     deleteAction->setShortcut( QKeySequence("Ctrl+Delete") );
     deleteAction->setShortcutVisibleInContextMenu(true);
     deleteAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(deleteAction);
 
-    QAction* deleteAllAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete all parameters", [this]() { deleteAllParameters(); });
+    QAction* deleteAllAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Delete all parameters", this, [this]() { deleteAllParameters(); });
     deleteAllAction->setObjectName("actionDeleteAll_option");
     deleteAllAction->setShortcut( QKeySequence("Alt+Delete") );
     deleteAllAction->setShortcutVisibleInContextMenu(true);
     deleteAllAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(deleteAllAction);
 
-    QAction* moveUpAction = mContextMenu.addAction(Theme::icon(":/%1/move-up"), "Move up", [this]() { moveParameterUp(); });
+    QAction* moveUpAction = mContextMenu.addAction(Theme::icon(":/%1/move-up"), "Move up", this, [this]() { moveParameterUp(); });
     moveUpAction->setObjectName("actionMoveUp_option");
     moveUpAction->setShortcut( QKeySequence("Ctrl+Up") );
     moveUpAction->setShortcutVisibleInContextMenu(true);
     moveUpAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(moveUpAction);
 
-    QAction* moveDownAction = mContextMenu.addAction(Theme::icon(":/%1/move-down"), "Move down", [this]() { moveParameterDown(); });
+    QAction* moveDownAction = mContextMenu.addAction(Theme::icon(":/%1/move-down"), "Move down", this, [this]() { moveParameterDown(); });
     moveDownAction->setObjectName("actionMoveDown_option");
     moveDownAction->setShortcut( QKeySequence("Ctrl+Down") );
     moveDownAction->setShortcutVisibleInContextMenu(true);
     moveDownAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(moveDownAction);
 
-    QAction* showDefinitionAction = mContextMenu.addAction("Show parameter definition", [this]() { showParameterDefinition(); });
+    QAction* showDefinitionAction = mContextMenu.addAction("Show parameter definition", this, [this]() { showParameterDefinition(); });
     showDefinitionAction->setObjectName("actionShowDefinition_option");
     showDefinitionAction->setShortcut( QKeySequence("Ctrl+F1") );
     showDefinitionAction->setShortcutVisibleInContextMenu(true);
     showDefinitionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(showDefinitionAction);
 
-    QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", [this]() { showParameterRecurrence(); });
+    QAction* showDuplicationAction = mContextMenu.addAction("Show all parameters of the same definition", this, [this]() { showParameterRecurrence(); });
     showDuplicationAction->setObjectName("actionShowRecurrence_option");
     showDuplicationAction->setShortcut( QKeySequence("Shift+F1") );
     showDuplicationAction->setShortcutVisibleInContextMenu(true);
     showDuplicationAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTableView->addAction(showDuplicationAction);
 
-    QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this parameter", [this]() {
+    QAction* addThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/plus"), "Add this parameter", this, [this]() {
         QModelIndexList selection = ui->gamsParameterTreeView->selectionModel()->selectedRows();
         if (selection.size()>0)
             addParameterFromDefinition(selection.at(0));
@@ -1136,7 +1140,7 @@ void ParameterEditor::addActions()
     addThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTreeView->addAction(addThisOptionAction);
 
-    QAction* deleteThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Remove this parameter", [this]() {
+    QAction* deleteThisOptionAction = mContextMenu.addAction(Theme::icon(":/%1/delete-all"), "Remove this parameter", this, [this]() {
         findAndSelectionParameterFromDefinition();
         deleteParameter();
     });
@@ -1146,7 +1150,7 @@ void ParameterEditor::addActions()
     deleteThisOptionAction->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     ui->gamsParameterTreeView->addAction(deleteThisOptionAction);
 
-    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", [this]() { resizeColumnsToContents(); });
+    QAction* resizeColumns = mContextMenu.addAction("Resize columns to contents", this, [this]() { resizeColumnsToContents(); });
     resizeColumns->setObjectName("actionResize_columns");
     resizeColumns->setShortcut( QKeySequence("Ctrl+R") );
     resizeColumns->setShortcutVisibleInContextMenu(true);

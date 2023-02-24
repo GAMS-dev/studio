@@ -87,6 +87,9 @@ class PExProjectNode : public PExGroupNode
 {
     Q_OBJECT
 public:
+    enum Type {tCommon, tSearch, tGams};
+
+public:
     virtual ~PExProjectNode() override;
     QIcon icon(QIcon::Mode mode = QIcon::Normal, int alpha = 100) override;
     QString name(NameModifier mod = NameModifier::raw) const override;
@@ -133,8 +136,7 @@ public:
     const QString &nameExt() const;
     void setNameExt(const QString &newNameExt);
 
-    bool isVirtual() const;
-    void setVirtual(bool isVirtual = true);
+    Type type() const;
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
@@ -159,7 +161,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(QString filePath, QString basePath, FileMeta *runFileMeta, QString workDir);
+    PExProjectNode(QString filePath, QString basePath, FileMeta *runFileMeta, QString workDir, Type type);
     void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
@@ -172,7 +174,7 @@ private:
     QString mProjectFile;
     QString mWorkDir;
     QString mNameExt;
-    bool mVirtual = false;
+    Type mType = tCommon;
     std::unique_ptr<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;

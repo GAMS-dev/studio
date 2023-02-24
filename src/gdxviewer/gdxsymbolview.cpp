@@ -59,7 +59,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mDefaultSymbolView = DefaultSymbolView(Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView));
 
     //create context menu
-    QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", [this]() { copySelectionToClipboard(","); });
+    QAction* cpComma = mContextMenuLV.addAction("Copy (comma-separated)\tCtrl+C", this, [this]() { copySelectionToClipboard(","); });
     mContextMenuTV.addAction(cpComma);
     cpComma->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpComma->setShortcutVisibleInContextMenu(true);
@@ -67,20 +67,20 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->addAction(cpComma);
     ui->tvTableView->addAction(cpComma);
 
-    QAction* cpTab = mContextMenuLV.addAction("Copy (tab-separated)", [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
+    QAction* cpTab = mContextMenuLV.addAction("Copy (tab-separated)", this, [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
     mContextMenuTV.addAction(cpTab);
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
     ui->tvListView->addAction(cpTab);
     ui->tvTableView->addAction(cpTab);
 
-    mContextMenuTV.addAction("Copy Without Labels (comma-separated)", [this]() { copySelectionToClipboard(",", false); });
-    mContextMenuTV.addAction("Copy Without Labels (tab-separated)", [this]() { copySelectionToClipboard("\t", false); });
+    mContextMenuTV.addAction("Copy Without Labels (comma-separated)", this, [this]() { copySelectionToClipboard(",", false); });
+    mContextMenuTV.addAction("Copy Without Labels (tab-separated)", this, [this]() { copySelectionToClipboard("\t", false); });
 
     mContextMenuLV.addSeparator();
     mContextMenuTV.addSeparator();
 
-    QAction* aResizeColumn = mContextMenuLV.addAction("Auto Resize Columns", [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
+    QAction* aResizeColumn = mContextMenuLV.addAction("Auto Resize Columns", this, [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
     mContextMenuTV.addAction(aResizeColumn);
     aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aResizeColumn->setShortcutVisibleInContextMenu(true);
@@ -90,7 +90,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mContextMenuLV.addSeparator();
     mContextMenuTV.addSeparator();
 
-    QAction* aSelectAll = mContextMenuLV.addAction("Select All\tCtrl+A", [this]() { selectAll(); });
+    QAction* aSelectAll = mContextMenuLV.addAction("Select All\tCtrl+A", this, [this]() { selectAll(); });
     mContextMenuTV.addAction(aSelectAll);
     aSelectAll->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aSelectAll->setShortcutVisibleInContextMenu(true);
@@ -100,7 +100,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     // populate preferences
     QWidgetAction* preferences = new QWidgetAction(ui->tbPreferences);
     QVBoxLayout* vLayout = new QVBoxLayout();
-    mPreferencesWidget = new QWidget();
+    mPreferencesWidget = new QWidget(this);
     mPreferencesWidget->setAutoFillBackground(true);
     mSqDefaults = new QCheckBox("Squeeze Defaults", this);
     vLayout->addWidget(mSqDefaults);
@@ -193,8 +193,6 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
 
 GdxSymbolView::~GdxSymbolView()
 {
-    delete mSqDefaults;
-    delete mSqZeroes;
     if (mTvModel)
         delete mTvModel;
     delete ui;
@@ -325,11 +323,9 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
-    if (mSym->recordCount()>0) { //enable controls only for symbols that have records, otherwise it does not make sense to filter, sort, etc
-        connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
-        connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
-        showDefaultView(symViewState);
-    }
+    connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
+    connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+    showDefaultView(symViewState);
     ui->tvListView->setModel(mSym);
 
     if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR) {
@@ -348,7 +344,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
             cb = new QCheckBox(valColNames[i]);
             cb->setChecked(true);
             layout->addWidget(cb);
-            connect(cb, &QCheckBox::toggled, [this]() {toggleColumnHidden();});
+            connect(cb, &QCheckBox::toggled, this, [this]() {toggleColumnHidden();});
             mShowValColActions.append(cb);
         }
         QPushButton *invert = new QPushButton("  Invert Selection  ", mVisibleValColWidget);
@@ -734,7 +730,8 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
 
     for(int r=minRow; r<maxRow+1; r++) {
         if (copyLabels) { // copy labels as well in table view mode
-            for (const QString &label:tv->model()->headerData(r, Qt::Vertical).toStringList())
+            const auto labels = tv->model()->headerData(r, Qt::Vertical).toStringList();
+            for (const QString &label : labels)
                 sList << label << separator;
         }
         for(int c=minCol; c<maxCol+1; c++) {
@@ -848,6 +845,7 @@ void GdxSymbolView::applyFilters(GdxSymbolViewState *symViewState)
 
 void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
 {
+    if (!symViewState) return;
     saveFilters(symViewState);
     symViewState->setSqDefaults(mSqDefaults->isChecked());
     symViewState->setSqTrailingZeroes(mSqZeroes->isChecked());
@@ -870,7 +868,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setShowAttributes(showAttributes);
 
     symViewState->setTableViewLoaded(mTvModel != nullptr);
-    if (symViewState->tableViewLoaded()) {
+    if (mTvModel && symViewState->tableViewLoaded()) {
         symViewState->setTvColDim(mTvModel->tvColDim());
         symViewState->setTvDimOrder(mTvModel->tvDimOrder());
         symViewState->setTableViewFilterHeaderState(ui->tvTableViewFilter->horizontalHeader()->saveState());

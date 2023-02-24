@@ -24,7 +24,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-
+#include "colors/palettemanager.h"
 #include "networkmanager.h"
 
 #include <iostream>
@@ -63,6 +63,7 @@ Application::~Application()
 {
     NetworkManager::cleanup();
     Settings::releaseSettings();
+    PaletteManager::deleteInstance();
 }
 
 void Application::init()
@@ -76,6 +77,10 @@ void Application::init()
                              mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
     mMainWindow->openFiles(mCmdParser.files());
+    if (!mOpenPathOnInit.isEmpty()) {
+        triggerOpenFile(mOpenPathOnInit);
+        mOpenPathOnInit = QString();
+    }
 
     mDistribValidator.start();
     listen();
@@ -126,7 +131,8 @@ bool Application::checkForOtherInstance()
 
     if(socket.waitForConnected()) {
         QByteArray buffer;
-        Q_FOREACH (auto f, mCmdParser.files())
+        const auto files = mCmdParser.files();
+        for (const auto &f : files)
             buffer.append(f.toUtf8() + "\n");
         socket.write(buffer);
         socket.waitForBytesWritten();
@@ -170,15 +176,10 @@ bool Application::event(QEvent *event)
     if (event->type() == QEvent::FileOpen) {
         // this is a macOS only event
         auto* openEvent = static_cast<QFileOpenEvent*>(event);
-        mMainWindow->openFiles({openEvent->url().path()});
-        Q_FOREACH (auto window, allWindows()) {
-            if (!window->isVisible())
-                continue;
-            if (window->windowState() & Qt::WindowMinimized) {
-                window->show();
-                window->raise();
-            }
-        }
+        if (mMainWindow)
+            triggerOpenFile(openEvent->url().path());
+        else
+            mOpenPathOnInit = openEvent->url().path();
     }
     return QApplication::event(event);
 }
@@ -201,6 +202,19 @@ void Application::parseCmdArgs()
             mCmdParser.showVersion();
         case gams::studio::CommandLineHelpRequested:
             mCmdParser.showHelp();
+    }
+}
+
+void Application::triggerOpenFile(QString path)
+{
+    mMainWindow->openFiles({path});
+    for (auto window : allWindows()) {
+        if (!window->isVisible())
+            continue;
+        if (window->windowState() & Qt::WindowMinimized) {
+            window->show();
+            window->raise();
+        }
     }
 }
 

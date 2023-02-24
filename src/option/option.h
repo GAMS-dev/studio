@@ -181,9 +181,9 @@ public:
     QVariant getLowerBound(const QString &optionName) const;
     QVariant getDefaultValue(const QString &optionName) const;
     QString getDescription(const QString &optionName) const;
-    QList<OptionValue> getValueList(const QString &optionName) const;
+    const QList<OptionValue> getValueList(const QString &optionName) const;
 
-    QString getEOLChars() const;
+    const QString getEOLChars() const;
     bool isEOLCharDefined() const;
 
     QString getDefaultSeparator() const;
@@ -196,7 +196,7 @@ public:
     QStringList getValidNonDeprecatedKeyList() const;
     QStringList getKeyAndSynonymList() const;
     QStringList getValuesList(const QString &optionName) const;
-    QStringList getSynonymList(const QString &optionName) const;
+    const QStringList getSynonymList(const QString &optionName) const;
     QStringList getNonHiddenValuesList(const QString &optionName) const;
 
     int getOrdinalNumber(const QString &optionName) const;

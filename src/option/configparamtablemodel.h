@@ -61,7 +61,7 @@ public:
     static const int COLUMN_MAX_VERSION = 3;
     static const int COLUMN_ENTRY_NUMBER = 4;
 
-    QList<ParamConfigItem *> parameterConfigItems();
+    const QList<ParamConfigItem *> parameterConfigItems();
 
 signals:
     void newTableRowDropped(const QModelIndex &index);

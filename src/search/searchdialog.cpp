@@ -788,12 +788,12 @@ void SearchDialog::jumpToResult(int matchNr)
     }
 
     PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
-    if (r.parentGroup() == -1) {
+    if (!r.parentGroup().isValid()) {
         if (fn) r.setParentGroup(fn->parentNode()->id());
     }
 
     // create group for search results
-    if (r.parentGroup() == -1 && !Settings::settings()->toBool(skOpenInCurrent)) {
+    if (!r.parentGroup().isValid() && !Settings::settings()->toBool(skOpenInCurrent)) {
         QString name = "Search: " + ui->combo_search->currentText();
 
         // find existing search group
@@ -815,7 +815,7 @@ void SearchDialog::jumpToResult(int matchNr)
         if (!fn) EXCEPT() << "File not found: " << r.filepath();
     }
 
-    NodeId nodeId = (r.parentGroup() != -1) ? r.parentGroup() : fn->assignedProject()->id();
+    NodeId nodeId = (r.parentGroup().isValid()) ? r.parentGroup() : fn->assignedProject()->id();
     fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 
 }

@@ -486,7 +486,8 @@ void ParamConfigEditor::deleteOption()
         QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
 
         QList<int> rows;
-        for(const QModelIndex & index : ui->paramCfgTableView->selectionModel()->selectedRows()) {
+        const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }
 
@@ -578,9 +579,9 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
             msgBox.setWindowTitle("Parameter Entry exists");
             msgBox.setText("Parameter '" + optionNameData+ "' already exists.");
             msgBox.setInformativeText("How do you want to proceed?");
-            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(indices.at(0).row()))
-                    .arg("When a Gams config file contains multiple entries of the same parameters, only the value of the last entry will be utilized by Gams.")
-                    .arg("The value of all other entries except the last entry will be ignored."));
+            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(indices.at(0).row()),
+                    "When a Gams config file contains multiple entries of the same parameters, only the value of the last entry will be utilized by Gams.",
+                    "The value of all other entries except the last entry will be ignored."));
             msgBox.setStandardButtons(QMessageBox::Abort);
             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
@@ -914,10 +915,8 @@ QString ParamConfigEditor::getParameterTableEntry(int row)
     QVariant minVersionValue = ui->paramCfgTableView->model()->data(minVersionIndex, Qt::DisplayRole);
     QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(row, ConfigParamTableModel::COLUMN_PARAM_VALUE);
     QVariant maxVersionValue = ui->paramCfgTableView->model()->data(maxVersionIndex, Qt::DisplayRole);
-    return QString("%1%2%3 %4 %5").arg(optionKey.toString()).arg(mOptionTokenizer->getOption()->getDefaultSeparator(),
-                                                                 optionValue.toString(),
-                                                                 minVersionValue.toString(),
-                                                                 maxVersionValue.toString());
+    return QString("%1%2%3 %4 %5").arg(optionKey.toString(), mOptionTokenizer->getOption()->getDefaultSeparator(),
+                                       optionValue.toString(), minVersionValue.toString(), maxVersionValue.toString());
 }
 
 //void ParamConfigEditor::deleteParameter()
@@ -1005,7 +1004,8 @@ void ParamConfigEditor::on_actionInsert_triggered()
     int rowToBeInserted = -1;
     if (isThereARowSelection()) {
         QList<int> rows;
-        for(QModelIndex idx : ui->paramCfgTableView->selectionModel()->selectedRows()) {
+        const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        for(QModelIndex idx : indexes) {
             rows.append( idx.row() );
         }
         std::sort(rows.begin(), rows.end());
@@ -1061,7 +1061,8 @@ void ParamConfigEditor::on_actionDelete_triggered()
         QItemSelection selection( ui->paramCfgTableView->selectionModel()->selection() );
 
         QList<int> rows;
-        for(const QModelIndex & index : ui->paramCfgTableView->selectionModel()->selectedRows()) {
+        const auto indexes = ui->paramCfgTableView->selectionModel()->selectedRows();
+        for(const QModelIndex & index : indexes) {
             rows.append( index.row() );
         }
 
@@ -1140,7 +1141,8 @@ void ParamConfigEditor::on_actionSelect_Current_Row_triggered()
     if (!ui->actionSelect_Current_Row->isEnabled())
         return;
     QList<int> rowList;
-    for(QModelIndex idx : ui->paramCfgTableView->selectionModel()->selectedIndexes()) {
+    const auto indexes = ui->paramCfgTableView->selectionModel()->selectedIndexes();
+    for(const QModelIndex &idx : indexes) {
         if (!rowList.contains(idx.row())) {
             on_selectRow(idx.row());
             rowList << idx.row();

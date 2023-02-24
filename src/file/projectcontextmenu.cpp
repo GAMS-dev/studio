@@ -103,12 +103,12 @@ ProjectContextMenu::ProjectContextMenu()
         QMap<QString, QString> solverDefFileNames = solverInfo.solverOptDefFileNames();
 
         if (solverDefFileNames.size()>0) { // when solver definition file information is available
-            for (const QString &solvername : solverDefFileNames.keys()) {
-                if (optFiles.contains(solverDefFileNames.value(solvername))) { //there exists such a file
-                    QAction* createSolverOption = newSolverOptionMenu->addAction(solvername.toLower());
-                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solvername.toLower()); });
+            for (auto it = solverDefFileNames.constBegin() ; it != solverDefFileNames.constEnd() ; ++it) {
+                if (optFiles.contains(solverDefFileNames.value(it.key()))) { //there exists such a file
+                    QAction* createSolverOption = newSolverOptionMenu->addAction(it.key().toLower());
+                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(it.key().toLower()); });
 
-                    mAvailableSolvers << solvername;
+                    mAvailableSolvers << it.key();
                     mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
                 }
             }
@@ -157,10 +157,13 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canMoveProject = project && project->childCount() && !project->isVirtual();
+    bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
+    bool isGamsSys = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: qAsConst(mNodes)) {
-        if (!canMoveProject) break;
+        if (PExProjectNode *project = node->toProject())
+            if (project->type() != PExProjectNode::tCommon)
+                isGamsSys = true;
         if (node->assignedProject() != project)
             canMoveProject = false;
     }
@@ -235,8 +238,9 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     }
 
     mActions[actExplorer]->setEnabled(single);
-    mActions[actExplorer]->setVisible(!isFreeSpace);
-    mActions[actOpenTerminal]->setVisible(!isFreeSpace);
+    mActions[actExplorer]->setVisible(!isFreeSpace && !isGamsSys);
+    mActions[actOpenTerminal]->setEnabled(single);
+    mActions[actOpenTerminal]->setVisible(!isFreeSpace && !isGamsSys);
 
     mActions[actGdxDiff]->setEnabled(isOpenableWithGdxDiff);
     mActions[actGdxDiff]->setVisible(isOpenableWithGdxDiff);
@@ -245,7 +249,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actGdxReset]->setText(QString(hasOpenGdx ? "Close and " : "") + "&Reset GDX State");
 
     mActions[actOpen]->setEnabled(isOpenable);
-    mActions[actOpen]->setVisible(isOpenable);
+    mActions[actOpen]->setVisible(isOpenable && !isGamsSys);
     mActions[actOpenAsText]->setEnabled(isOpenableAsText);
     mActions[actOpenAsText]->setVisible(isOpenableAsText);
 
@@ -262,10 +266,10 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actReOpenAsText]->setEnabled(isReOpenableAsText);
     mActions[actReOpenAsText]->setVisible(isReOpenableAsText);
 
-    mActions[actLogTab]->setVisible(isProject);
+    mActions[actLogTab]->setVisible(isProject && !isGamsSys);
     mActions[actLogTab]->setEnabled(single);
 
-    mActions[actOpenEfi]->setVisible(isProject);
+    mActions[actOpenEfi]->setVisible(isProject && !isGamsSys);
     mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
     mActions[actProjectMove]->setVisible(!isFreeSpace);
@@ -275,11 +279,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actProjectCopy]->setEnabled(canMoveProject);
 
     mActions[actSep1]->setVisible(isProject);
-    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && single);
+    mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
 //    mActions[actSetMain]->setEnabled(single);
 
-    mActions[actAddNewGms]->setVisible(isProject);
-    mActions[actAddExisting]->setVisible(isProject);
+    mActions[actAddNewGms]->setVisible(isProject && !isGamsSys);
+    mActions[actAddExisting]->setVisible(isProject && !isGamsSys);
 
     mActions[actCloseProject]->setVisible(isProject);
     mActions[actCloseGroup]->setVisible(isGroup);
@@ -297,7 +301,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
-    mActions[actAddNewOpt]->setVisible(isProject);
+    mActions[actAddNewOpt]->setVisible(isProject && !isGamsSys);
     for (QAction* action : qAsConst(mSolverOptionActions))
         action->setVisible(isProject);
 }
@@ -525,7 +529,7 @@ void ProjectContextMenu::onOpenEfi()
 
 QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
 {
-    if (project && !project->runnableGms()) return QString();
+    if (!project || !project->runnableGms()) return QString();
     QFileInfo info(project->runnableGms()->location());
     return info.path() + '/' + info.completeBaseName() + ".efi";
 }

@@ -35,6 +35,7 @@ public:
     ~PaletteManager();
 
     static PaletteManager* instance();
+    static void deleteInstance();
 
     void setPalette(int i);
     int nrPalettes();

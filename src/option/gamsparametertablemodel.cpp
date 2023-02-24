@@ -595,7 +595,7 @@ void GamsParameterTableModel::setRowCount(int rows)
 
 void GamsParameterTableModel::itemizeOptionFromCommandLineStr(const QString text)
 {
-    QMap<int, QVariant> previousCheckState = mCheckState;
+//    QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();
     mOptionItem = mOptionTokenizer->tokenize(text);
     for(int idx = 0; idx<mOptionItem.size(); ++idx) {

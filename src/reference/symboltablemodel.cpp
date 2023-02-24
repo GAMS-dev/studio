@@ -60,6 +60,7 @@ QVariant SymbolTableModel::headerData(int index, Qt::Orientation orientation, in
                break;
            case SymbolDataType::Model :
            case SymbolDataType::Funct :
+           case SymbolDataType::Macro :
            case SymbolDataType::File :
                if (index < mFileHeader.size())
                   return mFileHeader[index];
@@ -99,6 +100,7 @@ int SymbolTableModel::columnCount(const QModelIndex &parent) const
         return mSymbolsHeader.size();
     case SymbolDataType::File :
     case SymbolDataType::Funct :
+    case SymbolDataType::Macro :
     case SymbolDataType::Model :
         return mFileHeader.size();
     case SymbolDataType::FileUsed :
@@ -123,15 +125,16 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
         }
         Qt::AlignmentFlag aFlag;
         switch(index.column()) {
-            case 0: aFlag = Qt::AlignRight; break;
-            case 1: aFlag = Qt::AlignLeft; break;
+        case 0: aFlag = Qt::AlignRight; break;
+        case 1: aFlag = Qt::AlignLeft; break;
         case 2: if (mType == SymbolDataType::Unknown || mType == SymbolDataType::Unused ||
-                    mType == SymbolDataType::Model || mType == SymbolDataType::Funct || mType == SymbolDataType::File )
+                    mType == SymbolDataType::Model || mType == SymbolDataType::Funct ||
+                    mType == SymbolDataType::File || mType == SymbolDataType::Macro )
                         aFlag = Qt::AlignLeft;
                     else
                         aFlag = Qt::AlignRight;
                     break;
-            case 3: if (mType == SymbolDataType::Unknown || mType == SymbolDataType::Unused)
+        case 3: if (mType == SymbolDataType::Unknown || mType == SymbolDataType::Unused)
                         aFlag = Qt::AlignRight;
                     else
                         aFlag = Qt::AlignLeft;
@@ -172,6 +175,7 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
               break;
          case SymbolDataType::File :
          case SymbolDataType::Funct :
+         case SymbolDataType::Macro :
          case SymbolDataType::Model :
              switch(index.column()) {
              case 0: return QString::number( refList.at(idx)->id() );
@@ -388,14 +392,16 @@ int SymbolTableModel::getLastSectionIndex()
     case SymbolDataType::Model :
     case SymbolDataType::Funct :
     case SymbolDataType::File :
+    case SymbolDataType::Macro :
         return 2;
     case SymbolDataType::FileUsed :
         return 0;
     case SymbolDataType::Unknown :
     case SymbolDataType::Unused :
         return 5;
+    default:
+       return 0;
     }
-    return 0;
 }
 
 void SymbolTableModel::sortFileUsed(FileUsedSortOrder order)
@@ -438,6 +444,7 @@ SymbolTableModel::SortType SymbolTableModel::getSortTypeOf(int column) const
     }
     case SymbolDataType::Model :
     case SymbolDataType::Funct :
+    case SymbolDataType::Macro :
     case SymbolDataType::File : {
         if (column == 0)
            return sortInt;
@@ -483,6 +490,7 @@ SymbolTableModel::ColumnType SymbolTableModel::getColumnTypeOf(int column) const
     }
     case SymbolDataType::Model :
     case SymbolDataType::Funct :
+    case SymbolDataType::Macro :
     case SymbolDataType::File : {
         switch(column) {
         case 0 : return columnId;

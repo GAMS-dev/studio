@@ -65,8 +65,7 @@ PExFileNode* SearchFileHandler::findFileNode(QString filepath)
 
 PExProjectNode* SearchFileHandler::createProject(QString name, QString path)
 {
-    PExProjectNode* project = mMain->projectRepo()->createProject(name, path, "", onExist_AddNr);
-    project->setVirtual();
+    PExProjectNode* project = mMain->projectRepo()->createProject(name, path, "", onExist_AddNr, "", PExProjectNode::tSearch);
     return project;
 }
 

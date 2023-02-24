@@ -190,7 +190,7 @@ bool ConnectEditor::init(bool quiet)
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested, Qt::UniqueConnection);
 
-    connect(ui->schemaControlListView, &QListView::clicked,  [=](const QModelIndex &index) {
+    connect(ui->schemaControlListView, &QListView::clicked, this,  [=](const QModelIndex &index) {
         defmodel->loadSchemaFromName( schemaItemModel->data( schemaItemModel->index(index.row(),0) ).toString() );
         schemaItemModel->setToolTip(index);
     });
@@ -214,20 +214,20 @@ bool ConnectEditor::init(bool quiet)
     connect(mDataModel, &ConnectDataModel::indexExpandedAndResized, this, &ConnectEditor::expandAndResizedToContents, Qt::UniqueConnection);
     connect(mDataModel, &ConnectDataModel::dataChanged, mDataModel, &ConnectDataModel::onEditDataChanged, Qt::UniqueConnection);
 
-    connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, [this]() { saveExpandedState(); });
-    connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , [this]() { saveExpandedState(); });
-    connect(mDataModel, &ConnectDataModel::rowsAboutToBeRemoved , [this]() { saveExpandedState(); });
-    connect(mDataModel, &ConnectDataModel::rowsInserted, [this]() { restoreExpandedState();  });
-    connect(mDataModel, &ConnectDataModel::rowsRemoved , [this]() { restoreExpandedState();  });
-    connect(mDataModel, &ConnectDataModel::rowsMoved   , [this]() { restoreExpandedState();  });
-    connect(mDataModel, &ConnectDataModel::modelReset, [this]() {
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeInserted, this, [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeMoved   , this, [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsAboutToBeRemoved , this, [this]() { saveExpandedState(); });
+    connect(mDataModel, &ConnectDataModel::rowsInserted, this, [this]() { restoreExpandedState();  });
+    connect(mDataModel, &ConnectDataModel::rowsRemoved , this, [this]() { restoreExpandedState();  });
+    connect(mDataModel, &ConnectDataModel::rowsMoved   , this, [this]() { restoreExpandedState();  });
+    connect(mDataModel, &ConnectDataModel::modelReset  , this, [this]() {
         ui->dataTreeView->expandRecursively(mDataModel->index(0,0));
         ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
         ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key);
         ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value);
     });
 
-    connect(defmodel, &SchemaDefinitionModel::modelReset, [this]() {
+    connect(defmodel, &SchemaDefinitionModel::modelReset, this, [this]() {
         ui->helpTreeView->expandAll();
         ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Field);
         ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Required);
@@ -464,7 +464,8 @@ void ConnectEditor::restoreExpandedOnLevel(const QModelIndex &index)
 
 MainWindow *ConnectEditor::getMainWindow()
 {
-    foreach(QWidget *widget, qApp->topLevelWidgets())
+    const QWidgetList widgets = qApp->topLevelWidgets();
+    for (QWidget *widget : widgets)
         if (MainWindow *mainWindow = qobject_cast<MainWindow*>(widget))
             return mainWindow;
     return nullptr;

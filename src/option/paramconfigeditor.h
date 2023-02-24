@@ -50,12 +50,13 @@ public:
 
     bool isInFocus(QWidget* focusWidget) const;
     QList<QHeaderView*> headers();
+    QString getSelectedParameterName(QWidget* widget) const;
+    bool isModified() const;
 
 signals:
     void modificationChanged(bool modifiedState);
 
 public slots:
-    QString getSelectedParameterName(QWidget* widget) const;
     void parameterItemCommitted(QWidget *editor);
     void on_reloadGamsUserConfigFile(const QList<gams::studio::option::ConfigItem *> &initParams);
 
@@ -63,7 +64,6 @@ public slots:
     void deSelect();
 
     void setModified(bool modified);
-    bool isModified() const;
 
     QList<gams::studio::option::ConfigItem *> parameterConfigItems();
 
@@ -97,11 +97,6 @@ private slots:
 
 //    void deleteParameter();
 
-    bool isThereARow() const;
-    bool isThereAnIndexSelection() const;
-    bool isThereARowSelection() const;
-    bool isEverySelectionARow() const;
-
     void on_actionInsert_triggered();
     void on_actionDelete_triggered();
     void on_actionMoveUp_triggered();
@@ -115,6 +110,12 @@ private slots:
 
     void on_actionAdd_This_Parameter_triggered();
     void on_actionRemove_This_Parameter_triggered();
+
+private:
+    bool isThereARow() const;
+    bool isThereAnIndexSelection() const;
+    bool isThereARowSelection() const;
+    bool isEverySelectionARow() const;
 
 private:
     friend class GamsConfigEditor;

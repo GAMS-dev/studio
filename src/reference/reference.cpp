@@ -53,6 +53,8 @@ QList<SymbolReferenceItem *> Reference::findReferenceFromType(SymbolDataType::Sy
         return mModelReference;
     case SymbolDataType::Funct :
         return mFunctionReference;
+    case SymbolDataType::Macro :
+        return mMacroReference;
     case SymbolDataType::Unused :
         return mUnusedReference;
     case SymbolDataType::Unknown :
@@ -211,9 +213,12 @@ bool Reference::parseFile(QString referenceFile)
     }
     recordList.removeFirst();
     int size = recordList.first().toInt();
+    int expectedLineread = size+lineread;
     while (!in.atEnd()) {
         recordList = in.readLine().split(QRegExp("\\s+"), Qt::SkipEmptyParts);
         lineread++;
+        if (lineread > expectedLineread)  // ignore the rest of the file contents
+            break;
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
             mLastErrorLine=lineread;
             return false;
@@ -278,6 +283,9 @@ bool Reference::parseFile(QString referenceFile)
          case SymbolDataType::Funct :
              mFunctionReference.append( ref );
              break;
+         case SymbolDataType::Macro :
+             mMacroReference.append( ref );
+             break;
          case SymbolDataType::File :
              mFileReference.append( ref );
              break;
@@ -335,6 +343,7 @@ void Reference::clear()
     mFileReference.clear();
     mModelReference.clear();
     mFunctionReference.clear();
+    mMacroReference.clear();
     mUnusedReference.clear();
 
     mFileUsed.clear();

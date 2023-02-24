@@ -38,6 +38,7 @@ public:
         NodeIdRole = Qt::UserRole + 1,
         IsProjectRole = Qt::UserRole + 2,
         NameExtRole = Qt::UserRole + 3,
+        IsGamsSys = Qt::UserRole + 4,
     };
 
 public:
@@ -80,7 +81,7 @@ protected:
     bool isCurrent(const QModelIndex& ind) const;
     void setCurrent(const QModelIndex& ind);
     bool isCurrentProject(const QModelIndex& ind) const;
-    QModelIndex findProject(QModelIndex ind);
+    QModelIndex findProject(QModelIndex ind, bool *locked);
     void sortChildNodes(PExGroupNode *group);
     void updateProjectExtNums();
 

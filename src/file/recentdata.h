@@ -39,7 +39,8 @@ public:
 
     FileMeta* fileMeta() const;
     QWidget* editor() const;
-    PExProjectNode* project() const;
+    PExProjectNode* project(bool skipGamsSystem = true) const;
+    PExProjectNode* lastProject() const;
     FileId editFileId() const { return mEditFileId; }
     QString path() const { return mPath; }
     QWidget* persistentEditor() const;
@@ -53,6 +54,8 @@ private:
     QVector<FileMeta*> mMetaList;
     FileId mEditFileId;
     QString mPath;
+    NodeId mLastValidProjectId = 0;
+
 };
 
 } // namespace studio

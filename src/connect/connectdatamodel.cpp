@@ -728,7 +728,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
     YAML::Node node = data->getRootNode();
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
-        QString listkey = schemaKeys.last();
+//        QString listkey = schemaKeys.last();
         mapSeqData << QVariant::fromValue(idx.row()+i);
         mapSeqData << "";
         mapSeqData << QVariant((int)DataCheckState::ListItem);
@@ -758,7 +758,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
             QStringList dataKeysforTypes(keys);
             dataKeysforTypes.removeLast();
             itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
-            itemData << QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(","));
+            itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
             itemData << QVariant(false);
             itemData << QVariant(false);
             itemData << QVariant();
@@ -854,17 +854,17 @@ void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QMod
 bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
 {
     ConnectDataItem* parentitem = item;
-    if (item) {
+    if (parentitem) {
         // if immediate child of agent is undefined
         if (item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1 == 1)
             if (item->data((int)DataItemColumn::Undefined).toBool())
                 return false;
        for(int i = item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1; i>1; --i) {
            parentitem = parentitem->parentItem();
+           // Need handling of the case when parentitem == nullptr?
+           // Maybe:   if (!parentitem) break;
            // skip check item if parent who is not schemaagent name is already invalid
-           if (parentitem
-                   && parentitem != item
-                   && parentitem && parentitem->data((int)DataItemColumn::InvalidValue).toInt()>0) {
+           if (parentitem && parentitem != item && parentitem->data((int)DataItemColumn::InvalidValue).toInt()>0) {
                   return true;
            }
        }
@@ -875,12 +875,12 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                            ? item->data((int)DataItemColumn::Value).toString()
                            : item->data((int)DataItemColumn::Key).toString());
 
-    QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
+    const QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
     QString values = item->data((int)DataItemColumn::AllowedValue).toString();
-    QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
+    const QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
 
     bool valid = false;
-    foreach (const QString& t, types ) {
+    for (const QString& t : types ) {
        if (allowedValues.isEmpty()) {
             if (t.compare("string")==0 || t.compare("dict")==0 || t.compare("list")==0) {
                 valid = true;
@@ -915,7 +915,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                        }
             } // else if (t.compare("float")==0) { }
          } else {
-            foreach (const QString& v, allowedValues) {
+            for (const QString& v : allowedValues) {
                 if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
                     valid = true;
                     break;

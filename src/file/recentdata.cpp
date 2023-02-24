@@ -65,8 +65,13 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
     mMetaList << fileMeta;
 
     if (PExFileNode* node = mMainWindow->projectRepo()->findFileNode(edit)) {
+        PExProjectNode *project = node->assignedProject();
         mEditFileId = node->file()->id();
-        mPath = QFileInfo(node->location()).path();
+        if (project) {
+            mLastValidProjectId = project->id();
+            if (project->type() != PExProjectNode::tGams)
+                mPath = QFileInfo(node->location()).path();
+        }
     } else {
         mEditFileId = fileMeta ? fileMeta->id() : FileId();
         if (!mEditFileId.isValid())
@@ -129,9 +134,22 @@ QWidget *RecentData::editor() const
     return mEditList.isEmpty() ? nullptr : mEditList.last();
 }
 
-PExProjectNode *RecentData::project() const
+PExProjectNode *RecentData::project(bool skipGamsSystem) const
 {
+    if (skipGamsSystem && fileMeta()) {
+        PExProjectNode *topProject = mMainWindow->projectRepo()->asProject(fileMeta()->projectId());
+        if (topProject && topProject->type() != PExProjectNode::tGams)
+            return topProject;
+        return nullptr;
+    }
     return (fileMeta() ? mMainWindow->projectRepo()->asProject(fileMeta()->projectId()) : nullptr);
+}
+
+PExProjectNode *RecentData::lastProject() const
+{
+    if (mLastValidProjectId.isValid())
+        return mMainWindow->projectRepo()->asProject(mLastValidProjectId);
+    return nullptr;
 }
 
 QWidget *RecentData::persistentEditor() const

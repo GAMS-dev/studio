@@ -66,7 +66,6 @@ PaletteManager::PaletteManager()
 
 PaletteManager::~PaletteManager()
 {
-    delete mInstance;
 }
 
 PaletteManager *PaletteManager::instance()
@@ -74,6 +73,11 @@ PaletteManager *PaletteManager::instance()
     if (!mInstance) mInstance = new PaletteManager();
 
     return mInstance;
+}
+
+void PaletteManager::deleteInstance()
+{
+    if (mInstance) delete mInstance;
 }
 
 void PaletteManager::setPalette(int i)

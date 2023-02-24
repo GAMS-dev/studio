@@ -55,10 +55,6 @@ public:
         return PhantomInt(prev);
     }
 };
-template <typename PHANTOM_TYPE>
-unsigned int qHash(PhantomInt<PHANTOM_TYPE> key, unsigned int seed) {
-    return ::qHash(static_cast<unsigned int>(key), seed);
-}
 
 struct PiFileId {};
 struct PiNodeId {};
@@ -202,6 +198,12 @@ enum ProcessExitCode {
 
 }
 }
+
+template <typename PHANTOM_TYPE>
+unsigned int qHash(gams::studio::PhantomInt<PHANTOM_TYPE> key, unsigned int seed) {
+    return ::qHash(static_cast<unsigned int>(key), seed);
+}
+
 
 Q_DECLARE_METATYPE(gams::studio::FileId);
 Q_DECLARE_METATYPE(gams::studio::NodeId);

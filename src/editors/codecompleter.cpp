@@ -562,8 +562,8 @@ bool FilterCompleterModel::lessThan(const QModelIndex &source_left, const QModel
 CodeCompleter::CodeCompleter(QPlainTextEdit *parent) :
     QListView(nullptr),
     mEdit(parent),
-    mModel(new CodeCompleterModel(parent)),
-    mFilterModel(new FilterCompleterModel(parent))
+    mModel(new CodeCompleterModel(this)),
+    mFilterModel(new FilterCompleterModel(this))
 {
     if (mEdit) setFont(mEdit->font());
     mFilterModel->setFilterCaseSensitivity(Qt::CaseInsensitive);

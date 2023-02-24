@@ -142,7 +142,7 @@ QString CommonPaths::userModelLibraryDir()
 
 QString CommonPaths::gamsLicenseFilePath(const QStringList &dataPaths)
 {
-    Q_FOREACH(const auto &path, dataPaths) {
+    for (const auto &path : dataPaths) {
         auto filePath = path + "/" +LicenseFile;
         if (QFileInfo::exists(filePath))
             return QDir::cleanPath(filePath);
@@ -182,7 +182,7 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
     case StandardDataPath: return GamsStandardDataPaths;
     default: {
         QStringList res = GamsStandardConfigPaths;
-        Q_FOREACH (const QString &path, GamsStandardDataPaths)
+        for (const QString &path : qAsConst(GamsStandardDataPaths))
             if (!res.contains(path)) res << path;
         return res; }
     }

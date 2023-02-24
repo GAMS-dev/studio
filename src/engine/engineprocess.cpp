@@ -843,7 +843,6 @@ void EngineProcess::startUnpacking()
 
 void EngineProcess::handleResultFiles()
 {
-    QString model = modelName();
     QDir srcDir(QDir::fromNativeSeparators(mOutPath), "");
     QDir destDir(QDir::fromNativeSeparators(mWorkPath));
     mkDirsAndMoveFiles(srcDir, destDir, true);
@@ -853,7 +852,8 @@ void EngineProcess::mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, 
 {
     moveFiles(srcDir, destDir, inBase);
 
-    for (QFileInfo fi : srcDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot)) {
+    const auto fInfos = srcDir.entryInfoList(QDir::Dirs | QDir::NoDotAndDotDot);
+    for (const QFileInfo &fi : fInfos) {
         QString subDir = fi.fileName();
         destDir.mkdir(subDir);
         QDir destSub = QDir(destDir.filePath(subDir));
@@ -877,7 +877,8 @@ void EngineProcess::mkDirsAndMoveFiles(const QDir &srcDir, const QDir &destDir, 
 void EngineProcess::moveFiles(const QDir &srcDir, const QDir &destDir, bool inBase)
 {
     QDir workDir(mWorkPath);
-    for (QFileInfo srcFi : srcDir.entryInfoList(QDir::Files)) {
+    const auto fInfos = srcDir.entryInfoList(QDir::Files);
+    for (const QFileInfo &srcFi : fInfos) {
         QFile srcFile(srcFi.filePath());
         QString destFileName;
         Qt::CaseSensitivity cs = FileType::fsCaseSense();

@@ -148,14 +148,14 @@ void LxiViewer::jumpToTreeItem()
     if (!lxiTreeModel) return;
     int itemIdx = 0;
 
-    if (lineNr >= lxiTreeModel->lineNrs().first()-1) {
+    if (lineNr >= lxiTreeModel->lineNrs().at(1)-1) {
         itemIdx=1;
-        while (lxiTreeModel->lineNrs().size() > itemIdx && lineNr >= lxiTreeModel->lineNrs()[itemIdx]-1)
+        while (lxiTreeModel->lineNrs().size() > itemIdx && lineNr >= lxiTreeModel->lineNrs().at(itemIdx)-1)
             itemIdx++;
         itemIdx--;
     }
 
-    LxiTreeItem* treeItem = lxiTreeModel->treeItems()[itemIdx];
+    LxiTreeItem* treeItem = lxiTreeModel->treeItems().at(itemIdx);
     if (!ui->lxiTreeView->isExpanded(treeItem->parentItem()->modelIndex()))
         ui->lxiTreeView->expand(treeItem->parentItem()->modelIndex());
     ui->lxiTreeView->selectionModel()->select(treeItem->modelIndex(), QItemSelectionModel::SelectCurrent);

@@ -188,7 +188,7 @@ void NeosProcess::sslErrors(const QStringList &errors)
 void NeosProcess::parseUnzipStdOut(const QByteArray &data)
 {
     if (data.startsWith(" extracting: ") || data.startsWith("  inflating: ")) {
-        QByteArray preText = "--- " + data.left(data.indexOf(":")+1).trimmed() + " .";
+//        QByteArray preText = "--- " + data.left(data.indexOf(":")+1).trimmed() + " .";
         QByteArray fName = data.trimmed();
         fName = QString(QDir::separator()).toUtf8() + fName.right(fName.length() - fName.indexOf(':') -2);
         QByteArray folder = mOutPath.split(QDir::separator(), Qt::SkipEmptyParts).last().toUtf8();

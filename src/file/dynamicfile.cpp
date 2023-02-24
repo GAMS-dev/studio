@@ -82,7 +82,6 @@ void DynamicFile::runBackupCircle()
     QStringList names;
 
     QFileInfo fi(mFile);
-    QString fileBase = fi.completeBaseName();
     QString suffix = fi.suffix();
     names << mFile.fileName();
     // if filename has a temp-marker add non-temp filename to backup-circle

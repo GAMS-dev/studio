@@ -44,8 +44,8 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
 
     connect(mProc.get(), &GdxDiffProcess::finished, this, &GdxDiffDialog::diffDone);
 
-    connect(ui->leDiff, &QLineEdit::textEdited, [this]() {mPrepopulateDiff = false;});
-    connect(ui->leInput1, &QLineEdit::textChanged, [this]() {prepopulateDiff();});
+    connect(ui->leDiff, &QLineEdit::textEdited, this, [this]() {mPrepopulateDiff = false;});
+    connect(ui->leInput1, &QLineEdit::textChanged, this, [this]() {prepopulateDiff();});
 
     adjustSize();
     reset();
@@ -54,6 +54,13 @@ GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
 GdxDiffDialog::~GdxDiffDialog()
 {
     cancelProcess(50);
+    const QValidator *v = ui->lineEdit_4->validator();
+    ui->lineEdit_4->setValidator(nullptr);
+    delete v;
+    v = ui->lineEdit_5->validator();
+    ui->lineEdit_5->setValidator(nullptr);
+    delete v;
+    mProc.release();
     delete ui;
 }
 
@@ -175,7 +182,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     if (QFileInfo(mLastDiffFile).suffix().isEmpty())
         mLastDiffFile = mLastDiffFile + ".gdx";
 
-    if (QFileInfo(mLastDiffFile).exists()) {
+    if (QFileInfo::exists(mLastDiffFile)) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Overwrite Existing File");
         msgBox.setText(QFileInfo(mLastDiffFile).fileName() + " already exists.\nDo you want to overwrite it?");

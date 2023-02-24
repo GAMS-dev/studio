@@ -73,7 +73,7 @@ public:
 //    inline static const QString START_CHAPTER = docs + "/index.html";
 //    inline static const QString LATEST_ONLINE_HELP_URL = "https://www.gams.com/latest";
 
-    static QList<QPair<DocumentType, QString>> chapterLocation() {
+    static const QList<QPair<DocumentType, QString>> chapterLocation() {
         auto docs = CommonPaths::documentationDir();
         QList<QPair<DocumentType, QString>> list = {
             {DocumentType::Main, docs + "/index.html"},
@@ -89,7 +89,7 @@ public:
         };
         return list;
     }
-    static QList<QPair<StudioSection, QString>> studioSectionName() {
+    static const QList<QPair<StudioSection, QString>> studioSectionName() {
         QList<QPair<StudioSection, QString>> list = {
             {StudioSection::WelcomePage, "Welcome Page"},
             {StudioSection::ProjectExplorer, "Project Explorer"}, // Project Explorer or STUDIO_PROJECT_EXPLORER?
@@ -105,7 +105,7 @@ public:
         };
         return list;
     }
-    static QList<QPair<QString, QString>> solverChaperLocation() {
+    static const QList<QPair<QString, QString>> solverChaperLocation() {
         auto docs = CommonPaths::documentationDir();
         QList<QPair<QString, QString>> list = {
             {"alphaecp", docs + "/S_ALPHAECP.html"},
@@ -192,9 +192,9 @@ public:
     inline static QString getDollarControlOptionAnchor(const QString &keyword) {
         if (keyword.isEmpty()) return keyword;
 
-        if (keyword.toLower().startsWith("off"))
+        if (keyword.startsWith("off", Qt::CaseInsensitive))
             return QString("%1%2").arg("DOLLARon", keyword.toLower());
-        else if (keyword.toLower().startsWith("on"))
+        else if (keyword.startsWith("on", Qt::CaseInsensitive))
                return QString("%1%2").arg("DOLLARonoff", keyword.toLower().mid(2));
         else
            return QString("%1%2").arg("DOLLAR", keyword.toLower());
@@ -241,7 +241,7 @@ public:
         return index;
     }
 
-    inline static QStringList getPathList() {
+    inline static const QStringList getPathList() {
         QStringList pathList = {
             "/docs",
             "/gamslib_ml", "/testlib_ml", "/datalib_ml", "/emplib_ml",
