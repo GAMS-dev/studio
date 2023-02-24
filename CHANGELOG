@@ -1,11 +1,11 @@
 Version 1.13.2
 ==================
-- added support for Macro symbol to reference file viewer
+- added support for macro symbol in Reference File Viewer
 - fixed crash when reloading an empty GDX symbol in table view mode
-- enable controls for empty symbols in GDX Viewer as well
+- enabled controls for empty symbols in GDX Viewer as well
 - fixed several memory leaks
-- added a special group -GAMS-System- on project level to carry system files like Changelog and gamsconfig.yaml
-- for system and search groups disallow dragging files into them, disabled main file, and fixed tooltips
+- added a special group -GAMS-System- on project level to bundle files like Changelog and gamsconfig.yaml
+- disallowed dragging files into system and search groups, disabled main file, fixed tooltips
 
 Version 1.13.1
 ==================
