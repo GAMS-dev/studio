@@ -32,6 +32,7 @@ class OAIDefaultApi;
 class OAIJobsApi;
 class OAINamespacesApi;
 class OAIUsageApi;
+class OAIUsersApi;
 }
 
 namespace gams {
@@ -88,6 +89,7 @@ public:
 
     void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
+    void getUsername();
     void initUsername(const QString &user);
     void getVersion();
     void getUserInstances();
@@ -105,7 +107,9 @@ signals:
     void syncKillJob(bool hard);
 
     void reAuthorize(const QString &token);
+    void reGetUsername(const QString &name);
     void reAuthorizeError(const QString &error);
+    void reGetUsernameError(const QString &error);
     void rePing(const QString &value);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
     void reVersionError(const QString &errorText);
@@ -141,6 +145,7 @@ private:
     OpenAPI::OAIJobsApi *mJobsApi;
     OpenAPI::OAINamespacesApi *mNamespacesApi;
     OpenAPI::OAIUsageApi *mUsageApi;
+    OpenAPI::OAIUsersApi *mUsersApi;
     QUrl mUrl;
     QUrl mIgnoreSslUrl;
     QString mUser;

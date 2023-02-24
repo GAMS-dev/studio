@@ -25,6 +25,7 @@
 #include <OAIHelpers.h>
 #include <OAINamespacesApi.h>
 #include <OAIUsageApi.h>
+#include <OAIUsersApi.h>
 #include <QString>
 #include <iostream>
 #include <QFile>
@@ -44,8 +45,8 @@ QSslConfiguration *EngineManager::mSslConfigurationIgnoreErrOff = nullptr;
 
 EngineManager::EngineManager(QObject* parent)
     : QObject(parent), mAuthApi(new OAIAuthApi()), mDefaultApi(new OAIDefaultApi()), mJobsApi(new OAIJobsApi()),
-      mNamespacesApi(new OAINamespacesApi()), mUsageApi(new OAIUsageApi()), mNetworkManager(NetworkManager::manager()),
-      mQueueFinished(false)
+      mNamespacesApi(new OAINamespacesApi()), mUsageApi(new OAIUsageApi()), mUsersApi(new OAIUsersApi()),
+      mNetworkManager(NetworkManager::manager()), mQueueFinished(false)
 {
     // ===== initialize Authorization API =====
 
@@ -127,6 +128,23 @@ EngineManager::EngineManager(QObject* parent)
     connect(mUsageApi, &OAIUsageApi::getQuotaSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
         emit reQuotaError(getJsonMessageIfFound(text));
+    });
+
+    // ===== initialize Users API =====
+
+    mUsersApi->setNetworkAccessManager(mNetworkManager);
+
+    connect(mUsersApi, &OAIUsersApi::listUsersSignal, this, [this](QList<OAIUser> summary) {
+        if (summary.size() == 1) {
+            mUser = summary.first().getUsername();
+            emit reGetUsername(mUser);
+        } else
+            emit reGetUsernameError("Error while fetching username");
+    });
+
+    connect(mUsersApi, &OAIUsersApi::listUsersSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reGetUsernameError("ERR: "+getJsonMessageIfFound(text));
     });
 
 
@@ -240,6 +258,7 @@ EngineManager::~EngineManager()
     mJobsApi->deleteLater();
     mNamespacesApi->deleteLater();
     mUsageApi->deleteLater();
+    mUsersApi->deleteLater();
 }
 
 void EngineManager::startupInit()
@@ -278,6 +297,7 @@ void EngineManager::setUrl(const QString &url)
     mJobsApi->setNewServerForAllOperations(cleanUrl);
     mNamespacesApi->setNewServerForAllOperations(cleanUrl);
     mUsageApi->setNewServerForAllOperations(cleanUrl);
+    mUsersApi->setNewServerForAllOperations(cleanUrl);
     if (mUrl.scheme() == "https")
         setIgnoreSslErrorsCurrentUrl(mUrl.host() == mIgnoreSslUrl.host() && mUrl.port() == mIgnoreSslUrl.port());
 }
@@ -298,6 +318,7 @@ void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
     mJobsApi->setNetworkAccessManager(mNetworkManager);
     mNamespacesApi->setNetworkAccessManager(mNetworkManager);
     mUsageApi->setNetworkAccessManager(mNetworkManager);
+    mUsersApi->setNetworkAccessManager(mNetworkManager);
 }
 
 bool EngineManager::isIgnoreSslErrors() const
@@ -308,7 +329,8 @@ bool EngineManager::isIgnoreSslErrors() const
 void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)
 {
     mUser = user;
-    mAuthApi->createJWTTokenJSON(user, password, expireMinutes * 60);
+    ::OpenAPI::OptionalParam<QString> dummy;
+    mAuthApi->createJWTTokenJSON(user, password, dummy, dummy, expireMinutes * 60);
 }
 
 void EngineManager::setAuthToken(const QString &bearerToken)
@@ -320,6 +342,14 @@ void EngineManager::setAuthToken(const QString &bearerToken)
     mNamespacesApi->setPassword("");
     mUsageApi->addHeaders("Authorization", "Bearer " + bearerToken);
     mUsageApi->setPassword("");
+    mUsersApi->addHeaders("Authorization", "Bearer " + bearerToken);
+    mUsersApi->setPassword("");
+}
+
+void EngineManager::getUsername()
+{
+    ::OpenAPI::OptionalParam<QString> dummy;
+    mUsersApi->listUsers(dummy, false);
 }
 
 void EngineManager::initUsername(const QString &user)
@@ -363,7 +393,7 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
     if (!instance.isEmpty())
         labels << QString("instance=%1").arg(instance);
 
-    mJobsApi->createJob(modelName, nSpace, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, model);
+    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, dummy, dummyL, model);
 }
 
 void EngineManager::getJobStatus()
@@ -435,6 +465,7 @@ void EngineManager::abortRequests()
     mDefaultApi->abortRequests();
     mJobsApi->abortRequests();
     mUsageApi->abortRequests();
+    mUsersApi->abortRequests();
 }
 
 void EngineManager::cleanup()

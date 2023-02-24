@@ -29,10 +29,10 @@ CONFIG += c++14
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 
-ENGINEAPI = $$PWD/../extern/engineapi
 YAMLCPP   = $$PWD/../extern/yaml-cpp
-INCLUDEPATH += $$ENGINEAPI \
-               $$PWD/../extern
+INCLUDEPATH += $$PWD/../extern
+INCLUDEPATH += $$PWD/../extern/engineapi
+include(../extern/engineapi/client.pri)
 
 OBJECTS_DIR=../objects
 MOC_DIR=../objects
@@ -116,45 +116,6 @@ SOURCES += \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
-    $$ENGINEAPI/OAIAuthApi.cpp \
-    $$ENGINEAPI/OAIDefaultApi.cpp \
-    $$ENGINEAPI/OAIHelpers.cpp \
-    $$ENGINEAPI/OAIHttpFileElement.cpp \
-    $$ENGINEAPI/OAIHttpRequest.cpp \
-    $$ENGINEAPI/OAIInex.cpp \
-    $$ENGINEAPI/OAIJob.cpp \
-    $$ENGINEAPI/OAIJobsApi.cpp \
-    $$ENGINEAPI/OAIJob_no_text_entry.cpp \
-    $$ENGINEAPI/OAIJob_no_text_entry_page.cpp \
-    $$ENGINEAPI/OAILog_piece.cpp \
-    $$ENGINEAPI/OAIModels.cpp \
-    $$ENGINEAPI/OAIModel_job_labels.cpp \
-    $$ENGINEAPI/OAIModel_job_usage.cpp \
-    $$ENGINEAPI/OAIMessage.cpp \
-    $$ENGINEAPI/OAIMessage_and_token.cpp \
-    $$ENGINEAPI/OAIModel_auth_token.cpp \
-    $$ENGINEAPI/OAIModel_hypercube_job.cpp \
-    $$ENGINEAPI/OAIModel_hypercube_usage.cpp \
-    $$ENGINEAPI/OAIModel_instance_info.cpp \
-    $$ENGINEAPI/OAIModel_version.cpp \
-    $$ENGINEAPI/OAIModel_usage.cpp \
-    $$ENGINEAPI/OAIModel_userinstance_info.cpp \
-    $$ENGINEAPI/OAINamespace.cpp \
-    $$ENGINEAPI/OAINamespace_quota.cpp \
-    $$ENGINEAPI/OAINamespace_with_permission.cpp \
-    $$ENGINEAPI/OAINamespacesApi.cpp \
-    $$ENGINEAPI/OAIPerm_and_username.cpp \
-    $$ENGINEAPI/OAIQuota.cpp \
-    $$ENGINEAPI/OAIQuota_exceeded.cpp \
-    $$ENGINEAPI/OAIResult_user.cpp \
-    $$ENGINEAPI/OAIStatus_code_meaning.cpp \
-    $$ENGINEAPI/OAIStream_entry.cpp \
-    $$ENGINEAPI/OAIText_entry.cpp \
-    $$ENGINEAPI/OAITime_span.cpp \
-    $$ENGINEAPI/OAIUsageApi.cpp \
-    $$ENGINEAPI/OAIUser.cpp \
-    $$ENGINEAPI/OAIUser_group_member.cpp \
-    $$ENGINEAPI/OAIUser_groups.cpp \
     engine/efieditor.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
@@ -396,47 +357,6 @@ HEADERS += \
     editors/textview.h \
     editors/textviewedit.h \
     encodingsdialog.h \
-    $$ENGINEAPI/OAIAuthApi.h \
-    $$ENGINEAPI/OAIDefaultApi.h \
-    $$ENGINEAPI/OAIEnum.h \
-    $$ENGINEAPI/OAIHelpers.h \
-    $$ENGINEAPI/OAIHttpFileElement.h \
-    $$ENGINEAPI/OAIHttpRequest.h \
-    $$ENGINEAPI/OAIInex.h \
-    $$ENGINEAPI/OAIJob.h \
-    $$ENGINEAPI/OAIJobsApi.h \
-    $$ENGINEAPI/OAIJob_no_text_entry.h \
-    $$ENGINEAPI/OAIJob_no_text_entry_page.h \
-    $$ENGINEAPI/OAILog_piece.h \
-    $$ENGINEAPI/OAIMessage.h \
-    $$ENGINEAPI/OAIMessage_and_token.h \
-    $$ENGINEAPI/OAIModels.h \
-    $$ENGINEAPI/OAIModel_auth_token.h \
-    $$ENGINEAPI/OAIModel_hypercube_job.h \
-    $$ENGINEAPI/OAIModel_hypercube_usage.h \
-    $$ENGINEAPI/OAIModel_instance_info.h \
-    $$ENGINEAPI/OAIModel_job_labels.h \
-    $$ENGINEAPI/OAIModel_job_usage.h \
-    $$ENGINEAPI/OAIModel_version.h \
-    $$ENGINEAPI/OAIModel_usage.h \
-    $$ENGINEAPI/OAIModel_userinstance_info.h \
-    $$ENGINEAPI/OAINamespace.h \
-    $$ENGINEAPI/OAINamespace_quota.h \
-    $$ENGINEAPI/OAINamespace_with_permission.h \
-    $$ENGINEAPI/OAINamespacesApi.h \
-    $$ENGINEAPI/OAIPerm_and_username.h \
-    $$ENGINEAPI/OAIObject.h \
-    $$ENGINEAPI/OAIQuota.h \
-    $$ENGINEAPI/OAIQuota_exceeded.h \
-    $$ENGINEAPI/OAIResult_user.h \
-    $$ENGINEAPI/OAIStatus_code_meaning.h \
-    $$ENGINEAPI/OAIStream_entry.h \
-    $$ENGINEAPI/OAIText_entry.h \
-    $$ENGINEAPI/OAITime_span.h \
-    $$ENGINEAPI/OAIUsageApi.h \
-    $$ENGINEAPI/OAIUser.h \
-    $$ENGINEAPI/OAIUser_group_member.h \
-    $$ENGINEAPI/OAIUser_groups.h \
     engine/efieditor.h \
     engine/enginemanager.h \
     engine/engineprocess.h \

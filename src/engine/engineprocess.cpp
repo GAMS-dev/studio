@@ -59,15 +59,9 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
     connect(mManager, &EngineManager::reListJobs, this, [this](qint32 count) {
-        if (mAuthPollJobs) {
-            mAuthPollJobs = false;
-            listNamespaces();
-            setProcState(ProcCheck);
-        }
         emit EngineProcess::reListJobs(count);
     });
     connect(mManager, &EngineManager::reListJobsError, this, [this](const QString &error) {
-        mAuthPollJobs = false;
         emit EngineProcess::reListJobsError(error);
     });
     connect(mManager, &EngineManager::reListNamspaces, this, &EngineProcess::reListNamspaces);
@@ -78,6 +72,12 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
     connect(mManager, &EngineManager::jobIsQueued, this, &EngineProcess::jobIsQueued);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
+    connect(mManager, &EngineManager::reGetUsername, this, [this]() {
+        setProcState(ProcCheck);
+        listJobs();
+        listNamespaces();
+    });
+    connect(mManager, &EngineManager::reGetUsernameError, this, &EngineProcess::authorizeError);
 
     setIgnoreSslErrorsCurrentUrl(false);
     mPollTimer.setInterval(1000);
@@ -412,8 +412,7 @@ void EngineProcess::authorize(const QString &authToken)
 {
     setAuthToken(authToken);
     if (!authToken.isEmpty()) {
-        mAuthPollJobs = true;
-        listJobs();
+        mManager->getUsername();
     }
 }
 

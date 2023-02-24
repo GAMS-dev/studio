@@ -173,7 +173,6 @@ private:
     QTimer mPollTimer;
     int mPollCounter = 0;
     bool mPollSlow = false;
-    bool mAuthPollJobs = false;
     AbstractGamsProcess *mSubProc = nullptr;
 
     enum JobStatusEnum {jsInvalid, jsDone, jsRunning, jsWaiting, jsUnknownJob, jsBadPassword};

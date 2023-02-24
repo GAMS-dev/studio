@@ -466,6 +466,7 @@ void EngineStartDialog::reListJobsError(const QString &error)
 
 void EngineStartDialog::reListNamespaces(const QStringList &list)
 {
+    DEB() << "namespaces count " << list.size();
     QString text = ui->cbNamespace->currentText().trimmed();
     ui->cbNamespace->clear();
     if (list.isEmpty()) {
