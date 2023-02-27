@@ -1784,8 +1784,8 @@ PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldC
     ci = ci % pSplit;
     PositionPair result(block.position() + parList.at(start).relPos);
     result.match = result.pos;
-    QStringRef parEnter = parentheses.midRef(back ? pSplit : 0, pSplit);
-    QStringRef parLeave = parentheses.midRef(back ? 0 : pSplit, pSplit);
+    QString parEnter = parentheses.mid(back ? pSplit : 0, pSplit);
+    QString parLeave = parentheses.mid(back ? 0 : pSplit, pSplit);
     QVector<QChar> parStack;
     parStack << parLeave.at(ci);
     int startBlockNr = block.blockNumber();
@@ -2257,7 +2257,7 @@ QString CodeEdit::BlockEdit::blockText()
     if (qMin(mStartLine, mCurrentLine) == qMax(mStartLine, mCurrentLine)) {
         QString text = block.text();
         if (text.length()-1 < to) text.append(QString(qAbs(mSize), ' '));
-        res.append(text.midRef(from, to-from));
+        res.append(text.mid(from, to-from));
     } else {
         for (int i = qMin(mStartLine, mCurrentLine); i <= qMax(mStartLine, mCurrentLine); ++i) {
             QString text = block.text();
@@ -2676,8 +2676,8 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     if (mSize < 0) mColumn += mSize;
     int insertWidth = -1;
     for (const QString &s: texts) {
-        const auto refs = s.splitRef('\n');
-        for (const QStringRef &ref: refs) {
+        const QStringList refs = s.split('\n');
+        for (const QString &ref: refs) {
             if (insertWidth < ref.length()) insertWidth = ref.length();
         }
     }

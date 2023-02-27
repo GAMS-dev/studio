@@ -131,10 +131,10 @@ private:
     int getEOLCommentCharIndex(const QString &text);
     void parseOptionString(const QString &text, QString &keyStr, QString &valueStr, QString &commentStr);
 
-    void offsetWhiteSpaces(QStringRef str, int &offset, const int length);
-    void offsetKey(QStringRef str,  QString &key, int &keyPosition, int &offset, const int length);
-    void offsetAssignment(QStringRef str, int &offset, const int length);
-    void offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length);
+    void offsetWhiteSpaces(const QString &str, int &offset, const int length);
+    void offsetKey(const QString &str,  QString &key, int &keyPosition, int &offset, const int length);
+    void offsetAssignment(const QString &str, int &offset, const int length);
+    void offsetValue(const QString &str, QString &value, int &valuePosition, int &offset, const int length);
 
     void formatLineEdit(QLineEdit* lineEdit, const QList<OptionError> &errorList);
 };

@@ -21,6 +21,7 @@
 #define LOGPARSER_H
 
 #include <QString>
+#include <QTextCodec>
 #include "syntax/textmarkrepo.h"
 
 namespace gams {

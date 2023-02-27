@@ -344,7 +344,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     if (href.length() < 5) return res;
     QString code = href.left(3);
     int iCode = tags.indexOf(code);
-    QVector<QStringRef> parts = href.rightRef(href.length()-4).split(',');
+    QStringList parts = href.right(href.length()-4).split(',');
     if (iCode >= 0) {
         if (iCode < 2) {
             QString lstFile = parameter(code.at(2) == '2' ? "ls2" : "lst");
@@ -355,7 +355,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
             node = projectRepo()->findOrCreateFileNode(lstFile, this, &FileType::from(FileKind::Lst));
 
         } else {
-            QString fName = parts.first().toString();
+            QString fName = parts.first();
             if (fName.startsWith("\"") && fName.endsWith("\""))
                 fName = fName.mid(1, fName.length()-2);
             QStringList locations;
@@ -384,7 +384,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
                 }
 
             } else if (iCode == 5) { // DIR
-                QString path = parts.first().toString();
+                QString path = parts.first();
                 if (path.startsWith("\"") && path.endsWith("\""))
                     path = path.mid(1, path.length()-2);
                 return path;
@@ -439,7 +439,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
             node = projectRepo()->findOrCreateFileNode(fName, this);
         }
     } else if (parts.first().startsWith('"')) {
-        QString fName = parts.first().mid(1, parts.first().length()-2).toString();
+        QString fName = parts.first().mid(1, parts.first().length()-2);
         if (!QDir::isAbsolutePath(fName))
             fName = workDir() + '/' + fName;
 

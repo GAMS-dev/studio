@@ -59,7 +59,7 @@ void TreeItemDelegate::paint(QPainter* painter, const QStyleOptionViewItem& opti
             QString name = index.model()->data(index, Qt::EditRole).toString();
             painter->setPen(Qt::gray);
             painter->setFont(qvariant_cast<QFont>(index.model()->data(index, Qt::FontRole)));
-            int w = painter->fontMetrics().width(name + ' ');
+            int w = painter->fontMetrics().horizontalAdvance(name + ' ');
             nxRect.setLeft(nxRect.left() + w);
             painter->drawText(nxRect, nameExt);
         }

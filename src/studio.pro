@@ -18,7 +18,8 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT       += core gui svg concurrent network printsupport
+QT += core gui svg concurrent network printsupport
+#QT += core5compat
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = studio

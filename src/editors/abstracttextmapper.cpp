@@ -486,7 +486,7 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
 
         if (match.hasMatch() || match.hasPartialMatch()) {
 
-            QStringRef ref = textBlock.leftRef(match.capturedStart());
+            QString ref = textBlock.left(match.capturedStart());
             int line = ref.count("\n");
             int charNr = line ? match.capturedStart() - ref.lastIndexOf("\n") - 1
                               : match.capturedStart();

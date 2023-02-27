@@ -802,7 +802,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
                     || syntax.first == int(syntax::SyntaxKind::AssignmentSystemData)) {
                 if (line.at(peekStart) == '.') {
                     const QString sys("system.");
-                    if (peekStart >= sys.length() && sys.compare(line.midRef(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
+                    if (peekStart >= sys.length() && sys.compare(line.mid(validStart - sys.length(), sys.length()), Qt::CaseInsensitive) == 0) {
                         validStart -= sys.length();
                         if (validStart > 0 && line.at(validStart-1) == '%')
                             --validStart;
@@ -1077,7 +1077,7 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
         ind = look;
     }
     QString str = model()->data(model()->index(ind, 0)).toString();
-    if (str.length() > pos && str.midRef(pos, 2).compare(nextTwo, Qt::CaseInsensitive) == 0)
+    if (str.length() > pos && str.mid(pos, 2).compare(nextTwo, Qt::CaseInsensitive) == 0)
         return findBound(pos, nextTwo, ind, look);
     if (ind == look) return ind;
     return findBound(pos, nextTwo, good, ind);

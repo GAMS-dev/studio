@@ -357,7 +357,7 @@ QVector<int> TextViewEdit::toolTipLstNumbers(const QPoint &mousePos)
         cur.setPosition(cur.block().position());
         if (cur.charFormat().anchorHref().length() > 4 && cur.charFormat().anchorHref().at(3) == ':') {
             bool ok = false;
-            int lstNr = cur.charFormat().anchorHref().midRef(4, cur.charFormat().anchorHref().length()-4).toInt(&ok);
+            int lstNr = cur.charFormat().anchorHref().mid(4, cur.charFormat().anchorHref().length()-4).toInt(&ok);
             if (ok) res << lstNr;
         }
     }

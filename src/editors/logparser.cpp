@@ -95,12 +95,12 @@ void LogParser::quickParse(const QByteArray &data, int start, int end, QString &
 
 }
 
-inline QStringRef capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
+inline QString capture(const QString &line, int &a, int &b, const int offset, const QChar ch)
 {
     a = b + offset;
     b = line.indexOf(ch, a);
     if (b < 0) b = line.length();
-    return line.midRef(a, b-a);
+    return line.mid(a, b-a);
 }
 
 QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::MarksBlockState &mbState)
@@ -122,8 +122,8 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
         mbState.errData.text = "";
 
         posB = 0;
-        if (line.midRef(9, 9) == " at line ") {
-            result = capture(line, posA, posB, 0, ':').toString();
+        if (line.mid(9, 9) == " at line ") {
+            result = capture(line, posA, posB, 0, ':');
             mbState.errData.errNr = -1;
             if (posB+2 < line.length()) {
                 int subLen = (line.contains('[') ? line.indexOf('['): line.length()) - (posB+2);
@@ -135,8 +135,8 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
             while (posA < line.length() && (line.at(posA)<'0' || line.at(posA)>'9')) posA++;
             posB = posA;
             while (posB < line.length() && line.at(posB)>='0' && line.at(posB)<='9') posB++;
-            int errNr = line.midRef(posA, posB-posA).toInt(&ok);
-            result = capture(line, posA, posB, -posB, '[').toString();
+            int errNr = line.mid(posA, posB-posA).toInt(&ok);
+            result = capture(line, posA, posB, -posB, '[');
             ++posB;
             int end = posB+1;
             end = line.indexOf(']', end);
@@ -155,16 +155,16 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 
             int start = posB+1;
 
-            if (line.midRef(posB+1,5) == "LS2:\"") {
+            if (line.mid(posB+1,5) == "LS2:\"") {
                 // adding a secondary LST file
-                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"').toString());
+                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, '"'));
                 mbState.switchLst = fName;
                 ++posB;
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
                 // LST:
-            } else if (line.midRef(posB+1,4) == "LST:" || line.midRef(posB+1,4) == "LS2:") {
+            } else if (line.mid(posB+1,4) == "LST:" || line.mid(posB+1,4) == "LS2:") {
                 int lineNr = capture(line, posA, posB, 5, ']').toInt();
                 mbState.errData.lstLine = lineNr;
                 mbState.marks.setMark(line.mid(start, posB-start), mbState.errData.lstLine);
@@ -172,18 +172,18 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 ++posB;
 
                 // FIL + REF
-            } else if (line.midRef(posB+1,4) == "FIL:" || line.midRef(posB+1,4) == "REF:") {
-                QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
+            } else if (line.mid(posB+1,4) == "FIL:" || line.mid(posB+1,4) == "REF:") {
+//                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
-            } else if (line.midRef(posB+1,4) == "DIR:") {
-                QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
+            } else if (line.mid(posB+1,4) == "DIR:") {
+//                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
                 // TIT
-            } else if (line.midRef(posB+1,4) == "TIT:") {
+            } else if (line.mid(posB+1,4) == "TIT:") {
                 return QString();
             } else {
                 // no link reference: restore missing braces
@@ -191,7 +191,7 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
                 posB++;
             }
         } else {
-            if (posB < line.length()) result += line.rightRef(line.length() - posB);
+            if (posB < line.length()) result += line.right(line.length() - posB);
             break;
         }
     }

@@ -114,7 +114,7 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr)
 
         int offset = 0;
         int length = commandLineStr.length();
-        QStringRef str = commandLineStr.midRef(0);
+        QString str = commandLineStr.mid(0);
         offsetWhiteSpaces(str, offset, length);
         while( offset < commandLineStr.length() ) {
             QString key = "";
@@ -185,7 +185,7 @@ QList<OptionItem> OptionTokenizer::tokenize(const QString &commandLineStr, const
     if (!commandLineStr.isEmpty()) {
         int offset = 0;
         int length = commandLineStr.length();
-        QStringRef str = commandLineStr.midRef(0);
+        QString str = commandLineStr.mid(0);
         offsetWhiteSpaces(str, offset, length);
         while( offset < commandLineStr.length() ) {
             QString key = "";
@@ -500,14 +500,14 @@ QString OptionTokenizer::normalize(const QList<OptionItem> &items)
     return strList.join(" ");
 }
 
-void OptionTokenizer::offsetWhiteSpaces(QStringRef str, int &offset, const int length)
+void OptionTokenizer::offsetWhiteSpaces(const QString &str, int &offset, const int length)
 {
     while( str.mid(offset).startsWith(" ") && (offset < length) ) {
            ++offset;
     }
 }
 
-void OptionTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, int &offset, const int length)
+void OptionTokenizer::offsetKey(const QString &str, QString &key, int &keyPosition, int &offset, const int length)
 {
     if (keyPosition == -1)
        keyPosition = offset;
@@ -519,7 +519,7 @@ void OptionTokenizer::offsetKey(QStringRef str, QString &key, int &keyPosition, 
     }
 }
 
-void OptionTokenizer::offsetAssignment(QStringRef str, int &offset, const int length)
+void OptionTokenizer::offsetAssignment(const QString &str, int &offset, const int length)
 {
     bool seenAssignmentOperator = false;
     while( (offset < length) &&
@@ -536,7 +536,7 @@ void OptionTokenizer::offsetAssignment(QStringRef str, int &offset, const int le
     }
 }
 
-void OptionTokenizer::offsetValue(QStringRef str, QString &value, int &valuePosition, int &offset, const int length)
+void OptionTokenizer::offsetValue(const QString &str, QString &value, int &valuePosition, int &offset, const int length)
 {
     bool startedWithDoubleQuote = false;
     bool seenCompleteDoubleQuotation = false;
@@ -1117,11 +1117,11 @@ QString OptionTokenizer::getKeyFromStr(const QString &line, const QString &hintK
         }
         if (key.isEmpty()) {
             if (line.contains(mOption->getDefaultSeparator())) {
-                QVector<QStringRef> sref = line.splitRef(mOption->getDefaultSeparator(), Qt::SkipEmptyParts);
-                key = sref.first().toString();
+                QStringList sref = line.split(mOption->getDefaultSeparator(), Qt::SkipEmptyParts);
+                key = sref.first();
             } else if (line.contains(" ")) {
-                QVector<QStringRef> sref = line.splitRef(" ", Qt::SkipEmptyParts);
-                key = sref.first().toString();
+                QStringList sref = line.split(" ", Qt::SkipEmptyParts);
+                key = sref.first();
             } else  {
                 return hintKey;
             }
@@ -1187,7 +1187,7 @@ QString OptionTokenizer::getValueFromStr(const QString &line, const int itype, c
 
 QString OptionTokenizer::getEOLCommentFromStr(const QString &line, const QString &hintKey, const QString &hintValue)
 {
-    QStringRef strref = line.midRef(0, line.size());
+    QString strref = line.mid(0, line.size());
     if (line.contains(hintKey, Qt::CaseInsensitive))
          strref = strref.mid( hintKey.size(), strref.size() ).trimmed();
 
@@ -1254,7 +1254,7 @@ void OptionTokenizer::parseOptionString(const QString &text, QString &keyStr, QS
         if (commentCharIndex < 0) {
             valueStr = text.mid(separatorIndex+separator.size()).simplified();
         } else {
-            int valueStrSize = text.size() - (text.leftRef(separatorIndex).size() + separator.size() + text.midRef(commentCharIndex).size());
+            int valueStrSize = text.size() - (text.left(separatorIndex).size() + separator.size() + text.mid(commentCharIndex).size());
             valueStr = text.mid(separatorIndex+separator.size(), valueStrSize).simplified();
         }
     } else {

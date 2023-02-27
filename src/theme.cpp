@@ -409,7 +409,7 @@ QString Theme::findUniqueName(const QString &name, const QString &ignore)
     while (!base.isEmpty() && base.at(base.length()-1).isDigit())
         base = base.left(base.length()-1);
     if (base.isEmpty()) base = name;
-    if (base.length() != name.length()) nr = name.rightRef(name.length()-base.length()).toInt();
+    if (base.length() != name.length()) nr = name.right(name.length()-base.length()).toInt();
     while (mThemeNames.contains(uniqueName) && uniqueName != ignore)
         uniqueName = base + QString::number(++nr);
     return uniqueName;

@@ -127,7 +127,7 @@ QByteArray XmlRpc::prepareCall(const QString &method, const QVariantList &params
 }
 
 const QStringList typeTag {"array","base64","boolean","dateTime.iso8601","double","int","i4","string","struct"};
-int typeTagId(QStringRef ref) { // workaround: currently indexOf(QStringRef) doesn't work on all platforms
+int typeTagId(QStringView ref) { // workaround: currently indexOf(QString) doesn't work on all platforms
     for (int i = 0; i < typeTag.size(); ++i)
         if (typeTag.at(i).compare(ref, Qt::CaseInsensitive) == 0) return i;
     return -1;
