@@ -58,12 +58,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::rePing, this, &EngineProcess::rePing);
     connect(mManager, &EngineManager::reError, this, &EngineProcess::reError);
     connect(mManager, &EngineManager::reKillJob, this, &EngineProcess::reKillJob, Qt::QueuedConnection);
-    connect(mManager, &EngineManager::reListJobs, this, [this](qint32 count) {
-        emit EngineProcess::reListJobs(count);
-    });
-    connect(mManager, &EngineManager::reListJobsError, this, [this](const QString &error) {
-        emit EngineProcess::reListJobsError(error);
-    });
+    connect(mManager, &EngineManager::reListJobs, this, &EngineProcess::reListJobs);
+    connect(mManager, &EngineManager::reListJobsError, this, &EngineProcess::reListJobsError);
     connect(mManager, &EngineManager::reListNamspaces, this, &EngineProcess::reListNamspaces);
     connect(mManager, &EngineManager::reListNamespacesError, this, &EngineProcess::reListNamespacesError);
     connect(mManager, &EngineManager::reCreateJob, this, &EngineProcess::reCreateJob);
@@ -76,6 +72,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
         setProcState(ProcCheck);
         listJobs();
         listNamespaces();
+        emit authorized(mAuthToken);
     });
     connect(mManager, &EngineManager::reGetUsernameError, this, &EngineProcess::authorizeError);
 
