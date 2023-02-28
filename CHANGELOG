@@ -1,3 +1,7 @@
+Version 1.13.3 *
+==================
+- fixed LOG shows raw links
+
 Version 1.13.2
 ==================
 - added support for macro symbol in Reference File Viewer
