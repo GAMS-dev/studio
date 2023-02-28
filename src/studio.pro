@@ -30,7 +30,9 @@ CONFIG += c++14
 include(../gamsdependency.pri)
 
 ENGINEAPI = $$PWD/../extern/engineapi
-INCLUDEPATH += $$ENGINEAPI
+YAMLCPP   = $$PWD/../extern/yaml-cpp
+INCLUDEPATH += $$ENGINEAPI \
+               $$PWD/../extern
 
 OBJECTS_DIR=../objects
 MOC_DIR=../objects
@@ -319,37 +321,37 @@ SOURCES += \
     viewhelper.cpp \
     welcomepage.cpp \
     wplabel.cpp \
-    yaml-cpp/binary.cpp \
-    yaml-cpp/convert.cpp \
-    yaml-cpp/depthguard.cpp \
-    yaml-cpp/directives.cpp \
-    yaml-cpp/emit.cpp \
-    yaml-cpp/emitfromevents.cpp \
-    yaml-cpp/emitter.cpp \
-    yaml-cpp/emitterstate.cpp \
-    yaml-cpp/emitterutils.cpp \
-    yaml-cpp/exceptions.cpp \
-    yaml-cpp/exp.cpp \
-    yaml-cpp/memory.cpp \
-    yaml-cpp/nodebuilder.cpp \
-    yaml-cpp/node.cpp \
-    yaml-cpp/node_data.cpp \
-    yaml-cpp/nodeevents.cpp \
-    yaml-cpp/null.cpp \
-    yaml-cpp/ostream_wrapper.cpp \
-    yaml-cpp/parse.cpp \
-    yaml-cpp/parser.cpp \
-    yaml-cpp/regex_yaml.cpp \
-    yaml-cpp/scanner.cpp \
-    yaml-cpp/scanscalar.cpp \
-    yaml-cpp/scantag.cpp \
-    yaml-cpp/scantoken.cpp \
-    yaml-cpp/simplekey.cpp \
-    yaml-cpp/singledocparser.cpp \
-    yaml-cpp/stream.cpp \
-    yaml-cpp/tag.cpp \
-    yaml-cpp/contrib/graphbuilderadapter.cpp \
-    yaml-cpp/contrib/graphbuilder.cpp
+    $$YAMLCPP/binary.cpp \
+    $$YAMLCPP/convert.cpp \
+    $$YAMLCPP/depthguard.cpp \
+    $$YAMLCPP/directives.cpp \
+    $$YAMLCPP/emit.cpp \
+    $$YAMLCPP/emitfromevents.cpp \
+    $$YAMLCPP/emitter.cpp \
+    $$YAMLCPP/emitterstate.cpp \
+    $$YAMLCPP/emitterutils.cpp \
+    $$YAMLCPP/exceptions.cpp \
+    $$YAMLCPP/exp.cpp \
+    $$YAMLCPP/memory.cpp \
+    $$YAMLCPP/nodebuilder.cpp \
+    $$YAMLCPP/node.cpp \
+    $$YAMLCPP/node_data.cpp \
+    $$YAMLCPP/nodeevents.cpp \
+    $$YAMLCPP/null.cpp \
+    $$YAMLCPP/ostream_wrapper.cpp \
+    $$YAMLCPP/parse.cpp \
+    $$YAMLCPP/parser.cpp \
+    $$YAMLCPP/regex_yaml.cpp \
+    $$YAMLCPP/scanner.cpp \
+    $$YAMLCPP/scanscalar.cpp \
+    $$YAMLCPP/scantag.cpp \
+    $$YAMLCPP/scantoken.cpp \
+    $$YAMLCPP/simplekey.cpp \
+    $$YAMLCPP/singledocparser.cpp \
+    $$YAMLCPP/stream.cpp \
+    $$YAMLCPP/tag.cpp \
+    $$YAMLCPP/contrib/graphbuilderadapter.cpp \
+    $$YAMLCPP/contrib/graphbuilder.cpp
 
 
 HEADERS += \
@@ -607,65 +609,65 @@ HEADERS += \
     viewhelper.h \
     welcomepage.h \
     wplabel.h  \
-    yaml-cpp/anchor.h \
-    yaml-cpp/binary.h \
-    yaml-cpp/collectionstack.h \
-    yaml-cpp/depthguard.h \
-    yaml-cpp/directives.h \
-    yaml-cpp/dll.h \
-    yaml-cpp/emitfromevents.h \
-    yaml-cpp/emitterdef.h \
-    yaml-cpp/emitter.h \
-    yaml-cpp/emittermanip.h \
-    yaml-cpp/emitterstate.h \
-    yaml-cpp/emitterstyle.h \
-    yaml-cpp/emitterutils.h \
-    yaml-cpp/eventhandler.h \
-    yaml-cpp/exceptions.h \
-    yaml-cpp/exp.h \
-    yaml-cpp/indentation.h \
-    yaml-cpp/mark.h \
-    yaml-cpp/nodebuilder.h \
-    yaml-cpp/nodeevents.h \
-    yaml-cpp/noexcept.h \
-    yaml-cpp/null.h \
-    yaml-cpp/ostream_wrapper.h \
-    yaml-cpp/parser.h \
-    yaml-cpp/ptr_vector.h \
-    yaml-cpp/regeximpl.h \
-    yaml-cpp/regex_yaml.h \
-    yaml-cpp/scanner.h \
-    yaml-cpp/scanscalar.h \
-    yaml-cpp/scantag.h \
-    yaml-cpp/setting.h \
-    yaml-cpp/singledocparser.h \
-    yaml-cpp/stlemitter.h \
-    yaml-cpp/streamcharsource.h \
-    yaml-cpp/stream.h \
-    yaml-cpp/stringsource.h \
-    yaml-cpp/tag.h \
-    yaml-cpp/token.h \
-    yaml-cpp/traits.h \
-    yaml-cpp/yaml.h \
-    yaml-cpp/contrib/anchordict.h \
-    yaml-cpp/contrib/graphbuilderadapter.h \
-    yaml-cpp/contrib/graphbuilder.h \
-    yaml-cpp/node/convert.h \
-    yaml-cpp/node/emit.h \
-    yaml-cpp/node/impl.h \
-    yaml-cpp/node/iterator.h \
-    yaml-cpp/node/node.h \
-    yaml-cpp/node/parse.h \
-    yaml-cpp/node/ptr.h \
-    yaml-cpp/node/type.h \
-    yaml-cpp/node/detail/impl.h \
-    yaml-cpp/node/detail/iterator_fwd.h \
-    yaml-cpp/node/detail/iterator.h \
-    yaml-cpp/node/detail/memory.h \
-    yaml-cpp/node/detail/node_data.h \
-    yaml-cpp/node/detail/node.h \
-    yaml-cpp/node/detail/node_iterator.h \
-    yaml-cpp/node/detail/node_ref.h
+    $$YAMLCPP/anchor.h \
+    $$YAMLCPP/binary.h \
+    $$YAMLCPP/collectionstack.h \
+    $$YAMLCPP/depthguard.h \
+    $$YAMLCPP/directives.h \
+    $$YAMLCPP/dll.h \
+    $$YAMLCPP/emitfromevents.h \
+    $$YAMLCPP/emitterdef.h \
+    $$YAMLCPP/emitter.h \
+    $$YAMLCPP/emittermanip.h \
+    $$YAMLCPP/emitterstate.h \
+    $$YAMLCPP/emitterstyle.h \
+    $$YAMLCPP/emitterutils.h \
+    $$YAMLCPP/eventhandler.h \
+    $$YAMLCPP/exceptions.h \
+    $$YAMLCPP/exp.h \
+    $$YAMLCPP/indentation.h \
+    $$YAMLCPP/mark.h \
+    $$YAMLCPP/nodebuilder.h \
+    $$YAMLCPP/nodeevents.h \
+    $$YAMLCPP/noexcept.h \
+    $$YAMLCPP/null.h \
+    $$YAMLCPP/ostream_wrapper.h \
+    $$YAMLCPP/parser.h \
+    $$YAMLCPP/ptr_vector.h \
+    $$YAMLCPP/regeximpl.h \
+    $$YAMLCPP/regex_yaml.h \
+    $$YAMLCPP/scanner.h \
+    $$YAMLCPP/scanscalar.h \
+    $$YAMLCPP/scantag.h \
+    $$YAMLCPP/setting.h \
+    $$YAMLCPP/singledocparser.h \
+    $$YAMLCPP/stlemitter.h \
+    $$YAMLCPP/streamcharsource.h \
+    $$YAMLCPP/stream.h \
+    $$YAMLCPP/stringsource.h \
+    $$YAMLCPP/tag.h \
+    $$YAMLCPP/token.h \
+    $$YAMLCPP/traits.h \
+    $$YAMLCPP/yaml.h \
+    $$YAMLCPP/contrib/anchordict.h \
+    $$YAMLCPP/contrib/graphbuilderadapter.h \
+    $$YAMLCPP/contrib/graphbuilder.h \
+    $$YAMLCPP/node/convert.h \
+    $$YAMLCPP/node/emit.h \
+    $$YAMLCPP/node/impl.h \
+    $$YAMLCPP/node/iterator.h \
+    $$YAMLCPP/node/node.h \
+    $$YAMLCPP/node/parse.h \
+    $$YAMLCPP/node/ptr.h \
+    $$YAMLCPP/node/type.h \
+    $$YAMLCPP/node/detail/impl.h \
+    $$YAMLCPP/node/detail/iterator_fwd.h \
+    $$YAMLCPP/node/detail/iterator.h \
+    $$YAMLCPP/node/detail/memory.h \
+    $$YAMLCPP/node/detail/node_data.h \
+    $$YAMLCPP/node/detail/node.h \
+    $$YAMLCPP/node/detail/node_iterator.h \
+    $$YAMLCPP/node/detail/node_ref.h
 
 
 FORMS += \

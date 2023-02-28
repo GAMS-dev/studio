@@ -24,6 +24,7 @@ include(../tests.pri)
 
 INCLUDEPATH +=  \
         $$SRCPATH \
+        $$SRCPATH/../extern \
         $$SRCPATH/editors
 
 HEADERS += \

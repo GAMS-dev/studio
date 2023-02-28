@@ -21,7 +21,7 @@
 #define CONNECTAGENT_H
 
 #include <QString>
-#include "yaml-cpp/yaml.h"
+#include <yaml-cpp/yaml.h>
 
 namespace gams {
 namespace studio {
