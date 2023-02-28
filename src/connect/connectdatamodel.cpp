@@ -1281,7 +1281,10 @@ void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
                            seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap      ) {
                            YAML::Node mapseqnode;
                            getData(seqchilditem, mapseqnode);
-                           mapnode[seqmapkey] = seqchilditem->data((int)DataItemColumn::Value).toString().toStdString();;
+                           if (seqchilditem->data((int)DataItemColumn::Value).toString().toLower().compare("null")==0)
+                               mapnode[seqmapkey] = YAML::Node(YAML::NodeType::Null);
+                           else
+                               mapnode[seqmapkey] = seqchilditem->data((int)DataItemColumn::Value).toString().toStdString();;
                        } else if (seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey ) {
                            mapnode = seqmapkey;
                        } else {
@@ -1294,7 +1297,10 @@ void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
         } else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue ||
                    childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap      ) {
                    std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
-                   node[key] = childitem->data((int)DataItemColumn::Value).toString().toStdString();
+                   if (childitem->data((int)DataItemColumn::Value).toString().toLower().compare("null")==0)
+                       node[key] = YAML::Node(YAML::NodeType::Null);
+                   else
+                       node[key] = childitem->data((int)DataItemColumn::Value).toString().toStdString();
         }  else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey) {
                   YAML::Node node = YAML::Node(YAML::NodeType::Scalar);
                   node = YAML::Node(childitem->data((int)DataItemColumn::Key).toString().toStdString());

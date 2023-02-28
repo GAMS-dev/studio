@@ -52,10 +52,11 @@ void ConnectData::loadFromString(const QString &input)
 void ConnectData::unload(const QString &outputFileName)
 {
     YAML::Emitter emitter;
-    emitter << mRootNode;
+    emitter.SetNullFormat(YAML::EMITTER_MANIP::LowerNull);
+    emitter << mRootNode << YAML::Newline;
 
     std::ofstream fout(outputFileName.toStdString());
-    fout << emitter.c_str() << std::endl;
+    fout << emitter.c_str();
 }
 
 
