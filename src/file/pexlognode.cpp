@@ -99,7 +99,7 @@ void PExLogNode::logDone()
         QString message;
         QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
         TextView *tv = ViewHelper::toTextView(wid);
-        QFileInfo fi = QFileInfo(baseFile + ".log");
+        QFileInfo fi(baseFile + ".log");
         QString path = fi.filePath();
         if (mLogOption == 2) {
             if (PExProjectNode *project = projectRepo()->asProject(projectId())) {

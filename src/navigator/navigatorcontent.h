@@ -32,12 +32,12 @@ public:
     NavigatorContent(QString txt, std::function<void()> function);
     bool isValid();
 
-    FileMeta *GetFileMeta();
-    QFileInfo FileInfo();
-    QString Text();
-    QString AdditionalInfo();
-    QString Prefix();
-    void ExecuteQuickAction();
+    FileMeta *getFileMeta();
+    QFileInfo fileInfo();
+    QString text();
+    QString additionalInfo();
+    QString prefix();
+    void executeQuickAction();
 
 private:
     FileMeta* mFileMeta = nullptr;

@@ -2467,7 +2467,7 @@ void CodeEdit::BlockEdit::checkHorizontalScroll()
     qreal curOffset = mEdit->cursorRect(cursor).left();
     if (int beyondEnd = colFrom() > existChars ? colFrom() - existChars : 0) {
         QString str = QString(beyondEnd, ' ');
-        curOffset += metric.width(str);
+        curOffset += metric.horizontalAdvance(str);
     }
     int offset = 0;
     if (curOffset < 4)
@@ -2522,9 +2522,9 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
             int beyondStart = qMax(block.length()-1, qMin(mColumn, mColumn+mSize));
             QRectF selRect = mEdit->cursorRect(cursor);
             if (block.length() <= beyondStart) {
-                selRect.moveLeft(left + metric.width(str.left(beyondStart)) - mEdit->horizontalScrollBar()->value());
+                selRect.moveLeft(left + metric.horizontalAdvance(str.left(beyondStart)) - mEdit->horizontalScrollBar()->value());
             }
-            selRect.setRight(left + metric.width(str.left(beyondEnd)) - mEdit->horizontalScrollBar()->value());
+            selRect.setRight(left + metric.horizontalAdvance(str.left(beyondEnd)) - mEdit->horizontalScrollBar()->value());
             painter.fillRect(selRect, mEdit->palette().highlight());
         }
 
@@ -2537,7 +2537,7 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
         cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
         QRectF cursorRect = mEdit->cursorRect(cursor);
         if (block.length() <= cursorColumn) {
-            cursorRect.setX(left + metric.width(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
+            cursorRect.setX(left + metric.horizontalAdvance(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
         }
         cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 

@@ -53,7 +53,7 @@ int NavigatorModel::findIndex(const QString& file)
 {
     int index = 0;
     for (NavigatorContent nc : qAsConst(mContent)) {
-        if (nc.FileInfo().filePath() == file)
+        if (nc.fileInfo().filePath() == file)
             return index;
         index++;
     }
@@ -76,11 +76,11 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
 {
     if (role == Qt::DisplayRole) {
         NavigatorContent nc = mContent.at(index.row());
-        QFileInfo f = nc.FileInfo();
+        QFileInfo f = nc.fileInfo();
 
         if (index.column() == 0) { // file name: show text if available, otherwise fileinfo
-            if (!nc.Text().isEmpty())
-                return nc.Text();
+            if (!nc.text().isEmpty())
+                return nc.text();
             else return f.fileName();
 
         } else if (index.column() == 1) { // path: relative path if contains less than 4 .., otherwise absolute
@@ -96,7 +96,7 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
             if (f.fileName().contains("..")) // detect ".." and hide info
                 return QVariant();
 
-            return nc.AdditionalInfo();
+            return nc.additionalInfo();
         }
 
     } else if (role == Qt::TextAlignmentRole) {

@@ -906,7 +906,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             }
         }
         if (!validFile.isEmpty()) {
-            QFileInfo file = validFile;
+            QFileInfo file(validFile);
             QString name;
             QString basePath;
             if (file.isFile())

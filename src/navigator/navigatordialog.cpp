@@ -269,8 +269,8 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     } else if (mLastSelectedItem.isValid()) {
         nc = mLastSelectedItem;
     }
-    fm = nc.GetFileMeta();
-    fi = nc.FileInfo();
+    fm = nc.getFileMeta();
+    fi = nc.fileInfo();
 
     if (fm) {
         // if has editors, get line number
@@ -388,35 +388,35 @@ void NavigatorDialog::autocomplete()
     if (postMatch.hasMatch())
         postfix = postMatch.captured(1);
 
-    if (!nc.Prefix().isEmpty()) { // help content
+    if (!nc.prefix().isEmpty()) { // help content
         FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         if (fm) mInput->setText(prefix + fm->location() + postfix);
-    } else if (nc.GetFileMeta()) {
-        mInput->setText(prefix + (nc.Text().isEmpty() ? nc.FileInfo().fileName() : nc.Text()) + postfix);
+    } else if (nc.getFileMeta()) {
+        mInput->setText(prefix + (nc.text().isEmpty() ? nc.fileInfo().fileName() : nc.text()) + postfix);
     } else {
-        mInput->setText(prefix + nc.FileInfo().absoluteFilePath() + postfix);
+        mInput->setText(prefix + nc.fileInfo().absoluteFilePath() + postfix);
     }
 }
 
 void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
 {
-    mSelectedDirectory = QDir(nc.FileInfo().absoluteFilePath());
+    mSelectedDirectory = QDir(nc.fileInfo().absoluteFilePath());
     mInput->setText("f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
-                         + (nc.FileInfo().isDir() ? QDir::separator() : QString()));
+                         + (nc.fileInfo().isDir() ? QDir::separator() : QString()));
     updateContent();
 }
 
 void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 {
-    if (FileMeta* fm = nc.GetFileMeta()) {
+    if (FileMeta* fm = nc.getFileMeta()) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
         else mMain->openFile(fm, true);
 
         close();
     } else {
-        if (nc.FileInfo().isFile()) {
-            mMain->openFilePath(nc.FileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
+        if (nc.fileInfo().isFile()) {
+            mMain->openFilePath(nc.fileInfo().absoluteFilePath(), nullptr, OpenGroupOption::ogNone, true);
             close();
         } else {
             fillFileSystemPath(nc);
@@ -426,14 +426,14 @@ void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 
 void NavigatorDialog::selectHelpContent(NavigatorContent nc)
 {
-    mInput->setText(nc.Prefix());
+    mInput->setText(nc.prefix());
     updateContent();
 }
 
 void NavigatorDialog::selectQuickAction(NavigatorContent nc)
 {
     mInput->setText("");
-    nc.ExecuteQuickAction();
+    nc.executeQuickAction();
     close();
 }
 
@@ -534,7 +534,7 @@ bool NavigatorDialog::conditionallyClose()
 bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
 {
     for (NavigatorContent c : content) {
-        if (c.GetFileMeta() == fm)
+        if (c.getFileMeta() == fm)
             return true;
     }
     return false;

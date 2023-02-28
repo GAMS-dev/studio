@@ -54,32 +54,32 @@ bool NavigatorContent::isValid()
     return !mAdditionalInfo.isEmpty() || mFunction.target<void>();
 }
 
-FileMeta *NavigatorContent::GetFileMeta()
+FileMeta *NavigatorContent::getFileMeta()
 {
     return mFileMeta;
 }
 
-QFileInfo NavigatorContent::FileInfo()
+QFileInfo NavigatorContent::fileInfo()
 {
     return mFileInfo;
 }
 
-QString NavigatorContent::Text()
+QString NavigatorContent::text()
 {
     return mText;
 }
 
-QString NavigatorContent::AdditionalInfo()
+QString NavigatorContent::additionalInfo()
 {
     return mAdditionalInfo;
 }
 
-QString NavigatorContent::Prefix()
+QString NavigatorContent::prefix()
 {
     return mInsertPrefix;
 }
 
-void NavigatorContent::ExecuteQuickAction()
+void NavigatorContent::executeQuickAction()
 {
     mFunction();
 }
