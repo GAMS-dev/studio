@@ -126,8 +126,11 @@ void FilterLineEdit::updateRegExp()
 
     QString filter;
     if (!text().isEmpty()) {
-        filter = buttonState(mRegExButton) ? (buttonState(mExactButton) ? '^' + text() + '$' : text())
-                                           : QRegularExpression::wildcardToRegularExpression(text());
+        if (buttonState(mRegExButton))
+            filter = buttonState(mExactButton) ? "^"+text()+"$" : text();
+        else
+            filter = QRegularExpression::wildcardToRegularExpression(buttonState(mExactButton) ? text()
+                                                                                               : "*"+text()+"*");
     }
     mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
     emit regExpChanged(mRegExp);
