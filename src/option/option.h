@@ -238,6 +238,11 @@ private:
     QMap<int, QString> mOptionTypeNameMap;
     QMap<int, OptionGroup> mOptionGroup;
 
+    static QRegularExpression mRexDoubleDash;
+    static QRegularExpression mRexDoubleDashName;
+    static QRegularExpression mRexVersion;
+    static QRegularExpression mRexOptionKey;
+
     bool mAvailable;
     bool readDefinitionFile(const QString &optionFilePath, const QString &optionFileName);
 };

@@ -36,7 +36,7 @@ FilterLineEdit::FilterLineEdit(const QString &contents, QWidget *parent): QLineE
     init();
 }
 
-const QRegExp &FilterLineEdit::regExp() const
+const QRegularExpression &FilterLineEdit::regExp() const
 {
     return mRegExp;
 }
@@ -123,14 +123,13 @@ void FilterLineEdit::updateRegExp()
         mClearButton->setVisible(!text().isEmpty());
         updateTextMargins();
     }
-    QString rawText = buttonState(mRegExButton) ? text() : QRegExp::escape(text());
-    QString filter = text().isEmpty() ? QString() : buttonState(mExactButton) ? '^' + rawText + '$'
-                                                                              : rawText;
-    filter.replace("\\*", ".*");
-    filter.replace("\\?", ".");
-    mRegExp = QRegExp(filter);
-    mRegExp.setCaseSensitivity(Qt::CaseInsensitive);
-    mRegExp.setPatternSyntax(buttonState(mRegExButton) ? QRegExp::RegExp : QRegExp::Wildcard);
+
+    QString filter;
+    if (!text().isEmpty()) {
+        filter = buttonState(mRegExButton) ? (buttonState(mExactButton) ? '^' + text() + '$' : text())
+                                           : QRegularExpression::wildcardToRegularExpression(text());
+    }
+    mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
     emit regExpChanged(mRegExp);
 }
 

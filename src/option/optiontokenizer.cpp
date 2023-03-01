@@ -35,6 +35,7 @@ namespace studio {
 namespace option {
 
 AbstractSystemLogger* OptionTokenizer::mNullLogger = new DefaultSystemLogger;
+QRegularExpression OptionTokenizer::mRexVersion("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
 
 QString OptionTokenizer::keyGeneratedStr = QString("[KEY]");
 QString OptionTokenizer::valueGeneratedStr = QString("[VALUE]");
@@ -1430,11 +1431,10 @@ void OptionTokenizer::validateOption(QList<ParamConfigItem *> &items)
             } else { // valid and not deprected Option
                 item->error = mOption->getValueErrorType(item->key, item->value);
                 if (item->error==OptionErrorType::No_Error) {
-                    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
-                    if (re.exactMatch(item->minVersion)) {
+                    if (mRexVersion.match(item->minVersion).hasMatch()) {
                         item->error = OptionErrorType::Invalid_minVersion;
-                    } else if (re.exactMatch(item->maxVersion)) {
-                               item->error = OptionErrorType::Invalid_maxVersion;
+                    } else if (mRexVersion.match(item->maxVersion).hasMatch()) {
+                        item->error = OptionErrorType::Invalid_maxVersion;
                     }
                 }
             }

@@ -114,7 +114,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->gamsParameterSearch, &FilterLineEdit::regExpChanged, proxymodel, [this, proxymodel]() {
-        proxymodel->setFilterRegExp(ui->gamsParameterSearch->regExp());
+        proxymodel->setFilterRegularExpression(ui->gamsParameterSearch->regExp());
     });
 
     if (HeaderViewProxy::platformShouldDrawBorder())

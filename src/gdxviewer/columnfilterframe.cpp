@@ -111,7 +111,7 @@ void ColumnFilterFrame::invert()
 
 void ColumnFilterFrame::filterLabels()
 {
-    QRegExp regExp = ui.leSearch->regExp();
+    QRegularExpression regExp = ui.leSearch->regExp();
     mModel->filterLabels(regExp);
 }
 

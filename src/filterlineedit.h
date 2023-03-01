@@ -22,6 +22,7 @@
 
 #include <QLineEdit>
 #include <QPushButton>
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
@@ -54,7 +55,7 @@ public:
 public:
     explicit FilterLineEdit(QWidget *parent = nullptr);
     explicit FilterLineEdit(const QString &contents, QWidget *parent = nullptr);
-    const QRegExp &regExp() const;
+    const QRegularExpression &regExp() const;
     void setOptionState(FilterLineEditFlag option, int state);
     void setKeyColumn(int column);
     void hideOptions(FilterLineEditFlags options);
@@ -62,7 +63,7 @@ public:
     bool exactMatch();
 
 signals:
-    void regExpChanged(QRegExp regExp);
+    void regExpChanged(QRegularExpression regExp);
     void columnScopeChanged();
 
 protected:
@@ -82,7 +83,7 @@ private:
     QAbstractButton *mExactButton = nullptr;
     QAbstractButton *mRegExButton = nullptr;
     QAbstractButton *mAllColButton = nullptr;
-    QRegExp mRegExp;
+    QRegularExpression mRegExp;
     bool mCanClear = true;
     int mKeyColumn = -1;
 };

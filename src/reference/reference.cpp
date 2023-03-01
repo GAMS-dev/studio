@@ -23,6 +23,8 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+QRegularExpression Reference::mRexSplit("\\s+");
+
 Reference::Reference(QString referenceFile, QTextCodec* codec, QObject *parent) :
     QObject(parent), mCodec(codec),  mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
@@ -174,7 +176,7 @@ bool Reference::parseFile(QString referenceFile)
     while (!in.atEnd()) {
         QString line = in.readLine();
         lineread++;
-        recordList = line.split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        recordList = line.split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.size() <= 0) {
             mLastErrorLine=lineread;
             return false;
@@ -215,7 +217,7 @@ bool Reference::parseFile(QString referenceFile)
     int size = recordList.first().toInt();
     int expectedLineread = size+lineread;
     while (!in.atEnd()) {
-        recordList = in.readLine().split(QRegExp("\\s+"), Qt::SkipEmptyParts);
+        recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
         lineread++;
         if (lineread > expectedLineread)  // ignore the rest of the file contents
             break;

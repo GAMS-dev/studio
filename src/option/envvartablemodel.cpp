@@ -26,6 +26,9 @@ namespace gams {
 namespace studio {
 namespace option {
 
+QRegularExpression EnvVarTableModel::mRexVersion("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
+
+
 EnvVarTableModel::EnvVarTableModel(QList<EnvVarConfigItem *> itemList, QObject *parent):
     QAbstractTableModel(parent), mEnvVarItem(itemList)
 {
@@ -397,8 +400,7 @@ bool EnvVarTableModel::isThereAnError(EnvVarConfigItem* item) const
 
 bool EnvVarTableModel::isConformatVersion(const QString &version) const
 {
-    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
-    return re.exactMatch(version);
+    return mRexVersion.match(version).hasMatch();
 }
 
 } // namepsace option

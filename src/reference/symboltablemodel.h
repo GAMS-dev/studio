@@ -70,7 +70,7 @@ signals:
 
 public slots:
     void sortFileUsed(gams::studio::reference::SymbolTableModel::FileUsedSortOrder order =  FileUsedSortOrder::OriginalOrder);
-    void setFilterPattern(const QRegExp &pattern);
+    void setFilterPattern(const QRegularExpression &pattern);
 
 private:
     enum SortType {
@@ -91,8 +91,8 @@ private:
     SortType getSortTypeOf(int column) const;
     ColumnType getColumnTypeOf(int column) const;
     QString getDomainStr(const QList<SymbolId>& domain) const;
-    bool isFilteredActive(SymbolReferenceItem* item, int column, const QRegExp &regExp);
-    bool isLocationFilteredActive(int idx, const QRegExp &regExp);
+    bool isFilteredActive(SymbolReferenceItem* item, int column, const QRegularExpression &regExp);
+    bool isLocationFilteredActive(int idx, const QRegularExpression &regExp);
     void filterRows();
     void resetSizeAndIndices();
 
@@ -106,7 +106,7 @@ private:
     Reference* mReference = nullptr;
 
     int mFilteredKeyColumn = -1;
-    QRegExp mFilteredPattern;
+    QRegularExpression mFilteredPattern;
     int mCurrentSortedColumn = 0;
     Qt::SortOrder mCurrentAscendingSort = Qt::AscendingOrder;
 

@@ -32,6 +32,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
+QRegularExpression Option::mRexDoubleDash("^[-/][-/](\\S*)$");
+QRegularExpression Option::mRexDoubleDashName("^[a-zA-Z]+[_a-zA-Z0-9]*$");
+QRegularExpression Option::mRexVersion("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
+QRegularExpression Option::mRexOptionKey("^([-/]+)");
+
 Option::Option(const QString &optionFilePath, const QString &optionFileName) :
     mOptionDefinitionPath(optionFilePath), mOptionDefinitionFile(optionFileName)
 {
@@ -122,18 +127,17 @@ bool Option::isDeprecated(const QString &optionName) const
 
 bool Option::isDoubleDashedOption(const QString &option) const
 {
-    return QRegExp("^[-/][-/](\\S*)").exactMatch(option);
+    return mRexDoubleDash.match(option).hasMatch();
 }
 
 bool Option::isDoubleDashedOptionNameValid(const QString &optionName) const
 {
-    return QRegExp("^[a-zA-Z]+[_a-zA-Z0-9]*").exactMatch(optionName) ;
+    return mRexDoubleDashName.match(optionName).hasMatch();
 }
 
 bool Option::isConformantVersion(const QString &version) const
 {
-    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
-    return re.exactMatch(version);
+    return mRexVersion.match(version).hasMatch();
 }
 
 OptionErrorType Option::getValueErrorType(const QString &optionName, const QString &value) const
@@ -424,10 +428,9 @@ QString Option::getOptionTypeName(int type) const
 
 QString Option::getOptionKey(const QString &option) const
 {
-    QRegExp regexp("^([-/]+)");
-    int pos = regexp.indexIn(option);
-    if (pos != -1)
-       return QString(option.mid(regexp.matchedLength()));
+    QRegularExpressionMatch match = mRexOptionKey.match(option);
+    if (match.hasMatch())
+       return QString(option.mid(match.capturedLength()));
     else
        return QString(option);
 }

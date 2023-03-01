@@ -117,6 +117,7 @@ private:
 
     AbstractSystemLogger* mOptionLogger = nullptr;
     static AbstractSystemLogger* mNullLogger;
+    static QRegularExpression mRexVersion;
 
     OptionErrorType getErrorType(optHandle_t &mOPTHandle);
     bool logMessage(optHandle_t &mOPTHandle);

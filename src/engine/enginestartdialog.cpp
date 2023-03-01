@@ -33,6 +33,7 @@ namespace studio {
 namespace engine {
 
 const QString EngineStartDialog::CUnavailable("-");
+QRegularExpression EngineStartDialog::mRexVersion("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*$");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
@@ -75,9 +76,9 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
     GamsProcess gp;
     QString about = gp.aboutGAMS();
-    QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
-    if (regex.exactMatch(about))
-        mLocalGamsVersion = regex.cap(regex.captureCount()).split('.');
+    QRegularExpressionMatch match = mRexVersion.match(about);
+    if (match.hasMatch())
+        mLocalGamsVersion = match.captured(1).split('.');
     updateLoginStates();
     ui->edUrl->installEventFilter(this);
     mConnectStateUpdater.setSingleShot(true);

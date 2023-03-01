@@ -201,7 +201,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(mOptionTableModel, &SolverOptionTableModel::newTableRowDropped, this, &SolverOptionWidget::on_newTableRowDropped, Qt::UniqueConnection);
 
         connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, this, [this, proxymodel]() {
-            proxymodel->setFilterRegExp(ui->solverOptionSearch->regExp());
+            proxymodel->setFilterRegularExpression(ui->solverOptionSearch->regExp());
         });
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);

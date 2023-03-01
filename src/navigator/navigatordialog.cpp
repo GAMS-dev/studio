@@ -488,7 +488,7 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
         selectItem(index);
 }
 
-void NavigatorDialog::regexChanged(QRegExp regex)
+void NavigatorDialog::regexChanged(QRegularExpression regex)
 {
     Q_UNUSED(regex)
 
@@ -502,13 +502,10 @@ void NavigatorDialog::setFilter(QString filter, bool ignoreOptions)
     QString regex = filter;
 
     if (!ignoreOptions) {
-        if (mInput->regExp().patternSyntax() != QRegExp::RegExp)
-            regex = QRegularExpression::escape(filter);
-
         if (mInput->exactMatch()) regex = '^' + filter + '$';
     }
 
-    mFilterModel->setFilterRegExp(regex);
+    mFilterModel->setFilterRegularExpression(regex);
 }
 
 void NavigatorDialog::updatePosition()

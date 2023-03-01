@@ -121,7 +121,7 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     proxymodel->setFilterCaseSensitivity(Qt::CaseInsensitive);
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->paramCfgDefSearch, &FilterLineEdit::regExpChanged, proxymodel, [this, proxymodel]() {
-        proxymodel->setFilterRegExp(ui->paramCfgDefSearch->regExp());
+        proxymodel->setFilterRegularExpression(ui->paramCfgDefSearch->regExp());
     });
 
     if (HeaderViewProxy::platformShouldDrawBorder())

@@ -144,6 +144,7 @@ protected:
     static const QString TooltipStrFooter;
     static const QString TooltipOpenedBoldStr;
     static const QString TooltipClosedBoldStr;
+    static QRegularExpression mRexWhitechar;
 };
 
 } // namespace connect

@@ -20,6 +20,7 @@
 #include "testcheckforupdatewrapper.h"
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
+#include <QRegularExpression>
 
 using namespace gams::studio;
 using namespace gams::studio::support;
@@ -82,8 +83,8 @@ void TestCheckForUpdateWrapper::testCurrentDistribVersionShort()
 {
     CheckForUpdateWrapper c4uWrapper;
     QString result = c4uWrapper.currentDistribVersionShort();
-    QRegExp regexp("^\\d+\\.\\d$");
-    QVERIFY(regexp.exactMatch(result));
+    QRegularExpression regexp("^\\d+\\.\\d$");
+    QVERIFY(regexp.match(result).hasMatch());
 }
 
 void TestCheckForUpdateWrapper::testLastDistribVersion()
@@ -98,8 +99,8 @@ void TestCheckForUpdateWrapper::testLastDistribVersionShort()
     c4uWrapper.checkForUpdate(); // call to fill str below
     QString result = c4uWrapper.lastDistribVersionShort();
     qDebug() << result;
-    QRegExp regexp("^\\d+\\.\\d$");
-    QVERIFY(regexp.exactMatch(result));
+    QRegularExpression regexp("^\\d+\\.\\d$");
+    QVERIFY(regexp.match(result).hasMatch());
 }
 
 void TestCheckForUpdateWrapper::testDistribIsLast()
@@ -122,8 +123,8 @@ void TestCheckForUpdateWrapper::testStudioVersion()
 void TestCheckForUpdateWrapper::testDistribVersionString()
 {
     auto version = CheckForUpdateWrapper::distribVersionString();
-    QRegExp regexp("^\\d+\\.\\d\\.\\d\\s?[\\w\\W]*");
-    QVERIFY(regexp.exactMatch(version));
+    QRegularExpression regexp("^\\d+\\.\\d\\.\\d\\s?[\\w\\W]*$");
+    QVERIFY(regexp.match(version).hasMatch());
 }
 
 QTEST_MAIN(TestCheckForUpdateWrapper)

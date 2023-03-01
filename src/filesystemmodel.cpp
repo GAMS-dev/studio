@@ -72,7 +72,7 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
         } else {
             QString text = sourceModel()->data(idx).toString();
             if (mHideUncommon && mUncommonRegEx.isValid()) {
-                if (mUncommonRegEx.exactMatch(text)) {
+                if (mUncommonRegEx.match(text).hasMatch()) {
                     return false;
                 }
             }

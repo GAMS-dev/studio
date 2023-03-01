@@ -21,7 +21,7 @@
 #define ENVVARTABLEMODEL_H
 
 #include <QAbstractTableModel>
-
+#include <QRegularExpression>
 #include "gamsuserconfig.h"
 
 namespace gams {
@@ -76,8 +76,8 @@ private:
     QList<EnvVarConfigItem *> mEnvVarItem;
     QList<QString> mHeader;
     QMap<int, QVariant> mCheckState;
-
     bool mModified;
+    static QRegularExpression mRexVersion;
 };
 
 } // namepsace option

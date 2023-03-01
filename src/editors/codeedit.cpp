@@ -42,6 +42,14 @@ namespace studio {
 
 using namespace search;
 
+QRegularExpression CodeEdit::mRex0LeadingSpaces("^(\\s*)");
+QRegularExpression CodeEdit::mRex1LeadingSpaces("^(\\s+)");
+QRegularExpression CodeEdit::mRexIncFile(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape("$")));
+QRegularExpression CodeEdit::mRexIndent("^(\\s*).*$");
+QRegularExpression CodeEdit::mRexIndentPre("^((\\s+)|([^\\s]+))");
+QRegularExpression CodeEdit::mRexTruncate("(^.*[^\\s]|^)(\\s+)$");
+QRegularExpression CodeEdit::mRexWordStart("^\\w");
+
 inline const KeySeqList &hotkey(Hotkey _hotkey) { return Keys::instance().keySequence(_hotkey); }
 
 CodeEdit::CodeEdit(QWidget *parent)
@@ -386,8 +394,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         e->accept();
     } else if (e == Hotkey::MoveToStartOfLine) {
         QTextBlock block = cur.block();
-        QRegularExpression leadingSpaces("^(\\s*)");
-        QRegularExpressionMatch lsMatch = leadingSpaces.match(block.text());
+        QRegularExpressionMatch lsMatch = mRex0LeadingSpaces.match(block.text());
 
         if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock() || vertScroll != verticalScrollBar()->sliderPosition())
             cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
@@ -472,8 +479,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
             int pos = textCursor().positionInBlock();
 
             QString line = textCursor().block().text();
-            QRegularExpression regex("^(\\s+)");
-            QRegularExpressionMatch match = regex.match(line);
+            QRegularExpressionMatch match = mRex1LeadingSpaces.match(line);
             bool allWhitespace = match.hasMatch();
 
             if (allWhitespace && !textCursor().hasSelection() && match.capturedLength() == pos) {
@@ -804,9 +810,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
     QTextBlock block = document()->findBlockByNumber(line);
     fileStart = block.length();
     if (block.isValid()) {
-        QRegularExpression rex;
-        rex.setPattern(QString("(^%1|%1%1)\\s*([\\w]+)\\s*").arg(QRegularExpression::escape("$")));
-        QRegularExpressionMatch match = rex.match(block.text());
+        QRegularExpressionMatch match = mRexIncFile.match(block.text());
         if (match.captured(2).length() < block.length()) {
             QChar endChar(' ');
             QString command = match.captured(2).toUpper();
@@ -920,12 +924,10 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
 {
     if (!mSettings->toBool(skEdAutoIndent)) return;
 
-    QRegularExpression rex("^(\\s*).*$");
-    QRegularExpressionMatch match = rex.match(cursor.block().text());
+    QRegularExpressionMatch match = mRexIndent.match(cursor.block().text());
     if (match.hasMatch()) {
         QTextBlock prev = cursor.block().previous();
-        QRegularExpression pRex("^((\\s+)|([^\\s]+))");
-        QRegularExpressionMatch pMatch = pRex.match(prev.text());
+        QRegularExpressionMatch pMatch = mRexIndentPre.match(prev.text());
         while (true) {
             if (pMatch.hasMatch()) {
                 if (pMatch.capturedLength(2) < 1)
@@ -940,7 +942,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
             prev = prev.previous();
             if (!prev.isValid() || prev.blockNumber() < cursor.blockNumber()-50)
                 break;
-            pMatch = pRex.match(prev.text());
+            pMatch = mRexIndentPre.match(prev.text());
         }
     }
 }
@@ -948,8 +950,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
 
 void CodeEdit::truncate(QTextBlock block)
 {
-    QRegularExpression pRex("(^.*[^\\s]|^)(\\s+)$");
-    QRegularExpressionMatch match = pRex.match(block.text());
+    QRegularExpressionMatch match = mRexTruncate.match(block.text());
     if (match.hasMatch()) {
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::EndOfBlock);
@@ -1417,9 +1418,8 @@ int CodeEdit::minIndentCount(int fromLine, int toLine)
     QTextBlock last = (toLine < 0) ? document()->findBlock(cursor.position()) : document()->findBlockByNumber(toLine);
     if (block.blockNumber() > last.blockNumber()) qSwap(block, last);
     int res = block.text().length();
-    QRegularExpression rex("^(\\s*)");
     while (true) {
-        QRegularExpressionMatch match = rex.match(block.text());
+        QRegularExpressionMatch match = mRex0LeadingSpaces.match(block.text());
         if (res > match.capturedLength(1)) res = match.capturedLength(1);
         if (block == last) break;
         block = block.next();
@@ -1912,8 +1912,7 @@ void CodeEdit::updateExtraSelections()
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
         // if first character is not \w  the whole string needs to be matched in order to deactivate HWUC
-        QRegularExpression startsWithW("^\\w");
-        if (startsWithW.match(selectedText).hasMatch())
+        if (mRexWordStart.match(selectedText).hasMatch())
             regexp.setPattern("\\b" + regexp.pattern());
 
         QRegularExpressionMatch match = regexp.match(selectedText);

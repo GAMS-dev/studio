@@ -37,13 +37,13 @@ enum FileSystemRole {
 class FilteredFileSystemModel : public QSortFilterProxyModel
 {
     bool mHideUncommon = true;
-    QRegExp mUncommonRegEx;
+    QRegularExpression mUncommonRegEx;
     Q_OBJECT
 public:
     FilteredFileSystemModel(QObject *parent = nullptr);
     bool isDir(const QModelIndex &index) const;
     void setHideUncommonFiles(bool hide) { mHideUncommon = hide; invalidateFilter(); }
-    void setUncommonRegExp(QRegExp rex) { mUncommonRegEx = rex; invalidateFilter(); }
+    void setUncommonRegExp(QRegularExpression rex) { mUncommonRegEx = rex; invalidateFilter(); }
     void setSourceModel(QAbstractItemModel *sourceModel) override;
 protected:
     bool filterAcceptsColumn(int source_column, const QModelIndex& source_parent) const override;

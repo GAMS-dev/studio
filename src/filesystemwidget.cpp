@@ -50,9 +50,16 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
         mMissingFiles = files;
         selectionCountChanged(mFileSystemModel->selectionCount());
     });
-    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegExp regExp) {
-        regExp.setCaseSensitivity(FileType::fsCaseSense());
-        mFilterModel->setFilterRegExp(regExp);
+    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegularExpression regExp) {
+
+        if (FileType::fsCaseSense()) {
+            if (regExp.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption))
+                regExp.setPatternOptions(regExp.patternOptions() & (~QRegularExpression::CaseInsensitiveOption));
+        }
+        else if (!regExp.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption)) {
+            regExp.setPatternOptions(regExp.patternOptions().setFlag(QRegularExpression::CaseInsensitiveOption));
+        }
+        mFilterModel->setFilterRegularExpression(regExp);
         QModelIndex rootIndex = mFileSystemModel->index(mWorkingDirectory);
         ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));
     });
@@ -92,7 +99,7 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
 void FileSystemWidget::setModelName(const QString &modelName)
 {
     if (modelName.isEmpty()) {
-        mFilterModel->setUncommonRegExp(QRegExp());
+        mFilterModel->setUncommonRegExp(QRegularExpression());
         return;
     }
     QStringList uncommonFiles;
@@ -101,8 +108,8 @@ void FileSystemWidget::setModelName(const QString &modelName)
     }
     QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");
     pattern = QString("^(%1)$").arg(pattern);
-    QRegExp rex(pattern);
-    rex.setCaseSensitivity(FileType::fsCaseSense());
+    QRegularExpression rex(pattern);
+    if (FileType::fsCaseSense()) rex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     mFilterModel->setUncommonRegExp(rex);
 }
 

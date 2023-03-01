@@ -88,7 +88,7 @@ private:
 private slots:
     void returnPressed();
     void itemClicked(const QModelIndex& index);
-    void regexChanged(QRegExp regex);
+    void regexChanged(QRegularExpression regex);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;

@@ -204,6 +204,7 @@ private:
 
     QMap<QString, SymbolId> mSymbolNameMap;
     QMap<SymbolId, SymbolReferenceItem*> mReference;
+    static QRegularExpression mRexSplit;
 };
 
 } // namespace reference

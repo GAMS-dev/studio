@@ -108,7 +108,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     }
 
     // bind filter mechanism to textChanged
-    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &value) {
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &value) {
         for (int i=0; i<proxyModelList.size(); i++)
             applyFilter(value, i);
     });
@@ -250,9 +250,9 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.exec();
 }
 
-void ModelDialog::applyFilter(const QRegExp &filterString, int proxyModelIndex)
+void ModelDialog::applyFilter(const QRegularExpression &filterString, int proxyModelIndex)
 {
-    proxyModelList[proxyModelIndex]->setFilterRegExp(filterString);
+    proxyModelList[proxyModelIndex]->setFilterRegularExpression(filterString);
     this->changeHeader(proxyModelIndex);
 }
 

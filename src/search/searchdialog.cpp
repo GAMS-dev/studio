@@ -19,6 +19,7 @@
  */
 #include <QFileDialog>
 #include <QTextDocumentFragment>
+#include <QRegularExpression>
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "settings.h"
@@ -235,16 +236,17 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
 
     // create list of include filter regexes
     QStringList includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
-    QList<QRegExp> includeFilterList;
+    QList<QRegularExpression> includeFilterList;
     for (const QString &s : qAsConst(includeFilter))
-        includeFilterList.append(QRegExp("*" + s.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
+        includeFilterList.append(QRegularExpression(QRegularExpression::wildcardToRegularExpression("*" + s.trimmed()),
+                                                    QRegularExpression::CaseInsensitiveOption));
 
     // create list of exclude filters
     QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
-    QList<QRegExp> excludeFilterList;
+    QList<QRegularExpression> excludeFilterList;
     for (const QString &e : qAsConst(excludeFilter))
-        excludeFilterList.append(QRegExp("*" + e.trimmed(), Qt::CaseInsensitive, QRegExp::Wildcard));
-
+        excludeFilterList.append(QRegularExpression(QRegularExpression::wildcardToRegularExpression("*" + e.trimmed()),
+                                                    QRegularExpression::CaseInsensitiveOption));
 
     // filter files
     QSet<FileMeta*> res;
@@ -252,14 +254,14 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
         if (!fm) continue;
         bool include = includeFilterList.count() == 0;
 
-        for (const QRegExp &wildcard : qAsConst(includeFilterList)) {
-            include = wildcard.exactMatch(fm->location());
+        for (const QRegularExpression &wildcard : qAsConst(includeFilterList)) {
+            include = wildcard.match(fm->location()).hasMatch();
             if (include) break; // one match is enough, dont overwrite result
         }
 
         if (include)
-        for (const QRegExp &wildcard : qAsConst(excludeFilterList)) {
-            include = !wildcard.exactMatch(fm->location());
+        for (const QRegularExpression &wildcard : qAsConst(excludeFilterList)) {
+            include = !wildcard.match(fm->location()).hasMatch();
             if (!include) break;
         }
 

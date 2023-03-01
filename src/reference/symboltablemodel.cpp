@@ -372,7 +372,7 @@ void SymbolTableModel::toggleSearchColumns(bool checked)
     emit symbolSelectionToBeUpdated();
 }
 
-void SymbolTableModel::setFilterPattern(const QRegExp &pattern)
+void SymbolTableModel::setFilterPattern(const QRegularExpression &pattern)
 {
     mFilteredPattern = pattern;
     filterRows();
@@ -541,15 +541,15 @@ QString SymbolTableModel::getDomainStr(const QList<SymbolId>& domain) const
     }
 }
 
-bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QRegExp &regExp)
+bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, const QRegularExpression &regExp)
 {
     if (mType == SymbolDataType::SymbolType::FileUsed) {
         return false;
     } else {
         ColumnType type = getColumnTypeOf(column);
         switch(type) {
-        case columnId: return (regExp.indexIn(QString::number(item->id())) < 0);
-        case columnName: return (regExp.indexIn(item->name()) < 0);
+        case columnId: return (!regExp.match(QString::number(item->id())).hasMatch());
+        case columnName: return (!regExp.match(item->name()).hasMatch());
         default: // search every column
             QStringList strList = {
                 QString::number( item->id() ),
@@ -560,16 +560,16 @@ bool SymbolTableModel::isFilteredActive(SymbolReferenceItem *item, int column, c
                 item->explanatoryText()
             };
             for (const QString &val: strList)
-                if (regExp.indexIn(val) >= 0) return false;
+                if (regExp.match(val).hasMatch()) return false;
             return true;
         }
     }
 }
 
-bool SymbolTableModel::isLocationFilteredActive(int idx, const QRegExp &regExp)
+bool SymbolTableModel::isLocationFilteredActive(int idx, const QRegularExpression &regExp)
 {
     if (mType == SymbolDataType::SymbolType::FileUsed) {
-        return (regExp.indexIn(mReference->getFileUsed().at(idx)) < 0);
+        return (!regExp.match(mReference->getFileUsed().at(idx)).hasMatch());
     } else {
         return false;
     }
@@ -582,7 +582,7 @@ void SymbolTableModel::filterRows()
 
     size_t size = 0;
     // there is no filter
-    if (mFilteredPattern.isEmpty()) {
+    if (mFilteredPattern.pattern().isEmpty()) {
         if (mType == SymbolDataType::SymbolType::FileUsed)
             size = static_cast<size_t>(mReference->getFileUsed().size());
         else
@@ -682,7 +682,7 @@ void SymbolTableModel::resetSizeAndIndices()
     }
 
     mFilteredRecordSize = size;
-    mFilteredPattern = QRegExp();
+    mFilteredPattern = QRegularExpression();
 }
 
 } // namespace reference

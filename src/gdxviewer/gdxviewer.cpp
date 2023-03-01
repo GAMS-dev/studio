@@ -174,7 +174,7 @@ int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
             //msgBox.exec();
         }
         if (mSymbolTableProxyModel) {
-            mSymbolTableProxyModel->setFilterRegExp(ui->lineEdit->regExp());
+            mSymbolTableProxyModel->setFilterRegularExpression(ui->lineEdit->regExp());
         }
         return initError;
     }
@@ -321,8 +321,8 @@ int GdxViewer::init(bool quiet)
     ui->tvSymbols->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
     connect(ui->tvSymbols->selectionModel(), &QItemSelectionModel::selectionChanged, this, &GdxViewer::updateSelectedSymbol);
-    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegExp &regExp) {
-        mSymbolTableProxyModel->setFilterRegExp(regExp);
+    connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &regExp) {
+        mSymbolTableProxyModel->setFilterRegularExpression(regExp);
     });
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsInserted, this, &GdxViewer::hideUniverseSymbol);
     connect(mSymbolTableProxyModel, &QSortFilterProxyModel::rowsRemoved, this, &GdxViewer::hideUniverseSymbol);

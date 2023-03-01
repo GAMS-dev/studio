@@ -26,6 +26,7 @@
 
 #include <QStandardPaths>
 #include <QProcess>
+#include <QRegularExpression>
 
 using gams::studio::CommonPaths;
 using gams::studio::option::GamsUserConfig;
@@ -254,9 +255,9 @@ void TestGamsUserConfig::testVersionFormat()
     QFETCH(QString, version);
     QFETCH(bool, valid);
 
-//    QRegExp re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
-    QRegExp re("[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?");
-    QCOMPARE( re.exactMatch(version) , valid);
+//    QRegularExpression re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
+    QRegularExpression re("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
+    QCOMPARE( re.match(version).hasMatch() , valid);
 }
 
 QTEST_MAIN(TestGamsUserConfig)

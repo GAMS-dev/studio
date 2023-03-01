@@ -151,6 +151,7 @@ private:
     int mAuthExpireMinutes = 60*2;
 
     static const QString CUnavailable;
+    static QRegularExpression mRexVersion;
 
 };
 

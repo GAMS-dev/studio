@@ -305,6 +305,14 @@ private:
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;
+
+    static QRegularExpression mRex0LeadingSpaces;
+    static QRegularExpression mRex1LeadingSpaces;
+    static QRegularExpression mRexIncFile;
+    static QRegularExpression mRexTruncate;
+    static QRegularExpression mRexIndent;
+    static QRegularExpression mRexIndentPre;
+    static QRegularExpression mRexWordStart;
 };
 
 class LineNumberArea : public QWidget

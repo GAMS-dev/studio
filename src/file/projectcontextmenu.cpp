@@ -116,7 +116,7 @@ ProjectContextMenu::ProjectContextMenu()
         } else { // when no information on solver option definition file names
            for (const QString &filename : qAsConst(optFiles)) {
                QString solvername = filename.mid(QString("opt").length());
-               solvername.replace(QRegExp(".def"), "");
+               solvername.replace(".def", "");
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
                    continue;
                QAction* createSolverOption = newSolverOptionMenu->addAction(solvername);

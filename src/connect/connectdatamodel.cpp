@@ -38,6 +38,7 @@ const QString ConnectDataModel::TooltipStrHeader = QString("<html><head/><body>"
 const QString ConnectDataModel::TooltipStrFooter = QString("</body></html>");
 const QString ConnectDataModel::TooltipOpenedBoldStr = QString("<span style=' font-weight:600;'>");
 const QString ConnectDataModel::TooltipClosedBoldStr = QString("</span>");
+QRegularExpression ConnectDataModel::mRexWhitechar("\\s+");
 
 ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject *parent)
     : QAbstractItemModel{parent},
@@ -1065,7 +1066,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
             } else if (t.compare("integer")==0) {
                       if (allowedValues.isEmpty()) {
                           bool flag = false;
-                          if (newdata.contains(QRegExp("\\s+"))) {
+                          if (newdata.contains(mRexWhitechar)) {
                               valid = false;
                               break;
                           }
