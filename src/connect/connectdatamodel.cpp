@@ -24,6 +24,7 @@
 #include <QStringListModel>
 #include <QMimeData>
 #include <QDir>
+#include <QRegularExpression>
 
 #include "connectdatamodel.h"
 #include "theme.h"
@@ -1013,16 +1014,49 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                            ? item->data((int)DataItemColumn::Value).toString()
                            : item->data((int)DataItemColumn::Key).toString());
 
-    const QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
+    QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
     QString values = item->data((int)DataItemColumn::AllowedValue).toString();
-    const QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
+    QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
 
+    int n = 0;
+    QStringList schemakeys = item->data((int)DataItemColumn::SchemaKey).toStringList();
+    ConnectSchema* schema = schemakeys.isEmpty() ? nullptr : mConnect->getSchema(schemakeys.first());
+    QString schemaname;
+    if (schema) {
+        schemaname = schemakeys.first();
+        QString pattern = "^[A-Za-z]+.\\[\\d\\d?\\]";
+        QRegularExpression rx(QRegularExpression::anchoredPattern(pattern));
+        if (rx.match(schemakeys.last()).hasMatch()) {
+            QString key = schemakeys.last();
+            schemakeys.removeFirst();
+            schemakeys.removeLast();
+            schemakeys << key.left( key.indexOf("["));
+            n = schema->getNumberOfAnyOfDefined(schemakeys.join(":"));
+        }
+    }
+
+    int i = 0;
     bool valid = false;
-    for (const QString& t : types ) {
-       if (allowedValues.isEmpty()) {
+    while (!valid && i<=n ) {
+        QString slist = schemakeys.join(":");
+        if (schema && n>0 && schemakeys.size()>1) { // if (schema defined) and (anyof defined) and (not first level attribute)
+            slist = QString("%1[%2]").arg(schemakeys.join(":"), QString::number(i));
+            types = schema->getTypeAsStringList( slist );
+            allowedValues = schema->getAllowedValueAsStringList( slist );
+        }
+        for (const QString& t : qAsConst(types) ) {
             if (t.compare("string")==0 || t.compare("dict")==0 || t.compare("list")==0) {
-                valid = true;
-                break;
+               if (allowedValues.isEmpty()) {
+                   valid = true;
+                   break;
+               } else {
+                      for (const QString& v : qAsConst(allowedValues)) {
+                          if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
+                              valid = true;
+                              break;
+                          }
+                      }
+               }
             } else if (t.compare("boolean")==0) {
                        QStringList booleanlist({"true", "false"});
                       if (booleanlist.contains(item->data((int)DataItemColumn::Value).toString())) {
@@ -1030,44 +1064,45 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                           break;
                       }
             } else if (t.compare("integer")==0) {
-                       bool flag = false;
-                       if (newdata.contains(QRegExp("\\s+"))) {
-                           valid = false;
-                           break;
-                       }
-                       int i = newdata.trimmed().toInt(&flag);
-                       if (flag) {
-                           QStringList schema = item->data((int)DataItemColumn::SchemaKey).toStringList();
-                           QString schemaname = schema.first();
-                           schema.removeFirst();
-                           ValueWrapper minvalue = mConnect->getSchema(schemaname)->getMin(schema.join(":"));
-                           if (minvalue.type==SchemaValueType::NoValue) {
-                               valid = true;
-                               break;
-                           } else if (minvalue.type==SchemaValueType::Integer) {
-                                      if (i >= minvalue.value.intval) {
-                                          ValueWrapper maxvalue = mConnect->getSchema(schemaname)->getMax(schema.join(":"));
-                                          if (maxvalue.type==SchemaValueType::NoValue) {
-                                              valid = true;
-                                          } else if (maxvalue.type==SchemaValueType::Integer) {
-                                                    if (i <= maxvalue.value.intval) {
-                                                        valid=true;
-                                                    }
-                                          }
-                                          break;
-                                      }
-                           }
-                       }
+                      if (allowedValues.isEmpty()) {
+                          bool flag = false;
+                          if (newdata.contains(QRegExp("\\s+"))) {
+                              valid = false;
+                              break;
+                          }
+                          int i = newdata.trimmed().toInt(&flag);
+                          if (flag) {
+                               if (!schema)
+                                   schema = mConnect->getSchema(schemaname);
+                              ValueWrapper minvalue = schema->getMin(slist);
+                              if (minvalue.type==SchemaValueType::NoValue) {
+                                  valid = true;
+                                  break;
+                              } else if (minvalue.type==SchemaValueType::Integer) {
+                                         if (i >= minvalue.value.intval) {
+                                             ValueWrapper maxvalue = schema->getMax(slist);
+                                             if (maxvalue.type==SchemaValueType::NoValue) {
+                                                 valid = true;
+                                             } else if (maxvalue.type==SchemaValueType::Integer) {
+                                                       if (i <= maxvalue.value.intval) {
+                                                           valid=true;
+                                                       }
+                                             }
+                                             break;
+                                         }
+                              }
+                          }
+                      } else {
+                          for (const QString& v : qAsConst(allowedValues)) {
+                              if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
+                                  valid = true;
+                                  break;
+                              }
+                          }
+                      }
             } // else if (t.compare("float")==0) { }
-         } else {
-            for (const QString& v : allowedValues) {
-                if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
-                    valid = true;
-                    break;
-                }
-            }
         }
-
+        ++i;
     }
     return valid;
 }
