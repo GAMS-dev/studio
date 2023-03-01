@@ -2,6 +2,10 @@ Version 1.14.0
 ==================
 - Add new GDX Viewer setting to control decimal separator used when copying data
 
+Version 1.13.3
+==================
+- fixed LOG shows raw links
+
 Version 1.13.2
 ==================
 - added support for macro symbol in Reference File Viewer
