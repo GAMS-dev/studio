@@ -38,6 +38,8 @@ public:
     void loadFromFile(const QString& inputFileName);
     void loadFromString(const QString& input);
     void unload(const QString& outputFileName);
+protected:
+    void format(YAML::Emitter& emitter, const YAML::Node& node);
 };
 
 } // namespace connect

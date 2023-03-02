@@ -1427,7 +1427,8 @@ void ConnectDataModel::setupTreeItemModelData()
 
     if (!mConnectData->getRootNode().IsNull()) {
         YAML::Node node = mConnectData->getRootNode();
-        Q_ASSERT(node.Type()==YAML::NodeType::Sequence);
+        if (node.Type()!=YAML::NodeType::Sequence)
+            EXCEPT() << "Error: The file content might be corrupted or incorrectly overwritten";
 
         int position = 0;
         for(size_t i = 0; i<node.size(); i++) {
