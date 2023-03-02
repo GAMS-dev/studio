@@ -58,6 +58,9 @@ private:
     void checkForUpdates();
 
     QDate nextCheckUpdate();
+
+private:
+    static QRegularExpression RegEx;
 };
 
 }

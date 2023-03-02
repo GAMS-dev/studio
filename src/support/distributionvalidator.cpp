@@ -27,10 +27,13 @@
 #include <QStringList>
 #include <QFileInfo>
 #include <QDir>
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 namespace support {
+
+QRegularExpression DistributionValidator::RegEx = QRegularExpression("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
 
 DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
@@ -76,9 +79,9 @@ void DistributionValidator::checkCompatibility()
         return;
     }
 
-    QRegExp regex("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
-    if (regex.exactMatch(about) && regex.captureCount() == 1) {
-        auto version = regex.cap(regex.captureCount()).split('.');
+    auto match = RegEx.match(about);
+    if (match.hasMatch() && RegEx.captureCount() == 1) {
+        auto version = match.captured(RegEx.captureCount()).split('.');
         auto minVersion = QString(GAMS_DISTRIB_VERSION_SHORT).split('.');
         if (version.at(0).toInt() > minVersion.at(0).toInt())
             return;
@@ -86,7 +89,7 @@ void DistributionValidator::checkCompatibility()
             version.at(1).toInt() >= minVersion.at(1).toInt())
             return;
         QString error = QString("Found incompatible GAMS %1 but GAMS %2 or higher was expected. Please upgrade your GAMS.")
-                .arg(regex.cap(regex.captureCount()), GAMS_DISTRIB_VERSION_SHORT);
+                .arg(match.captured(RegEx.captureCount()), GAMS_DISTRIB_VERSION_SHORT);
         emit newWarning(error);
     }
     else {
