@@ -1,3 +1,8 @@
+Version 1.13.4 *
+==================
+- fixed crash on creating an opt-file via context menu in the Project Explorer
+- fixed wrong opt-file extension, which prevented to save the opt-file
+
 Version 1.13.3
 ==================
 - fixed LOG shows raw links
