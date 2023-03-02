@@ -45,8 +45,10 @@ Then perform a `Build All` operation (`Build -> Build All`) to build the project
 
 # Dependencies and Licenses
 
-| Dependency | License |
-| ------ | ------ |
-| [Qt 5](qt.io) | [GNU Lesser General Public License (LGPL)](https://doc.qt.io/qt-5/lgpl.html) |
-| dtoaLoc | [License](src/numerics/README.md) |
+| Dependency | License | Description |
+| ------ | ------ | ------ |
+| [Qt 5](qt.io) | [GNU Lesser General Public License (LGPL)](https://doc.qt.io/qt-5/lgpl.html) | |
+| dtoaLoc | [License](src/numerics/README.md) | |
+| [engineapi](extern/engineapi/) | [MIT](extern/engineapi/README.md) | Owned by GAMS and can be used in other projects. |
+| [yaml-cpp](extern/yaml-cpp/) | [MIT](extern/yaml-cpp/LICENSE/) | The project can be found at https://github.com/jbeder/yaml-cpp |
 
