@@ -56,7 +56,7 @@ bool OptionSortFilterProxyModel::filterAcceptsSelfRow(int sourceRow, const QMode
         if (!keyIndex.isValid())
            continue;
 
-        if (sourceModel()->data(keyIndex).toString().contains(filterRegExp()))
+        if (sourceModel()->data(keyIndex).toString().contains(filterRegularExpression()))
            return true;
     }
     return false;

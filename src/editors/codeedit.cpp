@@ -1907,15 +1907,15 @@ void CodeEdit::updateExtraSelections()
     extraSelMarks(selections);
     if (!mBlockEdit) {
         QString selectedText = textCursor().selectedText();
-        QRegularExpression regexp = search::SearchLocator::search()->regex();
+        QRegularExpression rex = search::SearchLocator::search()->regex();
 
         // word boundary (\b) only matches start-of-string when first character is \w
         // so \b will only be added when first character of selectedText is a \w
         // if first character is not \w  the whole string needs to be matched in order to deactivate HWUC
         if (mRexWordStart.match(selectedText).hasMatch())
-            regexp.setPattern("\\b" + regexp.pattern());
+            rex.setPattern("\\b" + rex.pattern());
 
-        QRegularExpressionMatch match = regexp.match(selectedText);
+        QRegularExpressionMatch match = rex.match(selectedText);
         bool skipWordTimer = (sender() == &mParenthesesDelay
                               || sender() == this->verticalScrollBar()
                               || sender() == nullptr);

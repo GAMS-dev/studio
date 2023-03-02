@@ -40,6 +40,7 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     ui->setupUi(this);
     mDelegate = new FileSystemItemDelegate(this);
     mFilterModel->setSourceModel(mFileSystemModel);
+    mFilterModel->setFilterCaseSensitivity(FileType::fsCaseSense());
     auto oldModel = ui->directoryView->selectionModel();
     ui->directoryView->setModel(mFilterModel);
     connect(mFileSystemModel, &FileSystemModel::dataChanged, this, &FileSystemWidget::updateButtons);
@@ -51,14 +52,6 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
         selectionCountChanged(mFileSystemModel->selectionCount());
     });
     connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegularExpression regExp) {
-
-        if (FileType::fsCaseSense()) {
-            if (regExp.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption))
-                regExp.setPatternOptions(regExp.patternOptions() & (~QRegularExpression::CaseInsensitiveOption));
-        }
-        else if (!regExp.patternOptions().testFlag(QRegularExpression::CaseInsensitiveOption)) {
-            regExp.setPatternOptions(regExp.patternOptions().setFlag(QRegularExpression::CaseInsensitiveOption));
-        }
         mFilterModel->setFilterRegularExpression(regExp);
         QModelIndex rootIndex = mFileSystemModel->index(mWorkingDirectory);
         ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));

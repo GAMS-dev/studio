@@ -60,7 +60,7 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
             QString text = sourceModel()->data(idx).toString();
             if (!path.startsWith(srcModel->rootPath())) return true;
             if (mHideUncommon && text.startsWith("225")) return false;
-            if (!filterRegExp().isEmpty()) {
+            if (!filterRegularExpression().pattern().isEmpty()) {
                 QDir dir(srcModel->filePath(idx));
                 const auto infos = dir.entryInfoList(QDir::Files | QDir::Dirs | QDir::NoDotAndDotDot);
                 for (const QFileInfo &info : infos) {
@@ -76,7 +76,7 @@ bool FilteredFileSystemModel::filterAcceptsRow(int source_row, const QModelIndex
                     return false;
                 }
             }
-            return text.contains(filterRegExp());
+            return text.contains(filterRegularExpression());
         }
         return true;
     }
