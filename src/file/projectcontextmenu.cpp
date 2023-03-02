@@ -105,8 +105,9 @@ ProjectContextMenu::ProjectContextMenu()
         if (solverDefFileNames.size()>0) { // when solver definition file information is available
             for (auto it = solverDefFileNames.constBegin() ; it != solverDefFileNames.constEnd() ; ++it) {
                 if (optFiles.contains(solverDefFileNames.value(it.key()))) { //there exists such a file
-                    QAction* createSolverOption = newSolverOptionMenu->addAction(it.key().toLower());
-                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(it.key().toLower()); });
+                    QString solver = it.key().toLower();
+                    QAction* createSolverOption = newSolverOptionMenu->addAction(solver);
+                    connect(createSolverOption, &QAction::triggered, this, [=] { onAddNewSolverOptionFile(solver); });
 
                     mAvailableSolvers << it.key();
                     mSolverOptionActions.insert(++addNewSolverOptActionBaseIndex, createSolverOption);
