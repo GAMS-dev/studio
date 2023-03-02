@@ -20,6 +20,7 @@
 #include "testcheckforupdatewrapper.h"
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
+
 #include <QRegularExpression>
 
 using namespace gams::studio;
@@ -64,10 +65,11 @@ void TestCheckForUpdateWrapper::testcheckForUpdateShort()
 {
     CheckForUpdateWrapper c4uWrapper;
     if (c4uWrapper.isValid()) {
-        if (c4uWrapper.usingLatestGams())
+        if (c4uWrapper.usingLatestGams() && !isBeta(c4uWrapper)) {
             QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
-        else
+        } else {
             QVERIFY(!c4uWrapper.checkForUpdateShort().isEmpty());
+        }
     } else {
         QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
     }
@@ -125,6 +127,21 @@ void TestCheckForUpdateWrapper::testDistribVersionString()
     auto version = CheckForUpdateWrapper::distribVersionString();
     QRegularExpression regexp("^\\d+\\.\\d\\.\\d\\s?[\\w\\W]*$");
     QVERIFY(regexp.match(version).hasMatch());
+}
+
+bool TestCheckForUpdateWrapper::isBeta(CheckForUpdateWrapper& c4uWrapper)
+{
+    int current = 0;
+    auto target = GAMS_DISTRIB_MAJOR;
+    auto versions = c4uWrapper.currentDistribVersionShort().split('.');
+    if (versions.count() != 0) {
+        bool ok;
+        current = versions.first().toInt(&ok);
+        if (!ok) return false;
+    } else {
+        return false;
+    }
+    return current < target ? true : false;
 }
 
 QTEST_MAIN(TestCheckForUpdateWrapper)

@@ -22,6 +22,14 @@
 
 #include <QtTest/QTest>
 
+namespace gams {
+namespace studio {
+namespace support {
+class CheckForUpdateWrapper;
+}
+}
+}
+
 class TestCheckForUpdateWrapper : public QObject
 {
     Q_OBJECT
@@ -54,6 +62,9 @@ private slots:
     void testStudioVersion();
 
     void testDistribVersionString();
+
+private:
+    bool isBeta(gams::studio::support::CheckForUpdateWrapper& c4uWrapper);
 };
 
 #endif // TESTCHECKFORUPDATEWRAPPER_H
