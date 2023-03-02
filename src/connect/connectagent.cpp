@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <fstream>
-#include <QDebug>
 #include "connectagent.h"
 #include "exception.h"
 

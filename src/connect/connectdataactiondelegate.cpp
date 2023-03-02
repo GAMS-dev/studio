@@ -19,7 +19,6 @@
  */
 #include <QPainter>
 #include <QMouseEvent>
-#include <QDebug>
 
 #include "connectdataactiondelegate.h"
 #include "connectdatamodel.h"

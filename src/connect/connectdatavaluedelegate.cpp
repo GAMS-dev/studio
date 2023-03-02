@@ -24,8 +24,6 @@
 #include <QStringListModel>
 #include <QKeyEvent>
 
-#include <QDebug>
-
 #include "connectdatavaluedelegate.h"
 #include "connectdatamodel.h"
 

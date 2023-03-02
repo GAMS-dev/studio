@@ -19,7 +19,6 @@
  */
 #include <QDir>
 #include <QMessageBox>
-#include <QDebug>
 
 #include "commonpaths.h"
 #include "connect.h"

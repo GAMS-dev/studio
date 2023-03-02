@@ -19,7 +19,6 @@
  */
 #include <QPainter>
 #include <QMouseEvent>
-#include <QDebug>
 #include <QToolTip>
 #include <QLineEdit>
 #include <QComboBox>
