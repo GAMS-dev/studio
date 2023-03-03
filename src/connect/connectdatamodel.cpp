@@ -1477,7 +1477,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
         schemaKeys << dataKeys;
     for (YAML::const_iterator mit = data->getRootNode().begin(); mit != data->getRootNode().end(); ++mit) {
          QString mapToSequenceKey = "";
-         if (mit->second.Type()==YAML::NodeType::Scalar) {
+         if (mit->second.Type()==YAML::NodeType::Scalar || mit->second.Type()==YAML::NodeType::Null) {
              QString key = QString::fromStdString(mit->first.as<std::string>());
              QStringList keyslist(dataKeys);
              keyslist << key;
@@ -1489,11 +1489,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              schemaKeys << key;
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
-             QString valuestr = QString::fromStdString( mit->second.as<std::string>() );
-             if (valuestr.endsWith("\n"))
-                itemData << QVariant(valuestr.left( valuestr.lastIndexOf("\n")));
-             else
-                itemData << QVariant(valuestr);
+             itemData << (mit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mit->second.as<std::string>()) )
+                                                                     : QVariant( "null" ) );
              itemData << QVariant((int)DataCheckState::ElementValue);
              itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
              itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
@@ -1697,7 +1694,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                  schemaKeys.removeLast();
 
                        } else {
-                           Q_ASSERT(dmit->second.Type()==YAML::NodeType::Scalar || dmit->second.Type()==YAML::NodeType::Null || dmit->second.Type()==YAML::NodeType::Sequence );
+                           Q_ASSERT(dmit->second.Type()==YAML::NodeType::Scalar || dmit->second.Type()==YAML::NodeType::Sequence );
                        }
 //                       dataKeys.removeLast();
                    }
@@ -1878,10 +1875,12 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        indexSeqData << QVariant(0);
                                        parents.last()->appendChild(new ConnectDataItem(indexSeqData, mItemIDCount++, parents.last()));
 
-                                       if (mmit->second[kk].Type()==YAML::NodeType::Scalar) {
+                                       if (mmit->second[kk].Type()==YAML::NodeType::Scalar || mmit->second[kk].Type()==YAML::NodeType::Null) {
                                            parents << parents.last()->child(parents.last()->childCount()-1);
                                             QList<QVariant> indexScalarData;
-                                           indexScalarData << mmit->second[kk].as<std::string>().c_str();
+                                           indexScalarData << (mmit->second[kk].Type()==YAML::NodeType::Scalar
+                                                               ? QVariant( QString::fromStdString(mmit->second[kk].as<std::string>()) )
+                                                               : QVariant( "null" ) );
                                            indexScalarData << ""; // TODO
                                            indexScalarData << QVariant((int)DataCheckState::ElementKey);
                                            QStringList dataKeysforTypes(datakeyslist);
@@ -2000,10 +1999,11 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
 
                                           parents.pop_back();
 
-                               } else if (mmit->second.Type()==YAML::NodeType::Scalar) {
+                               } else if (mmit->second.Type()==YAML::NodeType::Scalar || mmit->second.Type()==YAML::NodeType::Null) {
                                      QList<QVariant> mapSeqData;
                                      mapSeqData << (keystr.contains("[") ? keystr.left(keystr.lastIndexOf("[")) : keystr);
-                                     mapSeqData << mmit->second.as<std::string>().c_str();
+                                     mapSeqData << (mmit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mmit->second.as<std::string>()) )
+                                                                                                : QVariant( "null" ) );
                                      mapSeqData << QVariant((int)DataCheckState::ElementValue);
                                      mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")): QVariant());
                                      mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")): QVariant());
