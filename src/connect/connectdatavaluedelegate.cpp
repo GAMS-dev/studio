@@ -83,9 +83,11 @@ void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex 
 void ConnectDataValueDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
-    emit commitData(lineEdit);
-    emit closeEditor(lineEdit);
-    emit modificationChanged(true);
+    if (lineEdit && !mIsLastEditorClosed) {
+        emit commitData(lineEdit);
+        emit closeEditor(lineEdit);
+        emit modificationChanged(true);
+    }
     mIsLastEditorClosed = true;
 }
 
@@ -118,6 +120,7 @@ bool ConnectDataValueDelegate::eventFilter(QObject *editor, QEvent *event)
        QLineEdit* lineEdit = static_cast<QLineEdit *>(editor);
        QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
+             mIsLastEditorClosed = true;
              emit closeEditor(lineEdit);
              return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
