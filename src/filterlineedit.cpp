@@ -74,6 +74,11 @@ bool FilterLineEdit::exactMatch()
     return buttonState(mExactButton);
 }
 
+bool FilterLineEdit::isRegEx()
+{
+    return buttonState(mRegExButton);
+}
+
 void FilterLineEdit::resizeEvent(QResizeEvent *event)
 {
     QLineEdit::resizeEvent(event);

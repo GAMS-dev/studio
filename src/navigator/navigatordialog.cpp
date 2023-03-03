@@ -112,15 +112,14 @@ void NavigatorDialog::updateContent()
     QVector<NavigatorContent> content = QVector<NavigatorContent>();
     QString input = mInput->text();
 
-    QRegularExpressionMatch match;
     if (input.startsWith("?")) {
         mCurrentMode = NavigatorMode::Help;
-        setFilter("", true);
+        setFilter("");
         collectHelpContent(content);
 
     } else if (mPostfixRegex.match(input).hasMatch()) {
         mCurrentMode = NavigatorMode::Line;
-        setFilter("", true);
+        setFilter("");
         collectLineNavigation(content);
 
     } else if (input.startsWith("p ", Qt::CaseInsensitive)) {
@@ -149,7 +148,6 @@ void NavigatorDialog::updateContent()
 
     } else {
         setFilter(input);
-        mFilterModel->setFilterWildcard(input);
         collectAllFiles(content);
     }
 
@@ -497,14 +495,15 @@ void NavigatorDialog::regexChanged(QRegularExpression regex)
     mInput->setFocus(Qt::FocusReason::PopupFocusReason);
 }
 
-void NavigatorDialog::setFilter(QString filter, bool ignoreOptions)
+void NavigatorDialog::setFilter(QString filter)
 {
-    QString regex = filter;
-
-    if (!ignoreOptions) {
-        if (mInput->exactMatch()) regex = '^' + filter + '$';
+    QString regex = filter.trimmed();
+    if (!regex.isEmpty()) {
+        if (!mInput->isRegEx())
+            regex = regex.replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        if (mInput->exactMatch())
+            regex = '^'+regex+'$';
     }
-
     mFilterModel->setFilterRegularExpression(regex);
 }
 

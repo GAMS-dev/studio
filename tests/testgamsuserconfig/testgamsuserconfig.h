@@ -43,6 +43,7 @@ private slots:
 
 private:
     QString systemDir;
+    static QRegularExpression mRexVersion;
 };
 
 #endif // TESTGAMSUSERCONFIG_H

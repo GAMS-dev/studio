@@ -61,6 +61,7 @@ public:
     void hideOptions(FilterLineEditFlags options);
     int effectiveKeyColumn();
     bool exactMatch();
+    bool isRegEx();
 
 signals:
     void regExpChanged(QRegularExpression regExp);

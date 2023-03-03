@@ -250,14 +250,14 @@ void TestGamsUserConfig::testVersionFormat_data()
     QTest::newRow("30.y.1") << "30.y.1" << false;
 }
 
+QRegularExpression TestGamsUserConfig::mRexVersion("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
+
 void TestGamsUserConfig::testVersionFormat()
 {
     QFETCH(QString, version);
     QFETCH(bool, valid);
 
-//    QRegularExpression re("[1-9][0-9]*(\\.([0-9]|[1-9][0-9]*)(\\.([0-9]|[1-9][0-9]*))?)?");
-    QRegularExpression re("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
-    QCOMPARE( re.match(version).hasMatch() , valid);
+    QCOMPARE( mRexVersion.match(version).hasMatch() , valid);
 }
 
 QTEST_MAIN(TestGamsUserConfig)
