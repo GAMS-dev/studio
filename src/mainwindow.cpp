@@ -649,7 +649,7 @@ void MainWindow::on_actionEditDefaultConfig_triggered()
            return;
         }
     } else {
-        file.open(QIODevice::WriteOnly); // create empty file
+        file.open(QFile::WriteOnly); // create empty file
         file.close();
     }
 
@@ -1485,14 +1485,14 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
                 if (FileMeta *destFM = mFileMetaRepo.fileMeta(filePath))
                    closeFileEditors(destFM->id());
             }
-            file.open(QIODevice::WriteOnly); // create empty file
+            file.open(QFile::WriteOnly); // create empty file
             file.close();
             break;
         case QMessageBox::Abort:
             return;
         }
     } else if (!suffix.isEmpty()) {
-        file.open(QIODevice::WriteOnly); // create empty file
+        file.open(QFile::WriteOnly); // create empty file
         file.close();
     }
 

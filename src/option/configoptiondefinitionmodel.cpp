@@ -21,6 +21,7 @@
 #include "configoptiondefinitionmodel.h"
 
 #include <QDataStream>
+#include <QFile>
 #include <QDebug>
 
 namespace gams {
@@ -50,7 +51,7 @@ QMimeData *ConfigOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {

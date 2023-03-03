@@ -164,7 +164,7 @@ bool Reference::parseFile(QString referenceFile)
 {
     QFile file(referenceFile);
     int lineread = 0;
-    if(!file.open(QIODevice::ReadOnly)) {
+    if(!file.open(QFile::ReadOnly)) {
         mLastErrorLine=lineread;
         return false;
     }

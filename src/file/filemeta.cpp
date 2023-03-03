@@ -817,7 +817,7 @@ void FileMeta::save(const QString &newLocation)
 
     mFileRepo->unwatch(this);
     if (document()) {
-        if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+        if (!file.open(QFile::WriteOnly | QFile::Text))
             EXCEPT() << "Can't save " << location;
         QTextStream out(&file);
         if (mCodec) out.setCodec(mCodec);

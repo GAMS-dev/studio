@@ -19,7 +19,7 @@
 #
 
 QT += core gui svg concurrent network printsupport
-#QT += core5compat
+greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
 greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
 
 TARGET = studio

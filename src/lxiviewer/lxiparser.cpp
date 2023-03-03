@@ -33,7 +33,7 @@ LxiTreeModel *LxiParser::parseFile(QString lxiFile)
     QVector<LxiTreeItem*> treeItems;
 
     QFile file(lxiFile);
-    if(!file.open(QIODevice::ReadOnly))
+    if(!file.open(QFile::ReadOnly))
         EXCEPT() << "Unable to open file: " << lxiFile;
     QTextStream in(&file);
 

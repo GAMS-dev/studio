@@ -961,7 +961,7 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
     int listSize = list.size();
     QFile file(efiFile);
     if (!file.exists()) return false;
-    if (!file.open(QFile::ReadOnly | QIODevice::Text)) {
+    if (!file.open(QFile::ReadOnly | QFile::Text)) {
         emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
         return false;
     }

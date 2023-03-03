@@ -358,7 +358,7 @@ QMimeData *GamsParameterTableModel::mimeData(const QModelIndexList &indexes) con
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
@@ -395,7 +395,7 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
         return false;
 
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::GamsOptionDefinition));
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QDataStream stream(&encodedData, QFile::ReadOnly);
     QStringList newItems;
     int rows = 0;
 

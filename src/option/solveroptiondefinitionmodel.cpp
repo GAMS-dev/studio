@@ -20,6 +20,7 @@
 #include "solveroptiondefinitionmodel.h"
 #include "settings.h"
 #include <QDataStream>
+#include <QFile>
 
 namespace gams {
 namespace studio {
@@ -50,7 +51,7 @@ QMimeData *SolverOptionDefinitionModel::mimeData(const QModelIndexList &indexes)
         return mimeData;
 
     QByteArray encodedData;
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     Settings* settings = Settings::settings();
     for (const QModelIndex &index : indexes) {

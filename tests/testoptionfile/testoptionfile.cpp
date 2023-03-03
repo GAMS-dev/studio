@@ -489,7 +489,7 @@ void TestOptionFile::testReadOptionFile_data()
 {
     // given
     QFile outputFile(QDir(".").absoluteFilePath("dummy.opt"));
-    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!outputFile.open(QFile::WriteOnly | QFile::Text))
         QFAIL("expected to open dummy.opt to write, but failed");
 
     QTextStream out(&outputFile);
@@ -629,7 +629,7 @@ void TestOptionFile::testWriteOptionFile_data()
     int i = 0;
     QStringList optionItems;
 
-    if (inputFile.open(QIODevice::ReadOnly)) {
+    if (inputFile.open(QFile::ReadOnly)) {
        QTextStream in(&inputFile);
        while (!in.atEnd()) {
            optionItems << in.readLine();

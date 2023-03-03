@@ -43,7 +43,7 @@ QString OAIHttpFileElement::asJson() const {
     QByteArray bArray;
     bool result = false;
     if (file.exists()) {
-        result = file.open(QIODevice::ReadOnly);
+        result = file.open(QFile::ReadOnly);
         bArray = file.readAll();
         file.close();
     }
@@ -58,7 +58,7 @@ QJsonValue OAIHttpFileElement::asJsonValue() const {
     QByteArray bArray;
     bool result = false;
     if (file.exists()) {
-        result = file.open(QIODevice::ReadOnly);
+        result = file.open(QFile::ReadOnly);
         bArray = file.readAll();
         file.close();
     }
@@ -78,7 +78,7 @@ bool OAIHttpFileElement::fromStringValue(const QString &instr) {
     if (file.exists()) {
         file.remove();
     }
-    result = file.open(QIODevice::WriteOnly);
+    result = file.open(QFile::WriteOnly);
     file.write(instr.toUtf8());
     file.close();
     if (!result) {
@@ -93,7 +93,7 @@ bool OAIHttpFileElement::fromJsonValue(const QJsonValue &jval) {
     if (file.exists()) {
         file.remove();
     }
-    result = file.open(QIODevice::WriteOnly);
+    result = file.open(QFile::WriteOnly);
 #if QT_VERSION >= QT_VERSION_CHECK(5, 15, 0)
     file.write(QJsonDocument(jval.toObject()).toJson());
 #else
@@ -111,7 +111,7 @@ QByteArray OAIHttpFileElement::asByteArray() const {
     QByteArray bArray;
     bool result = false;
     if (file.exists()) {
-        result = file.open(QIODevice::ReadOnly);
+        result = file.open(QFile::ReadOnly);
         bArray = file.readAll();
         file.close();
     }
@@ -127,7 +127,7 @@ bool OAIHttpFileElement::fromByteArray(const QByteArray &bytes) {
     if (file.exists()) {
         file.remove();
     }
-    result = file.open(QIODevice::WriteOnly);
+    result = file.open(QFile::WriteOnly);
     file.write(bytes);
     file.close();
     if (!result) {

@@ -69,7 +69,7 @@ void TestGamsUserConfig::testReadEmptyDefaultGamsConfigFile()
 
     QFile file(testFile);
     if (file.exists())  file.remove();
-    if (file.open(QIODevice::WriteOnly))
+    if (file.open(QFile::WriteOnly))
         file.close();
 
     // when
@@ -94,7 +94,7 @@ void TestGamsUserConfig::testReadDefaultGamsConfigFile()
     QFile file(testFile);
     if (file.exists())  file.remove();
 
-    if (!file.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!file.open(QFile::WriteOnly | QFile::Text))
         QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
 
     QTextStream out(&file);
@@ -161,7 +161,7 @@ void TestGamsUserConfig::testGamsRunningDefaultConfigFile()
     QFile gamsConfigFile(testFile);
     if (gamsConfigFile.exists())  gamsConfigFile.remove();
 
-    if (!gamsConfigFile.open(QIODevice::WriteOnly | QIODevice::Text))
+    if (!gamsConfigFile.open(QFile::WriteOnly | QFile::Text))
         QFAIL(QString("expected to open [%1] to write, but failed").arg(testFile).toLatin1());
 
     QTextStream out(&gamsConfigFile);

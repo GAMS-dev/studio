@@ -1269,7 +1269,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
 
     QFile inputFile(absoluteFilePath);
     int i = 0;
-    if (inputFile.open(QIODevice::ReadOnly)) {
+    if (inputFile.open(QFile::ReadOnly)) {
        QTextStream in(&inputFile);
        in.setCodec(codec);
 
@@ -1297,7 +1297,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
     bool hasBeenLogged = false;
 
     QFile outputFile(absoluteFilepath);
-    if (!outputFile.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (!outputFile.open(QFile::WriteOnly | QFile::Text)) {
         logger()->append( QString("expected to write %1, but failed").arg(absoluteFilepath), LogMsgType::Error );
         return false;
     }

@@ -37,7 +37,7 @@ bool GlbParser::parseFile(QString glbFile)
     mLineNr = 0;
     mGlbFile = glbFile;
     QFile file(mGlbFile);
-    if (!file.open(QIODevice::ReadOnly))
+    if (!file.open(QFile::ReadOnly))
         EXCEPT() << "GLB file '" << file.fileName() << "' not found";
     QTextStream in(&file);
 

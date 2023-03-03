@@ -19,6 +19,8 @@
  */
 #include <QMimeData>
 
+#include <QFile>
+
 #include "schemalistmodel.h"
 #include "theme.h"
 
@@ -67,7 +69,7 @@ QMimeData *SchemaListModel::mimeData(const QModelIndexList &indexes) const
 
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         QStandardItem* sitem = item(index.row());

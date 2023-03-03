@@ -32,13 +32,13 @@ TestMiroCommon::TestMiroCommon(QObject *parent)
       mUnifiedAssemblyFileContentFile("unified_files.txt"),
       mUnifiedAssemblyFileContentFileData("data_files.txt")
 {
-    if (mFile1.open(QIODevice::WriteOnly))
+    if (mFile1.open(QFile::WriteOnly))
         mFile1.close();
-    if (mFile2.open(QIODevice::WriteOnly))
+    if (mFile2.open(QFile::WriteOnly))
         mFile2.close();
-    if (mUnifiedAssemblyFileContentFile.open(QIODevice::WriteOnly))
+    if (mUnifiedAssemblyFileContentFile.open(QFile::WriteOnly))
         mUnifiedAssemblyFileContentFile.close();
-    if (mUnifiedAssemblyFileContentFileData.open(QIODevice::WriteOnly)) {
+    if (mUnifiedAssemblyFileContentFileData.open(QFile::WriteOnly)) {
         mUnifiedAssemblyFileContentFileData.write("data_files.txt\ndata_files.txt\ndata\ndata\nconf_files");
         mUnifiedAssemblyFileContentFileData.close();
     }
@@ -247,7 +247,7 @@ void TestMiroCommon::testWriteAssemblyFile()
 
     if (QString(QTest::currentDataTag()) == "content") {
         QFile file(fileName);
-        if (file.open(QIODevice::ReadOnly)) {
+        if (file.open(QFile::ReadOnly)) {
             QStringList data;
             const QStringList items = QString(file.readAll()).split('\n', Qt::SkipEmptyParts);
             for (const auto &item: items)

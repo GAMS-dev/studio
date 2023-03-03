@@ -38,7 +38,7 @@ void FilePathLineEdit::dragEnterEvent(QDragEnterEvent *event)
     // drag and drop from the project explorer
     if (event->mimeData()->formats().contains(ProjectTreeView::ItemModelDataType)) {
         QByteArray data = event->mimeData()->data(ProjectTreeView::ItemModelDataType);
-        QDataStream stream(&data, QIODevice::ReadOnly);
+        QDataStream stream(&data, QFile::ReadOnly);
         QStringList pathList;
         while (!stream.atEnd()) {
             int row, col;
@@ -61,7 +61,7 @@ void FilePathLineEdit::dropEvent(QDropEvent *event)
     // drag and drop from the project explorer
     if (event->mimeData()->formats().contains(ProjectTreeView::ItemModelDataType)) {
         QByteArray data = event->mimeData()->data(ProjectTreeView::ItemModelDataType);
-        QDataStream stream(&data, QIODevice::ReadOnly);
+        QDataStream stream(&data, QFile::ReadOnly);
         QStringList pathList;
         while (!stream.atEnd()) {
             int row, col;

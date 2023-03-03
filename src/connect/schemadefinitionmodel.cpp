@@ -21,6 +21,7 @@
 #include <QApplication>
 #include <QPalette>
 #include <QMimeData>
+#include <QFile>
 
 #include "schemadefinitionmodel.h"
 #include "theme.h"
@@ -194,7 +195,7 @@ QMimeData *SchemaDefinitionModel::mimeData(const QModelIndexList &indexes) const
 {
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         QModelIndex sibling = index.sibling(index.row(), (int)SchemaItemColumn::SchemaKey);

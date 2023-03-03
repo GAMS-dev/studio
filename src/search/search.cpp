@@ -426,7 +426,7 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     ts.setCodec(fm->codec());
     int hits = 0;
 
-    if (!file.open(QIODevice::ReadWrite)) {
+    if (!file.open(QFile::ReadWrite)) {
         SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
         return 0;
     }

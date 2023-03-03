@@ -501,7 +501,8 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
 
     QStringList newItems;
     QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+
+    QDataStream stream(&encodedData, QFile::ReadOnly);
 //    int rows = stream.atEnd()?-1:0;
     while (!stream.atEnd()) {
        QString text;
@@ -586,7 +587,7 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         return true;
 
     QByteArray encodedData = mimedata->data("application/vnd.gams-connect.text");
-    QDataStream stream(&encodedData, QIODevice::ReadOnly);
+    QDataStream stream(&encodedData, QFile::ReadOnly);
     QStringList newItems;
 //    int rows = stream.atEnd()?-1:0;
     while (!stream.atEnd()) {

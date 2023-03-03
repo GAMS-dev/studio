@@ -84,8 +84,8 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
             mMainWindow->openFilePath(destFile.fileName(), nullptr, ogFindGroup);
-            if (srcFile.open(QIODevice::ReadWrite)) {
-                if (destFile.open(QIODevice::ReadWrite)) {
+            if (srcFile.open(QFile::ReadWrite)) {
+                if (destFile.open(QFile::ReadWrite)) {
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();
@@ -116,7 +116,7 @@ void AutosaveHandler::saveChangedFiles()
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
         if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt)) {
             QFile file(autosaveFile);
-            file.open(QIODevice::WriteOnly);
+            file.open(QFile::WriteOnly);
             QTextStream out(&file);
             out << node->document()->toPlainText();
             out.flush();

@@ -82,7 +82,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
     if (event->mimeData()->formats().contains(ItemModelDataType)) {
         event->accept();
         QByteArray data = event->mimeData()->data(ItemModelDataType);
-        QDataStream stream(&data, QIODevice::ReadOnly);
+        QDataStream stream(&data, QFile::ReadOnly);
         while (!stream.atEnd()) {
             int row, col;
             QMap<int,  QVariant> roleDataMap;

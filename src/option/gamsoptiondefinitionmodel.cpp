@@ -19,6 +19,7 @@
  */
 #include "gamsoptiondefinitionmodel.h"
 #include <QDataStream>
+#include <QFile>
 
 namespace gams {
 namespace studio {
@@ -47,7 +48,7 @@ QMimeData *GamsOptionDefinitionModel::mimeData(const QModelIndexList &indexes) c
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QIODevice::WriteOnly);
+    QDataStream stream(&encodedData, QFile::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {

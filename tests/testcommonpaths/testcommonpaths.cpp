@@ -219,7 +219,7 @@ void TestCommonPaths::testGamsLicenseFilePath_data()
     QTest::newRow("file") << QStringList(".") << QString(".") + "/" +
                              CommonPaths::licenseFile();
     QFile file1(QDir(".").path() + "/" + CommonPaths::licenseFile());
-    if (!file1.open(QIODevice::WriteOnly))
+    if (!file1.open(QFile::WriteOnly))
         QFAIL("Error creating test file");
 
     QStringList paths {"nodir", "./test"};
@@ -230,7 +230,7 @@ void TestCommonPaths::testGamsLicenseFilePath_data()
     else
         file1.close();
     QFile file2(QDir("./test").path() + "/" + CommonPaths::licenseFile());
-    if (!file2.open(QIODevice::WriteOnly))
+    if (!file2.open(QFile::WriteOnly))
         QFAIL("Error creating test file");
     else
         file2.close();

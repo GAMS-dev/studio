@@ -178,14 +178,14 @@ enum OpenGroupOption {
     ogProjects
 };
 
-template <typename T>
-typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
-operator<<(QTextStream &dbg, T enumValue)
-{
-    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
-    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
-    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
-}
+//template <typename T>
+//typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
+//operator<<(QTextStream &dbg, T enumValue)
+//{
+//    const QMetaObject *mo = qt_getEnumMetaObject(enumValue);
+//    int enumIdx = mo->indexOfEnumerator(qt_getEnumName(enumValue));
+//    return dbg << mo->enumerator(enumIdx).valueToKey(int(enumValue));
+//}
 
 const int MAX_SEARCH_RESULTS = 50000;
 const double TABLE_ROW_HEIGHT = 1.6;

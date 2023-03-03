@@ -65,7 +65,7 @@ void SearchWorker::findInFiles()
 
         int lineCounter = 0;
         QFile file(fm->location());
-        if (file.open(QIODevice::ReadOnly)) {
+        if (file.open(QFile::ReadOnly)) {
 
             QTextStream in(&file);
             in.setCodec(fm->codec());

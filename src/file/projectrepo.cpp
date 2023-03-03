@@ -1031,7 +1031,7 @@ void ProjectRepo::closeNodeById(NodeId nodeId)
 bool ProjectRepo::parseGdxHeader(QString location)
 {
     QFile file(location);
-    if (file.open(QIODevice::ReadOnly)) {
+    if (file.open(QFile::ReadOnly)) {
         QByteArray data = file.read(50);
         file.close();
         return data.contains("\aGAMSGDX\a");

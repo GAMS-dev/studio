@@ -87,7 +87,7 @@ QStringList MiroCommon::unifiedAssemblyFileContent(const QString &assemblyFile,
     QFileInfo fileInfo(assemblyFile);
     if (fileInfo.exists(assemblyFile)) {
         QFile file(assemblyFile);
-        if (file.open(QIODevice::ReadOnly | QIODevice::Text)) {
+        if (file.open(QFile::ReadOnly | QFile::Text)) {
             QTextStream stream(&file);
             stream.setCodec(QTextCodec::codecForName("UTF-8"));
             while (!stream.atEnd()) {
@@ -111,7 +111,7 @@ bool MiroCommon::writeAssemblyFile(const QString &assemblyFile,
     if (assemblyFile.isEmpty())
         return false;
     QFile file(assemblyFile);
-    if (file.open(QIODevice::WriteOnly | QIODevice::Text)) {
+    if (file.open(QFile::WriteOnly | QFile::Text)) {
         QTextStream stream(&file);
         stream.setCodec(QTextCodec::codecForName("UTF-8"));
         for (const auto& selectedFile: selectedFiles)

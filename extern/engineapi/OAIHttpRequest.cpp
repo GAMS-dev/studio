@@ -272,7 +272,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
             }
 
             QFile file(file_info->local_filename);
-            if (!file.open(QIODevice::ReadOnly)) {
+            if (!file.open(QFile::ReadOnly)) {
                 // silent abort for the current file
                 continue;
             }
@@ -375,7 +375,7 @@ void OAIHttpRequestWorker::execute(OAIHttpRequestInput *input) {
 #else
         QBuffer *buffer = new QBuffer;
         buffer->setData(request_content);
-        buffer->open(QIODevice::ReadOnly);
+        buffer->open(QFile::ReadOnly);
 
         reply = manager->sendCustomRequest(request, input->http_method.toLatin1(), buffer);
         buffer->setParent(reply);
