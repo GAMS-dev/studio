@@ -1489,7 +1489,11 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              schemaKeys << key;
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
-             itemData << QVariant(mit->second.as<std::string>().c_str());
+             QString valuestr = QString::fromStdString( mit->second.as<std::string>() );
+             if (valuestr.endsWith("\n"))
+                itemData << QVariant(valuestr.left( valuestr.lastIndexOf("\n")));
+             else
+                itemData << QVariant(valuestr);
              itemData << QVariant((int)DataCheckState::ElementValue);
              itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
              itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
