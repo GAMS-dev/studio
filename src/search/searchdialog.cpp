@@ -237,16 +237,18 @@ QSet<FileMeta*> SearchDialog::filterFiles(QSet<FileMeta*> files, bool ignoreRead
     // create list of include filter regexes
     QStringList includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     QList<QRegularExpression> includeFilterList;
-    for (const QString &s : qAsConst(includeFilter))
-        includeFilterList.append(QRegularExpression(QRegularExpression::wildcardToRegularExpression("*" + s.trimmed()),
-                                                    QRegularExpression::CaseInsensitiveOption));
+    for (const QString &s : qAsConst(includeFilter)) {
+        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    }
 
     // create list of exclude filters
     QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
     QList<QRegularExpression> excludeFilterList;
-    for (const QString &e : qAsConst(excludeFilter))
-        excludeFilterList.append(QRegularExpression(QRegularExpression::wildcardToRegularExpression("*" + e.trimmed()),
-                                                    QRegularExpression::CaseInsensitiveOption));
+    for (const QString &s : qAsConst(excludeFilter)) {
+        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    }
 
     // filter files
     QSet<FileMeta*> res;

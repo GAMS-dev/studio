@@ -33,7 +33,7 @@ namespace studio {
 namespace engine {
 
 const QString EngineStartDialog::CUnavailable("-");
-QRegularExpression EngineStartDialog::mRexVersion("^GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*$");
+QRegularExpression EngineStartDialog::mRexVersion("GAMS Release\\s*:\\s+(\\d\\d\\.\\d).*");
 
 EngineStartDialog::EngineStartDialog(QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),

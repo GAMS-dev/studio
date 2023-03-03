@@ -133,7 +133,8 @@ void FilterLineEdit::updateRegExp()
                                                                                                : "*"+text()+"*");
     }
     mRegExp = QRegularExpression(filter, QRegularExpression::CaseInsensitiveOption);
-    emit regExpChanged(mRegExp);
+    if (mRegExp.isValid())
+        emit regExpChanged(mRegExp);
 }
 
 QAbstractButton *FilterLineEdit::createButton(const QStringList &iconPaths, const QStringList &toolTips)

@@ -389,13 +389,12 @@ bool EnvVarTableModel::isThereAnError(EnvVarConfigItem* item) const
     if (item->key.simplified().isEmpty())
         return true;
     else if (item->value.simplified().isEmpty())
-             return true;
+        return true;
     else if (!item->maxVersion.simplified().isEmpty() && !isConformatVersion(item->maxVersion))
-             return true;
+        return true;
     else  if (!item->minVersion.simplified().isEmpty() && !isConformatVersion(item->minVersion))
-              return true;
-    else
-        return false;
+        return true;
+    return false;
 }
 
 bool EnvVarTableModel::isConformatVersion(const QString &version) const

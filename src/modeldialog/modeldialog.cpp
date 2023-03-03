@@ -250,10 +250,12 @@ void ModelDialog::on_pbDescription_clicked()
     msgBox.exec();
 }
 
-void ModelDialog::applyFilter(const QRegularExpression &filterString, int proxyModelIndex)
+void ModelDialog::applyFilter(const QRegularExpression &filterRex, int proxyModelIndex)
 {
-    proxyModelList[proxyModelIndex]->setFilterRegularExpression(filterString);
-    this->changeHeader(proxyModelIndex);
+    if (filterRex.isValid()) {
+        proxyModelList[proxyModelIndex]->setFilterRegularExpression(filterRex);
+        this->changeHeader(proxyModelIndex);
+    }
 }
 
 void ModelDialog::jumpToNonEmptyTab()
