@@ -335,7 +335,7 @@ void GdxSymbolViewState::read(const QVariantMap &map)
         mShowAttributes.clear();
         const QString attribs = map.value("showAttributes").toString();
         for (const QChar &atr : attribs)
-            mShowAttributes << (atr != "0");
+            mShowAttributes << (atr != '0');
     }
 
     if (map.contains("tvDimOrder")) {

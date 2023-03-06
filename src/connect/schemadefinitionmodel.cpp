@@ -246,7 +246,7 @@ void SchemaDefinitionModel::addValueList(QList<ValueWrapper> &valueList, QList<Q
         } else if (valueList.at(i).type==SchemaValueType::String) {
             valueStrList << QString(valueList.at(i).value.stringval);
         } else if (valueList.at(i).type==SchemaValueType::Boolean) {
-            valueStrList << QString(valueList.at(i).value.boolval);
+            valueStrList << QString(valueList.at(i).value.boolval ? "1" : "0");
         } else  {
             valueStrList << "";
         }
@@ -270,7 +270,7 @@ void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
     } else if (value.type==SchemaValueType::Float) {
         data << value.value.doubleval;
     } else if (value.type==SchemaValueType::String) {
-        data << value.value.stringval;
+        data << QString(value.value.stringval);
     } else if (value.type==SchemaValueType::Boolean) {
         data << value.value.boolval;
     } else  {

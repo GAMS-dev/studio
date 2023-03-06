@@ -463,7 +463,7 @@ void GdxSymbol::updateDecSepCopy()
     case DecimalSeparator::studio:
         break;
     case DecimalSeparator::system:
-        mDecSepCopy = locale.decimalPoint();
+        mDecSepCopy = QString(locale.decimalPoint()).front();
         break;
     case DecimalSeparator::custom:
         if (!Settings::settings()->toString(skGdxCustomDecSepCopy).isEmpty())

@@ -173,12 +173,12 @@ QString LogParser::extractLinks(const QString &line, bool &hasError, LogParser::
 
                 // FIL + REF
             } else if (line.mid(posB+1,4) == "FIL:" || line.mid(posB+1,4) == "REF:") {
-//                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
+                QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']'));
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
             } else if (line.mid(posB+1,4) == "DIR:") {
-//                QString fName = QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']').toString());
+                QDir::fromNativeSeparators(capture(line, posA, posB, 6, ']'));
                 mbState.marks.setMark(line.mid(start, posB-start));
                 ++posB;
 
