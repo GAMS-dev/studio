@@ -289,7 +289,9 @@ bool ConfigParamTableModel::setData(const QModelIndex &index, const QVariant &va
     if (role == Qt::EditRole)   {
         roles = { Qt::EditRole };
         QString dataValue = value.toString().simplified();
-        if (dataValue.isEmpty())
+        if (index.column() != COLUMN_MIN_VERSION &&
+            index.column() != COLUMN_MAX_VERSION &&
+            dataValue.isEmpty())
             return false;
 
         if (index.row() > mOptionItem.size())
