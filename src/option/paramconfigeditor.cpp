@@ -657,7 +657,10 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
     QModelIndex minVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
     QModelIndex maxVersionIndex = ui->paramCfgTableView->model()->index(rowToBeAdded, ConfigParamTableModel::COLUMN_MIN_VERSION);
     ui->paramCfgTableView->model()->setData( insertKeyIndex, optionNameData, Qt::EditRole);
-    ui->paramCfgTableView->model()->setData( insertValueIndex, selectedValueData, Qt::EditRole);
+    ui->paramCfgTableView->model()->setData( insertValueIndex, (selectedValueData.simplified().isEmpty()
+                                                                   ? OptionTokenizer::valueGeneratedStr
+                                                                   : selectedValueData)
+                                                             , Qt::EditRole);
     ui->paramCfgTableView->model()->setData( minVersionIndex, "", Qt::EditRole);
     ui->paramCfgTableView->model()->setData( maxVersionIndex, "", Qt::EditRole);
 
