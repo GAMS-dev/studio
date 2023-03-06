@@ -76,7 +76,7 @@ void ConnectData::format(YAML::Emitter& emitter, const YAML::Node& node) {
                emitter << YAML::EndSeq;
     } else if (node.Type()==YAML::NodeType::Scalar) {
               QString str = QString::fromStdString(node.as<std::string>());
-              if (str.contains("\n") || str.contains("%"))
+              if (str.contains("\n"))
                  emitter << YAML::Literal;
               emitter << node.as<std::string>();
     } else /*if (node.Type()==YAML::NodeType::Null)*/ {
