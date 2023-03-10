@@ -234,6 +234,9 @@ SOURCES += \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
     process/gmszipprocess.cpp \
+    reference/filereferenceitem.cpp \
+    reference/filereferencewidget.cpp \
+    reference/fileusedtreemodel.cpp \
     reference/reference.cpp \
     reference/referencedatatype.cpp \
     reference/referenceitemmodel.cpp \
@@ -476,6 +479,9 @@ HEADERS += \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
     process/gmszipprocess.h \
+    reference/filereferenceitem.h \
+    reference/filereferencewidget.h \
+    reference/fileusedtreemodel.h \
     reference/reference.h \
     reference/referencedatatype.h \
     reference/referenceitemmodel.h \
@@ -620,6 +626,7 @@ FORMS += \
     option/parametereditor.ui \
     option/solveroptionwidget.ui \
     pinviewwidget.ui \
+    reference/filereferencewidget.ui \
     reference/referenceviewer.ui \
     reference/symbolreferencewidget.ui \
     search/resultsview.ui \
