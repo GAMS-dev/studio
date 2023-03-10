@@ -49,7 +49,7 @@ Then perform a `Build All` operation (`Build -> Build All`) to build the project
 | ------ | ------ | ------ |
 | [Qt 5](https://www.qt.io/) | [LGPL](https://doc.qt.io/qt-5/lgpl.html) | [Qt Licensing](https://doc.qt.io/qt-5/licensing.html). The Qt 5 everywhere package (source) can be downloaded from [GAMS](https://d37drm4t2jghv5.cloudfront.net/qt/qt-everywhere-src-5.15.2.tar.xz) or directly from https://www.qt.io/download, where installers are provided as well. |
 | [Qt 6](https://www.qt.io/) | [LGPL](https://doc.qt.io/qt-6/lgpl.html) | [Qt Licensing](https://doc.qt.io/qt-6/licensing.html). The Qt 6 everywhere package (source) can be downloaded from [GAMS](https://d37drm4t2jghv5.cloudfront.net/qt/qt-everywhere-src-6.4.2.tar.xz) or directly from https://www.qt.io/download, where installers are provided as well. |
-| dtoaLoc | [License](src/numerics/README.md) | |
+| [dtoaLoc](extern/dtoaloc) | [License](extern/dtoaloc/README.md) | |
 | [engineapi](extern/engineapi/) | [MIT](extern/engineapi/README.md) | Owned by GAMS and can be used in other projects. |
 | [yaml-cpp](extern/yaml-cpp/) | [MIT](extern/yaml-cpp/LICENSE/) | The project can be found at https://github.com/jbeder/yaml-cpp |
 
