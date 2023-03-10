@@ -165,7 +165,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
         break;
     }
     case Qt::TextAlignmentRole: {
-        return Qt::AlignLeft + Qt::AlignVCenter;
+        return int(Qt::AlignLeft | Qt::AlignVCenter);
     }
     case Qt::ToolTipRole: {
         if (mOptionItem.at(row)->disabled) {

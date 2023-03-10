@@ -212,7 +212,7 @@ QString ExportDriver::generateFilters()
                         inst += "      - column: " + QString::number(d+1) + "\n";
 
                         // switch between keep and reject for improved performance
-                        int uelCount = uels.size();
+                        size_t uelCount = uels.size();
                         int showUelCount = 0;
                         for (int uel: uels) {
                             if (showUels[uel])

@@ -119,15 +119,15 @@ QVariant EnvVarTableModel::data(const QModelIndex &index, int role) const
             else if (mEnvVarItem.at(row)->pathVariable == EnvVarConfigItem::pathDefinition::NO_PATH_DEFINED)
                 return "False";
             else
-                return QString(mEnvVarItem.at(row)->pathVariable);
+                return QString::number(mEnvVarItem.at(row)->pathVariable);
         }
         break;
     }
     case Qt::TextAlignmentRole: {
         if (col==COLUMN_MIN_VERSION || col==COLUMN_MAX_VERSION)
-            return Qt::AlignRight+ Qt::AlignVCenter;
+            return int(Qt::AlignRight | Qt::AlignVCenter);
         else
-           return Qt::AlignLeft+ Qt::AlignVCenter;
+           return int(Qt::AlignLeft | Qt::AlignVCenter);
     }
     case Qt::ToolTipRole: {
         QString tooltipText = "";

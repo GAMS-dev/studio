@@ -54,7 +54,7 @@ Option::~Option()
 void Option::dumpAll()
 {
     qDebug() << QString("mSynonymMap.size() = %1").arg(mSynonymMap.size());
-    QMap<QString, QString>::iterator ssit;
+    QMultiMap<QString, QString>::iterator ssit;
     for (ssit = mSynonymMap.begin(); ssit != mSynonymMap.end(); ++ssit)
         qDebug()  << QString("  [%1] = %2").arg(ssit.key(), ssit.value());
 
@@ -571,7 +571,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
              opt.valid = (helpContextNr != 0);
              QStringList synonymList;
              if (synonym.contains(nameStr)) {
-                 QMap<QString, QString>::iterator it = synonym.find(nameStr);
+                 QMultiMap<QString, QString>::iterator it = synonym.find(nameStr);
                  while (it != synonym.end() && (QString::compare(it.key(), nameStr, Qt::CaseInsensitive) == 0) ) {
                        if (!isDeprecated(it.value()))
                           synonymList << it.value();
@@ -619,7 +619,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
              case optTypeString:
                  char sdefval[GMS_SSSIZE];
                  optGetDefaultStr(mOPTHandle, i, sdefval);
-                 opt.defaultValue = QVariant(sdefval);
+                 opt.defaultValue = QString(sdefval);
                  if (modeltypes.contains(nameStr)) {
                      QStringList solvers = solverConfigInfo.solversForModelType( modeltypes[nameStr] );
                      for (const QString &s : qAsConst(solvers)) {
@@ -632,7 +632,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
 //                     case optTypeImmediate: {
                  char sdefval[GMS_SSSIZE];
                  optGetDefaultStr(mOPTHandle, i, sdefval);
-                 opt.defaultValue = QVariant(sdefval);
+                 opt.defaultValue = QString(sdefval);
                  break;
             }
              default: break;
