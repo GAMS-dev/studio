@@ -44,7 +44,7 @@
 #include <string.h>
 #include <math.h>
 
-#include "dtoaLoc.h"
+#include <dtoaloc/dtoaLoc.h>
 #include "doubleFormat.h"
 
 /* patch up zero case

@@ -30,6 +30,7 @@ CONFIG += c++14
 include(../gamsdependency.pri)
 
 YAMLCPP   = $$PWD/../extern/yaml-cpp
+DTOALOC   = $$PWD/../extern/dtoaloc
 INCLUDEPATH += $$PWD/../extern
 INCLUDEPATH += $$PWD/../extern/engineapi
 include(../extern/engineapi/client.pri)
@@ -200,7 +201,7 @@ SOURCES += \
     networkmanager.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
-    numerics/dtoaLoc.c \
+    $$DTOALOC/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/configoptiondefinitionmodel.cpp \
@@ -441,7 +442,7 @@ HEADERS += \
     networkmanager.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
-    numerics/dtoaLoc.h \
+    $$DTOALOC/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/configoptiondefinitionmodel.h \

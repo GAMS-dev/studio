@@ -25,7 +25,6 @@ INCLUDEPATH += $$SRCPATH
 
 
 
-
 SOURCES += \
     tst_testgdxviewer.cpp \
     $$SRCPATH/abstractview.cpp \
@@ -61,7 +60,7 @@ SOURCES += \
     $$SRCPATH/logger.cpp \
     $$SRCPATH/numerics/doubleFormat.c \
     $$SRCPATH/numerics/doubleformatter.cpp \
-    $$SRCPATH/numerics/dtoaLoc.c \
+    $$SRCPATH/../extern/dtoaloc/dtoaLoc.c \
     $$SRCPATH/process/abstractprocess.cpp \
     $$SRCPATH/process/connectprocess.cpp \
     $$SRCPATH/settings.cpp \
@@ -105,7 +104,7 @@ HEADERS += \
     $$SRCPATH/logger.h \
     $$SRCPATH/numerics/doubleFormat.h \
     $$SRCPATH/numerics/doubleformatter.h \
-    $$SRCPATH/numerics/dtoaLoc.h \
+    $$SRCPATH/../extern/dtoaloc/dtoaLoc.h \
     $$SRCPATH/process.h \
     $$SRCPATH/process/abstractprocess.h \
     $$SRCPATH/process/connectprocess.h \
