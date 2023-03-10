@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QMimeData>
-#include <QDebug>
 
 #include "schemalistmodel.h"
 #include "theme.h"

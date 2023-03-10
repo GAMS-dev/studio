@@ -180,6 +180,10 @@ bool EnvVarTableModel::setData(const QModelIndex &index, const QVariant &value, 
         if (index.row() > mEnvVarItem.size())
             return false;
         QString dataValue = value.toString();
+        if (index.column() != COLUMN_MIN_VERSION &&
+            index.column() != COLUMN_MAX_VERSION &&
+            dataValue.simplified().isEmpty())
+            return false;
         if (index.column() == COLUMN_PARAM_KEY) { // key
 //            QString from = data(index, Qt::DisplayRole).toString();
             mEnvVarItem[index.row()]->key = dataValue;

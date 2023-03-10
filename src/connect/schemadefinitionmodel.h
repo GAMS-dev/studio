@@ -67,7 +67,11 @@ private:
     void addTypeList(QList<SchemaType>& typeList, QList<QVariant>& data);
     void addValueList(QList<ValueWrapper>& valueList, QList<QVariant>& data);
     void addValue(ValueWrapper& value, QList<QVariant>& data);
+    QString getValue(ValueWrapper& value);
+    QStringList gettAllAllowedValues(Schema* schemaHelper);
 
+    void setupOneofSchemaTree(const QString& schemaName, const QString& key,
+                              QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupAnyofSchemaTree(const QString& schemaName, const QString& key,
                               QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupSchemaTree(const QString& schemaName, const QString& key,

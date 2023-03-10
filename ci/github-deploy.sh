@@ -8,9 +8,7 @@ STUDIO_MINOR_VERSION=$(grep ^STUDIO_MINOR_VERSION version | cut -f2 -d"=")
 STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
 
 ## get GAMS version information for artifact, tag name and description
-GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR version | cut -f2 -d"=")
-GAMS_DISTRIB_MINOR_VERSION=$(grep ^GAMS_DISTRIB_MINOR version | cut -f2 -d"=")
-export GAMS_DISTRIB_VERSION=$GAMS_DISTRIB_MAJOR_VERSION.$GAMS_DISTRIB_MINOR_VERSION
+export GAMS_DISTRIB_MAJOR_VERSION=$(grep ^GAMS_DISTRIB_MAJOR version | cut -f2 -d"=")
 
 ## get changelog content
 CHANGELOG=""
@@ -46,12 +44,12 @@ if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} \
 --description "${CHANGELOG}
 
-This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
+This version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION}. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
 elif [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$ ]]; then
     github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --pre-release \
 --description "${CHANGELOG}
 
-This new version of GAMS Studio requires GAMS ${GAMS_DISTRIB_VERSION} or higher. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
+This version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION}. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
 fi
 
 ## upload artifacts to GitHub

@@ -344,11 +344,11 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
     QModelIndex maxVersionIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_MIN_VERSION);
     QModelIndex pathVarIndex = ui->EnvVarConfigTableView->model()->index(rowToBeInserted, EnvVarTableModel::COLUMN_PATH_VAR);
     ui->EnvVarConfigTableView->model()->setHeaderData(rowToBeInserted, Qt::Vertical,
-                                                    Qt::CheckState(Qt::Checked),
+                                                    Qt::CheckState(Qt::Unchecked),
                                                     Qt::CheckStateRole );
 
-    ui->EnvVarConfigTableView->model()->setData( insertKeyIndex, "", Qt::EditRole);
-    ui->EnvVarConfigTableView->model()->setData( insertValueIndex, "", Qt::EditRole);
+    ui->EnvVarConfigTableView->model()->setData( insertKeyIndex, "[NAME]", Qt::EditRole);
+    ui->EnvVarConfigTableView->model()->setData( insertValueIndex, "[VALUE]", Qt::EditRole);
     ui->EnvVarConfigTableView->model()->setData( minVersionIndex, "", Qt::EditRole);
     ui->EnvVarConfigTableView->model()->setData( maxVersionIndex, "", Qt::EditRole);
     ui->EnvVarConfigTableView->model()->setData( pathVarIndex, "", Qt::EditRole);

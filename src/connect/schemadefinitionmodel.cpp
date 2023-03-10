@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
 #include <QColor>
 #include <QApplication>
 #include <QPalette>
@@ -69,9 +68,12 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
         if (index.column()==(int)SchemaItemColumn::Type &&
             item->data((int)SchemaItemColumn::Type).toString().compare("anyof")==0)
             return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
+        else if (index.column()==(int)SchemaItemColumn::Type &&
+                 item->data((int)SchemaItemColumn::Type).toString().compare("oneof_schema")==0)
+                  return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
         else if (index.column()==(int)SchemaItemColumn::Field &&
                  item->data(index.column()).toString().compare("schema")==0)
-            return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
+                  return  QVariant::fromValue(Theme::color(Theme::Disable_Gray));
         else if (index.column()==(int)SchemaItemColumn::Field                      &&
                  item->data((int)SchemaItemColumn::Field).toString().contains("[") &&
                  item->data((int)SchemaItemColumn::Field).toString().contains("]")    )
@@ -275,6 +277,41 @@ void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
     }
 }
 
+QString SchemaDefinitionModel::getValue(ValueWrapper &value)
+{
+    if (value.type==SchemaValueType::Integer || value.type==SchemaValueType::Float) {
+        return QString::number(value.value.intval);
+    } else if (value.type==SchemaValueType::String) {
+              return QString::fromLatin1(value.value.stringval);
+    } else if (value.type==SchemaValueType::Boolean) {
+               return (value.value.boolval ? "true": "false");
+    }
+    return "";
+}
+
+QStringList SchemaDefinitionModel::gettAllAllowedValues(Schema *schemaHelper)
+{
+    QList<ValueWrapper> allvalues(schemaHelper->allowedValues);
+    QStringList valueStrList;
+    for(int i=0; i<allvalues.size(); ++i) {
+        QString value = getValue(allvalues[i]);
+        if (!value.isEmpty())
+            valueStrList << value;
+    }
+    QString minvalue = getValue(schemaHelper->min);
+    if (!minvalue.isEmpty()) {
+        valueStrList << minvalue << "..";
+    }
+    QString maxvalue = getValue(schemaHelper->max);
+    if (!maxvalue.isEmpty()) {
+        valueStrList << maxvalue;
+    } else {
+        if (schemaHelper->min.type==SchemaValueType::Integer)
+           valueStrList << QString::number(std::numeric_limits<int>::max());
+    }
+    return valueStrList;
+}
+
 void SchemaDefinitionModel::setupTreeItemModelData()
 {
     QList<QVariant> rootData;
@@ -325,17 +362,67 @@ void SchemaDefinitionModel::setupTreeItemModelData()
                 columnData << (s->required?"Y":"");
                 addTypeList(s->types, columnData);
                 addValue(s->defaultValue, columnData);
-                addValueList(s->allowedValues, columnData);
-                addValue(s->min, columnData);
+                QStringList strlist = gettAllAllowedValues(s);
+                if (strlist.isEmpty())
+                    columnData << "";
+                else
+                    columnData << strlist.join(",");
+                columnData << "";
                 columnData << QVariant(schemaKeys);
                 columnData << QVariant(!isAnyOfDefined);
                 SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, columnData, parents.last());
                 parents.last()->appendChild(item);
 
-                if (s->schemaDefined)
+                if (s->schemaDefined) {
                     setupSchemaTree(schemaName, key, schemaKeys, parents, schema);
+                }
             }
             schemaKeys.removeLast();
+        }
+    }
+}
+
+void SchemaDefinitionModel::setupOneofSchemaTree(const QString &schemaName, const QString &key, QStringList &schemaKeys, QList<SchemaDefinitionItem *> &parents, ConnectSchema *schema)
+{
+    Schema* schemaHelper = schema->getSchema(key);
+    if (schemaHelper) {
+        bool isAnyOfDefined = schema->isAnyOfDefined(key);
+        if (isAnyOfDefined) {
+            QList<QVariant> columnData;
+            schemaKeys << key;
+            columnData << key;
+            columnData << "";
+            columnData << "anyof";
+            columnData << "";
+            columnData << "";
+            columnData << "";
+            columnData << "";
+            columnData << QVariant(false);
+            SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, columnData, parents.last());
+            parents.last()->appendChild(item);
+
+            for (int i =0; i<schema->getNumberOfAnyOfDefined(key); ++i) {
+                QString keystr = QString("%1[%2]").arg(key).arg(i);
+                schemaKeys.removeLast();
+                schemaKeys << keystr;
+                setupAnyofSchemaTree(schemaName, keystr, schemaKeys, parents, schema);
+            }
+        } else {
+            QList<QVariant> listData;
+            listData << key.mid(key.lastIndexOf(":")+1);
+            listData << (schemaHelper->required?"Y":"");
+            addTypeList(schemaHelper->types, listData);
+            addValue(schemaHelper->defaultValue, listData);
+            QStringList strlist = gettAllAllowedValues(schemaHelper);
+            if (strlist.isEmpty())
+                listData << "";
+            else
+                listData << strlist.join(",");
+            listData << "";
+            listData << QVariant(schemaKeys);
+            listData << QVariant(!schema->isAnyOfDefined(key));
+            SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, listData, parents.last());
+            parents.last()->appendChild(item);
         }
     }
 }
@@ -346,12 +433,16 @@ void SchemaDefinitionModel::setupAnyofSchemaTree(const QString &schemaName, cons
     if (schemaHelper) {
         Schema* s = schema->getSchema(key);
         QList<QVariant> listData;
-        listData << key;
+        listData << (key.contains(":") ? key.mid(key.lastIndexOf(":")+1) : key) ;
         listData << (s->required?"Y":"");
         addTypeList(s->types, listData);
         addValue(s->defaultValue, listData);
-        addValueList(s->allowedValues, listData);
-        addValue(s->min, listData);
+        QStringList strlist = gettAllAllowedValues(schemaHelper);
+        if (strlist.isEmpty())
+            listData << "";
+        else
+            listData << strlist.join(",");
+        listData << "";
         listData << QVariant(schemaKeys);
         listData << QVariant(!schema->isAnyOfDefined(key));
         parents << parents.last()->child(parents.last()->childCount()-1);
@@ -377,8 +468,12 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         listData << (schemaHelper->required?"Y":"");;
         addTypeList(schemaHelper->types, listData);
         addValue(schemaHelper->defaultValue, listData);
-        addValueList(schemaHelper->allowedValues, listData);
-        addValue(schemaHelper->min, listData);
+        QStringList strlist = gettAllAllowedValues(schemaHelper);
+        if (strlist.isEmpty())
+            listData << "";
+        else
+            listData << strlist.join(",");
+        listData << "";
         listData << QVariant(schemaKeys);
         listData << QVariant(false);
         parents.last()->appendChild(new SchemaDefinitionItem(schemaName, listData, parents.last()));
@@ -387,23 +482,80 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         if (nextlevelList.size() > 0) {
             parents << parents.last()->child(parents.last()->childCount()-1);
             for (const QString& k :  nextlevelList) {
+                QStringList schemaDataKeys(schemaKeys);
                 schemaHelper = schema->getSchema(k);
                 QString schemaKeyStr = k.mid(prefix.length()+1);
                 if (k.endsWith(":-")) {
-                   setupSchemaTree(schemaName, k.left(k.lastIndexOf(":")), schemaKeys, parents, schema);
-               } else {
-                    schemaKeys << schemaKeyStr;
+                   setupSchemaTree(schemaName, k.left(k.lastIndexOf(":")), schemaDataKeys, parents, schema);
+                } else if (k.endsWith("]")) {
+                          schemaDataKeys << schemaKeyStr;
+                          QList<QVariant> data;
+                          data <<  schemaKeyStr;
+                          data << (schemaHelper->required?"Y":"");
+                          QString pattern = "^\\[\\d\\d?\\]";
+                          QRegExp rx(pattern);
+                          if (rx.exactMatch(schemaKeyStr))
+                              data << "oneof_schema";
+                          else
+                              addTypeList(schemaHelper->types, data);
+                          addValue(schemaHelper->defaultValue, data);
+                          QStringList strlist = gettAllAllowedValues(schemaHelper);
+                          if (strlist.isEmpty())
+                              data << "";
+                          else
+                              data << strlist.join(",");
+                          data << "";
+                          data << QVariant(schemaDataKeys);
+                          data << QVariant(!schema->isAnyOfDefined(key));
+                          parents.last()->appendChild(new SchemaDefinitionItem(schemaName, data, parents.last()));
+
+                          QString anyofPrefix = "";
+                          foreach(const QString& kk, schema->getNextLevelKeyList(k)) {
+                              QStringList dataKeys(schemaDataKeys);
+                              parents << parents.last()->child(parents.last()->childCount()-1);
+                              if (schema->isAnyOfDefined(kk)) {
+                                  anyofPrefix = kk;
+                                  QList<QVariant> columnData;
+                                  dataKeys << kk.mid(kk.lastIndexOf(":")+1);
+                                  columnData << kk.mid(kk.lastIndexOf(":")+1);
+                                  columnData << "";
+                                  columnData << "anyof";
+                                  columnData << "";
+                                  columnData << "";
+                                  columnData << "";
+                                  columnData << QVariant(kk);
+                                  columnData << QVariant(false);
+                                  SchemaDefinitionItem* item = new SchemaDefinitionItem(schemaName, columnData, parents.last());
+                                  parents.last()->appendChild(item);
+
+                                  for (int i =0; i<schema->getNumberOfAnyOfDefined(kk); ++i) {
+                                      QString keystr = QString("%1[%2]").arg(kk).arg(i);
+                                      dataKeys.removeLast();
+                                      dataKeys << keystr.split(":").last(); //keystr;
+                                      setupAnyofSchemaTree(schemaName, keystr, dataKeys, parents, schema);
+                                  }
+                              } else if (!kk.startsWith(anyofPrefix)) {
+                                  dataKeys << kk.split(":").last();
+                                  setupOneofSchemaTree(schemaName, kk, dataKeys, parents, schema);
+                              }
+                              parents.pop_back();
+                          }
+                } else {
+                    schemaDataKeys << schemaKeyStr;
                     QList<QVariant> data;
                     data <<  schemaKeyStr;
                     data << (schemaHelper->required?"Y":"");;
                     addTypeList(schemaHelper->types, data);
                     addValue(schemaHelper->defaultValue, data);
-                    addValueList(schemaHelper->allowedValues, data);
-                    addValue(schemaHelper->min, data);
-                    data << QVariant(schemaKeys);
+                    QStringList strlist = gettAllAllowedValues(schemaHelper);
+                    if (strlist.isEmpty())
+                        data << "";
+                    else
+                        data << strlist.join(",");
+                    data << "";
+                    data << QVariant(schemaDataKeys);
                     data << QVariant(!schema->isAnyOfDefined(key));
                     parents.last()->appendChild(new SchemaDefinitionItem(schemaName, data, parents.last()));
-                    schemaKeys.removeLast();
                }
             }
             parents.pop_back();

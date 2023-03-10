@@ -32,12 +32,12 @@ namespace studio {
 namespace gdxdiffdialog {
 
 GdxDiffDialog::GdxDiffDialog(QWidget *parent) :
-    QDialog(parent),
+    QDialog(parent, Qt::Tool),
     ui(new Ui::GdxDiffDialog),
     mProc(new GdxDiffProcess(this))
 {
     ui->setupUi(this);
-    setWindowFlags(this->windowFlags() & ~Qt::WindowContextHelpButtonHint);
+    setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
     ui->lineEdit_4->setValidator(new QDoubleValidator());
     ui->lineEdit_5->setValidator(new QDoubleValidator());

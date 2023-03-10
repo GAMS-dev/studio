@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
 #include "connectschema.h"
 #include "exception.h"
 
@@ -106,6 +105,31 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                       }
                     }
         } // else  'schema' with niether 'type:list' nor 'type:dict' ?
+    } else if (node["oneof_schema"] ? true : false) {
+        if (node["oneof_schema"].Type()==YAML::NodeType::Sequence) {
+            ++level;
+            for(size_t i=0; i<node["oneof_schema"].size(); i++) {
+               QString str = QString("%1:[%2]").arg(key).arg(i);
+               if (node["oneof_schema"][i].Type()==YAML::NodeType::Map) {
+                   createSchemaHelper(str, node["oneof_schema"][i], level);
+                  for (YAML::const_iterator it=node["oneof_schema"][i].begin(); it != node["oneof_schema"][i].end(); ++it) {
+                      if (it->second.Type() == YAML::NodeType::Map) {
+
+                          QString nodestr = str + ":" + QString::fromStdString( it->first.as<std::string>() );
+                          createSchemaHelper(nodestr, it->second, level+1);
+                      }
+                 }
+               }
+            }
+        }
+    } else  if (node["anyof"] ? true : false) {
+        if (node["anyof"].Type()==YAML::NodeType::Sequence) {
+            for(size_t i=0; i<node["anyof"].size(); i++) {
+               QString str = QString("%1[%2]").arg(key).arg(i);
+               createSchemaHelper(str, node["anyof"][i], 1);
+            }
+        }
+
     }
 }
 
@@ -152,7 +176,6 @@ void ConnectSchema::loadFromString(const QString &input)
         YAML::Node node = it->second;
         createSchemaHelper(key, it->second, 1);
     }
-
 }
 
 QStringList ConnectSchema::getlKeyList() const
@@ -177,8 +200,9 @@ const QStringList ConnectSchema::getFirstLevelKeyList() const
 QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
 {
     QStringList keyList;
+    int size = key.split(":").size();
     for(const QString& k : mOrderedKeyList) {
-        if (k.startsWith(key+":"))
+        if (k.startsWith(key+":") && k.split(":").size()== size+1)
             keyList << k;
     }
     return keyList;
@@ -232,6 +256,35 @@ int ConnectSchema::getNumberOfAnyOfDefined(const QString &key) const
 bool ConnectSchema::isAnyOfDefined(const QString &key) const
 {
     return (getNumberOfAnyOfDefined(key) > 0);
+}
+
+QStringList ConnectSchema::getAllOneOfSchemaKeys(const QString &key) const
+{
+    QStringList keyslist;
+    QString pattern = "^"+key+":-:\\[\\d\\d?\\]";
+    QRegExp rx(pattern);
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        if (rx.exactMatch(it.key()) && !keyslist.contains(it.key()))
+            keyslist << it.key();
+    }
+    return keyslist;
+}
+
+int ConnectSchema::getNumberOfOneOfSchemaDefined(const QString &key) const
+{
+    int num=0;
+    QString keystr;
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        keystr = (!key.endsWith("-") ? QString("%1:-:[%2]").arg(key).arg(num) : QString("%1:[%2]").arg(key).arg(num));
+        if (keystr.compare(it.key())==0)
+            ++num;
+    }
+    return num;
+}
+
+bool ConnectSchema::isOneOfSchemaDefined(const QString &key) const
+{
+    return (getNumberOfOneOfSchemaDefined(key) > 0);
 }
 
 Schema *ConnectSchema::getSchema(const QString &key) const
@@ -314,7 +367,7 @@ ValueWrapper ConnectSchema::getMin(const QString &key) const
 ValueWrapper ConnectSchema::getMax(const QString &key) const
 {
     if (contains(key)) {
-        return mSchemaHelper[key]->min; // [key]->max;
+        return mSchemaHelper[key]->max; // [key]->max;
     } else {
         return ValueWrapper();
     }

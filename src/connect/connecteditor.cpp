@@ -17,7 +17,6 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#include <QDebug>
 #include <QStandardItemModel>
 #include <QBitmap>
 
@@ -111,9 +110,9 @@ bool ConnectEditor::init(bool quiet)
 
     ui->dataTreeView->setModel( mDataModel );
     ConnectDataValueDelegate* valuedelegate = new ConnectDataValueDelegate(ui->dataTreeView);
-    ui->dataTreeView->setItemDelegateForColumn(1, valuedelegate );
+    ui->dataTreeView->setItemDelegateForColumn((int)DataItemColumn::Value, valuedelegate );
 
-    ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate( ui->dataTreeView);
+    ConnectDataKeyDelegate* keydelegate = new ConnectDataKeyDelegate(mConnect, ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Key, keydelegate);
     ConnectDataActionDelegate* actiondelegate = new ConnectDataActionDelegate( ui->dataTreeView);
     ui->dataTreeView->setItemDelegateForColumn( (int)DataItemColumn::Delete, actiondelegate);
@@ -176,6 +175,7 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Default, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
+    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::min, true );
     headerRegister(ui->helpTreeView->header());
 
     ui->onlyRequiredAttribute->setCheckState(Qt::Unchecked);
@@ -183,6 +183,7 @@ bool ConnectEditor::init(bool quiet)
 
     connect(keydelegate, &ConnectDataKeyDelegate::requestSchemaHelp, this, &ConnectEditor::schemaHelpRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested, Qt::UniqueConnection);
+    connect(keydelegate, &ConnectDataKeyDelegate::requestInsertSchemaItem, this, &ConnectEditor::appendSchemaItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
 
     connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
@@ -369,6 +370,30 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
         }
     } else if ((int)DataCheckState::MapAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
               mDataModel->appendMapElement(index);
+    }
+}
+
+void ConnectEditor::appendSchemaItemRequested(const int schemaNumber, const QModelIndex &index)
+{
+    QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+    if ((int)DataCheckState::SchemaAppend!=checkstate_idx.data(Qt::DisplayRole).toInt())
+        return;
+
+    if (index.parent().isValid() &&
+        index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
+        return;
+
+    QModelIndex values_idx = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
+    QStringList schema = values_idx.data().toString().split(":");
+    QString schemaname = "";
+    schema << "["+QString::number(schemaNumber)+"]";
+    ConnectData* data = mConnect->createDataHolderFromSchema(schema , (ui->onlyRequiredAttribute->checkState()==Qt::Checked));
+    if (!schema.isEmpty()) {
+        schemaname = schema.first();
+        schema.removeFirst();
+    }
+    if (data->getRootNode().Type()==YAML::NodeType::Sequence) {
+        mDataModel->insertLastListElement(schemaname, schema, data, index.parent());
     }
 }
 

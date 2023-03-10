@@ -52,12 +52,37 @@ void ConnectData::loadFromString(const QString &input)
 void ConnectData::unload(const QString &outputFileName)
 {
     YAML::Emitter emitter;
-    emitter << mRootNode;
+    emitter.SetNullFormat(YAML::EMITTER_MANIP::LowerNull);
+    format(emitter, mRootNode);
+    emitter << YAML::Newline;
 
     std::ofstream fout(outputFileName.toStdString());
-    fout << emitter.c_str() << std::endl;
+    fout << emitter.c_str();
 }
 
+void ConnectData::format(YAML::Emitter& emitter, const YAML::Node& node) {
+    if (node.Type()==YAML::NodeType::Map) {
+        emitter << YAML::BeginMap;
+        for (YAML::const_iterator it = node.begin(); it != node.end(); ++it) {
+            emitter << YAML::Key << it->first.as<std::string>();
+            format(emitter, it->second);
+        }
+        emitter << YAML::EndMap;
+    } else if (node.Type()==YAML::NodeType::Sequence) {
+               emitter << YAML::BeginSeq;
+               for (size_t i=0; i<node.size(); ++i) {
+                   format(emitter, node[i]);
+               }
+               emitter << YAML::EndSeq;
+    } else if (node.Type()==YAML::NodeType::Scalar) {
+              QString str = QString::fromStdString(node.as<std::string>());
+              if (str.contains("\n"))
+                 emitter << YAML::Literal;
+              emitter << node.as<std::string>();
+    } else /*if (node.Type()==YAML::NodeType::Null)*/ {
+               emitter << node;
+    }
+}
 
 }// namespace connect
 } // namespace studio

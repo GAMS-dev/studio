@@ -20,7 +20,6 @@
 #include "treecellresizer.h"
 #include <QMouseEvent>
 #include <QHeaderView>
-#include <QDebug>
 
 namespace gams {
 namespace studio {

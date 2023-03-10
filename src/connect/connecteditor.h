@@ -68,6 +68,7 @@ private slots:
 
     void schemaHelpRequested(const QString &schemaName);
     void appendItemRequested(const QModelIndex &index);
+    void appendSchemaItemRequested(const int schemaNumber, const QModelIndex &index);
     void deleteDataItemRequested(const QModelIndex &index);
     void moveUpDatatItemRequested(const QModelIndex &index);
     void moveDownDatatItemRequested(const QModelIndex &index);

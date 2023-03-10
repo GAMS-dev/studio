@@ -24,8 +24,6 @@
 #include <QStringListModel>
 #include <QKeyEvent>
 
-#include <QDebug>
-
 #include "connectdatavaluedelegate.h"
 #include "connectdatamodel.h"
 
@@ -85,9 +83,11 @@ void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex 
 void ConnectDataValueDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
-    emit commitData(lineEdit);
-    emit closeEditor(lineEdit);
-    emit modificationChanged(true);
+    if (lineEdit && !mIsLastEditorClosed) {
+        emit commitData(lineEdit);
+        emit closeEditor(lineEdit);
+        emit modificationChanged(true);
+    }
     mIsLastEditorClosed = true;
 }
 
@@ -95,7 +95,7 @@ void ConnectDataValueDelegate::setModelData(QWidget *editor, QAbstractItemModel 
 {
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        model->setData( index, lineEdit->text() ) ;
+        model->setData( index, lineEdit->text(), Qt::EditRole ) ;
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
@@ -120,6 +120,7 @@ bool ConnectDataValueDelegate::eventFilter(QObject *editor, QEvent *event)
        QLineEdit* lineEdit = static_cast<QLineEdit *>(editor);
        QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
+             mIsLastEditorClosed = true;
              emit closeEditor(lineEdit);
              return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
