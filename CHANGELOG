@@ -3,6 +3,7 @@ Version 1.13.4 *
 - fixed crash on creating an opt-file via context menu in the Project Explorer
 - fixed wrong opt-file extension, which prevented to save the opt-file
 - fixed value edit in GAMS Configuration Editor, allowed to delete minVersion and maxVersion values
+- fixed GdxDiffDialog crash after opening a input file
 
 Version 1.13.3
 ==================
