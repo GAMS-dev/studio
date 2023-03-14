@@ -1498,7 +1498,8 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
 
     if (projectOnly) {
         QFileInfo fi(filePath);
-        mProjectRepo.createProject(filePath, fi.path(), "", onExist_AddNr);
+        PExProjectNode *project = mProjectRepo.createProject(filePath, fi.path(), "", onExist_AddNr);
+        openFileNode(project);
     } else if (!projects.isEmpty()) {
         // add file to each selected project
         for (PExProjectNode *project: projects)
