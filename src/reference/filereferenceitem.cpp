@@ -27,14 +27,10 @@ FileReferenceItem::FileReferenceItem(const QList<QVariant> &data, FileReferenceI
     mItemData(data),
     mParentItem(parentItem)
 {
-
 }
 
 FileReferenceItem::~FileReferenceItem()
 {
-    for(int i=0; i<childCount(); ++i)
-        removeChildren(i, 1);
-    qDeleteAll(mChildItems);
 }
 
 void FileReferenceItem::appendChild(FileReferenceItem *child)
@@ -106,22 +102,6 @@ void FileReferenceItem::insertChild(int row, FileReferenceItem *item)
 {
     item->setParent(this);
     mChildItems.insert(row, item);
-}
-
-bool FileReferenceItem::removeChildren(int position, int count)
-{
-    if (position < 0 || position + count > mChildItems.size())
-        return false;
-
-    for (int row = position+count-1; row >=position; --row) {
-        FileReferenceItem* item = mChildItems.takeAt(row);
-        for (int i = item->childCount(); i>=0; --i) {
-            item->removeChildren(i, 1);
-        }
-        delete item;
-    }
-
-    return true;
 }
 
 } // namespace reference

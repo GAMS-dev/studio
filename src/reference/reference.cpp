@@ -86,6 +86,16 @@ SymbolReferenceItem *Reference::findReferenceFromName(const QString &symbolName)
     return nullptr;
 }
 
+FileReferenceItem* Reference::getFileUsedReference(FileReferenceId id)
+{
+    return mFileUsedReference[id];
+}
+
+int Reference::getNumberOfFileUsed() const
+{
+    return (mFileUsedReference.size()<=0 ? mFileUsed.size() : mFileUsedReference.size()-1);
+}
+
 bool Reference::contains(SymbolId id) const
 {
     return mReference.contains(id);
@@ -207,7 +217,6 @@ bool Reference::parseFile(QString referenceFile)
         mLastErrorLine=lineread;
         return false;
     }
-
     // start of symboltable
     if (recordList.size() < 2)  { // only the first two elements are used
         mLastErrorLine=lineread;
@@ -217,10 +226,10 @@ bool Reference::parseFile(QString referenceFile)
     int size = recordList.first().toInt();
     int expectedLineread = size+lineread;
     while (!in.atEnd()) {
-        recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
         lineread++;
         if (lineread > expectedLineread)  // ignore the rest of the file contents
             break;
+        recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
             mLastErrorLine=lineread;
             return false;
@@ -251,15 +260,76 @@ bool Reference::parseFile(QString referenceFile)
         ref->setNumberOfElements(numberOfElements.toInt());
         QStringList text;
         // last element (explanatory text) may contains whitespaces
-        for (int idx=6+dimension.toInt(); idx< recordList.size(); idx++)
-            text << recordList.at(idx);
+        for (int i=6+dimension.toInt(); i< recordList.size(); i++)
+            text << recordList.at(i);
         ref->setExplanatoryText(text.join(' '));
     }
+    if (lineread > expectedLineread && !in.atEnd()) {
+        recordList =  in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
+        int id = recordList.first().toInt();
+        if (id != 0) {
+            mLastErrorLine=lineread;
+            return false;
+        }
+        QList<QVariant> rootdata;
+        rootdata << QVariant(id) << QVariant() << QVariant()
+                 << QVariant()   << QVariant();
+        FileReferenceItem* item = new FileReferenceItem(rootdata);
+        mFileUsedReference[id] = item;
 
-     if (idx.toInt()!=size) {
-        mLastErrorLine=lineread;
-        return false;
+        recordList.removeFirst();
+        size = recordList.first().toInt();
+        expectedLineread += size;
+        while (!in.atEnd()) {
+            if (lineread > expectedLineread)
+                break;
+            recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
+            if (recordList.size() < 6)
+                break;
+            id = recordList.first().toInt();
+            QString globalLineno   = recordList.at(1);
+            QString referenceType  = recordList.at(2);
+            QString parentIdx      = recordList.at(3);
+            QString localLineumber = recordList.at(4);
+            QString location       = recordList.at(5);
+            for (int i=6; i<recordList.size(); ++i) {
+                location += " ";
+                location += recordList.at(i);
+            }
+            QList<QVariant> data;
+            data << QVariant( location )   << QVariant(referenceType)
+                 << QVariant(globalLineno) << QVariant(localLineumber) << QVariant(id);
+            int parentId = parentIdx.toInt();
+            if (!mFileUsedReference.contains(parentId))
+                break;
+            FileReferenceItem* parentItem = mFileUsedReference[parentId];
+            item = new FileReferenceItem(data, parentItem);
+            parentItem->appendChild( item );
+            mFileUsedReference[id]  = item;
+            lineread++;
+        }
      }
+     if (mFileUsedReference.size()==0 && mFileUsed.size()>0) {
+         int id = 0;
+         QList<QVariant> rootdata;
+         rootdata << QVariant(id) << QVariant() << QVariant()
+                  << QVariant()   << QVariant();
+         FileReferenceItem* rootitem = new FileReferenceItem(rootdata);
+         mFileUsedReference[id] = rootitem;
+         for(int i=0; i<mFileUsed.size(); ++i) {
+             id = i+1;
+             QList<QVariant> data;
+             data << QVariant( mFileUsed.at(i) ) << QVariant()
+                  << QVariant() << QVariant() << QVariant(id);
+             FileReferenceItem* item = new FileReferenceItem(data, rootitem);
+             rootitem->appendChild( item );
+             mFileUsedReference[id]  = item;
+         }
+     }
+//     if (idx.toInt()!=size) {
+//        mLastErrorLine=lineread;
+//        return false;
+//     }
      QMap<SymbolId, SymbolReferenceItem*>::const_iterator it = mReference.constBegin();
      while (it != mReference.constEnd()) {
          SymbolReferenceItem* ref = it.value();
@@ -351,6 +421,9 @@ void Reference::clear()
     mFileUsed.clear();
 
     mSymbolNameMap.clear();
+
+    qDeleteAll(mFileUsedReference);
+    mFileUsedReference.clear();
 
     qDeleteAll(mReference);
     mReference.clear();

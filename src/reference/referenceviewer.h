@@ -37,6 +37,12 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+enum class ReferenceViewerType {
+    undefined = 0,
+    Symbol,
+    FileUsed
+};
+
 class Reference;
 class ReferenceTabStyle;
 class ReferenceViewer : public AbstractView

@@ -33,7 +33,7 @@ class FileUsedTreeModel : public QAbstractItemModel
 {
     Q_OBJECT
 public:
-    explicit FileUsedTreeModel(Reference* ref, QObject *parent = nullptr);
+    explicit FileUsedTreeModel(QObject *parent = nullptr);
     ~FileUsedTreeModel() override;
 
     QVariant data(const QModelIndex& index, int role) const override;
@@ -52,7 +52,20 @@ public:
 
     FileReferenceItem *getItem(const QModelIndex &index) const;
 
+    void resetModel();
+    void initModel(Reference* ref);
+    bool isModelLoaded();
+
 protected:
+    void setupTreeItemModelData();
+
+    static QList<QVariant> header() {
+        QList<QVariant> header;
+        header << QVariant("Location")    << QVariant("Type")
+               << QVariant("Global Line") << QVariant("Reference Line") << QVariant("ID");
+        return header;
+    };
+
     Reference*         mReference;
     FileReferenceItem* mRootItem;
 };

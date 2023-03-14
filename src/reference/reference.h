@@ -25,6 +25,7 @@
 #include <QDir>
 
 #include "referencedatatype.h"
+#include "filereferenceitem.h"
 #include "symbolreferenceitem.h"
 
 namespace gams {
@@ -83,6 +84,18 @@ public:
     /// \return <c>SymbolReferenceItem of the symbol</c> if found; otherwise <c>nullptr</c>.
     ///
     SymbolReferenceItem* findReferenceFromName(const QString &symbolName);
+
+    ///
+    /// \brief Get the FileReferenceItem by id.
+    /// \param File reference id.
+    /// \return <c>FileReferenceItem.
+    ///
+    FileReferenceItem* getFileUsedReference(FileReferenceId id);
+
+    ///
+    /// \brief Get the number of file reference in the reference object.
+    /// \return Returns the number of file references.
+    int getNumberOfFileUsed() const;
 
     ///
     /// \brief Checks if symbol of the given id exists in the reference object.
@@ -203,7 +216,9 @@ private:
     QList<SymbolReferenceItem *> mUnusedReference;
 
     QMap<QString, SymbolId> mSymbolNameMap;
+    QMap<FileReferenceId, FileReferenceItem*> mFileUsedReference;
     QMap<SymbolId, SymbolReferenceItem*> mReference;
+
     static QRegularExpression mRexSplit;
 };
 

@@ -26,6 +26,7 @@
 
 #include "referenceviewer.h"
 #include "ui_referenceviewer.h"
+#include "filereferencewidget.h"
 #include "referencetabstyle.h"
 #include "symbolreferenceitem.h"
 #include "symbolreferencewidget.h"
@@ -35,6 +36,32 @@
 namespace gams {
 namespace studio {
 namespace reference {
+
+inline static SymbolReferenceWidget* initViewerType(SymbolReferenceWidget* w) {
+    if(w) w->setProperty("ViewerType", int(ReferenceViewerType::Symbol));
+    return w;
+}
+
+inline static FileReferenceWidget* initViewerType(FileReferenceWidget* w) {
+    if(w) w->setProperty("ViewerType", int(ReferenceViewerType::FileUsed));
+    return w;
+}
+
+inline static ReferenceViewerType viewerType(QWidget* w) {
+    if (!w) return ReferenceViewerType::undefined;
+    QVariant v = w ? w->property("ViewerType") : QVariant();
+    return (v.isValid() ? static_cast<ReferenceViewerType>(v.toInt()) : ReferenceViewerType::undefined);
+}
+
+inline static SymbolReferenceWidget* toSymbolReferenceWidget(QWidget* w) {
+    ReferenceViewerType t = viewerType(w);
+    return (t == ReferenceViewerType::Symbol) ? static_cast<SymbolReferenceWidget*>(w) : nullptr;
+}
+
+inline static FileReferenceWidget* toFileUsedReferenceWidget(QWidget* w) {
+    ReferenceViewerType t = viewerType(w);
+    return (t == ReferenceViewerType::FileUsed) ? static_cast<FileReferenceWidget*>(w) : nullptr;
+}
 
 ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidget *parent) :
     AbstractView(parent),
@@ -56,52 +83,52 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QTextCodec* codec, QWidg
 
     QList<QHeaderView*> headers;
 
-    SymbolReferenceWidget* allSymbolsRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this);
+    SymbolReferenceWidget* allSymbolsRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unknown, this));
     ui->tabWidget->addTab(allSymbolsRefWidget, QString("All Symbols (%1)").arg( problemLoaded ? "?" : QString::number(mReference->size())) );
     headers << allSymbolsRefWidget->headers();
 
-    SymbolReferenceWidget* setRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Set, this);
+    SymbolReferenceWidget* setRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Set, this));
     ui->tabWidget->addTab(setRefWidget, QString("Set (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Set).size())) );
     headers << setRefWidget->headers();
 
-    SymbolReferenceWidget* acronymRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Acronym, this);
+    SymbolReferenceWidget* acronymRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Acronym, this));
     ui->tabWidget->addTab(acronymRefWidget, QString("Acronym (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Acronym).size())) );
     headers << acronymRefWidget->headers();
 
-    SymbolReferenceWidget* varRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Variable, this);
+    SymbolReferenceWidget* varRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Variable, this));
     ui->tabWidget->addTab(varRefWidget, QString("Variable (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Variable).size()) ));
     headers << varRefWidget->headers();
 
-    SymbolReferenceWidget* parRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Parameter, this);
+    SymbolReferenceWidget* parRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Parameter, this));
     ui->tabWidget->addTab(parRefWidget, QString("Parameter (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Parameter).size())) );
     headers << parRefWidget->headers();
 
-    SymbolReferenceWidget* equRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Equation, this);
+    SymbolReferenceWidget* equRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Equation, this));
     ui->tabWidget->addTab(equRefWidget, QString("Equation (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Equation).size())) );
     headers << equRefWidget->headers();
 
-    SymbolReferenceWidget* modelRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Model, this);
+    SymbolReferenceWidget* modelRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Model, this));
     ui->tabWidget->addTab(modelRefWidget, QString("Model (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Model).size())) );
     headers << modelRefWidget->headers();
 
-    SymbolReferenceWidget* fileRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::File, this);
+    SymbolReferenceWidget* fileRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::File, this));
     ui->tabWidget->addTab(fileRefWidget, QString("File (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::File).size())) );
     headers << fileRefWidget->headers();
 
-    SymbolReferenceWidget* macroRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Macro, this);
+    SymbolReferenceWidget* macroRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Macro, this));
     ui->tabWidget->addTab(macroRefWidget, QString("Macro (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Macro).size())) );
     headers << macroRefWidget->headers();
 
-    SymbolReferenceWidget* functRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this);
+    SymbolReferenceWidget* functRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Funct, this));
     ui->tabWidget->addTab(functRefWidget, QString("Function (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Funct).size())) );
     headers << functRefWidget->headers();
 
-    SymbolReferenceWidget* unusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unused, this);
+    SymbolReferenceWidget* unusedRefWidget = initViewerType(new SymbolReferenceWidget(mReference.data(), SymbolDataType::Unused, this));
     ui->tabWidget->addTab(unusedRefWidget, QString("Unused (%1)").arg( problemLoaded ? "?" : QString::number(mReference->findReferenceFromType(SymbolDataType::Unused).size())) );
     headers << unusedRefWidget->headers();
 
-    SymbolReferenceWidget* fileusedRefWidget = new SymbolReferenceWidget(mReference.data(), SymbolDataType::FileUsed, this);
-    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getFileUsed().size())) );
+    FileReferenceWidget* fileusedRefWidget = initViewerType(new FileReferenceWidget(mReference.data(), this));
+    ui->tabWidget->addTab(fileusedRefWidget, QString("File Used (%1)").arg( problemLoaded ? "?" : QString::number(mReference->getNumberOfFileUsed())) );
     headers << fileusedRefWidget->headers();
 
     ui->tabWidget->setCurrentIndex(0);
@@ -153,18 +180,30 @@ void ReferenceViewer::on_referenceFileChanged(QTextCodec* codec)
 
 void ReferenceViewer::on_tabBarClicked(int index)
 {
-    SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(index));
-    if (refWidget && !refWidget->isModelLoaded())
+    SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(index));
+    if (refWidget && !refWidget->isModelLoaded()) {
         refWidget->initModel();
+    } else {
+        FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(index));
+        if (fileUsedWidget && !fileUsedWidget->isModelLoaded()) {
+            fileUsedWidget->initModel();
+        }
+    }
 }
 
 void ReferenceViewer::updateView(bool status)
 {
     for(int i=0; i<ui->tabWidget->count(); i++) {
-        SymbolReferenceWidget* refWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->widget(i));
+        SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(i));
         if (refWidget) {
             refWidget->initModel(mReference.data());
             refWidget->resetModel();
+        } else {
+            FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(i));
+            if (fileUsedWidget) {
+                fileUsedWidget->initModel(mReference.data());
+                fileUsedWidget->resetModel();
+            }
         }
     }
     if (status) {

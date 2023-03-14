@@ -28,6 +28,14 @@ namespace reference {
 
 typedef int FileReferenceId;
 
+enum class FileReferenceItemColumn {
+    Location         = 0,
+    Type             = 1,
+    GlobalLineNumber = 2,
+    LocalLineNumber  = 3,
+    Id               = 4
+};
+
 class FileReferenceItem
 {
 public:
@@ -53,7 +61,6 @@ public:
 
     void setParent(FileReferenceItem* parent);
     void insertChild(int row, FileReferenceItem* item);
-    bool removeChildren(int position, int count);
 
 private:
     QList<QVariant>           mItemData;

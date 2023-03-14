@@ -24,28 +24,33 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-FileUsedTreeModel::FileUsedTreeModel(Reference* ref, QObject *parent) :
-    QAbstractItemModel(parent), mReference(ref)
+FileUsedTreeModel::FileUsedTreeModel(QObject *parent) :
+    QAbstractItemModel(parent), mReference(nullptr)
 {
-    QList<QVariant> rootData;
-    rootData << "Location"  << "Type" << "Line" ;
-    mRootItem = new FileReferenceItem(rootData, 0);
+    setupTreeItemModelData();
 }
 
 FileUsedTreeModel::~FileUsedTreeModel()
 {
-    if (mRootItem)
-        delete mRootItem;
 }
 
 QVariant FileUsedTreeModel::data(const QModelIndex &index, int role) const
 {
+    if (!mReference || mReference->isEmpty())
+        return QVariant();
+
     if (!index.isValid())
         return QVariant();
 
     switch (role) {
-    case Qt::EditRole: { }
-    case Qt::DisplayRole: { }
+    case Qt::TextAlignmentRole: {
+        return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+    }
+    case Qt::DisplayRole: {
+        FileReferenceItem* item = static_cast<FileReferenceItem*>(index.internalPointer());
+
+        return item->data(index.column());
+    }
     case Qt::ForegroundRole: { }
     case Qt::BackgroundRole: { }
 //    case Qt::UserRole: { }
@@ -64,8 +69,9 @@ Qt::ItemFlags FileUsedTreeModel::flags(const QModelIndex &index) const
 
 QVariant FileUsedTreeModel::headerData(int section, Qt::Orientation orientation, int role) const
 {
-    if (orientation == Qt::Horizontal && role == Qt::DisplayRole)
-        return mRootItem->data(section);
+    if (orientation == Qt::Horizontal && role == Qt::DisplayRole) {
+        return header().at(section);
+    }
 
     return QVariant();
 }
@@ -121,7 +127,7 @@ int FileUsedTreeModel::columnCount(const QModelIndex &parent) const
     if (parent.isValid())
         return static_cast<FileReferenceItem*>(parent.internalPointer())->columnCount();
     else
-        return mRootItem->columnCount();
+        return header().size();
 }
 
 FileReferenceItem *FileUsedTreeModel::getItem(const QModelIndex &index) const
@@ -132,6 +138,39 @@ FileReferenceItem *FileUsedTreeModel::getItem(const QModelIndex &index) const
             return item;
     }
     return mRootItem;
+}
+
+void FileUsedTreeModel::resetModel()
+{
+    beginResetModel();
+    if (rowCount() > 0) {
+        removeRows(0, rowCount(), QModelIndex());
+    }
+    setupTreeItemModelData();
+    endResetModel();
+}
+
+void FileUsedTreeModel::initModel(Reference *ref)
+{
+    mReference = ref;
+    setupTreeItemModelData();
+    resetModel();
+}
+
+bool FileUsedTreeModel::isModelLoaded()
+{
+    return (mReference!=nullptr);
+}
+
+void FileUsedTreeModel::setupTreeItemModelData()
+{
+    if (!isModelLoaded())
+        return;
+
+    if (mReference->getNumberOfFileUsed() > 0) {
+        mRootItem = mReference->getFileUsedReference(0);
+    }
+
 }
 
 } // namespace reference

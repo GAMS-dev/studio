@@ -24,6 +24,7 @@
 
 #include "reference.h"
 #include "referenceviewer.h"
+#include "fileusedtreemodel.h"
 
 namespace Ui {
 class FileReferenceWidget;
@@ -33,16 +34,30 @@ namespace gams {
 namespace studio {
 namespace reference {
 
+class ReferenceViewer;
+
 class FileReferenceWidget : public QWidget
 {
     Q_OBJECT
 
 public:
     explicit FileReferenceWidget(Reference* ref, ReferenceViewer *parent = nullptr);
-    ~FileReferenceWidget();
+    ~FileReferenceWidget() override;
+    QList<QHeaderView*> headers();
+    bool isModelLoaded() const;
+
+public slots:
+    void resetModel();
+    void initModel();
+    void initModel(gams::studio::reference::Reference *ref);
+
+    void expandResetModel();
+    void jumpToFile(const QModelIndex &index);
+    void jumpToReferenceItem(const QModelIndex &index);
 
 private:
     Ui::FileReferenceWidget *ui;
+    FileUsedTreeModel* mFileUsedModel;
 
     Reference* mReference;
     ReferenceViewer* mReferenceViewer;
