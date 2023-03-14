@@ -179,7 +179,7 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(8, QString("Macro (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Macro).size()));
         ui->tabWidget->setTabText(9, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
         ui->tabWidget->setTabText(10, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
-        ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getFileUsed().size()));
+        ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed()));
     } else {
         ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
         ui->tabWidget->setTabText(1, QString("Set (?)"));
