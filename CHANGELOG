@@ -1,6 +1,7 @@
 Version 1.13.5 *
 ==================
 - open project editor after creating a project with "New Project..."
+- fixed duplicated tab in reference file viewer when reloading a reference file
 
 Version 1.13.4
 ==================
