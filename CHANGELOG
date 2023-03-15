@@ -3,6 +3,11 @@ Version 1.14.0 *
 - Add new GDX Viewer setting to control decimal separator used when copying data
 - added GAMS Engine authorization by token
 
+Version 1.13.5 *
+==================
+- open project editor after creating a project with "New Project..."
+- fixed duplicated tab in reference file viewer when reloading a reference file
+
 Version 1.13.4
 ==================
 - added support for filter connect agent to Studio connect editor
