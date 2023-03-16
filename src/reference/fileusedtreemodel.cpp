@@ -51,11 +51,6 @@ QVariant FileUsedTreeModel::data(const QModelIndex &index, int role) const
 
         return item->data(index.column());
     }
-    case Qt::ForegroundRole: { }
-    case Qt::BackgroundRole: { }
-//    case Qt::UserRole: { }
-    case Qt::ToolTipRole: { }
-    case Qt::DecorationRole: { }
     default:
          break;
     }

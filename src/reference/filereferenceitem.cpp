@@ -50,11 +50,6 @@ int FileReferenceItem::childNumber() const
     return 0;
 }
 
-int FileReferenceItem::id() const
-{
-    return mItemData.first().toInt();
-}
-
 FileReferenceItem *FileReferenceItem::parent()
 {
      return mParentItem;

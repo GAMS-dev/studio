@@ -46,9 +46,6 @@ public:
 
     FileReferenceItem* child(int row);
     int childNumber() const;
-    int id() const;
-    int globalLineNumber() const;
-    QString location() const;
 
     FileReferenceItem* parent();
     int childCount() const;
