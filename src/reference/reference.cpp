@@ -166,7 +166,7 @@ void Reference::loadReferenceFile(QTextCodec* codec)
     clear();
     mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
     if (mState == ReferenceState::UnsuccessfullyLoaded)
-        mReference.clear();
+        clear();
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
