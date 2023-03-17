@@ -511,8 +511,8 @@ void TestOptionFile::testReadOptionFile_data()
     QTest::addColumn<bool>("disabledFlag");
     QTest::addColumn<QString>("optionItem_optionKey");
     QTest::addColumn<QString>("optionKey");
-    QTest::addColumn<QVariant>("optionItem_optionValue");
-    QTest::addColumn<QVariant>("optionValue");
+    QTest::addColumn<QString>("optionItem_optionValue");
+    QTest::addColumn<QString>("optionValue");
     QTest::addColumn<QString>("optionItem_optionText");
     QTest::addColumn<QString>("optionText");
     QTest::addColumn<int>("optionItem_optionId");
@@ -524,42 +524,42 @@ void TestOptionFile::testReadOptionFile_data()
     QTest::newRow("* -this-is-a-comment-line----")
                       << items.at(0)->disabled <<  true
                       << items.at(0)->key      << "* -this-is-a-comment-line----"
-                      << items.at(0)->value    << QVariant("")
+                      << items.at(0)->value    << ""
                       << items.at(0)->text     << ""
                       << items.at(0)->optionId << -1
                       << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("[empty line1]")
                       << items.at(1)->disabled <<  true
                       << items.at(1)->key      << ""
-                      << items.at(1)->value    << QVariant("")
+                      << items.at(1)->value    << ""
                       << items.at(1)->text     << ""
                       << items.at(1)->optionId << -1
                       << static_cast<int>(items.at(1)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("bool_0=YES")
                       << items.at(2)->disabled <<  false
                       << items.at(2)->key      << "bool_0"
-                      << items.at(2)->value    << QVariant("YES")
+                      << items.at(2)->value    << "YES"
                       << items.at(2)->text     << "Default value (recommended)"
                       << items.at(2)->optionId << 0
                       << static_cast<int>(items.at(2)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("int_2=0")
                       << items.at(3)->disabled <<  false
                       << items.at(3)->key      << "int_2"
-                      << items.at(3)->value    << QVariant("0")
+                      << items.at(3)->value    << "0"
                       << items.at(3)->text     << ""
                       << items.at(3)->optionId << 0
                       << static_cast<int>(items.at(3)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("str_0=aValue")
                       << items.at(4)->disabled <<  false
                       << items.at(4)->key      << "str_0"
-                      << items.at(4)->value    << QVariant("aValue")
+                      << items.at(4)->value    << "aValue"
                       << items.at(4)->text     << ""
                       << items.at(4)->optionId << 0
                       << static_cast<int>(items.at(4)->error)    << static_cast<int>(OptionErrorType::No_Error);
     QTest::newRow("str_1=anotherValue   * this is not a comment due to invalid eolchar")
                       << items.at(5)->disabled <<  false
                       << items.at(5)->key      << "str_1"
-                      << items.at(5)->value    << QVariant("anotherValue   * this is not a comment due to invalid eolchar")
+                      << items.at(5)->value    << "anotherValue   * this is not a comment due to invalid eolchar"
                       << items.at(5)->text     << ""
                       << items.at(5)->optionId << 0
                       << static_cast<int>(items.at(5)->error)    << static_cast<int>(OptionErrorType::No_Error);
@@ -571,8 +571,8 @@ void TestOptionFile::testReadOptionFile()
     QFETCH(bool, disabledFlag);
     QFETCH(QString, optionItem_optionKey);
     QFETCH(QString, optionKey);
-    QFETCH(QVariant, optionItem_optionValue);
-    QFETCH(QVariant, optionValue);
+    QFETCH(QString, optionItem_optionValue);
+    QFETCH(QString, optionValue);
     QFETCH(QString, optionItem_optionText);
     QFETCH(QString, optionText);
     QFETCH(int, optionItem_optionId);

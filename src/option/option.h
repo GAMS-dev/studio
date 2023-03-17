@@ -102,7 +102,7 @@ struct SolverOptionItem {
 
     int optionId = -1;
     QString key = "";
-    QVariant value = "";
+    QString value = "";
     QString text = "";
     bool disabled = false;
     bool recurrent = false;

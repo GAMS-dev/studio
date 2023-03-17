@@ -64,9 +64,9 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
         QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
         if (mOptionItem.at(index)->disabled) {
             if (mOptionItem.at(index)->key.startsWith(lineComment))
-                return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
+                return QString("%1 %2").arg(mOptionItem.at(index)->key, mOptionItem.at(index)->value);
             else
-                return QString("%1 %2 %3").arg(lineComment, mOptionItem.at(index)->key, mOptionItem.at(index)->value.toString());
+                return QString("%1 %2 %3").arg(lineComment, mOptionItem.at(index)->key, mOptionItem.at(index)->value);
         } else {
             QString tooltipText = "";
             switch(mOptionItem.at(index)->error) {
@@ -77,7 +77,7 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(index)->key));
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value.toString(), mOptionItem.at(index)->key));
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(index)->value, mOptionItem.at(index)->key));
                 break;
             case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(index)->key));
@@ -180,7 +180,7 @@ QVariant SolverOptionTableModel::data(const QModelIndex &index, int role) const
                 tooltipText.append( QString("Option key '%1' has a value of incorrect type").arg(mOptionItem.at(row)->key) );
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value.toString(), mOptionItem.at(row)->key) );
+                tooltipText.append( QString("Value '%1' for option key '%2' is out of range").arg(mOptionItem.at(row)->value, mOptionItem.at(row)->key) );
                 break;
             case OptionErrorType::Deprecated_Option:
                 tooltipText.append( QString("Option '%1' is deprecated, will be eventually ignored").arg(mOptionItem.at(row)->key) );
@@ -734,7 +734,7 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
         setHeaderData( logicalIndex, Qt::Vertical,  mCheckState[logicalIndex], Qt::CheckStateRole );
     } else {  // to comment
         QString key;
-        if (mOptionItem.at(logicalIndex)->value.toString().isEmpty()) {
+        if (mOptionItem.at(logicalIndex)->value.isEmpty()) {
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
                 key = QString("%1 %2 %3").arg(mOptionItem.at(logicalIndex)->key,
                                               mOptionTokenizer->getEOLCommentChar(),
@@ -745,13 +745,13 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
             if (mOption->isEOLCharDefined() && !mOptionItem.at(logicalIndex)->text.isEmpty())
                 key = QString("%1%2%3 %4 %5").arg(mOptionItem.at(logicalIndex)->key,
                                                   mOption->getDefaultSeparator(),
-                                                  mOptionItem.at(logicalIndex)->value.toString(),
+                                                  mOptionItem.at(logicalIndex)->value,
                                                   mOptionTokenizer->getEOLCommentChar(),
                                                   mOptionItem.at(logicalIndex)->text);
             else
                 key = QString("%1%2%3").arg(mOptionItem.at(logicalIndex)->key,
                                             mOption->getDefaultSeparator(),
-                                            mOptionItem.at(logicalIndex)->value.toString());
+                                            mOptionItem.at(logicalIndex)->value);
        }
         mOptionItem.at(logicalIndex)->key = key;
         mOptionItem.at(logicalIndex)->value = "";

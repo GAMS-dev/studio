@@ -607,7 +607,7 @@ void OptionTokenizer::setDeactivatedOptionFormat(const QTextCharFormat &deactiva
 QString  OptionTokenizer::formatOption(const SolverOptionItem *item)
 {
     QString key = item->key.simplified();
-    QString value = item->value.toString().simplified();
+    QString value = item->value.simplified();
     QString text = item->text.simplified();
     QString separator = (mOption->isDefaultSeparatorDefined() ? mOption->getDefaultSeparator() : " ");
 
@@ -1319,7 +1319,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
                 hasBeenLogged = true;
                 break;
             case OptionErrorType::Value_Out_Of_Range:
-                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key, item->value.toString()),
+                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key, item->value),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
@@ -1329,7 +1329,7 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
                 hasBeenLogged = true;
                 break;
             case OptionErrorType::Override_Option:
-                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key, item->value.toString()),
+                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key, item->value),
                                   LogMsgType::Warning );
                 hasBeenLogged = true;
                 break;
@@ -1396,7 +1396,7 @@ void OptionTokenizer::validateOption(QList<SolverOptionItem *> &items)
             continue;
 
         QString key = item->key;
-        QString value = item->value.toString();
+        QString value = item->value;
         QString text = item->text;
         updateOptionItem(key, value, text, item);
         idList << item->optionId;
