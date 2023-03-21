@@ -39,7 +39,7 @@ class ProjectData : public QObject
 {
     Q_OBJECT
 public:
-    enum Field {file, name, nameExt, workDir, baseDir, mainGms};
+    enum Field {file, name, nameExt, workDir, baseDir, mainGms, pfFile};
 
     ProjectData(PExProjectNode *project);
     virtual ~ProjectData() override {}

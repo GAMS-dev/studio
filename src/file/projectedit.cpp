@@ -45,7 +45,12 @@ ProjectData::ProjectData(PExProjectNode *project)
             mData.insert(mainGms, QDir::toNativeSeparators(mProject->runnableGms()->location()));
         else
             mData.insert(mainGms, "-no runnable-");
-
+    }
+    if (!mData.contains(pfFile)) {
+        if (mProject->activePfFile())
+            mData.insert(pfFile, QDir::toNativeSeparators(mProject->activePfFile()->location()));
+        else
+            mData.insert(pfFile, "-none-");
     }
     connect(project, &PExProjectNode::changed, this, &ProjectData::projectChanged);
 }
@@ -92,6 +97,10 @@ void ProjectData::projectChanged(NodeId id)
         setFieldData(ProjectData::mainGms, QDir::toNativeSeparators(mProject->runnableGms()->location()));
     else
         setFieldData(ProjectData::mainGms, "-no runnable-");
+    if (mProject->activePfFile())
+        setFieldData(ProjectData::pfFile, QDir::toNativeSeparators(mProject->activePfFile()->location()));
+    else
+        setFieldData(ProjectData::pfFile, "-none-");
 }
 
 ProjectData *ProjectEdit::sharedData() const
@@ -115,6 +124,8 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->edName->setToolTip("Name: the name of the project, this is always the filename");
     ui->edMainGms->setEnabled(false);
     ui->edMainGms->setToolTip("Main file: this file will be excuted with GAMS");
+    ui->edPfFile->setEnabled(false);
+    ui->edPfFile->setToolTip("Parameter file: this file contains the default parameters");
     ui->edProjectFile->setEnabled(false);
     ui->edProjectFile->setToolTip("Project file: this file contains all project information");
     setWindowFlag(Qt::WindowContextHelpButtonHint, false);
@@ -124,6 +135,7 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->laName->setToolTip(ui->edName->toolTip());
     ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
     ui->laMainGms->setToolTip(ui->edMainGms->toolTip());
+    ui->laPfFile->setToolTip(ui->edPfFile->toolTip());
     ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
     ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
     ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
@@ -226,6 +238,10 @@ void ProjectEdit::projectChanged(NodeId id)
         ui->edMainGms->setText(QDir::toNativeSeparators(mSharedData->project()->runnableGms()->location()));
     else
         ui->edMainGms->setText("-no runnable-");
+    if (mSharedData->project()->activePfFile())
+        ui->edPfFile->setText(QDir::toNativeSeparators(mSharedData->project()->activePfFile()->location()));
+    else
+        ui->edPfFile->setText("-none-");
     updateState();
 }
 
@@ -242,6 +258,8 @@ void ProjectEdit::updateData()
         ui->edBaseDir->setText(mSharedData->fieldData(ProjectData::baseDir));
     if (ui->edMainGms->text() != mSharedData->fieldData(ProjectData::mainGms))
         ui->edMainGms->setText(mSharedData->fieldData(ProjectData::mainGms));
+    if (ui->edPfFile->text() != mSharedData->fieldData(ProjectData::pfFile))
+        ui->edPfFile->setText(mSharedData->fieldData(ProjectData::pfFile));
 }
 
 void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
