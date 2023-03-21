@@ -48,6 +48,7 @@ enum ContextAction {
     actSep4,
     actAddNewGms,
     actAddNewOpt,
+    actAddNewPf,
     actSep5,
     actCloseProject,
     actCloseGroup,
@@ -94,6 +95,8 @@ ProjectContextMenu::ProjectContextMenu()
     QMenu* newSolverOptionMenu = addMenu( "Add New Solver Option File" );
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
     int addNewSolverOptActionBaseIndex = actAddNewOpt*1000;
+
+    mActions.insert(actAddNewPf, addAction("Add &New Gams Parameter File", this, &ProjectContextMenu::onAddNewPfFile));
 
     QDir sysdir(CommonPaths::systemDir());
     QStringList optFiles = sysdir.entryList(QStringList() << "opt*.def" , QDir::Files);
@@ -183,10 +186,11 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool isOpen = fileNode && fileNode->file()->isOpen();
     bool isOpenable = fileNode && !fileNode->file()->isOpen();
     bool isOptFile = fileNode && fileNode->file()->kind() == FileKind::Opt;
+    bool isPfFile = fileNode && fileNode->file()->kind() == FileKind::Pf;
     bool isGucFile = fileNode && fileNode->file()->kind() == FileKind::Guc;
     bool isEfiFile = fileNode && fileNode->file()->kind() == FileKind::Efi;
     bool isGConnectFile = fileNode && fileNode->file()->kind() == FileKind::GCon;
-    bool isOpenableAsText = isOpenable && (isOptFile || isGucFile || isGConnectFile);
+    bool isOpenableAsText = isOpenable && (isOptFile || isPfFile || isGucFile || isGConnectFile);
     bool isOpenWithSolverOptionEditor = false;
     bool isOpenWithGamsUserConfigEditor = false;
     bool isOpenWithEfiEditor = false;
@@ -256,8 +260,10 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
 
     if (isReOpenableWithGamsUserConfigEditor)
         mActions[actReOpen]->setText( "&Reopen File using Gams User Configuration Editor" );
-    else if (isReOpenableWithSolverOptionEditor)
+    else if (isReOpenableWithSolverOptionEditor && isOptFile)
         mActions[actReOpen]->setText( "&Reopen File using Solver Option Editor" );
+    else if (isReOpenableWithSolverOptionEditor && isPfFile)
+        mActions[actReOpen]->setText( "&Reopen File using Gams Parameter Editor" );
     else if (isReopenableWithGamsConnectEditor)
         mActions[actReOpen]->setText( "&Reopen File using Gams Connect Editor" );
     else
@@ -305,6 +311,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     mActions[actAddNewOpt]->setVisible(isProject && !isGamsSys);
     for (QAction* action : qAsConst(mSolverOptionActions))
         action->setVisible(isProject);
+    mActions[actAddNewPf]->setVisible(isProject && !isGamsSys);
 }
 
 void ProjectContextMenu::onCloseFile()
@@ -355,6 +362,20 @@ void ProjectContextMenu::onAddNewFile()
     }
     if (!projects.isEmpty())
         emit newFileDialog(projects);
+}
+
+void ProjectContextMenu::onAddNewPfFile()
+{
+    QVector<PExProjectNode*> projects;
+    for (PExAbstractNode *node: qAsConst(mNodes)) {
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (!project) continue;
+        if (!projects.contains(project))
+            projects << project;
+    }
+    if (!projects.isEmpty())
+        emit newFileDialog(projects, "", FileKind::Pf);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)

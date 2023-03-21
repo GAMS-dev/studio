@@ -61,7 +61,8 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<gams::studio::PExProjectNode *> groups, const QString& solverName="", bool projectOnly = false);
+    void newFileDialog(QVector<gams::studio::PExProjectNode *> groups, const QString& solverName="",
+                       gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");
     void resetGdxStates(const QStringList &files);
@@ -72,6 +73,7 @@ private slots:
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();
+    void onAddNewPfFile();
     void onSetMainFile();
     void onMoveProject();
     void onCopyProject();

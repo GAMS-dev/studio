@@ -1412,10 +1412,13 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString& solverName, bool projectOnly)
+void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString& solverName, FileKind fileKind)
 {
     QString path;
+    bool projectOnly = fileKind == FileKind::Gsp;
+    bool pfFileOnly = fileKind == FileKind::Pf;
     if (projectOnly) {
+
         path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     } else {
         if (!projects.isEmpty()) {
@@ -1428,14 +1431,26 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
         if (path.isEmpty()) path = ".";
     }
 
-    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : "gms";
+    QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : pfFileOnly ? "pf" : "gms";
     QString suffixDot = suffix.isEmpty() ? "" : "."+suffix;
     if (solverName.isEmpty()) {
         // find a free file name
-        int nr = 1;
-        while (QFileInfo(path, QString("%1%2%3").arg(projectOnly ? "project" : "new").arg(nr).arg(suffixDot)).exists())
-            ++nr;
-        path += QString("/%1%2%3").arg(projectOnly ? "project" : "new").arg(nr).arg(suffixDot);
+        bool done = false;
+        QString baseName = projectOnly ? "project" : "new";
+        if (pfFileOnly && projects.count() == 1 && !projects.at(0)->name().isEmpty()) {
+            baseName = projects.at(0)->name();
+            if (!QFileInfo(path, QString("%1%2").arg(baseName, suffixDot)).exists()) {
+                path += QString("/%1%2").arg(baseName, suffixDot);
+                done = true;
+            } else if (baseName.at(baseName.size()-1).isDigit())
+                baseName.append('_');
+        }
+        if (!done) {
+            int nr = 1;
+            while (QFileInfo(path, QString("%1%3%2").arg(baseName, suffixDot).arg(nr)).exists())
+                ++nr;
+            path += QString("/%1%3%2").arg(baseName, suffixDot).arg(nr);
+        }
     } else {
         int nr = 1;
         QString filename = QString("%1.%2").arg(solverName, suffix);
@@ -1449,10 +1464,11 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
 
     QString kind = projectOnly ? "Project" : "File";
     QString kind2 = !solverName.isEmpty() ? QString("%1 option file").arg(solverName)
-                                          : kind.toLower();
+                                          : pfFileOnly ? QString("Gams Parameter File") : kind.toLower();
     QString filter = !solverName.isEmpty() ? ViewHelper::dialogOptFileFilter(solverName)
                                            : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
-                                                         : ViewHelper::dialogFileFilterUserCreated().join(";;");
+                                                         : pfFileOnly ? ViewHelper::dialogPfFileFilter()
+                                                                      : ViewHelper::dialogFileFilterUserCreated().join(";;");
     QString filePath = QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
                                                     filter, nullptr, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
@@ -1965,7 +1981,7 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
         }
         return FileProcessKind::ignore;
     }
-    if (file->kind() == FileKind::Opt) {
+    if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
             if (option::SolverOptionWidget *sow = ViewHelper::toSolverOptionEdit(e))
                sow->setFileChangedExtern(true);
@@ -4350,8 +4366,8 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
         if (!ae->isReadOnly())
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
-    } else if (fileMeta->kind() == FileKind::Gsp || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Guc
-               || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
+    } else if (fileMeta->kind() == FileKind::Gsp || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Pf
+               || fileMeta->kind() == FileKind::Guc || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
@@ -5883,7 +5899,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionNew_Project_triggered()
 {
-    newFileDialog(QVector<PExProjectNode*>(), "", true);
+    newFileDialog(QVector<PExProjectNode*>(), "", FileKind::Gsp);
 }
 
 void MainWindow::on_actionOpen_Project_triggered()

@@ -311,6 +311,9 @@ void PExProjectNode::appendChild(PExAbstractNode *child)
     if (!mParameterHash.contains("gms") && file && file->file() && file->file()->kind() == FileKind::Gms) {
         setRunnableGms(file->file());
     }
+    if (!mParameterHash.contains("pf") && file && file->file() && file->file()->kind() == FileKind::Pf) {
+        setParameterFile(file->file());
+    }
     setNeedSave();
 }
 
@@ -318,17 +321,18 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
 {
     PExGroupNode::removeChild(child);
     bool gmsLost = false;
+    bool pfLost = false;
     PExFileNode *file = child->toFile();
     if (file) {
-        const QList<QString> files = mParameterHash.keys(file->location());
-        for (const QString &file: files) {
-            mParameterHash.remove(file);
-            if (file=="gms") gmsLost = true;
+        const QList<QString> keys = mParameterHash.keys(file->location());
+        for (const QString &key: keys) {
+            mParameterHash.remove(key);
+            if (key=="gms") gmsLost = true;
+            if (key=="pf") pfLost = true;
         }
     }
-    if (gmsLost) {
-        setRunnableGms();
-    }
+    if (gmsLost) setRunnableGms();
+    if (pfLost) setParameterFile();
     setNeedSave();
 }
 
@@ -572,6 +576,48 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     if (hasLogNode()) logNode()->resetLst();
     emit changed(id());
     emit runnableChanged();
+}
+
+FileMeta *PExProjectNode::activePfFile() const
+{
+    FileMetaRepo *repo = fileRepo();
+    if (!repo) return nullptr;
+    return repo->fileMeta(parameter("pf"));
+}
+
+void PExProjectNode::setParameterFile(FileMeta *pfFile)
+{
+    if (mType != PExProjectNode::tCommon) return;
+    PExFileNode *pfFileNode;
+    if (!pfFile) {
+        // find alternative runable file
+        for (PExAbstractNode *node: listFiles()) {
+            pfFileNode = node->toFile();
+            if (pfFileNode->file()->kind() == FileKind::Pf) {
+                pfFile = pfFileNode->file();
+                break;
+            }
+        }
+    }
+    if (pfFile && pfFile->kind() != FileKind::Pf) {
+        DEB() << "Only files of FileKind::Pf can become a parameter file";
+        return;
+    }
+    setParameter("pf", "");
+//    if (!pfFile) {
+//        setParameter("lst", "");
+//        emit changed(id());
+//        emit runnableChanged();
+//        return;
+//    }
+//    if (workDir().isEmpty())
+//        setLocation(QFileInfo(pfFile->location()).absoluteDir().path());
+
+    QString pfPath = pfFile->location();
+    setParameter("pf", pfPath);
+//    if (hasLogNode()) logNode()->resetLst();
+    emit changed(id());
+//    emit runnableChanged();
 }
 
 FileMeta *PExProjectNode::projectEditFileMeta() const
@@ -1016,8 +1062,10 @@ void PExProjectNode::clearParameters()
 {
     bool willChange = mParameterHash.size() != 1 || !mParameterHash.contains("gms");
     QString gms = mParameterHash.value("gms");
+    QString pf = mParameterHash.value("pf");
     mParameterHash.clear();
     mParameterHash.insert("gms", gms);
+    mParameterHash.insert("pf", pf);
     if (willChange) setNeedSave();
 }
 

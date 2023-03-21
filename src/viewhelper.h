@@ -178,6 +178,12 @@ public:
         return res;
     }
 
+    static const QString dialogPfFileFilter() {
+        QString res("Gams Parameter File (*.pf);;");
+        res.append("All files (" + allFilesFilter + ")");
+        return res;
+    }
+
     static const QString dialogSettingsFileFilter() {
         QString res("GAMS user settings (*.gus);;");
         res.append("All files (" + allFilesFilter + ")");

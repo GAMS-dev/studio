@@ -718,7 +718,7 @@ void FileMeta::load(QStringConverter::Encoding encoding, bool init)
         }
         return;
     }
-    if (kind() == FileKind::Opt) {
+    if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         bool done = false;
         for (QWidget *wid : qAsConst(mEditors)) {
             if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
@@ -811,7 +811,7 @@ void FileMeta::save(const QString &newLocation)
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
         if (PEd) PEd->save();
-    } else if (kind() == FileKind::Opt) {
+    } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
 
@@ -968,7 +968,7 @@ bool FileMeta::isModified() const
             project::ProjectEdit *prOp = ViewHelper::toProjectEdit(wid);
             if (prOp) return prOp->isModified();
         }
-    } else if (kind() == FileKind::Opt) {
+    } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         for (QWidget *wid: mEditors) {
             option::SolverOptionWidget *solverOptionWidget = ViewHelper::toSolverOptionEdit(wid);
             if (solverOptionWidget)
@@ -1042,7 +1042,7 @@ void FileMeta::setModified(bool modified)
              connect::ConnectEditor *ce = ViewHelper::toGamsConnectEditor(e);
              if (ce) ce->setModified(modified);
         }
-    } else if (kind() == FileKind::Opt) {
+    } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
           for (QWidget *e : qAsConst(mEditors)) {
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
@@ -1061,7 +1061,7 @@ void FileMeta::setModified(bool modified)
 
 bool FileMeta::isPinnable()
 {
-    QSet<FileKind> suppressedKinds {FileKind::Guc, FileKind::Opt, FileKind::GCon, };
+    QSet<FileKind> suppressedKinds {FileKind::Guc, FileKind::Opt, FileKind::Pf, FileKind::GCon, };
     return !suppressedKinds.contains(kind());
 }
 
@@ -1183,10 +1183,11 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, QStringC
                                                                          id(), parent));
     } else if (kind() == FileKind::GCon && !forcedAsTextEdit) {
         res =  ViewHelper::initEditorType(new connect::ConnectEditor(location(), id(), parent));
-    } else if (kind() == FileKind::Opt && !forcedAsTextEdit) {
+    } else if ((kind() == FileKind::Opt || kind() == FileKind::Pf) && !forcedAsTextEdit) {
         QFileInfo fileInfo(name());
         support::SolverConfigInfo solverConfigInfo;
-        QString defFileName = solverConfigInfo.solverOptDefFileName(fileInfo.baseName());
+        QString defFileName =  kind() == FileKind::Opt ? solverConfigInfo.solverOptDefFileName(fileInfo.baseName())
+                                                       : "optgams.def";
         if (!defFileName.isEmpty() && QFileInfo(CommonPaths::systemDir(),defFileName).exists()) {
             res =  ViewHelper::initEditorType(new option::SolverOptionWidget(QFileInfo(name()).completeBaseName(), location(), defFileName,
                                                                              id(), mEncoding, parent));

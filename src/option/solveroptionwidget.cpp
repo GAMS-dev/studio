@@ -1550,14 +1550,16 @@ bool SolverOptionWidget::saveAs(const QString &location)
     bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mEncoding);
     if (mLocation != location) {
         bool warning = false;
-        if (QString::compare(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).completeBaseName(), Qt::CaseInsensitive)!=0 ) {
+        if (FileType::from(FileKind::Opt) == FileType::from(QFileInfo(location).fileName()) &&
+            QString::compare(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).completeBaseName(), Qt::CaseInsensitive) != 0) {
             mOptionTokenizer->logger()->append(QString("Solver option file name '%1' has been changed. Saved options into '%2' may cause solver option editor to display the contents improperly.")
                                                        .arg(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).fileName())
                                                , LogMsgType::Warning);
             warning = true;
         }
-        if (FileType::from(FileKind::Opt) != FileType::from(QFileInfo(location).fileName())) {
-            mOptionTokenizer->logger()->append(QString("Unrecognized file suffix '%1'. Saved options into '%2' may cause solver option editor to display the contents improperly.")
+        if (FileType::from(FileKind::Opt) != FileType::from(QFileInfo(location).fileName()) &&
+            FileType::from(FileKind::Pf) != FileType::from(QFileInfo(location).fileName())) {
+            mOptionTokenizer->logger()->append(QString("Unrecognized file suffix '%1'. Saved options into '%2' may cause this editor to display the contents improperly.")
                                                        .arg(QFileInfo(location).fileName(), QFileInfo(location).fileName())
                                                , LogMsgType::Warning);
             warning = true;

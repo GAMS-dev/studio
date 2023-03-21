@@ -197,8 +197,7 @@ public slots:
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
     void newFileDialog(QVector<gams::studio::PExProjectNode*> projects = QVector<gams::studio::PExProjectNode *>(),
-                       const QString& solverName=QString(),
-                       bool projectOnly = false);
+                       const QString& solverName=QString(), gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const gams::studio::FileId fileId, bool willReopen = false);

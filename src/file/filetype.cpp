@@ -43,6 +43,7 @@ QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Ref, {"ref"}, "GAMS Ref File", true),
     new FileType(FileKind::Log, {"~log"}, "GAMS Log File", true),
     new FileType(FileKind::Opt, {"opt"}, "Solver Option File", false),
+    new FileType(FileKind::Pf, {"pf"}, "GAMS Parameter File", false),
     new FileType(FileKind::Guc, {"yaml"}, "GAMS Config File", false),
     new FileType(FileKind::Efi, {"efi"}, "External Files", false),
     new FileType(FileKind::GCon, {"yaml", "yml"}, "Gams Connect Yaml File", false),

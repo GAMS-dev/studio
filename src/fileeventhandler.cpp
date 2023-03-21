@@ -231,7 +231,7 @@ void FileEventHandler::keepFirstChangedFile()
         }
         return;
     }
-    if (file->kind() == FileKind::Opt) {
+    if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
             auto* sow = ViewHelper::toSolverOptionEdit(e);
             if (sow) sow->setFileChangedExtern(true);
@@ -254,7 +254,7 @@ void FileEventHandler::reloadFile(FileMeta *file)
         }
         return;
     }
-    if (file->kind() == FileKind::Opt) {
+    if (file->kind() == FileKind::Opt || file->kind() == FileKind::Pf) {
         for (QWidget *e : file->editors()) {
             auto *sow = ViewHelper::toSolverOptionEdit(e);
             if (sow) sow->setFileChangedExtern(true);
