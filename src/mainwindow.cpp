@@ -5951,5 +5951,11 @@ void MainWindow::on_actionNavigator_triggered()
 }
 
 
+void MainWindow::on_actionRunDebugger_triggered()
+{
+    // create and start debugger::Server
+}
+
+
 }
 }

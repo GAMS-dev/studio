@@ -285,6 +285,7 @@
     </property>
     <addaction name="actionRun"/>
     <addaction name="actionRun_with_GDX_Creation"/>
+    <addaction name="actionRunDebugger"/>
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
@@ -1596,6 +1597,18 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionRunDebugger">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/hammer</normaloff>:/solid/hammer</iconset>
+   </property>
+   <property name="text">
+    <string>Run Debugger</string>
+   </property>
+   <property name="toolTip">
+    <string>Connection Test (alpha)</string>
    </property>
   </action>
  </widget>

@@ -99,6 +99,7 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
+    debugger/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
     editors/codecompleter.cpp \
@@ -310,6 +311,7 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
+    debugger/server.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
