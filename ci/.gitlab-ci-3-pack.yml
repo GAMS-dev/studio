@@ -2,13 +2,11 @@ pack-deg:
   stage: pack
   tags: [macos]
   variables:
-    qtpath: /Users/gitlab/Qt/5.15.2/clang_64/bin
+    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   dependencies: [build-deg]
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
-    - MACOS_KEYCHAIN_PASSWD=`cat ~/.gsv.keychainpasswd`
-    - security unlock-keychain -p ${MACOS_KEYCHAIN_PASSWD}
     # create directory, sign and create dmg
     - cd build/src/bin
     - mv studio.app "GAMS Studio.app"
@@ -75,17 +73,89 @@ pack-deg:
     expose_as: 'GAMS_Studio-deg-x86_64'
     expire_in: 1 days
 
+pack-dac:
+  stage: pack
+  tags: [macos-arm64]
+  variables:
+    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+  dependencies: [build-dac]
+  script:
+    - WORKSPACE=$(pwd)
+    - PATH="${qtpath}:${PATH}"
+    # create directory, sign and create dmg
+    - cd build/src/bin
+    - mv studio.app "GAMS Studio.app"
+    - macdeployqt "GAMS Studio.app" -always-overwrite
+    - cp ${WORKSPACE}/CHANGELOG "GAMS Studio.app/Contents/Resources/Changelog"
+    - codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --deep --timestamp --entitlements ${WORKSPACE}/platform/macos/studio.entitlements.plist "GAMS Studio.app"
+    - USE_QWEBENGINE=$(grep "QWEBENGINE=" ${WORKSPACE}/gamsdependency.pri | cut -f2 -d"=")
+    - |+
+      if [ "$USE_QWEBENGINE" = "true" ]; then
+          echo "Signing QWEBENGINE..."
+          codesign --sign ${GAMS_CODESIGN_IDENTITY} --options runtime --force --timestamp --entitlements ${WORKSPACE}/platform/macos/webengine.entitlements.plist "GAMS Studio.app/Contents/Frameworks/QtWebEngineCore.framework/Helpers/QtWebEngineProcess.app/Contents/MacOS/QtWebEngineProcess"
+      fi
+      hdiutil create -volname "GAMS Studio" -srcfolder "GAMS Studio.app" -ov -fs HFS+ -format UDZO "GAMS Studio.dmg"
+    # verify signature
+    - codesign --verify --verbose "GAMS Studio.app"
+    # rename the AppImage... for MR artifact exposure
+    - DMG_NAME=GAMS_Studio-dac-arm_64.dmg
+    - mv "GAMS Studio.dmg" ${WORKSPACE}/${DMG_NAME}
+    - cd ${WORKSPACE}
+    # leave pipeline if it is not a Release, Release Tag or RC build
+    - |+
+      if [[ ! ${CI_COMMIT_REF_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-release$ ]] && [[ ! ${CI_COMMIT_REF_NAME} =~ .*-rc$ ]]; then
+        echo "Notarization skipped!" > upload.log
+        echo "Notarization skipped!" > report.xml
+        cat upload.log
+        cat report.xml
+        exit 0;
+      fi
+    # notarize dmg
+    - xcrun altool --notarize-app -f $DMG_NAME --primary-bundle-id com.gams.studio -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> upload.log
+    - REQUEST_UUID=$(cat upload.log | grep RequestUUID | cut -f2 -d"=" | tr -d '[:space:]')
+    - |+
+      if [ -z "$REQUEST_UUID" ]; then
+        REQUEST_UUID=$(cat upload.log | grep -e "\\*\\*\\* Error: ERROR ITMS-90732: .*" | sed -nE "s/^[[:digit:]]+.*ID is ([0-9a-z-]+)\\\".*/\\1/p")
+      fi
+    - |+
+      while true;
+      do
+        sleep 60
+        xcrun altool --notarization-info $REQUEST_UUID --output-format xml -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> report.xml
+        NOTARIZATION_STATUS=$(/usr/libexec/PlistBuddy -c "Print :notarization-info:Status" report.xml)
+        if [ $? -eq 0 ]; then
+          if [ "$NOTARIZATION_STATUS" != "in progress" ]; then
+            echo "Notarization ended; result: $NOTARIZATION_STATUS"
+            break
+          fi
+          echo "Notarization still in progress. Waiting 60s to check again."
+        else
+          echo "Could not determine notarization status; giving up. Server response:"
+          cat report.xml
+          exit 1
+         fi
+      done
+      if [ "$NOTARIZATION_STATUS" == "success" ]; then
+        echo "Notarization successful; stapling ticket to app bundle"
+        xcrun stapler staple $DMG_NAME
+      else
+        echo "Notarization failed."
+        exit 1
+      fi
+  artifacts:
+    name: "GAMS_Studio-dac-arm_64"
+    paths: ['GAMS_Studio-dac-arm_64.dmg']
+    expose_as: 'GAMS_Studio-dac-arm_64'
+    expire_in: 1 days
+
 pack-leg:
   stage: pack
   tags: [linux]
-  variables:
-    qtpath: /opt/Qt/5.15.2/bin
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [build-leg]
   script:
-  - PATH="${qtpath}:${PATH}"
   # create folder structure
   - mkdir -p appdir/usr/bin
   - mkdir -p appdir/usr/share/pixmaps
@@ -100,11 +170,7 @@ pack-leg:
   - minor=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
   - patch=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
   - export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
-  # Chromium crash workaround (probably removed some day)
-  - mkdir -p appdir/usr/lib
-  - cp /usr/lib/x86_64-linux-gnu/nss/* ./appdir/usr/lib
-  # create the appimage
-  - /opt/linuxdeployqt/linuxdeployqt-continuous-x86_64.AppImage appdir/usr/share/studio.desktop -appimage -bundle-non-qt-libs -no-translations -extra-plugins=iconengines,platforms/
+  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --desktop-file=appdir/usr/share/studio.desktop
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
   artifacts:
@@ -117,10 +183,10 @@ pack-wei:
   stage: pack
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
   dependencies: [build-wei]
   variables:
-    qtpath: C:\Qt\5.15.2\msvc2019_64\bin
+    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
@@ -168,10 +234,10 @@ pack-wei-debug:
     - when: always
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
   dependencies: [build-wei-debug]
   variables:
-    qtpath: C:\Qt\5.15.2\msvc2019_64\bin
+    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:

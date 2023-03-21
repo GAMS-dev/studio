@@ -68,7 +68,8 @@ void SearchWorker::findInFiles()
         if (file.open(QFile::ReadOnly)) {
 
             QTextStream in(&file);
-            in.setCodec(fm->codec());
+            // TODO(JM) find solution using QTextStream::setEncoding();
+//            in.setCodec(fm->codec());
 
             while (!in.atEnd() && !cacheFull) { // read file
 

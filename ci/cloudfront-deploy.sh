@@ -9,7 +9,8 @@ STUDIO_PATCH_LEVEL=$(grep ^STUDIO_PATCH_LEVEL version | cut -f2 -d"=")
 
 ## change to artifact location and name
 cd artifacts
-mv $(find *dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.dmg"
+mv $(find *arm_64.dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-arm_64.dmg"
+mv $(find *x86_64.dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.dmg"
 mv $(find *AppImage) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.AppImage"
 mv $(find *zip) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.zip"
 

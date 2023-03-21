@@ -20,7 +20,6 @@
 #ifndef FILEMAPPER_H
 #define FILEMAPPER_H
 
-#include <QTextCodec>
 #include <QVector>
 #include <QFile>
 #include <QSet>

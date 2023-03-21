@@ -18,23 +18,20 @@
 # along with this program. If not, see <http://www.gnu.org/licenses/>.
 #
 
-QT += core gui svg concurrent network printsupport
-greaterThan(QT_MAJOR_VERSION, 5): QT += core5compat
-greaterThan(QT_MAJOR_VERSION, 4): QT += widgets
+QT += core widgets gui svg concurrent network printsupport
 
 TARGET = studio
 TEMPLATE = app
 DESTDIR = bin
-CONFIG += c++14
+CONFIG += c++17
 
 # Setup and include the GAMS distribution
 include(../gamsdependency.pri)
 
-YAMLCPP   = $$PWD/../extern/yaml-cpp
-DTOALOC   = $$PWD/../extern/dtoaloc
 INCLUDEPATH += $$PWD/../extern
-INCLUDEPATH += $$PWD/../extern/engineapi
+include(../extern/dtoaloc/client.pri)
 include(../extern/engineapi/client.pri)
+include(../extern/yaml-cpp/client.pri)
 
 OBJECTS_DIR=../objects
 MOC_DIR=../objects
@@ -202,7 +199,6 @@ SOURCES += \
     networkmanager.cpp \
     numerics/doubleFormat.c \
     numerics/doubleformatter.cpp \
-    $$DTOALOC/dtoaLoc.c \
     option/addoptionheaderview.cpp \
     option/commandline.cpp \
     option/configoptiondefinitionmodel.cpp \
@@ -286,39 +282,7 @@ SOURCES += \
     themewidget.cpp \
     viewhelper.cpp \
     welcomepage.cpp \
-    wplabel.cpp \
-    $$YAMLCPP/binary.cpp \
-    $$YAMLCPP/convert.cpp \
-    $$YAMLCPP/depthguard.cpp \
-    $$YAMLCPP/directives.cpp \
-    $$YAMLCPP/emit.cpp \
-    $$YAMLCPP/emitfromevents.cpp \
-    $$YAMLCPP/emitter.cpp \
-    $$YAMLCPP/emitterstate.cpp \
-    $$YAMLCPP/emitterutils.cpp \
-    $$YAMLCPP/exceptions.cpp \
-    $$YAMLCPP/exp.cpp \
-    $$YAMLCPP/memory.cpp \
-    $$YAMLCPP/nodebuilder.cpp \
-    $$YAMLCPP/node.cpp \
-    $$YAMLCPP/node_data.cpp \
-    $$YAMLCPP/nodeevents.cpp \
-    $$YAMLCPP/null.cpp \
-    $$YAMLCPP/ostream_wrapper.cpp \
-    $$YAMLCPP/parse.cpp \
-    $$YAMLCPP/parser.cpp \
-    $$YAMLCPP/regex_yaml.cpp \
-    $$YAMLCPP/scanner.cpp \
-    $$YAMLCPP/scanscalar.cpp \
-    $$YAMLCPP/scantag.cpp \
-    $$YAMLCPP/scantoken.cpp \
-    $$YAMLCPP/simplekey.cpp \
-    $$YAMLCPP/singledocparser.cpp \
-    $$YAMLCPP/stream.cpp \
-    $$YAMLCPP/tag.cpp \
-    $$YAMLCPP/contrib/graphbuilderadapter.cpp \
-    $$YAMLCPP/contrib/graphbuilder.cpp
-
+    wplabel.cpp
 
 HEADERS += \
     abstractview.h \
@@ -446,7 +410,6 @@ HEADERS += \
     networkmanager.h \
     numerics/doubleFormat.h \
     numerics/doubleformatter.h \
-    $$DTOALOC/dtoaLoc.h \
     option/addoptionheaderview.h \
     option/commandline.h \
     option/configoptiondefinitionmodel.h \
@@ -536,67 +499,7 @@ HEADERS += \
     version.h \
     viewhelper.h \
     welcomepage.h \
-    wplabel.h  \
-    $$YAMLCPP/anchor.h \
-    $$YAMLCPP/binary.h \
-    $$YAMLCPP/collectionstack.h \
-    $$YAMLCPP/depthguard.h \
-    $$YAMLCPP/directives.h \
-    $$YAMLCPP/dll.h \
-    $$YAMLCPP/emitfromevents.h \
-    $$YAMLCPP/emitterdef.h \
-    $$YAMLCPP/emitter.h \
-    $$YAMLCPP/emittermanip.h \
-    $$YAMLCPP/emitterstate.h \
-    $$YAMLCPP/emitterstyle.h \
-    $$YAMLCPP/emitterutils.h \
-    $$YAMLCPP/eventhandler.h \
-    $$YAMLCPP/exceptions.h \
-    $$YAMLCPP/exp.h \
-    $$YAMLCPP/indentation.h \
-    $$YAMLCPP/mark.h \
-    $$YAMLCPP/nodebuilder.h \
-    $$YAMLCPP/nodeevents.h \
-    $$YAMLCPP/noexcept.h \
-    $$YAMLCPP/null.h \
-    $$YAMLCPP/ostream_wrapper.h \
-    $$YAMLCPP/parser.h \
-    $$YAMLCPP/ptr_vector.h \
-    $$YAMLCPP/regeximpl.h \
-    $$YAMLCPP/regex_yaml.h \
-    $$YAMLCPP/scanner.h \
-    $$YAMLCPP/scanscalar.h \
-    $$YAMLCPP/scantag.h \
-    $$YAMLCPP/setting.h \
-    $$YAMLCPP/singledocparser.h \
-    $$YAMLCPP/stlemitter.h \
-    $$YAMLCPP/streamcharsource.h \
-    $$YAMLCPP/stream.h \
-    $$YAMLCPP/stringsource.h \
-    $$YAMLCPP/tag.h \
-    $$YAMLCPP/token.h \
-    $$YAMLCPP/traits.h \
-    $$YAMLCPP/yaml.h \
-    $$YAMLCPP/contrib/anchordict.h \
-    $$YAMLCPP/contrib/graphbuilderadapter.h \
-    $$YAMLCPP/contrib/graphbuilder.h \
-    $$YAMLCPP/node/convert.h \
-    $$YAMLCPP/node/emit.h \
-    $$YAMLCPP/node/impl.h \
-    $$YAMLCPP/node/iterator.h \
-    $$YAMLCPP/node/node.h \
-    $$YAMLCPP/node/parse.h \
-    $$YAMLCPP/node/ptr.h \
-    $$YAMLCPP/node/type.h \
-    $$YAMLCPP/node/detail/impl.h \
-    $$YAMLCPP/node/detail/iterator_fwd.h \
-    $$YAMLCPP/node/detail/iterator.h \
-    $$YAMLCPP/node/detail/memory.h \
-    $$YAMLCPP/node/detail/node_data.h \
-    $$YAMLCPP/node/detail/node.h \
-    $$YAMLCPP/node/detail/node_iterator.h \
-    $$YAMLCPP/node/detail/node_ref.h
-
+    wplabel.h
 
 FORMS += \
     confirmdialog.ui \
@@ -646,7 +549,7 @@ DISTFILES += \
 
 equals(QWEBENGINE, "true") {
 DEFINES += QWEBENGINE
-greaterThan(QT_MAJOR_VERSION, 4): QT += webenginewidgets
+QT      += webenginewidgets
 SOURCES += help/bookmarkdialog.cpp \
     help/helppage.cpp \
     help/helptoolbar.cpp \

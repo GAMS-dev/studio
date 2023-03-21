@@ -63,7 +63,7 @@ public:
 public:
     explicit StatusWidgets(QMainWindow *parent);
     void setFileName(const QString &fileName);
-    void setEncoding(int encodingMib);
+    void setEncoding(QStringConverter::Encoding encoding);
     void setLineCount(int lines);
     void setLoadAmount(qreal amount);
     void setEditMode(EditMode mode);

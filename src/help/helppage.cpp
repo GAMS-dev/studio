@@ -25,7 +25,7 @@ namespace gams {
 namespace studio {
 namespace help {
 
-HelpPage::HelpPage(QWidget *parent) : QWebEnginePage(parent)
+HelpPage::HelpPage(QObject *parent) : QWebEnginePage(parent)
 {
 }
 

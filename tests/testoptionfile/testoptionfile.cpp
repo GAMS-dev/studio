@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include <QStandardPaths>
-#include <QTextCodec>
 
 #include "commonpaths.h"
 #include "testoptionfile.h"
@@ -503,7 +502,7 @@ void TestOptionFile::testReadOptionFile_data()
 
     // when
     QString optFile = QDir(".").absoluteFilePath("dummy.opt");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QStringConverter::System);
 
     // then
     QCOMPARE( items.size(), 6 );
@@ -594,7 +593,7 @@ void TestOptionFile::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(".").absoluteFilePath("dummy.op3");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QTextCodec::codecForLocale());
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QStringConverter::System);
 
     // then
     QCOMPARE( items.size(), 0);
@@ -618,7 +617,7 @@ void TestOptionFile::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("dummy.op2"), QTextCodec::codecForLocale()) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("dummy.op2"), QStringConverter::System) );
 
     // clean up
     qDeleteAll(items);

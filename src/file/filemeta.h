@@ -64,10 +64,8 @@ public:
     QString name(NameModifier mod = NameModifier::raw);
     FontGroup fontGroup();
     QTextDocument* document() const;
-    int codecMib() const;
-    void setCodecMib(int mib);
-    QTextCodec *codec() const;
-    void setCodec(QTextCodec *codec);
+    QStringConverter::Encoding encoding() const;
+    void setEncoding(QStringConverter::Encoding encoding);
     bool exists(bool ckeckNow = false) const;
     bool isOpen() const;
     bool isModified() const;
@@ -79,14 +77,14 @@ public:
     bool isPinnable();
     void updateTabName(QTabWidget *tabWidget, int index);
 
-    QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
-    int addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
+    QWidget *createEdit(QWidget *parent, PExProjectNode *project, QStringConverter::Encoding encoding = QStringConverter::Utf8, bool forcedAsTextEdit = false);
+    int addToTab(QTabWidget *tabWidget, QWidget *edit, QStringConverter::Encoding encoding = QStringConverter::Utf8, NewTabStrategy tabStrategy = tabAfterCurrent);
     const QWidgetList editors() const;
     QWidget* topEditor() const;
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
-    void load(int codecMib, bool init = true);
+    void load(QStringConverter::Encoding encoding, bool init = true);
     void save(const QString& newLocation = "");
     void renameToBackup();
     FileDifferences compare(QString fileName = QString());
@@ -164,7 +162,7 @@ private:
     bool mAutoReload = false;
     bool mActivelySaved = false;
     QWidgetList mEditors;
-    QTextCodec *mCodec = nullptr;
+    QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
     QTextDocument* mDocument = nullptr;
     syntax::SyntaxHighlighter* mHighlighter = nullptr;
     int mLineCount = 0;

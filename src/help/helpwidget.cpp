@@ -25,6 +25,7 @@
 #include <QMenu>
 #include <QToolBar>
 #include <QToolButton>
+#include <QWebEngineFindTextResult>
 
 #include "helptoolbar.h"
 #include "helpview.h"
@@ -707,8 +708,8 @@ void HelpWidget::findText(const QString &text, HelpWidget::SearchDirection direc
     QWebEnginePage::FindFlags flags = (caseSensitivity ? QWebEnginePage::FindCaseSensitively : QWebEnginePage::FindFlags());
     if (direction == Backward)
         flags = flags | QWebEnginePage::FindBackward;
-    ui->webEngineView->page()->findText(text, flags, [this](bool found) {
-        if (found)
+    ui->webEngineView->page()->findText(text, flags, [this](const QWebEngineFindTextResult &res) {
+        if (res.numberOfMatches())
             ui->statusText->clear();
         else
            ui->statusText->setText("No occurrences found");

@@ -264,7 +264,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
     if (!marks || !marks->size() || !lineShift) return;
     QSet<int> changedLines;
     changedLines.reserve(marks->size()*2);
-    QMutableMapIterator<int, TextMark*> it(*marks);
+    QMutableMultiMapIterator<int, TextMark*> it(*marks);
     QVector<TextMark*> parked;
     if (lineShift < 0) {
         while (it.hasNext()) {

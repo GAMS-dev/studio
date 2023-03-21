@@ -26,6 +26,8 @@ const QString HighlightingData::ErrorKeyword = "Error";
 const QString HighlightingData::InfoKeyword = "Info";
 const QString HighlightingData::WarningKeyword = "Warning";
 
+const QString HighlightingRule::timestampRegex = " \\[\\d\\d:\\d\\d:\\d\\d\\]:";
+
 SystemLogHighlighter::SystemLogHighlighter(QObject *parent)
     : QSyntaxHighlighter(parent)
 {

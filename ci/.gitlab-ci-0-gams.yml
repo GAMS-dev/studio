@@ -45,6 +45,18 @@ install-gams-deg:
     expire_in: 1 hour
     paths: [ci/*,gamsdist/*]
 
+install-gams-dac:
+  stage: install-gams
+  tags: [macos-arm64]
+  dependencies: [fetch-prerequisites]
+  script:
+    - python3 ci/fetch_gams.py fetch_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
+  artifacts:
+    name: gamsdist-dac
+    expire_in: 1 hour
+    paths: [gamsdist/*]
+
 install-gams-wei:
   stage: install-gams
   tags: [windows]

@@ -25,6 +25,7 @@
 #include <QTextStream>
 #include <QMetaEnum>
 #include <QMetaType>
+#include <QStringConverter>
 
 namespace gams {
 namespace studio {
@@ -101,7 +102,7 @@ enum class FileKind {
 };
 Q_ENUM_NS(FileKind)
 
-inline unsigned int qHash(FileKind key, unsigned int seed)
+inline size_t qHash(FileKind key, size_t seed)
 {
     return ::qHash(static_cast<unsigned int>(key), seed);
 }
@@ -200,8 +201,8 @@ enum ProcessExitCode {
 }
 
 template <typename PHANTOM_TYPE>
-unsigned int qHash(gams::studio::PhantomInt<PHANTOM_TYPE> key, unsigned int seed) {
-    return ::qHash(static_cast<unsigned int>(key), seed);
+size_t qHash(gams::studio::PhantomInt<PHANTOM_TYPE> key, size_t seed) {
+    return ::qHash(static_cast<size_t>(key), seed);
 }
 
 

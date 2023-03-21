@@ -42,8 +42,7 @@ class ConnectEditor : public AbstractView
     Q_OBJECT
 
 public:
-    explicit ConnectEditor(const QString& connectDataFileName,
-                           FileId id,  QTextCodec* codec, QWidget *parent = nullptr);
+    explicit ConnectEditor(const QString& connectDataFileName, FileId id,  QWidget *parent = nullptr);
     ~ConnectEditor() override;
 
     FileId fileId() const;
@@ -59,7 +58,7 @@ signals:
 public slots:
     bool saveConnectFile(const QString &location);
     void openAsTextButton_clicked(bool checked = false);
-    void on_reloadConnectFile(QTextCodec* codec);
+    void on_reloadConnectFile();
 
 private slots:
     void fromSchemaInserted(const QString& schemaname, int position);
@@ -86,7 +85,6 @@ private:
     Ui::ConnectEditor *ui;
     bool        mModified;
     FileId      mFileId;
-    QTextCodec* mCodec;
 
     QList<int>        mExpandIDs;
     ConnectDataModel* mDataModel;

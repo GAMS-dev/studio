@@ -20,7 +20,6 @@
 #include "testcheckforupdatewrapper.h"
 #include "checkforupdatewrapper.h"
 #include "commonpaths.h"
-
 #include <QRegularExpression>
 
 using namespace gams::studio;

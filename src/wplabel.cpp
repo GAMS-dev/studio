@@ -44,7 +44,7 @@ WpLabel::WpLabel(const QString &content, const QString &link, QWidget *parent)
     QLabel::setText(mContent);
 }
 
-void WpLabel::enterEvent(QEvent *event)
+void WpLabel::enterEvent(QEnterEvent *event)
 {
     Q_UNUSED(event)
     if (mInactive) return;

@@ -36,12 +36,10 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectEditor::ConnectEditor(const QString& connectDataFileName,
-                             FileId id,  QTextCodec* codec,  QWidget *parent) :
+ConnectEditor::ConnectEditor(const QString& connectDataFileName, FileId id,  QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::ConnectEditor),
     mFileId(id),
-    mCodec(codec),
     mLocation(connectDataFileName)
 {
     init(false);
@@ -304,7 +302,7 @@ void ConnectEditor::openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, QStringConverter::Utf8, true);
 }
 
 void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
@@ -426,9 +424,8 @@ void ConnectEditor::moveDownDatatItemRequested(const QModelIndex &index)
     ui->dataTreeView->setUpdatesEnabled(true);
 }
 
-void ConnectEditor::on_reloadConnectFile(QTextCodec *codec)
+void ConnectEditor::on_reloadConnectFile()
 {
-    Q_UNUSED(codec);  // yaml-cpp supports only QTextCodec::codecForName("UTF-8")
     try {
        mDataModel->reloadConnectDataModel();
        setModified(false);

@@ -39,6 +39,7 @@ const QString ConnectDataModel::TooltipStrFooter = QString("</body></html>");
 const QString ConnectDataModel::TooltipOpenedBoldStr = QString("<span style=' font-weight:600;'>");
 const QString ConnectDataModel::TooltipClosedBoldStr = QString("</span>");
 QRegularExpression ConnectDataModel::mRexWhitechar("\\s+");
+QRegularExpression ConnectDataModel::mRexNumber("^\\[\\d\\d?\\]$");
 
 ConnectDataModel::ConnectDataModel(const QString& filename,  Connect* c, QObject *parent)
     : QAbstractItemModel{parent},
@@ -551,9 +552,7 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
             if (!hasSameParent(tobeinsertSchemaKey, schemaKey, schemaKey.size()==tobeinsertSchemaKey.size())) // not immediate attribute of schemaname
                 return false;
             if (schemaKey.last().compare("-")==0) {
-                QString pattern = "\\[\\d\\d?\\]";
-                QRegExp rx(pattern);
-                if (rx.exactMatch(tobeinsertSchemaKey.last()))
+                if (mRexNumber.match(tobeinsertSchemaKey.last()).hasMatch())
                     return true;
             }
             if (existsUnderSameParent(schemastrlist[1],  parent)) // exists under the same parent

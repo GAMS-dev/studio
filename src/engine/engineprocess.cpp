@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "engineprocess.h"
-#include <OAIJobsApi.h>
+#include <engineapi/OAIJobsApi.h>
 #include "enginemanager.h"
 #include "logger.h"
 #include "commonpaths.h"
@@ -29,7 +29,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
-#include <QNetworkConfiguration>
+//#include <QNetworkConfiguration>
 
 #ifdef _WIN32
 #include "Windows.h"

@@ -41,13 +41,13 @@ namespace studio {
 namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
-                                       FileId id, QTextCodec* codec, QWidget *parent) :
+                                       FileId id, QStringConverter::Encoding encoding, QWidget *parent) :
           AbstractView(parent),
           ui(new Ui::SolverOptionWidget),
           mFileId(id),
           mLocation(optionFilePath),
           mSolverName(solverName),
-          mCodec(codec)
+          mEncoding(encoding)
 {
     ui->setupUi(this);
     setFocusProxy(ui->solverOptionTableView);
@@ -74,7 +74,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     mOptionTokenizer->provideLogger(logEdit);
     ui->solverOptionTabWidget->addTab( logEdit, "Messages" );
 
-    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mCodec);
+    QList<SolverOptionItem *> optionItem = mOptionTokenizer->readOptionFile(mLocation, mEncoding);
     mOptionTableModel = new SolverOptionTableModel(optionItem, mOptionTokenizer,  this);
     ui->solverOptionTableView->setModel( mOptionTableModel );
     updateTableColumnSpan();
@@ -601,16 +601,17 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
     return saveAs(location);
 }
 
-void SolverOptionWidget::on_reloadSolverOptionFile(QTextCodec* codec)
+void SolverOptionWidget::on_reloadSolverOptionFile(QStringConverter::Encoding encoding)
 {
-     if (mCodec != codec)
-         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding").arg(mLocation, QString(codec->name())), LogMsgType::Info);
-     else if (mFileHasChangedExtern)
+    if (mEncoding != encoding) {
+        mEncoding = encoding;
+        mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding")
+                                           .arg(mLocation, QStringConverter::nameForEncoding(encoding)), LogMsgType::Info);
+    } else if (mFileHasChangedExtern)
               mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
      else
          return;
-     mCodec = codec;
-     mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, codec) );
+     mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, mEncoding) );
      mFileHasChangedExtern = false;
      setModified(false);
 }
@@ -680,7 +681,7 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, QStringConverter::Utf8, true);
 }
 
 void SolverOptionWidget::copyAction()
@@ -1546,7 +1547,7 @@ void SolverOptionWidget::setModified(bool modified)
 bool SolverOptionWidget::saveAs(const QString &location)
 {
     setModified(false);
-    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mCodec);
+    bool success = mOptionTokenizer->writeOptionFile(mOptionTableModel->getCurrentListOfOptionItems(), location, mEncoding);
     if (mLocation != location) {
         bool warning = false;
         if (QString::compare(QFileInfo(mLocation).completeBaseName(), QFileInfo(location).completeBaseName(), Qt::CaseInsensitive)!=0 ) {

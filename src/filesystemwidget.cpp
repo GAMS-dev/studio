@@ -102,6 +102,7 @@ void FileSystemWidget::setModelName(const QString &modelName)
     QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");
     pattern = QString("^(%1)$").arg(pattern);
     QRegularExpression rex(pattern);
+    if (FileType::fsCaseSense()) rex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
     mFilterModel->setUncommonRegExp(rex);
 }
 

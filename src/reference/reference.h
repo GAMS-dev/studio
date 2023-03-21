@@ -52,7 +52,7 @@ public:
     /// \param referenceFile the absolute file path of the reference file.
     /// \param parent the parent object.
     ///
-    Reference(QString referenceFile, QTextCodec* codec, QObject* parent = Q_NULLPTR);
+    Reference(QString referenceFile, QStringConverter::Encoding encoding, QObject* parent = Q_NULLPTR);
 
     ///
     /// \brief Destructs the Reference object, i.e., cleaning up internal memory.
@@ -166,12 +166,6 @@ public:
     ///
     int errorLine() const;
 
-    ///
-    /// \brief Get pointer to the codec.
-    /// \return Returns pointer to the codec
-    ///
-    QTextCodec *codec() const;
-
 signals:
     ///
     /// \brief Signal emitted when loading the reference file has just been started.
@@ -190,14 +184,14 @@ public slots:
     /// \brief Load the reference object from the reference file.
     /// \param pointer to codec to be loaded
     ///
-    void loadReferenceFile(QTextCodec* codec);
+    void loadReferenceFile(QStringConverter::Encoding encoding);
 
 private:
     bool parseFile(QString referenceFile);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
     void clear();
 
-    QTextCodec* mCodec;
+    QStringConverter::Encoding mEncoding;
     QString mReferenceFile;
     ReferenceState mState = Initializing;
     int mLastErrorLine = -1;

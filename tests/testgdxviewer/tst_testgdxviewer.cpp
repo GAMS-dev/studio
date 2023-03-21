@@ -70,10 +70,8 @@ void TestGdxViewer::test_createGdxViewer()
     createGdxFile("trnsport");
 
     // create GdxViewer instance
-    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-    QTextCodec *mCodec = QTextCodec::codecForMib(codecMib);
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
-    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), mCodec);
+    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QStringConverter::Utf8);
     delete gdxViewer;
     gdxViewer = nullptr;
 }
@@ -83,10 +81,8 @@ void TestGdxViewer::test_export()
     createGdxFile("trnsport");
 
     // create GdxViewer instance
-    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-    QTextCodec *mCodec = QTextCodec::codecForMib(codecMib);
     QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
-    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), mCodec);
+    GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QStringConverter::Utf8);
 
     ExportModel *exportModel = new ExportModel(gdxViewer->gdxSymbolTable(), this);
     exportModel->selectAll();

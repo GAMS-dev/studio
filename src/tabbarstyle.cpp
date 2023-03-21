@@ -97,9 +97,9 @@ QSize TabBarStyle::sizeFromContents(QStyle::ContentsType type, const QStyleOptio
     QSize res = QProxyStyle::sizeFromContents(type, option, size, widget);
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
     if (tabWidget && widget == mMainTabs->tabBar()) {
-        if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
             if (QWidget *wid = tabWidget->widget(tab->tabIndex)) {
-                QStyleOptionTabV4 opt(*tab);
+                QStyleOptionTab opt(*tab);
                 QSize newSize = size;
                 opt.text = platformGetText(opt.text, wid);
                 if (opt.text != tab->text) {
@@ -119,7 +119,7 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
 {
     QTabWidget *tabWidget = widget == mMainTabs->tabBar() ? mMainTabs : widget == mLogTabs->tabBar() ? mLogTabs : nullptr;
     if (tabWidget) {
-        if (const QStyleOptionTabV4 *tab = qstyleoption_cast<const QStyleOptionTabV4 *>(option)) {
+        if (const QStyleOptionTab *tab = qstyleoption_cast<const QStyleOptionTab *>(option)) {
 
 //            if (element == CE_TabBarTabShape) { // change the color of the background
 //                QStyleOptionTabV4 opt(*tab);
@@ -133,7 +133,7 @@ void TabBarStyle::drawControl(QStyle::ControlElement element, const QStyleOption
 //            }
 
             if (element == CE_TabBarTabLabel) {
-                QStyleOptionTabV4 opt(*tab);
+                QStyleOptionTab opt(*tab);
                 TabState state = tsNormal;
 
                 state = getState(tabWidget->widget(tab->tabIndex), opt.state.testFlag(State_Selected));

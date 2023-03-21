@@ -73,7 +73,8 @@ signals:
     void projectTabRenamed(QWidget *wid, const QString &newName);
 
 public slots:
-    void openFile(gams::studio::FileMeta* fm, gams::studio::NodeId groupId, bool focus = true, int codecMib = -1);
+    void openFile(gams::studio::FileMeta* fm, gams::studio::NodeId groupId, bool focus = true,
+                  QStringConverter::Encoding encoding = QStringConverter::Utf8);
     void removeFile(gams::studio::FileMeta* fileMeta);
     void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
     void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);

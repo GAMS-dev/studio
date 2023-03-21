@@ -291,11 +291,11 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
     }
 }
 
-void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
+void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, QStringConverter::Encoding encoding)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
     PExProjectNode* project = mProjectRepo->findProject(groupId);
-    emit mProjectRepo->openFile(fm, focus, project, codecMib);
+    emit mProjectRepo->openFile(fm, focus, project, encoding);
 }
 
 void FileMetaRepo::fileChanged(const QString &path)

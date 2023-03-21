@@ -22,8 +22,8 @@
 #include "headerviewproxy.h"
 
 #include <QCheckBox>
-#include <QTextCodec>
 #include <QRadioButton>
+#include <QStringDecoder>
 
 namespace gams {
 namespace studio {
@@ -37,41 +37,41 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     mSelectedMibs = selectedMibs;
     mDefaultMib = defaultMib;
 
-    QList<int> mibs = QTextCodec::availableMibs();
+    QList<int> mibs = {}; //QTextCodec::availableMibs();
     std::sort(mibs.begin(), mibs.end());
     if (HeaderViewProxy::platformShouldDrawBorder())
         ui->tableWidget->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     ui->tableWidget->setRowCount(mibs.count());
     ui->tableWidget->setWordWrap(false);
 
-    int row = 0;
-    QFont boldFont = font();
-    boldFont.setBold(true);
-    for (int mib: qAsConst(mibs)) {
-        QRadioButton *rad = new QRadioButton("");
-        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
-        rad->setChecked(mib == defaultMib);
-        ui->tableWidget->setCellWidget(row, 0, rad);
+//    int row = 0;
+//    QFont boldFont = font();
+//    boldFont.setBold(true);
+//    for (int mib: qAsConst(mibs)) {
+//        QRadioButton *rad = new QRadioButton("");
+//        rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+//        rad->setChecked(mib == defaultMib);
+//        ui->tableWidget->setCellWidget(row, 0, rad);
 
-        QCheckBox *box = new QCheckBox("");
-        box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
-        if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);
-        if (mib == 0) box->setEnabled(false);
-        ui->tableWidget->setCellWidget(row, 1, box);
+//        QCheckBox *box = new QCheckBox("");
+//        box->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
+//        if (selectedMibs.contains(mib) || mib == 0) box->setChecked(true);
+//        if (mib == 0) box->setEnabled(false);
+//        ui->tableWidget->setCellWidget(row, 1, box);
 
-        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(mib));
-        ui->tableWidget->item(row, 2)->setTextAlignment(Qt::AlignRight);
-        ui->tableWidget->item(row, 2)->setData(Qt::EditRole, mib);
+//        ui->tableWidget->setItem(row, 2, new QTableWidgetItem(mib));
+//        ui->tableWidget->item(row, 2)->setTextAlignment(Qt::AlignRight);
+//        ui->tableWidget->item(row, 2)->setData(Qt::EditRole, mib);
 
-        QTextCodec *codec = QTextCodec::codecForMib(mib);
-        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->name())+" "));
-        ui->tableWidget->item(row, 3)->setFont(boldFont);
+//        QStringDecoder codec(mib);
+//        ui->tableWidget->setItem(row, 3, new QTableWidgetItem(" "+QString(codec->name())+" "));
+//        ui->tableWidget->item(row, 3)->setFont(boldFont);
 
-        ui->tableWidget->setItem(row, 4, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
-        ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
-        ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
-        row++;
-    }
+//        ui->tableWidget->setItem(row, 4, new QTableWidgetItem(" "+QString(codec->aliases().join(", "))+" "));
+//        ui->tableWidget->setVerticalHeaderItem(row, new QTableWidgetItem());
+//        ui->tableWidget->setRowHeight(row, int(ui->tableWidget->fontMetrics().height()*1.4));
+//        row++;
+//    }
     ui->tableWidget->horizontalHeader()->resizeSections(QHeaderView::ResizeToContents);
     ui->tableWidget->hideColumn(2);
     ui->tableWidget->setSelectionMode(QAbstractItemView::SingleSelection);

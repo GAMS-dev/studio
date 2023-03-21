@@ -83,6 +83,7 @@ protected:
     QString   mCurrentSchemaName;
     Connect*  mConnect;
     QMap<QString, SchemaDefinitionItem*> mRootItems;
+    static QRegularExpression mRexDigits;
 };
 
 } // namespace connect

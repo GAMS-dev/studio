@@ -49,8 +49,6 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     if (kind == FileText) {
         mMapper = new FileMapper();
     }
-    int mib = Settings::settings()->toInt(skDefaultCodecMib);
-    QTextCodec *codec = QTextCodec::codecForMib(mib);
     if (kind == MemoryText) {
         MemoryMapper* mm = new MemoryMapper();
         connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
@@ -63,7 +61,11 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
         connect(mm, &MemoryMapper::updateView, this, &TextView::updateView);
         mMapper = mm;
     }
-    mMapper->setCodec(codec);
+    // TODO(JM) gather available encodings usable by QStringConverterBase - for now always use UTF-8
+//    int mib = Settings::settings()->toInt(skDefaultCodecMib);
+//    QTextCodec *codec = QTextCodec::codecForMib(mib);
+    mMapper->setEncoding(QStringConverter::Utf8);
+
     mEdit = new TextViewEdit(*mMapper, this);
     mEdit->setFrameShape(QFrame::NoFrame);
     QVBoxLayout *lay = new QVBoxLayout(this);
@@ -118,11 +120,11 @@ int TextView::lineCount() const
     return mMapper->lineCount();
 }
 
-bool TextView::loadFile(const QString &fileName, int codecMib, bool initAnchor)
+bool TextView::loadFile(const QString &fileName, QStringConverter::Encoding encoding, bool initAnchor)
 {
     if (mTextKind != FileText) return false;
-    if (codecMib == -1) codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-    mMapper->setCodec(codecMib == -1 ? QTextCodec::codecForLocale() : QTextCodec::codecForMib(codecMib));
+//    if (encoding == -1) encoding = Settings::settings()->toInt(skDefaultCodecMib);
+    mMapper->setEncoding(encoding);
 
     if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     recalcVisibleLines();

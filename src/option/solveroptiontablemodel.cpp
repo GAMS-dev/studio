@@ -412,7 +412,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
         return false;
 
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::SolverOptionDefinition));
-    QDataStream stream(&encodedData, QFile::ReadOnly);
+    QDataStream stream(&encodedData, QDataStream::ReadOnly);
     QStringList newItems;
     int rows = 0;
 

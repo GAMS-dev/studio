@@ -366,11 +366,16 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
             FileType *ft = &FileType::from(suf);
             if (QFileInfo::exists(file)) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
-                if (child.contains("codecMib")) {
-                    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-                    node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
-                                                                         : codecMib);
-                }
+
+                node->file()->setEncoding(QStringConverter::Utf8);
+                // TODO(JM) Check if it makes sense to switch to other encodings from QStringConverter::Encodings
+                // If so: store the encoding "string" in the settings
+
+//                if (child.contains("codecMib")) {
+//                    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+//                    node->file()->setEncoding(child.contains("codecMib") ? child.value("codecMib").toInt()
+//                                                                         : codecMib);
+//                }
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
@@ -441,7 +446,7 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
         nodeObject.insert("file", relativePaths ? dir.relativeFilePath(file->location()) : file->location());
         nodeObject.insert("name", file->name());
         nodeObject.insert("type", file->file()->kindAsStr());
-        int mib = file->file()->codecMib();
+        int mib = file->file()->encoding();
         nodeObject.insert("codecMib", mib);
         childList.append(nodeObject);
     }

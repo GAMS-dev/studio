@@ -20,7 +20,7 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
-#include <QTextCodec>
+#include <QStringEncoder>
 #include <QRegularExpression>
 #include "optiontokenizer.h"
 #include "gclgms.h"
@@ -1263,7 +1263,7 @@ void OptionTokenizer::parseOptionString(const QString &text, QString &keyStr, QS
     return;
 }
 
-QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QTextCodec* codec)
+QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QStringConverter::Encoding encoding)
 {
     QList<SolverOptionItem *> items;
 
@@ -1271,7 +1271,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     int i = 0;
     if (inputFile.open(QFile::ReadOnly)) {
        QTextStream in(&inputFile);
-       in.setCodec(codec);
+       in.setEncoding(encoding);
 
        QList<int> idList;
        while (!in.atEnd()) {
@@ -1292,7 +1292,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     return items;
 }
 
-bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec)
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QStringConverter::Encoding encoding)
 {
     bool hasBeenLogged = false;
 
@@ -1304,10 +1304,9 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
 
 //    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
     QTextStream out(&outputFile);
-    out.setCodec( codec );
-
+    QStringEncoder encode = QStringEncoder(encoding);
     for(SolverOptionItem* item: items) {
-            out << formatOption( item ) << Qt::endl;
+            out << encode(formatOption(item)) << Qt::endl;
             switch (item->error) {
             case OptionErrorType::Invalid_Key:
                 logger()->append( QString("Unknown option '%1'").arg(item->key),

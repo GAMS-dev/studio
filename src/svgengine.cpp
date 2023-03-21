@@ -55,7 +55,7 @@ SvgEngine::~SvgEngine()
         mController->unbind(this);
 }
 
-QString SvgEngine::iconName() const
+QString SvgEngine::iconName()
 {
     //QIconEngine::IconNameHook
     return mName;

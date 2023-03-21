@@ -177,7 +177,7 @@ public slots:
                                             gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
     void openFile(gams::studio::FileMeta *fileMeta, bool focus = true,
-                  gams::studio::PExProjectNode *project = nullptr, int codecMib = -1,
+                  gams::studio::PExProjectNode *project = nullptr, QStringConverter::Encoding encoding = QStringConverter::Utf8,
                   bool forcedTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
     void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
@@ -214,7 +214,7 @@ private slots:
     void openDelayedFiles();
     void updateRecentEdit(QWidget *old, QWidget *now);
     void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
-                      int codecMib = -1, bool forcedAsTextEditor = false,
+                      QStringConverter::Encoding encoding = QStringConverter::Utf8, bool forcedAsTextEditor = false,
                       gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);

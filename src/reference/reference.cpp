@@ -25,10 +25,10 @@ namespace reference {
 
 QRegularExpression Reference::mRexSplit("\\s+");
 
-Reference::Reference(QString referenceFile, QTextCodec* codec, QObject *parent) :
-    QObject(parent), mCodec(codec),  mReferenceFile(QDir::toNativeSeparators(referenceFile))
+Reference::Reference(QString referenceFile, QStringConverter::Encoding encoding, QObject *parent) :
+    QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
-    loadReferenceFile(mCodec);
+    loadReferenceFile(encoding);
 }
 
 Reference::~Reference()
@@ -152,16 +152,11 @@ int Reference::errorLine() const
     return  mLastErrorLine;
 }
 
-QTextCodec *Reference::codec() const
-{
-    return mCodec;
-}
-
-void Reference::loadReferenceFile(QTextCodec* codec)
+void Reference::loadReferenceFile(QStringConverter::Encoding encoding)
 {
     mLastErrorLine = -1;
     emit loadStarted();
-    mCodec = codec;
+    mEncoding = encoding;
     mState = ReferenceState::Loading;
     clear();
     mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
@@ -179,7 +174,7 @@ bool Reference::parseFile(QString referenceFile)
         return false;
     }
     QTextStream in(&file);
-    in.setCodec(mCodec);
+    in.setEncoding(mEncoding);
 
     QStringList recordList;
     QString idx;

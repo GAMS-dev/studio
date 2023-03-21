@@ -25,6 +25,7 @@
 #include <QBrush>
 #include <QIcon>
 #include <QPalette>
+#include <QHash>
 
 namespace gams {
 namespace studio {
@@ -167,10 +168,10 @@ private:
     QHash<QString, QIcon> mIconCache;
     QHash<QString, QByteArray> mDataCache;
     QVector<SvgEngine*> mEngines;
+
 };
 
-inline QColor toColor(Theme::ColorSlot code) {
-    return Theme::color(code); }
+inline QColor toColor(Theme::ColorSlot code) { return Theme::color(code); }
 inline QString name(Theme::ColorSlot col) { return Theme::instance()->name(col); }
 
 } // namespace studio

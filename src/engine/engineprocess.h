@@ -21,6 +21,8 @@
 #define GAMS_STUDIO_ENGINE_ENGINEPROCESS_H
 
 #include "process.h"
+#include "enginemanager.h"
+
 #include <QTimer>
 #include <QElapsedTimer>
 #include <QFileInfo>
@@ -33,7 +35,7 @@ namespace gams {
 namespace studio {
 namespace engine {
 
-struct QuotaData;
+//struct QuotaData;
 class EngineManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine

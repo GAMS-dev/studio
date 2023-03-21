@@ -19,6 +19,7 @@
  */
 #include <QDir>
 #include <QMessageBox>
+#include <QRegularExpression>
 
 #include "commonpaths.h"
 #include "connect.h"
@@ -27,6 +28,8 @@
 namespace gams {
 namespace studio {
 namespace connect {
+
+static const QRegularExpression cRex("^\\[\\d\\d?\\]$");
 
 Connect::Connect()
 {
@@ -269,10 +272,8 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
 
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Node value;
-    QString pattern = "^\\[\\d\\d?\\]";
-    QRegExp rx(pattern);
     if (mapValue(schemanode, value, true, onlyRequiredAttribute )) {
-       if (rx.exactMatch(tobeinsertSchemaKey.last())) {
+       if (cRex.match(tobeinsertSchemaKey.last()).hasMatch()) {
            data[0] = value; //listnode;
        } else {
             data[tobeinsertSchemaKey.last().toStdString()] = value;

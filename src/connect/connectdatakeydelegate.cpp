@@ -200,7 +200,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
                     if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaAppend) {
                         QString data = model->data(index).toString();
                         bool *ok = nullptr;
-                        int i = data.left(data.indexOf("]")).midRef(data.indexOf("[")+1).toInt(ok);
+                        int i = data.left(data.indexOf("]")).mid(data.indexOf("[")+1).toInt(ok);
                         emit requestInsertSchemaItem( ok ? 0 : i, index);
                     } else {
                         emit requestAppendItem(index);

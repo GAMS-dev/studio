@@ -21,13 +21,13 @@
 #include <QMainWindow>
 #include <QStatusBar>
 #include <QLabel>
-#include <QTextCodec>
 #include <logger.h>
 #include <QPainter>
 #include <QPaintEvent>
 #include <QStyle>
 #include <QLayout>
 #include <QStyleOption>
+#include <QStringDecoder>
 
 namespace gams {
 namespace studio {
@@ -65,13 +65,13 @@ void StatusWidgets::setFileName(const QString &fileName)
     mFileName->setBaseText(fileName);
 }
 
-void StatusWidgets::setEncoding(int encodingMib)
+void StatusWidgets::setEncoding(QStringConverter::Encoding encoding)
 {
-    if (encodingMib == -1) {
+    if (encoding == -1) {
         mEditEncode->setText("");
     } else {
-        QTextCodec* codec = QTextCodec::codecForMib(encodingMib);
-        mEditEncode->setText(codec->name());
+        QStringDecoder dec(encoding);
+        mEditEncode->setText(dec.name());
     }
 }
 

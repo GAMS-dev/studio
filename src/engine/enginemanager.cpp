@@ -19,13 +19,13 @@
  */
 #include "enginemanager.h"
 #include "logger.h"
-#include <OAIAuthApi.h>
-#include <OAIDefaultApi.h>
-#include <OAIJobsApi.h>
-#include <OAIHelpers.h>
-#include <OAINamespacesApi.h>
-#include <OAIUsageApi.h>
-#include <OAIUsersApi.h>
+#include <engineapi/OAIAuthApi.h>
+#include <engineapi/OAIDefaultApi.h>
+#include <engineapi/OAIJobsApi.h>
+#include <engineapi/OAIHelpers.h>
+#include <engineapi/OAINamespacesApi.h>
+#include <engineapi/OAIUsageApi.h>
+#include <engineapi/OAIUsersApi.h>
 #include <QString>
 #include <iostream>
 #include <QFile>

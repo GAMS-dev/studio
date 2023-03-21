@@ -69,7 +69,7 @@ public:
     bool saveAs(const QString &location);
     void setFileChangedExtern(bool value);
 
-    void on_reloadGamsUserConfigFile(QTextCodec* codec);
+    void on_reloadGamsUserConfigFile(QStringConverter::Encoding encoding);
     QString getSelectedParameterName(QWidget* widget) const;
 
     void zoomIn(int range = 1);

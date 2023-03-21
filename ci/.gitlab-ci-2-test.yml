@@ -3,7 +3,7 @@ test-deg:
   tags: [macos]
   dependencies: [install-gams-deg,build-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/5.15.2/clang_64/bin
+    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   script:
     - GAMS_PATH=$(pwd)/gamsdist
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
@@ -23,19 +23,42 @@ test-deg:
     reports:
       junit: build/reports/*
 
+test-dac:
+  stage: test
+  tags: [macos-arm64]
+  dependencies: [install-gams-dac,build-dac]
+  variables:
+    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+  script:
+    - GAMS_PATH=$(pwd)/gamsdist
+    - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
+    - cd build && mkdir reports
+    - REPORTS_DIR=$(pwd)/reports
+    - |+
+      set +e
+      cd tests/bin
+      for f in *
+      do
+        ./$f -xunitxml -o $REPORTS_DIR/$f.xml
+      done
+  artifacts:
+    name: unittest-results-dac
+    paths:
+      - build/src/bin/*
+    reports:
+      junit: build/reports/*
+
 test-leg:
   stage: test
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [install-gams-leg,build-leg]
-  variables:
-    qtpath: /opt/Qt/5.15.2/bin
   script:
     - GAMS_PATH=$(pwd)/gamsdist
     - echo ${GAMS_LICENSE} > $GAMS_PATH/gamslice.txt
-    - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
+    - PATH="${GAMS_PATH}:${PATH}"
     - cd build && mkdir reports
     - REPORTS_DIR=$(pwd)/reports
     - |+
@@ -57,10 +80,10 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
   dependencies: [install-gams-wei,build-wei]
   variables:
-    qtpath: C:\Qt\5.15.2\msvc2019_64\bin
+    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
   script:
     - $GAMS_PATH = ($(pwd), '\gamsdist') -join ""
     - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII

@@ -21,6 +21,7 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QtMath>
+
 #include "abstracttextmapper.h"
 #include "exception.h"
 #include "logger.h"
@@ -31,7 +32,6 @@ namespace studio {
 
 AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 {
-    mCodec = nullptr;
     setMappingSizes();
     setPosAbsolute(nullptr, 0, 0);
 }
@@ -39,14 +39,16 @@ AbstractTextMapper::AbstractTextMapper(QObject *parent): QObject(parent)
 AbstractTextMapper::~AbstractTextMapper()
 {}
 
-QTextCodec *AbstractTextMapper::codec() const
+QStringConverter::Encoding AbstractTextMapper::encoding() const
 {
-    return mCodec;
+    return mEncoding;
 }
 
-void AbstractTextMapper::setCodec(QTextCodec *codec)
+void AbstractTextMapper::setEncoding(QStringConverter::Encoding encoding)
 {
-    mCodec = codec;
+    mEncoding = encoding;
+    encode = QStringEncoder(encoding); // QStringEncoder::Flag::Default
+    decode = QStringDecoder(encoding); // QStringEncoder::Flag::Default
 }
 
 bool AbstractTextMapper::isEmpty() const
@@ -415,7 +417,7 @@ QString AbstractTextMapper::lines(int localLineNrFrom, int lineCount) const
                        uint(chunk->lineBytes.at(chunkInterval.first+chunkInterval.second)
                             - chunk->lineBytes.at(chunkInterval.first) - mDelimiter.size()));
         if (!res.isEmpty()) res.append(mDelimiter);
-        res.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+        res.append(decode(raw));
         interval.first += chunkInterval.second;
         interval.second -= chunkInterval.second;
         if (chunk->nr == chunkCount()-1) {
@@ -612,23 +614,21 @@ QString AbstractTextMapper::selectedText() const
         int from = chunk->lineBytes.at(0);
         if (chunk->nr == pFrom.chunkNr) {
             QString text = line(chunk, pFrom.localLine).left(pFrom.charNr);
-            from = chunk->lineBytes.at(pFrom.localLine)
-                    + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
+            from = chunk->lineBytes.at(pFrom.localLine) + QByteArray(encode(text)).length();
         }
         int to = chunk->lineBytes.at(chunk->lineCount());
         if (chunk->nr == pTo.chunkNr) {
             QString text = line(chunk, pTo.localLine).left(pTo.charNr);
-            to = chunk->lineBytes.at(pTo.localLine)
-                    + (mCodec ? mCodec->fromUnicode(text).length() : text.length());
+            to = chunk->lineBytes.at(pTo.localLine) + QByteArray(encode(text)).length();
         }
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
-        all.append(mCodec ? mCodec->toUnicode(raw).toUtf8() : raw);
+        all.append(raw);
         if (chunk->nr == chunkCount()-1) break;
 
         chunk = getChunk(chunk->nr + 1);
     }
-    return mCodec ? mCodec->toUnicode(all) : all;
+    return decode(all);
 }
 
 QString AbstractTextMapper::positionLine() const
@@ -639,7 +639,7 @@ QString AbstractTextMapper::positionLine() const
         int to = chunk->lineBytes.at(mPosition.localLine + 1) - mDelimiter.length();
         QByteArray raw;
         raw.setRawData(static_cast<const char*>(chunk->bArray)+from, uint(to - from));
-        return mCodec ? mCodec->toUnicode(raw) : raw;
+        return decode.decode(raw);
     }
     return QString();
 }
@@ -658,7 +658,7 @@ QString AbstractTextMapper::line(AbstractTextMapper::Chunk *chunk, int chunkLine
     QByteArray raw;
     raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(chunkLineNr),
                    uint(chunk->lineBytes.at(chunkLineNr+1) - chunk->lineBytes.at(chunkLineNr) - mDelimiter.size()));
-    return mCodec ? mCodec->toUnicode(raw) : QString(raw);
+    return decode(raw);
 }
 
 int AbstractTextMapper::lastChunkWithLineNr() const
@@ -708,7 +708,7 @@ QString AbstractTextMapper::lines(Chunk *chunk, int startLine, int &lineCount) c
     raw.setRawData(static_cast<const char*>(chunk->bArray)+chunk->lineBytes.at(startLine),
                    uint(chunk->lineBytes.at(startLine+lineCount) - chunk->lineBytes.at(startLine) - mDelimiter.size()));
     if (!res.isEmpty()) res.append(mDelimiter);
-    res.append(mCodec ? mCodec->toUnicode(raw) : QString(raw));
+    res.append(decode(raw));
     return res;
 }
 

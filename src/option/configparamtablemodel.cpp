@@ -400,7 +400,7 @@ QMimeData *ConfigParamTableModel::mimeData(const QModelIndexList &indexes) const
     QMimeData* mimeData = new QMimeData();
     QByteArray encodedData;
 
-    QDataStream stream(&encodedData, QFile::WriteOnly);
+    QDataStream stream(&encodedData, QDataStream::WriteOnly);
 
     for (const QModelIndex &index : indexes) {
         if (index.isValid()) {
@@ -438,7 +438,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
         return false;
 
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::ConfigOptionDefinition));
-    QDataStream stream(&encodedData, QFile::ReadOnly);
+    QDataStream stream(&encodedData, QDataStream::ReadOnly);
     QStringList newItems;
     int rows = 0;
 

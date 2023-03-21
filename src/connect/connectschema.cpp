@@ -17,13 +17,16 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QRegularExpression>
+
 #include "connectschema.h"
 #include "exception.h"
+
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 namespace connect {
-
 
 void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int level)
 {
@@ -261,10 +264,10 @@ bool ConnectSchema::isAnyOfDefined(const QString &key) const
 QStringList ConnectSchema::getAllOneOfSchemaKeys(const QString &key) const
 {
     QStringList keyslist;
-    QString pattern = "^"+key+":-:\\[\\d\\d?\\]";
-    QRegExp rx(pattern);
+    QString pattern = "^"+key+":-:\\[\\d\\d?\\]$";
+    QRegularExpression rex(pattern);
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
-        if (rx.exactMatch(it.key()) && !keyslist.contains(it.key()))
+        if (rex.match(it.key()).hasMatch() && !keyslist.contains(it.key()))
             keyslist << it.key();
     }
     return keyslist;

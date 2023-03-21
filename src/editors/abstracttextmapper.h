@@ -21,12 +21,13 @@
 #define ABSTRACTTEXTMAPPER_H
 
 #include <QObject>
-#include <QTextCodec>
 #include <QVector>
 #include <QSet>
+#include <QStringConverter>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QPoint>
+
 #include "search/result.h"
 
 namespace gams {
@@ -145,8 +146,8 @@ public:
     ~AbstractTextMapper() override;
     virtual AbstractTextMapper::Kind kind() const = 0;
 
-    QTextCodec *codec() const;
-    void setCodec(QTextCodec *codec);
+    QStringConverter::Encoding encoding() const;
+    void setEncoding(QStringConverter::Encoding encoding);
 
     bool isEmpty() const;
     virtual void startRun() = 0;
@@ -257,13 +258,14 @@ private:
     int mVisibleLineCount = 0;
     int mFindChunk = 0;
     int mCursorColumn = 0;
-
-    QTextCodec *mCodec = nullptr;
     int mMaxChunksInCache = 5;
     int mChunkSize = 1024*1024;
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
 
+    QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
+    mutable QStringEncoder encode;
+    mutable QStringDecoder decode;
 };
 
 } // namespace studio

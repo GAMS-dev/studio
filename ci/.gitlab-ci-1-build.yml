@@ -3,16 +3,34 @@ build-deg:
   tags: [macos]
   dependencies: [install-gams-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/5.15.2/clang_64/bin
+    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   script:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
-    - mkdir build
-    - cd build
-    - $qtpath/qmake ../gams-studio.pro CONFIG+=release && make -j4
+    - mkdir build && cd build
+    - PATH="${qtpath}:${PATH}"
+    - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
     name: studio-deg
+    expire_in: 2 hours
+    paths: [build/*]
+
+build-dac:
+  stage: build
+  tags: [macos-arm64]
+  dependencies: [install-gams-dac]
+  variables:
+    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+  script:
+    - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
+    - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
+    - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
+    - mkdir build && cd build
+    - PATH="${qtpath}:${PATH}"
+    - qmake ../gams-studio.pro CONFIG+=release && make -j4
+  artifacts:
+    name: studio-dac
     expire_in: 2 hours
     paths: [build/*]
 
@@ -20,19 +38,17 @@ build-leg:
   stage: build
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [install-gams-leg]
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
-    qtpath: /opt/Qt/5.15.2/bin
   script:
     - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
-    - mkdir build
-    - cd build
-    - $qtpath/qmake ../gams-studio.pro CONFIG+=release && make -j4
+    - mkdir build && cd build
+    - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
     name: studio-leg
     expire_in: 2 hours
@@ -44,9 +60,9 @@ build-wei:
   dependencies: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
-     qtpath: C:\Qt\5.15.2\msvc2019_64\bin\
+     qtpath: C:\Qt\6.4.2\msvc2019_64\bin
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
     entrypoint: [""]
   script:
     - '& $cmd_vcvars'
@@ -75,9 +91,9 @@ build-wei-debug:
   dependencies: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
-     qtpath: C:\Qt\5.15.2\msvc2019_64\bin\
+     qtpath: C:\Qt\6.4.2\msvc2019_64\bin
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
   script:
     - '& $cmd_vcvars'
     - $env:Path = "$qtpath;" + $env:Path

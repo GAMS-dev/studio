@@ -491,7 +491,7 @@ void SettingsDialog::on_tb_userLibSelect_clicked()
 
     QFileDialog *fd = new QFileDialog(this, "Select User Library Folder", path);
     fd->setAcceptMode(QFileDialog::AcceptOpen);
-    fd->setFileMode(QFileDialog::DirectoryOnly);
+    fd->setFileMode(QFileDialog::Directory);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
         const QStringList selFiles = fd->selectedFiles();
         if (res && !selFiles.isEmpty())

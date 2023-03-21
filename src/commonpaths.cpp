@@ -47,7 +47,7 @@ QStringList CommonPaths::GamsStandardDataPaths;
 
 #if defined(__APPLE__) || defined(__unix__)
     const QString CommonPaths::ConfigFile = "gmscmpun.txt";
-    const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::DataLocation);
+    const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
     const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)  + "/GAMS";
 
 #else

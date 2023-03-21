@@ -63,6 +63,7 @@ private:
     QMap<QString, ConnectSchema*> mSchema;
     QMap<QString, QString> mSchemaError;
     ConnectError mError;
+    static QRegularExpression mRex;
 };
 
 } // namespace connect

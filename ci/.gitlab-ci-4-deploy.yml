@@ -5,7 +5,7 @@ deploy-cloudfront:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
     entrypoint: [""]   # prevent startup.sh
-  dependencies: [pack-deg, pack-leg, pack-wei]
+  dependencies: [pack-deg, pack-dac, pack-leg, pack-wei]
   rules:
     - if: $CI_COMMIT_TAG =~ /v\d+\.\d+\.\d+.*/
   script:
@@ -21,7 +21,7 @@ deploy-github:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
     entrypoint: [""]   # prevent startup.sh
-  dependencies: [pack-deg, pack-leg, pack-wei]
+  dependencies: [pack-deg, pack-dac, pack-leg, pack-wei]
   rules:
     - if: $CI_COMMIT_TAG =~ /v\d+\.\d+\.\d+.*/
   script:

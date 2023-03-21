@@ -22,7 +22,6 @@
 
 #include <QTextLayout>
 #include <QLineEdit>
-#include <QTextCodec>
 
 #include "option.h"
 #include "commonpaths.h"
@@ -77,8 +76,8 @@ public:
     bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
     bool updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem* item);
 
-    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QTextCodec* codec);
-    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QTextCodec* codec);
+    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QStringConverter::Encoding encoding);
+    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QStringConverter::Encoding encoding);
 
     void validateOption(QList<OptionItem> &items);
     void validateOption(QList<SolverOptionItem *> &items);

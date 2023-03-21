@@ -54,7 +54,7 @@ public:
 protected:
     QRegularExpression mPattern;
     QTextCharFormat mFormat;
-    const QString timestampRegex = " \\[\\d\\d:\\d\\d:\\d\\d\\]:";
+    static const QString timestampRegex;
 };
 
 class LinkHighlightingRule

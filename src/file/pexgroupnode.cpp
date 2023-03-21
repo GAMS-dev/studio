@@ -967,15 +967,16 @@ void PExProjectNode::addNodesForSpecialFiles()
         QString loc = it.value();
         if (QFileInfo::exists(loc)) {
             PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
-            QTextCodec *codec = node->file()->codec();
+            QStringConverter::Encoding encoding = node->file()->encoding();
             if (runFile)
-                node->file()->setCodec(runFile->codec());
+                node->file()->setEncoding(runFile->encoding());
             else {
-                int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-                QTextCodec *codec = QTextCodec::codecForMib(codecMib);
-                if (codec) node->file()->setCodec(codec);
+                // TODO(JM) check if needed
+//                int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
+//                QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+//                node->file()->setEncoding(codec);
             }
-            if (codec != node->file()->codec())
+            if (encoding != node->file()->encoding())
                 setNeedSave();
         } else {
             SysLogLocator::systemLog()->append("Could not add file " + loc, LogMsgType::Error);

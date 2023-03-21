@@ -36,7 +36,7 @@ public:
     SvgEngine(const QString &name, const QString &disabledName, int alpha = 100);
     SvgEngine(const SvgEngine &other);
     ~SvgEngine() override;
-    QString iconName() const override;
+    QString iconName() override;
     void replaceNormalMode(QIcon::Mode mode);
     void forceSquare(bool force);
     void unbind();

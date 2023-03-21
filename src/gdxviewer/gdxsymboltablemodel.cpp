@@ -28,8 +28,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mCodec(codec)
+GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QStringConverter::Encoding encoding, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mEncoding(encoding)
 {
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
@@ -172,7 +172,7 @@ QString GdxSymbolTableModel::getElementText(int textNr)
         int node;
 
         gdxGetElemText(mGdx, textNr, text, &node);
-        return mCodec->toUnicode(text);
+        return decode(text);
     }
 }
 
@@ -182,7 +182,7 @@ void GdxSymbolTableModel::loadUel2Label()
     int map;
     for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
-        QString l = mCodec->toUnicode(label);
+        QString l = decode(label);
         mUel2Label.append(l);
     }
 }
@@ -195,7 +195,7 @@ void GdxSymbolTableModel::loadStringPool()
     char text[GMS_SSSIZE];
 
     while (gdxGetElemText(mGdx, strNr, text, &node)) {
-        mStrPool.append(mCodec->toUnicode(text));
+        mStrPool.append(decode(text));
         strNr++;
     }
 }
@@ -205,9 +205,9 @@ void GdxSymbolTableModel::reportIoError(int errNr, QString message)
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-QTextCodec *GdxSymbolTableModel::codec() const
+QStringDecoder &GdxSymbolTableModel::decoder() const
 {
-    return mCodec;
+    return decode;
 }
 
 std::vector<int> GdxSymbolTableModel::labelCompIdx()
@@ -225,7 +225,7 @@ QString GdxSymbolTableModel::uel2Label(int uel)
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
-        return mCodec->toUnicode(label);
+        return decode(label);
     }
     return this->mUel2Label.at(uel);
 }

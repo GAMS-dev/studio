@@ -485,25 +485,25 @@ void ProjectContextMenu::onOpenFileLoc()
 void ProjectContextMenu::onOpenFile()
 {
     PExFileNode *file = mNodes.first()->toFile();
-    if (file) emit openFile(file, true, -1, false);
+    if (file) emit openFile(file, true, QStringConverter::Utf8, false);
 }
 
 void ProjectContextMenu::onOpenFileAsText()
 {
     PExFileNode *file = mNodes.first()->toFile();
-    if (file) emit openFile(file, true, -1, true);
+    if (file) emit openFile(file, true, QStringConverter::Utf8, true);
 }
 
 void ProjectContextMenu::onReOpenFile()
 {
     PExFileNode *file = mNodes.first()->toFile();
-    if (file) emit reOpenFile(file, true, -1, false);
+    if (file) emit reOpenFile(file, true, QStringConverter::Utf8, false);
 }
 
 void ProjectContextMenu::onReOpenFileAsText()
 {
     PExFileNode *file = mNodes.first()->toFile();
-    if (file) emit reOpenFile(file, true, -1, true);
+    if (file) emit reOpenFile(file, true, QStringConverter::Utf8, true);
 }
 
 void ProjectContextMenu::onOpenLog()

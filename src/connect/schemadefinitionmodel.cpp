@@ -22,6 +22,7 @@
 #include <QPalette>
 #include <QMimeData>
 #include <QFile>
+#include <QRegularExpression>
 
 #include "schemadefinitionmodel.h"
 #include "theme.h"
@@ -29,6 +30,8 @@
 namespace gams {
 namespace studio {
 namespace connect {
+
+static const QRegularExpression cRex("^\\[\\d\\d?\\]$");
 
 SchemaDefinitionModel::SchemaDefinitionModel(Connect* connect, const QString& schemaName, QObject *parent)
     : QAbstractItemModel{parent},
@@ -493,9 +496,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                           QList<QVariant> data;
                           data <<  schemaKeyStr;
                           data << (schemaHelper->required?"Y":"");
-                          QString pattern = "^\\[\\d\\d?\\]";
-                          QRegExp rx(pattern);
-                          if (rx.exactMatch(schemaKeyStr))
+                          if (cRex.match(schemaKeyStr).hasMatch())
                               data << "oneof_schema";
                           else
                               addTypeList(schemaHelper->types, data);
