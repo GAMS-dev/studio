@@ -2,7 +2,7 @@ Version 1.13.5 *
 ==================
 - open project editor after creating a project with "New Project..."
 - fixed duplicated tab in reference file viewer when reloading a reference file
-- fixed crash when a GAMS related file is opened via double-click in Finder
+- fixed crash on macOS when a GAMS related file is opened via double-click in Finder
 
 Version 1.13.4
 ==================
