@@ -148,7 +148,7 @@ void LxiViewer::jumpToTreeItem()
     if (!lxiTreeModel) return;
     int itemIdx = 0;
 
-    if (lineNr >= lxiTreeModel->lineNrs().at(1)-1) {
+    if (lxiTreeModel->lineNrs().size() > 1 && lineNr >= lxiTreeModel->lineNrs().at(1)-1) {
         itemIdx=1;
         while (lxiTreeModel->lineNrs().size() > itemIdx && lineNr >= lxiTreeModel->lineNrs().at(itemIdx)-1)
             itemIdx++;
