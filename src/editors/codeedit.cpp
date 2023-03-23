@@ -861,11 +861,13 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
-        if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
-            QString fileName = resolveHRef(command+" "+file);
-            linkType = fileName.isEmpty() ? linkMiss : linkDirect;
-            if (fName) *fName = fileName;
+        if (!file.isEmpty()) {
+            int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+            if (cur.positionInBlock() == boundPos) {
+                QString fileName = resolveHRef(command+" "+file);
+                linkType = fileName.isEmpty() ? linkMiss : linkDirect;
+                if (fName) *fName = fileName;
+            }
         }
     }
     return linkType;
@@ -895,12 +897,14 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
         int fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
-        int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
-        if (!file.isEmpty() && cur.positionInBlock() == boundPos) {
-            mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
-            cur.clearSelection();
-            setTextCursor(cur);
-            emit jumpToHRef(command+" "+file);
+        if (!file.isEmpty()) {
+            int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+            if (cur.positionInBlock() == boundPos) {
+                mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
+                cur.clearSelection();
+                setTextCursor(cur);
+                emit jumpToHRef(command+" "+file);
+            }
         }
     }
 }
