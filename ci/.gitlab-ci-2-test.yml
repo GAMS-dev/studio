@@ -57,7 +57,7 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-qt:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt5:latest
   dependencies: [install-gams-wei,build-wei]
   variables:
     qtpath: C:\Qt\5.15.2\msvc2019_64\bin
