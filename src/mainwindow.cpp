@@ -5950,10 +5950,14 @@ void MainWindow::on_actionNavigator_triggered()
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
 
-
 void MainWindow::on_actionRunDebugger_triggered()
 {
-    // create and start debugger::Server
+    if (!mDebugServer)
+        mDebugServer = new debugger::Server(this);
+    if (mDebugServer->isListening())
+        mDebugServer->stop();
+    else
+        mDebugServer->start(12345);
 }
 
 

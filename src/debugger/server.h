@@ -4,6 +4,7 @@
 #include <QObject>
 
 class QTcpServer;
+class QTcpSocket;
 
 namespace gams {
 namespace studio {
@@ -14,7 +15,10 @@ class Server : public QObject
     Q_OBJECT
 public:
     explicit Server(QObject *parent = nullptr);
+    bool isListening();
+    quint16 port();
     bool start(quint16 port);
+    void stop();
 
 public slots:
     void newConnection();
@@ -23,7 +27,7 @@ signals:
 
 private:
     QTcpServer *mServer = nullptr;
-    quint16 mPort;
+    QList<QTcpSocket*> mSockets;
 };
 
 } // namespace debugger

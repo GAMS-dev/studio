@@ -42,6 +42,7 @@
 #include "neos/neosprocess.h"
 #include "reference/symbolreferenceitem.h"
 #include "engine/engineprocess.h"
+#include "debugger/server.h"
 #include "common.h"
 
 #ifdef QWEBENGINE
@@ -556,6 +557,7 @@ private:
     bool mMiroRunning = false;
     QString mEngineAuthToken;
     bool mEngineNoDialog = false;
+    debugger::Server *mDebugServer = nullptr;
 };
 
 }
