@@ -568,8 +568,6 @@ void FileMeta::addEditor(QWidget *edit)
             disconnect(aEdit, &AbstractEdit::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         if (tv->kind() == TextView::FileText)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
-        connect(tv->edit(), &AbstractEdit::getProjectId, this, [this](NodeId &projectId) { projectId = this->projectId(); });
-        connect(tv->edit(), &AbstractEdit::getFileId, this, [this](FileId &fileId) { fileId = this->id(); });
     } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
         connect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
