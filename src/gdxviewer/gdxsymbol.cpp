@@ -27,7 +27,6 @@
 #include <QMutex>
 #include <QSet>
 #include <settings.h>
-
 #include <cmath>
 
 namespace gams {
@@ -63,6 +62,7 @@ GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTableMo
 {
     loadMetaData();
     loadDomains();
+    decode = QStringDecoder(QStringConverter::Latin1);
 
     mRecSortIdx.resize(mRecordCount);
     for(int i=0; i<mRecordCount; i++)
@@ -353,9 +353,9 @@ void GdxSymbol::loadMetaData()
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    mName = mGdxSymbolTable->decoder()(symName);
+    mName = decode(symName);
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
-    mExplText =  mGdxSymbolTable->decoder()(explText);
+    mExplText = decode(explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -379,7 +379,7 @@ void GdxSymbol::loadDomains()
         GDXSTRINDEXPTRS_INIT(domXXX,domX);
         gdxSymbolGetDomainX(mGdx, mNr, domX);
         for(int i=0; i<mDim; i++)
-            mDomains.append(mGdxSymbolTable->decoder()(domX[i]));
+            mDomains.append(decode(domX[i]));
     }
 }
 

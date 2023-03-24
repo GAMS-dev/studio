@@ -205,11 +205,6 @@ void GdxSymbolTableModel::reportIoError(int errNr, QString message)
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
 
-QStringDecoder &GdxSymbolTableModel::decoder() const
-{
-    return decode;
-}
-
 std::vector<int> GdxSymbolTableModel::labelCompIdx()
 {
     if (!mIsSortIndexCreated) {

@@ -50,11 +50,7 @@ public:
     std::vector<int> labelCompIdx();
     int symbolCount() const;
     QString getElementText(int textNr);
-
-    QStringDecoder &decoder() const;
-
     int getUelCount() const;
-
     int label2Uel(QString label);
 
 private:
