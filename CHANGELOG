@@ -5,10 +5,12 @@ Version 1.14.0 *
 - added support for FileUsed section in reference file viewer
 - upgraded GAMS Studio to Qt 6.4.2 for macOS x86, Linux, Windows and Qt 6.4.3 for macOS ARM
 
-Version 1.13.5 *
+Version 1.13.5
 ==================
-- open project editor after creating a project with "New Project..."
+- added automatic opening of project editor after creating a new project
 - fixed duplicated tab in reference file viewer when reloading a reference file
+- fixed crash on macOS when a GAMS related file is opened via double-click in Finder
+- fixed broken compile error link to GMS file in LST file
 
 Version 1.13.4
 ==================
