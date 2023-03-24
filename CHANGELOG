@@ -3,6 +3,7 @@ Version 1.14.0 *
 - add new GDX Viewer setting to control decimal separator used when copying data
 - added GAMS Engine authorization by token
 - added support for FileUsed section in reference file viewer
+- added dedicated macOS ARM Studio version 
 - upgraded GAMS Studio to Qt 6.4.2 for macOS x86, Linux, Windows and Qt 6.4.3 for macOS ARM
 
 Version 1.13.5
