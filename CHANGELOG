@@ -1,4 +1,4 @@
-Version 1.13.5 *
+Version 1.13.5
 ==================
 - added automatic opening of project editor after creating a new project
 - fixed duplicated tab in reference file viewer when reloading a reference file
