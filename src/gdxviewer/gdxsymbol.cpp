@@ -33,6 +33,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+
 const QList<QString> GdxSymbol::superScript = QList<QString>({
                                          QString(u8"\u2070"),
                                          QString(u8"\u00B9"),
@@ -58,7 +59,8 @@ const QList<QString> GdxSymbol::superScript = QList<QString>({
                                      });
 
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
+    : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable),
+    decode(QStringConverter::Utf8, QStringConverter::Flag::Stateless)
 {
     loadMetaData();
     loadDomains();
@@ -352,9 +354,9 @@ void GdxSymbol::loadMetaData()
     char symName[GMS_UEL_IDENT_SIZE];
     char explText[GMS_SSSIZE];
     gdxSymbolInfo(mGdx, mNr, symName, &mDim, &mType);
-    mName = symName;
+    mName = decode(symName);
     gdxSymbolInfoX (mGdx, mNr, &mRecordCount, &mSubType, explText);
-    mExplText = explText;
+    mExplText = decode(explText);
     if(mType == GMS_DT_EQU)
         mSubType = gmsFixEquType(mSubType);
     if(mType == GMS_DT_VAR)
@@ -378,7 +380,7 @@ void GdxSymbol::loadDomains()
         GDXSTRINDEXPTRS_INIT(domXXX,domX);
         gdxSymbolGetDomainX(mGdx, mNr, domX);
         for(int i=0; i<mDim; i++)
-            mDomains.append(domX[i]);
+            mDomains.append(decode(domX[i]));
     }
 }
 
