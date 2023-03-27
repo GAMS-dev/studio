@@ -59,9 +59,9 @@ const QList<QString> GdxSymbol::superScript = QList<QString>({
                                      });
 
 GdxSymbol::GdxSymbol(gdxHandle_t gdx, QMutex* gdxMutex, int nr, GdxSymbolTableModel* gdxSymbolTable, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable),
-    decode(QStringConverter::Utf8, QStringConverter::Flag::Stateless)
+    : QAbstractTableModel(parent), mGdx(gdx), mNr(nr), mGdxMutex(gdxMutex), mGdxSymbolTable(gdxSymbolTable)
 {
+    decode = QStringDecoder(QStringConverter::Utf8, QStringConverter::Flag::Stateless);
     loadMetaData();
     loadDomains();
 
