@@ -136,7 +136,6 @@ private:
     QString mExplText;
     QString mName;
     bool mHasInvalidUel = false;
-    mutable QStringDecoder decode;
 
     std::vector<int> mMinUel;
     std::vector<int> mMaxUel;
