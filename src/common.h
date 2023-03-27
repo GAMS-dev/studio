@@ -189,7 +189,7 @@ enum OpenGroupOption {
 //}
 
 const int MAX_SEARCH_RESULTS = 50000;
-const double TABLE_ROW_HEIGHT = 1.6;
+const double TABLE_ROW_HEIGHT = 1.35;
 
 enum ProcessExitCode {
     ecTooManyScratchDirs = 110,
