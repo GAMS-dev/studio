@@ -36,35 +36,20 @@ pack-deg:
         exit 0;
       fi
     # notarize dmg
-    - xcrun altool --notarize-app -f $DMG_NAME --primary-bundle-id com.gams.studio -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> upload.log
-    - REQUEST_UUID=$(cat upload.log | grep RequestUUID | cut -f2 -d"=" | tr -d '[:space:]')
     - |+
-      if [ -z "$REQUEST_UUID" ]; then
-        REQUEST_UUID=$(cat upload.log | grep -e "\\*\\*\\* Error: ERROR ITMS-90732: .*" | sed -nE "s/^[[:digit:]]+.*ID is ([0-9a-z-]+)\\\".*/\\1/p")
+      if xcrun notarytool submit $DMG_NAME --team-id ${GAMS_CODESIGN_IDENTITY} --apple-id ${GAMS_APPLEID_USER} --password ${GAMS_APPLEID_PASSWORD} --wait --timeout 30m
+      then
+        echo "Notarization successful"
+      else
+        echo "Notarization failed"
+        exit 1
       fi
     - |+
-      while true;
-      do
-        sleep 60
-        xcrun altool --notarization-info $REQUEST_UUID --output-format xml -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> report.xml
-        NOTARIZATION_STATUS=$(/usr/libexec/PlistBuddy -c "Print :notarization-info:Status" report.xml)
-        if [ $? -eq 0 ]; then
-          if [ "$NOTARIZATION_STATUS" != "in progress" ]; then
-            echo "Notarization ended; result: $NOTARIZATION_STATUS"
-            break
-          fi
-          echo "Notarization still in progress. Waiting 60s to check again."
-        else
-          echo "Could not determine notarization status; giving up. Server response:"
-          cat report.xml
-          exit 1
-         fi
-      done
-      if [ "$NOTARIZATION_STATUS" == "success" ]; then
-        echo "Notarization successful; stapling ticket to app bundle"
-        xcrun stapler staple $DMG_NAME
+      if xcrun stapler staple $DMG_NAME
+      then
+        echo "Stapled ticket to app bundle"
       else
-        echo "Notarization failed."
+        echo "Stapling failed"
         exit 1
       fi
   artifacts:
@@ -111,35 +96,20 @@ pack-dac:
         exit 0;
       fi
     # notarize dmg
-    - xcrun altool --notarize-app -f $DMG_NAME --primary-bundle-id com.gams.studio -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> upload.log
-    - REQUEST_UUID=$(cat upload.log | grep RequestUUID | cut -f2 -d"=" | tr -d '[:space:]')
     - |+
-      if [ -z "$REQUEST_UUID" ]; then
-        REQUEST_UUID=$(cat upload.log | grep -e "\\*\\*\\* Error: ERROR ITMS-90732: .*" | sed -nE "s/^[[:digit:]]+.*ID is ([0-9a-z-]+)\\\".*/\\1/p")
+      if xcrun notarytool submit $DMG_NAME --team-id ${GAMS_CODESIGN_IDENTITY} --apple-id ${GAMS_APPLEID_USER} --password ${GAMS_APPLEID_PASSWORD} --wait --timeout 30m
+      then
+        echo "Notarization successful"
+      else
+        echo "Notarization failed"
+        exit 1
       fi
     - |+
-      while true;
-      do
-        sleep 60
-        xcrun altool --notarization-info $REQUEST_UUID --output-format xml -u ${GAMS_APPLEID_USER} -p ${GAMS_APPLEID_PASSWORD} &> report.xml
-        NOTARIZATION_STATUS=$(/usr/libexec/PlistBuddy -c "Print :notarization-info:Status" report.xml)
-        if [ $? -eq 0 ]; then
-          if [ "$NOTARIZATION_STATUS" != "in progress" ]; then
-            echo "Notarization ended; result: $NOTARIZATION_STATUS"
-            break
-          fi
-          echo "Notarization still in progress. Waiting 60s to check again."
-        else
-          echo "Could not determine notarization status; giving up. Server response:"
-          cat report.xml
-          exit 1
-         fi
-      done
-      if [ "$NOTARIZATION_STATUS" == "success" ]; then
-        echo "Notarization successful; stapling ticket to app bundle"
-        xcrun stapler staple $DMG_NAME
+      if xcrun stapler staple $DMG_NAME
+      then
+        echo "Stapled ticket to app bundle"
       else
-        echo "Notarization failed."
+        echo "Stapling failed"
         exit 1
       fi
   artifacts:
