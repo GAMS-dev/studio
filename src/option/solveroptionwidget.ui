@@ -172,7 +172,7 @@
      </widget>
      <widget class="QWidget" name="SolverOptionMessageWidget" native="true">
       <property name="sizePolicy">
-       <sizepolicy hsizetype="Maximum" vsizetype="Preferred">
+       <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
         <horstretch>0</horstretch>
         <verstretch>0</verstretch>
        </sizepolicy>

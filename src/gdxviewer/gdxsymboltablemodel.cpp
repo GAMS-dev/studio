@@ -31,6 +31,7 @@ namespace gdxviewer {
 GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QStringConverter::Encoding encoding, QObject *parent)
     : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mEncoding(encoding)
 {
+    decode = QStringDecoder(mEncoding);
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
