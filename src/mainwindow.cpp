@@ -152,7 +152,7 @@ MainWindow::MainWindow(QWidget *parent)
     mStatusWidgets = new StatusWidgets(this);
 
     // Project View Setup
-    int iconSize = fontMetrics().lineSpacing() + 4;
+    int iconSize = fontMetrics().lineSpacing() + 1;
     ui->projectView->setModel(mProjectRepo.treeModel());
     ui->projectView->setRootIndex(mProjectRepo.treeModel()->rootModelIndex());
     ui->projectView->setHeaderHidden(true);
