@@ -44,7 +44,7 @@ void TestGamsLicenseInfo::testSolvers()
 
 void TestGamsLicenseInfo::testSolverId()
 {
-    const QString solver = "CPLEXD";
+    const QString solver = "CPLEX";
     GamsLicenseInfo gamsLicenseInfo;
     auto solverId = gamsLicenseInfo.solverId(solver);
     auto solverName = gamsLicenseInfo.solverName(solverId);
@@ -53,7 +53,7 @@ void TestGamsLicenseInfo::testSolverId()
 
 void TestGamsLicenseInfo::testSolverIdLowerCase()
 {
-    const QString solver = "CPLEXD";
+    const QString solver = "CPLEX";
     GamsLicenseInfo gamsLicenseInfo;
     auto solverId = gamsLicenseInfo.solverId(solver.toLower());
     auto solverName = gamsLicenseInfo.solverName(solverId);
@@ -62,7 +62,7 @@ void TestGamsLicenseInfo::testSolverIdLowerCase()
 
 void TestGamsLicenseInfo::testSolverIdMixedCase()
 {
-    const QString solver = "CpLeXd";
+    const QString solver = "CpLeX";
     GamsLicenseInfo gamsLicenseInfo;
     auto solverId = gamsLicenseInfo.solverId(solver);
     auto solverName = gamsLicenseInfo.solverName(solverId);
@@ -145,9 +145,9 @@ void TestGamsLicenseInfo::testModelTypeNames()
 void TestGamsLicenseInfo::testSolverCapability()
 {
     GamsLicenseInfo gamsLicenseInfo;
-    auto solverId = gamsLicenseInfo.solverId("CPLEXD");
+    auto solverId = gamsLicenseInfo.solverId("CPLEX");
     bool capable = gamsLicenseInfo.solverCapability(solverId, cfgProc_lp);
-    QVERIFY2(capable, "Ther solver CPLEXD shall be LP capable.");
+    QVERIFY2(capable, "Ther solver CPLEX shall be LP capable.");
 }
 
 void TestGamsLicenseInfo::testSolverCapabilityInvalidSolver()
