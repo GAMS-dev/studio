@@ -100,7 +100,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     mPrintDialog = new QPrintDialog(&mPrinter, this);
 
-
     ui->setupUi(this);
     ui->updateWidget->hide();
 
@@ -5518,8 +5517,6 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
     }
     QFont font(fontFamily);
     font.setPointSizeF(pointSize);
-    if (fGroup != FontGroup::fgTable)
-        font.setHintingPreference(QFont::PreferNoHinting);
     mGroupFontSize.insert(fGroup, pointSize);
     return font;
 }

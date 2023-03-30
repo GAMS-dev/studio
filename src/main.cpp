@@ -45,10 +45,7 @@ int main(int argc, char *argv[])
 #if !defined(__APPLE__) && defined(__unix__)
     qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu --no-sandbox");
 #endif
-    QApplication::setAttribute(Qt::AA_UseOpenGLES);
     QApplication::setApplicationVersion(STUDIO_VERSION);
-    QCoreApplication::setAttribute(Qt::AA_UseOpenGLES);
-
     // to temporarily add additional information enable the following line
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
 
