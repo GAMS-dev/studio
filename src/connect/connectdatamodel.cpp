@@ -988,6 +988,8 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
 {
     ConnectDataItem* parentitem = item;
     if (parentitem) {
+        if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::SchemaAppend)
+            return true;
         // if immediate child of agent is undefined
         if (item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1 == 1)
             if (item->data((int)DataItemColumn::Undefined).toBool())
