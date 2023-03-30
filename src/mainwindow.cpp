@@ -115,6 +115,11 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAcceptDrops(true);
 
+#ifdef _WIN32
+    // TODO(JM) Fix the hidden menu issue in full-screen on Windows
+    ui->actionFull_Screen->setEnabled(false);
+#endif
+
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 
@@ -666,6 +671,17 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
 bool MainWindow::event(QEvent *event)
 {
+    // According to Qt 6.4 reference this should fix hidden menus in full-screen. Doesn't so, but keep to check further
+    //    see: https://doc.qt.io/qt-6/windows-issues.html#fullscreen-opengl-based-windows
+//#if defined(Q_OS_WIN)
+//    if (event->type() == QEvent::WinIdChange) {
+//        if (windowHandle()) {
+//            HWND handle = reinterpret_cast<HWND>(windowHandle()->winId());
+//            SetWindowLongPtr(handle, GWL_STYLE, GetWindowLongPtr(handle, GWL_STYLE) | WS_BORDER);
+//        }
+//    }
+//#endif
+
     if (event->type() == QEvent::WindowStateChange) {
         ui->actionFull_Screen->setChecked(windowState().testFlag(Qt::WindowFullScreen));
         popDockSizes();
