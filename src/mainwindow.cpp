@@ -3728,7 +3728,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 
     // prepare the options and process and run it
     if (project->parameterFile())
-        commandLineStr += " pf=" + project->parameterFile()->location();
+        commandLineStr += " pf=\"" + project->parameterFile()->location() + '"';
 
     QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
