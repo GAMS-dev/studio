@@ -34,7 +34,7 @@ OptionCompleterDelegate::OptionCompleterDelegate(OptionTokenizer* tokenizer, QOb
     QStyledItemDelegate(parent), mOptionTokenizer(tokenizer), mOption(tokenizer->getOption()), mIsLastEditorClosed(false), mLastEditor(nullptr)
 {
     mCurrentEditedIndex = QModelIndex();
-    connect( this, &OptionCompleterDelegate::currentEditedIndexChanged, this, &OptionCompleterDelegate::updateCurrentEditedIndex) ;
+    connect( this, &OptionCompleterDelegate::currentEditedIndexChanged, this, &OptionCompleterDelegate::updateCurrentEditedIndex, Qt::UniqueConnection) ;
 }
 
 QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const
@@ -64,16 +64,23 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
 
     mLastEditor = lineEdit;
     mIsLastEditorClosed = false;
-    connect( lineEdit, &QLineEdit::editingFinished, this, &OptionCompleterDelegate::commitAndCloseEditor) ;
+
     emit currentEditedIndexChanged(index);
     return lineEdit;
 }
 
+void OptionCompleterDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
+{
+    Q_UNUSED(editor);
+    Q_UNUSED(index);
+    mLastEditor = nullptr;
+    mIsLastEditorClosed = true;
+}
+
 void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
-    if (lineEdit) {
+    if (lineEdit && index.isValid()) {
         QVariant data = index.model()->data( index.model()->index(index.row(), index.column()) );
         lineEdit->setText(  data.toString() ) ;
         return;
@@ -83,9 +90,8 @@ void OptionCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &
 
 void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
-    emit currentEditedIndexChanged(index);
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
-    if (lineEdit) {
+    if (lineEdit && index.isValid()) {
         model->setData( index, lineEdit->text() ) ;
         return;
     }
@@ -95,10 +101,12 @@ void OptionCompleterDelegate::setModelData(QWidget *editor, QAbstractItemModel *
 void OptionCompleterDelegate::commitAndCloseEditor()
 {
     QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
-    emit commitData(lineEdit);
-    emit closeEditor(lineEdit);
-    updateCurrentEditedIndex(QModelIndex());
-    mIsLastEditorClosed = true;
+    if (lineEdit) {
+       emit commitData(lineEdit);
+        if (!mIsLastEditorClosed)
+           emit closeEditor(lineEdit);
+        emit currentEditedIndexChanged(QModelIndex());
+    }
 }
 
 void OptionCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
@@ -133,7 +141,7 @@ bool OptionCompleterDelegate::eventFilter(QObject* editor, QEvent* event)
              emit closeEditor(lineEdit);
              return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
-                  emit lineEdit->editingFinished();
+                  commitAndCloseEditor();
                   return true;
        }
     }

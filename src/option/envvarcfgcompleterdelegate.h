@@ -34,6 +34,8 @@ public:
     EnvVarCfgCompleterDelegate(QObject* parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void destroyEditor(QWidget *editor, const QModelIndex &index) const override;
+
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
 
@@ -51,6 +53,10 @@ private slots:
 
 private:
     QModelIndex mCurrentEditedIndex;
+
+    mutable bool mIsLastEditorClosed;
+    mutable QWidget* mLastEditor;
+
 };
 
 } // namespace option

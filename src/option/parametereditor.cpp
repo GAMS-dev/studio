@@ -67,7 +67,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
 
     mOptionCompleter = new OptionCompleterDelegate(mOptionTokenizer, ui->gamsParameterTableView);
     ui->gamsParameterTableView->setItemDelegate( mOptionCompleter );
-    connect(mOptionCompleter, &QStyledItemDelegate::commitData, this, &ParameterEditor::parameterItemCommitted);
+    connect(mOptionCompleter, &OptionCompleterDelegate::currentEditedIndexChanged, this, &ParameterEditor::parameterItemCommitted, Qt::UniqueConnection);
     ui->gamsParameterTableView->setEditTriggers(QAbstractItemView::DoubleClicked
                        | QAbstractItemView::SelectedClicked
                        | QAbstractItemView::EditKeyPressed
@@ -522,12 +522,11 @@ void ParameterEditor::selectSearchField()
     ui->gamsParameterSearch->setFocus();
 }
 
-void ParameterEditor::parameterItemCommitted(QWidget *editor)
+void ParameterEditor::parameterItemCommitted(const QModelIndex &index)
 {
-    Q_UNUSED(editor)
-    if (mOptionCompleter->currentEditedIndex().isValid()) {
-        ui->gamsParameterTableView->selectionModel()->select( mOptionCompleter->currentEditedIndex(), QItemSelectionModel::ClearAndSelect );
-        ui->gamsParameterTableView->setCurrentIndex( mOptionCompleter->currentEditedIndex() );
+    if (index.isValid()) {
+        ui->gamsParameterTableView->selectionModel()->select( index, QItemSelectionModel::ClearAndSelect );
+        ui->gamsParameterTableView->setCurrentIndex( index );
         ui->gamsParameterTableView->setFocus();
     }
 }
@@ -988,6 +987,7 @@ void ParameterEditor::on_parameterTableModelChanged(const QString &commandLineSt
             this, &ParameterEditor::updateParameterTableModel );
     disconnect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr);
     disconnect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit);
+    disconnect(mOptionCompleter, &OptionCompleterDelegate::currentEditedIndexChanged, this, &ParameterEditor::parameterItemCommitted);
 
     mParameterTableModel->on_ParameterTableModelChanged(commandLineStr);
 
@@ -995,6 +995,7 @@ void ParameterEditor::on_parameterTableModelChanged(const QString &commandLineSt
             this, &ParameterEditor::updateParameterTableModel, Qt::UniqueConnection);
     connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, this, &ParameterEditor::updateCommandLineStr, Qt::UniqueConnection);
     connect(this, &ParameterEditor::commandLineChanged, mOptionTokenizer, &OptionTokenizer::formatItemLineEdit, Qt::UniqueConnection);
+    connect(mOptionCompleter, &OptionCompleterDelegate::currentEditedIndexChanged, this, &ParameterEditor::parameterItemCommitted, Qt::UniqueConnection);
 }
 
 void ParameterEditor::resizeColumnsToContents()

@@ -97,7 +97,7 @@ public slots:
     void loadCommandLine(const QStringList &history);
 
     void selectSearchField();
-    void parameterItemCommitted(QWidget *editor);
+    void parameterItemCommitted(const QModelIndex &index);
 
     void deSelectParameters();
 

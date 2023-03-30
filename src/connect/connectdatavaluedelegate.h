@@ -33,11 +33,10 @@ public:
     explicit ConnectDataValueDelegate(QObject *parent = nullptr);
 
     QWidget* createEditor(QWidget* parent, const QStyleOptionViewItem& option, const QModelIndex& index) const override;
+    void destroyEditor(QWidget *editor, const QModelIndex &index) const override;
+
     void setEditorData(QWidget *editor, const QModelIndex &index) const override;
     void setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const override;
-
-    QWidget* lastEditor() const;
-    bool isLastEditorClosed() const;
 
 protected:
     virtual bool eventFilter(QObject * editor, QEvent * event) override;

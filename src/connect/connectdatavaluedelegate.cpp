@@ -64,9 +64,15 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     mLastEditor = lineEdit;
     mIsLastEditorClosed = false;
 
-    connect( lineEdit, &QLineEdit::editingFinished,
-             this, &ConnectDataValueDelegate::commitAndCloseEditor );
     return lineEdit;
+}
+
+void ConnectDataValueDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
+{
+    Q_UNUSED(editor);
+    Q_UNUSED(index);
+    mLastEditor = nullptr;
+    mIsLastEditorClosed = true;
 }
 
 void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
@@ -91,6 +97,7 @@ void ConnectDataValueDelegate::commitAndCloseEditor()
     mIsLastEditorClosed = true;
 }
 
+
 void ConnectDataValueDelegate::setModelData(QWidget *editor, QAbstractItemModel *model, const QModelIndex &index) const
 {
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
@@ -99,16 +106,6 @@ void ConnectDataValueDelegate::setModelData(QWidget *editor, QAbstractItemModel 
         return;
     }
     QStyledItemDelegate::setModelData(editor, model, index);
-}
-
-QWidget *ConnectDataValueDelegate::lastEditor() const
-{
-    return mLastEditor;
-}
-
-bool ConnectDataValueDelegate::isLastEditorClosed() const
-{
-    return mIsLastEditorClosed;
 }
 
 bool ConnectDataValueDelegate::eventFilter(QObject *editor, QEvent *event)
@@ -124,7 +121,7 @@ bool ConnectDataValueDelegate::eventFilter(QObject *editor, QEvent *event)
              emit closeEditor(lineEdit);
              return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
-                  emit lineEdit->editingFinished();
+                  commitAndCloseEditor();
                   return true;
        }
     }

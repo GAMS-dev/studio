@@ -49,8 +49,18 @@ QWidget *EnvVarCfgCompleterDelegate::createEditor(QWidget *parent, const QStyleO
     lineEdit->setCompleter(completer);
     lineEdit->adjustSize();
 
-    connect( lineEdit, &QLineEdit::editingFinished, this, &EnvVarCfgCompleterDelegate::commitAndCloseEditor) ;
+    mLastEditor = lineEdit;
+    mIsLastEditorClosed = false;
+
     return lineEdit;
+}
+
+void EnvVarCfgCompleterDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
+{
+    Q_UNUSED(editor);
+    Q_UNUSED(index);
+    mLastEditor = nullptr;
+    mIsLastEditorClosed = true;
 }
 
 void EnvVarCfgCompleterDelegate::setEditorData(QWidget *editor, const QModelIndex &index) const
@@ -93,7 +103,7 @@ bool EnvVarCfgCompleterDelegate::eventFilter(QObject *editor, QEvent *event)
              emit closeEditor(lineEdit);
              return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
-                  emit lineEdit->editingFinished();
+                  commitAndCloseEditor();
                   return true;
        }
     }
@@ -102,10 +112,11 @@ bool EnvVarCfgCompleterDelegate::eventFilter(QObject *editor, QEvent *event)
 
 void EnvVarCfgCompleterDelegate::commitAndCloseEditor()
 {
-    QLineEdit *lineEdit = qobject_cast<QLineEdit *>( sender() ) ;
-
-    emit commitData(lineEdit);
-    emit closeEditor(lineEdit);
+    QLineEdit *lineEdit = qobject_cast<QLineEdit *>( mLastEditor ? mLastEditor : sender() ) ;
+    if (lineEdit && !mIsLastEditorClosed) {
+        emit commitData(lineEdit);
+        emit closeEditor(lineEdit);
+    }
 }
 
 void EnvVarCfgCompleterDelegate::updateCurrentEditedIndex(const QModelIndex &index)
