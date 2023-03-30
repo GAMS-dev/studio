@@ -20,6 +20,7 @@
 #include "projectedit.h"
 #include "ui_projectedit.h"
 #include "file/pexgroupnode.h"
+#include "file/pexfilenode.h"
 #include "file/filemeta.h"
 #include "theme.h"
 
@@ -32,26 +33,24 @@ namespace gams {
 namespace studio {
 namespace project {
 
+const QString cNone("-none-");
+
 ProjectData::ProjectData(PExProjectNode *project)
 {
     mProject = project;
-    if (!mData.contains(file)) mData.insert(file, QDir::toNativeSeparators(project->fileName()));
-    if (!mData.contains(name)) mData.insert(name, project->name());
-    if (!mData.contains(nameExt)) mData.insert(nameExt, project->nameExt());
-    if (!mData.contains(workDir)) mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
-    if (!mData.contains(baseDir)) mData.insert(baseDir, QDir::toNativeSeparators(project->location()));
-    if (!mData.contains(mainGms)) {
-        if (mProject->runnableGms())
-            mData.insert(mainGms, QDir::toNativeSeparators(mProject->runnableGms()->location()));
-        else
-            mData.insert(mainGms, "-no runnable-");
-    }
-    if (!mData.contains(pfFile)) {
-        if (mProject->activePfFile())
-            mData.insert(pfFile, QDir::toNativeSeparators(mProject->activePfFile()->location()));
-        else
-            mData.insert(pfFile, "-none-");
-    }
+    mData.insert(file, QDir::toNativeSeparators(project->fileName()));
+    mData.insert(name, project->name());
+    mData.insert(nameExt, project->nameExt());
+    mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
+    mData.insert(baseDir, QDir::toNativeSeparators(project->location()));
+    if (mProject->runnableGms())
+        mData.insert(mainFile, QDir::toNativeSeparators(mProject->runnableGms()->location()));
+    else
+        mData.insert(mainFile, cNone);
+    if (mProject->parameterFile())
+        mData.insert(pfFile, QDir::toNativeSeparators(mProject->parameterFile()->location()));
+    else
+        mData.insert(pfFile, cNone);
     connect(project, &PExProjectNode::changed, this, &ProjectData::projectChanged);
 }
 
@@ -75,32 +74,80 @@ void ProjectData::save()
     path = QDir::fromNativeSeparators(mData.value(workDir)).trimmed();
     if (path.compare(mProject->workDir(), FileType::fsCaseSense()))
         mProject->setWorkDir(path);
+    updateFile(FileKind::Gms, QDir::fromNativeSeparators(mData.value(mainFile)).trimmed());
+    updateFile(FileKind::Pf, QDir::fromNativeSeparators(mData.value(pfFile)).trimmed());
+}
+
+void ProjectData::updateFile(FileKind kind, const QString &path)
+{
+    if (!mProject) return;
+    FileMeta *meta = kind == FileKind::Gms ? mProject->runnableGms() : mProject->parameterFile();
+    QString curPath = meta ? QDir::fromNativeSeparators(meta->location()) : QString();
+    if (curPath.compare(path, FileType::fsCaseSense()) != 0) {
+        PExFileNode *file = mProject->findFile(path);
+        meta = file ? file->file() : nullptr;
+        if (kind == FileKind::Gms)
+            mProject->setRunnableGms(meta);
+        else
+            mProject->setParameterFile(meta);
+    }
 }
 
 void ProjectData::projectChanged(NodeId id)
 {
     if (mProject->id() != id) return;
-    bool updateTab = false;
     if (fieldData(ProjectData::file) != QDir::toNativeSeparators(mProject->fileName()))
         setFieldData(ProjectData::file, QDir::toNativeSeparators(mProject->fileName()));
-    if (fieldData(ProjectData::name) != mProject->name()) {
+    if (fieldData(ProjectData::name) != mProject->name())
         setFieldData(ProjectData::name, mProject->name());
-        updateTab = true;
-    }
-    if (fieldData(ProjectData::nameExt) != mProject->nameExt()) {
+    if (fieldData(ProjectData::nameExt) != mProject->nameExt())
         setFieldData(ProjectData::nameExt, mProject->nameExt());
-        updateTab = true;
-    }
-    if (updateTab)
-        emit tabNameChanged(mProject);
-    if (mProject->runnableGms())
-        setFieldData(ProjectData::mainGms, QDir::toNativeSeparators(mProject->runnableGms()->location()));
-    else
-        setFieldData(ProjectData::mainGms, "-no runnable-");
-    if (mProject->activePfFile())
-        setFieldData(ProjectData::pfFile, QDir::toNativeSeparators(mProject->activePfFile()->location()));
-    else
-        setFieldData(ProjectData::pfFile, "-none-");
+    QString mainFile = mProject->runnableGms() ? QDir::toNativeSeparators(mProject->runnableGms()->location()) : "";
+    if (fieldData(ProjectData::mainFile) != mainFile)
+        setFieldData(ProjectData::mainFile, mainFile);
+    QString pfFile = mProject->parameterFile() ? QDir::toNativeSeparators(mProject->parameterFile()->location()) : "";
+    if (fieldData(ProjectData::pfFile) != pfFile)
+        setFieldData(ProjectData::pfFile, pfFile);
+}
+
+
+ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
+    AbstractView(parent),
+    ui(new Ui::ProjectEdit)
+{
+    ui->setupUi(this);
+    mSharedData = sharedData;
+    ui->edName->setEnabled(false);
+    ui->edName->setToolTip("Name: the name of the project, this is always the filename");
+    ui->cbMainFile->setToolTip("Main file: this file will be excuted with GAMS");
+    ui->cbPfFile->setToolTip("Parameter file: this file contains the default parameters");
+    ui->edProjectFile->setEnabled(false);
+    ui->edProjectFile->setToolTip("Project file: this file contains all project information");
+    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
+    ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
+    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
+    ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
+    ui->laName->setToolTip(ui->edName->toolTip());
+    ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
+    ui->laMainGms->setToolTip(ui->cbMainFile->toolTip());
+    ui->laPfFile->setToolTip(ui->cbPfFile->toolTip());
+    ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
+    ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
+    ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bBaseDir->setToolTip("Browse for base directory");
+    ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
+    ui->bBaseDir->setToolTip("Browse for working directory");
+    adjustSize();
+    connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
+    updateData(ProjectData::all);
+    mInitDone = true;
+    updateState();
+}
+
+ProjectEdit::~ProjectEdit()
+{
+    if (mSharedData->project()) mSharedData->project()->unlinkProjectEditFileMeta();
+    delete ui;
 }
 
 ProjectData *ProjectEdit::sharedData() const
@@ -112,48 +159,6 @@ QString ProjectEdit::tabName(NameModifier mod)
 {
     return '[' + mSharedData->project()->name() + mSharedData->project()->nameExt()
             + (mod == NameModifier::editState && isModified() ? "]*" : "]");
-}
-
-ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
-    AbstractView(parent),
-    ui(new Ui::ProjectEdit)
-{
-    ui->setupUi(this);
-    mSharedData = sharedData;
-    ui->edName->setEnabled(false);
-    ui->edName->setToolTip("Name: the name of the project, this is always the filename");
-    ui->edMainGms->setEnabled(false);
-    ui->edMainGms->setToolTip("Main file: this file will be excuted with GAMS");
-    ui->edPfFile->setEnabled(false);
-    ui->edPfFile->setToolTip("Parameter file: this file contains the default parameters");
-    ui->edProjectFile->setEnabled(false);
-    ui->edProjectFile->setToolTip("Project file: this file contains all project information");
-    setWindowFlag(Qt::WindowContextHelpButtonHint, false);
-    ui->edBaseDir->setMinimumWidth(fontMetrics().height()*30);
-    ui->edBaseDir->setToolTip("Base directory: used as base folder to represent the files");
-    ui->edWorkDir->setToolTip("Working directory: used as working directory to run GAMS");
-    ui->laName->setToolTip(ui->edName->toolTip());
-    ui->laProjectFile->setToolTip(ui->edProjectFile->toolTip());
-    ui->laMainGms->setToolTip(ui->edMainGms->toolTip());
-    ui->laPfFile->setToolTip(ui->edPfFile->toolTip());
-    ui->laBaseDir->setToolTip(ui->edBaseDir->toolTip());
-    ui->laWorkDir->setToolTip(ui->edWorkDir->toolTip());
-    ui->bBaseDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
-    ui->bBaseDir->setToolTip("Browse for base directory");
-    ui->bWorkDir->setIcon(Theme::icon(":/%1/folder-open-bw"));
-    ui->bBaseDir->setToolTip("Browse for working directory");
-    adjustSize();
-    connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
-    connect(sharedData, &ProjectData::tabNameChanged, this, [this](PExProjectNode *project) {
-        project->refreshProjectTabName();
-    });
-    updateData();
-}
-
-ProjectEdit::~ProjectEdit()
-{
-    if (mSharedData->project()) mSharedData->project()->unlinkProjectEditFileMeta();
-    delete ui;
 }
 
 bool ProjectEdit::isModified() const
@@ -169,6 +174,7 @@ void ProjectEdit::save()
 
 void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 {
+    if (!mInitDone) return;
     updateEditColor(ui->edWorkDir, text);
     if (text != mSharedData->fieldData(ProjectData::workDir))
         mSharedData->setFieldData(ProjectData::workDir, text);
@@ -177,6 +183,7 @@ void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 
 void ProjectEdit::on_edBaseDir_textChanged(const QString &text)
 {
+    if (!mInitDone) return;
     updateEditColor(ui->edBaseDir, text);
     if (text != mSharedData->fieldData(ProjectData::baseDir))
         mSharedData->setFieldData(ProjectData::baseDir, text);
@@ -198,16 +205,22 @@ void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 void ProjectEdit::updateState()
 {
     bool isModified = false;
-    QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
-    if (ui->edName->text().trimmed().compare(fullName))
+    PExProjectNode *pro = mSharedData->project();
+    QString edPath = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
+    if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
+    if (edPath.compare(pro->location(), FileType::fsCaseSense()))
         isModified = true;
-    QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    if (path.endsWith("/")) path = path.left(path.length()-1);
-    if (path.compare(mSharedData->project()->location(), FileType::fsCaseSense()))
+    edPath = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
+    if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
+    if (edPath.compare(pro->workDir(), FileType::fsCaseSense()))
         isModified = true;
-    path = QDir::fromNativeSeparators(ui->edWorkDir->text()).trimmed();
-    if (path.endsWith("/")) path = path.left(path.length()-1);
-    if (path.compare(mSharedData->project()->workDir(), FileType::fsCaseSense()))
+    QString proPath = pro->runnableGms() ? pro->runnableGms()->location() : cNone;
+    edPath = QDir::fromNativeSeparators(ui->cbMainFile->currentText());
+    if (edPath.compare(proPath))
+        isModified = true;
+    proPath = pro->parameterFile() ? pro->parameterFile()->location() : cNone;
+    edPath = QDir::fromNativeSeparators(ui->cbPfFile->currentText());
+    if (edPath.compare(proPath))
         isModified = true;
     if (isModified != mModified) {
         mModified = isModified;
@@ -225,41 +238,32 @@ void ProjectEdit::on_bBaseDir_clicked()
     showDirDialog("Select Base Directory", ui->edBaseDir, mSharedData->project()->location());
 }
 
-void ProjectEdit::projectChanged(NodeId id)
+void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 {
-    if (mSharedData->project()->id() != id) return;
-    if (mSharedData->fieldData(ProjectData::file) != QDir::toNativeSeparators(mSharedData->project()->fileName())) {
-        mSharedData->setFieldData(ProjectData::file, QDir::toNativeSeparators(mSharedData->project()->fileName()));
-    }
-    if (mSharedData->fieldData(ProjectData::name) != mSharedData->project()->name()) {
-        mSharedData->setFieldData(ProjectData::name, mSharedData->project()->name());
-    }
-    if (mSharedData->project()->runnableGms())
-        ui->edMainGms->setText(QDir::toNativeSeparators(mSharedData->project()->runnableGms()->location()));
-    else
-        ui->edMainGms->setText("-no runnable-");
-    if (mSharedData->project()->activePfFile())
-        ui->edPfFile->setText(QDir::toNativeSeparators(mSharedData->project()->activePfFile()->location()));
-    else
-        ui->edPfFile->setText("-none-");
-    updateState();
-}
-
-void ProjectEdit::updateData()
-{
-    if (ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
+    if (field & (ProjectData::name | field == ProjectData::nameExt))
+        mSharedData->project()->refreshProjectTabName();
+    if ((field & ProjectData::file) && ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));
     QString fullName = mSharedData->fieldData(ProjectData::name) + mSharedData->fieldData(ProjectData::nameExt);
     if (ui->edName->text() != fullName)
         ui->edName->setText(fullName);
-    if (ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
+    if ((field & ProjectData::workDir) && ui->edWorkDir->text() != mSharedData->fieldData(ProjectData::workDir))
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
-    if (ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
+    if ((field & ProjectData::baseDir) && ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
         ui->edBaseDir->setText(mSharedData->fieldData(ProjectData::baseDir));
-    if (ui->edMainGms->text() != mSharedData->fieldData(ProjectData::mainGms))
-        ui->edMainGms->setText(mSharedData->fieldData(ProjectData::mainGms));
-    if (ui->edPfFile->text() != mSharedData->fieldData(ProjectData::pfFile))
-        ui->edPfFile->setText(mSharedData->fieldData(ProjectData::pfFile));
+
+    // update combobox of main-file and pf-file
+    QStringList mainFiles = files(FileKind::Gms);
+    mainFiles.prepend(cNone);
+    updateChanged(ui->cbMainFile, mainFiles);
+    QStringList pfFiles =  files(FileKind::Pf);
+    pfFiles.prepend(cNone);
+    updateChanged(ui->cbPfFile, pfFiles);
+
+    if ((field & ProjectData::mainFile) && ui->cbMainFile->currentText() != mSharedData->fieldData(ProjectData::mainFile))
+        ui->cbMainFile->setCurrentIndex(qMax(0, ui->cbMainFile->findText(mSharedData->fieldData(ProjectData::mainFile))));
+    if ((field & ProjectData::pfFile) && ui->cbPfFile->currentText() != mSharedData->fieldData(ProjectData::pfFile))
+        ui->cbPfFile->setCurrentIndex(qMax(0, ui->cbPfFile->findText(mSharedData->fieldData(ProjectData::pfFile))));
 }
 
 void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
@@ -278,6 +282,59 @@ void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QStri
     connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
     dialog->setModal(true);
     dialog->open();
+}
+
+QStringList ProjectEdit::files(FileKind kind)
+{
+    QStringList res;
+    PExProjectNode *project = mSharedData->project();
+    if (!project) return res;
+
+    QVector<PExFileNode*> nodes = mSharedData->project()->listFiles();
+    for (const PExFileNode *node : nodes) {
+        if (node->file()->kind() == kind)
+            res.append(QDir::toNativeSeparators(node->location()));
+    }
+    return res;
+}
+
+void ProjectEdit::updateChanged(QComboBox *comboBox, const QStringList &data)
+{
+    bool changed = comboBox->count() != data.count();
+    if (!changed) {
+        for (int i = 0; i < data.count(); ++i) {
+            if (comboBox->itemText(i) != data.at(i)) {
+                changed = true;
+                break;
+            }
+        }
+    }
+    if (changed) {
+        QString current = comboBox->currentText();
+        comboBox->clear();
+        comboBox->addItems(data);
+        comboBox->setCurrentIndex(qMax(0, comboBox->findText(current)));
+    }
+}
+
+
+void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
+{
+    if (!mInitDone) return;
+    QString text = index ? ui->cbMainFile->currentText() : cNone;
+    if (text != mSharedData->fieldData(ProjectData::mainFile))
+        mSharedData->setFieldData(ProjectData::mainFile, text);
+    updateState();
+}
+
+
+void ProjectEdit::on_cbPfFile_currentIndexChanged(int index)
+{
+    if (!mInitDone) return;
+    QString text = index ? ui->cbPfFile->currentText() : cNone;
+    if (text != mSharedData->fieldData(ProjectData::pfFile))
+        mSharedData->setFieldData(ProjectData::pfFile, text);
+    updateState();
 }
 
 } // namespace project

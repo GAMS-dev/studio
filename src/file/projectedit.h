@@ -25,6 +25,8 @@
 #include <QLineEdit>
 #include "common.h"
 
+class QComboBox;
+
 namespace gams {
 namespace studio {
 class PExProjectNode;
@@ -39,7 +41,19 @@ class ProjectData : public QObject
 {
     Q_OBJECT
 public:
-    enum Field {file, name, nameExt, workDir, baseDir, mainGms, pfFile};
+    enum Field {
+        none     = 0x0000,
+        file     = 0x0001,
+        name     = 0x0002,
+        nameExt  = 0x0004,
+        workDir  = 0x0008,
+        baseDir  = 0x0010,
+        mainFile = 0x0020,
+        pfFile   = 0x0040,
+        all      = 0xffff,
+    };
+    Q_DECLARE_FLAGS(Fields, Field)
+    Q_FLAG(Fields)
 
     ProjectData(PExProjectNode *project);
     virtual ~ProjectData() override {}
@@ -54,6 +68,9 @@ signals:
 
 private slots:
     void projectChanged(gams::studio::NodeId id);
+
+private:
+    void updateFile(FileKind kind, const QString &path);
 
 private:
     QHash<Field, QString> mData;
@@ -78,23 +95,29 @@ signals:
     void modificationChanged(bool modification);
 
 public slots:
-    void updateData();
+    void updateData(ProjectData::Field field);
 
 private slots:
     void on_edWorkDir_textChanged(const QString &text);
     void on_edBaseDir_textChanged(const QString &text);
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
-    void projectChanged(gams::studio::NodeId id);
+
+    void on_cbMainFile_currentIndexChanged(int index);
+
+    void on_cbPfFile_currentIndexChanged(int index);
 
 private:
     void setSharedData(ProjectData *sharedData);
     void updateEditColor(QLineEdit *edit, const QString &text);
     void updateState();
     void showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir);
+    QStringList files(FileKind kind);
+    void updateChanged(QComboBox *comboBox, const QStringList &data);
 
     Ui::ProjectEdit *ui;
     ProjectData *mSharedData;
+    bool mInitDone = false;
     bool mModified = false;
     QString mName;
 

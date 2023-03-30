@@ -426,8 +426,8 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
         QString filePath = project->runnableGms()->location();
         projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
-    if (project->activePfFile()) {
-        QString filePath = project->activePfFile()->location();
+    if (project->parameterFile()) {
+        QString filePath = project->parameterFile()->location();
         projectObject.insert("pf", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
     projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );

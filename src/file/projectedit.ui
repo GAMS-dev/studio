@@ -114,14 +114,8 @@
         </property>
        </widget>
       </item>
-      <item row="4" column="1">
-       <widget class="QLineEdit" name="edMainGms"/>
-      </item>
       <item row="0" column="1">
        <widget class="QLineEdit" name="edProjectFile"/>
-      </item>
-      <item row="5" column="1">
-       <widget class="QLineEdit" name="edPfFile"/>
       </item>
       <item row="5" column="0">
        <widget class="QLabel" name="laPfFile">
@@ -129,6 +123,12 @@
          <string>Parameter file</string>
         </property>
        </widget>
+      </item>
+      <item row="5" column="1">
+       <widget class="QComboBox" name="cbPfFile"/>
+      </item>
+      <item row="4" column="1">
+       <widget class="QComboBox" name="cbMainFile"/>
       </item>
      </layout>
     </widget>
@@ -140,7 +140,6 @@
   <tabstop>edName</tabstop>
   <tabstop>edWorkDir</tabstop>
   <tabstop>bWorkDir</tabstop>
-  <tabstop>edMainGms</tabstop>
  </tabstops>
  <resources>
   <include location="../../icons/icons.qrc"/>

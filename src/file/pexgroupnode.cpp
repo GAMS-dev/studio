@@ -578,7 +578,7 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     emit runnableChanged();
 }
 
-FileMeta *PExProjectNode::activePfFile() const
+FileMeta *PExProjectNode::parameterFile() const
 {
     FileMetaRepo *repo = fileRepo();
     if (!repo) return nullptr;
@@ -588,36 +588,16 @@ FileMeta *PExProjectNode::activePfFile() const
 void PExProjectNode::setParameterFile(FileMeta *pfFile)
 {
     if (mType != PExProjectNode::tCommon) return;
-    PExFileNode *pfFileNode;
-    if (!pfFile) {
-        // find alternative runable file
-        for (PExAbstractNode *node: listFiles()) {
-            pfFileNode = node->toFile();
-            if (pfFileNode->file()->kind() == FileKind::Pf) {
-                pfFile = pfFileNode->file();
-                break;
-            }
-        }
-    }
     if (pfFile && pfFile->kind() != FileKind::Pf) {
         DEB() << "Only files of FileKind::Pf can become a parameter file";
         return;
     }
     setParameter("pf", "");
-//    if (!pfFile) {
-//        setParameter("lst", "");
-//        emit changed(id());
-//        emit runnableChanged();
-//        return;
-//    }
-//    if (workDir().isEmpty())
-//        setLocation(QFileInfo(pfFile->location()).absoluteDir().path());
+    if (!pfFile) return;
 
     QString pfPath = pfFile->location();
     setParameter("pf", pfPath);
-//    if (hasLogNode()) logNode()->resetLst();
     emit changed(id());
-//    emit runnableChanged();
 }
 
 FileMeta *PExProjectNode::projectEditFileMeta() const
