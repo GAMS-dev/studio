@@ -5,6 +5,7 @@ Version 1.14.0 *
 - added support for FileUsed section in reference file viewer
 - added dedicated macOS ARM Studio version 
 - upgraded GAMS Studio to Qt 6.4.2 for macOS x86, Linux, Windows and Qt 6.4.3 for macOS ARM
+- currently only UTF-8 is supported (tbd)
 
 Version 1.13.5
 ==================
