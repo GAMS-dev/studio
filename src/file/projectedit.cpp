@@ -116,6 +116,7 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui(new Ui::ProjectEdit)
 {
     ui->setupUi(this);
+    mBlockUpdate = true;
     mSharedData = sharedData;
     ui->edName->setEnabled(false);
     ui->edName->setToolTip("Name: the name of the project, this is always the filename");
@@ -140,7 +141,7 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     adjustSize();
     connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
     updateData(ProjectData::all);
-    mInitDone = true;
+    mBlockUpdate = false;
     updateState();
 }
 
@@ -174,7 +175,7 @@ void ProjectEdit::save()
 
 void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 {
-    if (!mInitDone) return;
+    if (mBlockUpdate) return;
     updateEditColor(ui->edWorkDir, text);
     if (text != mSharedData->fieldData(ProjectData::workDir))
         mSharedData->setFieldData(ProjectData::workDir, text);
@@ -183,7 +184,7 @@ void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
 
 void ProjectEdit::on_edBaseDir_textChanged(const QString &text)
 {
-    if (!mInitDone) return;
+    if (mBlockUpdate) return;
     updateEditColor(ui->edBaseDir, text);
     if (text != mSharedData->fieldData(ProjectData::baseDir))
         mSharedData->setFieldData(ProjectData::baseDir, text);
@@ -310,17 +311,19 @@ void ProjectEdit::updateChanged(QComboBox *comboBox, const QStringList &data)
         }
     }
     if (changed) {
+        mBlockUpdate = true;
         QString current = comboBox->currentText();
         comboBox->clear();
         comboBox->addItems(data);
         comboBox->setCurrentIndex(qMax(0, comboBox->findText(current)));
+        mBlockUpdate = false;
     }
 }
 
 
 void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
 {
-    if (!mInitDone) return;
+    if (mBlockUpdate) return;
     QString text = index ? ui->cbMainFile->currentText() : cNone;
     if (text != mSharedData->fieldData(ProjectData::mainFile))
         mSharedData->setFieldData(ProjectData::mainFile, text);
@@ -330,7 +333,7 @@ void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
 
 void ProjectEdit::on_cbPfFile_currentIndexChanged(int index)
 {
-    if (!mInitDone) return;
+    if (mBlockUpdate) return;
     QString text = index ? ui->cbPfFile->currentText() : cNone;
     if (text != mSharedData->fieldData(ProjectData::pfFile))
         mSharedData->setFieldData(ProjectData::pfFile, text);

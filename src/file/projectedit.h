@@ -119,6 +119,7 @@ private:
     ProjectData *mSharedData;
     bool mInitDone = false;
     bool mModified = false;
+    bool mBlockUpdate = false;
     QString mName;
 
 };
