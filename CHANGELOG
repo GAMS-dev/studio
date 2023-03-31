@@ -6,6 +6,9 @@ Version 1.14.0 *
 - added dedicated macOS ARM Studio version 
 - upgraded GAMS Studio to Qt 6.4.2 for macOS x86, Linux, Windows and Qt 6.4.3 for macOS ARM
 - currently only UTF-8 is supported (tbd)
+- added "Add new GAMS Parameter File" to the context menu of the Project Explorer
+- added editor for parameter file
+- added selection for main file and parameter file to project editor
 
 Version 1.13.5
 ==================
