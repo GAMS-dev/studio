@@ -190,7 +190,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
-    const auto items = getOptionTokenizer()->tokenize( commandLineStr);
+    const auto items = getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : items) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;

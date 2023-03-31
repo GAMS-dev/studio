@@ -850,6 +850,10 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
             if (value == "default") value = "\"" + filestem + ".ref\"";
             setParameter("ref", cleanPath(path, value));
 
+        } else if (item.optionId == opt->getOrdinalNumber("pf")) {
+            if (value == "default") value = "\"" + filestem + ".pf\"";
+            setParameter("pf", cleanPath(path, value));
+
         } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
             int lo = item.value.toInt(&ok);
             if (ok) logOption = lo;
@@ -993,6 +997,8 @@ void PExProjectNode::addNodesForSpecialFiles()
     FileMeta* runFile = runnableGms();
     for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
         QString loc = it.value();
+        if (loc.isEmpty())
+            continue;
         if (QFileInfo::exists(loc)) {
             PExFileNode* node = projectRepo()->findOrCreateFileNode(loc, this, &FileType::from(QFileInfo(loc).fileName()));
             QStringConverter::Encoding encoding = node->file()->encoding();
