@@ -65,6 +65,7 @@ public:
 signals:
     void changed(gams::studio::project::ProjectData::Field field);
     void tabNameChanged(gams::studio::PExProjectNode *project);
+    void projectFilesChanged();
 
 private slots:
     void projectChanged(gams::studio::NodeId id);
@@ -94,17 +95,15 @@ public:
 signals:
     void modificationChanged(bool modification);
 
-public slots:
-    void updateData(ProjectData::Field field);
-
 private slots:
+    void updateData(ProjectData::Field field);
+    void updateComboboxEntries();
+
     void on_edWorkDir_textChanged(const QString &text);
     void on_edBaseDir_textChanged(const QString &text);
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
-
     void on_cbMainFile_currentIndexChanged(int index);
-
     void on_cbPfFile_currentIndexChanged(int index);
 
 private:

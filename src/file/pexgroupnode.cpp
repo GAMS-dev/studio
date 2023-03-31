@@ -474,8 +474,10 @@ bool PExProjectNode::isClosing() const
 
 void PExProjectNode::setNeedSave(bool needSave)
 {
-    if (mChangeState != csClosing && type() != PExProjectNode::tSearch)
+    if (mChangeState != csClosing && type() != PExProjectNode::tSearch) {
         mChangeState = needSave ? csChanged : csNone;
+        emit changed(id());
+    }
 }
 
 void PExProjectNode::setIsClosing()

@@ -108,6 +108,7 @@ void ProjectData::projectChanged(NodeId id)
     QString pfFile = mProject->parameterFile() ? QDir::toNativeSeparators(mProject->parameterFile()->location()) : "";
     if (fieldData(ProjectData::pfFile) != pfFile)
         setFieldData(ProjectData::pfFile, pfFile);
+    emit projectFilesChanged();
 }
 
 
@@ -140,6 +141,7 @@ ProjectEdit::ProjectEdit(ProjectData *sharedData,  QWidget *parent) :
     ui->bBaseDir->setToolTip("Browse for working directory");
     adjustSize();
     connect(sharedData, &ProjectData::changed, this, &ProjectEdit::updateData);
+    connect(sharedData, &ProjectData::projectFilesChanged, this, &ProjectEdit::updateComboboxEntries);
     updateData(ProjectData::all);
     mBlockUpdate = false;
     updateState();
@@ -252,7 +254,15 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
         ui->edWorkDir->setText(mSharedData->fieldData(ProjectData::workDir));
     if ((field & ProjectData::baseDir) && ui->edBaseDir->text() != mSharedData->fieldData(ProjectData::baseDir))
         ui->edBaseDir->setText(mSharedData->fieldData(ProjectData::baseDir));
+    updateComboboxEntries();
+    if ((field & ProjectData::mainFile) && ui->cbMainFile->currentText() != mSharedData->fieldData(ProjectData::mainFile))
+        ui->cbMainFile->setCurrentIndex(qMax(0, ui->cbMainFile->findText(mSharedData->fieldData(ProjectData::mainFile))));
+    if ((field & ProjectData::pfFile) && ui->cbPfFile->currentText() != mSharedData->fieldData(ProjectData::pfFile))
+        ui->cbPfFile->setCurrentIndex(qMax(0, ui->cbPfFile->findText(mSharedData->fieldData(ProjectData::pfFile))));
+}
 
+void ProjectEdit::updateComboboxEntries()
+{
     // update combobox of main-file and pf-file
     QStringList mainFiles = files(FileKind::Gms);
     mainFiles.prepend(cNone);
@@ -260,29 +270,6 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
     QStringList pfFiles =  files(FileKind::Pf);
     pfFiles.prepend(cNone);
     updateChanged(ui->cbPfFile, pfFiles);
-
-    if ((field & ProjectData::mainFile) && ui->cbMainFile->currentText() != mSharedData->fieldData(ProjectData::mainFile))
-        ui->cbMainFile->setCurrentIndex(qMax(0, ui->cbMainFile->findText(mSharedData->fieldData(ProjectData::mainFile))));
-    if ((field & ProjectData::pfFile) && ui->cbPfFile->currentText() != mSharedData->fieldData(ProjectData::pfFile))
-        ui->cbPfFile->setCurrentIndex(qMax(0, ui->cbPfFile->findText(mSharedData->fieldData(ProjectData::pfFile))));
-}
-
-void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
-{
-    QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
-    QDir dir(path);
-    if (!dir.exists()) path = defaultDir;
-    QFileDialog *dialog = new QFileDialog(this, title, path);
-    dialog->setFileMode(QFileDialog::Directory);
-    connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
-        if (dialog->selectedFiles().count() == 1) {
-            QDir dir(dialog->selectedFiles().at(0).trimmed());
-            if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
-        }
-    });
-    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
-    dialog->setModal(true);
-    dialog->open();
 }
 
 QStringList ProjectEdit::files(FileKind kind)
@@ -320,6 +307,23 @@ void ProjectEdit::updateChanged(QComboBox *comboBox, const QStringList &data)
     }
 }
 
+void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
+{
+    QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
+    QDir dir(path);
+    if (!dir.exists()) path = defaultDir;
+    QFileDialog *dialog = new QFileDialog(this, title, path);
+    dialog->setFileMode(QFileDialog::Directory);
+    connect(dialog, &QFileDialog::accepted, this, [lineEdit, dialog]() {
+        if (dialog->selectedFiles().count() == 1) {
+            QDir dir(dialog->selectedFiles().at(0).trimmed());
+            if (dir.exists()) lineEdit->setText(QDir::toNativeSeparators(dir.path()));
+        }
+    });
+    connect(dialog, &QFileDialog::finished, this, [dialog]() { dialog->deleteLater(); });
+    dialog->setModal(true);
+    dialog->open();
+}
 
 void ProjectEdit::on_cbMainFile_currentIndexChanged(int index)
 {
