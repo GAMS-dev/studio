@@ -594,7 +594,7 @@ void PExProjectNode::setParameterFile(FileMeta *pfFile)
         DEB() << "Only files of FileKind::Pf can become a parameter file";
         return;
     }
-    setParameter("pf", "");
+    mParameterHash.remove("pf");
     if (!pfFile) return;
 
     QString pfPath = pfFile->location();
@@ -1050,10 +1050,8 @@ void PExProjectNode::clearParameters()
 {
     bool willChange = mParameterHash.size() != 1 || !mParameterHash.contains("gms");
     QString gms = mParameterHash.value("gms");
-    QString pf = mParameterHash.value("pf");
     mParameterHash.clear();
     mParameterHash.insert("gms", gms);
-    mParameterHash.insert("pf", pf);
     if (willChange) setNeedSave();
 }
 
