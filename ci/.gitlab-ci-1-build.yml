@@ -47,6 +47,7 @@ build-leg:
     - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
+    - rm $DOLLAR_GAMS/apifiles/C++/api/version
     - mkdir build && cd build
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
@@ -71,6 +72,7 @@ build-wei:
       ('GAMS_DISTRIB=', $(Get-Location).ToString().Replace('\','/'), '/gamsdist' -join ""),
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
+      'rm $$GAMS_DISTRIB/apifiles/C++/api/version'
     - $data | out-file -encoding ascii gamsinclude.pri
     - mkdir build
     - cd build
@@ -101,6 +103,7 @@ build-wei-debug:
       ('GAMS_DISTRIB=', $(Get-Location).ToString().Replace('\','/'), '/gamsdist' -join ""),
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
+      'rm $$GAMS_DISTRIB/apifiles/C++/api/version'
     - $data | out-file -encoding ascii gamsinclude.pri
     - mkdir build-debug
     - cd build-debug
