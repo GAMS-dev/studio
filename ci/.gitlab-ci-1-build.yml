@@ -73,6 +73,7 @@ build-wei:
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
     - $data | out-file -encoding ascii gamsinclude.pri
+    - ls "$GAMS_DISTRIB/apifiles/C++/api/*"
     - rm "$GAMS_DISTRIB/apifiles/C++/api/version"
     - mkdir build
     - cd build
