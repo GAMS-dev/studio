@@ -25,33 +25,30 @@
 namespace gams {
 namespace studio {
 
-LogParser::LogParser(QStringConverter::Encoding encoding)
-    : mEncoding(encoding)
+LogParser::LogParser(QTextCodec *codec)
+    : mCodec(codec)
+{}
+
+QTextCodec *LogParser::codec() const
 {
+    return mCodec;
 }
 
-QStringConverter::Encoding LogParser::encoding() const
+void LogParser::setCodec(QTextCodec *codec)
 {
-    return mEncoding;
-}
-
-void LogParser::setEncoding(QStringConverter::Encoding encoding)
-{
-    mEncoding = encoding;
-    encode = QStringEncoder(encoding); // QStringEncoder::Flag::Default
+    mCodec = codec;
 }
 
 QString LogParser::parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState)
 {
-//    QTextCodec::ConverterState convState;
-    line = encode(data);
-//    if (mEncoding) {
-//        line = mEncoding->toUnicode(data.constData(), data.size(), &convState);
-//    }
-//    if (!mEncoding || convState.invalidChars > 0) {
-//        QTextCodec* locCodec = QStringConverter::System;
-//        line = locCodec->toUnicode(data.constData(), data.size(), &convState);
-//    }
+    QTextCodec::ConverterState convState;
+    if (mCodec) {
+        line = mCodec->toUnicode(data.constData(), data.size(), &convState);
+    }
+    if (!mCodec || convState.invalidChars > 0) {
+        QTextCodec* locCodec = QTextCodec::codecForLocale();
+        line = locCodec->toUnicode(data.constData(), data.size(), &convState);
+    }
     return extractLinks(line, hasError, mbState);
 }
 

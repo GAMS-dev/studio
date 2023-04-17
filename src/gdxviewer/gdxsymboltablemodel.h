@@ -21,7 +21,7 @@
 #define GAMS_STUDIO_GDXVIEWER_GDXSYMBOLTABLEMODEL_H
 
 #include <QAbstractItemModel>
-#include <QStringDecoder>
+#include <QtCore5Compat/QTextCodec>
 #include "gdxcc.h"
 
 class QMutex;
@@ -37,7 +37,7 @@ class GdxSymbolTableModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QStringConverter::Encoding encoding, QObject *parent = nullptr);
+    explicit GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent = nullptr);
     ~GdxSymbolTableModel() override;
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
@@ -52,6 +52,8 @@ public:
     QString getElementText(int textNr);
     int getUelCount() const;
     int label2Uel(QString label);
+
+    QTextCodec *codec() const;
 
 private:
     QStringList mHeaderText;
@@ -74,8 +76,7 @@ private:
     bool mIsSortIndexCreated = false;
 
     QMutex* mGdxMutex = nullptr;
-    mutable QStringDecoder decode;
-    QStringConverter::Encoding mEncoding;
+    QTextCodec *mCodec;
 };
 
 } // namespace gdxviewer

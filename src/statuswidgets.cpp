@@ -65,14 +65,9 @@ void StatusWidgets::setFileName(const QString &fileName)
     mFileName->setBaseText(fileName);
 }
 
-void StatusWidgets::setEncoding(QStringConverter::Encoding encoding)
+void StatusWidgets::setEncoding(QString encodingName)
 {
-    if (encoding == -1) {
-        mEditEncode->setText("");
-    } else {
-        QStringDecoder dec(encoding);
-        mEditEncode->setText(dec.name());
-    }
+    mEditEncode->setText(encodingName);
 }
 
 void StatusWidgets::setLineCount(int lines)

@@ -25,10 +25,10 @@ namespace reference {
 
 QRegularExpression Reference::mRexSplit("\\s+");
 
-Reference::Reference(QString referenceFile, QStringConverter::Encoding encoding, QObject *parent) :
+Reference::Reference(QString referenceFile, QString encodingName, QObject *parent) :
     QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
-    loadReferenceFile(encoding);
+    loadReferenceFile(encodingName);
 }
 
 Reference::~Reference()
@@ -152,20 +152,25 @@ int Reference::errorLine() const
     return  mLastErrorLine;
 }
 
-void Reference::loadReferenceFile(QStringConverter::Encoding encoding)
+void Reference::loadReferenceFile(QString encodingName)
 {
     mLastErrorLine = -1;
     emit loadStarted();
-    mEncoding = encoding;
+    QStringConverter::Encoding encoding = QStringConverter::Utf8;
+    {
+        QStringEncoder encode(encodingName.toLatin1());
+        if (encode.isValid()) encoding = QStringConverter::Utf8;
+    }
+
     mState = ReferenceState::Loading;
     clear();
-    mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
+    mState = (parseFile(mReferenceFile, encoding) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
     if (mState == ReferenceState::UnsuccessfullyLoaded)
         clear();
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
-bool Reference::parseFile(QString referenceFile)
+bool Reference::parseFile(QString referenceFile, QStringConverter::Encoding encoding)
 {
     QFile file(referenceFile);
     int lineread = 0;
@@ -174,7 +179,7 @@ bool Reference::parseFile(QString referenceFile)
         return false;
     }
     QTextStream in(&file);
-    in.setEncoding(mEncoding);
+    in.setEncoding(encoding);
 
     QStringList recordList;
     QString idx;

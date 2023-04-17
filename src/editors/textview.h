@@ -44,7 +44,7 @@ public:
     explicit TextView(TextKind kind, QWidget *parent = nullptr);
     ~TextView() override;
 
-    bool loadFile(const QString &fileName, QStringConverter::Encoding encoding, bool initAnchor);
+    bool loadFile(const QString &fileName, QTextCodec *codec, bool initAnchor);
     TextKind kind() const;
     void prepareRun();
     void endRun();

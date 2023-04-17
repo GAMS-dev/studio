@@ -42,12 +42,12 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QStringConverter::Encoding encoding, QWidget *parent)
+GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
     : AbstractView(parent),
-      ui(new Ui::GdxViewer),
-      mGdxFile(gdxFile),
-      mSystemDirectory(systemDirectory),
-      mEncoding(encoding)
+    ui(new Ui::GdxViewer),
+    mGdxFile(gdxFile),
+    mSystemDirectory(systemDirectory),
+    mCodec(codec)
 {
     ui->setupUi(this);
     connect(qApp, &QApplication::focusChanged, this, &GdxViewer::applySelectedSymbolOnFocus);
@@ -99,7 +99,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             QtConcurrent::run(&GdxSymbol::stopLoadingData, deselectedSymbol);
         }
 
-        if (reload(mEncoding) != 0)
+        if (reload(mCodec) != 0)
             return;
 
         GdxSymbol* selectedSymbol = mGdxSymbolTable->gdxSymbols().at(selectedIdx);
@@ -154,16 +154,16 @@ void GdxViewer::createSymbolView(GdxSymbol *sym, int symbolIndex)
         symView->setSym(sym, mGdxSymbolTable);
 }
 
-int GdxViewer::reload(QStringConverter::Encoding encoding, bool quiet, bool triggerReload)
+int GdxViewer::reload(QTextCodec* codec, bool quiet, bool triggerReload)
 {
-    if (mHasChanged || encoding != mEncoding) {
+    if (mHasChanged || codec != mCodec) {
         // in case a drag-and-drop opertion or the invalidate() function is in progress, we have to wait for it to complete
         if (dragInProgress() || mPendingInvalidate) {
             if (triggerReload) // call reload() again every 50 ms
-                QTimer::singleShot(50, this, [this, encoding, quiet, triggerReload](){ reload(encoding, quiet, triggerReload); });
+                QTimer::singleShot(50, this, [this, codec, quiet, triggerReload](){ reload(codec, quiet, triggerReload); });
             return -2;
         }
-        mEncoding = encoding;
+        mCodec = codec;
         releaseFile();
         int initError = init(quiet);
         if (!initError) {
@@ -296,7 +296,7 @@ int GdxViewer::init(bool quiet)
             if (QMessageBox::Retry == msgBox.exec()) {
                 mHasChanged = true;
                 invalidate();
-                errNr = reload(mEncoding);
+                errNr = reload(mCodec);
             } else {
                 errNr = -1;
             }
@@ -308,7 +308,7 @@ int GdxViewer::init(bool quiet)
     ui->splitter->widget(0)->hide();
     ui->splitter->widget(1)->hide();
 
-    mGdxSymbolTable = new GdxSymbolTableModel(mGdx, mGdxMutex, mEncoding);
+    mGdxSymbolTable = new GdxSymbolTableModel(mGdx, mGdxMutex, mCodec);
     mSymbolViews.resize(mGdxSymbolTable->symbolCount() + 1); // +1 because of the hidden universe symbol
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);

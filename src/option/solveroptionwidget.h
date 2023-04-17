@@ -48,7 +48,7 @@ class SolverOptionWidget : public AbstractView
 
 public:
     explicit SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
-                                FileId id, QStringConverter::Encoding encoding, QWidget *parent = nullptr);
+                                FileId id, QString encodingName, QWidget *parent = nullptr);
     ~SolverOptionWidget() override;
 
     FileId fileId() const;
@@ -86,7 +86,7 @@ public slots:
 
     bool saveOptionFile(const QString &location);
 
-    void on_reloadSolverOptionFile(QStringConverter::Encoding encoding);
+    void on_reloadSolverOptionFile(QString encodingName);
     void on_selectRow(int logicalIndex);
     void on_selectAndToggleRow(int logicalIndex);
     void on_toggleRowHeader(int logicalIndex);

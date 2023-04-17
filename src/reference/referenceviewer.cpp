@@ -63,11 +63,10 @@ inline static FileReferenceWidget* toFileUsedReferenceWidget(QWidget* w) {
     return (t == ReferenceViewerType::FileUsed) ? static_cast<FileReferenceWidget*>(w) : nullptr;
 }
 
-ReferenceViewer::ReferenceViewer(QString referenceFile, QStringConverter::Encoding encoding, QWidget *parent) :
+ReferenceViewer::ReferenceViewer(QString referenceFile, QString encodingName, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::ReferenceViewer),
-    mEncoding(encoding),
-    mReference(new Reference(referenceFile, encoding))
+    mReference(new Reference(referenceFile, encodingName))
 {
     ui->setupUi(this);
     updateStyle();
@@ -166,9 +165,9 @@ void ReferenceViewer::selectSearchField() const
         tabWidget->selectSearchField();
 }
 
-void ReferenceViewer::on_referenceFileChanged(QStringConverter::Encoding encoding)
+void ReferenceViewer::reloadFile(QString encodingName)
 {
-    mReference->loadReferenceFile(encoding);
+    mReference->loadReferenceFile(encodingName);
     if (mReference->state() == Reference::UnsuccessfullyLoaded) {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(

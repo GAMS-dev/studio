@@ -88,12 +88,9 @@ void GamsConfigEditor::setModified(bool modified)
                                      ConfigEditorName.at(int(ConfigEditorType::environmentVariable)) + (mEnvVarConfigEditor->isModified() ? "*" : ""));
 }
 
-void GamsConfigEditor::on_reloadGamsUserConfigFile(QStringConverter::Encoding encoding)
+void GamsConfigEditor::on_reloadGamsUserConfigFile()
 {
-    if (encoding != QStringConverter::Utf8) {
-        SysLogLocator::systemLog()->append(QString("Gams User Confiugration Editor supports only %1 encoding")
-                                           .arg(QStringConverter::nameForEncoding(encoding)), LogMsgType::Info);
-    } else if (mFileHasChangedExtern) {
+    if (mFileHasChangedExtern) {
              SysLogLocator::systemLog()->append(QString("Reloading Gams User Configuration from %1").arg(mLocation), LogMsgType::Info);
     } else {
         if (!mGuc->isAvailable()) {

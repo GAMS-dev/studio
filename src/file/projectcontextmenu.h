@@ -51,10 +51,9 @@ signals:
     void getSourcePath(QString& source);
     void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void openFilePath(QString fileName, gams::studio::PExProjectNode* knownProject, gams::studio::OpenGroupOption opt, bool focus);
-    void openFile(gams::studio::PExFileNode* node, bool focus = true, QStringConverter::Encoding codecMib = QStringConverter::Utf8,
-                  bool forcedAstextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
-    void reOpenFile(gams::studio::PExFileNode* node, bool focus = true, QStringConverter::Encoding encoding = QStringConverter::Utf8,
-                    bool forcedAstextEditor = false);
+    void openFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false,
+                  gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
+    void reOpenFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void moveProject(gams::studio::PExProjectNode* project, bool fullCopy);
     void newProject();
     void openProject();
