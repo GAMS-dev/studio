@@ -8,6 +8,7 @@ build-deg:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
+    - rm gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
@@ -26,6 +27,7 @@ build-dac:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
+    - rm gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
@@ -47,7 +49,7 @@ build-leg:
     - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
-    - rm "$DOLLAR_GAMS/apifiles/C++/api/version"
+    - rm gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
@@ -73,8 +75,7 @@ build-wei:
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
     - $data | out-file -encoding ascii gamsinclude.pri
-    - ls "$$GAMS_DISTRIB/apifiles/C++/api/*"
-    - rm "$$GAMS_DISTRIB/apifiles/C++/api/version"
+    - rm gamsdist/apifiles/C++/api/version
     - mkdir build
     - cd build
     - qmake.exe ..\gams-studio.pro "CONFIG+=release"
@@ -106,6 +107,7 @@ build-wei-debug:
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
       'rm $$GAMS_DISTRIB/apifiles/C++/api/version'
     - $data | out-file -encoding ascii gamsinclude.pri
+    - rm gamsdist/apifiles/C++/api/version
     - mkdir build-debug
     - cd build-debug
     - qmake.exe ..\gams-studio.pro "CONFIG+=debug"
