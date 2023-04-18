@@ -3,7 +3,7 @@ build-deg:
   tags: [macos]
   dependencies: [install-gams-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   script:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
