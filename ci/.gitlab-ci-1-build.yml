@@ -49,7 +49,7 @@ build-leg:
     - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
-    - rm gamsdist/apifiles/C++/api/version
+    - rm -f gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
