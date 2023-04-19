@@ -815,8 +815,7 @@ void FileMeta::save(const QString &newLocation)
         if (!file.open(QFile::WriteOnly | QFile::Text))
             EXCEPT() << "Can't save " << location;
         QTextStream out(&file);
-        out.setEncoding(QStringConverter::Utf8);
-        out << document()->toPlainText();
+        out << (mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText());
         out.flush();
         file.close();
     } else if (kind() == FileKind::Gsp) {

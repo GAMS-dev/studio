@@ -129,7 +129,7 @@ private:
 
     bool mFileHasChangedExtern = false;
 
-    QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
+    QString mEncoding = "UTF-8";
 
     SolverOptionTableModel* mOptionTableModel;
     QMenu mContextMenu;

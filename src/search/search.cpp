@@ -424,7 +424,6 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     QFile file(fm->location());
     QTextStream ts(&file);
     // TODO(JM) find solution using QTextStream::setEncoding();
-//    ts.setCodec(fm->codec());
     int hits = 0;
 
     if (!file.open(QFile::ReadWrite)) {

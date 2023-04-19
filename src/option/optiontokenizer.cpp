@@ -20,8 +20,9 @@
 #include <QCoreApplication>
 #include <QDir>
 #include <QTextStream>
-#include <QStringEncoder>
+#include <QtCore5Compat/QTextCodec>
 #include <QRegularExpression>
+
 #include "optiontokenizer.h"
 #include "gclgms.h"
 #include "option.h"
@@ -1263,36 +1264,35 @@ void OptionTokenizer::parseOptionString(const QString &text, QString &keyStr, QS
     return;
 }
 
-QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QStringConverter::Encoding encoding)
+QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QString encodingName)
 {
     QList<SolverOptionItem *> items;
 
     QFile inputFile(absoluteFilePath);
     int i = 0;
     if (inputFile.open(QFile::ReadOnly)) {
-       QTextStream in(&inputFile);
-       in.setEncoding(encoding);
+        QTextStream in(&inputFile);
 
-       QList<int> idList;
-       while (!in.atEnd()) {
-           i++;
-           SolverOptionItem* item = new SolverOptionItem();
-           if (mOption->available())
-              getOptionItemFromStr(item, true, in.readLine());
-           else
-               item->key = in.readLine();
-           items.append( item );
-           idList << item->optionId;
-       }
-       for(SolverOptionItem* item : items) {
-           item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
-       }
-       inputFile.close();
+        QList<int> idList;
+        while (!in.atEnd()) {
+            i++;
+            SolverOptionItem* item = new SolverOptionItem();
+            if (mOption->available())
+                getOptionItemFromStr(item, true, in.readLine());
+            else
+                item->key = in.readLine();
+            items.append( item );
+            idList << item->optionId;
+        }
+        for(SolverOptionItem* item : items) {
+            item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
+        }
+        inputFile.close();
     }
     return items;
 }
 
-bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QStringConverter::Encoding encoding)
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QString encodingName)
 {
     bool hasBeenLogged = false;
 
@@ -1304,39 +1304,39 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
 
 //    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
     QTextStream out(&outputFile);
-    QStringEncoder encode = QStringEncoder(encoding);
+    QTextCodec *codec = QTextCodec::codecForName(encodingName.toUtf8());
     for(SolverOptionItem* item: items) {
-            out << encode(formatOption(item)) << Qt::endl;
-            switch (item->error) {
-            case OptionErrorType::Invalid_Key:
-                logger()->append( QString("Unknown option '%1'").arg(item->key),
-                                  LogMsgType::Warning );
-                hasBeenLogged = true;
-                break;
-            case OptionErrorType::Incorrect_Value_Type:
-                logger()->append( QString("Option key '%1' has an incorrect value type").arg(item->key),
-                                  LogMsgType::Warning );
-                hasBeenLogged = true;
-                break;
-            case OptionErrorType::Value_Out_Of_Range:
-                logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key, item->value),
-                                  LogMsgType::Warning );
-                hasBeenLogged = true;
-                break;
-            case OptionErrorType::Deprecated_Option:
-                logger()->append( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
-                                  LogMsgType::Warning );
-                hasBeenLogged = true;
-                break;
-            case OptionErrorType::Override_Option:
-                logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key, item->value),
-                                  LogMsgType::Warning );
-                hasBeenLogged = true;
-                break;
-            case OptionErrorType::No_Error:
-            default:
-                break;
-            }
+        out << (codec ? codec->fromUnicode(formatOption(item)) : formatOption(item)) << Qt::endl;
+        switch (item->error) {
+        case OptionErrorType::Invalid_Key:
+            logger()->append( QString("Unknown option '%1'").arg(item->key),
+                             LogMsgType::Warning );
+            hasBeenLogged = true;
+            break;
+        case OptionErrorType::Incorrect_Value_Type:
+            logger()->append( QString("Option key '%1' has an incorrect value type").arg(item->key),
+                             LogMsgType::Warning );
+            hasBeenLogged = true;
+            break;
+        case OptionErrorType::Value_Out_Of_Range:
+            logger()->append( QString("Value '%1' for option key '%2' is out of range").arg(item->key, item->value),
+                             LogMsgType::Warning );
+            hasBeenLogged = true;
+            break;
+        case OptionErrorType::Deprecated_Option:
+            logger()->append( QString("Option '%1' is deprecated, will be eventually ignored").arg(item->key),
+                             LogMsgType::Warning );
+            hasBeenLogged = true;
+            break;
+        case OptionErrorType::Override_Option:
+            logger()->append( QString("Value '%1' for option key '%2' will be overriden").arg(item->key, item->value),
+                             LogMsgType::Warning );
+            hasBeenLogged = true;
+            break;
+        case OptionErrorType::No_Error:
+        default:
+            break;
+        }
     }
     outputFile.close();
 

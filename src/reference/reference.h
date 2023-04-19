@@ -187,7 +187,7 @@ public slots:
     void loadReferenceFile(QString encodingName);
 
 private:
-    bool parseFile(QString referenceFile, QStringConverter::Encoding encoding);
+    bool parseFile(QString referenceFile, QString encodingName);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
     void clear();
 

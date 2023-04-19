@@ -49,8 +49,7 @@ SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePat
     mSolverName(solverName)
 {
     ui->setupUi(this);
-    std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName(encodingName.toLatin1());
-    mEncoding = enc.has_value() ? enc.value() : QStringConverter::Utf8;
+    mEncoding = encodingName.isEmpty() ? "UTF-8" : encodingName;
     setFocusProxy(ui->solverOptionTableView);
     addActions();
 
@@ -604,12 +603,10 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
 
 void SolverOptionWidget::on_reloadSolverOptionFile(QString encodingName)
 {
-    QString curEnc = QStringConverter::nameForEncoding(mEncoding);
-    if (curEnc != encodingName) {
-        std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName(encodingName.toLatin1());
-        mEncoding = enc.has_value() ? enc.value() : QStringConverter::Utf8;
+    if (mEncoding != encodingName) {
+        mEncoding = encodingName.isEmpty() ? "UTF-8" : encodingName;
         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding")
-                                               .arg(mLocation, curEnc), LogMsgType::Info);
+                                               .arg(mLocation, encodingName), LogMsgType::Info);
     } else if (mFileHasChangedExtern)
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
      else

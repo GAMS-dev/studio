@@ -164,13 +164,13 @@ void Reference::loadReferenceFile(QString encodingName)
 
     mState = ReferenceState::Loading;
     clear();
-    mState = (parseFile(mReferenceFile, encoding) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
+    mState = (parseFile(mReferenceFile, encodingName) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
     if (mState == ReferenceState::UnsuccessfullyLoaded)
         clear();
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
-bool Reference::parseFile(QString referenceFile, QStringConverter::Encoding encoding)
+bool Reference::parseFile(QString referenceFile, QString encoding)
 {
     QFile file(referenceFile);
     int lineread = 0;
@@ -179,7 +179,7 @@ bool Reference::parseFile(QString referenceFile, QStringConverter::Encoding enco
         return false;
     }
     QTextStream in(&file);
-    in.setEncoding(encoding);
+//    in.setEncoding(encoding);
 
     QStringList recordList;
     QString idx;
