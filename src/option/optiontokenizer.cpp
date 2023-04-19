@@ -1271,16 +1271,19 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     QFile inputFile(absoluteFilePath);
     int i = 0;
     if (inputFile.open(QFile::ReadOnly)) {
-        QTextStream in(&inputFile);
+        QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
+        if (!codec) codec = QTextCodec::codecForName("UTF-8");
 
         QList<int> idList;
-        while (!in.atEnd()) {
+        while (!inputFile.atEnd()) {
             i++;
             SolverOptionItem* item = new SolverOptionItem();
+            QByteArray arry = inputFile.readLine();
+
             if (mOption->available())
-                getOptionItemFromStr(item, true, in.readLine());
+                getOptionItemFromStr(item, true, codec ? codec->toUnicode(arry) : QString(arry));
             else
-                item->key = in.readLine();
+                item->key = codec ? codec->toUnicode(arry) : QString(arry);
             items.append( item );
             idList << item->optionId;
         }
@@ -1303,10 +1306,10 @@ bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, co
     }
 
 //    qDebug() << "writeout :" << items.size() << " using codec :" << codec->name();
-    QTextStream out(&outputFile);
     QTextCodec *codec = QTextCodec::codecForName(encodingName.toUtf8());
     for(SolverOptionItem* item: items) {
-        out << (codec ? codec->fromUnicode(formatOption(item)) : formatOption(item)) << Qt::endl;
+        outputFile.write((codec ? codec->fromUnicode(formatOption(item)) : formatOption(item).toUtf8()));
+        outputFile.write("\n");
         switch (item->error) {
         case OptionErrorType::Invalid_Key:
             logger()->append( QString("Unknown option '%1'").arg(item->key),

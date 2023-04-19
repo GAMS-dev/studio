@@ -67,16 +67,14 @@ void SearchWorker::findInFiles()
         QFile file(fm->location());
         if (file.open(QFile::ReadOnly)) {
 
-            QTextStream in(&file);
-            // TODO(JM) find solution using QTextStream::setEncoding();
-//            in.setCodec(fm->codec());
-
-            while (!in.atEnd() && !cacheFull) { // read file
+            QTextCodec *codec = fm->codec();
+            while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
                 if (lineCounter % 500 == 0 && thread()->isInterruptionRequested()) break;
 
-                QString line = in.readLine();
+                QByteArray arry = file.readLine();
+                QString line = codec ? codec->toUnicode(arry) : QString(arry);
 
                 QRegularExpressionMatch match;
                 QRegularExpressionMatchIterator i = mRegex.globalMatch(line);

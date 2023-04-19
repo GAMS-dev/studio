@@ -20,7 +20,6 @@
 #include <QDir>
 #include <QFile>
 #include <QTabBar>
-#include <QTextStream>
 #include <QStackedWidget>
 #include <QWheelEvent>
 

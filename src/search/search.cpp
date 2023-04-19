@@ -422,8 +422,7 @@ bool Search::hasResultsForFile(QString filePath) {
 int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
-    QTextStream ts(&file);
-    // TODO(JM) find solution using QTextStream::setEncoding();
+    QTextCodec *codec = fm->codec();
     int hits = 0;
 
     if (!file.open(QFile::ReadWrite)) {
@@ -432,8 +431,9 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     }
 
     QString content;
-    while (!ts.atEnd()) {
-        QString line = ts.readLine();
+    while (!file.atEnd()) {
+        QByteArray arry = file.readLine();
+        QString line = codec ? codec->toUnicode(arry) : QString(arry);
 
         if (regex.captureCount() > 0) {
             QRegularExpressionMatchIterator matchIter = regex.globalMatch(line);
@@ -461,8 +461,8 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
         content += line + "\n";
     }
 
-    ts.seek(0);
-    ts << content;
+    file.seek(0);
+    file.write(codec ? codec->fromUnicode(content) : content.toUtf8());
     file.close();
     return hits;
 }
