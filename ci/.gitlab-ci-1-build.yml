@@ -8,7 +8,6 @@ build-deg:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
-    - rm gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
@@ -27,7 +26,6 @@ build-dac:
     - printf "GAMS_DISTRIB=$(pwd)/gamsdist\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
-    - rm gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - PATH="${qtpath}:${PATH}"
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
@@ -49,7 +47,6 @@ build-leg:
     - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
-    - rm -f gamsdist/apifiles/C++/api/version
     - mkdir build && cd build
     - qmake ../gams-studio.pro CONFIG+=release && make -j4
   artifacts:
