@@ -4306,6 +4306,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         }
         try {
             if (codecMib == -1) codecMib = fileMeta->codecMib();
+
+//            QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+//            DEB() << "file " << fileMeta->name() << "   codec" << (codec ? codec->name() : QString("???"));
+
             edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
             int tabIndex = fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
             PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);

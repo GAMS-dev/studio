@@ -814,9 +814,7 @@ void FileMeta::save(const QString &newLocation)
     if (document()) {
         if (!file.open(QFile::WriteOnly | QFile::Text))
             EXCEPT() << "Can't save " << location;
-        QTextStream out(&file);
-        out << (mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText());
-        out.flush();
+        file.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
         file.close();
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
