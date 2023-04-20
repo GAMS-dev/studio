@@ -433,6 +433,14 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     QString content;
     while (!file.atEnd()) {
         QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
         QString line = codec ? codec->toUnicode(arry) : QString(arry);
 
         if (regex.captureCount() > 0) {

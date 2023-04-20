@@ -26,6 +26,7 @@
 #include "optiontokenizer.h"
 #include "gclgms.h"
 #include "option.h"
+#include "logger.h"
 #include "theme.h"
 #include "commonpaths.h"
 #include "editors/defaultsystemlogger.h"
@@ -1279,6 +1280,13 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
             i++;
             SolverOptionItem* item = new SolverOptionItem();
             QByteArray arry = inputFile.readLine();
+            // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+            if (arry.endsWith('\n')) {
+                if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                   arry.chop(2);
+                else
+                   arry.chop(1);
+            }
 
             if (mOption->available())
                 getOptionItemFromStr(item, true, codec ? codec->toUnicode(arry) : QString(arry));

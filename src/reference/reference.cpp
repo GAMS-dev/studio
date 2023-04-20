@@ -187,6 +187,14 @@ bool Reference::parseFile(QString referenceFile, QString encodingName)
     QString idx;
     while (!file.atEnd()) {
         QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+           if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+               arry.chop(2);
+           else
+               arry.chop(1);
+        }
+
         QString line = codec ? codec->toUnicode(arry) : QString(arry);
         lineread++;
         recordList = line.split(mRexSplit, Qt::SkipEmptyParts);
@@ -233,6 +241,14 @@ bool Reference::parseFile(QString referenceFile, QString encodingName)
         if (lineread > expectedLineread)  // ignore the rest of the file contents
             break;
         QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
         QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
 
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
@@ -271,6 +287,14 @@ bool Reference::parseFile(QString referenceFile, QString encodingName)
     }
     if (lineread > expectedLineread && !file.atEnd()) {
         QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
         QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
         int id = recordList.first().toInt();
         if (id != 0) {
@@ -290,6 +314,14 @@ bool Reference::parseFile(QString referenceFile, QString encodingName)
             if (lineread > expectedLineread)
                 break;
             QByteArray arry = file.readLine();
+            // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+            if (arry.endsWith('\n')) {
+                if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                    arry.chop(2);
+                else
+                    arry.chop(1);
+            }
+
             QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
             if (recordList.size() < 6)
                 break;
