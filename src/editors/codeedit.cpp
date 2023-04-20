@@ -2856,26 +2856,23 @@ void CodeEdit::moveLines(bool moveLinesUp)
 void CodeEdit::trimtrailing()
 {
     QTextCursor c= textCursor();
-    c.movePosition(QTextCursor::Start);
-    while(!c.atEnd()){
-        QString line=c.block().text();
-        qDebug() << line.size();
-        for(int i=line.size()-1;i>=0;i--){
-            if(line[i]==' '|| line[i]=='\t'){
-                line.removeAt(i);
-            }
-            else{
-                line += "\n";
-                break;
+    c.movePosition(c.Start);
+    c.movePosition(c.EndOfLine);
+    for(int i=0;i<blockCount();i++){
+        if(c.block().text().size()>0){
+            c.movePosition(c.Left);
+            while(c.positionInBlock()>0){
+                QChar x=c.block().text().at(c.positionInBlock());
+                if(x==' ' || x == '\t' ){
+                    c.deleteChar();
+                }
+                else{
+                    break;
+                }
+                c.movePosition(c.Left);
             }
         }
-        c.select(c.BlockUnderCursor);
-        c.removeSelectedText();
-        c.movePosition(c.StartOfLine);
-        c.beginEditBlock();
-        c.insertText(line);
-        c.endEditBlock();
-        c.movePosition(c.Down);
+        c.movePosition(c.NextBlock);
         c.movePosition(c.EndOfLine);
     }
 }
