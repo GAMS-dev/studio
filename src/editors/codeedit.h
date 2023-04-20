@@ -92,6 +92,7 @@ public:
     void removeLine();
     void commentLine();
     void moveLines(bool moveLinesUp);
+    void trimtrailing();
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);

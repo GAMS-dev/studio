@@ -434,6 +434,8 @@ private slots:
 
     void on_actionOpen_Project_triggered();
 
+    void on_actionTrim_Trailing_Spaces_triggered();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();

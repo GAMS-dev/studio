@@ -2853,5 +2853,32 @@ void CodeEdit::moveLines(bool moveLinesUp)
         mCompleter->suppressNextOpenTrigger();
 }
 
+void CodeEdit::trimtrailing()
+{
+    QTextCursor c= textCursor();
+    c.movePosition(QTextCursor::Start);
+    while(!c.atEnd()){
+        QString line=c.block().text();
+        qDebug() << line.size();
+        for(int i=line.size()-1;i>=0;i--){
+            if(line[i]==' '|| line[i]=='\t'){
+                line.removeAt(i);
+            }
+            else{
+                line += "\n";
+                break;
+            }
+        }
+        c.select(c.BlockUnderCursor);
+        c.removeSelectedText();
+        c.movePosition(c.StartOfLine);
+        c.beginEditBlock();
+        c.insertText(line);
+        c.endEditBlock();
+        c.movePosition(c.Down);
+        c.movePosition(c.EndOfLine);
+    }
+}
+
 } // namespace studio
 } // namespace gams

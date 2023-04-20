@@ -115,7 +115,7 @@
      <x>0</x>
      <y>0</y>
      <width>1014</width>
-     <height>22</height>
+     <height>25</height>
     </rect>
    </property>
    <widget class="QMenu" name="menuFile">
@@ -181,6 +181,12 @@
      <property name="title">
       <string>&amp;Advanced</string>
      </property>
+     <widget class="QMenu" name="menuBlank_Operations">
+      <property name="title">
+       <string>Blank Operations</string>
+      </property>
+      <addaction name="actionTrim_Trailing_Spaces"/>
+     </widget>
      <addaction name="actionSet_to_Uppercase"/>
      <addaction name="actionSet_to_Lowercase"/>
      <addaction name="separator"/>
@@ -189,6 +195,8 @@
      <addaction name="actionDuplicate_Line"/>
      <addaction name="actionRemove_Line"/>
      <addaction name="actionComment"/>
+     <addaction name="separator"/>
+     <addaction name="menuBlank_Operations"/>
     </widget>
     <addaction name="actionUndo"/>
     <addaction name="actionRedo"/>
@@ -1596,6 +1604,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionTrim_Trailing_Spaces">
+   <property name="text">
+    <string>Trim Trailing Spaces</string>
    </property>
   </action>
  </widget>

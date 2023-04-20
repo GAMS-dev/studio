@@ -5941,5 +5941,13 @@ void MainWindow::on_actionNavigator_triggered()
 }
 
 
+void MainWindow::on_actionTrim_Trailing_Spaces_triggered()
+{
+    CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce -> trimtrailing();
+}
+
+
 }
 }
