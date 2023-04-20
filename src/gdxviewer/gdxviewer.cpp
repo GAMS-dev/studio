@@ -118,6 +118,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (!selectedSymbol->isLoaded())
             QtConcurrent::run(&GdxViewer::loadSymbol, this, selectedSymbol);
 
+        if (ui->splitter->widget(1) != mSymbolViews.at(selectedIdx))
         ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
     }
     else if (ui->splitter->widget(1) != ui->widget)
