@@ -1820,6 +1820,7 @@ void MainWindow::codecReload(QAction *action)
             updateMenuToCodec(fm->codecMib());
             updateStatusFile();
         }
+        updateAndSaveSettings();
     }
 }
 
