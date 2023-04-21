@@ -1860,40 +1860,31 @@ void MainWindow::activeTabChanged(int index)
         changeToLog(node, false, false);
         updateStatusFile();
 
+        bool canEncode = true;
+        bool canWrite = true;
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
-            ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
+            canEncode = !edit->isReadOnly();
+            canWrite = !edit->isReadOnly();
         } else if (ViewHelper::toTextView(editWidget)) {
-            ui->menuEncoding->setEnabled(true);
-            ui->menuconvert_to->setEnabled(false);
+            canWrite = false;
         } else if (ViewHelper::toGdxViewer(editWidget)) {
-            ui->menuconvert_to->setEnabled(false);
+            canWrite = false;
             node->file()->reload();
-        } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
-            ui->menuconvert_to->setEnabled(false);
-            if (mProjectRepo.findFileNode(refViewer)) {
-                ui->menuconvert_to->setEnabled(false);
-                updateMenuToCodec(node->file()->codecMib());
-            }
-        } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
-            if (mProjectRepo.findFileNode(solverOptionEditor)) {
-                ui->menuEncoding->setEnabled(true);
-                ui->menuconvert_to->setEnabled(true);
-                node->file()->reload();
-                updateMenuToCodec(node->file()->codecMib());
-            }
-        } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
-            ui->menuEncoding->setEnabled(false);
-            if (mProjectRepo.findFileNode(gucEditor)) {
-                ui->menuEncoding->setEnabled(false);
-                ui->menureload_with->setEnabled(false);
-                ui->menuconvert_to->setEnabled(false);
-                node->file()->reload();
-                updateMenuToCodec(node->file()->codecMib());
-            }
+        } else if (ViewHelper::toReferenceViewer(editWidget)) {
+            canEncode = false;
+            canWrite = false;
+        } else if (ViewHelper::toSolverOptionEdit(editWidget)) {
+            canEncode = true;
+            canWrite = true;
+            node->file()->reload();
+        } else if (ViewHelper::toGamsConfigEditor((editWidget))) {
+            canEncode = false;
+            canWrite = true;
+            node->file()->reload();
         }
+        ui->menuEncoding->setEnabled(canEncode);
+        ui->menureload_with->setEnabled(canEncode);
+        ui->menuconvert_to->setEnabled(canEncode && canWrite);
         updateMenuToCodec(node->file()->codecMib());
     } else {
         ui->menuEncoding->setEnabled(false);
