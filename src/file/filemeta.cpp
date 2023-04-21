@@ -788,7 +788,7 @@ void FileMeta::load(int codecMib, bool init)
             mLoading = false;
             mCodec = codec;
             if (!invalidCodecs.isEmpty()) {
-                DEB() << " can't be encoded to " + invalidCodecs + ". Encoding used: " + codec->name();
+                DEB() << "Errors when decoding with " + invalidCodecs + ". Finally used encoding: " + codec->name();
             }
         } else {
             SysLogLocator::systemLog()->append("System doesn't contain codec for MIB "
@@ -817,7 +817,7 @@ void FileMeta::save(const QString &newLocation)
         std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName((mCodec ? mCodec->name() : QString("UTF-8")).toLatin1());
         if (enc.has_value()) {
             QStringEncoder encode = QStringEncoder(enc.value());
-            file.write(encode(document()->toPlainText().toUtf8()));
+            file.write(encode(document()->toPlainText()));
         } else {
             file.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
         }
