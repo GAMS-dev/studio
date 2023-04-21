@@ -21,6 +21,7 @@
 #define LOGPARSER_H
 
 #include <QString>
+#include <QtCore5Compat/QTextCodec>
 #include "syntax/textmarkrepo.h"
 
 namespace gams {
@@ -55,9 +56,9 @@ public:
     };
 
 public:
-    LogParser(QStringConverter::Encoding encoding);
-    QStringConverter::Encoding encoding() const;
-    void setEncoding(QStringConverter::Encoding encoding);
+    LogParser(QTextCodec *codec);
+    QTextCodec *codec() const;
+    void setCodec(QTextCodec *codec);
     QString parseLine(const QByteArray &data, QString &line, bool &hasError, MarksBlockState &mbState);
     void quickParse(const QByteArray &data, int start, int end, QString &line, int &linkStart, int &lstLine);
 
@@ -70,8 +71,9 @@ private:
     QString extractLinks(const QString &line, bool &hasError, MarksBlockState &mbState);
 
     QString mDirectory;
-    mutable QStringEncoder encode;
-    QStringConverter::Encoding mEncoding;
+    QTextCodec *mCodec;
+//    mutable QStringEncoder encode;
+//    QStringConverter::Encoding mEncoding;
 };
 
 } // namespace studio

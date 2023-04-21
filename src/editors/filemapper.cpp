@@ -21,7 +21,6 @@
 #include "exception.h"
 #include "logger.h"
 #include <QFile>
-#include <QTextStream>
 #include <QGuiApplication>
 #include <QClipboard>
 

@@ -210,7 +210,7 @@ public:
     static QStringList dialogFileFilterAll(bool addProject = false) {
         QStringList res(addProject ? "GAMS source or project (*.gms *.gsp)" : "GAMS source (*.gms)");
         QStringList userTypes = FileType::userGamsTypes();
-        QString allGams(QString("All GAMS files (*.gms%1 *.gdx *.inc *.log *.lst *efi *.opt *.op* *.o *.pf *.ref *.dmp%1)")
+        QString allGams(QString("All GAMS files (*.gms%1 *.gdx *.inc *.log *.lst *efi *.opt *.op* *.o *.pf *.ref *.dmp%2)")
                         .arg(addProject ? " *.gsp" : ""));
         if (!userTypes.isEmpty()) {
             res << allGams.arg(" *." + userTypes.join(" *."));

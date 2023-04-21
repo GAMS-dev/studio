@@ -23,10 +23,11 @@
 #include <QObject>
 #include <QVector>
 #include <QSet>
-#include <QStringConverter>
+//#include <QStringConverter>
 #include <QTextCursor>
 #include <QTextDocument>
 #include <QPoint>
+#include <QtCore5Compat/QTextCodec>
 
 #include "search/result.h"
 
@@ -146,8 +147,8 @@ public:
     ~AbstractTextMapper() override;
     virtual AbstractTextMapper::Kind kind() const = 0;
 
-    QStringConverter::Encoding encoding() const;
-    void setEncoding(QStringConverter::Encoding encoding);
+    QTextCodec *codec() const;
+    void setCodec(QTextCodec *codec);
 
     bool isEmpty() const;
     virtual void startRun() = 0;
@@ -263,6 +264,7 @@ private:
     int mMaxLineWidth = 1024;
     bool mDebugMode = false;
 
+    QTextCodec *mCodec = nullptr;
     QStringConverter::Encoding mEncoding = QStringConverter::Utf8;
     mutable QStringEncoder encode;
     mutable QStringDecoder decode;

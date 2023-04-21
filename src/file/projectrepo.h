@@ -150,8 +150,7 @@ signals:
     void isNodeExpanded(const QModelIndex &mi, bool &expanded) const;
     void openProject(const QString &gspFile);
     void openFile(gams::studio::FileMeta* fileMeta, bool focus = true, gams::studio::PExProjectNode *project = nullptr,
-                  QStringConverter::Encoding encoding = QStringConverter::Utf8, bool forcedAsTextEditor = false,
-                  gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
+                  int codecMib = -1, bool forcedAsTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void openFolder(QString path, gams::studio::PExProjectNode* project);
     void changed();
     void runnableChanged();

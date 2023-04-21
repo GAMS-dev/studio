@@ -19,16 +19,18 @@
  */
 #include "reference.h"
 
+#include <QtCore5Compat/QTextCodec>
+
 namespace gams {
 namespace studio {
 namespace reference {
 
 QRegularExpression Reference::mRexSplit("\\s+");
 
-Reference::Reference(QString referenceFile, QStringConverter::Encoding encoding, QObject *parent) :
+Reference::Reference(QString referenceFile, QString encodingName, QObject *parent) :
     QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
-    loadReferenceFile(encoding);
+    loadReferenceFile(encodingName);
 }
 
 Reference::~Reference()
@@ -152,20 +154,25 @@ int Reference::errorLine() const
     return  mLastErrorLine;
 }
 
-void Reference::loadReferenceFile(QStringConverter::Encoding encoding)
+void Reference::loadReferenceFile(QString encodingName)
 {
     mLastErrorLine = -1;
     emit loadStarted();
-    mEncoding = encoding;
+    QStringConverter::Encoding encoding = QStringConverter::Utf8;
+    {
+        QStringEncoder encode(encodingName.toLatin1());
+        if (encode.isValid()) encoding = QStringConverter::Utf8;
+    }
+
     mState = ReferenceState::Loading;
     clear();
-    mState = (parseFile(mReferenceFile) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
+    mState = (parseFile(mReferenceFile, encodingName) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
     if (mState == ReferenceState::UnsuccessfullyLoaded)
         clear();
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
-bool Reference::parseFile(QString referenceFile)
+bool Reference::parseFile(QString referenceFile, QString encodingName)
 {
     QFile file(referenceFile);
     int lineread = 0;
@@ -173,13 +180,22 @@ bool Reference::parseFile(QString referenceFile)
         mLastErrorLine=lineread;
         return false;
     }
-    QTextStream in(&file);
-    in.setEncoding(mEncoding);
+    QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
+    if (!codec) codec = QTextCodec::codecForName("UTF-8");
 
     QStringList recordList;
     QString idx;
-    while (!in.atEnd()) {
-        QString line = in.readLine();
+    while (!file.atEnd()) {
+        QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+           if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+               arry.chop(2);
+           else
+               arry.chop(1);
+        }
+
+        QString line = codec ? codec->toUnicode(arry) : QString(arry);
         lineread++;
         recordList = line.split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.size() <= 0) {
@@ -208,7 +224,7 @@ bool Reference::parseFile(QString referenceFile)
         SymbolReferenceItem* ref = mReference[id.toInt()];
         addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
     }
-    if (in.atEnd()) {
+    if (file.atEnd()) {
         mLastErrorLine=lineread;
         return false;
     }
@@ -220,11 +236,21 @@ bool Reference::parseFile(QString referenceFile)
     recordList.removeFirst();
     int size = recordList.first().toInt();
     int expectedLineread = size+lineread;
-    while (!in.atEnd()) {
+    while (!file.atEnd()) {
         lineread++;
         if (lineread > expectedLineread)  // ignore the rest of the file contents
             break;
-        recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
+        QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
+        QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
+
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
             mLastErrorLine=lineread;
             return false;
@@ -259,8 +285,17 @@ bool Reference::parseFile(QString referenceFile)
             text << recordList.at(i);
         ref->setExplanatoryText(text.join(' '));
     }
-    if (lineread > expectedLineread && !in.atEnd()) {
-        recordList =  in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
+    if (lineread > expectedLineread && !file.atEnd()) {
+        QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
+        QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
         int id = recordList.first().toInt();
         if (id != 0) {
             mLastErrorLine=lineread;
@@ -275,10 +310,19 @@ bool Reference::parseFile(QString referenceFile)
         recordList.removeFirst();
         size = recordList.first().toInt();
         expectedLineread += size;
-        while (!in.atEnd()) {
+        while (!file.atEnd()) {
             if (lineread > expectedLineread)
                 break;
-            recordList = in.readLine().split(mRexSplit, Qt::SkipEmptyParts);
+            QByteArray arry = file.readLine();
+            // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+            if (arry.endsWith('\n')) {
+                if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                    arry.chop(2);
+                else
+                    arry.chop(1);
+            }
+
+            QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
             if (recordList.size() < 6)
                 break;
             id = recordList.first().toInt();

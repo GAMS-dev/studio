@@ -502,7 +502,7 @@ void TestOptionFile::testReadOptionFile_data()
 
     // when
     QString optFile = QDir(".").absoluteFilePath("dummy.opt");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QStringConverter::System);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, "System");
 
     // then
     QCOMPARE( items.size(), 6 );
@@ -593,7 +593,7 @@ void TestOptionFile::testNonExistReadOptionFile()
 {
     // when
     QString optFile = QDir(".").absoluteFilePath("dummy.op3");
-    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, QStringConverter::System);
+    QList<SolverOptionItem *> items = optionTokenizer->readOptionFile(optFile, "System");
 
     // then
     QCOMPARE( items.size(), 0);
@@ -617,7 +617,7 @@ void TestOptionFile::testWriteOptionFile_data()
     int size = items.size();
 
     // when
-    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("dummy.op2"), QStringConverter::System) );
+    QVERIFY( optionTokenizer->writeOptionFile(items, QDir(".").absoluteFilePath("dummy.op2"), "System") );
 
     // clean up
     qDeleteAll(items);

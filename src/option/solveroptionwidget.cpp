@@ -41,15 +41,15 @@ namespace studio {
 namespace option {
 
 SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
-                                       FileId id, QStringConverter::Encoding encoding, QWidget *parent) :
-          AbstractView(parent),
-          ui(new Ui::SolverOptionWidget),
-          mFileId(id),
-          mLocation(optionFilePath),
-          mSolverName(solverName),
-          mEncoding(encoding)
+                                       FileId id, QString encodingName, QWidget *parent) :
+    AbstractView(parent),
+    ui(new Ui::SolverOptionWidget),
+    mFileId(id),
+    mLocation(optionFilePath),
+    mSolverName(solverName)
 {
     ui->setupUi(this);
+    mEncoding = encodingName.isEmpty() ? "UTF-8" : encodingName;
     setFocusProxy(ui->solverOptionTableView);
     addActions();
 
@@ -601,14 +601,14 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
     return saveAs(location);
 }
 
-void SolverOptionWidget::on_reloadSolverOptionFile(QStringConverter::Encoding encoding)
+void SolverOptionWidget::on_reloadSolverOptionFile(QString encodingName)
 {
-    if (mEncoding != encoding) {
-        mEncoding = encoding;
+    if (mEncoding != encodingName) {
+        mEncoding = encodingName.isEmpty() ? "UTF-8" : encodingName;
         mOptionTokenizer->logger()->append(QString("Loading options from %1 with %2 encoding")
-                                           .arg(mLocation, QStringConverter::nameForEncoding(encoding)), LogMsgType::Info);
+                                               .arg(mLocation, encodingName), LogMsgType::Info);
     } else if (mFileHasChangedExtern)
-              mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
+        mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
      else
          return;
      mOptionTableModel->reloadSolverOptionModel( mOptionTokenizer->readOptionFile(mLocation, mEncoding) );
@@ -681,7 +681,7 @@ void SolverOptionWidget::on_openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, QStringConverter::Utf8, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
 }
 
 void SolverOptionWidget::copyAction()

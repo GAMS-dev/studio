@@ -422,9 +422,7 @@ bool Search::hasResultsForFile(QString filePath) {
 int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
 {
     QFile file(fm->location());
-    QTextStream ts(&file);
-    // TODO(JM) find solution using QTextStream::setEncoding();
-//    ts.setCodec(fm->codec());
+    QTextCodec *codec = fm->codec();
     int hits = 0;
 
     if (!file.open(QFile::ReadWrite)) {
@@ -433,8 +431,17 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
     }
 
     QString content;
-    while (!ts.atEnd()) {
-        QString line = ts.readLine();
+    while (!file.atEnd()) {
+        QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
+
+        QString line = codec ? codec->toUnicode(arry) : QString(arry);
 
         if (regex.captureCount() > 0) {
             QRegularExpressionMatchIterator matchIter = regex.globalMatch(line);
@@ -462,8 +469,8 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
         content += line + "\n";
     }
 
-    ts.seek(0);
-    ts << content;
+    file.seek(0);
+    file.write(codec ? codec->fromUnicode(content) : content.toUtf8());
     file.close();
     return hits;
 }

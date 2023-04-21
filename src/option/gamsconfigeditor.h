@@ -21,6 +21,7 @@
 #define GAMSCONFIGEDITOR_H
 
 #include <QWidget>
+#include <QtCore5Compat/QTextCodec>
 
 #include "abstractview.h"
 #include "common.h"
@@ -69,7 +70,7 @@ public:
     bool saveAs(const QString &location);
     void setFileChangedExtern(bool value);
 
-    void on_reloadGamsUserConfigFile(QStringConverter::Encoding encoding);
+    void on_reloadGamsUserConfigFile();
     QString getSelectedParameterName(QWidget* widget) const;
 
     void zoomIn(int range = 1);

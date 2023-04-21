@@ -243,7 +243,7 @@ void ProjectEdit::on_bBaseDir_clicked()
 
 void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 {
-    if (field & (ProjectData::name | field == ProjectData::nameExt))
+    if (field & (ProjectData::name | ProjectData::nameExt))
         mSharedData->project()->refreshProjectTabName();
     if ((field & ProjectData::file) && ui->edProjectFile->text() != mSharedData->fieldData(ProjectData::file))
         ui->edProjectFile->setText(mSharedData->fieldData(ProjectData::file));

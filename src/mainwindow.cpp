@@ -272,9 +272,9 @@ MainWindow::MainWindow(QWidget *parent)
 
     connect(&mProjectContextMenu, &ProjectContextMenu::openFile, this, &MainWindow::openFileNode);
     connect(&mProjectContextMenu, &ProjectContextMenu::reOpenFile, this,
-            [this](PExFileNode* node, bool focus, QStringConverter::Encoding encoding, bool forcedAsTextEditor) {
+            [this](PExFileNode* node, bool focus, int codecMib, bool forcedAsTextEditor) {
         if (node && handleFileChanges(node->file(), true))
-            openFileNode(node, focus, encoding, forcedAsTextEditor);
+            openFileNode(node, focus, codecMib, forcedAsTextEditor);
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::moveProject, this, &MainWindow::moveProjectDialog);
     connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, [this]() {
@@ -1037,14 +1037,14 @@ search::SearchDialog* MainWindow::searchDialog() const
 QStringList MainWindow::encodingNames()
 {
     QStringList res;
-//    const auto actions = ui->menuconvert_to->actions();
-//    for (QAction *act: actions) {
-//        if (!act->data().isNull()) {
-//            QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
-//            if (!codec) continue;
-//            res << codec->name();
-//        }
-//    }
+    const auto actions = ui->menuconvert_to->actions();
+    for (QAction *act: actions) {
+        if (!act->data().isNull()) {
+            QTextCodec *codec = QTextCodec::codecForMib(act->data().toInt());
+            if (!codec) continue;
+            res << codec->name();
+        }
+    }
     return res;
 }
 
@@ -1090,19 +1090,19 @@ void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
             ui->menureload_with->removeAction(act);
         mCodecGroupReload->removeAction(act);
     }
-//    for (int mib: mibs) {
-//        if (!QTextCodec::availableMibs().contains(mib)) continue;
-//        QAction *act;
-//        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
-//        act->setCheckable(true);
-//        act->setData(mib);
-//        act->setChecked(mib == active);
+    for (int mib: mibs) {
+        if (!QTextCodec::availableMibs().contains(mib)) continue;
+        QAction *act;
+        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupSwitch);
+        act->setCheckable(true);
+        act->setData(mib);
+        act->setChecked(mib == active);
 
-//        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupReload);
-//        act->setCheckable(true);
-//        act->setData(mib);
-//        act->setChecked(mib == active);
-//    }
+        act = new QAction(QTextCodec::codecForMib(mib)->name(), mCodecGroupReload);
+        act->setCheckable(true);
+        act->setData(mib);
+        act->setChecked(mib == active);
+    }
     ui->menuconvert_to->addActions(mCodecGroupSwitch->actions());
     ui->menureload_with->addActions(mCodecGroupReload->actions());
 }
@@ -1336,7 +1336,7 @@ void MainWindow::updateStatusFile()
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (fm) {
         mStatusWidgets->setFileName(QDir::toNativeSeparators(fm->location()));
-        mStatusWidgets->setEncoding(fm->encoding());
+        mStatusWidgets->setEncoding(fm->codec() ? fm->codec()->name() : QString());
     }
 }
 
@@ -1786,41 +1786,42 @@ void MainWindow::on_actionClose_All_Except_triggered()
 
 void MainWindow::codecChanged(QAction *action)
 {
-//    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
-//    if (fm) {
-//        if (!fm->isReadOnly()) {
-//            fm->setEncoding(action->data().toInt());
-//        }
-//        updateMenuToCodec(action->data().toInt());
-//        updateStatusFile();
-//    }
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
+    if (fm) {
+        if (!fm->isReadOnly()) {
+            fm->setCodecMib(action->data().toInt());
+        }
+        updateMenuToCodec(action->data().toInt());
+        updateStatusFile();
+    }
 }
 
 void MainWindow::codecReload(QAction *action)
 {
-//    if (!focusWidget()) return;
-//    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
-//    if (fm && (fm->kind() == FileKind::Log || fm->kind() == FileKind::Guc || fm->kind() == FileKind::Gsp))
-//        return;
-//    if (fm && fm->encoding() != action->data().toInt()) {
-//        bool reload = true;
-//        if (fm->isModified()) {
-//            QMessageBox msgBox;
-//            msgBox.setIcon(QMessageBox::Warning);
-//            msgBox.setText(QDir::toNativeSeparators(fm->location())+" has been modified.");
-//            msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
-//                                      + action->text() + "?");
-//            msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
-//            msgBox.setStandardButtons(QMessageBox::Cancel);
-//            msgBox.setDefaultButton(QMessageBox::Cancel);
-//            reload = msgBox.exec();
-//        }
-//        if (reload) {
-//            fm->load(action->data().toInt());
-//            updateMenuToCodec(fm->encoding());
-//            updateStatusFile();
-//        }
-//    }
+    if (!focusWidget()) return;
+    FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
+    if (fm && (fm->kind() == FileKind::Log || fm->kind() == FileKind::Guc || fm->kind() == FileKind::Gsp))
+        return;
+    if (fm && fm->codecMib() != action->data().toInt()) {
+        bool reload = true;
+        if (fm->isModified()) {
+            QMessageBox msgBox;
+            msgBox.setIcon(QMessageBox::Warning);
+            msgBox.setText(QDir::toNativeSeparators(fm->location())+" has been modified.");
+            msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
+                                      + action->text() + "?");
+            msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
+            msgBox.setStandardButtons(QMessageBox::Cancel);
+            msgBox.setDefaultButton(QMessageBox::Cancel);
+            reload = msgBox.exec();
+        }
+        if (reload) {
+            fm->load(action->data().toInt());
+            updateMenuToCodec(fm->codecMib());
+            updateStatusFile();
+        }
+        updateAndSaveSettings();
+    }
 }
 
 void MainWindow::loadCommandLines(PExFileNode* oldfn, PExFileNode* fn)
@@ -1859,41 +1860,32 @@ void MainWindow::activeTabChanged(int index)
         changeToLog(node, false, false);
         updateStatusFile();
 
+        bool canEncode = true;
+        bool canWrite = true;
         if (AbstractEdit* edit = ViewHelper::toAbstractEdit(editWidget)) {
-            ui->menuEncoding->setEnabled(node && !edit->isReadOnly());
-            ui->menuconvert_to->setEnabled(node && !edit->isReadOnly());
+            canEncode = !edit->isReadOnly();
+            canWrite = !edit->isReadOnly();
         } else if (ViewHelper::toTextView(editWidget)) {
-            ui->menuEncoding->setEnabled(true);
-            ui->menuconvert_to->setEnabled(false);
+            canWrite = false;
         } else if (ViewHelper::toGdxViewer(editWidget)) {
-            ui->menuconvert_to->setEnabled(false);
+            canWrite = false;
             node->file()->reload();
-        } else if (reference::ReferenceViewer* refViewer = ViewHelper::toReferenceViewer(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
-            ui->menuconvert_to->setEnabled(false);
-            if (mProjectRepo.findFileNode(refViewer)) {
-                ui->menuconvert_to->setEnabled(false);
-                updateMenuToCodec(node->file()->encoding());
-            }
-        } else if (option::SolverOptionWidget* solverOptionEditor = ViewHelper::toSolverOptionEdit(editWidget)) {
-            ui->menuEncoding->setEnabled(false);
-            if (mProjectRepo.findFileNode(solverOptionEditor)) {
-                ui->menuEncoding->setEnabled(true);
-                ui->menuconvert_to->setEnabled(true);
-                node->file()->reload();
-                updateMenuToCodec(node->file()->encoding());
-            }
-        } else if (option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor((editWidget))) {
-            ui->menuEncoding->setEnabled(false);
-            if (mProjectRepo.findFileNode(gucEditor)) {
-                ui->menuEncoding->setEnabled(false);
-                ui->menureload_with->setEnabled(false);
-                ui->menuconvert_to->setEnabled(false);
-                node->file()->reload();
-                updateMenuToCodec(node->file()->encoding());
-            }
+        } else if (ViewHelper::toReferenceViewer(editWidget)) {
+            canEncode = false;
+            canWrite = false;
+        } else if (ViewHelper::toSolverOptionEdit(editWidget)) {
+            canEncode = true;
+            canWrite = true;
+            node->file()->reload();
+        } else if (ViewHelper::toGamsConfigEditor((editWidget))) {
+            canEncode = false;
+            canWrite = true;
+            node->file()->reload();
         }
-        updateMenuToCodec(node->file()->encoding());
+        ui->menuEncoding->setEnabled(canEncode);
+        ui->menureload_with->setEnabled(canEncode);
+        ui->menuconvert_to->setEnabled(canEncode && canWrite);
+        updateMenuToCodec(node->file()->codecMib());
     } else {
         ui->menuEncoding->setEnabled(false);
     }
@@ -1975,7 +1967,7 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
         for (QWidget *e : file->editors()) {
             if (gdxviewer::GdxViewer *gv = ViewHelper::toGdxViewer(e)) {
                 gv->setHasChanged(true);
-                int gdxErr = gv->reload(file->encoding(), changed, false);
+                int gdxErr = gv->reload(file->codec(), changed, false);
                 if (gdxErr) return (gdxErr==-1 ? FileProcessKind::fileBecameInvalid : gdxErr==-2 ? FileProcessKind::fileLocked : FileProcessKind::ignore);
             }
         }
@@ -2251,7 +2243,7 @@ void MainWindow::postGamsLibRun()
     if (node) mFileMetaRepo.watch(node->file());
     if (node && !node->file()->editors().isEmpty()) {
         if (node->file()->kind() != FileKind::Log && node->file()->kind() != FileKind::Gsp)
-            node->file()->load(node->file()->encoding());
+            node->file()->load(node->file()->codecMib());
     }
     openFileNode(node);
     if (mLibProcess) {
@@ -3434,7 +3426,7 @@ PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownPro
 
     // open the detected file
     if (fileNode)
-        openFileNode(fileNode, focus, QStringConverter::Utf8, forcedAsTextEditor, tabStrategy);
+        openFileNode(fileNode, focus, -1, forcedAsTextEditor, tabStrategy);
     else
         DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
 
@@ -3658,7 +3650,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
             for (FileMeta *file: qAsConst(modifiedFiles))
                 if (file->kind() != FileKind::Log && file->kind() != FileKind::Gsp) {
                     try {
-                        file->load(file->encoding());
+                        file->load(file->codecMib());
                     } catch (Exception&) {
                         // TODO(JM) add reaction on exception
                     }
@@ -3683,8 +3675,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
-        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->encoding());
-        logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->encoding());
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+        logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
         wid->setFont(getEditorFont(fgLog));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
@@ -3723,7 +3715,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     }
     FileMeta *runMeta = mFileMetaRepo.fileMeta(gmsFilePath);
     PExFileNode *runNode = project->findFile(runMeta);
-    logNode->file()->setEncoding(runNode ? runNode->file()->encoding() : QStringConverter::Utf8);
+    logNode->file()->setCodecMib(runNode ? runNode->file()->codecMib() : -1);
     QString workDir = project->workDir();
 
     // prepare the options and process and run it
@@ -4063,7 +4055,7 @@ void MainWindow::showEngineStartDialog()
         if (fm) {
             for (QWidget *wid : fm->editors()) {
                 if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
-                    gdx->reload(fm->encoding());
+                    gdx->reload(fm->codec());
                 }
             }
         }
@@ -4157,8 +4149,8 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
-            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->encoding());
-            logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->encoding());
+            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+            logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
             wid->setFont(getEditorFont(fgLog));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
@@ -4278,7 +4270,7 @@ void MainWindow::raiseEdit(QWidget *widget)
     }
 }
 
-void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *project, QStringConverter::Encoding encoding,
+void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *project, int codecMib,
                           bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!fileMeta) return;
@@ -4305,9 +4297,13 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             }
         }
         try {
-//            if (encoding == -1) encoding = fileMeta->encoding();
-            edit = fileMeta->createEdit(tabWidget, project, encoding, forcedAsTextEditor);
-            int tabIndex = fileMeta->addToTab(tabWidget, edit, encoding, tabStrategy);
+            if (codecMib == -1) codecMib = fileMeta->codecMib();
+
+//            QTextCodec *codec = QTextCodec::codecForMib(codecMib);
+//            DEB() << "file " << fileMeta->name() << "   codec" << (codec ? codec->name() : QString("???"));
+
+            edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
+            int tabIndex = fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
             PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);
             if (!node) node = project;
             updateTabIcon(node, tabIndex);
@@ -4338,7 +4334,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             }
         }
         raiseEdit(edit);
-        updateMenuToCodec(fileMeta->encoding());
+        updateMenuToCodec(fileMeta->codecMib());
     }
 
     if (tabWidget != ui->logTabs) {
@@ -4378,7 +4374,7 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     }
 }
 
-void MainWindow::openFileNode(PExAbstractNode *node, bool focus, QStringConverter::Encoding encoding, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
+void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!node) return;
     FileMeta *fm = nullptr;
@@ -4393,7 +4389,7 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, QStringConverte
             fm = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::Gsp));
     } else
         return;
-    openFile(fm, focus, project, encoding, forcedAsTextEditor, tabStrategy);
+    openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
 }
 
 void MainWindow::closeProject(PExProjectNode* project)
@@ -4448,7 +4444,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
                 gv->releaseFile();
             } else if (progress == ProcState::ProcIdle) {
                 gv->setHasChanged(true);
-                gv->reload(gdxNode->file()->encoding());
+                gv->reload(gdxNode->file()->codec());
             }
         }
     }
@@ -4466,7 +4462,7 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
                     gv->releaseFile();
                 } else if (progress == ProcState::ProcIdle) {
                     gv->setHasChanged(true);
-                    gv->reload(gdxNode->file()->encoding());
+                    gv->reload(gdxNode->file()->codec());
                 }
             }
         }
@@ -5616,7 +5612,7 @@ void MainWindow::openGdxDiffFile()
             bool changed = fMeta->refreshMetaData();
             if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(fMeta->editors().constFirst())) {
                 gdx->setHasChanged(true);
-                gdx->reload(fMeta->encoding(), changed);
+                gdx->reload(fMeta->codec(), changed);
             }
         }
     }

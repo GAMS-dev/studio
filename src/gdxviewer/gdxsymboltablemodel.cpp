@@ -28,10 +28,9 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QStringConverter::Encoding encoding, QObject *parent)
-    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mEncoding(encoding)
+GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTextCodec* codec, QObject *parent)
+    : QAbstractTableModel(parent), mGdx(gdx), mGdxMutex(gdxMutex), mCodec(codec)
 {
-    decode = QStringDecoder(mEncoding);
     gdxSystemInfo(mGdx, &mSymbolCount, &mUelCount);
     loadUel2Label();
     loadStringPool();
@@ -173,7 +172,7 @@ QString GdxSymbolTableModel::getElementText(int textNr)
         int node;
 
         gdxGetElemText(mGdx, textNr, text, &node);
-        return decode(text);
+        return mCodec->toUnicode(text);
     }
 }
 
@@ -183,7 +182,7 @@ void GdxSymbolTableModel::loadUel2Label()
     int map;
     for (int i=0; i<=mUelCount; i++) {
         gdxUMUelGet(mGdx, i, label, &map);
-        QString l = decode(label);
+        QString l = mCodec->toUnicode(label);
         mUel2Label.append(l);
     }
 }
@@ -196,7 +195,7 @@ void GdxSymbolTableModel::loadStringPool()
     char text[GMS_SSSIZE];
 
     while (gdxGetElemText(mGdx, strNr, text, &node)) {
-        mStrPool.append(decode(text));
+        mStrPool.append(mCodec->toUnicode(text));
         strNr++;
     }
 }
@@ -204,6 +203,11 @@ void GdxSymbolTableModel::loadStringPool()
 void GdxSymbolTableModel::reportIoError(int errNr, QString message)
 {
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
+}
+
+QTextCodec *GdxSymbolTableModel::codec() const
+{
+    return mCodec;
 }
 
 std::vector<int> GdxSymbolTableModel::labelCompIdx()
@@ -221,7 +225,7 @@ QString GdxSymbolTableModel::uel2Label(int uel)
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
-        return decode(label);
+        mCodec->toUnicode(label);
     }
     return this->mUel2Label.at(uel);
 }
