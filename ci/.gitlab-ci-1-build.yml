@@ -101,7 +101,6 @@ build-wei-debug:
       ('GAMS_DISTRIB=', $(Get-Location).ToString().Replace('\','/'), '/gamsdist' -join ""),
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
       'GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api'
-      'rm $$GAMS_DISTRIB/apifiles/C++/api/version'
     - $data | out-file -encoding ascii gamsinclude.pri
     - mkdir build-debug
     - cd build-debug
