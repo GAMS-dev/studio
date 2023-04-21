@@ -814,7 +814,13 @@ void FileMeta::save(const QString &newLocation)
     if (document()) {
         if (!file.open(QFile::WriteOnly | QFile::Text))
             EXCEPT() << "Can't save " << location;
-        file.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
+        std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName((mCodec ? mCodec->name() : QString("UTF-8")).toLatin1());
+        if (enc.has_value()) {
+            QStringEncoder encode = QStringEncoder(enc.value());
+            file.write(encode(document()->toPlainText().toUtf8()));
+        } else {
+            file.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
+        }
         file.close();
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
