@@ -2856,24 +2856,47 @@ void CodeEdit::moveLines(bool moveLinesUp)
 void CodeEdit::trimtrailing()
 {
     QTextCursor c= textCursor();
-    c.movePosition(c.Start);
-    c.movePosition(c.EndOfLine);
-    for(int i=0;i<blockCount();i++){
+    QTextCursor s= textCursor();
+    int lastblock=c.blockNumber();
+    int firstblock=c.anchor();
+    s.setPosition(firstblock);
+    firstblock=s.blockNumber();
+    if(!c.hasSelection()){
+        lastblock=blockCount();
+        firstblock=0;
+        c.movePosition(QTextCursor::Start);
+        c.movePosition(QTextCursor::EndOfLine);
+    }
+    if(firstblock>lastblock){
+        int temp=firstblock;
+        firstblock=lastblock;
+        lastblock=temp;
+    }
+    while(c.blockNumber()!=firstblock){
+        if(c.blockNumber()<firstblock) c.movePosition(QTextCursor::Down);
+        if(c.blockNumber()>firstblock) c.movePosition(QTextCursor::Up);
+    }
+    c.movePosition(QTextCursor::EndOfLine);
+    qDebug() << c.selectedText() << " - "<< firstblock << "-" << lastblock << " - "<<c.blockNumber();
+    for(int i=firstblock;i<=lastblock;i++){
         if(c.block().text().size()>0){
-            c.movePosition(c.Left);
-            while(c.positionInBlock()>0){
-                QChar x=c.block().text().at(c.positionInBlock());
-                if(x==' ' || x == '\t' ){
-                    c.deleteChar();
+            if(c.block().text().endsWith(' ') || c.block().text().endsWith('\t')){
+                c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+                while(c.positionInBlock()>0){
+                    QChar x=c.block().text().at(c.positionInBlock());
+                    if(x==' ' || x == '\t' ){
+                        c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+                    }
+                    else{
+                        c.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+                        break;
+                    }
                 }
-                else{
-                    break;
-                }
-                c.movePosition(c.Left);
+                c.removeSelectedText();
             }
         }
-        c.movePosition(c.NextBlock);
-        c.movePosition(c.EndOfLine);
+        c.movePosition(QTextCursor::NextBlock);
+        c.movePosition(QTextCursor::EndOfLine);
     }
 }
 
