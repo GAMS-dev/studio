@@ -142,6 +142,7 @@ enum DcoFlavor {
     flavorCall = 17,
     flavorSave = 18,
     flavorEval = 19,
+    flavorTool = 20,
 
     flavorEmbed1 = 21,
     flavorEmbed0 = 22,

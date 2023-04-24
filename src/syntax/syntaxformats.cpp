@@ -236,6 +236,9 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("eval").toLower(), flavorEval);
     mFlavors.insert(QString("evalLocal").toLower(), flavorEval);
     mFlavors.insert(QString("evalGlobal").toLower(), flavorEval);
+    mFlavors.insert(QString("callTool").toLower(), flavorTool);
+    mFlavors.insert(QString("hiddenCallTool").toLower(), flavorTool);
+
     mFlavors.insert(QString("onEmbeddedCode").toLower(), flavorEmbed1);
     mFlavors.insert(QString("onEmbeddedCodeS").toLower(), flavorEmbed1);
     mFlavors.insert(QString("onEmbeddedCodeV").toLower(), flavorEmbed1);
@@ -243,7 +246,6 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mFlavors.insert(QString("offEmbeddedCodeS").toLower(), flavorEmbed0);
     mFlavors.insert(QString("offEmbeddedCodeV").toLower(), flavorEmbed0);
 
-    // !!! Enter special kinds always in lowercase
     mSpecialKinds.insert(QString("title").toLower(), SyntaxKind::Title);
     mSpecialKinds.insert(QString("onText").toLower(), SyntaxKind::CommentBlock);
     mSpecialKinds.insert(QString("onEcho").toLower(), SyntaxKind::IgnoredHead);
@@ -269,6 +271,8 @@ SyntaxDco::SyntaxDco(SharedSyntaxData *sharedData, QChar dcoChar)
     mSpecialKinds.insert(QString("eval").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalLocal").toLower(), SyntaxKind::SubDCO);
     mSpecialKinds.insert(QString("evalGlobal").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("callTool").toLower(), SyntaxKind::SubDCO);
+    mSpecialKinds.insert(QString("hiddenCallTool").toLower(), SyntaxKind::SubDCO);
 }
 
 SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const QString& line, int index)
@@ -348,7 +352,7 @@ SyntaxBlock SyntaxDco::find(const SyntaxKind entryKind, SyntaxState state, const
 SyntaxBlock SyntaxDco::validTail(const QString &line, int index, SyntaxState state, bool &hasContent)
 {
     int end = index;
-    if (state.flavor < flavorAbort || state.flavor > flavorEval)
+    if (state.flavor < flavorAbort || state.flavor > flavorTool)
         while (isWhitechar(line, end)) end++;
     hasContent = false;
     SyntaxShift shift = (line.length() == end) ? SyntaxShift::skip : SyntaxShift::in;
@@ -724,6 +728,8 @@ SyntaxBlock SyntaxSubDCO::find(const SyntaxKind entryKind, SyntaxState state, co
         subDCOs << "keepCode";
     else if (state.flavor == flavorEval)
         subDCOs << "set";
+    else if (state.flavor == flavorTool)
+        subDCOs << "checkErrorLevel";
 
     for (int i = subDCOs.size()-1 ; i >= 0 ; --i) {
         const QString &sub = subDCOs.at(i);
