@@ -28,9 +28,6 @@
    </property>
    <item row="0" column="0">
     <widget class="QTabWidget" name="GamsCfgTabWidget">
-     <property name="tabPosition">
-      <enum>QTabWidget::South</enum>
-     </property>
      <property name="currentIndex">
       <number>-1</number>
      </property>
