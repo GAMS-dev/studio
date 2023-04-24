@@ -88,7 +88,7 @@ void TestGamsOption::testOptionModelTypeString()
 
     QCOMPARE( gamsOption->getOptionType(optionName), optTypeString );
     QVERIFY( gamsOption->getValueList(optionName).size() > 0 );
-    QVERIFY( gamsOption->getDefaultValue(optionName).toString().isEmpty() );
+    QVERIFY( !gamsOption->getDefaultValue(optionName).toString().isEmpty() );
     for(const OptionValue &value : gamsOption->getValueList(optionName)) {
         QVERIFY( !value.hidden );
         QVERIFY( !value.enumFlag );

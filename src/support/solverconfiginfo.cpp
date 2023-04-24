@@ -136,11 +136,17 @@ QMap<int, int> SolverConfigInfo::solverIndices()
     return indices;
 }
 
-QString SolverConfigInfo::modelTypeName(int id) const
+QString SolverConfigInfo::modelTypeName(int modelTypeId) const
 {
     char modelType[GMS_SSSIZE];
-    cfgModelTypeName(mCFG, id, modelType);
+    cfgModelTypeName(mCFG, modelTypeId, modelType);
     return QString(modelType);
+}
+
+QString SolverConfigInfo::defaultSolverFormodelTypeName(int modelTypeId) const
+{
+    int solverid = cfgDefaultAlg(mCFG, modelTypeId);
+    return solverName(solverid);
 }
 
 QMap<int, QString> SolverConfigInfo::modelTypeNames()

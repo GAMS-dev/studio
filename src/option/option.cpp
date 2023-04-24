@@ -565,8 +565,15 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
                                   static_cast<optOptionType>(iopttype),
                                   static_cast<optOptionSubType>(ioptsubtype),
                                   QString::fromLatin1(descript));
-             opt.groupNumber = group;
 
+             opt.groupNumber = group;
+             /* only for gams "solver" option */
+             if (mOptionDefinitionFile.compare("optgams.def", Qt::CaseInsensitive)==0 &&
+                 opt.name.compare("solver", Qt::CaseInsensitive)==0                      ) {
+                 for(const QString &s : solverConfigInfo.solverNames()) {
+                    opt.valueList.append( OptionValue( QVariant(s), QString(), false, false));
+                 }
+             }
              opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);
              QStringList synonymList;
@@ -621,6 +628,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
                  optGetDefaultStr(mOPTHandle, i, sdefval);
                  opt.defaultValue = QString(sdefval);
                  if (modeltypes.contains(nameStr)) {
+                     opt.defaultValue = solverConfigInfo.defaultSolverFormodelTypeName( modeltypes.value(nameStr) );
                      QStringList solvers = solverConfigInfo.solversForModelType( modeltypes[nameStr] );
                      for (const QString &s : qAsConst(solvers)) {
                          opt.valueList.append( OptionValue(QVariant(s), "", false, false ) );
