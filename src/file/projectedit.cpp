@@ -265,7 +265,8 @@ void ProjectEdit::updateComboboxEntries()
 {
     // update combobox of main-file and pf-file
     QStringList mainFiles = files(FileKind::Gms);
-    mainFiles.prepend(cNone);
+    if (mainFiles.isEmpty())
+        mainFiles.prepend(cNone);
     updateChanged(ui->cbMainFile, mainFiles);
     QStringList pfFiles =  files(FileKind::Pf);
     pfFiles.prepend(cNone);
