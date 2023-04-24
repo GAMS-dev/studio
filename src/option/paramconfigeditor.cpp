@@ -31,6 +31,7 @@
 #include <QMenu>
 #include <QClipboard>
 #include <QTimer>
+#include <QStandardItemModel>
 
 namespace gams {
 namespace studio {
@@ -108,11 +109,37 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
 
     ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_KEY, QHeaderView::Stretch);
     ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_PARAM_VALUE, QHeaderView::Stretch);
+    ui->paramCfgTableView->horizontalHeader()->setSectionResizeMode(ConfigParamTableModel::COLUMN_MAX_VERSION, QHeaderView::Stretch);
 
     ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_KEY);
     ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_PARAM_VALUE);
     ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MIN_VERSION);
     ui->paramCfgTableView->resizeColumnToContents(ConfigParamTableModel::COLUMN_MAX_VERSION);
+
+    QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
+    int groupsize = 0;
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
+        if (group.hidden)
+            continue;
+        else
+            ++groupsize;
+    }
+
+    QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
+    int i = 0;
+    groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
+    groupModel->setItem(0, 1, new QStandardItem("0"));
+    groupModel->setItem(0, 2, new QStandardItem("All Options"));
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
+        if (group.hidden)
+            continue;
+        ++i;
+        groupModel->setItem(i, 0, new QStandardItem(group.description));
+        groupModel->setItem(i, 1, new QStandardItem(QString::number(group.number)));
+        groupModel->setItem(i, 2, new QStandardItem(group.name));
+    }
+    ui->paramCfgDefGroup->setModel(groupModel);
+    ui->paramCfgDefGroup->setModelColumn(0);
 
     QSortFilterProxyModel* proxymodel = new OptionSortFilterProxyModel(this);
     ConfigOptionDefinitionModel* optdefmodel =  new ConfigOptionDefinitionModel(mOptionTokenizer->getOption(), 0, this);
@@ -155,6 +182,9 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     connect(ui->paramCfgDefTreeView, &QTreeView::customContextMenuRequested, this, &ParamConfigEditor::showDefinitionContextMenu, Qt::UniqueConnection);
     connect(ui->paramCfgDefTreeView, &QAbstractItemView::doubleClicked, this, &ParamConfigEditor::addParameterFromDefinition, Qt::UniqueConnection);
 
+    connect(ui->paramCfgDefGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+         optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+    });
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ParamConfigEditor::on_dataItemChanged, Qt::UniqueConnection);
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigParamTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::configParamModelChanged, optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
