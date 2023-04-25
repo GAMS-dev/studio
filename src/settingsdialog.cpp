@@ -51,7 +51,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     ui->tb_userLibOpen->setIcon(Theme::icon(":/%1/forward"));
 
     // Load decimal seperator from system language settings
-    ui->le_decSepSystem->setText(QLocale().decimalPoint());
+    ui->le_decSepSystem->setText(QLocale::system().decimalPoint());
 
     // Themes
     ui->cbThemes->clear();
