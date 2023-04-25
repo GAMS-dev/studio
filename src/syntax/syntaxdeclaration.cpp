@@ -262,6 +262,14 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
         list = SyntaxData::execute();
         mSubKinds << SyntaxKind::ExecuteBody;
         break;
+    case SyntaxKind::ExecuteTool:
+        list = {{"executeTool", "Execute a GAMS tool"}};
+        mSubKinds << SyntaxKind::ExecuteTool << SyntaxKind::ExecuteToolKey << SyntaxKind::ExecuteBody;
+        break;
+    case SyntaxKind::ExecuteToolKey:
+        list = {{"checkErrorLevel", "Check errorLevel automatically after executing external program"}};
+        mSubKinds << SyntaxKind::ExecuteBody;
+        break;
     case SyntaxKind::Put:
         list = SyntaxData::keyPut();
         mSubKinds << SyntaxKind::PutFormula;
@@ -308,13 +316,17 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
         case SyntaxKind::Put:
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
-        case SyntaxKind::Execute: {
+        case SyntaxKind::Execute:
+        case SyntaxKind::ExecuteTool:
+        {
             while (isWhitechar(line, end))
                 ++end;
             if (end == line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, state, start, end, SyntaxShift::shift);
         }   break;
-        case SyntaxKind::ExecuteKey: {
+        case SyntaxKind::ExecuteKey:
+        case SyntaxKind::ExecuteToolKey:
+        {
             if (entryKind == SyntaxKind::Execute && state.flavor & flavorExecDot) {
                 state.flavor -= flavorExecDot;
                 return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
@@ -396,6 +408,11 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) 
         list << SyntaxData::execute();
         mKeywords.insert(int(kind), new DictList(list));
         break;
+    case SyntaxKind::ExecuteToolKey:
+        mSubKinds << SyntaxKind::ExecuteToolKey << SyntaxKind::ExecuteBody;
+        list << QPair<QString, QString>("checkErrorLevel", "Check errorLevel automatically after executing tool");
+        mKeywords.insert(int(kind), new DictList(list));
+        break;
     case SyntaxKind::SolveKey:
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
         list << SyntaxData::extendableKey();
@@ -418,7 +435,7 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (entryKind == SyntaxKind::ExecuteKey) {
+    if (entryKind == SyntaxKind::ExecuteKey || entryKind == SyntaxKind::ExecuteToolKey) {
         if (start < line.length() && line.at(start) == '.')
             ++start;
         while (isWhitechar(line, start))
@@ -444,7 +461,7 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
 
 SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, SyntaxState state, bool &hasContent)
 {
-    if (kind() == SyntaxKind::ExecuteKey) {
+    if (kind() == SyntaxKind::ExecuteKey || kind() == SyntaxKind::ExecuteToolKey) {
         hasContent = false;
         int end = index;
         while (isWhitechar(line, end)) end++;

@@ -195,6 +195,7 @@ private:
 
     static const QSet<int> cEnteringSyntax;
     static const QSet<int> cExecuteSyntax;
+    static const QSet<int> cExecuteToolSyntax;
     static const QSet<int> cBlockSyntax;
 };
 

@@ -85,6 +85,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxSubsetKey(SyntaxKind::SolveKey, d), Theme::Syntax_keyword);
     initKind(new SyntaxSubsetKey(SyntaxKind::OptionKey, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::ExecuteKey, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::ExecuteToolKey, d), Theme::Syntax_keyword);
     initKind(new SyntaxDelimiter(SyntaxKind::Semicolon, d));
     initKind(new SyntaxDelimiter(SyntaxKind::CommaIdent, d));
 
@@ -92,6 +93,7 @@ SyntaxHighlighter::SyntaxHighlighter(QTextDocument* doc)
     initKind(new SyntaxReserved(SyntaxKind::Solve, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Option, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Execute, d), Theme::Syntax_keyword);
+    initKind(new SyntaxReserved(SyntaxKind::ExecuteTool, d), Theme::Syntax_keyword);
     initKind(new SyntaxReserved(SyntaxKind::Put, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::Embedded, d), Theme::Syntax_keyword);
     initKind(new SyntaxEmbedded(SyntaxKind::EmbeddedEnd, d), Theme::Syntax_keyword);

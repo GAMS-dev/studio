@@ -93,6 +93,8 @@ enum class SyntaxKind {
     Execute,
     ExecuteBody,
     ExecuteKey,
+    ExecuteTool,
+    ExecuteToolKey,
     Put,
     PutFormula,                         // Formula that allows SystemRunAttrib
 
