@@ -28,7 +28,6 @@ install-gams-leg:
     - python3 ci/fetch_gams.py fetch_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
     - chmod 777 linux_x64_64_sfx.exe
     - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-    - ./gamsdist/gams
   artifacts:
     name: gamsdist-leg
     expire_in: 1 hour
@@ -41,7 +40,6 @@ install-gams-deg:
   script:
     - python3 ci/fetch_gams.py fetch_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
     - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-    - ./gamsdist/gams
   artifacts:
     name: gamsdist-deg
     expire_in: 1 hour
@@ -54,7 +52,6 @@ install-gams-dac:
   script:
     - python3 ci/fetch_gams.py fetch_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
     - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-    - ./gamsdist/gams
   artifacts:
     name: gamsdist-dac
     expire_in: 1 hour
