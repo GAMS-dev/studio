@@ -863,7 +863,6 @@ void ParamConfigEditor::copyDefinitionToClipboard(int column)
 
 void ParamConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
-    Q_UNUSED(topLeft)
     Q_UNUSED(bottomRight)
     Q_UNUSED(roles)
     emit modificationChanged(true);
@@ -877,6 +876,7 @@ void ParamConfigEditor::on_dataItemChanged(const QModelIndex &topLeft, const QMo
                                                                          ui->paramCfgTableView->model()->data( topLeft, Qt::DisplayRole), 1);
     }
 
+    ui->paramCfgDefTreeView->clearSelection();
     for(QModelIndex item : qAsConst(toDefinitionItems)) {
         ui->paramCfgDefTreeView->selectionModel()->select(
                     QItemSelection (

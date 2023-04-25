@@ -639,21 +639,22 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
               QList<OptionErrorType> errorList = mOptionTokenizer->validate(mOptionItem.at(idx.row()));
               mOptionItem[idx.row()]->error = (errorList.isEmpty()) ? OptionErrorType::No_Error : errorList.at(0);
               mOptionItem.at(idx.row())->disabled = (mOptionItem[idx.row()]->error == OptionErrorType::Deprecated_Option);
-              if (mOptionItem.at(idx.row())->error==OptionErrorType::Deprecated_Option)
+              if (mOptionItem.at(idx.row())->error==OptionErrorType::Deprecated_Option) {
                   setHeaderData( idx.row(), Qt::Vertical,
                                  Qt::CheckState(Qt::PartiallyChecked),
                                  Qt::CheckStateRole );
-              else if (mOptionItem.at(idx.row())->error==OptionErrorType::No_Error)
+              } else if (mOptionItem.at(idx.row())->error==OptionErrorType::No_Error) {
                       setHeaderData( idx.row(), Qt::Vertical,
                                      Qt::CheckState(Qt::Unchecked),
                                      Qt::CheckStateRole );
-               else
+              } else {
                    setHeaderData( idx.row(), Qt::Vertical,
                       Qt::CheckState(Qt::Checked),
                       Qt::CheckStateRole );
-              emit configParamItemChanged(mOptionItem.at(idx.row()));
+              }
+              emit configParamModelChanged(mOptionItem);
        } else if (roles.first()==Qt::CheckStateRole) {
-                  emit configParamItemChanged(mOptionItem.at(idx.row()));
+                  emit configParamModelChanged(mOptionItem);
        }
     }
     updateRecurrentStatus();
