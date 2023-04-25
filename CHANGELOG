@@ -1,3 +1,8 @@
+Version 1.14.2 *
+==================
+- in project editor only show -none- if there is no valid main file
+- fixed parameter file setting lost after running a project
+
 Version 1.14.1
 ==================
 - fixed GDX symbol unselected when filtering the symbol table
