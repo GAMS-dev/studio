@@ -19,6 +19,7 @@
 #include <QMessageBox>
 #include <QShortcut>
 #include <QSslSocket>
+#include <QStandardItemModel>
 
 #include "parametereditor.h"
 #include "ui_parametereditor.h"
@@ -101,6 +102,31 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     ui->gamsParameterTableView->verticalHeader()->setMinimumSectionSize(1);
     ui->gamsParameterTableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
+    QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
+    int groupsize = 0;
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
+        if (group.hidden)
+            continue;
+        else
+            ++groupsize;
+    }
+
+    QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
+    int i = 0;
+    groupModel->setItem(0, 0, new QStandardItem("--- All Options ---"));
+    groupModel->setItem(0, 1, new QStandardItem("0"));
+    groupModel->setItem(0, 2, new QStandardItem("All Options"));
+    for(const OptionGroup &group : qAsConst(optionGroupList)) {
+        if (group.hidden)
+            continue;
+        ++i;
+        groupModel->setItem(i, 0, new QStandardItem(group.description));
+        groupModel->setItem(i, 1, new QStandardItem(QString::number(group.number)));
+        groupModel->setItem(i, 2, new QStandardItem(group.name));
+    }
+    ui->gamsParameterGroup->setModel(groupModel);
+    ui->gamsParameterGroup->setModelColumn(0);
+
     connect(ui->gamsParameterTableView, &QTableView::customContextMenuRequested,this, &ParameterEditor::showParameterContextMenu, Qt::UniqueConnection);
     connect(this, &ParameterEditor::ParameterTableModelChanged, this, &ParameterEditor::on_parameterTableModelChanged, Qt::UniqueConnection);
     connect(mParameterTableModel, &GamsParameterTableModel::newTableRowDropped, this, &ParameterEditor::on_newTableRowDropped, Qt::UniqueConnection);
@@ -139,7 +165,9 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     connect(ui->gamsParameterTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ParameterEditor::findAndSelectionParameterFromDefinition, Qt::UniqueConnection);
     connect(ui->gamsParameterTreeView, &QTreeView::customContextMenuRequested, this, &ParameterEditor::showDefinitionContextMenu, Qt::UniqueConnection);
     connect(ui->gamsParameterTreeView, &QAbstractItemView::doubleClicked, this, &ParameterEditor::addParameterFromDefinition, Qt::UniqueConnection);
-
+    connect(ui->gamsParameterGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
+        optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+    });
     connect(mParameterTableModel, &GamsParameterTableModel::optionModelChanged, optdefmodel, &GamsOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
 
     mExtendedEditor = new QDockWidget("GAMS Parameters", this);
