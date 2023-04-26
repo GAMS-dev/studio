@@ -282,7 +282,6 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
 
 SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index)
 {
-    Q_UNUSED(entryKind)
     int start = index;
     int end = -1;
     while (isWhitechar(line, start))
@@ -290,7 +289,8 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
     if (entryKind == kind() && start > index) {
         return SyntaxBlock(this, state, index, start, false, SyntaxShift::shift);
     }
-    if (kind() == SyntaxKind::Execute && entryKind == kind() && (state.flavor & flavorExecDot) == 0) {
+    if ((kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
+        && entryKind == kind() && (state.flavor & flavorExecDot) == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
             while (isWhitechar(line, end))
@@ -300,12 +300,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
         }
         return SyntaxBlock(this);
     }
-    if (kind() != SyntaxKind::ExecuteKey && state.flavor & flavorExecDot) {
+    if (kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
         return SyntaxBlock(this);
     }
 
     int iKey;
-    end = findEnd(kind(), line, start, iKey, kind() == SyntaxKind::Execute);
+    end = findEnd(kind(), line, start, iKey, (kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool));
     if (end > start) {
         switch (kind()) {
         case SyntaxKind::Reserved:
@@ -327,7 +327,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
         case SyntaxKind::ExecuteKey:
         case SyntaxKind::ExecuteToolKey:
         {
-            if (entryKind == SyntaxKind::Execute && state.flavor & flavorExecDot) {
+            if ((entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) && state.flavor & flavorExecDot) {
                 state.flavor -= flavorExecDot;
                 return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
             }
