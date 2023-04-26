@@ -236,12 +236,6 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDcoStrt);
 
-    mData << "$callTool.checkErrorLevel";
-    mDescription << "Check errorLevel automatically after calling external program";
-    mData << "$hiddenCallTool.checkErrorLevel";
-    mDescription << "Check errorLevel automatically after calling external program";
-    mType.insert(mData.size()-1, ccDcoStrt);
-
     mData << "$eval.set";
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalGlobal.set";
