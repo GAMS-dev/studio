@@ -66,10 +66,10 @@ public:
 signals:
     void newTableRowDropped(const QModelIndex &index);
     void configParamModelChanged(const QList<gams::studio::option::ParamConfigItem *> &optionItem);
-    void configParamItemChanged(const gams::studio::option::ParamConfigItem* optionItem);
     void configParamItemRemoved();
 
 public slots:
+    void on_groupDefinitionReloaded();
     void on_reloadConfigParamModel(const QList<gams::studio::option::ParamConfigItem *> &optionItem);
     void on_updateConfigParamItem(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
     void on_removeConfigParamItem();

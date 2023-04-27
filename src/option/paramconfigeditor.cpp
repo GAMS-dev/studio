@@ -183,12 +183,12 @@ void ParamConfigEditor::init(const QList<ConfigItem *> &initParamItems)
     connect(ui->paramCfgDefTreeView, &QAbstractItemView::doubleClicked, this, &ParamConfigEditor::addParameterFromDefinition, Qt::UniqueConnection);
 
     connect(ui->paramCfgDefGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
-         optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+        optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+        mParameterTableModel->on_groupDefinitionReloaded();
     });
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, this, &ParamConfigEditor::on_dataItemChanged, Qt::UniqueConnection);
     connect(mParameterTableModel, &QAbstractTableModel::dataChanged, mParameterTableModel, &ConfigParamTableModel::on_updateConfigParamItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::configParamModelChanged, optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinition, Qt::UniqueConnection);
-    connect(mParameterTableModel, &ConfigParamTableModel::configParamItemChanged, optdefmodel, &ConfigOptionDefinitionModel::modifyOptionDefinitionItem, Qt::UniqueConnection);
     connect(mParameterTableModel, &ConfigParamTableModel::configParamItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeConfigParamItem, Qt::UniqueConnection);
 
     connect(this, &ParamConfigEditor::modificationChanged, this, &ParamConfigEditor::setModified, Qt::UniqueConnection);

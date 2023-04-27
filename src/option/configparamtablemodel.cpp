@@ -578,6 +578,11 @@ const QList<ParamConfigItem *> ConfigParamTableModel::parameterConfigItems()
     return mOptionItem;
 }
 
+void ConfigParamTableModel::on_groupDefinitionReloaded()
+{
+    emit configParamModelChanged(mOptionItem);
+}
+
 void ConfigParamTableModel::on_reloadConfigParamModel(const QList<ParamConfigItem *> &optionItem)
 {
     disconnect(this, &QAbstractTableModel::dataChanged, this, &ConfigParamTableModel::on_updateConfigParamItem);
