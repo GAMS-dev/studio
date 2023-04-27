@@ -209,7 +209,8 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         connect(ui->solverOptionTreeView, &QTreeView::customContextMenuRequested, this, &SolverOptionWidget::showDefinitionContextMenu, Qt::UniqueConnection);
 
         connect(ui->solverOptionGroup, static_cast<void(QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, [=](int index) {
-             optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+            optdefmodel->loadOptionFromGroup( groupModel->data(groupModel->index(index, 1)).toInt() );
+            mOptionTableModel->on_groupDefinitionReloaded();
         });
 
         connect(mOptionTableModel, &QAbstractTableModel::dataChanged, this, &SolverOptionWidget::on_dataItemChanged, Qt::UniqueConnection);

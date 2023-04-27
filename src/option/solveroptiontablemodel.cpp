@@ -771,6 +771,11 @@ void SolverOptionTableModel::on_toggleRowHeader(int logicalIndex)
     emit solverOptionItemModelChanged(mOptionItem.at(logicalIndex));
 }
 
+void SolverOptionTableModel::on_groupDefinitionReloaded()
+{
+    emit  solverOptionModelChanged(mOptionItem);
+}
+
 void SolverOptionTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
