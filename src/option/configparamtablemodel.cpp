@@ -642,7 +642,13 @@ void ConfigParamTableModel::on_updateConfigParamItem(const QModelIndex &topLeft,
         idx = index(row++, idx.column());
         if (roles.first()==Qt::EditRole) {
               QList<OptionErrorType> errorList = mOptionTokenizer->validate(mOptionItem.at(idx.row()));
-              mOptionItem[idx.row()]->error = (errorList.isEmpty()) ? OptionErrorType::No_Error : errorList.at(0);
+              if (errorList.isEmpty()) {
+                  mOptionItem[idx.row()]->error = OptionErrorType::No_Error;
+              } else {
+                  mOptionItem[idx.row()]->error = errorList.at(0);
+                  if (mOptionItem[idx.row()]->error == OptionErrorType::Invalid_Key)
+                      mOptionItem[idx.row()]->optionId = -1;
+              }
               mOptionItem.at(idx.row())->disabled = (mOptionItem[idx.row()]->error == OptionErrorType::Deprecated_Option);
               if (mOptionItem.at(idx.row())->error==OptionErrorType::Deprecated_Option) {
                   setHeaderData( idx.row(), Qt::Vertical,
