@@ -140,6 +140,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
               << SyntaxKind::Dco
               << SyntaxKind::Solve
               << SyntaxKind::Option
+              << SyntaxKind::ExecuteTool
               << SyntaxKind::Execute
               << SyntaxKind::Put
               << SyntaxKind::Reserved
@@ -490,7 +491,7 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
     sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon
               << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
-              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Execute
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::ExecuteTool << SyntaxKind::Execute
               << SyntaxKind::Put << SyntaxKind::Reserved << SyntaxKind::Dco << SyntaxKind::Assignment
               << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
               << SyntaxKind::String;
@@ -526,7 +527,7 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, SyntaxState state, c
     int prev = 0;
 
     if (kind() == SyntaxKind::ExecuteBody) {
-        if (entryKind == SyntaxKind::Execute) {
+        if (entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) {
             if (!(state.flavor % 2) && start < line.length() && line.at(start) == '.')
                 state.flavor += 1;
         } else if (state.flavor % 2)

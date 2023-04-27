@@ -39,6 +39,8 @@ namespace studio {
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
+    QLocale *locale = new QLocale(QLocale::English, QLocale::UnitedStates);
+    QLocale::setDefault(*locale);
     parseCmdArgs();
     QString userName;
 #ifdef __unix__

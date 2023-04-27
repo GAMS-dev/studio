@@ -459,12 +459,11 @@ GdxSymbol *GdxSymbol::aliasedSymbol()
 void GdxSymbol::updateDecSepCopy()
 {
     mDecSepCopy = '.';
-    QLocale locale;
     switch (Settings::settings()->toInt(SettingsKey::skGdxDecSepCopy)) {
     case DecimalSeparator::studio:
         break;
     case DecimalSeparator::system:
-        mDecSepCopy = QString(locale.decimalPoint()).front();
+        mDecSepCopy = QString(QLocale::system().decimalPoint()).front();
         break;
     case DecimalSeparator::custom:
         if (!Settings::settings()->toString(skGdxCustomDecSepCopy).isEmpty())

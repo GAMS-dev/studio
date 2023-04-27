@@ -14,7 +14,7 @@ variables:
       value: 0
       description: "A value != 0 builds the Windows debug version only"
   PF_CUSTOM_BRANCH:
-      value: "master"
+      value: 0
       description: "Name of custom branch or 0 if published distribution with version as specified should be taken"
   PF_BUILDS_WWW_PATH:
       value: $BUILDS_WWW_PATH

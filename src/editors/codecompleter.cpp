@@ -182,6 +182,8 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    mData << "executeTool";
+    mDescription << "Execute a GAMS tool";
     mType.insert(mData.size()-1, ccRes);
 
     // embedded end
@@ -317,6 +319,8 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
+    mData << "executeTool.checkErrorLevel";
+    mDescription << "Check errorLevel automatically after executing a GAMS tool";
     mType.insert(mData.size()-1, ccRes);
 
 
@@ -705,11 +709,14 @@ const QSet<int> CodeCompleter::cEnteringSyntax {
     int(syntax::SyntaxKind::IdentifierDescription),
     int(syntax::SyntaxKind::String)
 };
-
 const QSet<int> CodeCompleter::cExecuteSyntax {
     int(syntax::SyntaxKind::Execute),
     int(syntax::SyntaxKind::ExecuteKey),
     int(syntax::SyntaxKind::ExecuteBody)
+};
+const QSet<int> CodeCompleter::cExecuteToolSyntax {
+    int(syntax::SyntaxKind::ExecuteTool),
+    int(syntax::SyntaxKind::ExecuteToolKey)
 };
 const QSet<int> CodeCompleter::cBlockSyntax {
     int(syntax::SyntaxKind::CommentBlock),
@@ -729,6 +736,10 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
+        if (cExecuteToolSyntax.contains(it.value().first) && it.value().second % 2) {
+            if (res.first == int(syntax::SyntaxKind::ExecuteTool) && !(res.second % 2))
+                dotPos = lastEnd;
+        }
         if (cExecuteSyntax.contains(it.value().first) && it.value().second % 2) {
             if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
                 dotPos = lastEnd;

@@ -2,6 +2,14 @@ Version 1.15.0 *
 ==================
 - t.b.d.
 
+Version 1.14.2
+==================
+- added missing syntax for callTool, hiddenCallTool, and executeTool
+- improved project editor only show -none- if there is no valid main file
+- fixed parameter file setting lost after running a project
+- fixed localization issue which prevented GDX value filters from working properly
+- fixed some icon path issues and added new Connect icon
+
 Version 1.14.1
 ==================
 - fixed GDX symbol unselected when filtering the symbol table
