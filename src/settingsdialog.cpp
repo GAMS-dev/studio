@@ -434,9 +434,9 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     emit editorLineWrappingChanged();
 }
 
-void SettingsDialog::on_fontComboBox_currentIndexChanged(const QString &value)
+void SettingsDialog::on_fontComboBox_currentIndexChanged(int index)
 {
-    emit editorFontChanged(ui->sb_fontsize->value(), value);
+    emit editorFontChanged(ui->sb_fontsize->value(), ui->fontComboBox->itemText(index));
 }
 
 void SettingsDialog::on_sb_fontsize_valueChanged(int size)

@@ -86,7 +86,7 @@ private slots:
 
     void on_buttonBox_clicked(QAbstractButton *button);
     void on_tabWidget_currentChanged(int index);
-    void on_fontComboBox_currentIndexChanged(const QString &value);
+    void on_fontComboBox_currentIndexChanged(int index);
     void on_sb_fontsize_valueChanged(int size);
     void on_sb_tabsize_valueChanged(int size);
 
