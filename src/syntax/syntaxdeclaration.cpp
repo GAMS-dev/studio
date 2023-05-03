@@ -244,6 +244,15 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
     switch (kind) {
     case SyntaxKind::Reserved:
         list = SyntaxData::reserved();
+        list.remove(0);
+        mSubKinds << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::Abort:
+        list << SyntaxData::reserved().first();
+        mSubKinds << SyntaxKind::AbortKey << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::AbortKey:
+        list = {{"noError", "Don't throw an execution error"}};
         mSubKinds << SyntaxKind::Formula;
         break;
     case SyntaxKind::Solve:
@@ -300,7 +309,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
         }
         return SyntaxBlock(this);
     }
-    if (kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
+    if (kind() != SyntaxKind::Abort && kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
         return SyntaxBlock(this);
     }
 
@@ -316,6 +325,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
         case SyntaxKind::Put:
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
+        case SyntaxKind::Abort:
         case SyntaxKind::Execute:
         case SyntaxKind::ExecuteTool:
         {
@@ -324,10 +334,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
             if (end == line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, state, start, end, SyntaxShift::shift);
         }   break;
+        case SyntaxKind::AbortKey:
         case SyntaxKind::ExecuteKey:
         case SyntaxKind::ExecuteToolKey:
         {
-            if ((entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) && state.flavor & flavorExecDot) {
+            if ((entryKind == SyntaxKind::Abort || entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool)
+                && state.flavor & flavorExecDot) {
                 state.flavor -= flavorExecDot;
                 return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
             }
@@ -398,6 +410,11 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) 
     QList<QPair<QString, QString>> list;
     list = SyntaxData::modelTypes();
     switch (kind) {
+    case SyntaxKind::AbortKey:
+        mSubKinds << SyntaxKind::Formula;
+        list = {{"noError", "Do not throw an execution error"}};
+        mKeywords.insert(int(kind), new DictList(list));
+        break;
     case SyntaxKind::OptionKey:
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         list << SyntaxData::options();
@@ -435,7 +452,7 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (entryKind == SyntaxKind::ExecuteKey || entryKind == SyntaxKind::ExecuteToolKey) {
+    if (entryKind == SyntaxKind::AbortKey || entryKind == SyntaxKind::ExecuteKey || entryKind == SyntaxKind::ExecuteToolKey) {
         if (start < line.length() && line.at(start) == '.')
             ++start;
         while (isWhitechar(line, start))
@@ -461,7 +478,7 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
 
 SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, SyntaxState state, bool &hasContent)
 {
-    if (kind() == SyntaxKind::ExecuteKey || kind() == SyntaxKind::ExecuteToolKey) {
+    if (kind() == SyntaxKind::AbortKey || kind() == SyntaxKind::ExecuteKey || kind() == SyntaxKind::ExecuteToolKey) {
         hasContent = false;
         int end = index;
         while (isWhitechar(line, end)) end++;

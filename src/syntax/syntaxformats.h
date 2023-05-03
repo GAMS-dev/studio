@@ -84,6 +84,8 @@ enum class SyntaxKind {
     EmbeddedBody,
     EmbeddedEnd,
     Reserved,
+    Abort,
+    AbortKey,
     Solve,
     SolveBody,
     SolveKey,

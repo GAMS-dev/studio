@@ -164,6 +164,11 @@ void CodeCompleterModel::initData()
         }
         mData << it->first;
         mDescription << it->second;
+
+        if (it->first == "abort") {
+            mData << "abort.noError";
+            mDescription << "Don't throw an execution error";
+        }
         ++it;
     }
     // embedded
