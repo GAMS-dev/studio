@@ -120,7 +120,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
     for(const OptionGroup &group : qAsConst(optionGroupList)) {
-        if (group.hidden)
+        if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
         else
             ++groupsize;
@@ -132,7 +132,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
     groupModel->setItem(0, 1, new QStandardItem("0"));
     groupModel->setItem(0, 2, new QStandardItem("All Options"));
     for(const OptionGroup &group : qAsConst(optionGroupList)) {
-        if (group.hidden)
+        if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
         ++i;
         groupModel->setItem(i, 0, new QStandardItem(group.description));

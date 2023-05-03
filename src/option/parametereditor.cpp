@@ -105,10 +105,11 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     QList<OptionGroup> optionGroupList = mOptionTokenizer->getOption()->getOptionGroupList();
     int groupsize = 0;
     for(const OptionGroup &group : qAsConst(optionGroupList)) {
-        if (group.hidden)
+        if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
         else
             ++groupsize;
+        qDebug()<< " => " << group.name;
     }
 
     QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
@@ -117,7 +118,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     groupModel->setItem(0, 1, new QStandardItem("0"));
     groupModel->setItem(0, 2, new QStandardItem("All Options"));
     for(const OptionGroup &group : qAsConst(optionGroupList)) {
-        if (group.hidden)
+        if (group.hidden || group.name.compare("deprecated", Qt::CaseInsensitive)==0)
             continue;
         ++i;
         groupModel->setItem(i, 0, new QStandardItem(group.description));
