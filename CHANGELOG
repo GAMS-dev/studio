@@ -1,3 +1,7 @@
+Version 1.14.3 *
+==================
+- fixed font not updated instantly after changing the font in "Settings > Editor & Log"
+
 Version 1.14.2
 ==================
 - added missing syntax for callTool, hiddenCallTool, and executeTool
