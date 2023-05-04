@@ -109,7 +109,6 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
             continue;
         else
             ++groupsize;
-        qDebug()<< " => " << group.name;
     }
 
     QStandardItemModel* groupModel = new QStandardItemModel(groupsize+1, 3);
@@ -142,6 +141,7 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aComp
     proxymodel->setSortCaseSensitivity(Qt::CaseInsensitive);
     connect(ui->gamsParameterSearch, &FilterLineEdit::regExpChanged, proxymodel, [this, proxymodel]() {
         proxymodel->setFilterRegularExpression(ui->gamsParameterSearch->regExp());
+        selectSearchField();
     });
 
     if (HeaderViewProxy::platformShouldDrawBorder())

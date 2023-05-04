@@ -202,6 +202,7 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
 
         connect(ui->solverOptionSearch, &FilterLineEdit::regExpChanged, this, [this, proxymodel]() {
             proxymodel->setFilterRegularExpression(ui->solverOptionSearch->regExp());
+            selectSearchField();
         });
 
         connect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition, Qt::UniqueConnection);
@@ -701,7 +702,6 @@ void SolverOptionWidget::showOptionDefinition(bool selectRow)
 
     disconnect(ui->solverOptionTreeView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &SolverOptionWidget::findAndSelectionOptionFromDefinition);
 
-    ui->solverOptionGroup->setCurrentIndex(0);
     ui->solverOptionSearch->clear();
 
     QModelIndexList selection;
