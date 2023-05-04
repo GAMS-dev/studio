@@ -1,6 +1,7 @@
 Version 1.14.3 *
 ==================
 - fixed font not updated instantly after changing the font in "Settings > Editor & Log"
+- fixed false detection of "ParmFile" parameter
 
 Version 1.14.2
 ==================
