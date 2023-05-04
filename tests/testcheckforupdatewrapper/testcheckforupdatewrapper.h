@@ -47,7 +47,7 @@ private slots:
 
     void testCheckForUpdate();
 
-    void testcheckForUpdateShort();
+    void testCheckForUpdateShort();
 
     void testCurrentDistribVersion();
 
@@ -62,9 +62,6 @@ private slots:
     void testStudioVersion();
 
     void testDistribVersionString();
-
-private:
-    bool isBeta(gams::studio::support::CheckForUpdateWrapper& c4uWrapper);
 };
 
 #endif // TESTCHECKFORUPDATEWRAPPER_H
