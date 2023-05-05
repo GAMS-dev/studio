@@ -1729,7 +1729,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  int n = whichAnyOfSchema(mit->second, schema, dataKeys, key);
                  key += QString("[%1]").arg(n);
              } else {
-                 isOneofSchemaDefined=(schema->getNumberOfOneOfSchemaDefined(key) > 0);
+                 isOneofSchemaDefined=(schema ? schema->getNumberOfOneOfSchemaDefined(key) > 0 : false);
              }
 
              mapToSequenceKey = key;
