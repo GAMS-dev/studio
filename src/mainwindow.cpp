@@ -3739,7 +3739,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
     if (process) {
         project->setProcess(std::move(process));
-        StartDebugIfPresent(itemList);
+        StartDebugIfPresent(logNode, itemList);
     }
     AbstractProcess* groupProc = project->process();
     int logOption = 0;
@@ -3762,7 +3762,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     return true;
 }
 
-void MainWindow::StartDebugIfPresent(const QList<option::OptionItem> &itemList)
+void MainWindow::StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList)
 {
     for (const option::OptionItem &item : itemList) {
         if (item.key.compare("DebugPort") == 0) {
@@ -3770,12 +3770,18 @@ void MainWindow::StartDebugIfPresent(const QList<option::OptionItem> &itemList)
             int port = item.value.toInt(&ok);
             if (!ok) continue;
 
+            QWidget *wid = logNode->file()->editors().size() ? logNode->file()->editors().first() : nullptr;
+            TextView *tv = ViewHelper::toTextView(wid);
+            if (!tv) continue;
+
             if (!mDebugServer)
                 mDebugServer = new debugger::Server(this);
             if (mDebugServer->isListening())
                 mDebugServer->stop();
-            else
+            else {
+                connect(mDebugServer, &debugger::Server::addProcessData, tv, &TextView::addProcessData);
                 mDebugServer->start(port);
+            }
             break;
         }
     }

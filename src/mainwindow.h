@@ -456,7 +456,7 @@ private:
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
     bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
-    void StartDebugIfPresent(const QList<option::OptionItem> &itemList);
+    void StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);

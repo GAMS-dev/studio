@@ -18,19 +18,19 @@ bool Server::start(quint16 port)
 
     if (mServer->isListening()) {
         if (mServer->serverPort() != port) {
-            qDebug() << "ERROR: Can't connect to port" + QString::number(port)
-                        + ". The server already listens to port" + QString::number(mServer->serverPort());
+            logMessage("ERROR: Can't connect to port" + QString::number(port)
+                           + ". The Debug-Server already listens to port" + QString::number(mServer->serverPort()));
             return false;
         }
-        qDebug() << "WARNING: The server already listens to port" + mServer->serverPort();
+        logMessage("WARNING: The Debug-Server already listens to port" + mServer->serverPort());
         return true;
     }
 
     if(!mServer->listen(QHostAddress::LocalHost, port)) {
-        qDebug() << "Server could not start!";
+        logMessage("Debug-Server could not start listening to port " + QString::number(port) + "!");
         return false;
     }
-    qDebug() << "Server started!";
+    logMessage("Debug-Server started. Listening at port " + QString::number(port));
     return true;
 }
 
@@ -42,6 +42,7 @@ void Server::stop()
 
     if (isListening())
         mServer->close();
+    logMessage("Debug-Server stopped.");
 }
 
 bool Server::isListening()
@@ -60,12 +61,12 @@ void Server::newConnection()
     QTcpSocket *socket = mServer->nextPendingConnection();
     mSockets << socket;
     connect(socket, &QTcpSocket::disconnected, this, [this, socket]() {
-        qDebug() << "Socket disconnected";
+        logMessage("Debug-Server: Socket disconnected");
         mSockets.removeAll(socket);
     });
-    connect(socket, &QTcpSocket::readyRead, this, [socket]() {
+    connect(socket, &QTcpSocket::readyRead, this, [this, socket]() {
         QByteArray data = socket->readAll();
-        qDebug() << "Request: " << data;
+        logMessage("Debug-Server request: " + data);
         if (data.startsWith("exit")) {
             socket->write("bye!\r\n");
             socket->flush();
@@ -77,6 +78,11 @@ void Server::newConnection()
             socket->waitForBytesWritten(3000);
         }
     });
+}
+
+void Server::logMessage(const QString &message)
+{
+    emit addProcessData(message.toUtf8() + '\n');
 }
 
 

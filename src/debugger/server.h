@@ -24,8 +24,11 @@ public slots:
     void newConnection();
 
 signals:
+    void addProcessData(const QByteArray &data);
 
 private:
+    void logMessage(const QString &message);
+
     QTcpServer *mServer = nullptr;
     QList<QTcpSocket*> mSockets;
 };
