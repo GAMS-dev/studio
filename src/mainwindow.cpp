@@ -2154,6 +2154,11 @@ void MainWindow::appendSystemLogWarning(const QString &text) const
 
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
+    if (mDebugServer) {
+        mDebugServer->stop();
+        mDebugServer->deleteLater();
+        mDebugServer = nullptr;
+    }
     if (origin == -1) {
         appendSystemLogError("No fileId set to process");
         return;
@@ -3732,8 +3737,10 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
-    if (process)
+    if (process) {
         project->setProcess(std::move(process));
+        StartDebugIfPresent(itemList);
+    }
     AbstractProcess* groupProc = project->process();
     int logOption = 0;
     groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
