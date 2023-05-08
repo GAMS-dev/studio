@@ -70,6 +70,8 @@ enum CodeCompleterType {
     ccMod       = 0x00020000, // models
     ccSolve     = 0x00040000, // solve
     ccExec      = 0x00080000, // execute additions
+    ccExecT     = 0x00100000, // executeTool addition
+    ccAbort     = 0x00200000, // abort addition
 
     ccSufName   = 0x01000000, // temporary suffix name
 

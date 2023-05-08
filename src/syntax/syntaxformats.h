@@ -123,6 +123,7 @@ enum FlavorFlag {
     flavorBindLabel = 32,
 
     flavorExecDot = 4,
+    flavorAbortCmd = 64,
 };
 
 enum DcoFlavor {

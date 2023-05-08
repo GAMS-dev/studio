@@ -237,7 +237,7 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
 {
     // TODO(JM) check if other specialized reserved-types beneath solve need to be added here
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
-              << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+              << SyntaxKind::Reserved << SyntaxKind::Abort << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::Dco << SyntaxKind::Declaration
               << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
     QList<QPair<QString, QString>> list;
@@ -249,7 +249,7 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
         break;
     case SyntaxKind::Abort:
         list << SyntaxData::reserved().first();
-        mSubKinds << SyntaxKind::AbortKey << SyntaxKind::Formula;
+        mSubKinds << SyntaxKind::Abort << SyntaxKind::AbortKey << SyntaxKind::Formula;
         break;
     case SyntaxKind::AbortKey:
         list = {{"noError", "Don't throw an execution error"}};
@@ -298,7 +298,9 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
     if (entryKind == kind() && start > index) {
         return SyntaxBlock(this, state, index, start, false, SyntaxShift::shift);
     }
-    if ((kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
+    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::AbortKey) && state.flavor & flavorAbortCmd == 0)
+        state.flavor += flavorAbortCmd;
+    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
         && entryKind == kind() && (state.flavor & flavorExecDot) == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
@@ -309,12 +311,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
         }
         return SyntaxBlock(this);
     }
-    if (kind() != SyntaxKind::Abort && kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
+    if (kind() != SyntaxKind::AbortKey && kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
         return SyntaxBlock(this);
     }
 
     int iKey;
-    end = findEnd(kind(), line, start, iKey, (kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool));
+    end = findEnd(kind(), line, start, iKey, (kind() == SyntaxKind::Abort || kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool));
     if (end > start) {
         switch (kind()) {
         case SyntaxKind::Reserved:
@@ -411,7 +413,7 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) 
     list = SyntaxData::modelTypes();
     switch (kind) {
     case SyntaxKind::AbortKey:
-        mSubKinds << SyntaxKind::Formula;
+        mSubKinds << SyntaxKind::AbortKey << SyntaxKind::Formula;
         list = {{"noError", "Do not throw an execution error"}};
         mKeywords.insert(int(kind), new DictList(list));
         break;
