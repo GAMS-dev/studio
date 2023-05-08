@@ -3755,6 +3755,25 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     return true;
 }
 
+void MainWindow::StartDebugIfPresent(const QList<option::OptionItem> &itemList)
+{
+    for (const option::OptionItem &item : itemList) {
+        if (item.key.compare("DebugPort") == 0) {
+            bool ok;
+            int port = item.value.toInt(&ok);
+            if (!ok) continue;
+
+            if (!mDebugServer)
+                mDebugServer = new debugger::Server(this);
+            if (mDebugServer->isListening())
+                mDebugServer->stop();
+            else
+                mDebugServer->start(port);
+            break;
+        }
+    }
+}
+
 void MainWindow::execution(PExProjectNode *project)
 {
     AbstractProcess* groupProc = project->process();
