@@ -165,6 +165,15 @@ QStringList EngineProcess::remoteParameters() const
         } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
             needsGdx = false;
             continue;
+        } else if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
+            QStringList parts = par.split("=");
+            QString fileName = parts.at(1);
+            if (fileName.startsWith("\"") && fileName.endsWith("\""))
+                fileName = fileName.mid(1, fileName.size() - 2);
+            QFileInfo fi(fileName);
+            if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
+            i.setValue(parts.at(0) + "=" + fileName);
+            continue;
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
@@ -192,8 +201,6 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
         return;
     }
     if (mProcState == Proc1Compile) {
-        QStringList params = remoteParameters();
-        DEB() << remoteParameters().join("\n   ");
         setProcState(Proc2Pack);
         startPacking();
     } else {
@@ -793,7 +800,7 @@ void EngineProcess::startPacking()
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);
 
     QString baseName = modelName();
-    QFile file(mOutPath+'/'+baseName+".gms");
+    QFile file(mOutPath+'/' + baseName + ".gms");
     if (!file.open(QFile::WriteOnly)) {
         emit newStdChannelData("\n*** Can't create file: "+file.fileName().toUtf8()+'\n');
         completed(-1);
@@ -801,23 +808,45 @@ void EngineProcess::startPacking()
     }
     file.write("*dummy");
     file.close();
-    file.setFileName(mOutPath+'/'+baseName+".g00");
+    file.setFileName(mOutPath+'/' + baseName + ".g00");
     if (file.exists() && !file.remove()) {
         emit newStdChannelData("\n*** Can't remove file from subdirectory: "+file.fileName().toUtf8()+'\n');
         completed(-1);
         return;
     }
     file.setFileName(mWorkPath + '/' + modelName() + ".g00");
-    if (!file.rename(mOutPath+'/'+baseName+".g00")) {
+    if (!file.rename(mOutPath+'/' + baseName + ".g00")) {
         emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
         completed(-1);
         return;
+    }
+
+    QString pfFile;
+    for (const QString &par : remoteParameters()) {
+        if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
+            QStringList pfSplit = par.split("=");
+            if (pfSplit.size() != 2) continue;
+            QString fileName = pfSplit.at(1).startsWith("\"") ? pfSplit.at(1).mid(1,pfSplit.at(1).size()-2)
+                                                              : pfSplit.at(1);
+            QFileInfo pf(fileName);
+            QDir workDir(mWorkPath);
+            if (pf.isAbsolute()) pf.setFile(workDir.relativeFilePath(pf.filePath()));
+            file.setFileName(mWorkPath + '/' + pf.filePath());
+            if (!file.copy(mOutPath + '/' + pf.filePath())) {
+                emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
+                completed(-1);
+                return;
+            }
+            pfFile = pf.filePath();
+            break;
+        }
     }
 
     mSubProc = subProc;
     subProc->setWorkingDirectory(mOutPath);
     QStringList params;
     params << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00";
+    if (!pfFile.isEmpty()) params << pfFile;
     subProc->setParameters(params);
     subProc->execute();
 }
