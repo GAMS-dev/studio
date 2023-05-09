@@ -111,6 +111,8 @@ public:
     void updateDecSepCopy();
 
 
+    void setSearchString(const QString &searchString);
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();
@@ -123,6 +125,7 @@ private:
     void loadDomains();
     double specVal2SortVal(double val);
     QVariant formatValue(double val, bool dynamicDecSep=false) const;
+    QString mSearchString;
 
 private:
     void initNumericalBounds();

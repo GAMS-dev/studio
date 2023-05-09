@@ -93,6 +93,10 @@ private slots:
     void onResizeColumnsLV();
     void onResizeColumnsTV();
 
+    void on_search_prev();
+    void on_search_forw();
+    void on_lineEdit_textChanged(const QString &arg1);
+
 private:
     Ui::GdxSymbolView *ui;
     GdxSymbol *mSym = nullptr;
@@ -115,6 +119,7 @@ private:
     void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
     void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
     QString copySelectionToString(QString separator, bool copyLabels = true);
+    void markSearchResults();
 
     QVector<QCheckBox *> mShowValColActions;
     QCheckBox* mSqDefaults = nullptr;
@@ -150,6 +155,8 @@ private:
     bool mDragInProgress = false;
     bool mAutoResizeLV;
     bool mAutoResizeTV;
+
+    bool mPendingSearch=false;
 };
 
 

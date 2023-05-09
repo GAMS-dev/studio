@@ -162,6 +162,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
+    connect(ui->pbSearchPrev, &QPushButton::clicked, this, &GdxSymbolView::on_search_prev);
+    connect(ui->pbSearchForw, &QPushButton::clicked, this, &GdxSymbolView::on_search_forw);
+
     connect(mPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
     connect(mValFormat, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GdxSymbolView::updateNumericalPrecision);
 
@@ -536,6 +539,9 @@ void GdxSymbolView::adjustDomainScrollbar()
 void GdxSymbolView::showListView()
 {
     mTableView = false;
+    ui->pbSearchPrev->setEnabled(true);
+    ui->pbSearchForw->setEnabled(true);
+    ui->lineEdit->setEnabled(true);
     ui->tvTableView->hide();
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
@@ -550,6 +556,9 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
 {
+    ui->pbSearchPrev->setEnabled(false);
+    ui->pbSearchForw->setEnabled(false);
+    ui->lineEdit->setEnabled(false);
     if (!mTvModel)
         initTableViewModel(colDim, tvDimOrder);
     else {
@@ -949,6 +958,85 @@ void GdxSymbolView::enableControls()
         ui->pbToggleView->setEnabled(true);
 }
 
+void GdxSymbolView::on_search_prev()
+{
+    markSearchResults();
+    QString searchString = ui->lineEdit->text();
+    QModelIndex idx = ui->tvListView->currentIndex();
+    int row = idx.row();
+    int col = idx.column();
+    if (!idx.isValid()) {
+        col = mSym->dim()-1;
+        row = mSym->recordCount();
+    }
+    while (true) {
+        col--;
+        // min column reached
+        if (col < 0) {
+            col = ui->tvListView->model()->columnCount();
+            row--;
+        }
+        // min row reached
+        if (row < 0) {
+            col = mSym->dim()-1;
+            row = ui->tvListView->model()->rowCount();
+            ui->tvListView->setCurrentIndex(QModelIndex());
+            break;
+        }
+        // match
+        if (!ui->tvListView->isColumnHidden(col) && ui->tvListView->model()->index(row, col).data() == searchString) {
+            ui->tvListView->selectionModel()->setCurrentIndex(ui->tvListView->model()->index(row, col), QItemSelectionModel::SelectCurrent);
+            break;
+        }
+    }
+}
+
+
+void GdxSymbolView::on_search_forw()
+{
+    markSearchResults();
+    QString searchString = ui->lineEdit->text();
+    QModelIndex idx = ui->tvListView->currentIndex();
+    int row = idx.row();
+    int col = idx.column();
+    while (true) {
+        col++;
+        // max column reached
+        if (col >= ui->tvListView->model()->columnCount()) {
+            col = 0;
+            row++;
+        }
+        // max row reached
+        if (row >= ui->tvListView->model()->rowCount()) {
+            col = 0;
+            row = 0;
+            ui->tvListView->setCurrentIndex(QModelIndex());
+            break;
+        }
+        // match
+        if (!ui->tvListView->isColumnHidden(col) && ui->tvListView->model()->index(row, col).data() == searchString) {
+            ui->tvListView->selectionModel()->setCurrentIndex(ui->tvListView->model()->index(row, col), QItemSelectionModel::SelectCurrent);
+            break;
+        }
+    }
+}
+
+void GdxSymbolView::markSearchResults()
+{
+    if (mPendingSearch) {
+        mSym->setSearchString(ui->lineEdit->text());
+        mPendingSearch = false;
+        ui->tvListView->viewport()->update();
+    }
+}
+
+void GdxSymbolView::on_lineEdit_textChanged(const QString &arg1)
+{
+    mPendingSearch = true;
+}
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams
+
+

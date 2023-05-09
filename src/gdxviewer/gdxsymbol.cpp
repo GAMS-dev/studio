@@ -28,6 +28,7 @@
 #include <QSet>
 #include <settings.h>
 #include <cmath>
+#include "theme.h"
 
 namespace gams {
 namespace studio {
@@ -189,6 +190,17 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
                 return QVariant(Qt::AlignRight | Qt::AlignVCenter);
             else
                 return QVariant(Qt::AlignLeft | Qt::AlignVCenter);
+        }
+    }
+    else if (role == Qt::BackgroundRole) {
+        if (!mSearchString.isEmpty() && data(index) == mSearchString)
+            return toColor(Theme::Edit_matchesBg);
+    }
+    else if (role == Qt::FontRole) {
+        if (!mSearchString.isEmpty() && data(index) == mSearchString) {
+            QFont font;
+            font.setBold(true);
+            return font;
         }
     }
     return QVariant();
@@ -423,6 +435,11 @@ QVariant GdxSymbol::formatValue(double val, bool dynamicDecSep) const
         return QString(acr);
     }
     return QVariant();
+}
+
+void GdxSymbol::setSearchString(const QString &searchString)
+{
+    mSearchString = searchString;
 }
 
 void GdxSymbol::initNumericalBounds()
