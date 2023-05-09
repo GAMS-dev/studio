@@ -412,24 +412,9 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) 
     QList<QPair<QString, QString>> list;
     list = SyntaxData::modelTypes();
     switch (kind) {
-    case SyntaxKind::AbortKey:
-        mSubKinds << SyntaxKind::AbortKey << SyntaxKind::Formula;
-        list = {{"noError", "Do not throw an execution error"}};
-        mKeywords.insert(int(kind), new DictList(list));
-        break;
     case SyntaxKind::OptionKey:
         mSubKinds << SyntaxKind::OptionKey << SyntaxKind::OptionBody;
         list << SyntaxData::options();
-        mKeywords.insert(int(kind), new DictList(list));
-        break;
-    case SyntaxKind::ExecuteKey:
-        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
-        list << SyntaxData::execute();
-        mKeywords.insert(int(kind), new DictList(list));
-        break;
-    case SyntaxKind::ExecuteToolKey:
-        mSubKinds << SyntaxKind::ExecuteToolKey << SyntaxKind::ExecuteBody;
-        list << QPair<QString, QString>("checkErrorLevel", "Check errorLevel automatically after executing tool");
         mKeywords.insert(int(kind), new DictList(list));
         break;
     case SyntaxKind::SolveKey:
@@ -454,13 +439,6 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (entryKind == SyntaxKind::AbortKey || entryKind == SyntaxKind::ExecuteKey || entryKind == SyntaxKind::ExecuteToolKey) {
-        if (start < line.length() && line.at(start) == '.')
-            ++start;
-        while (isWhitechar(line, start))
-            ++start;
-        if (start == index) return SyntaxBlock(this);
-    }
     if (start >= line.length()) return SyntaxBlock(this);
     int end = -1;
     int iKey;
@@ -480,14 +458,6 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
 
 SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, SyntaxState state, bool &hasContent)
 {
-    if (kind() == SyntaxKind::AbortKey || kind() == SyntaxKind::ExecuteKey || kind() == SyntaxKind::ExecuteToolKey) {
-        hasContent = false;
-        int end = index;
-        while (isWhitechar(line, end)) end++;
-        if (end < line.length() && line.at(end) == '.') ++end;
-        while (isWhitechar(line, end)) end++;
-        return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
-    }
     return SyntaxKeywordBase::validTail(line, index, state, hasContent);
 }
 

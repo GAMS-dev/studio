@@ -527,7 +527,7 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, SyntaxState state, c
     if (start >= line.length()) return SyntaxBlock(this);
     int prev = 0;
 
-    if (kind() == SyntaxKind::ExecuteBody || state.flavor & flavorAbortCmd == 0) {
+    if (kind() == SyntaxKind::ExecuteBody || state.flavor & flavorAbortCmd) {
         if (entryKind == SyntaxKind::Abort || entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) {
             if (!(state.flavor % 2) && start < line.length() && line.at(start) == '.')
                 state.flavor += 1;
