@@ -320,6 +320,9 @@ void GdxSymbolView::resetSortFilter()
         mTVFirstInit = true;
         mTVResizeOnInit = true;
         mPendingUncheckedLabels.clear();
+        ui->lineEdit->setText("");
+        ui->lineEdit->setOptionState(FilterLineEdit::foExact, 0);
+        ui->lineEdit->setOptionState(FilterLineEdit::foRegEx, 0);
         showDefaultView();
     }
 }
