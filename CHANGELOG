@@ -3,6 +3,7 @@ Version 1.14.3 *
 - fixed font not updated instantly after changing the font in "Settings > Editor & Log"
 - fixed false detection of "ParmFile" parameter
 - fixed crash in the Connect Editor, when opening a file containing unknown schema name
+- added 'abort' and 'abort.noError' to the highlighter and completer
 
 Version 1.14.2
 ==================
