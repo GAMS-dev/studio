@@ -949,7 +949,7 @@ void EngineProcess::moveFiles(const QDir &srcDir, const QDir &destDir, bool inBa
         QFileInfo destFi(destFile);
         if (destFile.exists()) {
             if (mProtectedFiles.contains(destFi)) {
-                emit newStdChannelData("*** Skip updating "+destFile.fileName().toUtf8()+"\n");
+                emit newStdChannelData("*** Skip updating "+workDir.relativeFilePath(destFile.fileName()).toUtf8()+"\n");
                 srcFile.remove();
                 continue;
             }
