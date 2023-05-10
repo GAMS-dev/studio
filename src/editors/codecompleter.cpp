@@ -761,10 +761,6 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
                  || res.first == int(syntax::SyntaxKind::ExecuteTool)) && !(res.second % 2))
                 dotPos = lastEnd;
         }
-//        if (cExecuteSyntax.contains(it.value().first) && it.value().second % 2) {
-//            if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
-//                dotPos = lastEnd;
-//        }
         if (it.key() >= pos) {
             if (cEnteringSyntax.contains(res.first)) {
                 if (res.first == int(syntax::SyntaxKind::IdentifierDescription) && lastEnd == pos)
