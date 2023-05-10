@@ -141,6 +141,15 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
             painter->setPen(pen);
+            if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
+                QFont f = painter->font();
+                f.setBold(true);
+                painter->setFont(f);
+                QBrush bgBrush = painter->background();
+                bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                painter->setBackground(bgBrush);
+                painter->setBackgroundMode(Qt::OpaqueMode);
+            }
             painter->drawText(opt.rect.left(), fontVerticalOffset, text);
             if (dimIdxEnd>-1) {
                 if (dimIdxEnd == i)
@@ -162,6 +171,15 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 opt.text = labelCurSection[i];
             else
                 opt.text = "";
+            if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(opt.text).hasMatch()) {
+                QFont f = painter->font();
+                f.setBold(true);
+                painter->setFont(f);
+                QBrush bgBrush = painter->background();
+                bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                painter->setBackground(bgBrush);
+                painter->setBackgroundMode(Qt::OpaqueMode);
+            }
             opt.rect.setTop(opt.rect.top()+ lastHeight);
             lastHeight = QHeaderView::sectionSizeFromContents(logicalIndex).height();
 

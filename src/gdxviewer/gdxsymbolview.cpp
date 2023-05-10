@@ -549,9 +549,6 @@ void GdxSymbolView::adjustDomainScrollbar()
 void GdxSymbolView::showListView()
 {
     mTableView = false;
-    ui->pbSearchPrev->setEnabled(true);
-    ui->pbSearchForw->setEnabled(true);
-    ui->lineEdit->setEnabled(true);
     ui->tvTableView->hide();
     ui->tvTableViewFilter->hide();
     ui->tbDomLeft->hide();
@@ -566,9 +563,6 @@ void GdxSymbolView::showListView()
 
 void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
 {
-    ui->pbSearchPrev->setEnabled(false);
-    ui->pbSearchForw->setEnabled(false);
-    ui->lineEdit->setEnabled(false);
     if (!mTvModel)
         initTableViewModel(colDim, tvDimOrder);
     else {
@@ -967,37 +961,56 @@ void GdxSymbolView::enableControls()
         ui->pbToggleView->setEnabled(true);
 }
 
+bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
+    bool match = false;
+
+    // match in data for list view and table view
+    if (!tv->isColumnHidden(col) && mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
+        match = true;
+
+    // match in header for table view only
+    if (mTableView) {
+        QStringList labels = mTvModel->headerData(row, Qt::Vertical).toStringList() + mTvModel->headerData(col, Qt::Horizontal).toStringList();
+        for (QString s : labels) {
+            if (mSearchRegEx.match(s).hasMatch())
+                match = true;
+        }
+    }
+    if (match)
+        tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
+    return match;
+}
+
 void GdxSymbolView::on_search_prev()
 {
     if (mSearchRegEx.pattern().isEmpty())
         return;
-    QModelIndex idx = ui->tvListView->currentIndex();
+
+    QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
+    QModelIndex idx = tv->currentIndex();
     int row = idx.row();
     int col = idx.column();
+
     if (!idx.isValid()) {
-        col = mSym->dim()-1;
-        row = mSym->recordCount();
+        col = tv->model()->columnCount();
+        row = tv->model()->rowCount()-1;
     }
+
+    // find match
     while (true) {
         col--;
         // min column reached
         if (col < 0) {
-            col = ui->tvListView->model()->columnCount();
+            col = tv->model()->columnCount()-1;
             row--;
         }
         // min row reached
         if (row < 0) {
-            col = mSym->dim()-1;
-            row = ui->tvListView->model()->rowCount();
-            ui->tvListView->setCurrentIndex(QModelIndex());
-            break;
+            tv->setCurrentIndex(QModelIndex());
+            return;
         }
-        // match
-
-        if (!ui->tvListView->isColumnHidden(col) && mSearchRegEx.match(ui->tvListView->model()->index(row, col).data().toString()).hasMatch()) {
-            ui->tvListView->selectionModel()->setCurrentIndex(ui->tvListView->model()->index(row, col), QItemSelectionModel::SelectCurrent);
-            break;
-        }
+        if (matchAndSelect(row, col, tv))
+            return;
     }
 }
 
@@ -1006,35 +1019,38 @@ void GdxSymbolView::on_search_forw()
 {
     if (mSearchRegEx.pattern().isEmpty())
         return;
-    QModelIndex idx = ui->tvListView->currentIndex();
+
+    QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
+    QModelIndex idx = tv->currentIndex();
     int row = idx.row();
     int col = idx.column();
+
+    if (!idx.isValid()) {
+        col = -1;
+        row = 0;
+    }
     while (true) {
         col++;
         // max column reached
-        if (col >= ui->tvListView->model()->columnCount()) {
+        if (col >= tv->model()->columnCount()) {
             col = 0;
             row++;
         }
         // max row reached
-        if (row >= ui->tvListView->model()->rowCount()) {
-            col = 0;
-            row = 0;
-            ui->tvListView->setCurrentIndex(QModelIndex());
-            break;
+        if (row >= tv->model()->rowCount()) {
+            tv->setCurrentIndex(QModelIndex());
+            return;
         }
-        // match
-        if (!ui->tvListView->isColumnHidden(col) && mSearchRegEx.match(ui->tvListView->model()->index(row, col).data().toString()).hasMatch()) {
-            ui->tvListView->selectionModel()->setCurrentIndex(ui->tvListView->model()->index(row, col), QItemSelectionModel::SelectCurrent);
-            break;
-        }
+        if (matchAndSelect(row, col, tv))
+            return;
     }
 }
 
 void GdxSymbolView::markSearchResults()
 {
     mSym->setSearchRegEx(mSearchRegEx);
-    ui->tvListView->viewport()->update();
+    QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
+    tv->viewport()->update();
 }
 
 } // namespace gdxviewer

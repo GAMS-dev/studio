@@ -437,6 +437,11 @@ QVariant GdxSymbol::formatValue(double val, bool dynamicDecSep) const
     return QVariant();
 }
 
+QRegularExpression GdxSymbol::searchRegEx() const
+{
+    return mSearchRegEx;
+}
+
 void GdxSymbol::setSearchRegEx(const QRegularExpression &searchRegEx)
 {
     mSearchRegEx = searchRegEx;

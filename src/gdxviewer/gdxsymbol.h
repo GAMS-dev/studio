@@ -113,6 +113,8 @@ public:
 
     void setSearchRegEx(const QRegularExpression &searchRegEx);
 
+    QRegularExpression searchRegEx() const;
+
 signals:
     void loadFinished();
     void triggerListViewAutoResize();

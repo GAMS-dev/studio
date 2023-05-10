@@ -19,6 +19,8 @@
  */
 #include "tableviewmodel.h"
 
+#include "theme.h"
+
 namespace gams {
 namespace studio {
 namespace gdxviewer {
@@ -136,6 +138,17 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
     }
     else if (role == Qt::TextAlignmentRole) {
         return QVariant(Qt::AlignRight | Qt::AlignVCenter);
+    }
+    else if (role == Qt::BackgroundRole) {
+        if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch())
+            return toColor(Theme::Edit_matchesBg);
+    }
+    else if (role == Qt::FontRole) {
+        if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch()) {
+            QFont font;
+            font.setBold(true);
+            return font;
+        }
     }
     return QVariant();
 }
