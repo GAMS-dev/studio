@@ -100,6 +100,7 @@ void EngineProcess::execute()
         setProcState(ProcIdle);
         return;
     }
+    mProtectedFiles.clear();
     QStringList params = compileParameters();
     mProcess.setWorkingDirectory(workingDirectory());
     mManager->setWorkingDirectory(workingDirectory());
@@ -826,11 +827,7 @@ void EngineProcess::startPacking()
         if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
             QStringList pfSplit = par.split("=");
             if (pfSplit.size() != 2) continue;
-            QString fileName = pfSplit.at(1).startsWith("\"") ? pfSplit.at(1).mid(1,pfSplit.at(1).size()-2)
-                                                              : pfSplit.at(1);
-            QFileInfo pf(fileName);
-            QDir workDir(mWorkPath);
-            if (pf.isAbsolute()) pf.setFile(workDir.relativeFilePath(pf.filePath()));
+            QFileInfo pf(pfSplit.at(1));
             file.setFileName(mWorkPath + '/' + pf.filePath());
             if (!file.copy(mOutPath + '/' + pf.filePath())) {
                 emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
@@ -838,6 +835,7 @@ void EngineProcess::startPacking()
                 return;
             }
             pfFile = pf.filePath();
+            mProtectedFiles << pf;
             break;
         }
     }
@@ -846,7 +844,8 @@ void EngineProcess::startPacking()
     subProc->setWorkingDirectory(mOutPath);
     QStringList params;
     params << "-8"<< "-m" << baseName+".zip" << baseName+".gms" << baseName+".g00";
-    if (!pfFile.isEmpty()) params << pfFile;
+    if (!pfFile.isEmpty())
+        params << pfFile;
     subProc->setParameters(params);
     subProc->execute();
 }
@@ -995,7 +994,6 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
         emit newStdChannelData("*** Can't read file: "+file.fileName().toUtf8()+'\n');
         return false;
     }
-    mProtectedFiles.clear();
     QTextStream in(&file);
     QString path = QFileInfo(file).path();
     while (!in.atEnd()) {
