@@ -835,6 +835,7 @@ void EngineProcess::startPacking()
                 return;
             }
             pfFile = pf.filePath();
+            pf.setFile(mWorkPath + '/' + pf.filePath());
             mProtectedFiles << pf;
             break;
         }
