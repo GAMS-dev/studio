@@ -95,7 +95,6 @@ private slots:
 
     void on_search_prev();
     void on_search_forw();
-    void on_lineEdit_textChanged(const QString &arg1);
 
 private:
     Ui::GdxSymbolView *ui;
@@ -156,7 +155,7 @@ private:
     bool mAutoResizeLV;
     bool mAutoResizeTV;
 
-    bool mPendingSearch=false;
+    QRegularExpression mSearchRegEx;
 };
 
 

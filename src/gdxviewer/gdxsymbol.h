@@ -111,7 +111,7 @@ public:
     void updateDecSepCopy();
 
 
-    void setSearchString(const QString &searchString);
+    void setSearchRegEx(const QRegularExpression &searchRegEx);
 
 signals:
     void loadFinished();
@@ -125,7 +125,7 @@ private:
     void loadDomains();
     double specVal2SortVal(double val);
     QVariant formatValue(double val, bool dynamicDecSep=false) const;
-    QString mSearchString;
+    QRegularExpression mSearchRegEx;
 
 private:
     void initNumericalBounds();

@@ -193,11 +193,11 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
         }
     }
     else if (role == Qt::BackgroundRole) {
-        if (!mSearchString.isEmpty() && data(index) == mSearchString)
+        if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch())
             return toColor(Theme::Edit_matchesBg);
     }
     else if (role == Qt::FontRole) {
-        if (!mSearchString.isEmpty() && data(index) == mSearchString) {
+        if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch()) {
             QFont font;
             font.setBold(true);
             return font;
@@ -437,10 +437,11 @@ QVariant GdxSymbol::formatValue(double val, bool dynamicDecSep) const
     return QVariant();
 }
 
-void GdxSymbol::setSearchString(const QString &searchString)
+void GdxSymbol::setSearchRegEx(const QRegularExpression &searchRegEx)
 {
-    mSearchString = searchString;
+    mSearchRegEx = searchRegEx;
 }
+
 
 void GdxSymbol::initNumericalBounds()
 {
