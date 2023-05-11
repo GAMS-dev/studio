@@ -3,7 +3,7 @@ test-deg:
   tags: [macos]
   dependencies: [install-gams-deg,build-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
+    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
   script:
     - GAMS_PATH=$(pwd)/gamsdist
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
