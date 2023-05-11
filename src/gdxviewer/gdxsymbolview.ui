@@ -114,14 +114,17 @@
       </spacer>
      </item>
      <item>
-      <widget class="QLabel" name="label">
+      <widget class="gams::studio::FilterLineEdit" name="lineEdit">
+       <property name="inputMask">
+        <string/>
+       </property>
        <property name="text">
-        <string>Search:</string>
+        <string/>
+       </property>
+       <property name="placeholderText">
+        <string>Search ...</string>
        </property>
       </widget>
-     </item>
-     <item>
-      <widget class="gams::studio::FilterLineEdit" name="lineEdit"/>
      </item>
      <item>
       <widget class="QPushButton" name="pbSearchPrev">
