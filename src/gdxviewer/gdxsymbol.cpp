@@ -196,12 +196,9 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
         if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch())
             return toColor(Theme::Edit_matchesBg);
     }
-    else if (role == Qt::FontRole) {
-        if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch()) {
-            QFont font;
-            font.setBold(true);
-            return font;
-        }
+    else if (role == Qt::ForegroundRole) {
+        if (!mSearchRegEx.pattern().isEmpty() && mSearchRegEx.match(data(index).toString()).hasMatch())
+            return QColor(Qt::white);
     }
     return QVariant();
 }

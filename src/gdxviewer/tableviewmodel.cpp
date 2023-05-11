@@ -143,12 +143,9 @@ QVariant TableViewModel::data(const QModelIndex &index, int role) const
         if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch())
             return toColor(Theme::Edit_matchesBg);
     }
-    else if (role == Qt::FontRole) {
-        if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch()) {
-            QFont font;
-            font.setBold(true);
-            return font;
-        }
+    else if (role == Qt::ForegroundRole) {
+        if (!mSym->searchRegEx().pattern().isEmpty() && mSym->searchRegEx().match(data(index).toString()).hasMatch())
+            return QColor(Qt::white);
     }
     return QVariant();
 }

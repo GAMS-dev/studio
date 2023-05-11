@@ -36,7 +36,6 @@
 #include <QWidgetAction>
 #include <QLabel>
 #include <QTimer>
-
 #include <numerics/doubleformatter.h>
 
 namespace gams {
@@ -978,6 +977,7 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
     }
     if (match)
         tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
+
     return match;
 }
 
@@ -1049,8 +1049,11 @@ void GdxSymbolView::on_search_forw()
 void GdxSymbolView::markSearchResults()
 {
     mSym->setSearchRegEx(mSearchRegEx);
-    QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
-    tv->viewport()->update();
+    if (mTableView) {
+        ui->tvTableView->setUpdatesEnabled(false);
+        ui->tvTableView->setUpdatesEnabled(true);
+    } else
+        ui->tvListView->viewport()->update();
 }
 
 } // namespace gdxviewer
