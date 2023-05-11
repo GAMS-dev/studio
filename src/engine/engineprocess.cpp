@@ -249,7 +249,7 @@ void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatu
 
 void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
-    Q_UNUSED(reply)
+    reply->ignoreSslErrors();
     QString data("\n*** SSL errors:\n");
     int sslError = 0;
     for (const QSslError &err : errors) {
@@ -260,6 +260,7 @@ void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &erro
             sslError = err.error();
     }
     emit newStdChannelData(data.toUtf8());
+    DEB() << data;
     if (sslError)
         emit sslSelfSigned(sslError);
 }
