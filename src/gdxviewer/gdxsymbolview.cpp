@@ -171,6 +171,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
         markSearchResults();
     });
 
+    connect(ui->lineEdit, &QLineEdit::returnPressed, ui->pbSearchForw, &QPushButton::click);
+
     connect(mPrecision, static_cast<void (QSpinBox::*)(int)>(&QSpinBox::valueChanged), this, &GdxSymbolView::updateNumericalPrecision);
     connect(mValFormat, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged), this, &GdxSymbolView::updateNumericalPrecision);
 
