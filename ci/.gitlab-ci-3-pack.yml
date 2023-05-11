@@ -2,7 +2,7 @@ pack-deg:
   stage: pack
   tags: [macos]
   variables:
-    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   dependencies: [build-deg]
   script:
     - WORKSPACE=$(pwd)
