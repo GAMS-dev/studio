@@ -972,7 +972,7 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
     // match in header for table view only
     if (mTableView) {
         QStringList labels = mTvModel->headerData(row, Qt::Vertical).toStringList() + mTvModel->headerData(col, Qt::Horizontal).toStringList();
-        for (QString s : labels) {
+        for (const QString &s : labels) {
             if (mSearchRegEx.match(s).hasMatch())
                 match = true;
         }
