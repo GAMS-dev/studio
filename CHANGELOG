@@ -1,11 +1,11 @@
-Version 1.14.3 *
+Version 1.14.3
 ==================
-- fixed font not updated instantly after changing the font in "Settings > Editor & Log"
-- fixed false detection of "ParmFile" parameter
-- fixed crash in the Connect Editor, when opening a file containing unknown schema name
-- added 'abort' and 'abort.noError' to the highlighter and completer
-- fixed unability to connect to GAMS Engine via HTTPS on macOS
-- fixed GAMS Engine fails if a parameter file is set
+- fixed font not immediately updating after changing it in "Settings > Editor & Log"
+- fixed false detection of 'pf' parameter
+- fixed crash in Connect Editor when opening a file containing unknown schema name
+- added 'abort' and 'abort.noError' to highlighter and completer
+- fixed connecting to GAMS Engine via HTTPS on macOS
+- fixed GAMS Engine failing when using a parameter file
 
 Version 1.14.2
 ==================
