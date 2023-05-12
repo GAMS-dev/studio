@@ -964,9 +964,15 @@ void GdxSymbolView::enableControls()
 
 bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
     bool match = false;
+    if (tv->isColumnHidden(col))
+        return false;
+
+    // handle reordered columns in list view
+    if (!mTableView)
+        col = ui->tvListView->horizontalHeader()->logicalIndex(col);
 
     // match in data for list view and table view
-    if (!tv->isColumnHidden(col) && mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
+    if (mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
         match = true;
 
     // match in header for table view only
@@ -993,12 +999,14 @@ void GdxSymbolView::on_search_prev()
     int row = idx.row();
     int col = idx.column();
 
+    if (!mTableView)  // handle reordered columns in list view
+        col = ui->tvListView->horizontalHeader()->visualIndex(col);
+
     if (!idx.isValid()) {
         col = tv->model()->columnCount();
         row = tv->model()->rowCount()-1;
     }
 
-    // find match
     while (true) {
         col--;
         // min column reached
@@ -1027,10 +1035,14 @@ void GdxSymbolView::on_search_forw()
     int row = idx.row();
     int col = idx.column();
 
+    if (!mTableView)  // handle reordered columns in list view
+        col = ui->tvListView->horizontalHeader()->visualIndex(col);
+
     if (!idx.isValid()) {
         col = -1;
         row = 0;
     }
+
     while (true) {
         col++;
         // max column reached
