@@ -4,6 +4,7 @@ Version 1.14.3 *
 - fixed false detection of "ParmFile" parameter
 - fixed crash in the Connect Editor, when opening a file containing unknown schema name
 - added 'abort' and 'abort.noError' to the highlighter and completer
+- fixed unability to connect to GAMS Engine via HTTPS on macOS
 
 Version 1.14.2
 ==================
