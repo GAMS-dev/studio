@@ -90,7 +90,7 @@ public:
     /// \return Latest version integer, like <c>2510</c>.
     ///         <c>-1</c> in case of an error.
     ///
-    int currentDistribVersion();
+    int currentDistribVersion() const;
 
     ///
     /// \brief Get current GAMS distribution version as short string.
@@ -105,7 +105,7 @@ public:
     /// \remark This function connects to <c>gams.com</c>.
     ///         <c>-1</c> in case of an error.
     ///
-    int lastDistribVersion();
+    int lastDistribVersion() const;
 
     ///
     /// \brief Get latest GAMS distribution version as short string.

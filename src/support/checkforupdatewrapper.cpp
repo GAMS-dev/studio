@@ -62,7 +62,7 @@ bool CheckForUpdateWrapper::isValid() const
 
 bool CheckForUpdateWrapper::usingLatestGams() const
 {
-    return c4uLastRel(mC4U) <= c4uThisRel(mC4U);
+    return lastDistribVersion() <= currentDistribVersion();
 }
 
 QString CheckForUpdateWrapper::message()
@@ -110,7 +110,7 @@ QString CheckForUpdateWrapper::checkForUpdateShort()
     return message();
 }
 
-int CheckForUpdateWrapper::currentDistribVersion()
+int CheckForUpdateWrapper::currentDistribVersion() const
 {
     if (isValid())
         return c4uThisRel(mC4U);
@@ -128,7 +128,7 @@ QString CheckForUpdateWrapper::currentDistribVersionShort()
     return version.remove(index, version.size());
 }
 
-int CheckForUpdateWrapper::lastDistribVersion()
+int CheckForUpdateWrapper::lastDistribVersion() const
 {
     if (isValid() && c4uCheck4Update(mC4U))
         return c4uLastRel(mC4U);

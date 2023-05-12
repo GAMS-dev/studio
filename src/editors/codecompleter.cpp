@@ -164,6 +164,11 @@ void CodeCompleterModel::initData()
         }
         mData << it->first;
         mDescription << it->second;
+
+        if (it->first == "abort") {
+            mData << "abort.noError";
+            mDescription << "Don't throw an execution error";
+        }
         ++it;
     }
     // embedded
@@ -313,6 +318,19 @@ void CodeCompleterModel::initData()
         ++it;
     }
     mType.insert(mData.size()-1, ccExec);
+
+    mData << "checkErrorLevel";
+    mDescription << "Check errorLevel automatically after executing a GAMS tool";
+    mData << ".checkErrorLevel";
+    mDescription << "Check errorLevel automatically after executing a GAMS tool";
+    mType.insert(mData.size()-1, ccExecT);
+
+    mData << "noError";
+    mDescription << "Abort without error";
+    mData << ".noError";
+    mDescription << "Abort without error";
+    mType.insert(mData.size()-1, ccAbort);
+
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << "execute." + it->first;
@@ -483,7 +501,7 @@ bool FilterCompleterModel::filterAcceptsRow(int sourceRow, const QModelIndex &so
     if (type & ccSufName) return QSortFilterProxyModel::filterAcceptsRow(sourceRow, sourceParent);
     if (!test(type, mTypeFilter)) return false;
     QString text = sourceModel()->data(index, Qt::DisplayRole).toString();
-    if (type & cc_SubDco || type & ccExec) {
+    if (type & cc_SubDco || type & ccExec || type & ccExecT || type & ccAbort) {
         if (text.startsWith('.') != mNeedDot)
             return false;
     }
@@ -712,11 +730,13 @@ const QSet<int> CodeCompleter::cEnteringSyntax {
 const QSet<int> CodeCompleter::cExecuteSyntax {
     int(syntax::SyntaxKind::Execute),
     int(syntax::SyntaxKind::ExecuteKey),
-    int(syntax::SyntaxKind::ExecuteBody)
+    int(syntax::SyntaxKind::ExecuteBody),
+    int(syntax::SyntaxKind::ExecuteTool),
+    int(syntax::SyntaxKind::ExecuteToolKey),
+    int(syntax::SyntaxKind::Abort),
+    int(syntax::SyntaxKind::AbortKey),
 };
 const QSet<int> CodeCompleter::cExecuteToolSyntax {
-    int(syntax::SyntaxKind::ExecuteTool),
-    int(syntax::SyntaxKind::ExecuteToolKey)
 };
 const QSet<int> CodeCompleter::cBlockSyntax {
     int(syntax::SyntaxKind::CommentBlock),
@@ -736,12 +756,9 @@ QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlav
     int lastEnd = 0;
     dotPos = -1;
     for (QMap<int,QPair<int, int>>::ConstIterator it = blockSyntax.constBegin(); it != blockSyntax.constEnd(); ++it) {
-        if (cExecuteToolSyntax.contains(it.value().first) && it.value().second % 2) {
-            if (res.first == int(syntax::SyntaxKind::ExecuteTool) && !(res.second % 2))
-                dotPos = lastEnd;
-        }
         if (cExecuteSyntax.contains(it.value().first) && it.value().second % 2) {
-            if (res.first == int(syntax::SyntaxKind::Execute) && !(res.second % 2))
+            if ((res.first == int(syntax::SyntaxKind::Abort) || res.first == int(syntax::SyntaxKind::Execute)
+                 || res.first == int(syntax::SyntaxKind::ExecuteTool)) && !(res.second % 2))
                 dotPos = lastEnd;
         }
         if (it.key() >= pos) {
@@ -974,7 +991,8 @@ QStringList CodeCompleter::splitTypes(int filter)
         {ccDcoStrt,"ccDcoStrt"}, {ccDcoEnd,"ccDcoEnd"},
         {ccSysDat,"ccSysDat"}, {ccSysSufR,"ccSysSufR"}, {ccSysSufC,"ccSysSufC"}, {ccCtConst,"ccCtConst"}, {ccDecl,"ccDecl"},
         {ccDeclAddS,"ccDeclAddS"}, {ccDeclAddS,"ccDeclAddV"}, {ccRes,"ccRes"}, {ccResEnd,"ccResEnd"}, {ccDeclS,"ccDeclS"},
-        {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"}
+        {ccDeclV,"ccDeclV"}, {ccDeclT,"ccDeclT"}, {ccOpt,"ccOpt"}, {ccMod,"ccMod"}, {ccSolve,"ccSolve"}, {ccExec,"ccExec"},
+        {ccExecT,"ccExecT"}, {ccAbort,"ccAbort"},
     };
     QStringList res;
     int merge = 0;
@@ -1099,8 +1117,9 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     int filter = cc_All;
     int start = pos - mFilterText.length();
     bool needDot = false;
+    syntax::SyntaxKind synKind = syntax::SyntaxKind(syntax.first);
 
-    switch (syntax::SyntaxKind(syntax.first)) {
+    switch (synKind) {
     case syntax::SyntaxKind::Standard:
     case syntax::SyntaxKind::Formula:
     case syntax::SyntaxKind::Assignment:
@@ -1164,19 +1183,29 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     case syntax::SyntaxKind::Put:
     case syntax::SyntaxKind::PutFormula:
         filter = cc_Start; break;
+    case syntax::SyntaxKind::Abort:
+    case syntax::SyntaxKind::AbortKey:
+    case syntax::SyntaxKind::ExecuteTool:
+    case syntax::SyntaxKind::ExecuteToolKey:
     case syntax::SyntaxKind::ExecuteKey:
     case syntax::SyntaxKind::ExecuteBody:
     case syntax::SyntaxKind::Execute: {
+        int subFilter = (synKind == syntax::SyntaxKind::Abort || synKind == syntax::SyntaxKind::AbortKey)
+                            ? ccAbort
+                            :(synKind == syntax::SyntaxKind::ExecuteTool || synKind == syntax::SyntaxKind::ExecuteToolKey)
+                                  ? ccExecT
+                                  : ccExec;
         if (start < line.length() && line.at(start) == '.')
             needDot = true;
         else
             needDot = (syntax.second % 2 == 0);
-        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::ExecuteBody && !needDot && !(syntax.second % 2))
+
+        if ((synKind == syntax::SyntaxKind::ExecuteBody || synKind == syntax::SyntaxKind::Formula) && !needDot && !(syntax.second % 2))
             filter = ccDcoStrt | ccSysSufC | ccCtConst;
         else if (needDot)
-            filter = cc_Start | ccExec;
+            filter = cc_Start | subFilter;
         else
-            filter = ccDcoStrt | ccSysSufC | ccCtConst | ccExec;
+            filter = ccDcoStrt | ccSysSufC | ccCtConst | subFilter;
     }   break;
 
     case syntax::SyntaxKind::OptionKey:
@@ -1196,14 +1225,14 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
     }
     int subType = 0;
     if (isWhitespace) {
-        if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::CommentBlock) {
+        if (synKind == syntax::SyntaxKind::CommentBlock) {
             filter = cc_Start | ccDcoEnd;
             subType = 1;
-        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredHead
-                   || syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::IgnoredBlock) {
+        } else if (synKind == syntax::SyntaxKind::IgnoredHead
+                   || synKind == syntax::SyntaxKind::IgnoredBlock) {
             filter = cc_Start | ccDcoEnd;
             subType = syntax.second == syntax::flavorEcho1 ? 2 : 3;
-        } else if (syntax::SyntaxKind(syntax.first) == syntax::SyntaxKind::EmbeddedBody) {
+        } else if (synKind == syntax::SyntaxKind::EmbeddedBody) {
             if (syntax.second == 0) {
                 filter = cc_Start | ccResEnd;
             } else {
@@ -1242,8 +1271,8 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
         DEB() << "--- Line: \"" << line << "\"   start:" << start << " pos:" << pos;
 #endif
         QString debugText = "Completer at " + QString::number(start) + ": "
-                + syntax::syntaxKindName(syntax::SyntaxKind(syntax.first)) + "[" + QString::number(syntax.second)
-                + "], filters " + QString::number(filter, 16);
+                            + syntax::syntaxKindName(synKind) + "[" + QString::number(syntax.second)
+                            + "], filters " + QString::number(filter, 16);
         if (SysLogLocator::systemLog())
             SysLogLocator::systemLog()->append(debugText, LogMsgType::Info);
     }

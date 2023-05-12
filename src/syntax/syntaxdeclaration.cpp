@@ -237,13 +237,22 @@ SyntaxReserved::SyntaxReserved(SyntaxKind kind, SharedSyntaxData *sharedData) : 
 {
     // TODO(JM) check if other specialized reserved-types beneath solve need to be added here
     mSubKinds << SyntaxKind::Semicolon << SyntaxKind::String << SyntaxKind::Embedded << SyntaxKind::Solve
-              << SyntaxKind::Reserved << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
+              << SyntaxKind::Reserved << SyntaxKind::Abort << SyntaxKind::CommentLine << SyntaxKind::CommentEndline
               << SyntaxKind::CommentInline << SyntaxKind::Dco << SyntaxKind::Declaration
               << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType;
     QList<QPair<QString, QString>> list;
     switch (kind) {
     case SyntaxKind::Reserved:
         list = SyntaxData::reserved();
+        list.remove(0);
+        mSubKinds << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::Abort:
+        list << SyntaxData::reserved().first();
+        mSubKinds << SyntaxKind::Abort << SyntaxKind::AbortKey << SyntaxKind::Formula;
+        break;
+    case SyntaxKind::AbortKey:
+        list = {{"noError", "Don't throw an execution error"}};
         mSubKinds << SyntaxKind::Formula;
         break;
     case SyntaxKind::Solve:
@@ -289,7 +298,9 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
     if (entryKind == kind() && start > index) {
         return SyntaxBlock(this, state, index, start, false, SyntaxShift::shift);
     }
-    if ((kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
+    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::AbortKey) && state.flavor & flavorAbortCmd == 0)
+        state.flavor += flavorAbortCmd;
+    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
         && entryKind == kind() && (state.flavor & flavorExecDot) == 0) {
         if (start < line.length() && line.at(start) == '.') {
             end = start + 1;
@@ -300,12 +311,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
         }
         return SyntaxBlock(this);
     }
-    if (kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
+    if (kind() != SyntaxKind::AbortKey && kind() != SyntaxKind::ExecuteKey && kind() != SyntaxKind::ExecuteToolKey && state.flavor & flavorExecDot) {
         return SyntaxBlock(this);
     }
 
     int iKey;
-    end = findEnd(kind(), line, start, iKey, (kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool));
+    end = findEnd(kind(), line, start, iKey, (kind() == SyntaxKind::Abort || kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool));
     if (end > start) {
         switch (kind()) {
         case SyntaxKind::Reserved:
@@ -316,6 +327,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::OptionBody);
         case SyntaxKind::Put:
             return SyntaxBlock(this, state, start, end, false, SyntaxShift::in, SyntaxKind::PutFormula);
+        case SyntaxKind::Abort:
         case SyntaxKind::Execute:
         case SyntaxKind::ExecuteTool:
         {
@@ -324,10 +336,12 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
             if (end == line.length() || line.at(end) != '_')
                 return SyntaxBlock(this, state, start, end, SyntaxShift::shift);
         }   break;
+        case SyntaxKind::AbortKey:
         case SyntaxKind::ExecuteKey:
         case SyntaxKind::ExecuteToolKey:
         {
-            if ((entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) && state.flavor & flavorExecDot) {
+            if ((entryKind == SyntaxKind::Abort || entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool)
+                && state.flavor & flavorExecDot) {
                 state.flavor -= flavorExecDot;
                 return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
             }
@@ -403,16 +417,6 @@ SyntaxSubsetKey::SyntaxSubsetKey(SyntaxKind kind, SharedSyntaxData *sharedData) 
         list << SyntaxData::options();
         mKeywords.insert(int(kind), new DictList(list));
         break;
-    case SyntaxKind::ExecuteKey:
-        mSubKinds << SyntaxKind::ExecuteKey << SyntaxKind::ExecuteBody;
-        list << SyntaxData::execute();
-        mKeywords.insert(int(kind), new DictList(list));
-        break;
-    case SyntaxKind::ExecuteToolKey:
-        mSubKinds << SyntaxKind::ExecuteToolKey << SyntaxKind::ExecuteBody;
-        list << QPair<QString, QString>("checkErrorLevel", "Check errorLevel automatically after executing tool");
-        mKeywords.insert(int(kind), new DictList(list));
-        break;
     case SyntaxKind::SolveKey:
         mSubKinds << SyntaxKind::SolveKey << SyntaxKind::SolveBody;
         list << SyntaxData::extendableKey();
@@ -435,13 +439,6 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
     int start = index;
     while (isWhitechar(line, start))
         ++start;
-    if (entryKind == SyntaxKind::ExecuteKey || entryKind == SyntaxKind::ExecuteToolKey) {
-        if (start < line.length() && line.at(start) == '.')
-            ++start;
-        while (isWhitechar(line, start))
-            ++start;
-        if (start == index) return SyntaxBlock(this);
-    }
     if (start >= line.length()) return SyntaxBlock(this);
     int end = -1;
     int iKey;
@@ -461,14 +458,6 @@ SyntaxBlock SyntaxSubsetKey::find(const SyntaxKind entryKind, SyntaxState state,
 
 SyntaxBlock SyntaxSubsetKey::validTail(const QString &line, int index, SyntaxState state, bool &hasContent)
 {
-    if (kind() == SyntaxKind::ExecuteKey || kind() == SyntaxKind::ExecuteToolKey) {
-        hasContent = false;
-        int end = index;
-        while (isWhitechar(line, end)) end++;
-        if (end < line.length() && line.at(end) == '.') ++end;
-        while (isWhitechar(line, end)) end++;
-        return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
-    }
     return SyntaxKeywordBase::validTail(line, index, state, hasContent);
 }
 

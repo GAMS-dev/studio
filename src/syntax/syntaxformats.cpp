@@ -144,6 +144,7 @@ SyntaxStandard::SyntaxStandard(SharedSyntaxData *sharedData) : SyntaxAbstract(Sy
               << SyntaxKind::Execute
               << SyntaxKind::Put
               << SyntaxKind::Reserved
+              << SyntaxKind::Abort
               << SyntaxKind::Embedded
               << SyntaxKind::Formula;
 }
@@ -491,10 +492,10 @@ SyntaxFormula::SyntaxFormula(SyntaxKind kind, SharedSyntaxData *sharedData) : Sy
     sharedData->addFormula(this);
     mSubKinds << SyntaxKind::Embedded << SyntaxKind::Semicolon
               << SyntaxKind::CommentLine << SyntaxKind::CommentEndline << SyntaxKind::CommentInline
-              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::ExecuteTool << SyntaxKind::Execute
-              << SyntaxKind::Put << SyntaxKind::Reserved << SyntaxKind::Dco << SyntaxKind::Assignment
-              << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType << SyntaxKind::DeclarationVariableType
-              << SyntaxKind::String;
+              << SyntaxKind::Solve << SyntaxKind::Option << SyntaxKind::Abort << SyntaxKind::ExecuteTool
+              << SyntaxKind::Execute << SyntaxKind::Put << SyntaxKind::Reserved << SyntaxKind::Dco
+              << SyntaxKind::Assignment << SyntaxKind::Declaration << SyntaxKind::DeclarationSetType
+              << SyntaxKind::DeclarationVariableType << SyntaxKind::String;
 
     switch (kind) {
     case SyntaxKind::Formula:
@@ -526,8 +527,8 @@ SyntaxBlock SyntaxFormula::find(const SyntaxKind entryKind, SyntaxState state, c
     if (start >= line.length()) return SyntaxBlock(this);
     int prev = 0;
 
-    if (kind() == SyntaxKind::ExecuteBody) {
-        if (entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) {
+    if (kind() == SyntaxKind::ExecuteBody || state.flavor & flavorAbortCmd) {
+        if (entryKind == SyntaxKind::Abort || entryKind == SyntaxKind::Execute || entryKind == SyntaxKind::ExecuteTool) {
             if (!(state.flavor % 2) && start < line.length() && line.at(start) == '.')
                 state.flavor += 1;
         } else if (state.flavor % 2)

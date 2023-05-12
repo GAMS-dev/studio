@@ -60,11 +60,11 @@ void TestCheckForUpdateWrapper::testCheckForUpdate()
     QVERIFY(!c4uWrapper.checkForUpdate().isEmpty());
 }
 
-void TestCheckForUpdateWrapper::testcheckForUpdateShort()
+void TestCheckForUpdateWrapper::testCheckForUpdateShort()
 {
     CheckForUpdateWrapper c4uWrapper;
     if (c4uWrapper.isValid()) {
-        if (c4uWrapper.usingLatestGams() && !isBeta(c4uWrapper)) {
+        if (c4uWrapper.usingLatestGams()) {
             QVERIFY(c4uWrapper.checkForUpdateShort().isEmpty());
         } else {
             QVERIFY(!c4uWrapper.checkForUpdateShort().isEmpty());
@@ -84,7 +84,7 @@ void TestCheckForUpdateWrapper::testCurrentDistribVersionShort()
 {
     CheckForUpdateWrapper c4uWrapper;
     QString result = c4uWrapper.currentDistribVersionShort();
-    QRegularExpression regexp("^\\d+\\.\\d$");
+    static QRegularExpression regexp("^\\d+\\.\\d$");
     QVERIFY(regexp.match(result).hasMatch());
 }
 
@@ -100,7 +100,7 @@ void TestCheckForUpdateWrapper::testLastDistribVersionShort()
     c4uWrapper.checkForUpdate(); // call to fill str below
     QString result = c4uWrapper.lastDistribVersionShort();
     qDebug() << result;
-    QRegularExpression regexp("^\\d+\\.\\d$");
+    static QRegularExpression regexp("^\\d+\\.\\d$");
     QVERIFY(regexp.match(result).hasMatch());
 }
 
@@ -124,23 +124,8 @@ void TestCheckForUpdateWrapper::testStudioVersion()
 void TestCheckForUpdateWrapper::testDistribVersionString()
 {
     auto version = CheckForUpdateWrapper::distribVersionString();
-    QRegularExpression regexp("^\\d+\\.\\d\\.\\d\\s?[\\w\\W]*$");
+    static QRegularExpression regexp("^\\d+\\.\\d\\.\\d\\s?[\\w\\W]*$");
     QVERIFY(regexp.match(version).hasMatch());
-}
-
-bool TestCheckForUpdateWrapper::isBeta(CheckForUpdateWrapper& c4uWrapper)
-{
-    int current = 0;
-    auto target = GAMS_DISTRIB_MAJOR;
-    auto versions = c4uWrapper.currentDistribVersionShort().split('.');
-    if (versions.count() != 0) {
-        bool ok;
-        current = versions.first().toInt(&ok);
-        if (!ok) return false;
-    } else {
-        return false;
-    }
-    return current < target ? true : false;
 }
 
 QTEST_MAIN(TestCheckForUpdateWrapper)

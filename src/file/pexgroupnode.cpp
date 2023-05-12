@@ -836,36 +836,38 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
         if (match.hasMatch()) value = value.remove(match.capturedStart(1), match.capturedLength(1));
 
         // set parameters
-        if (item.optionId == opt->getOrdinalNumber("output")) {
-            mParameterHash.remove("lst"); // remove default
-            if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
-                        || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
-            setParameter("lst", cleanPath(path, value));
+        if (item.optionId != -1) {
+            if (item.optionId == opt->getOrdinalNumber("output")) {
+                mParameterHash.remove("lst"); // remove default
+                if (!(QString::compare(value, "nul", Qt::CaseInsensitive) == 0
+                      || QString::compare(value, "/dev/null", Qt::CaseInsensitive) == 0))
+                    setParameter("lst", cleanPath(path, value));
 
-        } else if (item.optionId == opt->getOrdinalNumber("GDX")) {
-            if (value == "default") value = "\"" + filestem + ".gdx\"";
-            setParameter("gdx", cleanPath(path, value));
+            } else if (item.optionId == opt->getOrdinalNumber("GDX")) {
+                if (value == "default") value = "\"" + filestem + ".gdx\"";
+                setParameter("gdx", cleanPath(path, value));
 
-        } else if (item.optionId == opt->getOrdinalNumber("Reference")) {
-            if (value == "default") value = "\"" + filestem + ".ref\"";
-            setParameter("ref", cleanPath(path, value));
+            } else if (item.optionId == opt->getOrdinalNumber("Reference")) {
+                if (value == "default") value = "\"" + filestem + ".ref\"";
+                setParameter("ref", cleanPath(path, value));
 
-        } else if (item.optionId == opt->getOrdinalNumber("pf")) {
-            if (value == "default") value = "\"" + filestem + ".pf\"";
-            setParameter("pf", cleanPath(path, value));
+            } else if (item.optionId == opt->getOrdinalNumber("ParmFile")) {
+                if (value == "default") value = "\"" + filestem + ".pf\"";
+                setParameter("pf", cleanPath(path, value));
 
-        } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
-            int lo = item.value.toInt(&ok);
-            if (ok) logOption = lo;
+            } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
+                int lo = item.value.toInt(&ok);
+                if (ok) logOption = lo;
 
-        } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
-            if (!value.endsWith(".log", FileType::fsCaseSense()))
-                value.append("." + FileType::from(FileKind::Log).defaultSuffix());
-            setLogLocation(cleanPath(path, value));
+            } else if (item.optionId == opt->getOrdinalNumber("logfile")) {
+                if (!value.endsWith(".log", FileType::fsCaseSense()))
+                    value.append("." + FileType::from(FileKind::Log).defaultSuffix());
+                setLogLocation(cleanPath(path, value));
+            }
+
+            if (defaultArgumentIdList.contains(item.optionId))
+                defaultOverride = true;
         }
-
-        if (item.optionId != -1 && defaultArgumentIdList.contains(item.optionId))
-            defaultOverride = true;
     }
 
     if (defaultOverride)

@@ -1,16 +1,25 @@
 Version 1.15.0 *
 ==================
- - in *gams configuration editor*: 
-    - move tab selection from bottom to top 
-    - fix status in definition section when editing a `Key`:   
+ - in *gams configuration editor*:
+    - move tab selection from bottom to top
+    - fix status in definition section when editing a `Key`:
        - *Step*: change value of `Key` (eg. from `Action` to `AppendExpand`) -*expect*-> in the definition section, old key deselected and new key selected (eg. `Action` deselected and `AppendExpand` definition selected and turned green)
  - in *gams configuration/parameter file/extended parameter editor*:
     - add `group` in parameter/option definition
     - list all available solvers for `Solver` parameter/option definition
     - fix the `DefValue` of all model types in parameter/option definition, eg. `CPLEX` is a default value of `LP`
  - in *solver option editor*:
-    - fix status in definition when changing a group of option:   
+    - fix status in definition when changing a group of option:
        - *Step*: change group of options -*expect*-> in the definition section, an option turned green only if it has been added and it belongs to that group
+
+Version 1.14.3
+==================
+- fixed font not immediately updating after changing it in "Settings > Editor & Log"
+- fixed false detection of 'pf' parameter
+- fixed crash in Connect Editor when opening a file containing unknown schema name
+- added 'abort' and 'abort.noError' to highlighter and completer
+- fixed connecting to GAMS Engine via HTTPS on macOS
+- fixed GAMS Engine failing when using a parameter file
 
 Version 1.14.2
 ==================

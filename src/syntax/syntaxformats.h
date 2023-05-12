@@ -84,6 +84,8 @@ enum class SyntaxKind {
     EmbeddedBody,
     EmbeddedEnd,
     Reserved,
+    Abort,
+    AbortKey,
     Solve,
     SolveBody,
     SolveKey,
@@ -121,6 +123,7 @@ enum FlavorFlag {
     flavorBindLabel = 32,
 
     flavorExecDot = 4,
+    flavorAbortCmd = 64,
 };
 
 enum DcoFlavor {
