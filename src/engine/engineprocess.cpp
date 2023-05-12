@@ -166,15 +166,6 @@ QStringList EngineProcess::remoteParameters() const
         } else if (par.startsWith("gdx=", Qt::CaseInsensitive)) {
             needsGdx = false;
             continue;
-        } else if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
-            QStringList parts = par.split("=");
-            QString fileName = parts.at(1);
-            if (fileName.startsWith("\"") && fileName.endsWith("\""))
-                fileName = fileName.mid(1, fileName.size() - 2);
-            QFileInfo fi(fileName);
-            if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
-            i.setValue(parts.at(0) + "=" + fileName);
-            continue;
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             i.remove();
             continue;
@@ -336,6 +327,7 @@ void EngineProcess::terminateLocal()
 
 void EngineProcess::setParameters(const QStringList &parameters)
 {
+    QStringList params;
     if (parameters.size()) {
         mMainFile = parameters.first();
         if (mMainFile.startsWith('"') && mMainFile.endsWith('"'))
@@ -355,10 +347,27 @@ void EngineProcess::setParameters(const QStringList &parameters)
         }
         mOutPath = QDir::toNativeSeparators(outDir.path());
         mWorkPath = QDir::toNativeSeparators(workingDirectory());
+
+        // cleanup path quotations
+        for (const QString &par : parameters) {
+            if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
+                QStringList parts = par.split("=");
+                QString fileName = parts.at(1).trimmed();
+                if (fileName.startsWith("\"") && fileName.endsWith("\""))
+                    fileName = fileName.mid(1, fileName.size() - 2);
+                QFileInfo fi(fileName);
+                if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
+                params << parts.at(0) + "=" + fileName;
+                continue;
+            }
+            params << par;
+        }
+
     } else {
         mOutPath = QString();
+        params = parameters;
     }
-    AbstractProcess::setParameters(parameters);
+    AbstractProcess::setParameters(params);
 }
 
 void EngineProcess::forcePreviousWork()
