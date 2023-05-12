@@ -146,6 +146,9 @@
        <property name="text">
         <string>&lt;</string>
        </property>
+       <property name="shortcut">
+        <string>Shift+F3</string>
+       </property>
       </widget>
      </item>
      <item>
@@ -167,6 +170,9 @@
        </property>
        <property name="text">
         <string>&gt;</string>
+       </property>
+       <property name="shortcut">
+        <string>F3</string>
        </property>
       </widget>
      </item>
