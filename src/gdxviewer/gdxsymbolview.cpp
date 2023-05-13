@@ -977,7 +977,18 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
 
     // match in header for table view only
     if (mTableView) {
-        QStringList labels = mTvModel->headerData(row, Qt::Vertical).toStringList() + mTvModel->headerData(col, Qt::Horizontal).toStringList();
+        QStringList rowLabels = mTvModel->headerData(row, Qt::Vertical).toStringList();
+        QStringList colLabels = mTvModel->headerData(col, Qt::Horizontal).toStringList();
+
+        // exclude dummy headers and level/equation attributes from search
+        if (mTvModel->needDummyRow())
+            rowLabels.pop_back();
+        if (mTvModel->needDummyColumn())
+            colLabels.pop_back();
+        if (mSym->type() == GMS_DT_EQU || mSym->type() == GMS_DT_VAR)
+            colLabels.pop_back();
+
+        QStringList labels = rowLabels + colLabels;
         for (const QString &s : labels) {
             if (mSearchRegEx.match(s).hasMatch())
                 match = true;

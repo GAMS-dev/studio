@@ -140,22 +140,25 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             painter->restore();
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
-            if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
-                pen.setColor(QColor(Qt::white));
-                QPen pen2 = pen;
-                pen2.setStyle(Qt::NoPen);
-                painter->setPen(pen2);
+            if (!sym()->needDummyRow()) {  // do not highlight search matches in dummy rows
+                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
+                    pen.setColor(QColor(Qt::white));
+                    QPen pen2 = pen;
+                    pen2.setStyle(Qt::NoPen);
+                    painter->setPen(pen2);
 
-                QBrush bgBrush = painter->background();
-                bgBrush.setColor(toColor(Theme::Edit_matchesBg));
-                painter->setBrush(bgBrush);
+                    QBrush bgBrush = painter->background();
+                    bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                    painter->setBrush(bgBrush);
 
-                QRect rect2 = opt.rect;
-                rect2.setWidth(rect2.width()-1);
-                rect2.setHeight(rect2.height()-1);
+                    QRect rect2 = opt.rect;
+                    rect2.setWidth(rect2.width()-1);
+                    rect2.setHeight(rect2.height()-1);
 
-                painter->drawRect(rect2);
+                    painter->drawRect(rect2);
+                }
             }
+
             painter->setPen(pen);
             painter->drawText(opt.rect.left(), fontVerticalOffset, text);
             if (dimIdxEnd>-1) {
@@ -194,22 +197,27 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             painter->restore();
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
-            if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
-                pen.setColor(QColor(Qt::white));
-                QPen pen2 = pen;
-                pen2.setStyle(Qt::NoPen);
-                painter->setPen(pen2);
 
-                QBrush bgBrush = painter->background();
-                bgBrush.setColor(toColor(Theme::Edit_matchesBg));
-                painter->setBrush(bgBrush);
+            // do not highlight search matches in dummy columns or var/equ attributes (e.g. level, marginal, ...)
+            if (!sym()->needDummyColumn() && sym()->type() != GMS_DT_VAR && sym()->type() != GMS_DT_EQU || i<dim()-1) {
+                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
+                    pen.setColor(QColor(Qt::white));
+                    QPen pen2 = pen;
+                    pen2.setStyle(Qt::NoPen);
+                    painter->setPen(pen2);
 
-                QRect rect2 = opt.rect;
-                rect2.setWidth(rect2.width()-1);
-                rect2.setHeight(rect2.height()-1);
+                    QBrush bgBrush = painter->background();
+                    bgBrush.setColor(toColor(Theme::Edit_matchesBg));
+                    painter->setBrush(bgBrush);
 
-                painter->drawRect(rect2);
+                    QRect rect2 = opt.rect;
+                    rect2.setWidth(rect2.width()-1);
+                    rect2.setHeight(rect2.height()-1);
+
+                    painter->drawRect(rect2);
+                }
             }
+
             painter->setPen(pen);
             painter->drawText(opt.rect.left()+4, opt.rect.top()+fontMetrics().height()*4/5+4, text);
             painter->save();
