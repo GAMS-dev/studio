@@ -94,6 +94,7 @@ public:
     void moveLines(bool moveLinesUp);
     void trimtrailing();
     void trimleading();
+    void eoltospace();
     void trimleadingandtrailing();
     void trailingtrimmermaster(int blocknums[], QTextCursor cursor);
     void leadingtrimmermaster(int blocknums[], QTextCursor cursor);

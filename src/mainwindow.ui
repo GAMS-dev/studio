@@ -188,6 +188,7 @@
       <addaction name="actionTrim_Trailing_Spaces"/>
       <addaction name="actionTrim_Leading_Space"/>
       <addaction name="actionTrim_Leading_and_Trailing_Spaces"/>
+      <addaction name="actionEOL_to_Space"/>
      </widget>
      <addaction name="actionSet_to_Uppercase"/>
      <addaction name="actionSet_to_Lowercase"/>
@@ -1621,6 +1622,11 @@
   <action name="actionTrim_Leading_and_Trailing_Spaces">
    <property name="text">
     <string>Trim Leading and Trailing Spaces</string>
+   </property>
+  </action>
+  <action name="actionEOL_to_Space">
+   <property name="text">
+    <string>EOL to Space</string>
    </property>
   </action>
  </widget>

@@ -21,6 +21,7 @@
 #include <QPalette>
 #include <QDir>
 #include <QMimeData>
+#include <regex>
 
 #include "editors/codeedit.h"
 #include "codecompleter.h"
@@ -2974,6 +2975,20 @@ QTextCursor CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
     return cursor;
 }
 
+void CodeEdit::eoltospace()
+{
+    QTextCursor cursor= textCursor();
+    int blocknums[2];
+    trimhelper(cursor,blocknums);
+    for(int i=blocknums[0];i<=blocknums[1];i++)
+    {
+        QString line=cursor.block().text();
+        cursor.select(QTextCursor::BlockUnderCursor);
+        cursor.removeSelectedText();
+        cursor.insertText(line);
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+}
 
 } // namespace studio
 } // namespace gams

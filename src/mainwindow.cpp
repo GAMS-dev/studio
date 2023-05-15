@@ -5965,5 +5965,13 @@ void MainWindow::on_actionTrim_Leading_and_Trailing_Spaces_triggered()
 }
 
 
+void MainWindow::on_actionEOL_to_Space_triggered()
+{
+    CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce -> eoltospace();
+}
+
+
 }
 }

@@ -440,6 +440,8 @@ private slots:
 
     void on_actionTrim_Leading_and_Trailing_Spaces_triggered();
 
+    void on_actionEOL_to_Space_triggered();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
