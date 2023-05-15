@@ -2855,50 +2855,70 @@ void CodeEdit::moveLines(bool moveLinesUp)
 
 void CodeEdit::trimtrailing()
 {
-    QTextCursor c= textCursor();
-    QTextCursor s= textCursor();
-    int lastblock=c.blockNumber();
-    int firstblock=c.anchor();
-    s.setPosition(firstblock);
-    firstblock=s.blockNumber();
-    if(!c.hasSelection()){
-        lastblock=blockCount();
-        firstblock=0;
-        c.movePosition(QTextCursor::Start);
-        c.movePosition(QTextCursor::EndOfLine);
-    }
-    if(firstblock>lastblock){
-        int temp=firstblock;
-        firstblock=lastblock;
-        lastblock=temp;
-    }
-    while(c.blockNumber()!=firstblock){
-        if(c.blockNumber()<firstblock) c.movePosition(QTextCursor::Down);
-        if(c.blockNumber()>firstblock) c.movePosition(QTextCursor::Up);
-    }
-    c.movePosition(QTextCursor::EndOfLine);
-    qDebug() << c.selectedText() << " - "<< firstblock << "-" << lastblock << " - "<<c.blockNumber();
-    for(int i=firstblock;i<=lastblock;i++){
-        if(c.block().text().size()>0){
-            if(c.block().text().endsWith(' ') || c.block().text().endsWith('\t')){
-                c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-                while(c.positionInBlock()>0){
-                    QChar x=c.block().text().at(c.positionInBlock());
-                    if(x==' ' || x == '\t' ){
-                        c.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+    QTextCursor cursor= textCursor();
+    //Array for the numbers of block in selected text.
+    int blocknums[2];
+
+    trimhelper(cursor, blocknums);
+
+    cursor.movePosition(QTextCursor::EndOfLine);
+    qDebug() << blocknums[0] << " - " << blocknums[1];
+    for(int i=blocknums[0];i<=blocknums[1];i++){
+        //Check if there is text on line.
+        if(cursor.block().text().size()>0){
+            //Check if the text ends with tab or space.
+            QString textatline=cursor.block().text();
+            if(textatline.endsWith(' ') || textatline.endsWith('\t')){
+                cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+                while(cursor.positionInBlock()>0){
+                    QChar currentchar = textatline.at(cursor.positionInBlock());
+                    if(currentchar == ' ' || currentchar == '\t' ){
+                        cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
                     }
                     else{
-                        c.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+                        cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
                         break;
                     }
                 }
-                c.removeSelectedText();
+                cursor.removeSelectedText();
             }
         }
-        c.movePosition(QTextCursor::NextBlock);
-        c.movePosition(QTextCursor::EndOfLine);
+        cursor.movePosition(QTextCursor::NextBlock);
+        cursor.movePosition(QTextCursor::EndOfLine);
+    }
+
+}
+
+void CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
+{//Function to find the selected area and get the cursors ready for trimming operation.
+    QTextCursor anchor= textCursor();
+
+    if(!cursor.hasSelection()){
+        blocknums[1]=blockCount();
+        blocknums[0]=0;
+        cursor.movePosition(QTextCursor::Start);
+    }
+    else{
+        int lastblock=cursor.blockNumber();
+        int tempanchorcoords=cursor.anchor();
+        anchor.setPosition(tempanchorcoords);
+        int firstblock=anchor.blockNumber();
+        qDebug() << firstblock;
+        if(firstblock>lastblock){
+            blocknums[0]=std::min(firstblock,lastblock);
+            blocknums[1]=std::max(firstblock,lastblock);
+        }
+        else {
+            blocknums[0]=firstblock;
+            blocknums[1]=lastblock;
+        }
+        while(cursor.blockNumber()!=blocknums[1]){
+            if(cursor.blockNumber()<blocknums[1]) cursor.movePosition(QTextCursor::Down);
+            if(cursor.blockNumber()>blocknums[1]) cursor.movePosition(QTextCursor::Up);
+        }
     }
 }
+
 
 } // namespace studio
 } // namespace gams
