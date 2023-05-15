@@ -186,6 +186,8 @@
        <string>Blank Operations</string>
       </property>
       <addaction name="actionTrim_Trailing_Spaces"/>
+      <addaction name="actionTrim_Leading_Space"/>
+      <addaction name="actionTrim_Leading_and_Trailing_Spaces"/>
      </widget>
      <addaction name="actionSet_to_Uppercase"/>
      <addaction name="actionSet_to_Lowercase"/>
@@ -1609,6 +1611,16 @@
   <action name="actionTrim_Trailing_Spaces">
    <property name="text">
     <string>Trim Trailing Spaces</string>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_Space">
+   <property name="text">
+    <string>Trim Leading Spaces</string>
+   </property>
+  </action>
+  <action name="actionTrim_Leading_and_Trailing_Spaces">
+   <property name="text">
+    <string>Trim Leading and Trailing Spaces</string>
    </property>
   </action>
  </widget>

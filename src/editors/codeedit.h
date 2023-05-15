@@ -93,7 +93,12 @@ public:
     void commentLine();
     void moveLines(bool moveLinesUp);
     void trimtrailing();
-    void trimhelper(QTextCursor cursor, int blocknums[]);
+    void trimleading();
+    void trimleadingandtrailing();
+    void trailingtrimmermaster(int blocknums[], QTextCursor cursor);
+    void leadingtrimmermaster(int blocknums[], QTextCursor cursor);
+    void fulltrimmermaster(int blocknums[], QTextCursor cursor);
+    QTextCursor trimhelper(QTextCursor cursor, int blocknums[]);
     int minIndentCount(int fromLine = -1, int toLine = -1);
     void wordInfo(QTextCursor cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);

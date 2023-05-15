@@ -5949,5 +5949,21 @@ void MainWindow::on_actionTrim_Trailing_Spaces_triggered()
 }
 
 
+void MainWindow::on_actionTrim_Leading_Space_triggered()
+{
+    CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce -> trimleading();
+}
+
+
+void MainWindow::on_actionTrim_Leading_and_Trailing_Spaces_triggered()
+{
+    CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce -> trimleadingandtrailing();
+}
+
+
 }
 }

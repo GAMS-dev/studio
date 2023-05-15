@@ -2856,40 +2856,93 @@ void CodeEdit::moveLines(bool moveLinesUp)
 void CodeEdit::trimtrailing()
 {
     QTextCursor cursor= textCursor();
-    //Array for the numbers of block in selected text.
-    int blocknums[2];
-
-    trimhelper(cursor, blocknums);
-
-    cursor.movePosition(QTextCursor::EndOfLine);
-    qDebug() << blocknums[0] << " - " << blocknums[1];
-    for(int i=blocknums[0];i<=blocknums[1];i++){
-        //Check if there is text on line.
-        if(cursor.block().text().size()>0){
-            //Check if the text ends with tab or space.
-            QString textatline=cursor.block().text();
-            if(textatline.endsWith(' ') || textatline.endsWith('\t')){
-                cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-                while(cursor.positionInBlock()>0){
-                    QChar currentchar = textatline.at(cursor.positionInBlock());
-                    if(currentchar == ' ' || currentchar == '\t' ){
-                        cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
-                    }
-                    else{
-                        cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
-                        break;
-                    }
-                }
-                cursor.removeSelectedText();
-            }
-        }
+    int blocknums[2]; //Array for the numbers of block in selected text.
+    cursor=trimhelper(cursor, blocknums);
+    for(int i=blocknums[0];i<=blocknums[1];i++)
+    {
+        trailingtrimmermaster(blocknums,cursor);
         cursor.movePosition(QTextCursor::NextBlock);
-        cursor.movePosition(QTextCursor::EndOfLine);
     }
-
 }
 
-void CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
+void CodeEdit::trimleading()
+{
+    QTextCursor cursor= textCursor();
+    int blocknums[2];//Array for the numbers of block in selected text.
+    cursor=trimhelper(cursor, blocknums);
+    for(int i=blocknums[0];i<=blocknums[1];i++)
+    {
+        leadingtrimmermaster(blocknums,cursor);
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+}
+
+void CodeEdit::trimleadingandtrailing()
+{
+    QTextCursor cursor= textCursor();
+    int blocknums[2];//Array for the numbers of block in selected text.
+    cursor=trimhelper(cursor, blocknums);
+    fulltrimmermaster(blocknums,cursor);
+}
+
+void CodeEdit::trailingtrimmermaster(int blocknums[], QTextCursor cursor)
+{
+    //Check if there is text on line.
+    if(cursor.block().text().size()>0){
+        //Check if the text ends with tab or space.
+        QString textatline=cursor.block().text();
+        if(textatline.endsWith(' ') || textatline.endsWith('\t')){
+            cursor.movePosition(QTextCursor::EndOfLine);
+            cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+            while(cursor.positionInBlock()>=0){
+                QChar currentchar = textatline.at(cursor.positionInBlock());
+                if(currentchar == ' ' || currentchar == '\t' ){
+                    cursor.movePosition(QTextCursor::Left, QTextCursor::KeepAnchor);
+                }
+                else{
+                    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+                    break;
+                }
+            }
+            cursor.removeSelectedText();
+        }
+    }
+}
+
+void CodeEdit::leadingtrimmermaster(int blocknums[], QTextCursor cursor)
+{
+    //Check if there is text on line.
+    if(cursor.block().text().size()>0){
+        //Check if the text ends with tab or space.
+        QString textatline=cursor.block().text();
+        if(textatline.startsWith(' ') || textatline.startsWith('\t')){
+            cursor.movePosition(QTextCursor::StartOfBlock);
+            while(cursor.positionInBlock()<textatline.length()){
+                QChar currentchar = textatline.at(cursor.positionInBlock());
+                if(currentchar == ' ' || currentchar == '\t' ){
+                    cursor.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor);
+                }
+                else{
+                    break;
+                }
+            }
+            cursor.removeSelectedText();
+        }
+    }
+    cursor.movePosition(QTextCursor::NextBlock);
+}
+
+void CodeEdit::fulltrimmermaster(int blocknums[], QTextCursor cursor)
+{
+    for(int i=blocknums[0];i<=blocknums[1];i++)
+    {
+        leadingtrimmermaster(blocknums,cursor);
+        trailingtrimmermaster(blocknums,cursor);
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+}
+
+QTextCursor CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
 {//Function to find the selected area and get the cursors ready for trimming operation.
     QTextCursor anchor= textCursor();
 
@@ -2917,6 +2970,8 @@ void CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
             if(cursor.blockNumber()>blocknums[1]) cursor.movePosition(QTextCursor::Up);
         }
     }
+
+    return cursor;
 }
 
 
