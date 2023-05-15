@@ -95,6 +95,7 @@ public:
     void trimtrailing();
     void trimleading();
     void eoltospace();
+    void tabtospace();
     void trimleadingandtrailing();
     void trailingtrimmermaster(int blocknums[], QTextCursor cursor);
     void leadingtrimmermaster(int blocknums[], QTextCursor cursor);

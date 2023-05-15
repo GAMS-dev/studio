@@ -442,6 +442,8 @@ private slots:
 
     void on_actionEOL_to_Space_triggered();
 
+    void on_actionTab_to_Space_triggered();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();

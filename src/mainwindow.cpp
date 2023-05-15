@@ -5973,5 +5973,13 @@ void MainWindow::on_actionEOL_to_Space_triggered()
 }
 
 
+void MainWindow::on_actionTab_to_Space_triggered()
+{
+    CodeEdit *ce = ViewHelper::toCodeEdit(focusWidget());
+    if (!ce || ce->isReadOnly()) return;
+    ce -> tabtospace();
+}
+
+
 }
 }

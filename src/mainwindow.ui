@@ -189,6 +189,7 @@
       <addaction name="actionTrim_Leading_Space"/>
       <addaction name="actionTrim_Leading_and_Trailing_Spaces"/>
       <addaction name="actionEOL_to_Space"/>
+      <addaction name="actionTab_to_Space"/>
      </widget>
      <addaction name="actionSet_to_Uppercase"/>
      <addaction name="actionSet_to_Lowercase"/>
@@ -1627,6 +1628,11 @@
   <action name="actionEOL_to_Space">
    <property name="text">
     <string>EOL to Space</string>
+   </property>
+  </action>
+  <action name="actionTab_to_Space">
+   <property name="text">
+    <string>Tab to Space</string>
    </property>
   </action>
  </widget>

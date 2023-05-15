@@ -2966,9 +2966,9 @@ QTextCursor CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
             blocknums[0]=firstblock;
             blocknums[1]=lastblock;
         }
-        while(cursor.blockNumber()!=blocknums[1]){
-            if(cursor.blockNumber()<blocknums[1]) cursor.movePosition(QTextCursor::Down);
-            if(cursor.blockNumber()>blocknums[1]) cursor.movePosition(QTextCursor::Up);
+        while(cursor.blockNumber()!=blocknums[0]){
+            if(cursor.blockNumber()<blocknums[0]) cursor.movePosition(QTextCursor::Down);
+            if(cursor.blockNumber()>blocknums[0]) cursor.movePosition(QTextCursor::Up);
         }
     }
 
@@ -2977,13 +2977,31 @@ QTextCursor CodeEdit::trimhelper(QTextCursor cursor, int blocknums[])
 
 void CodeEdit::eoltospace()
 {
+    //Because QString defines /n as ? , I have instead took the line and paste it back. That changed the /n to null.
     QTextCursor cursor= textCursor();
     int blocknums[2];
-    trimhelper(cursor,blocknums);
+    cursor=trimhelper(cursor,blocknums);
     for(int i=blocknums[0];i<=blocknums[1];i++)
     {
         QString line=cursor.block().text();
         cursor.select(QTextCursor::BlockUnderCursor);
+        cursor.removeSelectedText();
+        cursor.insertText(line);
+        cursor.movePosition(QTextCursor::NextBlock);
+    }
+}
+
+void CodeEdit::tabtospace()
+{
+    QTextCursor cursor= textCursor();
+    int blocknums[2];
+    cursor=trimhelper(cursor,blocknums);
+    for(int i=blocknums[0];i<=blocknums[1];i++)
+    {
+        QString line=cursor.block().text();
+        //For some reason Gams Studio turns tab into 3 consecutive spaces. That is the reason I used "   ".
+        line.replace("   "," ");
+        cursor.select(QTextCursor::LineUnderCursor);
         cursor.removeSelectedText();
         cursor.insertText(line);
         cursor.movePosition(QTextCursor::NextBlock);
