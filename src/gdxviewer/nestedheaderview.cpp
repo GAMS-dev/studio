@@ -126,8 +126,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             int rowWidth = sectionWidth.at(i);
 
             QString text;
-            if (labelPrevSection[i] != labelCurSection[i])
+            QString textSearch;
+            if (labelPrevSection[i] != labelCurSection[i]) {
                 text = " "+labelCurSection[i];
+                textSearch = labelCurSection[i];
+            }
             opt.rect.setLeft(opt.rect.left()+ lastRowWidth);
             lastRowWidth = rowWidth;
             opt.rect.setWidth(rowWidth);
@@ -141,7 +144,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             QPen pen(painter->pen());
             pen.setColor(palette().text().color());
             if (!sym()->needDummyRow()) {  // do not highlight search matches in dummy rows
-                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
+                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(textSearch).hasMatch()) {
                     pen.setColor(QColor(Qt::white));
                     QPen pen2 = pen;
                     pen2.setStyle(Qt::NoPen);
