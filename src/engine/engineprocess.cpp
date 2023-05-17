@@ -140,6 +140,17 @@ QStringList EngineProcess::compileParameters() const
         } else if (par.startsWith("action=", Qt::CaseInsensitive) || par.startsWith("a=", Qt::CaseInsensitive)) {
             needsActC = false;
             i.setValue("action=c");
+#ifndef _WIN32
+        } else if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
+            QStringList parts = par.split("=");
+            QString fileName = parts.at(1).trimmed();
+            if (fileName.startsWith("\"") && fileName.endsWith("\""))
+                fileName = fileName.remove("\"");
+            QFileInfo fi(fileName);
+            if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
+            i.setValue(parts.at(0) + "=" + fileName);
+            continue;
+#endif
         } else if (par.startsWith("previousWork=", Qt::CaseInsensitive)) {
             needsPw = false;
             continue;
@@ -171,6 +182,15 @@ QStringList EngineProcess::remoteParameters() const
             continue;
         } else if (par.startsWith("reference=", Qt::CaseInsensitive) || par.startsWith("rf=", Qt::CaseInsensitive)) {
             i.remove();
+            continue;
+        } else if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
+            QStringList parts = par.split("=");
+            QString fileName = parts.at(1).trimmed();
+            if (fileName.startsWith("\"") && fileName.endsWith("\""))
+                fileName = fileName.remove("\"");
+            QFileInfo fi(fileName);
+            if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
+            i.setValue(parts.at(0) + "=" + fileName);
             continue;
         } else if (par.startsWith("xsave=", Qt::CaseInsensitive) || par.startsWith("xs=", Qt::CaseInsensitive)) {
             i.remove();
@@ -327,7 +347,6 @@ void EngineProcess::terminateLocal()
 
 void EngineProcess::setParameters(const QStringList &parameters)
 {
-    QStringList params;
     if (parameters.size()) {
         mMainFile = parameters.first();
         if (mMainFile.startsWith('"') && mMainFile.endsWith('"'))
@@ -348,26 +367,10 @@ void EngineProcess::setParameters(const QStringList &parameters)
         mOutPath = QDir::toNativeSeparators(outDir.path());
         mWorkPath = QDir::toNativeSeparators(workingDirectory());
 
-        // cleanup path quotations
-        for (const QString &par : parameters) {
-            if (par.startsWith("parmFile=", Qt::CaseInsensitive) || par.startsWith("pf=", Qt::CaseInsensitive)) {
-                QStringList parts = par.split("=");
-                QString fileName = parts.at(1).trimmed();
-                if (fileName.startsWith("\"") && fileName.endsWith("\""))
-                    fileName = fileName.mid(1, fileName.size() - 2);
-                QFileInfo fi(fileName);
-                if (fi.isAbsolute()) fileName = QDir(mWorkPath).relativeFilePath(fileName);
-                params << parts.at(0) + "=" + fileName;
-                continue;
-            }
-            params << par;
-        }
-
     } else {
         mOutPath = QString();
-        params = parameters;
     }
-    AbstractProcess::setParameters(params);
+    AbstractProcess::setParameters(parameters);
 }
 
 void EngineProcess::forcePreviousWork()
@@ -838,8 +841,12 @@ void EngineProcess::startPacking()
             if (pfSplit.size() != 2) continue;
             QFileInfo pf(pfSplit.at(1));
             file.setFileName(mWorkPath + '/' + pf.filePath());
-            if (!file.copy(mOutPath + '/' + pf.filePath())) {
-                emit newStdChannelData("\n*** Can't move file to subdirectory: "+file.fileName().toUtf8()+'\n');
+            QFileInfo dest(mOutPath + '/' + pf.filePath());
+            QDir destDir(dest.path());
+            if (!destDir.exists())
+                destDir.mkpath(".");
+            if (!file.copy(dest.filePath())) {
+                emit newStdChannelData("\n*** Can't copy file to subdirectory: "+file.fileName().toUtf8()+'\n');
                 completed(-1);
                 return;
             }
