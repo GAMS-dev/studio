@@ -181,9 +181,11 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
                 state |= QStyle::State_Active;
 
             QString text;
-
-            if (labelPrevSection[i] != labelCurSection[i])
-                text = labelCurSection[i];
+            QString textSearch;
+            if (labelPrevSection[i] != labelCurSection[i]) {
+                text = " " + labelCurSection[i];
+                textSearch = labelCurSection[i];
+            }
             else
                 text = "";
             opt.text = "";
@@ -203,7 +205,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
 
             // do not highlight search matches in dummy columns or var/equ attributes (e.g. level, marginal, ...)
             if (!sym()->needDummyColumn() && sym()->type() != GMS_DT_VAR && sym()->type() != GMS_DT_EQU || i<dim()-1) {
-                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(text).hasMatch()) {
+                if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(textSearch).hasMatch()) {
                     pen.setColor(QColor(Qt::white));
                     QPen pen2 = pen;
                     pen2.setStyle(Qt::NoPen);
@@ -222,7 +224,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             }
 
             painter->setPen(pen);
-            painter->drawText(opt.rect.left()+4, opt.rect.top()+fontMetrics().height()*4/5+4, text);
+            painter->drawText(opt.rect.left(), opt.rect.top()+fontMetrics().height()*4/5+4, text);
             painter->save();
 
             if (dimIdxEnd == i) {
