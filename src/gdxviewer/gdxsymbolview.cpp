@@ -1,4 +1,4 @@
-/*
+﻿/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
@@ -161,8 +161,8 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     connect(ui->pbResetSortFilter, &QPushButton::clicked, this, &GdxSymbolView::resetSortFilter);
     connect(ui->pbToggleView, &QPushButton::clicked, this, &GdxSymbolView::toggleView);
 
-    connect(ui->pbSearchPrev, &QPushButton::clicked, this, &GdxSymbolView::on_search_prev);
-    connect(ui->pbSearchForw, &QPushButton::clicked, this, &GdxSymbolView::on_search_forw);
+    connect(ui->pbSearchPrev, &QPushButton::clicked, this, [this](){ onSearch(true); });
+    connect(ui->pbSearchForw, &QPushButton::clicked, this, [this](){ onSearch(); });
 
     connect(ui->lineEdit, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &regExp) {
         mSearchRegEx = regExp;
@@ -964,12 +964,6 @@ void GdxSymbolView::enableControls()
 
 bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
     bool match = false;
-    if (tv->isColumnHidden(col))
-        return false;
-
-    // handle reordered columns in list view
-    if (!mTableView)
-        col = ui->tvListView->horizontalHeader()->logicalIndex(col);
 
     // match in data for list view and table view
     if (mSearchRegEx.match(tv->model()->index(row, col).data().toString()).hasMatch())
@@ -994,79 +988,76 @@ bool GdxSymbolView::matchAndSelect(int row, int col, QTableView *tv) {
                 match = true;
         }
     }
+
     if (match)
         tv->selectionModel()->setCurrentIndex(tv->model()->index(row, col), QItemSelectionModel::SelectCurrent);
-
     return match;
 }
 
-void GdxSymbolView::on_search_prev()
+void GdxSymbolView::onSearch(bool backward)
 {
     if (mSearchRegEx.pattern().isEmpty())
         return;
 
     QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
-    QModelIndex idx = tv->currentIndex();
-    int row = idx.row();
-    int col = idx.column();
-
-    if (!mTableView)  // handle reordered columns in list view
-        col = ui->tvListView->horizontalHeader()->visualIndex(col);
-
-    if (!idx.isValid()) {
-        col = tv->model()->columnCount();
-        row = tv->model()->rowCount()-1;
-    }
-
-    while (true) {
-        col--;
-        // min column reached
-        if (col < 0) {
-            col = tv->model()->columnCount()-1;
-            row--;
-        }
-        // min row reached
-        if (row < 0) {
-            tv->setCurrentIndex(QModelIndex());
-            return;
-        }
-        if (matchAndSelect(row, col, tv))
-            return;
-    }
-}
-
-
-void GdxSymbolView::on_search_forw()
-{
-    if (mSearchRegEx.pattern().isEmpty())
+    if (tv->model()->rowCount() == 0)
         return;
-
-    QTableView *tv = mTableView ? ui->tvTableView : ui->tvListView;
     QModelIndex idx = tv->currentIndex();
-    int row = idx.row();
-    int col = idx.column();
 
-    if (!mTableView)  // handle reordered columns in list view
-        col = ui->tvListView->horizontalHeader()->visualIndex(col);
-
-    if (!idx.isValid()) {
-        col = -1;
-        row = 0;
+    QMap<int, int> vToL;  // visual index -> logical index
+    for (int i=0; i<tv->model()->columnCount(); i++) {
+        if (!tv->horizontalHeader()->isSectionHidden(i))
+            vToL.insert(tv->horizontalHeader()->visualIndex(i), i);
     }
 
-    while (true) {
-        col++;
-        // max column reached
-        if (col >= tv->model()->columnCount()) {
-            col = 0;
-            row++;
+    int row = idx.row();
+    int visualCol = tv->horizontalHeader()->visualIndex(idx.column());
+    if (!idx.isValid()) {
+        if (backward) {
+            row = tv->model()->rowCount()-1;
+            visualCol = vToL.firstKey();
+        } else {
+            row = -1;
+            visualCol = vToL.lastKey();
         }
-        // max row reached
-        if (row >= tv->model()->rowCount()) {
-            tv->setCurrentIndex(QModelIndex());
+    }
+    int startRow = -1;
+    int startCol = -1;
+    bool first = true;
+    while (true) {
+        auto iter = vToL.find(visualCol);
+        if (backward) {
+            --iter;
+            if (iter == vToL.begin() - 1) {
+                iter = vToL.end()-1;
+                row--;
+            }
+        } else {
+            ++iter;
+            if (iter == vToL.end()) {
+                iter = vToL.begin();
+                row++;
+            }
+        }
+        visualCol = iter.key();
+        if (backward) {
+            if (row < 0)
+                row = tv->model()->rowCount()-1;
+        } else {
+            if (row >= tv->model()->rowCount())
+                row = 0;
+        }
+        if (startRow == row && startCol == visualCol) {
+            if (idx.isValid())  // restore previous selection if any
+                tv->selectionModel()->setCurrentIndex(idx, QItemSelectionModel::SelectCurrent);
             return;
         }
-        if (matchAndSelect(row, col, tv))
+        if (first) {
+            startRow = row;
+            startCol = visualCol;
+            first = false;
+        }
+        if (matchAndSelect(row, vToL[visualCol], tv))
             return;
     }
 }

@@ -93,8 +93,7 @@ private slots:
     void onResizeColumnsLV();
     void onResizeColumnsTV();
 
-    void on_search_prev();
-    void on_search_forw();
+    void onSearch(bool backward=false);
 
 private:
     Ui::GdxSymbolView *ui;
