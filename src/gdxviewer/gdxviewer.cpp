@@ -211,7 +211,13 @@ void GdxViewer::selectAllAction()
 
 void GdxViewer::selectSearchField()
 {
-    ui->lineEdit->setFocus();
+    QWidget *fw = focusWidget();
+    while (fw && fw !=ui->splitter->widget(1))
+        fw = fw->parentWidget();
+    if (fw)
+        symbolViewByName(selectedSymbol()->name())->setFocusSearchEdit();
+    else
+        ui->lineEdit->setFocus();
 }
 
 void GdxViewer::releaseFile()

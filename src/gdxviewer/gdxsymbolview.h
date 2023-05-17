@@ -70,6 +70,7 @@ public:
     bool isTableViewActive() const;
     TableViewModel *getTvModel() const;
     QVector<int> listViewDimOrder();
+    void setFocusSearchEdit();
 
 public slots:
     void enableControls();

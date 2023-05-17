@@ -475,6 +475,11 @@ QVector<int> GdxSymbolView::listViewDimOrder()
     return dimOrder;
 }
 
+void GdxSymbolView::setFocusSearchEdit()
+{
+    ui->lineEdit->setFocus();
+}
+
 void GdxSymbolView::showContextMenu(QPoint p)
 {
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
