@@ -115,6 +115,9 @@
      </item>
      <item>
       <widget class="gams::studio::FilterLineEdit" name="lineEdit">
+       <property name="enabled">
+        <bool>false</bool>
+       </property>
        <property name="inputMask">
         <string/>
        </property>

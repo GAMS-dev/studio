@@ -963,6 +963,7 @@ void GdxSymbolView::enableControls()
         mSqDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
     ui->tbPreferences->setEnabled(true);
+    ui->lineEdit->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
 }
