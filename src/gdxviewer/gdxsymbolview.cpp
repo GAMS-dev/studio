@@ -1,4 +1,4 @@
-﻿/*
+/*
  * This file is part of the GAMS Studio project.
  *
  * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
@@ -315,6 +315,7 @@ void GdxSymbolView::resetSortFilter()
         ui->lineEdit->setOptionState(FilterLineEdit::foExact, 0);
         ui->lineEdit->setOptionState(FilterLineEdit::foRegEx, 0);
         showDefaultView();
+        applyDefaults();
     }
 }
 
@@ -448,6 +449,24 @@ QVector<int> GdxSymbolView::listViewDimOrder()
 void GdxSymbolView::setFocusSearchEdit()
 {
     ui->lineEdit->setFocus();
+}
+
+void GdxSymbolView::applyDefaults()
+{
+    if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
+        for(int i=0; i<GMS_VAL_MAX; i++) {
+            if (i == GMS_VAL_LEVEL)
+                mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowLevel));
+            else if (i == GMS_VAL_MARGINAL)
+                mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowMarginal));
+            else if (i == GMS_VAL_LOWER)
+                mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowLower));
+            else if (i == GMS_VAL_UPPER)
+                mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowUpper));
+            else if (i == GMS_VAL_SCALE)
+                mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowScale));
+        }
+    }
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)

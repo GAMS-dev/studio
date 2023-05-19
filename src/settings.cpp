@@ -345,6 +345,11 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skGdxStates, scSys, {"gdxViewer","states"}, QJsonObject());
     safelyAdd(res, skGdxDecSepCopy, scUser, {"gdxViewer","gdxDecSepCopy"}, 0);
     safelyAdd(res, skGdxCustomDecSepCopy, scUser, {"gdxViewer","gdxCustomDecSepCopy"}, "");
+    safelyAdd(res, skGdxDefaultShowLevel, scUser, {"gdxViewer","gdxDefaultShowLevel"}, true);
+    safelyAdd(res, skGdxDefaultShowMarginal, scUser, {"gdxViewer","gdxDefaultShowMarginal"}, true);
+    safelyAdd(res, skGdxDefaultShowLower, scUser, {"gdxViewer","gdxDefaultShowLower"}, true);
+    safelyAdd(res, skGdxDefaultShowUpper, scUser, {"gdxViewer","gdxDefaultShowUpper"}, true);
+    safelyAdd(res, skGdxDefaultShowScale, scUser, {"gdxViewer","gdxDefaultShowScale"}, true);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());

@@ -128,6 +128,14 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->rb_decSepStudio, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepLocale, &QRadioButton::toggled, this, &SettingsDialog::setModified);
     connect(ui->rb_decSepCustom, &QRadioButton::toggled, this, &SettingsDialog::setModified);
+    connect(ui->cbLevel, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbMarginal, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbLower, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbUpper, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbScale, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
     gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
     gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
@@ -239,6 +247,12 @@ void SettingsDialog::loadSettings()
         default: ui->rb_decSepStudio->setChecked(true); break;
     }
     ui->le_decSepCustom->setText(mSettings->toString(skGdxCustomDecSepCopy));
+
+    ui->cbLevel->setChecked(mSettings->toBool(skGdxDefaultShowLevel));
+    ui->cbMarginal->setChecked(mSettings->toBool(skGdxDefaultShowMarginal));
+    ui->cbLower->setChecked(mSettings->toBool(skGdxDefaultShowLower));
+    ui->cbUpper->setChecked(mSettings->toBool(skGdxDefaultShowUpper));
+    ui->cbScale->setChecked(mSettings->toBool(skGdxDefaultShowScale));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -379,6 +393,12 @@ void SettingsDialog::saveSettings()
         decimalSeparator = 2;
     mSettings->setInt(skGdxDecSepCopy, decimalSeparator);
     mSettings->setString(skGdxCustomDecSepCopy, ui->le_decSepCustom->text());
+
+    mSettings->setBool(skGdxDefaultShowLevel, ui->cbLevel->isChecked());
+    mSettings->setBool(skGdxDefaultShowMarginal, ui->cbMarginal->isChecked());
+    mSettings->setBool(skGdxDefaultShowLower, ui->cbLower->isChecked());
+    mSettings->setBool(skGdxDefaultShowUpper, ui->cbUpper->isChecked());
+    mSettings->setBool(skGdxDefaultShowScale, ui->cbScale->isChecked());
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());

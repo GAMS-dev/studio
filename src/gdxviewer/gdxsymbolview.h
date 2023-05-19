@@ -72,6 +72,8 @@ public:
     QVector<int> listViewDimOrder();
     void setFocusSearchEdit();
 
+    void applyDefaults();
+
 public slots:
     void enableControls();
     void toggleSqueezeDefaults(bool checked);

@@ -113,6 +113,11 @@ enum SettingsKey {
     skGdxStates,
     skGdxDecSepCopy,
     skGdxCustomDecSepCopy,
+    skGdxDefaultShowLevel,
+    skGdxDefaultShowMarginal,
+    skGdxDefaultShowLower,
+    skGdxDefaultShowUpper,
+    skGdxDefaultShowScale,
 
     // MIRO settings page
     skMiroInstallPath,

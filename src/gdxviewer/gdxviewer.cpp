@@ -485,6 +485,9 @@ void GdxViewer::applySymbolState(GdxSymbol *sym)
             symView->applyState(symViewState);
             mState->deleteSymbolViewState(name);
         }
+    } else {
+        GdxSymbolView* symView = symbolViewByName(name);
+        symView->applyDefaults();
     }
 }
 
