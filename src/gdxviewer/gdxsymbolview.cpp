@@ -31,6 +31,7 @@
 #include "tableviewdomainmodel.h"
 #include "settings.h"
 #include "exportdialog.h"
+#include "numericalformatcontroller.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -114,26 +115,15 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     QLabel* lblValFormat = new QLabel("Format:", this);
     gridLayout->addWidget(lblValFormat,0,0);
     mValFormat = new QComboBox(this);
-    mValFormat->addItem("g-format", numerics::DoubleFormatter::g);
-    mValFormat->addItem("f-format", numerics::DoubleFormatter::f);
-    mValFormat->addItem("e-format", numerics::DoubleFormatter::e);
-    mValFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
-                          "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"
-                          "<p><span style=' font-weight:600;'>f-format:</span> Values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
-                          "<p><span style=' font-weight:600;'>e-format:</span> Values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p></body></html>");
+    NumericalFormatController::initFormatComboBox(mValFormat);
     resetValFormat();
     gridLayout->addWidget(mValFormat,0,1);
 
     QLabel* lblPrecision = new QLabel("Precision:", this);
     gridLayout->addWidget(lblPrecision,1,0);
     mPrecision = new QSpinBox(this);
-    mPrecision->setRange(1, 14);
-    mPrecision->setValue(6);
-    mPrecision->setWrapping(true);
-    mPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
-                           "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
-                           "f-format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
-                           "e-format:</span> Significat digits [1..17, Full]</p></body></html>");
+    NumericalFormatController::initPrecisionSpinBox(mPrecision);
+
     gridLayout->addWidget(mPrecision,1,1);
 
     vLayout->addItem(gridLayout);
@@ -394,33 +384,13 @@ void GdxSymbolView::moveTvFilterColumns(int from, int to)
 
 void GdxSymbolView::updateNumericalPrecision()
 {
-    QString svFull = "Full";
     if (!mSym)
         return;
-    this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
+    mRestoreSqZeroes = NumericalFormatController::update(mValFormat, mPrecision, mSqZeroes, mRestoreSqZeroes);
+
     numerics::DoubleFormatter::Format format = static_cast<numerics::DoubleFormatter::Format>(mValFormat->currentData().toInt());
     this->mSym->setNumericalFormat(format);
-    if (format == numerics::DoubleFormatter::g || format == numerics::DoubleFormatter::e) {
-        mPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);
-        mPrecision->setSpecialValueText(svFull);
-    }
-    else if (format == numerics::DoubleFormatter::f) {
-        mPrecision->setRange(0, 14);
-        mPrecision->setSpecialValueText("");
-    }
-    if (mPrecision->text() == svFull && mSqZeroes->isEnabled()) {
-        if (!mSqZeroes->isChecked())
-            mRestoreSqZeroes = true;
-        mSqZeroes->setChecked(true);
-        mSqZeroes->setEnabled(false);
-    }
-    else if (mPrecision->text() != svFull && !mSqZeroes->isEnabled()) {
-        mSqZeroes->setEnabled(true);
-        if (mRestoreSqZeroes) {
-            mSqZeroes->setChecked(false);
-            mRestoreSqZeroes = false;
-        }
-    }
+    this->mSym->setNumericalPrecision(mPrecision->value(), mSqZeroes->isChecked());
     if (mTvModel)
         ui->tvTableView->reset();
 }

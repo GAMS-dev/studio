@@ -143,6 +143,8 @@ private:
     int mEngineInitialExpire = 0;
     support::UpdateChecker *mUpdateChecker;
     QDate mLastCheckDate;
+
+    bool mRestoreSqZeroes = false;
 };
 
 }

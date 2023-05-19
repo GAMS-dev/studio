@@ -51,6 +51,7 @@ SOURCES += \
     $$SRCPATH/gdxviewer/gdxviewer.cpp \
     $$SRCPATH/gdxviewer/gdxviewerstate.cpp \
     $$SRCPATH/gdxviewer/nestedheaderview.cpp \
+    $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/quickselectlistview.cpp \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.cpp \
     $$SRCPATH/gdxviewer/tableviewmodel.cpp \
@@ -94,6 +95,7 @@ HEADERS += \
     $$SRCPATH/gdxviewer/gdxsymbolviewstate.h \
     $$SRCPATH/gdxviewer/gdxviewer.h \
     $$SRCPATH/gdxviewer/gdxviewerstate.h \
+    $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/nestedheaderview.h \
     $$SRCPATH/gdxviewer/quickselectlistview.h \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.h \

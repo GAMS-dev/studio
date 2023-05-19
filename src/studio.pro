@@ -160,6 +160,7 @@ SOURCES += \
     gdxviewer/gdxviewer.cpp \
     gdxviewer/gdxviewerstate.cpp \
     gdxviewer/nestedheaderview.cpp \
+    gdxviewer/numericalformatcontroller.cpp \
     gdxviewer/quickselectlistview.cpp \
     gdxviewer/tableviewdomainmodel.cpp \
     gdxviewer/tableviewmodel.cpp \
@@ -372,6 +373,7 @@ HEADERS += \
     gdxviewer/gdxviewer.h \
     gdxviewer/gdxviewerstate.h \
     gdxviewer/nestedheaderview.h \
+    gdxviewer/numericalformatcontroller.h \
     gdxviewer/quickselectlistview.h \
     gdxviewer/tableviewdomainmodel.h \
     gdxviewer/tableviewmodel.h \
