@@ -33,6 +33,7 @@
 #include "viewhelper.h"
 #include "miro/mirocommon.h"
 #include "support/updatechecker.h"
+#include <numerics/doubleformatter.h>
 
 namespace gams {
 namespace studio {
@@ -231,6 +232,22 @@ void SettingsDialog::loadSettings()
         default: ui->rb_decSepStudio->setChecked(true); break;
     }
     ui->le_decSepCustom->setText(mSettings->toString(skGdxCustomDecSepCopy));
+
+    ui->cbFormat->addItem("g-format", numerics::DoubleFormatter::g);
+    ui->cbFormat->addItem("f-format", numerics::DoubleFormatter::f);
+    ui->cbFormat->addItem("e-format", numerics::DoubleFormatter::e);
+    ui->cbFormat->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
+                             "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"
+                             "<p><span style=' font-weight:600;'>f-format:</span> Values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
+                             "<p><span style=' font-weight:600;'>e-format:</span> Values are displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p></body></html>");
+
+    ui->sbPrecision->setRange(1, 14);
+    ui->sbPrecision->setValue(6);
+    ui->sbPrecision->setWrapping(true);
+    ui->sbPrecision->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
+                                "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"
+                                "f-format:</span> Decimals [0..14]</p><p><span style=' font-weight:600;'>"
+                                "e-format:</span> Significat digits [1..17, Full]</p></body></html>");
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
