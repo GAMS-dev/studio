@@ -951,14 +951,14 @@ void GdxSymbolView::enableControls()
 
     ui->tvListView->horizontalHeader()->setEnabled(true);
     mInitialHeaderState = ui->tvListView->horizontalHeader()->saveState();
-    if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
-        mSqDefaults->setEnabled(true);
-        ui->tbVisibleValCols->setEnabled(true);
+    if (mSym->type() != GMS_DT_SET && mSym->type() != GMS_DT_ALIAS) {
+        ui->tbPreferences->setEnabled(true);
+        if(mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
+            mSqDefaults->setEnabled(true);
+            ui->tbVisibleValCols->setEnabled(true);
+        }
     }
-    else
-        mSqDefaults->setEnabled(false);
     ui->pbResetSortFilter->setEnabled(true);
-    ui->tbPreferences->setEnabled(true);
     ui->lineEdit->setEnabled(true);
     if (mSym->dim()>1)
         ui->pbToggleView->setEnabled(true);
