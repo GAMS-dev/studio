@@ -1,13 +1,10 @@
 #include "numericalformatcontroller.h"
 #include <numerics/doubleformatter.h>
+#include <settings.h>
 
 namespace gams {
 namespace studio {
 namespace gdxviewer {
-
-const int NumericalFormatController::defaultPrecision = 6;
-const int NumericalFormatController::defaultFormatIndex = 0;
-
 
 NumericalFormatController::NumericalFormatController()
 {
@@ -20,8 +17,7 @@ void NumericalFormatController::initFormatComboBox(QComboBox *cb)
     cb->addItem("g-format", numerics::DoubleFormatter::g);
     cb->addItem("f-format", numerics::DoubleFormatter::f);
     cb->addItem("e-format", numerics::DoubleFormatter::e);
-
-    cb->setCurrentIndex(defaultFormatIndex);
+    cb->setCurrentIndex(Settings::settings()->toInt(SettingsKey::skGdxDefaultFormat));
     cb->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
                    "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"
                    "<p><span style=' font-weight:600;'>f-format:</span> Values are displayed in fixed format as long as appropriate. Large numbers are still displayed in scientific format. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of decimals.</p>"
@@ -31,7 +27,7 @@ void NumericalFormatController::initFormatComboBox(QComboBox *cb)
 void NumericalFormatController::initPrecisionSpinBox(QSpinBox *sb)
 {
     sb->setSpecialValueText("Full");
-    sb->setValue(defaultPrecision);
+    sb->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
     sb->setWrapping(true);
     sb->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
                    "g-format:</span> Significant digits [1..17, Full]</p><p><span style=' font-weight:600;'>"

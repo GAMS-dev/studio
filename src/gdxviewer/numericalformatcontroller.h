@@ -19,8 +19,6 @@ public:
 
 public:
     static bool update(QComboBox* cbFormat, QSpinBox *sbPrecision, QCheckBox *cbSqZeroes, bool restoreSqZeroes);
-    static const int defaultPrecision;
-    static const int defaultFormatIndex;
 };
 
 } // namespace gdxviewer
