@@ -118,6 +118,10 @@ enum SettingsKey {
     skGdxDefaultShowLower,
     skGdxDefaultShowUpper,
     skGdxDefaultShowScale,
+    skGdxDefaultSqueezeDefaults,
+    skGdxDefaultSqueezeZeroes,
+    skGdxDefaultFormat,
+    skGdxDefaultPrecision,
 
     // MIRO settings page
     skMiroInstallPath,

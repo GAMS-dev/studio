@@ -69,6 +69,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 #endif
 
     mSettings = Settings::settings();
+
+    gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
+    gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
+
+
     initColorPage();
     loadSettings();
     QString tip("<p style='white-space:pre'>A comma separated list of extensions (e.g.&quot;gms, inc&quot;)."
@@ -136,8 +141,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
     connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
-    gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
     connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
@@ -253,6 +256,12 @@ void SettingsDialog::loadSettings()
     ui->cbLower->setChecked(mSettings->toBool(skGdxDefaultShowLower));
     ui->cbUpper->setChecked(mSettings->toBool(skGdxDefaultShowUpper));
     ui->cbScale->setChecked(mSettings->toBool(skGdxDefaultShowScale));
+
+    ui->cbSqueezeDefaults->setChecked(mSettings->toBool(skGdxDefaultSqueezeDefaults));
+    ui->cbSqueezeTrailingZeroes->setChecked(mSettings->toBool(skGdxDefaultSqueezeZeroes));
+
+    ui->cbFormat->setCurrentIndex(mSettings->toInt(skGdxDefaultFormat));
+    ui->sbPrecision->setValue(mSettings->toInt(skGdxDefaultPrecision));
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -399,6 +408,11 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skGdxDefaultShowLower, ui->cbLower->isChecked());
     mSettings->setBool(skGdxDefaultShowUpper, ui->cbUpper->isChecked());
     mSettings->setBool(skGdxDefaultShowScale, ui->cbScale->isChecked());
+
+    mSettings->setBool(skGdxDefaultSqueezeDefaults, ui->cbSqueezeDefaults->isChecked());
+    mSettings->setBool(skGdxDefaultSqueezeZeroes, ui->cbSqueezeTrailingZeroes->isChecked());
+    mSettings->setInt(skGdxDefaultFormat, ui->cbFormat->currentIndex());
+    mSettings->setInt(skGdxDefaultPrecision, ui->sbPrecision->value());
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());

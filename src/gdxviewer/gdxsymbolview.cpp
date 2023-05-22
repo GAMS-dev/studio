@@ -466,7 +466,14 @@ void GdxSymbolView::applyDefaults()
             else if (i == GMS_VAL_SCALE)
                 mShowValColActions.at(i)->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultShowScale));
         }
+        mSqDefaults->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeDefaults));
     }
+
+    mSqZeroes->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeZeroes));
+
+    //TODO: map with DoubleFormatter
+    mValFormat->setCurrentIndex(Settings::settings()->toInt(SettingsKey::skGdxDefaultFormat));
+    mPrecision->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)
@@ -784,8 +791,8 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->sqTrailingZeroes());
     mRestoreSqZeroes = symViewState->restoreSqZeroes();
-    mValFormat->setCurrentIndex(symViewState->valFormatIndex());
     mPrecision->setValue(symViewState->numericalPrecision());
+    mValFormat->setCurrentIndex(symViewState->valFormatIndex());
 
     if (mAutoResizeLV)
         autoResizeListViewColumns();

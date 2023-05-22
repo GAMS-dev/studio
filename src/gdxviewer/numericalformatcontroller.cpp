@@ -20,6 +20,7 @@ void NumericalFormatController::initFormatComboBox(QComboBox *cb)
     cb->addItem("g-format", numerics::DoubleFormatter::g);
     cb->addItem("f-format", numerics::DoubleFormatter::f);
     cb->addItem("e-format", numerics::DoubleFormatter::e);
+
     cb->setCurrentIndex(defaultFormatIndex);
     cb->setToolTip("<html><head/><body><p>Display format for numerical values:</p>"
                    "<p><span style=' font-weight:600;'>g-format:</span> The display format is chosen automatically:  <span style=' font-style:italic;'>f-format</span> for numbers closer to one and  <span style=' font-style:italic;'>e-format</span> otherwise. The value in the <span style=' font-style:italic;'>Precision</span> spin box specifies the number of significant digits. When precision is set to  <span style=' font-style:italic;'>Full</span>, the number of digits used is the least possible such that the displayed value would convert back to the value stored in GDX. Trailing zeros do not exist when <span style=' font-style:italic;'>precision=Full</span>.</p>"

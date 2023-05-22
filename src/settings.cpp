@@ -27,6 +27,7 @@
 #include <QSize>
 #include <QPoint>
 #include <QFontDatabase>
+#include "gdxviewer/numericalformatcontroller.h"
 #include "logger.h"
 #include "settings.h"
 #include "commonpaths.h"
@@ -350,6 +351,12 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skGdxDefaultShowLower, scUser, {"gdxViewer","gdxDefaultShowLower"}, true);
     safelyAdd(res, skGdxDefaultShowUpper, scUser, {"gdxViewer","gdxDefaultShowUpper"}, true);
     safelyAdd(res, skGdxDefaultShowScale, scUser, {"gdxViewer","gdxDefaultShowScale"}, true);
+
+    safelyAdd(res, skGdxDefaultSqueezeDefaults, scUser, {"gdxViewer","gdxDefaultSqueezeDefaults"}, false);
+    safelyAdd(res, skGdxDefaultSqueezeZeroes, scUser, {"gdxViewer","gdxDefaultSqueezeZeroes"}, true);
+    // TODO use default values here
+    safelyAdd(res, skGdxDefaultFormat, scUser, {"gdxViewer","gdxDefaultFormat"}, 0);
+    safelyAdd(res, skGdxDefaultPrecision, scUser, {"gdxViewer","gdxDefaultPrecision"}, 6);
 
     // MIRO settings page
     safelyAdd(res, skMiroInstallPath, scUser, {"miro","installationLocation"}, QString());
