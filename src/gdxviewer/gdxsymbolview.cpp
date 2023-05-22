@@ -288,8 +288,8 @@ void GdxSymbolView::toggleSqueezeDefaults(bool checked)
 void GdxSymbolView::resetSortFilter()
 {
     if(mSym) {
-        mPrecision->setValue(mDefaultPrecision); // this is not to be confused with "MAX". The value will be 6
-        resetValFormat();
+        NumericalFormatController::initFormatComboBox(mValFormat);
+        NumericalFormatController::initPrecisionSpinBox(mPrecision);
         mSqZeroes->setChecked(true);
         if (mSym->type() == GMS_DT_VAR || mSym->type() == GMS_DT_EQU) {
             for (int i=0; i<GMS_VAL_MAX; i++)
@@ -784,8 +784,8 @@ void GdxSymbolView::applyState(GdxSymbolViewState* symViewState)
     mSqDefaults->setChecked(symViewState->sqDefaults());
     mSqZeroes->setChecked(symViewState->sqTrailingZeroes());
     mRestoreSqZeroes = symViewState->restoreSqZeroes();
-    mPrecision->setValue(symViewState->numericalPrecision());
     mValFormat->setCurrentIndex(symViewState->valFormatIndex());
+    mPrecision->setValue(symViewState->numericalPrecision());
 
     if (mAutoResizeLV)
         autoResizeListViewColumns();

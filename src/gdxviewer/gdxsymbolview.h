@@ -135,8 +135,6 @@ private:
     bool mTableView = false;
     int mTVResizePrecision = 500;
     int mTVResizeColNr = 100;
-
-    int mDefaultPrecision = 6;
     bool mRestoreSqZeroes = false;
     numerics::DoubleFormatter::Format mDefaultValFormat = numerics::DoubleFormatter::g;
 
