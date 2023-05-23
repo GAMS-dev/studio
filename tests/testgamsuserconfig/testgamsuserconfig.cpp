@@ -36,6 +36,7 @@ using gams::studio::FileKind;
 void TestGamsUserConfig::initTestCase()
 {
     systemDir = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    QVERIFY2(!systemDir.isEmpty(), "SystemDir must not be empty");
     qDebug() << QString("systemDir=[%1]").arg(CommonPaths::systemDir());
 }
 
