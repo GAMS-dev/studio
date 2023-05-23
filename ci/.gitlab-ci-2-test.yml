@@ -66,12 +66,13 @@ test-leg:
       cd tests/bin
       for f in *
       do
-        xvfb-run -e /dev/stdout --auto-servernum --server-num=1 ./$f -xunitxml -o $REPORTS_DIR/$f.xml
+        xvfb-run --auto-servernum --server-num=1 ./$f -xunitxml -o $REPORTS_DIR/$f.xml
       done
   artifacts:
     name: unittest-results-deg
     paths: 
       - build/src/bin/*
+      - build/reports/*
     reports:
       junit: build/reports/*
 
