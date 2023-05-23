@@ -20,6 +20,7 @@ test-deg:
     name: unittest-results-deg
     paths:
       - build/src/bin/*
+      - build/reports/*
     reports:
       junit: build/reports/*
 
@@ -45,6 +46,7 @@ test-dac:
     name: unittest-results-dac
     paths:
       - build/src/bin/*
+      - build/reports/*
     reports:
       junit: build/reports/*
 
@@ -69,7 +71,7 @@ test-leg:
         xvfb-run --auto-servernum --server-num=1 ./$f -xunitxml -o $REPORTS_DIR/$f.xml
       done
   artifacts:
-    name: unittest-results-deg
+    name: unittest-results-leg
     paths: 
       - build/src/bin/*
       - build/reports/*
@@ -108,5 +110,6 @@ test-wei:
     name: unittest-results-wei
     paths:
       - build/src/bin/*
+      - build/reports/*
     reports:
       junit: build/reports/*
