@@ -1020,7 +1020,7 @@ void GdxSymbolView::onSearch(bool backward)
     int visualCol = tv->horizontalHeader()->visualIndex(idx.column());
     if (!idx.isValid()) {
         if (backward) {
-            row = tv->model()->rowCount()-1;
+            row = tv->model()->rowCount();
             visualCol = vToL.firstKey();
         } else {
             row = -1;
@@ -1033,11 +1033,11 @@ void GdxSymbolView::onSearch(bool backward)
     while (true) {
         auto iter = vToL.find(visualCol);
         if (backward) {
-            --iter;
-            if (iter == vToL.begin() - 1) {
-                iter = vToL.end()-1;
-                row--;
-            }
+             if (iter == vToL.begin()) {
+                 iter = vToL.end();
+                 row--;
+             }
+             --iter;
         } else {
             ++iter;
             if (iter == vToL.end()) {
