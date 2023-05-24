@@ -11,6 +11,8 @@ Version 1.15.0 *
  - in *solver option editor*:
     - fix status in definition when changing a group of option:
        - *Step*: change group of options -*expect*-> in the definition section, an option turned green only if it has been added and it belongs to that group
+  - Added search facility to the data view of the GDX Viewer
+  - Fixed location of GDX Viewer context menus
 
 Version 1.14.3
 ==================
