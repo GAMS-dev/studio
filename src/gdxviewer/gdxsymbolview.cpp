@@ -485,10 +485,10 @@ void GdxSymbolView::showContextMenu(QPoint p)
     //mContextMenu.exec(ui->tvListView->mapToGlobal(p));
     if (mTableView) {
         mContextMenuTV.setFont(font());
-        mContextMenuTV.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()));
+        mContextMenuTV.exec(mapToGlobal(p)+ QPoint(ui->tvTableView->verticalHeader()->width(), ui->tvTableView->horizontalHeader()->height()+ui->tvTableView->y()));
     } else {
         mContextMenuLV.setFont(font());
-        mContextMenuLV.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()));
+        mContextMenuLV.exec(mapToGlobal(p)+ QPoint(ui->tvListView->verticalHeader()->width(), ui->tvListView->horizontalHeader()->height()+ui->tvListView->y()));
     }
 }
 
