@@ -471,9 +471,9 @@ void GdxSymbolView::applyDefaults()
 
     mSqZeroes->setChecked(Settings::settings()->toBool(SettingsKey::skGdxDefaultSqueezeZeroes));
 
-    //TODO: map with DoubleFormatter
     mValFormat->setCurrentIndex(Settings::settings()->toInt(SettingsKey::skGdxDefaultFormat));
     mPrecision->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
+    mRestoreSqZeroes = Settings::settings()->toBool(SettingsKey::skGdxDefaultRestoreSqueezeZeroes);
 }
 
 void GdxSymbolView::showContextMenu(QPoint p)

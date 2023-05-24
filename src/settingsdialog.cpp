@@ -70,9 +70,15 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     mSettings = Settings::settings();
 
+    connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
+    connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::updateNumericalPrecision);
+    connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::updateNumericalPrecision);
+    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::updateNumericalPrecision);
+
     gdxviewer::NumericalFormatController::initPrecisionSpinBox(ui->sbPrecision);
     gdxviewer::NumericalFormatController::initFormatComboBox(ui->cbFormat);
-
 
     initColorPage();
     loadSettings();
@@ -138,13 +144,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cbLower, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
     connect(ui->cbUpper, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
     connect(ui->cbScale, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
-    connect(ui->sbPrecision, &QSpinBox::valueChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
-    connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
-    connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, [this]() { mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes); });
-
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
@@ -256,12 +255,11 @@ void SettingsDialog::loadSettings()
     ui->cbLower->setChecked(mSettings->toBool(skGdxDefaultShowLower));
     ui->cbUpper->setChecked(mSettings->toBool(skGdxDefaultShowUpper));
     ui->cbScale->setChecked(mSettings->toBool(skGdxDefaultShowScale));
-
     ui->cbSqueezeDefaults->setChecked(mSettings->toBool(skGdxDefaultSqueezeDefaults));
     ui->cbSqueezeTrailingZeroes->setChecked(mSettings->toBool(skGdxDefaultSqueezeZeroes));
-
     ui->cbFormat->setCurrentIndex(mSettings->toInt(skGdxDefaultFormat));
     ui->sbPrecision->setValue(mSettings->toInt(skGdxDefaultPrecision));
+    mRestoreSqZeroes = mSettings->toBool(skGdxDefaultRestoreSqueezeZeroes);
 
     // misc page
     ui->edUserGamsTypes->setText(changeSeparators(mSettings->toString(skUserGamsTypes), ", "));
@@ -413,6 +411,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skGdxDefaultSqueezeZeroes, ui->cbSqueezeTrailingZeroes->isChecked());
     mSettings->setInt(skGdxDefaultFormat, ui->cbFormat->currentIndex());
     mSettings->setInt(skGdxDefaultPrecision, ui->sbPrecision->value());
+    mSettings->setBool(skGdxDefaultRestoreSqueezeZeroes, mRestoreSqZeroes);
 
     // misc page
     QStringList suffs = FileType::validateSuffixList(ui->edUserGamsTypes->text());
@@ -1024,6 +1023,11 @@ void SettingsDialog::on_rb_decSepStudio_toggled(bool checked)
 {
     if (checked)
         ui->le_decSepCustom->setEnabled(false);
+}
+
+void SettingsDialog::updateNumericalPrecision()
+{
+    mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes);
 }
 
 }

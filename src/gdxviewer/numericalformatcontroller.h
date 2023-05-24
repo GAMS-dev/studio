@@ -13,12 +13,14 @@ namespace gdxviewer {
 class NumericalFormatController
 {
 public:
-    NumericalFormatController();
     static void initFormatComboBox(QComboBox* cb);
     static void initPrecisionSpinBox(QSpinBox *sb);
 
 public:
     static bool update(QComboBox* cbFormat, QSpinBox *sbPrecision, QCheckBox *cbSqZeroes, bool restoreSqZeroes);
+private:
+    NumericalFormatController();
+    static const QString svFull;
 };
 
 } // namespace gdxviewer

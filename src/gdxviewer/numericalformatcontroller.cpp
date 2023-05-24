@@ -6,6 +6,8 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+const QString NumericalFormatController::svFull = "Full";
+
 NumericalFormatController::NumericalFormatController()
 {
 
@@ -26,7 +28,7 @@ void NumericalFormatController::initFormatComboBox(QComboBox *cb)
 
 void NumericalFormatController::initPrecisionSpinBox(QSpinBox *sb)
 {
-    sb->setSpecialValueText("Full");
+    sb->setSpecialValueText(svFull);
     sb->setValue(Settings::settings()->toInt(SettingsKey::skGdxDefaultPrecision));
     sb->setWrapping(true);
     sb->setToolTip("<html><head/><body><p>Specifies the number of decimals or the number of significant digits depending on the chosen format:</p><p><span style=' font-weight:600;'>"
@@ -38,7 +40,7 @@ void NumericalFormatController::initPrecisionSpinBox(QSpinBox *sb)
 bool NumericalFormatController::update(QComboBox *cbFormat, QSpinBox *sbPrecision, QCheckBox *cbSqZeroes, bool restoreSqZeroes)
 {
     bool retRestoreSqZeroes = restoreSqZeroes;
-    QString svFull = "Full";
+
     numerics::DoubleFormatter::Format format = static_cast<numerics::DoubleFormatter::Format>(cbFormat->currentData().toInt());
     if (format == numerics::DoubleFormatter::g || format == numerics::DoubleFormatter::e) {
         sbPrecision->setRange(numerics::DoubleFormatter::gFormatFull, 17);

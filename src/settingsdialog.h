@@ -119,6 +119,8 @@ private slots:
 
     void on_rb_decSepStudio_toggled(bool checked);
 
+    void updateNumericalPrecision();
+
 private:
     void saveSettings();
     void loadSettings();
@@ -126,6 +128,7 @@ private:
     void initColorPage();
     void setThemeEditable(bool editable);
     void prependUserLib();
+
     QString changeSeparators(const QString &commaSeparatedList, const QString &newSeparator);
     QDate nextCheckDate() const;
 
