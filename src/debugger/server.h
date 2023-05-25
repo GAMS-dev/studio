@@ -30,20 +30,42 @@ namespace gams {
 namespace studio {
 namespace debugger {
 
+enum Call {
+    invalid,
+    invalidReply,
+    writeGDX,
+    addBP,
+    delBP,
+    addBPs,
+    clearBPs,
+    interrupt,
+};
+
+enum Reply {
+    invalid,
+    invalidCall,
+    breakAt,
+    gdxReady,
+    finished,
+};
 struct Breakpoint
+
 {
     Breakpoint() {}
-    Breakpoint(const QString _file, int _line, int _column = 0) : file(_file), line(_line), column(_column) {}
+    Breakpoint(const QString _file, int _line, int _index = 0) : file(_file), line(_line), index(_index) {}
     inline bool operator ==(const Breakpoint &other) const {
-        return file.compare(other.file) == 0 && line == other.line && column == other.column;
+        return file.compare(other.file) == 0 && line == other.line && index == other.index;
     }
     inline bool operator !=(const Breakpoint &other) const {
         return *this == other;
     }
+    inline QString toString() {
+        return file + ':' + QString::number(line) + ':' + QString::number(index);
+    }
 
     QString file;
     int line = 0;
-    int column = 0;
+    int index = 0;
 };
 
 class Server : public QObject
@@ -63,9 +85,9 @@ signals:
     void signalInterruptedAt(const QString &file, int lineNr);
 
 public slots:
-    void addBreakpoint(const Breakpoint &breakpoint);
-    void addBreakpoints(const QList<Breakpoint> &breakpoints);
-    void removeBreakpoint(const Breakpoint &breakpoint);
+    void addBreakpoint(const Breakpoint &bp);
+    void addBreakpoints(const QList<Breakpoint> &bps);
+    void removeBreakpoint(const Breakpoint &bp);
     void clearBreakpoints();
     void sendInterrupt();
 
@@ -73,13 +95,18 @@ private slots:
     void newConnection();
 
 private:
+    void init();
     void sortBreakpoints();
     void logMessage(const QString &message);
     void deleteSocket();
-    void callProcedure(const QString &procedure, const QStringList &arguments);
+    void callProcedure(Call call, const QStringList &arguments = QStringList());
+    bool handleReply(const QString &replyData);
 
     QTcpServer *mServer = nullptr;
     QTcpSocket* mSocket = nullptr;
+    QHash<Call, QString> mCalls;
+    QHash<QString, Reply> mReplies;
+
     QList<Breakpoint> mBreakpoints;
 
     static QSet<int> mPortsInUse;
