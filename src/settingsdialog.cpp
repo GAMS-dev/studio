@@ -72,6 +72,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::setModified);
+    connect(ui->cbSqueezeDefaults, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
     connect(ui->cbSqueezeTrailingZeroes, &QCheckBox::stateChanged, this, &SettingsDialog::setModified);
     connect(ui->sbPrecision, &QSpinBox::valueChanged, this, &SettingsDialog::updateNumericalPrecision);
     connect(ui->cbFormat, &QComboBox::currentIndexChanged, this, &SettingsDialog::updateNumericalPrecision);
