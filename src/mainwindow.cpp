@@ -571,6 +571,7 @@ void MainWindow::initIcons()
     ui->actionReset_Zoom->setIcon(Theme::icon(":/%1/search-off"));
     ui->actionRun->setIcon(Theme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Theme::icon(":/%1/run-gdx"));
+    ui->actionRunDebugger->setIcon(Theme::icon(":/%1/run-debug"));
     ui->actionRunNeos->setIcon(Theme::icon(":/img/neos", false, ":/img/neos-g"));
     ui->actionRunEngine->setIcon(Theme::icon(":/img/engine", false, ":/img/engine-g"));
     ui->actionSave->setIcon(Theme::icon(":/%1/save"));
@@ -595,8 +596,8 @@ void MainWindow::initIcons()
 void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
-                ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionCompile, ui->actionCompile_with_GDX_Creation,
-                ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
+        ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionRunDebugger, ui->actionCompile,
+        ui->actionCompile_with_GDX_Creation, ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
     ui->toolBar->insertSeparator(ui->actionToggle_Extended_Parameter_Editor);
@@ -2154,11 +2155,6 @@ void MainWindow::appendSystemLogWarning(const QString &text) const
 
 void MainWindow::postGamsRun(NodeId origin, int exitCode)
 {
-    if (mDebugServer) {
-        mDebugServer->stop();
-        mDebugServer->deleteLater();
-        mDebugServer = nullptr;
-    }
     if (origin == -1) {
         appendSystemLogError("No fileId set to process");
         return;
@@ -3606,7 +3602,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, bool debug)
 {
     PExProjectNode* project = currentProject();
     if (!project) {
@@ -3614,7 +3610,15 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
         return;
     }
     bool ready = executePrepare(project, commandLineStr, std::move(process));
-    if (ready) execution(project);
+    if (ready) {
+        if (!debug || project->startDebugServer())
+            execution(project);
+        else if (debug) {
+            appendSystemLogWarning("Could not start debugger for project [" + project->name() + "]. "
+                                   + (project->debugServer() ? " Debugger is already running."
+                                                             : "Too many activeDebuggers."));
+        }
+    }
 }
 
 
@@ -3737,10 +3741,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
-    if (process) {
+    if (process)
         project->setProcess(std::move(process));
-        StartDebugIfPresent(logNode, itemList);
-    }
     AbstractProcess* groupProc = project->process();
     int logOption = 0;
     groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
@@ -3762,30 +3764,30 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     return true;
 }
 
-void MainWindow::StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList)
-{
-    for (const option::OptionItem &item : itemList) {
-        if (item.key.compare("DebugPort") == 0) {
-            bool ok;
-            int port = item.value.toInt(&ok);
-            if (!ok) continue;
+//void MainWindow::StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList)
+//{
+//    for (const option::OptionItem &item : itemList) {
+//        if (item.key.compare("DebugPort") == 0) {
+//            bool ok;
+//            int port = item.value.toInt(&ok);
+//            if (!ok) continue;
 
-            QWidget *wid = logNode->file()->editors().size() ? logNode->file()->editors().first() : nullptr;
-            TextView *tv = ViewHelper::toTextView(wid);
-            if (!tv) continue;
+//            QWidget *wid = logNode->file()->editors().size() ? logNode->file()->editors().first() : nullptr;
+//            TextView *tv = ViewHelper::toTextView(wid);
+//            if (!tv) continue;
 
-            if (!mDebugServer)
-                mDebugServer = new debugger::Server(this);
-            if (mDebugServer->isListening())
-                mDebugServer->stop();
-            else {
-                connect(mDebugServer, &debugger::Server::addProcessData, tv, &TextView::addProcessData);
-                mDebugServer->start(port);
-            }
-            break;
-        }
-    }
-}
+//            if (!mDebugServer)
+//                mDebugServer = new debugger::Server(this);
+//            if (mDebugServer->isListening())
+//                mDebugServer->stop();
+//            else {
+//                connect(mDebugServer, &debugger::Server::addProcessData, tv, &TextView::addProcessData);
+//                mDebugServer->start(port);
+//            }
+//            break;
+//        }
+//    }
+//}
 
 void MainWindow::execution(PExProjectNode *project)
 {
@@ -3900,6 +3902,12 @@ void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
     execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), std::make_unique<GamsProcess>());
 }
+
+void MainWindow::on_actionRunDebugger_triggered()
+{
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebugger), std::make_unique<GamsProcess>(), true);
+}
+
 
 void MainWindow::on_actionCompile_triggered()
 {
@@ -5980,16 +5988,6 @@ void MainWindow::on_actionNavigator_triggered()
 {
     mNavigatorDialog->show();
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
-}
-
-void MainWindow::on_actionRunDebugger_triggered()
-{
-    if (!mDebugServer)
-        mDebugServer = new debugger::Server(this);
-    if (mDebugServer->isListening())
-        mDebugServer->stop();
-    else
-        mDebugServer->start(12345);
 }
 
 

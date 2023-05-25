@@ -34,6 +34,8 @@
 #include "projectedit.h"
 #include "settings.h"
 #include "viewhelper.h"
+#include "debugger/server.h"
+
 #include <QFileInfo>
 #include <QDir>
 #include <QDesktopServices>
@@ -455,6 +457,11 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
         if (parts.size() > 2) col = parts.at(2).toInt();
     }
     return res;
+}
+
+debugger::Server *PExProjectNode::debugServer() const
+{
+    return mDebugServer;
 }
 
 PExProjectNode::Type PExProjectNode::type() const
@@ -1068,6 +1075,13 @@ void PExProjectNode::clearParameters()
     mParameterHash.insert("gms", gms);
     mParameterHash.insert("pf", pf);
     if (willChange) setNeedSave();
+}
+
+bool PExProjectNode::startDebugServer()
+{
+    if (!mDebugServer)
+        mDebugServer = new debugger::Server(this);
+    return mDebugServer->start();
 }
 
 QProcess::ProcessState PExProjectNode::gamsProcessState() const

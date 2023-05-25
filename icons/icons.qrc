@@ -103,6 +103,7 @@
         <file alias="reload">solid/redo.svg</file>
         <file alias="remove">solid/remove.svg</file>
         <file alias="run-gdx">solid/play-gdx.svg</file>
+        <file alias="run-debug">solid/play-debug.svg</file>
         <file alias="run-neos">solid/play-neos.svg</file>
         <file alias="run-engine">solid/play-engine.svg</file>
         <file alias="save">solid/save.svg</file>

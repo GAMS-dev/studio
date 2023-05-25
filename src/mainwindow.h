@@ -42,7 +42,6 @@
 #include "neos/neosprocess.h"
 #include "reference/symbolreferenceitem.h"
 #include "engine/engineprocess.h"
-#include "debugger/server.h"
 #include "common.h"
 
 #ifdef QWEBENGINE
@@ -155,8 +154,7 @@ public:
     void toggleSearchDialog();
     void toggleFullscreen();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
-    void execute(QString commandLineStr,
-                 std::unique_ptr<AbstractProcess> process = nullptr);
+    void execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr, bool debug = false);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -456,7 +454,7 @@ private:
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
     bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
-    void StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList);
+//    void StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);
@@ -558,7 +556,6 @@ private:
     bool mMiroRunning = false;
     QString mEngineAuthToken;
     bool mEngineNoDialog = false;
-    debugger::Server *mDebugServer = nullptr;
 };
 
 }

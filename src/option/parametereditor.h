@@ -44,6 +44,7 @@ class ParameterEditor;
 enum class RunActionState {
     Run,
     RunWithGDXCreation,
+    RunDebugger,
     Compile,
     CompileWithGDXCreation,
     RunNeos,
@@ -55,7 +56,7 @@ class ParameterEditor : public QWidget
     Q_OBJECT
 
 public:
-    explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aCompile, QAction* aCompileGDX,
+    explicit ParameterEditor(QAction* aRun, QAction* aRunGDX, QAction* aRunDebug, QAction* aCompile, QAction* aCompileGDX,
                              QAction* aRunNeos, QAction *aRunEngine,
                              QAction* aInterrupt, QAction* aStop, MainWindow *parent = nullptr);
     ~ParameterEditor();
@@ -84,6 +85,7 @@ signals:
     void parameterLoaded(const QString &location);
     void ParameterTableModelChanged(const QString &commandLineStr);
     void commandLineChanged(QLineEdit* lineEdit, const QList<gams::studio::option::OptionItem> &optionItems);
+    void requestDebugPort(int &port);
 
 public slots:
     void updateParameterTableModel(QLineEdit* lineEdit, const QString &commandLineStr);
@@ -121,7 +123,8 @@ private slots:
     void resizeColumnsToContents();
 
 private:
-    void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aCompile, QAction *aCompileGDX, QAction *aRunNeos, QAction *aRunEngine);
+    void setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aCompile, QAction *aCompileGDX,
+                            QAction *aRunNeos, QAction *aRunEngine);
     void setInterruptActionGroup(QAction* aInterrupt, QAction* aStop);
     void setRunActionsEnabled(bool enable);
     void setInterruptActionsEnabled(bool enable);
@@ -138,6 +141,7 @@ private:
 
     QAction* actionRun;
     QAction* actionRun_with_GDX_Creation;
+    QAction* actionRunDebug;
     QAction* actionCompile;
     QAction* actionCompile_with_GDX_Creation;
     QAction* actionRunNeos;

@@ -27,6 +27,7 @@
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
 #include "syntax/textmark.h"
+#include "debugger/server.h"
 
 namespace gams {
 namespace studio {
@@ -123,6 +124,7 @@ public:
     void addNodesForSpecialFiles();
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
+    bool startDebugServer();
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
@@ -141,6 +143,8 @@ public:
     void setNameExt(const QString &newNameExt);
 
     Type type() const;
+
+    debugger::Server *debugServer() const;
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
@@ -186,6 +190,7 @@ private:
     QStringList mRunParametersHistory;
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
+    debugger::Server *mDebugServer = nullptr;
 
 private:
     QString cleanPath(QString path, QString file);
