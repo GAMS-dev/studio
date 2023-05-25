@@ -478,17 +478,13 @@ void GdxViewer::applyState()
 void GdxViewer::applySymbolState(GdxSymbol *sym)
 {
     QString name = sym->name();
-    if (mState) {
+    GdxSymbolView* symView = symbolViewByName(name);
+    if (mState && mState->symbolViewState(name)) {
         GdxSymbolViewState* symViewState = mState->symbolViewState(name);
-        if (symViewState) {
-            GdxSymbolView* symView = symbolViewByName(name);
-            symView->applyState(symViewState);
-            mState->deleteSymbolViewState(name);
-        }
-    } else {
-        GdxSymbolView* symView = symbolViewByName(name);
+        symView->applyState(symViewState);
+        mState->deleteSymbolViewState(name);
+    } else
         symView->applyDefaults();
-    }
 }
 
 void GdxViewer::applySelectedSymbol()
