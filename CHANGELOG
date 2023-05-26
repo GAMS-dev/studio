@@ -13,6 +13,9 @@ Version 1.15.0 *
        - *Step*: change group of options -*expect*-> in the definition section, an option turned green only if it has been added and it belongs to that group
   - Added search facility to the data view of the GDX Viewer
   - Fixed location of GDX Viewer context menus
+  - Added settings to specify default numerical formatting options and showen/hidden attributes for the GDX Viewer
+  - Fixed a bug where precision=Full was not restored properly in the GDX Viewer.
+  - Disable preferences menu for sets and aliases in the GDX Viewer.
 
 Version 1.14.3
 ==================
