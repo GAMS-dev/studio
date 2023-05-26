@@ -1,6 +1,7 @@
 Version 1.14.4 *
 ==================
-- t.b.d.
+- fixed issues with parameter file on macOS and linux
+- fixed project setting for parameter file lost or reset on restart Studio
 
 Version 1.14.3
 ==================
