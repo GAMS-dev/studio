@@ -151,6 +151,7 @@ signals:
     void getParameterValue(QString param, QString &value);
     void baseDirChanged(gams::studio::PExProjectNode *project);
     void runnableChanged();
+    void addProcessData(const QByteArray &data);
 
 public slots:
     void setErrorText(int lstLine, QString text);
@@ -159,9 +160,16 @@ public slots:
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
+    void addBreakpoint(const QString &filename, int line);
+    void addBreakpoints(const QString &filename, const QSet<int> &lines);
+    void delBreakpoint(const QString &filename, int line);
+    void clearBreakpoints(const QString &filename = QString());
+    void breakpoints(const QString &filename, QSet<int> &bps) const;
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
+    void openDebugGdx(const QString &gdxFile);
+    void gotoPaused(const QString &file, int lineNr);
 
 protected:
     friend class ProjectRepo;
@@ -191,6 +199,7 @@ private:
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
+    QHash<QString, QSet<int>> mBreakpoints;
 
 private:
     QString cleanPath(QString path, QString file);

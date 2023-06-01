@@ -727,6 +727,53 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
+void PExProjectNode::addBreakpoint(const QString &filename, int line)
+{
+    QSet<int> lines = mBreakpoints.value(filename);
+    lines.insert(line);
+    mBreakpoints.insert(filename, lines);
+    if (mDebugServer)
+        mDebugServer->addBreakpoint(filename, line);
+}
+
+void PExProjectNode::addBreakpoints(const QString &filename, const QSet<int> &lines)
+{
+    if (lines.isEmpty()) return;
+    QSet<int> allLines = mBreakpoints.value(filename);
+    allLines.unite(lines);
+    mBreakpoints.insert(filename, allLines);
+    if (mDebugServer) {
+        QHash<QString, QSet<int>> all;
+        all.insert(filename, lines);
+        mDebugServer->addBreakpoints(all);
+    }
+}
+
+void PExProjectNode::delBreakpoint(const QString &filename, int line)
+{
+    if (!mBreakpoints.contains(filename)) return;
+    QSet<int> lines = mBreakpoints.value(filename);
+    if (!lines.contains(line)) return;
+
+    lines.remove(line);
+
+    mBreakpoints.insert(filename, lines);
+    if (mDebugServer)
+        mDebugServer->delBreakpoint(filename, line);
+}
+
+void PExProjectNode::clearBreakpoints(const QString &filename)
+{
+    mBreakpoints.clear();
+    if (mDebugServer)
+        mDebugServer->clearBreakpoints(filename);
+}
+
+void PExProjectNode::breakpoints(const QString &filename, QSet<int> &bps) const
+{
+    bps = mBreakpoints.value(filename);
+}
+
 void PExProjectNode::clearErrorTexts()
 {
     mErrorTexts.clear();
@@ -1079,8 +1126,12 @@ void PExProjectNode::clearParameters()
 
 bool PExProjectNode::startDebugServer()
 {
-    if (!mDebugServer)
+    if (!mDebugServer) {
         mDebugServer = new debugger::Server(this);
+        connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
+        connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
+        connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
+    }
     return mDebugServer->start();
 }
 
@@ -1115,6 +1166,16 @@ void PExProjectNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 {
     Q_UNUSED(newState)
     emit gamsProcessStateChanged(this);
+}
+
+void PExProjectNode::openDebugGdx(const QString &gdxFile)
+{
+
+}
+
+void PExProjectNode::gotoPaused(const QString &file, int lineNr)
+{
+
 }
 
 PExRootNode::PExRootNode(ProjectRepo* repo)

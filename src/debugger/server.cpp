@@ -55,7 +55,7 @@ void Server::init()
     mCalls.insert(clearBPs, "clearBPs");
 
     mReplies.insert("invalidCall", invalidCall);
-    mReplies.insert("breakAt", breakAt);
+    mReplies.insert("breakAt", paused);
     mReplies.insert("gdxReady", gdxReady);
     mReplies.insert("finished", finished);
 }
@@ -92,19 +92,21 @@ void Server::stop()
     logMessage("Debug-Server stopped.");
 }
 
-void Server::callProcedure(Call call, const QStringList &arguments)
+void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
 
     if (!mSocket->isOpen()) {
-        QString additionals = arguments.count() > 1 ? (" (and " + arguments.count()-1 + " more)") : "";
+        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1)
+                                                    : QString();
         logMessage("Debug-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
-        QString additionals = arguments.count() > 1 ? (" (and " + arguments.count()-1 + " more)") : "";
-        logMessage("Debug-Server: Undefined call '" + int(call) +
+        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1)
+                                                    : QString();
+        logMessage("Debug-Server: Undefined call '" + int(call)
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
@@ -114,100 +116,107 @@ void Server::callProcedure(Call call, const QStringList &arguments)
 bool Server::handleReply(const QString &replyData)
 {
     QStringList reList = replyData.split('\n');
-    Reply reply = Reply::invalid;
+    CallReply reply = invalid;
     if (!reList.isEmpty()) {
-        reply = mReplies.value(reList.at(0), Reply::invalid);
-        if (reply != Reply::invalid)
+        reply = mReplies.value(reList.at(0), invalid);
+        if (reply != invalid)
             reList.removeFirst();
     }
+    QStringList data;
+    QString file;
+    if (reList.size()) {
+        data = reList.first().split(':');
+        file = data.first();
+    }
+
     bool ok = false;
     switch (reply) {
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
-    case breakAt:
+    case paused: {
         if (reList.size() < 1) {
-            logMessage("Debug-Server: [breakAt] Missing data for interrupt.");
+            logMessage("Debug-Server: [paused] Missing data for interrupt.");
             return false;
         }
         if (reList.size() > 1)
-            logMessage("Debug-Server: [breakAt] Only one entry expected. Additional data ignored.");
-        QStringList data = reList.first().split(':');
-        QString file = data.first();
+            logMessage("Debug-Server: [paused] Only one entry expected. Additional data ignored.");
         if (file.isEmpty()) {
-            logMessage("Debug-Server: [breakAt] Missing filename");
+            logMessage("Debug-Server: [paused] Missing filename");
             return false;
         }
         if (!QFile::exists(file)) {
-            logMessage("Debug-Server: [breakAt] File not found: " + file);
+            logMessage("Debug-Server: [paused] File not found: " + file);
             return false;
         }
         if (data.size() < 2) {
-            logMessage("Debug-Server: [breakAt] Missing line number for file " + data.first());
+            logMessage("Debug-Server: [paused] Missing line number for file " + data.first());
         }
 
         int line = data.at(1).toInt(&ok);
         if (!ok) {
-            logMessage("Debug-Server: [breakAt] Can't parse line number: " + data.at(1));
-            return;
+            logMessage("Debug-Server: [paused] Can't parse line number: " + data.at(1));
+            return false;
         }
-        emit signalInterruptedAt(file, line);
-        break;
+        emit signalPaused(file, line);
+    }   break;
     case gdxReady:
-        emit signalReady();
+        if (file.isEmpty()) {
+            logMessage("Debug-Server: [gdxReady] Missing name for GDX file.");
+            return false;
+        }
+        if (!QFile::exists(file)) {
+            logMessage("Debug-Server: [gdxReady] File not found: " + file);
+            return false;
+        }
+        emit signalGdxReady(file);
         break;
     case finished:
         break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
-        break;
+        return false;
     }
 
-    if (data.compare("ready", Qt::CaseInsensitive) == 0) {
-    } else if (data.startsWith("interrupt@") == 0) {
-        bool ok;
-        int lineSep = data.lastIndexOf(':');
-        QString file = data.mid(10, lineSep - 11);
-        int line = data.last(data.size() - lineSep - 1).toInt(&ok);
-        if (ok)
-            emit signalInterruptedAt(file, line);
-    } else if (data.compare("exit", Qt::CaseInsensitive) == 0) {
-        logMessage("Debug-Server: Stop request from GAMS.");
-        stop();
-    }
-
-
-    return false;
+    return true;
 }
 
-void Server::addBreakpoint(const Breakpoint &bp)
+QString Server::toBpString(const QString &file, QSet<int> lines)
 {
-    if (mBreakpoints.contains(bp))
-        return;
-    mBreakpoints << bp;
-    callProcedure(addBP, bp.toString());
+    if (lines.isEmpty()) return QString();
+    QString res = file;
+    auto iter = lines.constBegin();
+    while (iter != lines.constEnd())
+        res += ':' + QString::number(*iter);
+    return res;
 }
 
-void Server::addBreakpoints(const QList<Breakpoint> &bps)
+void Server::addBreakpoint(const QString &filename, int line)
+{
+    callProcedure(addBP, {toBpString(filename, {line})});
+}
+
+void Server::addBreakpoints(const QHash<QString, QSet<int> > &breakpoints)
 {
     QStringList args;
-    for (const Breakpoint &breakpoint : bps) {
-        mBreakpoints << breakpoint;
-        args << breakpoint.toString();
+    auto iter = breakpoints.constBegin();
+    while (iter != breakpoints.constEnd()) {
+        if (!iter.value().isEmpty())
+            args << toBpString(iter.key(), iter.value());
+        ++iter;
     }
-    callProcedure(addBPs, args);
+    if (!args.isEmpty())
+        callProcedure(addBPs, args);
 }
 
-void Server::removeBreakpoint(const Breakpoint &bp)
+void Server::delBreakpoint(const QString &filename, int line)
 {
-    mBreakpoints.removeAll(bp);
-    callProcedure(delBP, bp.toString());
+    callProcedure(delBP, {toBpString(filename, {line})});
 }
 
-void Server::clearBreakpoints()
+void Server::clearBreakpoints(const QString file)
 {
-    mBreakpoints.clear();
-    callProcedure(clearBPs);
+    callProcedure(clearBPs, {file});
 }
 
 void Server::sendInterrupt()
@@ -246,17 +255,6 @@ void Server::newConnection()
             callProcedure(invalidReply, QStringList() << data);
             logMessage("Debug-Server: Unknown request: " + data);
         }
-    });
-}
-
-void Server::sortBreakpoints()
-{
-    std::sort(mBreakpoints.begin(), mBreakpoints.end(), [&](const Breakpoint& b1, const Breakpoint& b2) {
-        int comp = b1.file.compare(b2.file);
-        if (comp != 0) return comp;
-        comp = b1.line - b2.line;
-        if (comp != 0) return comp;
-        return b1.index - b2.index;
     });
 }
 

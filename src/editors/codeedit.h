@@ -124,6 +124,7 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
+    void showBpContext(const QPoint &pos);
 
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
@@ -156,6 +157,10 @@ signals:
     void requestAdvancedActions(QList<QAction*>* actions);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
+    void addBreakpoint(int line);
+    void delBreakpoint(int line);
+    void delBreakpoints();
+    void delAllBreakpoints();
 
 public slots:
     void clearSelection();
@@ -166,6 +171,8 @@ public slots:
     virtual void pasteClipboard();
     void updateExtraSelections() override;
     void unfold(QTextBlock block) override;
+    void breakpointsChanged(const QSet<int> &bpLines);
+    void breakPosition(int line);
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
@@ -305,6 +312,8 @@ private:
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;
+    QSet<int> mBreakpoints;
+    int mBreakLine = -1;
 
     static QRegularExpression mRex0LeadingSpaces;
     static QRegularExpression mRex1LeadingSpaces;

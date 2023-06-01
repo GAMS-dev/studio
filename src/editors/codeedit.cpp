@@ -982,7 +982,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
     setContextMenuPolicy(Qt::DefaultContextMenu);
     if (e->modifiers() == (Qt::AltModifier | Qt::ShiftModifier) && mAllowBlockEdit)
         setContextMenuPolicy(Qt::PreventContextMenu);
-    if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
+    if (e->button() == Qt::RightButton && e->pos().x() <= 0) {
+        showBpContext(e->pos());
+        done = true;
+    } else if (e->modifiers() & Qt::AltModifier && mAllowBlockEdit) {
         QTextCursor cursor = cursorForPosition(e->pos());
         QTextCursor anchor = textCursor();
         anchor.setPosition(anchor.anchor());
@@ -1010,6 +1013,13 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             }
             done = true;
         }
+    } else if (e->modifiers() == Qt::ControlModifier && e->pos().x() <= 0) {
+        int line = cursorForPosition(e->pos()).blockNumber();
+        if (mBreakpoints.contains(line))
+            emit delBreakpoint(line);
+        else
+            emit addBreakpoint(line);
+        done = true;
     }
     if (!done) {
         AbstractEdit::mousePressEvent(e);
@@ -1175,6 +1185,26 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     }
     menu->exec(e->globalPos());
     delete menu;
+}
+
+void CodeEdit::showBpContext(const QPoint &pos)
+{
+    int line = cursorForPosition(pos).blockNumber();
+
+    QMenu menu(this);
+    menu.addAction("Toggle breakpoint", this, [this, line]() {
+        if (mBreakpoints.contains(line))
+            emit delBreakpoint(line);
+        else
+            emit addBreakpoint(line);
+    });
+    menu.addAction("Remove breakpoints (this file)", this, [this]() {
+        emit delBreakpoints();
+    });
+    menu.addAction("Remove breakpoints (all files)", this, [this]() {
+        emit delAllBreakpoints();
+    });
+    menu.exec(viewport()->mapToGlobal(pos));
 }
 
 void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
@@ -1948,6 +1978,18 @@ void CodeEdit::unfold(QTextBlock block)
         toggleFolding(block);
 }
 
+void CodeEdit::breakpointsChanged(const QSet<int> &bpLines)
+{
+    mBreakpoints = bpLines;
+    mLineNumberArea->repaint();
+}
+
+void CodeEdit::breakPosition(int line)
+{
+    mBreakLine = line;
+    jumpTo(line);
+}
+
 void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)
 {
     if (mBlockEdit) {
@@ -2173,7 +2215,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.setFont(f);
                 painter.setPen(mark ? toColor(Theme::Edit_linenrAreaMarkFg)
                                     : toColor(Theme::Edit_linenrAreaFg));
-                if (blockNumber == 26) {
+                if (mBreakpoints.contains(blockNumber)) {
                     painter.setBrush(toColor(Theme::Normal_Red));
                     painter.setPen(Qt::NoPen);
                     painter.drawRoundedRect(0, top, widthForNr, fontMetrics().height(), 4, 4);

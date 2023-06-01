@@ -47,6 +47,25 @@ PExLogNode::PExLogNode(FileMeta* fileMeta, PExProjectNode *project)
     mLogCloser.setSingleShot(true);
     mLogCloser.setInterval(100);
     connect(&mLogCloser, &QTimer::timeout, this, &PExLogNode::closeLog);
+    connect(fileMeta, &FileMeta::documentOpened, this, [this]() {
+        connectDebugger(true);
+    });
+    connect(fileMeta, &FileMeta::documentOpened, this, [this]() {
+        connectDebugger(false);
+    });
+}
+
+void PExLogNode::connectDebugger(bool doConnect)
+{
+    QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
+    TextView *tv = ViewHelper::toTextView(wid);
+    if (tv) {
+        if (doConnect)
+            connect(this, &PExLogNode::addProcessData, tv, &TextView::addProcessData);
+        else
+            disconnect(this, &PExLogNode::addProcessData, tv, &TextView::addProcessData);
+    }
+
 }
 
 void PExLogNode::closeLog()

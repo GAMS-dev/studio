@@ -32,6 +32,7 @@ class AbstractProcess;
 
 class PExLogNode final: public PExFileNode
 {
+    Q_OBJECT
 public:
     ~PExLogNode() override;
     void resetLst();
@@ -45,6 +46,9 @@ public:
     const gams::studio::PExProjectNode *assignedProject() const override;
     gams::studio::PExProjectNode *assignedProject() override;
     void linkToProcess(AbstractProcess *process);
+
+signals:
+    void addProcessData(const QByteArray &data);
 
 public slots:
 //    void addProcessDataX(const QByteArray &data);
@@ -60,6 +64,7 @@ protected:
     friend class PExProjectNode;
 
     PExLogNode(FileMeta *fileMeta, PExProjectNode *project);
+    void connectDebugger(bool doConnect);
 
     struct LinkData {
         TextMark* textMark = nullptr;
@@ -73,10 +78,6 @@ protected:
 //    QString extractLinks(const QString &text, ExtractionState &state, QVector<LinkData> &marks, bool createMarks, bool &hasError);
 
 private:
-    enum LogFinish { logNone=0, logWritten=1, logEnd=2, llReady=3 };
-    Q_FLAG(LogFinish)
-    Q_DECLARE_FLAGS(LogFinishes, LogFinish)
-    Q_FLAG(LogFinishes)
     PExProjectNode *mProject = nullptr;
     PExFileNode *mLstNode = nullptr;
     struct ErrorData {
