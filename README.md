@@ -1,8 +1,6 @@
-# studio
+# GAMS Studio
 
 GAMS Studio is the official development environment of the General Algebraic Modeling System (GAMS). For further information about GAMS please visit [GAMS](https://www.gams.com) or the [GAMS documentation](https://www.gams.com/latest/docs/).
-
-GAMS Studio uses [Qt](https://www.qt.io/) which is licensed under [LGPL](https://www.gnu.org/licenses/lgpl-3.0.en.html). 
 
 # How to build
 
@@ -10,9 +8,8 @@ GAMS Studio uses [Qt](https://www.qt.io/) which is licensed under [LGPL](https:/
 
 The recommended way to get Qt is via its official [Qt online installer](https://www.qt.io/).
 If you are interested in the Qt sources you can download them through the 
-installer or build Qt from scratch by following the [Qt documentation](https://doc.qt.io/qt-5/build-sources.html).
+installer or build Qt from scratch by following the [Qt documentation](https://doc.qt.io/qt-6/build-sources.html).
 Alternatively, you can get and build Qt from the official [Qt GitHub mirror](https://github.com/qt/qt5).
-Please check the [CONTRIBUTING.md](CONTRIBUTING.md) for the GAMS Studio C++ and Qt requirements.
 
 ## 2. Download and install GAMS ##
 
@@ -42,6 +39,15 @@ GAMS_DISTRIB_CPP_API=$$GAMS_DISTRIB/apifiles/C++/api
 ```
 
 Then perform a `Build All` operation (`Build -> Build All`) to build the project. Finally, the GAMS Studio can be executed by triggering `Run` button or pressing `Ctrl + R`.
+
+# Contributing
+
+Your contributions to the GAMS Studio project are highly appreciated! Depending on
+your type of improvement you may want to [create an issue](https://help.github.com/en/articles/creating-an-issue)
+or [fork GAMS Studio](https://guides.github.com/activities/forking/) and open a pull
+request when your changes are ready.
+
+Before you request a review of your changes please make sure that you used the latest [GAMS release](https://www.gams.com/download/) for development and that your code is following the [Qt Coding Style](https://wiki.qt.io/Qt_Coding_Style).
 
 # Dependencies and Licenses
 
