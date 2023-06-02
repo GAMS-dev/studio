@@ -1984,7 +1984,7 @@ void CodeEdit::breakpointsChanged(const QSet<int> &bpLines)
     mLineNumberArea->repaint();
 }
 
-void CodeEdit::breakPosition(int line)
+void CodeEdit::setPausedPos(int line)
 {
     mBreakLine = line;
     jumpTo(line);
@@ -2219,9 +2219,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     painter.setBrush(toColor(Theme::Normal_Red));
                     painter.setPen(Qt::NoPen);
                     painter.drawRoundedRect(0, top, widthForNr, fontMetrics().height(), 4, 4);
-                    painter.setPen(Qt::SolidLine);
                     painter.setPen(mark ? toColor(Theme::Edit_foldLineFg)
                                         : toColor(Theme::Edit_foldLineFg));
+                    painter.setPen(Qt::SolidLine);
                 }
                 painter.drawText(0, top, widthForNr, fontMetrics().height(), Qt::AlignRight, number);
             }
@@ -2251,7 +2251,20 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                         painter.fillRect(foldRect, toColor(Theme::Edit_foldLineBg));
                     }
                 }
-          }
+                if (showLineNr() && mBreakLine == blockNumber) {
+                    painter.setBrush(toColor(Theme::Normal_Green));
+                    painter.setPen(Qt::NoPen);
+                    qreal h = fontMetrics().height() * .8;
+                    qreal off = (fontMetrics().height() - h) * .5;
+                    QPointF points[3] = {
+                        QPointF(widthForNr + 4, top + off),
+                        QPointF(widthForNr + 4, top + off + h),
+                        QPointF(widthForNr + 4 + (h * .5), top + off + (h * .5)),
+                    };
+                    painter.drawPolygon(points, 3);
+                    painter.setPen(Qt::SolidLine);
+                }
+            }
         }
 
         block = block.next();

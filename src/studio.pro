@@ -99,6 +99,7 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
+    debugger/debugwidget.cpp \
     debugger/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
@@ -311,6 +312,7 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
+    debugger/debugwidget.h \
     debugger/server.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
@@ -508,6 +510,7 @@ HEADERS += \
 FORMS += \
     confirmdialog.ui \
     connect/connecteditor.ui \
+    debugger/debugwidget.ui \
     encodingsdialog.ui \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \

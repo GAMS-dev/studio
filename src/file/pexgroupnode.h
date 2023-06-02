@@ -125,6 +125,7 @@ public:
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
     bool startDebugServer();
+    void stopDebugServer();
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
@@ -200,6 +201,7 @@ private:
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
     QHash<QString, QSet<int>> mBreakpoints;
+    PExFileNode *mPausedInFile = nullptr;
 
 private:
     QString cleanPath(QString path, QString file);

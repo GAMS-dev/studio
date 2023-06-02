@@ -1127,12 +1127,21 @@ void PExProjectNode::clearParameters()
 bool PExProjectNode::startDebugServer()
 {
     if (!mDebugServer) {
-        mDebugServer = new debugger::Server(this);
+        mDebugServer = new debugger::Server(workDir(), this);
         connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
     }
     return mDebugServer->start();
+}
+
+void PExProjectNode::stopDebugServer()
+{
+    if (mDebugServer) {
+        mDebugServer->stop();
+        mDebugServer->deleteLater();
+        mDebugServer = nullptr;
+    }
 }
 
 QProcess::ProcessState PExProjectNode::gamsProcessState() const
@@ -1170,12 +1179,28 @@ void PExProjectNode::onGamsProcessStateChanged(QProcess::ProcessState newState)
 
 void PExProjectNode::openDebugGdx(const QString &gdxFile)
 {
-
+    PExFileNode *node = projectRepo()->findFile(gdxFile, this);
+    if (node)
+        node->file()->jumpTo(node->projectId(), true);
 }
 
 void PExProjectNode::gotoPaused(const QString &file, int lineNr)
 {
-
+    PExFileNode *node = projectRepo()->findFile(file, this);
+    if (mPausedInFile && mPausedInFile != node) {
+        for (QWidget *wid : node->file()->editors()) {
+            if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
+                ce->setPausedPos(-1);
+        }
+    }
+    if (node) {
+        for (QWidget *wid : node->file()->editors()) {
+            if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
+                ce->setPausedPos(lineNr);
+        }
+    }
+    mPausedInFile = node;
+    mDebugServer->sendWriteGdx(mDebugServer->gdxTempFile());
 }
 
 PExRootNode::PExRootNode(ProjectRepo* repo)

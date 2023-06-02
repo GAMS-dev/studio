@@ -47,7 +47,7 @@
      <number>0</number>
     </property>
     <property name="bottomMargin">
-     <number>9</number>
+     <number>0</number>
     </property>
     <item>
      <widget class="QSplitter" name="splitter">
@@ -93,6 +93,9 @@
        </property>
       </widget>
      </widget>
+    </item>
+    <item>
+     <widget class="gams::studio::debugger::DebugWidget" name="debugWidget" native="true"/>
     </item>
     <item>
      <widget class="gams::studio::support::UpdateWidget" name="updateWidget" native="true">
@@ -1632,6 +1635,12 @@
    <class>gams::studio::support::UpdateWidget</class>
    <extends>QWidget</extends>
    <header>support/updatewidget.h</header>
+   <container>1</container>
+  </customwidget>
+  <customwidget>
+   <class>gams::studio::debugger::DebugWidget</class>
+   <extends>QWidget</extends>
+   <header>debugger/debugwidget.h</header>
    <container>1</container>
   </customwidget>
  </customwidgets>

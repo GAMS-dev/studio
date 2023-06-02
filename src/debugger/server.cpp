@@ -31,7 +31,7 @@ const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
 QSet<int> Server::mPortsInUse;
 
-Server::Server(QObject *parent) : QObject(parent)
+Server::Server(const QString &path, QObject *parent) : QObject(parent)
 {
     init();
     mServer = new QTcpServer(this);
@@ -48,11 +48,15 @@ Server::~Server()
 void Server::init()
 {
     mCalls.insert(invalidReply, "invalidReply");
-    mCalls.insert(writeGDX, "writeGDX");
     mCalls.insert(addBP, "addBP");
     mCalls.insert(delBP, "delBP");
     mCalls.insert(addBPs, "addBPs");
     mCalls.insert(clearBPs, "clearBPs");
+
+    mCalls.insert(run, "run");
+    mCalls.insert(stepLine, "stepLine");
+    mCalls.insert(interrupt, "interrupt");
+    mCalls.insert(writeGDX, "writeGDX");
 
     mReplies.insert("invalidCall", invalidCall);
     mReplies.insert("breakAt", paused);
@@ -90,6 +94,11 @@ void Server::stop()
     if (isListening())
         mServer->close();
     logMessage("Debug-Server stopped.");
+}
+
+QString Server::gdxTempFile() const
+{
+    return mPath + "/temp" + QString::number(mServer->serverPort()) + ".gdx";
 }
 
 void Server::callProcedure(CallReply call, const QStringList &arguments)
@@ -219,9 +228,24 @@ void Server::clearBreakpoints(const QString file)
     callProcedure(clearBPs, {file});
 }
 
+void Server::sendRun()
+{
+    callProcedure(run);
+}
+
+void Server::sendStepLine()
+{
+    callProcedure(stepLine);
+}
+
 void Server::sendInterrupt()
 {
     callProcedure(interrupt);
+}
+
+void Server::sendWriteGdx(const QString &gdxFile)
+{
+    callProcedure(writeGDX, {gdxFile});
 }
 
 bool Server::isListening()

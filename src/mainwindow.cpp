@@ -2164,6 +2164,9 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         appendSystemLogError("No group attached to process");
         return;
     }
+    if (QFile::exists(project->debugServer()->gdxTempFile()))
+        QFile::remove(project->debugServer()->gdxTempFile());
+    project->stopDebugServer();
 
     if (exitCode == ecTooManyScratchDirs) {
         FileMeta *fm = mRecent.fileMeta();
@@ -3611,8 +3614,11 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     }
     bool ready = executePrepare(project, commandLineStr, std::move(process));
     if (ready) {
-        if (!debug || project->startDebugServer())
+        if (!debug || project->startDebugServer()) {
+            if (debug)
+                ui->debugWidget->setVisible(true);
             execution(project);
+        }
         else if (debug) {
             appendSystemLogWarning("Could not start debugger for project [" + project->name() + "]. "
                                    + (project->debugServer() ? " Debugger is already running."
@@ -3693,9 +3699,10 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
     if (TextView* tv = ViewHelper::toTextView(logNode->file()->editors().first())) {
-        MainWindow::connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
-        MainWindow::connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
+        connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
+        connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
+        connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
+        connect(project, &PExProjectNode::addProcessData, tv, &TextView::addProcessData, Qt::UniqueConnection);
     }
     // cleanup bookmarks
     const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
@@ -3802,6 +3809,13 @@ void MainWindow::updateRunState()
 {
     updateMiroEnabled(false);
     mGamsParameterEditor->updateRunState(isActiveProjectRunnable(), isRecentGroupRunning());
+    debugger::Server *debugServer = nullptr;
+    if (PExProjectNode *project = currentProject()) {
+        debugServer = project->debugServer();
+        ui->debugWidget->setText("Project: " + project->name());
+    }
+    ui->debugWidget->setDebugServer(debugServer);
+    ui->debugWidget->setVisible(debugServer);
 }
 
 #ifdef QWEBENGINE

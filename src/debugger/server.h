@@ -33,14 +33,21 @@ namespace debugger {
 
 enum CallReply {
     invalid,
+
+    // configuring Call (Server -> GAMS)
     invalidReply,
-    writeGDX,
     addBP,
     delBP,
     addBPs,
     clearBPs,
-    interrupt,
 
+    // action Call (Server -> GAMS)
+    run,
+    stepLine,
+    interrupt,
+    writeGDX,
+
+    // Reply (GAMS -> Server)
     invalidCall,
     paused,
     gdxReady,
@@ -70,12 +77,13 @@ class Server : public QObject
 {
     Q_OBJECT
 public:
-    explicit Server(QObject *parent = nullptr);
+    explicit Server(const QString &path, QObject *parent = nullptr);
     ~Server() override;
     bool isListening();
     quint16 port();
     bool start();
     void stop();
+    QString gdxTempFile() const;
 
 signals:
     void addProcessData(const QByteArray &data);
@@ -87,7 +95,11 @@ public slots:
     void addBreakpoints(const QHash<QString, QSet<int> > &breakpoints);
     void delBreakpoint(const QString &filename, int line);
     void clearBreakpoints(const QString file = QString());
+
+    void sendRun();
+    void sendStepLine();
     void sendInterrupt();
+    void sendWriteGdx(const QString &gdxFile);
 
 private slots:
     void newConnection();
@@ -100,6 +112,7 @@ private:
     bool handleReply(const QString &replyData);
     QString toBpString(const QString &file, QSet<int> lines);
 
+    QString mPath;
     QTcpServer *mServer = nullptr;
     QTcpSocket *mSocket = nullptr;
     QHash<CallReply, QString> mCalls;

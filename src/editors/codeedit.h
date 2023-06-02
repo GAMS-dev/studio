@@ -172,7 +172,7 @@ public slots:
     void updateExtraSelections() override;
     void unfold(QTextBlock block) override;
     void breakpointsChanged(const QSet<int> &bpLines);
-    void breakPosition(int line);
+    void setPausedPos(int line);
 
 protected slots:
     void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
