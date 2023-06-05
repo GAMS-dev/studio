@@ -36,7 +36,7 @@ enum CallReply {
 
     // configuring Call (Server -> GAMS)
     invalidReply,
-    addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]
+    addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]  (shortstring = 255 characters) (relative to workdir)
     delBP,          //  delBP \n [file[:line]]
 
     // action Call (Server -> GAMS)

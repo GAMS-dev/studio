@@ -50,8 +50,6 @@ void Server::init()
     mCalls.insert(invalidReply, "invalidReply");
     mCalls.insert(addBP, "addBP");
     mCalls.insert(delBP, "delBP");
-    mCalls.insert(addBPs, "addBPs");
-    mCalls.insert(clearBPs, "clearBPs");
 
     mCalls.insert(run, "run");
     mCalls.insert(stepLine, "stepLine");
@@ -67,7 +65,7 @@ void Server::init()
 bool Server::start()
 {
     if (mServer->isListening()) {
-        logMessage("WARNING: The Debug-Server already listens to port" + mServer->serverPort());
+        logMessage("WARNING: The Debug-Server already listens to port" + QString::number(mServer->serverPort()));
         return true;
     }
 
@@ -115,11 +113,31 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
     if (keyword.isEmpty()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1)
                                                     : QString();
-        logMessage("Debug-Server: Undefined call '" + int(call)
+        logMessage("Debug-Server: Undefined call '" + QString::number(int(call))
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
-    mSocket->write((keyword + (arguments.isEmpty() ? "" : ('\n' + arguments.join('\n')))).toUtf8());
+    QStringList remain(arguments);
+    QString ready = keyword;
+    bool progress = false;
+    while (!remain.isEmpty()) {
+        if (ready.length() + 2 + remain.first().length() < 255) {
+            ready += '\n' + remain.takeFirst();
+            progress = true;
+        }
+        if (!progress) {
+            logMessage("Debug-Server: Call line too long. Can't send more than 255 characters at once '"
+                       + QString::number(int(call)) + ":" + remain.first() + "'");
+            break;
+        }
+        if (remain.isEmpty() || ready.length() + 2 + remain.first().length() >= 255) {
+            mSocket->write(ready.toUtf8());
+            if (!remain.isEmpty()) {
+                ready = keyword;
+                progress = false;
+            }
+        }
+    }
 }
 
 bool Server::handleReply(const QString &replyData)
