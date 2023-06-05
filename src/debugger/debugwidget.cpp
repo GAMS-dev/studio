@@ -47,13 +47,13 @@ void DebugWidget::on_tbRun_clicked()
 
 void DebugWidget::on_tbStep_clicked()
 {
-
+    emit sendStepLine();
 }
 
 
 void DebugWidget::on_tbStop_clicked()
 {
-
+    emit sendInterrupt();
 }
 
 } // namespace debugger

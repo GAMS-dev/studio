@@ -215,7 +215,7 @@ void Server::addBreakpoints(const QHash<QString, QSet<int> > &breakpoints)
         ++iter;
     }
     if (!args.isEmpty())
-        callProcedure(addBPs, args);
+        callProcedure(addBP, args);
 }
 
 void Server::delBreakpoint(const QString &filename, int line)
@@ -225,7 +225,7 @@ void Server::delBreakpoint(const QString &filename, int line)
 
 void Server::clearBreakpoints(const QString file)
 {
-    callProcedure(clearBPs, {file});
+    callProcedure(delBP, {file});
 }
 
 void Server::sendRun()

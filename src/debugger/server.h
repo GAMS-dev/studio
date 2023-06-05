@@ -36,10 +36,8 @@ enum CallReply {
 
     // configuring Call (Server -> GAMS)
     invalidReply,
-    addBP,
-    delBP,
-    addBPs,
-    clearBPs,
+    addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]
+    delBP,          //  delBP \n [file[:line]]
 
     // action Call (Server -> GAMS)
     run,
@@ -49,30 +47,26 @@ enum CallReply {
 
     // Reply (GAMS -> Server)
     invalidCall,
-    paused,
-    gdxReady,
+    paused,         // paused \n file:line
+    gdxReady,       // gdxReady \n file
     finished,
 };
-
-struct Breakpoint
-{
-    Breakpoint() {}
-    Breakpoint(const QString _file, int _line, int _index = 0) : file(_file), line(_line), index(_index) {}
-    inline bool operator ==(const Breakpoint &other) const {
-        return file.compare(other.file) == 0 && line == other.line && index == other.index;
-    }
-    inline bool operator !=(const Breakpoint &other) const {
-        return *this == other;
-    }
-    inline QString toString() const {
-        return file + ':' + QString::number(line) + ':' + QString::number(index);
-    }
-
-    QString file;
-    int line = 0;
-    int index = 0;
-};
-
+///
+/// \brief The Server class allows debug communication to a GAMS instance
+/// \details
+/// The Server class listens to a port to allow GAMS to connect. When the connection is established, the Server can
+/// send several kind of <b>Call</b> to GAMS and accepts some kinds of <b>Reply</b>.
+///
+/// The Data is formatted in a multi-line string:
+/// - the first line is the keyword of the Call/Reply
+/// - the data follows in subsequent lines, one line for each data set
+/// - a data set is split by the colon ':'
+///
+/// example to tell GAMS to add a breakpoint for trnsport at line 46, Studio sends:
+///
+/// addBP
+/// <path>/trnsport.gms:46
+///
 class Server : public QObject
 {
     Q_OBJECT
