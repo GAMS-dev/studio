@@ -31,6 +31,8 @@ add_library(${PROJECT_NAME}
     OAIIdentity_provider_oauth2.cpp
     OAIIdentity_provider_oauth2_scope.cpp
     OAIIdentity_provider_oauth2_with_secret.cpp
+    OAIIdentity_provider_oidc.cpp
+    OAIIdentity_provider_oidc_with_secret.cpp
     OAIInex.cpp
     OAIInvitation.cpp
     OAIInvitation_quota.cpp
@@ -44,14 +46,20 @@ add_library(${PROJECT_NAME}
     OAIMessage_and_token.cpp
     OAIModel_auth_token.cpp
     OAIModel_configuration.cpp
+    OAIModel_default_instance.cpp
+    OAIModel_default_user_instance.cpp
     OAIModel_hypercube_job.cpp
     OAIModel_hypercube_usage.cpp
     OAIModel_instance_info.cpp
     OAIModel_instance_info_full.cpp
+    OAIModel_instance_pool_info.cpp
     OAIModel_job_labels.cpp
     OAIModel_job_usage.cpp
+    OAIModel_pool_usage.cpp
     OAIModel_usage.cpp
+    OAIModel_user.cpp
     OAIModel_userinstance_info.cpp
+    OAIModel_userinstancepool_info.cpp
     OAIModel_version.cpp
     OAIModels.cpp
     OAINamespace.cpp
@@ -61,17 +69,19 @@ add_library(${PROJECT_NAME}
     OAIPerm_and_username.cpp
     OAIQuota.cpp
     OAIQuota_exceeded.cpp
-    OAIResult_user.cpp
     OAIStatus_code_meaning.cpp
     OAIStream_entry.cpp
     OAISystem_wide_license.cpp
     OAIText_entries.cpp
     OAIText_entry.cpp
     OAITime_span.cpp
+    OAITime_span_pool_worker.cpp
+    OAIToken_forward_error.cpp
     OAIUser.cpp
     OAIUser_group_member.cpp
     OAIUser_groups.cpp
     OAIWebhook.cpp
+    OAIWebhook_parameterized_event.cpp
     OAIAuthApi.cpp
     OAICleanupApi.cpp
     OAIDefaultApi.cpp

@@ -18,6 +18,8 @@ HEADERS += \
     $${PWD}/OAIIdentity_provider_oauth2.h \
     $${PWD}/OAIIdentity_provider_oauth2_scope.h \
     $${PWD}/OAIIdentity_provider_oauth2_with_secret.h \
+    $${PWD}/OAIIdentity_provider_oidc.h \
+    $${PWD}/OAIIdentity_provider_oidc_with_secret.h \
     $${PWD}/OAIInex.h \
     $${PWD}/OAIInvitation.h \
     $${PWD}/OAIInvitation_quota.h \
@@ -31,14 +33,20 @@ HEADERS += \
     $${PWD}/OAIMessage_and_token.h \
     $${PWD}/OAIModel_auth_token.h \
     $${PWD}/OAIModel_configuration.h \
+    $${PWD}/OAIModel_default_instance.h \
+    $${PWD}/OAIModel_default_user_instance.h \
     $${PWD}/OAIModel_hypercube_job.h \
     $${PWD}/OAIModel_hypercube_usage.h \
     $${PWD}/OAIModel_instance_info.h \
     $${PWD}/OAIModel_instance_info_full.h \
+    $${PWD}/OAIModel_instance_pool_info.h \
     $${PWD}/OAIModel_job_labels.h \
     $${PWD}/OAIModel_job_usage.h \
+    $${PWD}/OAIModel_pool_usage.h \
     $${PWD}/OAIModel_usage.h \
+    $${PWD}/OAIModel_user.h \
     $${PWD}/OAIModel_userinstance_info.h \
+    $${PWD}/OAIModel_userinstancepool_info.h \
     $${PWD}/OAIModel_version.h \
     $${PWD}/OAIModels.h \
     $${PWD}/OAINamespace.h \
@@ -48,17 +56,19 @@ HEADERS += \
     $${PWD}/OAIPerm_and_username.h \
     $${PWD}/OAIQuota.h \
     $${PWD}/OAIQuota_exceeded.h \
-    $${PWD}/OAIResult_user.h \
     $${PWD}/OAIStatus_code_meaning.h \
     $${PWD}/OAIStream_entry.h \
     $${PWD}/OAISystem_wide_license.h \
     $${PWD}/OAIText_entries.h \
     $${PWD}/OAIText_entry.h \
     $${PWD}/OAITime_span.h \
+    $${PWD}/OAITime_span_pool_worker.h \
+    $${PWD}/OAIToken_forward_error.h \
     $${PWD}/OAIUser.h \
     $${PWD}/OAIUser_group_member.h \
     $${PWD}/OAIUser_groups.h \
     $${PWD}/OAIWebhook.h \
+    $${PWD}/OAIWebhook_parameterized_event.h \
 # APIs
     $${PWD}/OAIAuthApi.h \
     $${PWD}/OAICleanupApi.h \
@@ -97,6 +107,8 @@ SOURCES += \
     $${PWD}/OAIIdentity_provider_oauth2.cpp \
     $${PWD}/OAIIdentity_provider_oauth2_scope.cpp \
     $${PWD}/OAIIdentity_provider_oauth2_with_secret.cpp \
+    $${PWD}/OAIIdentity_provider_oidc.cpp \
+    $${PWD}/OAIIdentity_provider_oidc_with_secret.cpp \
     $${PWD}/OAIInex.cpp \
     $${PWD}/OAIInvitation.cpp \
     $${PWD}/OAIInvitation_quota.cpp \
@@ -110,14 +122,20 @@ SOURCES += \
     $${PWD}/OAIMessage_and_token.cpp \
     $${PWD}/OAIModel_auth_token.cpp \
     $${PWD}/OAIModel_configuration.cpp \
+    $${PWD}/OAIModel_default_instance.cpp \
+    $${PWD}/OAIModel_default_user_instance.cpp \
     $${PWD}/OAIModel_hypercube_job.cpp \
     $${PWD}/OAIModel_hypercube_usage.cpp \
     $${PWD}/OAIModel_instance_info.cpp \
     $${PWD}/OAIModel_instance_info_full.cpp \
+    $${PWD}/OAIModel_instance_pool_info.cpp \
     $${PWD}/OAIModel_job_labels.cpp \
     $${PWD}/OAIModel_job_usage.cpp \
+    $${PWD}/OAIModel_pool_usage.cpp \
     $${PWD}/OAIModel_usage.cpp \
+    $${PWD}/OAIModel_user.cpp \
     $${PWD}/OAIModel_userinstance_info.cpp \
+    $${PWD}/OAIModel_userinstancepool_info.cpp \
     $${PWD}/OAIModel_version.cpp \
     $${PWD}/OAIModels.cpp \
     $${PWD}/OAINamespace.cpp \
@@ -127,17 +145,19 @@ SOURCES += \
     $${PWD}/OAIPerm_and_username.cpp \
     $${PWD}/OAIQuota.cpp \
     $${PWD}/OAIQuota_exceeded.cpp \
-    $${PWD}/OAIResult_user.cpp \
     $${PWD}/OAIStatus_code_meaning.cpp \
     $${PWD}/OAIStream_entry.cpp \
     $${PWD}/OAISystem_wide_license.cpp \
     $${PWD}/OAIText_entries.cpp \
     $${PWD}/OAIText_entry.cpp \
     $${PWD}/OAITime_span.cpp \
+    $${PWD}/OAITime_span_pool_worker.cpp \
+    $${PWD}/OAIToken_forward_error.cpp \
     $${PWD}/OAIUser.cpp \
     $${PWD}/OAIUser_group_member.cpp \
     $${PWD}/OAIUser_groups.cpp \
     $${PWD}/OAIWebhook.cpp \
+    $${PWD}/OAIWebhook_parameterized_event.cpp \
 # APIs
     $${PWD}/OAIAuthApi.cpp \
     $${PWD}/OAICleanupApi.cpp \
