@@ -407,7 +407,6 @@ MainWindow::MainWindow(QWidget *parent)
     initCompleterActions();
     initNavigator();
 
-    checkGamsLicense();
     checkSslLibrary();
 }
 
@@ -3814,7 +3813,7 @@ void MainWindow::initDelayedElements()
         mSaveSettingsTimer.stop();
         updateAndSaveSettings();
     });
-
+    checkGamsLicense();
 }
 
 void MainWindow::openDelayedFiles()
