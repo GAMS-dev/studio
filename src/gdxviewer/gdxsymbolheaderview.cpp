@@ -37,7 +37,7 @@ GdxSymbolHeaderView::GdxSymbolHeaderView(Qt::Orientation orientation, GdxSymbolH
     mFilterIconX.resize(maxColumns);
     mFilterIconY.resize(maxColumns);
 
-    int h = sectionSizeFromContents(0).height();
+    int h = GdxSymbolHeaderView::sectionSizeFromContents(0).height();
     mFilterIconWidth  = qRound(h * ICON_SCALE_FACTOR);
     mFilterIconMarginLeft = qRound(h*ICON_MARGIN_LEFT);
     mFilterIconMarginBottom = qRound(h*ICON_MARGIN_BOTTOM);
