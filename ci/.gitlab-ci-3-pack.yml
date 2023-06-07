@@ -140,7 +140,7 @@ pack-leg:
   - minor=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
   - patch=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
   - export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
-  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --desktop-file=appdir/usr/share/studio.desktop
+  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --library /usr/lib/x86_64-linux-gnu/libssl.so --desktop-file=appdir/usr/share/studio.desktop
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
   artifacts:

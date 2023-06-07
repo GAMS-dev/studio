@@ -16,6 +16,7 @@ Version 1.15.0 *
   - Added settings to specify default numerical formatting options and showen/hidden attributes for the GDX Viewer
   - Fixed a bug where precision=Full was not restored properly in the GDX Viewer.
   - Disable preferences menu for sets and aliases in the GDX Viewer.
+  - fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
 
 Version 1.14.3
 ==================
