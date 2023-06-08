@@ -224,6 +224,8 @@ QSettings *Settings::newQSettings(QString name)
         FATAL() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
     }
     res->sync();
+    if (!QFile::exists(res->fileName()))
+        mInitWarnings << QString("Failed to create file %1").arg(res->fileName());
     return res;
 }
 
@@ -962,6 +964,13 @@ void Settings::exportSettings(const QString &path)
 QString Settings::themeFileName(QString baseName)
 {
     return CThemePrefix+baseName.toLower()+".json";
+}
+
+QStringList Settings::takeInitWarnings()
+{
+    QStringList res = mInitWarnings;
+    mInitWarnings.clear();
+    return res;
 }
 
 }

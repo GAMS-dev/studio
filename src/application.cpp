@@ -77,7 +77,11 @@ void Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
+    QStringList warnings = Settings::settings()->takeInitWarnings();
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
+    mMainWindow->appendSystemLogInfo("GAMS Studio " + QCoreApplication::arguments().join(" "));
+    for (const QString &warn : warnings)
+        mMainWindow->appendSystemLogWarning(warn);
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
         triggerOpenFile(mOpenPathOnInit);
