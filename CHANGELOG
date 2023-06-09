@@ -4,6 +4,8 @@ Version 1.14.4 *
 - fixed project setting for parameter file lost or reset on restart Studio
 - delay license dialog to ensure Studio is already visible
 - fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
+- added info to system log with Studio start arguments
+- added warning to system log if setting can't be created
 
 Version 1.14.3
 ==================
