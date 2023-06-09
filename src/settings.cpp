@@ -180,9 +180,11 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
             // only if the basic settings file has been created ...
             mSettings.insert(scSys, settings);
             loadFile(scSys);
+            checkQSettings(settings);
             settings = newQSettings("usersettings");
             mSettings.insert(scUser, settings);
             loadFile(scUser);
+            checkQSettings(settings);
 
             // each theme has one file
             loadFile(scTheme);
@@ -219,18 +221,22 @@ QSettings *Settings::newQSettings(QString name)
 {
     QSettings *res = nullptr;
     res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
-    res->sync();
-    bool error = false;
-    if (res->status()) {
-        if (res->status() == QSettings::FormatError)
-            mInitWarnings << QString("Format error in settings file %1").arg(res->fileName());
-        error = res->status() == QSettings::AccessError;
-    }
-    if (!QFile::exists(res->fileName()))
-        mInitWarnings << QString("Failed to create settings file %1").arg(res->fileName());
-    else if (error)
-        mInitWarnings << QString("Failed to write settings file %1").arg(res->fileName());
     return res;
+}
+
+void Settings::checkQSettings(QSettings *settings)
+{
+    settings->sync();
+    if (settings->status()) {
+        if (settings->status() == QSettings::FormatError)
+            mInitWarnings << QString("Format error in settings file %1").arg(settings->fileName());
+        else if (!QFile::exists(settings->fileName()))
+            mInitWarnings << QString("Can't create settings file %1").arg(settings->fileName());
+        else
+            mInitWarnings << QString("Can't write settings file %1").arg(settings->fileName());
+    }
+    if (!QFile::exists(settings->fileName()))
+        mInitWarnings << QString("Failed to create settings file %1").arg(settings->fileName());
 }
 
 QString settingsKeyName(SettingsKey key) {
