@@ -185,6 +185,7 @@ public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
+    void checkSettings();
 
     static int version(Scope scope);
     static void useRelocatedPathForTests();
@@ -257,7 +258,6 @@ private:
     Settings(bool ignore, bool reset, bool resetView);
     ~Settings();
     QSettings *newQSettings(QString name);
-    void checkQSettings(QSettings *settings);
     QHash<SettingsKey, KeyData> generateKeys();
     bool safelyAdd(QHash<SettingsKey, KeyData> &hash, SettingsKey key, Scope scope, QStringList jsKey, QVariant defaultValue);
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }

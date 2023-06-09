@@ -3813,6 +3813,12 @@ void MainWindow::initDelayedElements()
         mSaveSettingsTimer.stop();
         updateAndSaveSettings();
     });
+    updateAndSaveSettings();
+    Settings::settings()->checkSettings();
+    QStringList warnings = Settings::settings()->takeInitWarnings();
+    for (const QString &warn : warnings)
+        appendSystemLogWarning(warn);
+
     checkGamsLicense();
 }
 
