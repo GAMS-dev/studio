@@ -20,6 +20,7 @@
 #include "engineprocess.h"
 #include <engineapi/OAIJobsApi.h>
 #include "enginemanager.h"
+#include "authmanager.h"
 #include "logger.h"
 #include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
@@ -45,6 +46,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
+//    connect(mManager, &EngineManager::reListProvider, this, &EngineProcess::reListProvider);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
@@ -420,10 +422,20 @@ QUrl EngineProcess::url()
     return mManager->url();
 }
 
+void EngineProcess::listProviders(const QString &name)
+{
+    mAuthManager->listProvider(name);
+}
+
 void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
 {
     mManager->authorize(username, password, expireMinutes);
     setProcState(ProcCheck);
+}
+
+void EngineProcess::authorize(QUrl authUrl, const QString &clientId, const QString &ssoName)
+{
+
 }
 
 void EngineProcess::authorize(const QString &authToken)
@@ -683,6 +695,11 @@ void EngineProcess::reAuthorize(const QString &token)
         setProcState(ProcCheck);
     }
     emit authorized(token);
+}
+
+void EngineProcess::reListProvider(const QList<QHash<QString, QVariant> > &allProvider)
+{
+
 }
 
 void EngineProcess::pollStatus()

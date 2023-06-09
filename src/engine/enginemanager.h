@@ -87,6 +87,7 @@ public:
     void abortRequests();
     void cleanup();
 
+    void listProvider(const QString &name);
     void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
     void getUsername();
@@ -106,6 +107,7 @@ public:
 signals:
     void syncKillJob(bool hard);
 
+    void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
     void reAuthorize(const QString &token);
     void reGetUsername(const QString &name);
     void reAuthorizeError(const QString &error);

@@ -21,6 +21,7 @@
 #include "ui_enginestartdialog.h"
 #include "logger.h"
 #include "engineprocess.h"
+#include "authmanager.h"
 #include "theme.h"
 #include <QPushButton>
 #include <QEvent>
@@ -53,9 +54,8 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     connect(ui->cbNamespace, &QComboBox::currentTextChanged, this, &EngineStartDialog::updateSubmitStates);
     connect(ui->edUser, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
     connect(ui->edPassword, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
-    connect(ui->edToken, &QPlainTextEdit::textChanged, this, [this]() {
-        updateLoginStates();
-    });
+    connect(ui->edSsoName, &QLineEdit::textChanged, this, &EngineStartDialog::updateLoginStates);
+    connect(ui->edToken, &QPlainTextEdit::textChanged, this, [this]() { updateLoginStates(); });
     connect(ui->bLogout, &QPushButton::clicked, this, &EngineStartDialog::bLogoutClicked);
     connect(ui->cbForceGdx, &QCheckBox::stateChanged, this, &EngineStartDialog::forceGdxStateChanged);
     connect(ui->cbAcceptCert, &QCheckBox::stateChanged, this, &EngineStartDialog::certAcceptChanged);
@@ -158,7 +158,7 @@ bool EngineStartDialog::isCertAccepted()
     return ui->cbAcceptCert->isChecked();
 }
 
-void EngineStartDialog::initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken,
+void EngineStartDialog::initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, const QString &ssoName,
                                  int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx)
 {
     mUrl = cleanUrl(_url);
@@ -168,6 +168,9 @@ void EngineStartDialog::initData(const QString &_url, const int authMethod, cons
     ui->stackLoginInput->setCurrentIndex(authMethod);
     if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
     if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
+    if (mProc && authMethod == 2) {
+        mProc->setAuthToken(_userToken.trimmed());
+    }
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
     if (selfCert) {
@@ -210,6 +213,11 @@ QString EngineStartDialog::authToken() const
 {
     if (mProc) return mProc->authToken();
     return ui->edToken->document()->toPlainText().trimmed();
+}
+
+QString EngineStartDialog::ssoName() const
+{
+    return ui->edSsoName->text().trimmed();
 }
 
 bool EngineStartDialog::forceGdx() const
@@ -346,6 +354,10 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         case 1:
             mProc->authorize(ui->edToken->document()->toPlainText().trimmed());
             break;
+        case 2: {
+            // SSO authorization
+            mProc->authorize(ui->edToken->document()->toPlainText().trimmed());
+        }   break;
         default:
             break;
         }

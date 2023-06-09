@@ -119,6 +119,7 @@ SOURCES += \
     editors/textview.cpp \
     editors/textviewedit.cpp \
     encodingsdialog.cpp \
+    engine/authmanager.cpp \
     engine/efieditor.cpp \
     engine/enginemanager.cpp \
     engine/engineprocess.cpp \
@@ -335,6 +336,7 @@ HEADERS += \
     editors/textview.h \
     editors/textviewedit.h \
     encodingsdialog.h \
+    engine/authmanager.h \
     engine/efieditor.h \
     engine/enginemanager.h \
     engine/engineprocess.h \

@@ -56,11 +56,30 @@ EngineManager::EngineManager(QObject* parent)
             [this](OAIModel_auth_token summary) {
         emit reAuthorize(summary.getToken());
     });
-    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this,
+    connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this, [this]
+            (OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reAuthorizeError(getJsonMessageIfFound(text));
+    });
+    connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignal, this, [this](QList<OAIIdentity_provider> summary) {
+        QList<QHash<QString, QVariant>> allProvider;
+        for (const OAIIdentity_provider &ip : summary) {
+            if (ip.is_oidc_Set()) {
+                QHash<QString, QVariant> provider;
+                const OAIIdentity_provider_oidc &oidc = ip.getOidc();
+                provider.insert("name", ip.getName());
+                provider.insert("label", ip.getLabel());
+                provider.insert("endpoint", oidc.getDeviceAuthorizationEndpoint());
+                provider.insert("clientId", oidc.getDeviceClientId());
+                provider.insert("hasSecret", oidc.isHasDeviceClientSecret());
+                allProvider << provider;
+            }
+        }
+        emit reListProvider(allProvider);
+    });
+    connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
         emit reAuthorizeError(getJsonMessageIfFound(text));
     });
-
 
     // ===== initialize Namespaces API =====
 
@@ -324,6 +343,11 @@ void EngineManager::setIgnoreSslErrorsCurrentUrl(bool ignore)
 bool EngineManager::isIgnoreSslErrors() const
 {
     return mNetworkManager == NetworkManager::managerSelfCert();
+}
+
+void EngineManager::listProvider(const QString &name)
+{
+    mAuthApi->listIdentityProviders(name);
 }
 
 void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)

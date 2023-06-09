@@ -395,6 +395,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skEngineUser, scSys, {"engine","user"}, "");
     safelyAdd(res, skEngineUserToken, scSys, {"engine","userToken"}, "");
     safelyAdd(res, skEngineStoreUserToken, scUser, {"engine","storeUserToken"}, false);
+    safelyAdd(res, skEngineSsoName, scSys, {"engine","ssoName"}, "");
     safelyAdd(res, skEngineAuthExpire, scUser, {"engine","authExpire"}, 60*24*7);
     safelyAdd(res, skEngineIsSelfCert, scSys, {"engine","isSelfCert"}, false);
     safelyAdd(res, skEngineNamespace, scSys, {"engine","namespace"}, "");

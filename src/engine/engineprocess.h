@@ -37,6 +37,7 @@ namespace engine {
 
 //struct QuotaData;
 class EngineManager;
+class AuthManager;
 
 /// \brief The EngineProcess controls all steps to run a job on GAMS Engine
 /// This class works in four process steps:
@@ -66,7 +67,9 @@ public:
     QProcess::ProcessState state() const override;
     bool setUrl(const QString &url);
     QUrl url();
+    void listProviders(const QString &name = QString());
     void authorize(const QString &username, const QString &password, int expireMinutes);
+    void authorize(QUrl authUrl, const QString &clientId, const QString &ssoName);
     void authorize(const QString &authToken);
     void initUsername(const QString &user);
     void setAuthToken(const QString &bearerToken);
@@ -87,6 +90,7 @@ public:
     void abortRequests();
 
 signals:
+    void reProviderList(const QList<QHash<QString, QVariant> > &allProvider);
     void authorized(const QString &token);
     void authorizeError(const QString &error);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
@@ -122,6 +126,7 @@ protected slots:
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
     void reAuthorize(const QString &token);
+    void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
 
 private slots:
     void pollStatus();
@@ -149,6 +154,7 @@ private:
     bool addFilenames(const QString &efiFile, QStringList &list);
 
     EngineManager *mManager;
+    AuthManager *mAuthManager = nullptr;
     QString mHost;
     QString mNamespace;
     QString mAuthToken;

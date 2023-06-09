@@ -66,13 +66,15 @@ public:
     EngineProcess *process() const;
     void setAcceptCert();
     bool isCertAccepted();
-    void initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
+    void initData(const QString &_url, const int authMethod, const QString &_user, const QString &_userToken, const QString &ssoName,
+                  int authExpireMinutes, bool selfCert, const QString &_nSpace, const QString &_userInst, bool _forceGdx);
     bool isAlways();
     QString url() const;
     QString nSpace() const;
     QString userInstance() const;
     QString user() const;
     QString authToken() const;
+    QString ssoName() const;
     bool forceGdx() const;
     void focusEmptyField();
     void setEngineVersion(QString version);

@@ -4120,6 +4120,7 @@ void MainWindow::showEngineStartDialog()
                      Settings::settings()->toInt(SettingsKey::skEngineAuthMethod),
                      Settings::settings()->toString(SettingsKey::skEngineUser),
                      Settings::settings()->toString(SettingsKey::skEngineUserToken),
+                     Settings::settings()->toString(SettingsKey::skEngineSsoName),
                      Settings::settings()->toInt(SettingsKey::skEngineAuthExpire),
                      Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert),
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
@@ -4130,6 +4131,7 @@ void MainWindow::showEngineStartDialog()
         mEngineAuthToken = token;
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+        Settings::settings()->setString(SettingsKey::skEngineSsoName, dialog->ssoName());
         Settings::settings()->setBool(SettingsKey::skEngineIsSelfCert, dialog->isCertAccepted());
         Settings::settings()->setInt(SettingsKey::skEngineAuthMethod, dialog->authMethod());
         if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))

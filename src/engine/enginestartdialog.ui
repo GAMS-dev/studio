@@ -175,7 +175,7 @@
        <item row="2" column="0" colspan="2">
         <widget class="QStackedWidget" name="stackLoginInput">
          <property name="currentIndex">
-          <number>1</number>
+          <number>2</number>
          </property>
          <widget class="QWidget" name="pageUserPw">
           <layout class="QGridLayout" name="gridLayout_5">
@@ -236,7 +236,7 @@
             <number>0</number>
            </property>
            <item row="0" column="0">
-            <widget class="QLabel" name="label_2">
+            <widget class="QLabel" name="laToken">
              <property name="text">
               <string>JWT Token</string>
              </property>
@@ -254,6 +254,32 @@
               <bool>true</bool>
              </property>
             </widget>
+           </item>
+          </layout>
+         </widget>
+         <widget class="QWidget" name="pageSSO">
+          <layout class="QGridLayout" name="gridLayout_7">
+           <property name="leftMargin">
+            <number>0</number>
+           </property>
+           <property name="topMargin">
+            <number>0</number>
+           </property>
+           <property name="rightMargin">
+            <number>0</number>
+           </property>
+           <property name="bottomMargin">
+            <number>0</number>
+           </property>
+           <item row="0" column="0">
+            <widget class="QLabel" name="laSso">
+             <property name="text">
+              <string>SSO Name</string>
+             </property>
+            </widget>
+           </item>
+           <item row="0" column="1">
+            <widget class="QLineEdit" name="edSsoName"/>
            </item>
           </layout>
          </widget>
