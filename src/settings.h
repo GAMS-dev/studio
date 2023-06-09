@@ -149,13 +149,13 @@ enum SettingsKey {
     // syntax colors
     skUserThemes,
 
-    skSettingsKeyCount,
-
     // check for GAMS update
     skUpdateInterval,
     skAutoUpdateCheck,
     skLastUpdateCheckDate,
-    skNextUpdateCheckDate
+    skNextUpdateCheckDate,
+
+    skSettingsKeyCount, // This MUST be the last enum value!
 };
 
 enum UpdateCheckInterval

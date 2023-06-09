@@ -219,13 +219,17 @@ QSettings *Settings::newQSettings(QString name)
 {
     QSettings *res = nullptr;
     res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
-    if (res->status()) {
-        // TODO(JM) Do we want to exit if the settings couldn't be created?
-        FATAL() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
-    }
     res->sync();
+    bool error = false;
+    if (res->status()) {
+        if (res->status() == QSettings::FormatError)
+            mInitWarnings << QString("Format error in settings file %1").arg(res->fileName());
+        error = res->status() == QSettings::AccessError;
+    }
     if (!QFile::exists(res->fileName()))
-        mInitWarnings << QString("Failed to create file %1").arg(res->fileName());
+        mInitWarnings << QString("Failed to create settings file %1").arg(res->fileName());
+    else if (error)
+        mInitWarnings << QString("Failed to write settings file %1").arg(res->fileName());
     return res;
 }
 
@@ -381,18 +385,18 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // syntax color settings
     safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());
 
+    // Check gams update
+    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
+    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
+    safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
+    safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
+
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
         if (!res.contains(static_cast<SettingsKey>(i))) {
             DEB() << "WARNING: Unused SettingsKey [" << QString::number(i) << "]";
         }
     }
-
-    // Check gams update
-    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
-    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
-    safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
-    safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
 
     return res;
 }

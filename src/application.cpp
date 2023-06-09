@@ -79,7 +79,7 @@ void Application::init()
                              mCmdParser.resetView());
     QStringList warnings = Settings::settings()->takeInitWarnings();
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
-    mMainWindow->appendSystemLogInfo("GAMS Studio " + QCoreApplication::arguments().join(" "));
+    mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     for (const QString &warn : warnings)
         mMainWindow->appendSystemLogWarning(warn);
     mMainWindow->openFiles(mCmdParser.files());
