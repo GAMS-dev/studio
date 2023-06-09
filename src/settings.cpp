@@ -230,13 +230,12 @@ void Settings::checkQSettings(QSettings *settings)
     if (settings->status()) {
         if (settings->status() == QSettings::FormatError)
             mInitWarnings << QString("Format error in settings file %1").arg(settings->fileName());
-        else if (!QFile::exists(settings->fileName()))
-            mInitWarnings << QString("Can't create settings file %1").arg(settings->fileName());
-        else
-            mInitWarnings << QString("Can't write settings file %1").arg(settings->fileName());
     }
     if (!QFile::exists(settings->fileName()))
-        mInitWarnings << QString("Failed to create settings file %1").arg(settings->fileName());
+        mInitWarnings << QString("Can't create settings file %1").arg(settings->fileName());
+    else if (!settings->isWritable())
+        mInitWarnings << QString("Can't write settings file %1").arg(settings->fileName());
+
 }
 
 QString settingsKeyName(SettingsKey key) {
