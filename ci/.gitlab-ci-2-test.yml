@@ -71,7 +71,7 @@ test-leg:
         xvfb-run -e /dev/stdout --auto-servernum --server-num=1 ./$f -junitxml -o $REPORTS_DIR/$f.xml
       done
   artifacts:
-    name: unittest-results-deg
+    name: unittest-results-leg
     paths: 
       - build/src/bin/*
       - build/reports/*

@@ -332,6 +332,8 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
+            if (projectData.contains("pf"))
+                project->setParameterFile(projectDir.absoluteFilePath(projectData.value("pf").toString()));
             if (!readProjectFiles(project, subChildren, projectPath))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
@@ -421,9 +423,13 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
         QString filePath = project->runnableGms()->location();
         projectObject.insert("file", relativePaths ? dir.relativeFilePath(filePath) : filePath);
     }
-    if (project->parameterFile()) {
-        QString filePath = project->parameterFile()->location();
-        projectObject.insert("pf", relativePaths ? dir.relativeFilePath(filePath) : filePath);
+    if (project->hasParameterFile()) {
+        QString pfPath;
+        if (FileMeta * meta = project->parameterFile()) {
+            QString filePath = meta->location();
+            pfPath = relativePaths ? dir.relativeFilePath(filePath) : filePath;
+        }
+        projectObject.insert("pf", pfPath);
     }
     projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );

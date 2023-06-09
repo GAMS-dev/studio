@@ -28,6 +28,7 @@
 #include <QPushButton>
 #include <QFont>
 #include <QFileDialog>
+#include <QComboBox>
 
 namespace gams {
 namespace studio {

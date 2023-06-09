@@ -36,6 +36,7 @@ using gams::studio::FileKind;
 void TestGamsUserConfig::initTestCase()
 {
     systemDir = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
+    QVERIFY2(!systemDir.isEmpty(), "SystemDir must not be empty");
     qDebug() << QString("systemDir=[%1]").arg(CommonPaths::systemDir());
 }
 
@@ -190,6 +191,20 @@ void TestGamsUserConfig::testGamsRunningDefaultConfigFile()
         gamsProc->start();
         // then
         if (gamsProc->waitForFinished()) {
+            QDir lstPath = QDir(tempDir).filePath("trnsport.lst");
+            QFile lstFile(lstPath.path());
+            QVERIFY(lstFile.exists());
+            qDebug() << "workdir=" << tempDir;
+            qDebug() << "lstFile=" << QFileInfo(lstFile).absoluteFilePath();
+            if (gamsProc->exitCode() != 0) {
+                if (lstFile.open(QIODevice::ReadOnly)) {
+                    QTextStream in(&lstFile);
+                    int line = 0;
+                    while (!in.atEnd())
+                        qDebug() << "line " << ++line << ":"  << in.readLine();
+                    lstFile.close();
+                }
+            }
             QCOMPARE( gamsProc->exitCode(), 0);
             QVERIFY(gdxOutputFile.exists());
             QVERIFY(gdxOutputFile.size() > 0);

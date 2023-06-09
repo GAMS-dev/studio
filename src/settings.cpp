@@ -207,12 +207,13 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
 
 Settings::~Settings()
 {
-    QMap<Scope, QSettings*>::iterator si = mSettings.begin();
-    while (si != mSettings.end()) {
-        QSettings *set = si.value();
+    QMap<Scope, QSettings*>::iterator iSettings = mSettings.begin();
+    while (iSettings != mSettings.end()) {
+        QSettings *set = iSettings.value();
         set->sync();
-        si = mSettings.erase(si);
+        iSettings = mSettings.erase(iSettings);
         delete set;
+        ++iSettings;
     }
 }
 
@@ -220,12 +221,25 @@ QSettings *Settings::newQSettings(QString name)
 {
     QSettings *res = nullptr;
     res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
-    if (res->status()) {
-        // TODO(JM) Do we want to exit if the settings couldn't be created?
-        FATAL() << (res->status()==1 ? "Access-" : "Format-") << "error in file: " << res->fileName();
-    }
-    res->sync();
     return res;
+}
+
+void Settings::checkSettings()
+{
+    QMap<Scope, QSettings*>::iterator iSettings = mSettings.begin();
+    while (iSettings != mSettings.end()) {
+        QSettings *settings = iSettings.value();
+        settings->sync();
+        if (settings->status()) {
+            if (settings->status() == QSettings::FormatError)
+                mInitWarnings << QString("Format error in settings file %1").arg(settings->fileName());
+        }
+        if (!QFile::exists(settings->fileName()))
+            mInitWarnings << QString("Can't create settings file %1").arg(settings->fileName());
+        else if (!settings->isWritable())
+            mInitWarnings << QString("Can't write settings file %1").arg(settings->fileName());
+        ++iSettings;
+    }
 }
 
 QString settingsKeyName(SettingsKey key) {
@@ -390,18 +404,18 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // syntax color settings
     safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());
 
+    // Check gams update
+    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
+    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
+    safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
+    safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
+
     // Check if all enum values of SettingsKey have been assigned
     for (int i = 0 ; i < skSettingsKeyCount ; ++i) {
         if (!res.contains(static_cast<SettingsKey>(i))) {
             DEB() << "WARNING: Unused SettingsKey [" << QString::number(i) << "]";
         }
     }
-
-    // Check gams update
-    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
-    safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
-    safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
-    safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
 
     return res;
 }
@@ -973,6 +987,13 @@ void Settings::exportSettings(const QString &path)
 QString Settings::themeFileName(QString baseName)
 {
     return CThemePrefix+baseName.toLower()+".json";
+}
+
+QStringList Settings::takeInitWarnings()
+{
+    QStringList res = mInitWarnings;
+    mInitWarnings.clear();
+    return res;
 }
 
 }

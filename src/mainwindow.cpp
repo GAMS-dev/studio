@@ -407,7 +407,6 @@ MainWindow::MainWindow(QWidget *parent)
     initCompleterActions();
     initNavigator();
 
-    checkGamsLicense();
     checkSslLibrary();
 }
 
@@ -3719,10 +3718,17 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     QString workDir = project->workDir();
 
     // prepare the options and process and run it
-    if (project->parameterFile())
-        commandLineStr += " pf=\"" + project->parameterFile()->location() + '"';
-
-    QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+    QList<option::OptionItem> itemList;
+    if (project->parameterFile()) {
+        QDir wDir(workDir);
+#if defined(__unix__) || defined(__APPLE__)
+        itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+        itemList << option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1);
+#else
+        commandLineStr += " pf=\"" + wDir.relativeFilePath(project->parameterFile()->location()) + '"';
+        itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+#endif
+    }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
     if (process)
         project->setProcess(std::move(process));
@@ -3807,7 +3813,13 @@ void MainWindow::initDelayedElements()
         mSaveSettingsTimer.stop();
         updateAndSaveSettings();
     });
+    updateAndSaveSettings();
+    Settings::settings()->checkSettings();
+    QStringList warnings = Settings::settings()->takeInitWarnings();
+    for (const QString &warn : warnings)
+        appendSystemLogWarning(warn);
 
+    checkGamsLicense();
 }
 
 void MainWindow::openDelayedFiles()

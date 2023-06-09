@@ -18,6 +18,15 @@ Version 1.15.0 *
   - Disable preferences menu for sets and aliases in the GDX Viewer.
   - fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
 
+Version 1.14.4
+==================
+- fixed issues with parameter file on macOS and linux
+- fixed project setting for parameter file lost or reset on restart Studio
+- fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
+- added information to system log with Studio start arguments
+- added warning to system log if setting files could not be created
+- delay license dialog to ensure Studio is already visible
+
 Version 1.14.3
 ==================
 - fixed font not immediately updating after changing it in "Settings > Editor & Log"

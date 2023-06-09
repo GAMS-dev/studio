@@ -580,6 +580,11 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     emit runnableChanged();
 }
 
+bool PExProjectNode::hasParameterFile()
+{
+    return mParameterHash.contains("pf");
+}
+
 FileMeta *PExProjectNode::parameterFile() const
 {
     FileMetaRepo *repo = fileRepo();
@@ -594,11 +599,19 @@ void PExProjectNode::setParameterFile(FileMeta *pfFile)
         DEB() << "Only files of FileKind::Pf can become a parameter file";
         return;
     }
-    mParameterHash.remove("pf");
-    if (!pfFile) return;
+    if (!pfFile) {
+        mParameterHash.remove("pf");
+    } else {
+        QString pfPath = pfFile->location();
+        setParameterFile(pfPath);
+    }
 
-    QString pfPath = pfFile->location();
-    setParameter("pf", pfPath);
+    emit changed(id());
+}
+
+void PExProjectNode::setParameterFile(const QString &fileName)
+{
+    setParameter("pf", fileName);
     emit changed(id());
 }
 

@@ -98,8 +98,10 @@ public:
     PExLogNode* logNode();
     FileMeta *runnableGms() const;
     void setRunnableGms(FileMeta *gmsFile = nullptr);
+    bool hasParameterFile();
     FileMeta *parameterFile() const;
     void setParameterFile(FileMeta *pfFile = nullptr);
+    void setParameterFile(const QString &fileName);
     FileMeta *projectEditFileMeta() const;
     void setProjectEditFileMeta(FileMeta *prOptMeta);
     void unlinkProjectEditFileMeta();

@@ -159,13 +159,13 @@ enum SettingsKey {
     // syntax colors
     skUserThemes,
 
-    skSettingsKeyCount,
-
     // check for GAMS update
     skUpdateInterval,
     skAutoUpdateCheck,
     skLastUpdateCheckDate,
-    skNextUpdateCheckDate
+    skNextUpdateCheckDate,
+
+    skSettingsKeyCount, // This MUST be the last enum value!
 };
 
 enum UpdateCheckInterval
@@ -195,12 +195,14 @@ public:
     static void createSettings(bool ignore, bool reset, bool resetView);
     static Settings *settings();
     static void releaseSettings();
+    void checkSettings();
 
     static int version(Scope scope);
     static void useRelocatedPathForTests();
     static QList<SettingsKey> viewKeys();
     static QString themeFileName(QString baseName);
 
+    QStringList takeInitWarnings();
     void loadFile(Scope scopeFilter);
     void save();
     void block();
@@ -257,7 +259,7 @@ private:
     bool mCanWrite = false;
     bool mCanRead = false;
     bool mBlock = false;
-
+    QStringList mInitWarnings;
     const QHash<SettingsKey, KeyData> mKeys;
     QMap<Scope, QSettings*> mSettings;
     QMap<Scope, Data> mData;

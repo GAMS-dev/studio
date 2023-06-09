@@ -78,12 +78,12 @@ void Application::init()
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
     mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
+    mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
         triggerOpenFile(mOpenPathOnInit);
         mOpenPathOnInit = QString();
     }
-
     mDistribValidator.start();
     listen();
 }
