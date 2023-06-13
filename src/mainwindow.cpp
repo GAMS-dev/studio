@@ -2164,7 +2164,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         appendSystemLogError("No group attached to process");
         return;
     }
-    if (QFile::exists(project->debugServer()->gdxTempFile()))
+    if (project->debugServer() && QFile::exists(project->debugServer()->gdxTempFile()))
         QFile::remove(project->debugServer()->gdxTempFile());
     project->stopDebugServer();
 
