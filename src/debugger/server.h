@@ -35,20 +35,20 @@ enum CallReply {
     invalid,
 
     // configuring Call (Server -> GAMS)
-    invalidReply,
+    invalidReply,   //  invalidReply \n -the-invalid-reply-
     addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]  (shortstring = 255 characters) (relative to workdir)
     delBP,          //  delBP \n [file[:line]]
 
     // action Call (Server -> GAMS)
-    run,
-    stepLine,
-    interrupt,
-    writeGDX,
+    run,            //  run
+    stepLine,       //  stepLine
+    interrupt,      //  interrupt
+    writeGDX,       //  writeGDX \n file (contains port of comunication)
 
     // Reply (GAMS -> Server)
-    invalidCall,
-    paused,         // paused \n file:line
-    gdxReady,       // gdxReady \n file
+    invalidCall,    //  invalidCall \n -the-invalid-call-
+    paused,         //  paused \n file:line
+    gdxReady,       //  gdxReady \n file
     finished,
 };
 ///
