@@ -80,6 +80,7 @@ public:
     QString gdxTempFile() const;
 
 signals:
+    void connected();
     void addProcessData(const QByteArray &data);
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(const QString &file, int lineNr);

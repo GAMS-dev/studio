@@ -287,17 +287,19 @@ void Server::newConnection()
     }
     if (!socket) return;
     mSocket = socket;
-    connect(socket, &QTcpSocket::disconnected, this, [this, socket]() {
+    connect(socket, &QTcpSocket::disconnected, this, [this]() {
         logMessage("Debug-Server: Socket disconnected");
         deleteSocket();
     });
-    connect(socket, &QTcpSocket::readyRead, this, [this, socket]() {
-        QByteArray data = socket->readAll();
+    connect(socket, &QTcpSocket::readyRead, this, [this]() {
+        QByteArray data = mSocket->readAll();
         if (!handleReply(data)) {
             callProcedure(invalidReply, QStringList() << data);
             logMessage("Debug-Server: Unknown request: " + data);
         }
     });
+    logMessage("Debug-Server: Socket connected to GAMS");
+    emit connected();
 }
 
 void Server::logMessage(const QString &message)

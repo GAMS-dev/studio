@@ -1138,6 +1138,9 @@ bool PExProjectNode::startDebugServer()
 {
     if (!mDebugServer) {
         mDebugServer = new debugger::Server(workDir(), this);
+        connect(mDebugServer, &debugger::Server::connected, this, [this]() {
+            mDebugServer->addBreakpoints(mBreakpoints);
+        });
         connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
