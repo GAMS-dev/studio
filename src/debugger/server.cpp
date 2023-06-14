@@ -89,9 +89,10 @@ void Server::stop()
 {
     deleteSocket();
     mPortsInUse.remove(mServer->serverPort());
-    if (isListening())
+    if (isListening()) {
         mServer->close();
-    logMessage("Debug-Server stopped.");
+        logMessage("Debug-Server stopped.");
+    }
 }
 
 QString Server::gdxTempFile() const
@@ -213,8 +214,10 @@ QString Server::toBpString(const QString &file, QSet<int> lines)
     if (lines.isEmpty()) return QString();
     QString res = file;
     auto iter = lines.constBegin();
-    while (iter != lines.constEnd())
+    while (iter != lines.constEnd()) {
         res += ':' + QString::number(*iter);
+        ++iter;
+    }
     return res;
 }
 
@@ -294,8 +297,9 @@ void Server::newConnection()
     connect(socket, &QTcpSocket::readyRead, this, [this]() {
         QByteArray data = mSocket->readAll();
         if (!handleReply(data)) {
-            callProcedure(invalidReply, QStringList() << data);
             logMessage("Debug-Server: Unknown request: " + data);
+            if (!data.contains("invalidCall"))
+                callProcedure(invalidReply, QStringList() << data);
         }
     });
     logMessage("Debug-Server: Socket connected to GAMS");

@@ -1145,7 +1145,16 @@ bool PExProjectNode::startDebugServer()
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
     }
-    return mDebugServer->start();
+    bool res = mDebugServer->start();
+    if (process()) {
+        QStringList params = process()->parameters();
+        params << ("DebugPort=" + QString::number(mDebugServer->port()));
+        process()->setParameters(params);
+        DEB() << "Added port to parameters.";
+    } else {
+        DEB() << "Process isn't up already.";
+    }
+    return res;
 }
 
 void PExProjectNode::stopDebugServer()
