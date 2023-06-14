@@ -53,7 +53,7 @@ void Server::init()
 
     mCalls.insert(run, "run");
     mCalls.insert(stepLine, "stepLine");
-    mCalls.insert(interrupt, "interrupt");
+    mCalls.insert(pause, "pause");
     mCalls.insert(writeGDX, "writeGDX");
 
     mReplies.insert("invalidCall", invalidCall);
@@ -209,14 +209,12 @@ bool Server::handleReply(const QString &replyData)
     return true;
 }
 
-QString Server::toBpString(const QString &file, QSet<int> lines)
+QString Server::toBpString(const QString &file, QList<int> lines)
 {
     if (lines.isEmpty()) return QString();
     QString res = file;
-    auto iter = lines.constBegin();
-    while (iter != lines.constEnd()) {
-        res += ':' + QString::number(*iter);
-        ++iter;
+    for (int line : lines) {
+        res += ':' + QString::number(line);
     }
     return res;
 }
@@ -226,7 +224,7 @@ void Server::addBreakpoint(const QString &filename, int line)
     callProcedure(addBP, {toBpString(filename, {line})});
 }
 
-void Server::addBreakpoints(const QHash<QString, QSet<int> > &breakpoints)
+void Server::addBreakpoints(const QMap<QString, QList<int> > &breakpoints)
 {
     QStringList args;
     auto iter = breakpoints.constBegin();
@@ -261,7 +259,7 @@ void Server::sendStepLine()
 
 void Server::sendInterrupt()
 {
-    callProcedure(interrupt);
+    callProcedure(pause);
 }
 
 void Server::sendWriteGdx(const QString &gdxFile)
@@ -296,8 +294,9 @@ void Server::newConnection()
     });
     connect(socket, &QTcpSocket::readyRead, this, [this]() {
         QByteArray data = mSocket->readAll();
+        if (data.endsWith("\0"))
+            data.remove(data.size() - 1, 1);
         if (!handleReply(data)) {
-            logMessage("Debug-Server: Unknown request: " + data);
             if (!data.contains("invalidCall"))
                 callProcedure(invalidReply, QStringList() << data);
         }

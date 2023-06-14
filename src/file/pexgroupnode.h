@@ -162,10 +162,10 @@ public slots:
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
     void addBreakpoint(const QString &filename, int line);
-    void addBreakpoints(const QString &filename, const QSet<int> &lines);
+    void addBreakpoints(const QString &filename, const QList<int> &lines);
     void delBreakpoint(const QString &filename, int line);
     void clearBreakpoints(const QString &filename = QString());
-    void breakpoints(const QString &filename, QSet<int> &bps) const;
+    void breakpoints(const QString &filename, QList<int> &bps) const;
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
@@ -200,7 +200,7 @@ private:
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
-    QHash<QString, QSet<int>> mBreakpoints;
+    QMap<QString, QList<int>> mBreakpoints;
     PExFileNode *mPausedInFile = nullptr;
 
 private:

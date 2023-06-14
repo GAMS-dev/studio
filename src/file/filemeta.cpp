@@ -601,7 +601,7 @@ void FileMeta::setProjectId(const NodeId &newProjectId)
     if (kind() == FileKind::Gms) {
         PExProjectNode *project = mFileRepo->projectRepo()->asProject(mProjectId);
         if (project) {
-            QSet<int> bpLines;
+            QList<int> bpLines;
             project->breakpoints(mLocation, bpLines);
             for (QWidget *wid : mEditors) {
                 if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
@@ -1272,7 +1272,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                     pro->addBreakpoint(mLocation, line);
                     for (QWidget *wid : mEditors) {
                         if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QSet<int> lines;
+                            QList<int> lines;
                             pro->breakpoints(mLocation, lines);
                             ce->breakpointsChanged(lines);
                         }
@@ -1285,7 +1285,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                     pro->delBreakpoint(mLocation, line);
                     for (QWidget *wid : mEditors) {
                         if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QSet<int> lines;
+                            QList<int> lines;
                             pro->breakpoints(mLocation, lines);
                             ce->breakpointsChanged(lines);
                         }
@@ -1298,7 +1298,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                     pro->clearBreakpoints(mLocation);
                     for (QWidget *wid : mEditors) {
                         if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QSet<int> lines;
+                            QList<int> lines;
                             pro->breakpoints(mLocation, lines);
                             ce->breakpointsChanged(lines);
                         }
@@ -1311,7 +1311,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                     pro->clearBreakpoints();
                     for (QWidget *wid : mEditors) {
                         if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QSet<int> lines;
+                            QList<int> lines;
                             pro->breakpoints(mLocation, lines);
                             ce->breakpointsChanged(lines);
                         }

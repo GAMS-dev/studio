@@ -171,7 +171,7 @@ public slots:
     virtual void pasteClipboard();
     void updateExtraSelections() override;
     void unfold(QTextBlock block) override;
-    void breakpointsChanged(const QSet<int> &bpLines);
+    void breakpointsChanged(const QList<int> &bpLines);
     void setPausedPos(int line);
 
 protected slots:
@@ -312,7 +312,7 @@ private:
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;
-    QSet<int> mBreakpoints;
+    QList<int> mBreakpoints;
     int mBreakLine = -1;
 
     static QRegularExpression mRex0LeadingSpaces;

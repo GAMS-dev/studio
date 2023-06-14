@@ -42,7 +42,7 @@ enum CallReply {
     // action Call (Server -> GAMS)
     run,            //  run
     stepLine,       //  stepLine
-    interrupt,      //  interrupt
+    pause,          //  pause
     writeGDX,       //  writeGDX \n file (contains port of comunication)
 
     // Reply (GAMS -> Server)
@@ -87,7 +87,7 @@ signals:
 
 public slots:
     void addBreakpoint(const QString &filename, int line);
-    void addBreakpoints(const QHash<QString, QSet<int> > &breakpoints);
+    void addBreakpoints(const QMap<QString, QList<int> > &breakpoints);
     void delBreakpoint(const QString &filename, int line);
     void clearBreakpoints(const QString file = QString());
 
@@ -105,7 +105,7 @@ private:
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
     bool handleReply(const QString &replyData);
-    QString toBpString(const QString &file, QSet<int> lines);
+    QString toBpString(const QString &file, QList<int> lines);
 
     QString mPath;
     QTcpServer *mServer = nullptr;

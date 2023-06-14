@@ -727,27 +727,37 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
+void insertSorted(QList<int> &list, int value)
+{
+    int index = 0;
+    while (list.size() > index && list.at(index) < value)
+        ++index;
+    if (list.size() == index || list.at(index) > value)
+        list.insert(index, value);
+}
+
 void PExProjectNode::addBreakpoint(const QString &filename, int line)
 {
     QDir dir(mWorkDir);
     QString relFile = dir.relativeFilePath(filename);
-    QSet<int> lines = mBreakpoints.value(relFile);
-    lines.insert(line);
+    QList<int> lines = mBreakpoints.value(relFile);
+    insertSorted(lines, line);
     mBreakpoints.insert(relFile, lines);
     if (mDebugServer)
         mDebugServer->addBreakpoint(relFile, line);
 }
 
-void PExProjectNode::addBreakpoints(const QString &filename, const QSet<int> &lines)
+void PExProjectNode::addBreakpoints(const QString &filename, const QList<int> &lines)
 {
     if (lines.isEmpty()) return;
     QDir dir(mWorkDir);
     QString relFile = dir.relativeFilePath(filename);
-    QSet<int> allLines = mBreakpoints.value(relFile);
-    allLines.unite(lines);
+    QList<int> allLines = mBreakpoints.value(relFile);
+    for (int line : lines)
+        insertSorted(allLines, line);
     mBreakpoints.insert(relFile, allLines);
     if (mDebugServer) {
-        QHash<QString, QSet<int>> all;
+        QMap<QString, QList<int>> all;
         all.insert(relFile, lines);
         mDebugServer->addBreakpoints(all);
     }
@@ -758,11 +768,10 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
     QDir dir(mWorkDir);
     QString relFile = dir.relativeFilePath(filename);
     if (!mBreakpoints.contains(relFile)) return;
-    QSet<int> lines = mBreakpoints.value(relFile);
+    QList<int> lines = mBreakpoints.value(relFile);
     if (!lines.contains(line)) return;
 
     lines.remove(line);
-
     mBreakpoints.insert(relFile, lines);
     if (mDebugServer)
         mDebugServer->delBreakpoint(relFile, line);
@@ -771,13 +780,18 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
 void PExProjectNode::clearBreakpoints(const QString &filename)
 {
     QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
-    mBreakpoints.clear();
+    QString relFile;
+    if (filename.isEmpty()) {
+        mBreakpoints.clear();
+    } else {
+        relFile = dir.relativeFilePath(filename);
+        mBreakpoints.remove(relFile);
+    }
     if (mDebugServer)
         mDebugServer->clearBreakpoints(relFile);
 }
 
-void PExProjectNode::breakpoints(const QString &filename, QSet<int> &bps) const
+void PExProjectNode::breakpoints(const QString &filename, QList<int> &bps) const
 {
     QDir dir(mWorkDir);
     QString relFile = dir.relativeFilePath(filename);

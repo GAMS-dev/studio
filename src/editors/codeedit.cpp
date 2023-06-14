@@ -1014,7 +1014,7 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
             done = true;
         }
     } else if (e->modifiers() == Qt::ControlModifier && e->pos().x() <= 0) {
-        int line = cursorForPosition(e->pos()).blockNumber();
+        int line = cursorForPosition(e->pos()).blockNumber() + 1;
         if (mBreakpoints.contains(line))
             emit delBreakpoint(line);
         else
@@ -1189,7 +1189,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
 
 void CodeEdit::showBpContext(const QPoint &pos)
 {
-    int line = cursorForPosition(pos).blockNumber();
+    int line = cursorForPosition(pos).blockNumber() + 1;
 
     QMenu menu(this);
     menu.addAction("Toggle breakpoint", this, [this, line]() {
@@ -1978,7 +1978,7 @@ void CodeEdit::unfold(QTextBlock block)
         toggleFolding(block);
 }
 
-void CodeEdit::breakpointsChanged(const QSet<int> &bpLines)
+void CodeEdit::breakpointsChanged(const QList<int> &bpLines)
 {
     mBreakpoints = bpLines;
     mLineNumberArea->repaint();
@@ -2215,7 +2215,7 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.setFont(f);
                 painter.setPen(mark ? toColor(Theme::Edit_linenrAreaMarkFg)
                                     : toColor(Theme::Edit_linenrAreaFg));
-                if (mBreakpoints.contains(blockNumber)) {
+                if (mBreakpoints.contains(blockNumber + 1)) {
                     painter.setBrush(toColor(Theme::Normal_Red));
                     painter.setPen(Qt::NoPen);
                     painter.drawRoundedRect(0, top, widthForNr, fontMetrics().height(), 4, 4);
