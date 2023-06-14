@@ -57,7 +57,7 @@ void Server::init()
     mCalls.insert(writeGDX, "writeGDX");
 
     mReplies.insert("invalidCall", invalidCall);
-    mReplies.insert("breakAt", paused);
+    mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
     mReplies.insert("finished", finished);
 }
