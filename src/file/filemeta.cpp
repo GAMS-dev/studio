@@ -558,6 +558,8 @@ void FileMeta::addEditor(QWidget *edit)
         connect(tv->edit(), &AbstractEdit::toggleBookmark, mFileRepo, &FileMetaRepo::toggleBookmark);
         connect(tv->edit(), &AbstractEdit::jumpToNextBookmark, mFileRepo, &FileMetaRepo::jumpToNextBookmark);
         connect(tv->edit(), &AbstractEdit::zoomRequest, this, &FileMeta::zoomRequest);
+        connect(tv->edit(), &AbstractEdit::getProjectId, this, [this](NodeId &projectId) { projectId = this->projectId(); });
+        connect(tv->edit(), &AbstractEdit::getFileId, this, [this](FileId &fileId) { fileId = this->id(); });
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(edit))
             connect(lxi, &lxiviewer::LxiViewer::scrolled, mFileRepo, &FileMetaRepo::scrollSynchronize);
         else
