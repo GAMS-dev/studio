@@ -769,9 +769,9 @@ void PExProjectNode::delBreakpoint(const QString &filename, int line)
     QString relFile = dir.relativeFilePath(filename);
     if (!mBreakpoints.contains(relFile)) return;
     QList<int> lines = mBreakpoints.value(relFile);
-    if (!lines.contains(line)) return;
-
-    lines.remove(line);
+    int index = lines.indexOf(line);
+    if (index < 0) return;
+    lines.remove(index);
     mBreakpoints.insert(relFile, lines);
     if (mDebugServer)
         mDebugServer->delBreakpoint(relFile, line);
