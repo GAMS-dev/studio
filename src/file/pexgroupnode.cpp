@@ -727,6 +727,50 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
+void PExProjectNode::presetBreakLines()
+{
+    if (!runnableGms()) return;
+    QDir dir(mWorkDir);
+    QString relFile = dir.relativeFilePath(runnableGms()->location());
+    if (mBreakLines.contains(relFile)) return;
+    QFile gms(runnableGms()->location());
+    if (gms.open(QFile::ReadOnly)) {
+        int i = 0;
+        QList<int> lines;
+        bool inComment = false;
+        while (!gms.atEnd()) {
+            ++i;
+            QString line = gms.readLine().simplified().replace(" ", "");
+            if (line.startsWith("$onText", Qt::CaseInsensitive))
+                inComment = true;
+            if (!line.isEmpty() && !line.startsWith('*') && !inComment)
+                lines << i;
+            if (line.startsWith("$offText", Qt::CaseInsensitive))
+                inComment = false;
+        }
+        gms.close();
+        mBreakLines.insert(relFile, lines);
+        isAutoBreakLines = true;
+    }
+}
+
+void PExProjectNode::adjustBreakpoint(const QString &filename, int &line)
+{
+    QDir dir(mWorkDir);
+    QString relFile = dir.relativeFilePath(filename);
+    QList<int> lines = mBreakLines.value(relFile);
+    if (lines.size()) {
+        for (int i = 0; i < lines.count(); ++i) {
+            if (line <= lines.at(i)) {
+                line = lines.at(i);
+                return;
+            }
+            if (i+1 == lines.count())
+                line = lines.at(i);
+        }
+    }
+}
+
 void insertSorted(QList<int> &list, int value)
 {
     int index = 0;
@@ -1158,6 +1202,7 @@ bool PExProjectNode::startDebugServer()
         connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
+        connect(mDebugServer, &debugger::Server::signalBreakLines, this, &PExProjectNode::addBreakLines);
     }
     bool res = mDebugServer->start();
     if (process()) {
@@ -1241,6 +1286,29 @@ void PExProjectNode::gotoPaused(const QString &file, int lineNr)
     }
     mPausedInFile = node;
     mDebugServer->sendWriteGdx(mDebugServer->gdxTempFile());
+}
+
+void PExProjectNode::addBreakLines(const QString &file, QList<int> lines)
+{
+    if (isAutoBreakLines && runnableGms()) {
+        QDir dir(mWorkDir);
+        QString relFile = dir.relativeFilePath(runnableGms()->location());
+        mBreakLines.remove(relFile);
+        isAutoBreakLines = false;
+    }
+    QList<int> curLines = mBreakLines.value(file);
+    for (int i = 0; i < lines.count(); ++i) {
+        for (int c = 0; c < curLines.count(); ++c) {
+            if (lines.at(i) < curLines.at(c)) {
+                curLines.insert(c, lines.at(i));
+                break;
+            }
+            if (c+1 == curLines.count()) {
+                curLines.insert(c+1, lines.at(i));
+                break;
+            }
+        }
+    }
 }
 
 PExRootNode::PExRootNode(ProjectRepo* repo)

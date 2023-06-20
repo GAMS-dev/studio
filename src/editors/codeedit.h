@@ -157,6 +157,7 @@ signals:
     void requestAdvancedActions(QList<QAction*>* actions);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
+    void adjustBreakpoint(int &line);
     void addBreakpoint(int line);
     void delBreakpoint(int line);
     void delBreakpoints();

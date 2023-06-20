@@ -55,8 +55,10 @@ void Server::init()
     mCalls.insert(stepLine, "stepLine");
     mCalls.insert(pause, "pause");
     mCalls.insert(writeGDX, "writeGDX");
+    mCalls.insert(finished, "finished");
 
     mReplies.insert("invalidCall", invalidCall);
+    mReplies.insert("breakLines", breakLines);
     mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
     mReplies.insert("finished", finished);
@@ -146,9 +148,14 @@ bool Server::handleReply(const QString &replyData)
     QStringList reList = replyData.split('\n');
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
-        reply = mReplies.value(reList.at(0), invalid);
-        if (reply != invalid)
-            reList.removeFirst();
+        if (reList.at(0).startsWith(':')) {
+            reply = breakLines;
+
+        } else {
+            reply = mReplies.value(reList.at(0), invalid);
+            if (reply != invalid)
+                reList.removeFirst();
+        }
     }
     QStringList data;
     QString file;
@@ -162,6 +169,15 @@ bool Server::handleReply(const QString &replyData)
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
+    case breakLines: {
+        if (reList.size() < 1) {
+            logMessage("Debug-Server: [breakLines] Missing data for breakable lines.");
+            return false;
+        }
+        for (const QString &line : reList) {
+            parseBreakLines(line);
+        }
+    }  break;
     case paused: {
         if (reList.size() < 1) {
             logMessage("Debug-Server: [paused] Missing data for interrupt.");
@@ -200,6 +216,7 @@ bool Server::handleReply(const QString &replyData)
         emit signalGdxReady(file);
         break;
     case finished:
+        callProcedure(finished);
         break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
@@ -217,6 +234,21 @@ QString Server::toBpString(const QString &file, QList<int> lines)
         res += ':' + QString::number(line);
     }
     return res;
+}
+
+void Server::parseBreakLines(const QString &breakData)
+{
+    QStringList data;
+    data = breakData.split(':');
+    QString file = (data.first().isEmpty() ? mBreakLinesFile : data.first());
+    QList<int> lines;
+    for (int i = 1; i < data.size(); ++i) {
+        bool ok;
+        int line = data.at(i).toInt(&ok);
+        if (ok) lines << line;
+    }
+    if (!lines.isEmpty())
+        emit signalBreakLines(file, lines);
 }
 
 void Server::addBreakpoint(const QString &filename, int line)

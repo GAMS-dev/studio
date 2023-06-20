@@ -161,6 +161,8 @@ public slots:
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
+    void presetBreakLines();
+    void adjustBreakpoint(const QString &filename, int &line);
     void addBreakpoint(const QString &filename, int line);
     void addBreakpoints(const QString &filename, const QList<int> &lines);
     void delBreakpoint(const QString &filename, int line);
@@ -171,6 +173,7 @@ protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
     void openDebugGdx(const QString &gdxFile);
     void gotoPaused(const QString &file, int lineNr);
+    void addBreakLines(const QString &file, QList<int> lines);
 
 protected:
     friend class ProjectRepo;
@@ -200,6 +203,8 @@ private:
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
+    bool isAutoBreakLines = false;
+    QMap<QString, QList<int>> mBreakLines;
     QMap<QString, QList<int>> mBreakpoints;
     PExFileNode *mPausedInFile = nullptr;
 

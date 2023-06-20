@@ -118,6 +118,7 @@ signals:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
     void projectTabRenamed(gams::studio::FileMeta *fileMeta);
+    void adjustBreakpoint(int &line);
 
 protected:
     bool eventFilter(QObject*sender, QEvent* event) override;

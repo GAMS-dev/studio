@@ -36,6 +36,7 @@ enum CallReply {
 
     // configuring Call (Server -> GAMS)
     invalidReply,   //  invalidReply \n -the-invalid-reply-
+    getBreakLines,  //  getBreakLines
     addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]  (shortstring = 255 characters) (relative to workdir)
     delBP,          //  delBP \n [file[:line]]
 
@@ -47,9 +48,13 @@ enum CallReply {
 
     // Reply (GAMS -> Server)
     invalidCall,    //  invalidCall \n -the-invalid-call-
+    breakLines,     //  breakLines \n file:line[:line] [\n file:line[:line]] (request all lines, packages can be split before ':')
+                    //  (... until we haven't another Reply with miltiple lines, we omit the repeat of "breakLines" keyword)
     paused,         //  paused \n file:line
     gdxReady,       //  gdxReady \n file
-    finished,
+
+    // Call (GAMS -> Server) and acknowledge (Server -> GAMS)
+    finished,       //  finished
 };
 ///
 /// \brief The Server class allows debug communication to a GAMS instance
@@ -84,6 +89,7 @@ signals:
     void addProcessData(const QByteArray &data);
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(const QString &file, int lineNr);
+    void signalBreakLines(const QString &file, QList<int> lines);
 
 public slots:
     void addBreakpoint(const QString &filename, int line);
@@ -106,12 +112,14 @@ private:
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
     bool handleReply(const QString &replyData);
     QString toBpString(const QString &file, QList<int> lines);
+    void parseBreakLines(const QString &breakData);
 
     QString mPath;
     QTcpServer *mServer = nullptr;
     QTcpSocket *mSocket = nullptr;
     QHash<CallReply, QString> mCalls;
     QHash<QString, CallReply> mReplies;
+    QString mBreakLinesFile;
 
     static QSet<int> mPortsInUse;
 

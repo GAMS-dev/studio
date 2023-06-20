@@ -3615,8 +3615,9 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     bool ready = executePrepare(project, commandLineStr, std::move(process));
     if (ready) {
         if (!debug || project->startDebugServer()) {
-            if (debug)
+            if (debug) {
                 ui->debugWidget->setVisible(true);
+            }
             execution(project);
         }
         else if (debug) {
@@ -4378,6 +4379,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             QTimer::singleShot(0, this, [this, edit, fileMeta]() {
                 edit->setFont(getEditorFont(fileMeta->fontGroup()));
             });
+            if (fileMeta == project->runnableGms())
+                project->presetBreakLines();
 
         } catch (Exception &e) {
             appendSystemLogError(e.what());

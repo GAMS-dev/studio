@@ -1015,10 +1015,12 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         }
     } else if (e->modifiers() == Qt::ControlModifier && e->pos().x() <= 0) {
         int line = cursorForPosition(e->pos()).blockNumber() + 1;
-        if (mBreakpoints.contains(line))
-            emit delBreakpoint(line);
-        else
+        int oriLine = line;
+        emit adjustBreakpoint(line);
+        if (!mBreakpoints.contains(line))
             emit addBreakpoint(line);
+        else if (oriLine == line)
+            emit delBreakpoint(line);
         done = true;
     }
     if (!done) {

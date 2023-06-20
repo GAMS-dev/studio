@@ -1266,16 +1266,20 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
             connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
             connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);
 
+            connect(codeEdit, &CodeEdit::adjustBreakpoint, this, [this](int &line) {
+                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
+                if (!pro) return;
+                pro->adjustBreakpoint(location(), line);
+            });
             connect(codeEdit, &CodeEdit::addBreakpoint, this, [this](int line) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
-                if (pro) {
-                    pro->addBreakpoint(mLocation, line);
-                    for (QWidget *wid : mEditors) {
-                        if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QList<int> lines;
-                            pro->breakpoints(mLocation, lines);
-                            ce->breakpointsChanged(lines);
-                        }
+                if (!pro) return;
+                pro->addBreakpoint(mLocation, line);
+                for (QWidget *wid : mEditors) {
+                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
+                        QList<int> lines;
+                        pro->breakpoints(mLocation, lines);
+                        ce->breakpointsChanged(lines);
                     }
                 }
             });
