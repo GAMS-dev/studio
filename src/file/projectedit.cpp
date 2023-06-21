@@ -77,6 +77,7 @@ void ProjectData::save()
         mProject->setWorkDir(path);
     updateFile(FileKind::Gms, QDir::fromNativeSeparators(mData.value(mainFile)).trimmed());
     updateFile(FileKind::Pf, QDir::fromNativeSeparators(mData.value(pfFile)).trimmed());
+    mProject->setNeedSave();
 }
 
 void ProjectData::updateFile(FileKind kind, const QString &path)

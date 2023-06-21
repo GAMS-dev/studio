@@ -599,12 +599,8 @@ void PExProjectNode::setParameterFile(FileMeta *pfFile)
         DEB() << "Only files of FileKind::Pf can become a parameter file";
         return;
     }
-    if (!pfFile) {
-        mParameterHash.remove("pf");
-    } else {
-        QString pfPath = pfFile->location();
-        setParameterFile(pfPath);
-    }
+    QString pfPath = pfFile ? pfFile->location() : "";
+    setParameterFile(pfPath);
 
     emit changed(id());
 }
@@ -1035,7 +1031,10 @@ void PExProjectNode::addNodesForSpecialFiles()
 void PExProjectNode::setParameter(const QString &kind, const QString &path)
 {
     if (path.isEmpty()) {
-        mParameterHash.remove(kind);
+        if (kind == "pf")
+            mParameterHash.insert(kind, "");
+        else
+            mParameterHash.remove(kind);
         return;
     }
     QString fullPath = path.contains('\\') ? QDir::fromNativeSeparators(path) : path;
