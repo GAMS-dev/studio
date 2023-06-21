@@ -397,13 +397,11 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::GamsOptionDefinition));
     QDataStream stream(&encodedData, QDataStream::ReadOnly);
     QStringList newItems;
-    int rows = 0;
 
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
        newItems << text;
-       ++rows;
     }
 
     int beginRow = -1;

@@ -605,7 +605,6 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
                                                          : (row==rowCount(parent)) ? index(rowCount(parent)-1, (int)DataItemColumn::SchemaKey, parent)
                                                                                    : index(row, (int)DataItemColumn::SchemaKey, parent)
                                    );
-        QStringList insertSchemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
 
         QString schemaname = tobeinsertSchemaKey.first();
         if (tobeinsertSchemaKey.size() == 1) {

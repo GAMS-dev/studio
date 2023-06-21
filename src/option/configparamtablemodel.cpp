@@ -440,13 +440,11 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::ConfigOptionDefinition));
     QDataStream stream(&encodedData, QDataStream::ReadOnly);
     QStringList newItems;
-    int rows = 0;
 
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
        newItems << text;
-       ++rows;
     }
 
     int beginRow = -1;

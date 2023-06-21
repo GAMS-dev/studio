@@ -78,8 +78,6 @@ bool ConnectEditor::init(bool quiet)
 
     setFocusProxy(ui->dataTreeView);
 
-    QStringList schema = mConnect->getSchemaNames();
-
     SchemaListModel* schemaItemModel = new SchemaListModel( mConnect->getSchemaNames(), this );
     ui->schemaControlListView->setModel(schemaItemModel);
 
