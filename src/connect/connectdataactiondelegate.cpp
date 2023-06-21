@@ -69,41 +69,35 @@ bool ConnectDataActionDelegate::editorEvent(QEvent *event, QAbstractItemModel *m
         if (index.data( Qt::DisplayRole ).toBool() ) {
             bool found = false;
             if (index.column()==(int)DataItemColumn::Delete) {
-                QMap<QModelIndex, QRect>::iterator it;
-                for (it= mDeleteActionPosition.begin();  it != mDeleteActionPosition.end(); ++it) {
+                for (QMap<QModelIndex, QRect>::const_iterator it= mDeleteActionPosition.constBegin();  it != mDeleteActionPosition.constEnd(); ++it) {
                     QRect rect = mDeleteActionPosition[it.key()];
                     if (rect.contains(p)) {
                         emit requestDeleteItem(index);
                         found = true;
+                        mDeleteActionPosition.erase(it);
                         break;
                     }
                 }
-                if (found)
-                    mDeleteActionPosition.erase(it);
             } else if (index.column()==(int)DataItemColumn::MoveDown) {
-                      QMap<QModelIndex, QRect>::iterator it;
-                      for (it= mMoveDownActionPosition.begin();  it != mMoveDownActionPosition.end(); ++it) {
+                      for (QMap<QModelIndex, QRect>::const_iterator it= mMoveDownActionPosition.constBegin();  it != mMoveDownActionPosition.constEnd(); ++it) {
                           QRect rect = mMoveDownActionPosition[it.key()];
                           if (it.key() == index && rect.contains(p)) {
                               emit requestMoveDownItem(index);
                               found = true;
+                              mMoveDownActionPosition.erase(it);
                               break;
                           }
                       }
-                      if (found)
-                          mMoveDownActionPosition.erase(it);
             }   else if (index.column()==(int)DataItemColumn::MoveUp) {
-                         QMap<QModelIndex, QRect>::iterator it;
-                         for (it= mMoveUpActionPosition.begin();  it != mMoveUpActionPosition.end(); ++it) {
+                         for (QMap<QModelIndex, QRect>::const_iterator it= mMoveUpActionPosition.constBegin();  it != mMoveUpActionPosition.constEnd(); ++it) {
                              QRect rect = mMoveUpActionPosition[it.key()];
                              if (it.key() == index && rect.contains(p)) {
                                  emit requestMoveUpItem(index);
                                  found = true;
+                                 mMoveUpActionPosition.erase(it);
                                  break;
                              }
                          }
-                         if (found)
-                             mMoveUpActionPosition.erase(it);
             }
             return found;
         }
