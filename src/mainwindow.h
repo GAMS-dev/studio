@@ -464,7 +464,7 @@ private:
     bool requestCloseChanged(QVector<FileMeta*> changedFiles);
     bool isActiveProjectRunnable();
     bool isRecentGroupRunning();
-    void loadCommandLines(PExFileNode* oldfn, PExFileNode* fn);
+    void loadCommandLines(PExProjectNode *oldProj, PExProjectNode *proj);
     void dockWidgetShow(QDockWidget* dw, bool show);
     int showSaveChangesMsgBox(const QString &text);
     void raiseEdit(QWidget *widget);

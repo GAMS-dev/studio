@@ -154,6 +154,16 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     return group->findFile(fileMeta);
 }
 
+PExProjectNode *ProjectRepo::findProject(QWidget *edit) const
+{
+    FileMeta *fileMeta = mFileRepo->fileMeta(edit);
+    if (!fileMeta) return nullptr;
+    NodeId projId = fileMeta->projectId();
+    if (!projId.isValid()) return nullptr;
+    PExAbstractNode *node = mNodes.value(projId);
+    return node ? node->toProject() : nullptr;
+}
+
 PExProjectNode *ProjectRepo::findProjectForPEdit(QWidget *projectEdit) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(projectEdit);

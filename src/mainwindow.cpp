@@ -423,9 +423,12 @@ void MainWindow::watchProjectTree()
         updateRunState();
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
-        if (PExFileNode *fn = mProjectRepo.asFileNode(node->id())) {
-            if (fn->file()->editors().contains(ui->mainTabs->currentWidget()))
-                loadCommandLines(fn, fn);
+        if (const PExProjectNode *project = node->assignedProject()) {
+            if (project->type() == PExProjectNode::tCommon) {
+                PExProjectNode *pro = mProjectRepo.findProject(ui->mainTabs->currentWidget());
+                if (project == pro)
+                    loadCommandLines(pro, pro);
+            }
         }
     });
     mStartedUp = true;
@@ -1823,18 +1826,16 @@ void MainWindow::codecReload(QAction *action)
     }
 }
 
-void MainWindow::loadCommandLines(PExFileNode* oldfn, PExFileNode* fn)
+void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 {
-    if (oldfn && oldfn != fn) {
+    if (oldProj && oldProj != proj) {
         // node changed from valid: store current command-line
-        if (PExProjectNode* oldgroup = oldfn->assignedProject())
-            oldgroup->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
+        oldProj->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
     }
 
-    if (fn) {
+    if (proj) {
         // switched to valid node
-        if (PExProjectNode* group = fn->assignedProject())
-            mGamsParameterEditor->loadCommandLine( group->getRunParametersHistory() );
+        mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
     } else {
         // switched to welcome page
         mGamsParameterEditor->loadCommandLine(QStringList());
@@ -1847,14 +1848,14 @@ void MainWindow::activeTabChanged(int index)
     if  (index >= 0) updateTabIcon(nullptr, index);
     mCurrentMainTab = index;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
-    PExFileNode* oldNode = mProjectRepo.findFileNode(mRecent.editor());
-    PExFileNode* node = mProjectRepo.findFileNode(editWidget);
+
     updateRecentEdit(mRecent.editor(), editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
         tv->updateExtraSelections();
 
+    PExFileNode* node = mProjectRepo.findFileNode(editWidget);
     if (node) {
         changeToLog(node, false, false);
         updateStatusFile();
@@ -1889,7 +1890,9 @@ void MainWindow::activeTabChanged(int index)
         ui->menuEncoding->setEnabled(false);
     }
 
-    loadCommandLines(oldNode, node);
+    PExProjectNode *oldProj = mProjectRepo.findProject(mRecent.editor());
+    PExProjectNode *proj = mProjectRepo.findProject(editWidget);
+    loadCommandLines(oldProj, proj);
     updateRunState();
     searchDialog()->updateDialogState();
     updateToolbar(mainTabs()->currentWidget());
