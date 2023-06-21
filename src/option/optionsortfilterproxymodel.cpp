@@ -91,7 +91,7 @@ bool OptionSortFilterProxyModel::lessThan(const QModelIndex &left, const QModelI
     QVariant leftData = sourceModel()->data(left);
     QVariant rightData = sourceModel()->data(right);
 
-    if (leftData.type() == QVariant::String) {
+    if (leftData.typeId() == QMetaType::QString) {
         return QString::localeAwareCompare(leftData.toString(), rightData.toString()) < 0;
     } else {
         return QSortFilterProxyModel::lessThan(left, right);
