@@ -3719,14 +3719,13 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 
     // prepare the options and process and run it
     QList<option::OptionItem> itemList;
+    itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
     if (project->parameterFile()) {
         QDir wDir(workDir);
-#if defined(__unix__) || defined(__APPLE__)
-        itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
-        itemList << option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1);
+#ifdef _WIN32
+        itemList.prepend(option::OptionItem("parmFile", '"'+wDir.relativeFilePath(project->parameterFile()->location())+'"',-1,-1));
 #else
-        commandLineStr += " pf=\"" + wDir.relativeFilePath(project->parameterFile()->location()) + '"';
-        itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
+        itemList.prepend(option::OptionItem("parmFile", wDir.relativeFilePath(project->parameterFile()->location()),-1,-1));
 #endif
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
