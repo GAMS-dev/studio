@@ -1,4 +1,4 @@
-Version 1.14.5 *
+Version 1.14.5
 ==================
 - fixed error link from lst to code not working
 - fixed parameters ignored when no pf-file is assigned to the project
