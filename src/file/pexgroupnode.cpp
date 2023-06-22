@@ -862,7 +862,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
 
             } else if (item.optionId == opt->getOrdinalNumber("ParmFile")) {
                 if (value == "default") value = "\"" + filestem + ".pf\"";
-                setParameter("pf", cleanPath(path, value));
+                setParameter("pf", value.isEmpty() ? "" : cleanPath(path, value));
 
             } else if (item.optionId == opt->getOrdinalNumber("logoption")) {
                 int lo = item.value.toInt(&ok);

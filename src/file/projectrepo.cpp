@@ -342,8 +342,12 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
-            if (projectData.contains("pf"))
-                project->setParameterFile(projectDir.absoluteFilePath(projectData.value("pf").toString()));
+            if (projectData.contains("pf")) {
+                QString pfFile = projectData.value("pf").toString();
+                if (!pfFile.isEmpty())
+                    pfFile = projectDir.absoluteFilePath(pfFile);
+                project->setParameterFile(pfFile);
+            }
             if (!readProjectFiles(project, subChildren, projectPath))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
