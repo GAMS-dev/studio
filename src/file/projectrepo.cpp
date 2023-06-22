@@ -551,8 +551,10 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
     if (type == PExProjectNode::tGams) {
         filePath = CGamsSystemProjectName;
     } else if (type == PExProjectNode::tCommon) {
-        if (!filePath.endsWith(".gsp", FileType::fsCaseSense()))
-            filePath += ".gsp";
+        if (!filePath.endsWith(".gsp", FileType::fsCaseSense())) {
+            QFileInfo fi(filePath);
+            filePath = fi.path() + '/' + fi.completeBaseName() + ".gsp";
+        }
         if (!filePath.contains('/')) {
             filePath = path + '/' + filePath;
         }
