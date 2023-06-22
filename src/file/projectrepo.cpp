@@ -154,6 +154,16 @@ PExFileNode *ProjectRepo::findFileNode(QWidget *editWidget) const
     return group->findFile(fileMeta);
 }
 
+PExProjectNode *ProjectRepo::findProject(QWidget *edit) const
+{
+    FileMeta *fileMeta = mFileRepo->fileMeta(edit);
+    if (!fileMeta) return nullptr;
+    NodeId projId = fileMeta->projectId();
+    if (!projId.isValid()) return nullptr;
+    PExAbstractNode *node = mNodes.value(projId);
+    return node ? node->toProject() : nullptr;
+}
+
 PExProjectNode *ProjectRepo::findProjectForPEdit(QWidget *projectEdit) const
 {
     FileMeta *fileMeta = mFileRepo->fileMeta(projectEdit);
@@ -332,8 +342,12 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
-            if (projectData.contains("pf"))
-                project->setParameterFile(projectDir.absoluteFilePath(projectData.value("pf").toString()));
+            if (projectData.contains("pf")) {
+                QString pfFile = projectData.value("pf").toString();
+                if (!pfFile.isEmpty())
+                    pfFile = projectDir.absoluteFilePath(pfFile);
+                project->setParameterFile(pfFile);
+            }
             if (!readProjectFiles(project, subChildren, projectPath))
                 res = false;
             bool expand = projectData.contains("expand") ? projectData.value("expand").toBool() : true;
@@ -537,8 +551,10 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
     if (type == PExProjectNode::tGams) {
         filePath = CGamsSystemProjectName;
     } else if (type == PExProjectNode::tCommon) {
-        if (!filePath.endsWith(".gsp", FileType::fsCaseSense()))
-            filePath += ".gsp";
+        if (!filePath.endsWith(".gsp", FileType::fsCaseSense())) {
+            QFileInfo fi(filePath);
+            filePath = fi.path() + '/' + fi.completeBaseName() + ".gsp";
+        }
         if (!filePath.contains('/')) {
             filePath = path + '/' + filePath;
         }
