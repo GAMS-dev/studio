@@ -5,6 +5,7 @@ Version 1.14.5 *
 - fixed order of parameters: parameter-box can overrule pf-file
 - fixed parameters were cleared when project settings were opened
 - fixed pf-file set to -none- hasn't been stored
+- fixed project file name contains suffix like ".gms" when automatically created
 
 Version 1.14.4
 ==================
