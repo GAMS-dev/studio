@@ -36,7 +36,7 @@ enum CallReply {
 
     // configuring Call (Server -> GAMS)
     invalidReply,   //  invalidReply \n -the-invalid-reply-
-    getLinesMap,    //  getLinesMap
+//    getLinesMap,    //  getLinesMap
     addBP,          //  addBP \n contLN[:contLN] (shortstring = 255 characters)
     delBP,          //  delBP \n [contLN]
 
@@ -52,7 +52,7 @@ enum CallReply {
                     //   (where contLN is the internal continous-line-number that CMEX is working with.)
                     //   (sends all lines known by CMEX, packages can be split before ':'. Until we haven't another
                     //    Reply with multiple lines, we omit the repeat of "breakLines" keyword)
-    ready,          //  ready (when all breakLines have been sent)
+    linesMapDone,   //  linesMapDone (when all breakLines have been sent)
     paused,         //  paused \n file:line  (file is relative to workdir)
     gdxReady,       //  gdxReady \n file
 
@@ -74,9 +74,9 @@ enum CallReply {
 /// The initialization handshake procedure:
 /// 1. Studio: calls GAMS with the debugPort parameter
 /// 2. GAMS  : connects the socket
-/// 3. Studio: accepts the socket and sends "getBreakLines"
-/// 4. GAMS  : sends the "breakLines" (probably multiple packets)
-/// 5. GAMS  : sends "ready" when done
+/// 3. Studio: accepts the socket
+/// 4. GAMS  : sends the "linesMap" (probably multiple packets)
+/// 5. GAMS  : sends "linesMapDone" when done
 /// 6. Studio: sends "addBP" to send the breakpoints (optional)
 /// 7. Studio: sends "run" or "stepLine"
 ///
@@ -110,7 +110,6 @@ public slots:
     void delBreakpoint(int contLine);
     void clearBreakpoints();
 
-    void sendGetLinesMap();
     void sendRun();
     void sendStepLine();
     void sendInterrupt();

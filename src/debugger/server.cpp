@@ -55,7 +55,6 @@ void Server::init()
     mCalls.insert(addBP, "addBP");
     mCalls.insert(delBP, "delBP");
 
-    mCalls.insert(getLinesMap, "getLinesMap");
     mCalls.insert(run, "run");
     mCalls.insert(stepLine, "stepLine");
     mCalls.insert(pause, "pause");
@@ -64,7 +63,7 @@ void Server::init()
 
     mReplies.insert("invalidCall", invalidCall);
     mReplies.insert("linesMap", linesMap);
-    mReplies.insert("ready", ready);
+    mReplies.insert("linesMapDone", linesMapDone);
     mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
     mReplies.insert("finished", finished);
@@ -225,7 +224,7 @@ bool Server::handleReply(const QString &replyData)
             parseLinesMap(line);
         }
     }  break;
-    case ready: {
+    case linesMapDone: {
        emit signalReady();
     }  break;
     case paused: {
@@ -335,11 +334,6 @@ void Server::delBreakpoint(int contLine)
 void Server::clearBreakpoints()
 {
     callProcedure(delBP);
-}
-
-void Server::sendGetLinesMap()
-{
-    callProcedure(getLinesMap);
 }
 
 void Server::sendRun()

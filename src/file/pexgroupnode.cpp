@@ -1170,7 +1170,7 @@ bool PExProjectNode::startDebugServer()
     if (!mDebugServer) {
         mDebugServer = new debugger::Server(workDir(), this);
         connect(mDebugServer, &debugger::Server::connected, this, [this]() {
-            mDebugServer->sendGetLinesMap();
+            // TODO handle debugger::DebugWidget
         });
         connect(mDebugServer, &debugger::Server::signalReady, this, [this](){
             mDebugServer->addBreakpoints(mBreakpointData->bpContinuousLines());
