@@ -160,7 +160,6 @@ signals:
     void adjustBreakpoint(int &line);
     void addBreakpoint(int line);
     void delBreakpoint(int line);
-    void delBreakpoints();
     void delAllBreakpoints();
 
 public slots:

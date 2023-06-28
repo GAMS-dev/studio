@@ -36,9 +36,9 @@ enum CallReply {
 
     // configuring Call (Server -> GAMS)
     invalidReply,   //  invalidReply \n -the-invalid-reply-
-    getBreakLines,  //  getBreakLines
-    addBP,          //  addBP \n file:line[:line] [\n file:line[:line]]  (shortstring = 255 characters) (relative to workdir)
-    delBP,          //  delBP \n [file[:line]]
+    getLinesMap,    //  getLinesMap
+    addBP,          //  addBP \n contLN[:contLN] (shortstring = 255 characters)
+    delBP,          //  delBP \n [contLN]
 
     // action Call (Server -> GAMS)
     run,            //  run
@@ -48,9 +48,12 @@ enum CallReply {
 
     // Reply (GAMS -> Server)
     invalidCall,    //  invalidCall \n -the-invalid-call-
-    breakLines,     //  breakLines \n file:line[:line] [\n file:line[:line]] (request all lines, packages can be split before ':')
-                    //  (... until we haven't another Reply with miltiple lines, we omit the repeat of "breakLines" keyword)
-    paused,         //  paused \n file:line
+    linesMap,       //  linesMap \n file:line=contLN[:line=contLN] [\n file:line=contLN[:line=contLN]]
+                    //   (where contLN is the internal continous-line-number that CMEX is working with.)
+                    //   (sends all lines known by CMEX, packages can be split before ':'. Until we haven't another
+                    //    Reply with multiple lines, we omit the repeat of "breakLines" keyword)
+    ready,          //  ready (when all breakLines have been sent)
+    paused,         //  paused \n file:line  (file is relative to workdir)
     gdxReady,       //  gdxReady \n file
 
     // Call (GAMS -> Server) and acknowledge (Server -> GAMS)
@@ -66,11 +69,21 @@ enum CallReply {
 /// - the first line is the keyword of the Call/Reply
 /// - the data follows in subsequent lines, one line for each data set
 /// - a data set is split by the colon ':'
+/// - an assignment uses '=' (e.g. in breakLines reply)
 ///
-/// example to tell GAMS to add a breakpoint for trnsport at line 46, Studio sends:
+/// The initialization handshake procedure:
+/// 1. Studio: calls GAMS with the debugPort parameter
+/// 2. GAMS  : connects the socket
+/// 3. Studio: accepts the socket and sends "getBreakLines"
+/// 4. GAMS  : sends the "breakLines" (probably multiple packets)
+/// 5. GAMS  : sends "ready" when done
+/// 6. Studio: sends "addBP" to send the breakpoints (optional)
+/// 7. Studio: sends "run" or "stepLine"
+///
+/// example to tell GAMS to add a breakpoint for trnsport at line 46, which is also the continuous line 46, Studio sends:
 ///
 /// addBP
-/// <path>/trnsport.gms:46
+/// 46
 ///
 class Server : public QObject
 {
@@ -81,38 +94,42 @@ public:
     bool isListening();
     quint16 port();
     bool start();
-    void stop();
     QString gdxTempFile() const;
 
 signals:
     void connected();
     void addProcessData(const QByteArray &data);
+    void signalLinesMap(const QString &file, const QList<int> &fileLines, const QList<int> &continuousLines);
+    void signalReady();
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(const QString &file, int lineNr);
-    void signalBreakLines(const QString &file, QList<int> lines);
 
 public slots:
-    void addBreakpoint(const QString &filename, int line);
-    void addBreakpoints(const QMap<QString, QList<int> > &breakpoints);
-    void delBreakpoint(const QString &filename, int line);
-    void clearBreakpoints(const QString file = QString());
+    void addBreakpoint(int contLine);
+    void addBreakpoints(const QList<int> &contLines);
+    void delBreakpoint(int contLine);
+    void clearBreakpoints();
 
+    void sendGetLinesMap();
     void sendRun();
     void sendStepLine();
     void sendInterrupt();
     void sendWriteGdx(const QString &gdxFile);
+
+    void stopWhenFinished();
 
 private slots:
     void newConnection();
 
 private:
     void init();
+    void stopAndDelete();
     void logMessage(const QString &message);
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
     bool handleReply(const QString &replyData);
-    QString toBpString(const QString &file, QList<int> lines);
-    void parseBreakLines(const QString &breakData);
+    QString toBpString(QList<int> lines);
+    void parseLinesMap(const QString &breakData);
 
     QString mPath;
     QTcpServer *mServer = nullptr;
@@ -120,6 +137,8 @@ private:
     QHash<CallReply, QString> mCalls;
     QHash<QString, CallReply> mReplies;
     QString mBreakLinesFile;
+    bool mFinished = false;
+    int mDelayCounter = 0;
 
     static QSet<int> mPortsInUse;
 

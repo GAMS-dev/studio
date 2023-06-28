@@ -1296,19 +1296,6 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                     }
                 }
             });
-            connect(codeEdit, &CodeEdit::delBreakpoints, this, [this]() {
-                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
-                if (pro) {
-                    pro->clearBreakpoints(mLocation);
-                    for (QWidget *wid : mEditors) {
-                        if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QList<int> lines;
-                            pro->breakpoints(mLocation, lines);
-                            ce->breakpointsChanged(lines);
-                        }
-                    }
-                }
-            });
             connect(codeEdit, &CodeEdit::delAllBreakpoints, this, [this]() {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (pro) {

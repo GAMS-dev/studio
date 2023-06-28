@@ -22,6 +22,9 @@
 #include <QTcpSocket>
 #include <QCollator>
 #include <QFile>
+#include <QTimer>
+
+#include "logger.h"
 
 namespace gams {
 namespace studio {
@@ -35,12 +38,13 @@ Server::Server(const QString &path, QObject *parent) : QObject(parent)
 {
     init();
     mServer = new QTcpServer(this);
+//    QTcpSocket::ReuseAddressHint
     connect(mServer, &QTcpServer::newConnection, this, &Server::newConnection, Qt::UniqueConnection);
 }
 
 Server::~Server()
 {
-    stop();
+    stopAndDelete();
     mServer->deleteLater();
     mServer = nullptr;
 }
@@ -51,6 +55,7 @@ void Server::init()
     mCalls.insert(addBP, "addBP");
     mCalls.insert(delBP, "delBP");
 
+    mCalls.insert(getLinesMap, "getLinesMap");
     mCalls.insert(run, "run");
     mCalls.insert(stepLine, "stepLine");
     mCalls.insert(pause, "pause");
@@ -58,7 +63,8 @@ void Server::init()
     mCalls.insert(finished, "finished");
 
     mReplies.insert("invalidCall", invalidCall);
-    mReplies.insert("breakLines", breakLines);
+    mReplies.insert("linesMap", linesMap);
+    mReplies.insert("ready", ready);
     mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
     mReplies.insert("finished", finished);
@@ -87,7 +93,19 @@ bool Server::start()
     return true;
 }
 
-void Server::stop()
+void Server::stopWhenFinished()
+{
+    if (mFinished) {
+        stopAndDelete();
+    } else {
+        if (++mDelayCounter < 5)
+            QTimer::singleShot(500, this, &Server::stopWhenFinished);
+        else
+            stopAndDelete();
+    }
+}
+
+void Server::stopAndDelete()
 {
     deleteSocket();
     mPortsInUse.remove(mServer->serverPort());
@@ -95,6 +113,35 @@ void Server::stop()
         mServer->close();
         logMessage("Debug-Server stopped.");
     }
+    deleteLater();
+}
+
+void Server::newConnection()
+{
+    if (!mServer) return;
+    QTcpSocket *socket = mServer->nextPendingConnection();
+    if (mSocket) {
+        logMessage("Debug-Server: already connected to a socket");
+        if (socket) socket->deleteLater();
+        return;
+    }
+    if (!socket) return;
+    mSocket = socket;
+    connect(socket, &QTcpSocket::disconnected, this, [this]() {
+        logMessage("Debug-Server: Socket disconnected");
+        deleteSocket();
+    });
+    connect(socket, &QTcpSocket::readyRead, this, [this]() {
+        QByteArray data = mSocket->readAll();
+        if (data.endsWith("\0"))
+            data.remove(data.size() - 1, 1);
+        if (!handleReply(data)) {
+            if (!data.contains("invalidCall"))
+                callProcedure(invalidReply, QStringList() << data);
+        }
+    });
+    logMessage("Debug-Server: Socket connected to GAMS");
+    emit connected();
 }
 
 QString Server::gdxTempFile() const
@@ -149,7 +196,7 @@ bool Server::handleReply(const QString &replyData)
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
         if (reList.at(0).startsWith(':')) {
-            reply = breakLines;
+            reply = linesMap;
 
         } else {
             reply = mReplies.value(reList.at(0), invalid);
@@ -169,14 +216,17 @@ bool Server::handleReply(const QString &replyData)
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
-    case breakLines: {
+    case linesMap: {
         if (reList.size() < 1) {
             logMessage("Debug-Server: [breakLines] Missing data for breakable lines.");
             return false;
         }
         for (const QString &line : reList) {
-            parseBreakLines(line);
+            parseLinesMap(line);
         }
+    }  break;
+    case ready: {
+       emit signalReady();
     }  break;
     case paused: {
         if (reList.size() < 1) {
@@ -217,6 +267,7 @@ bool Server::handleReply(const QString &replyData)
         break;
     case finished:
         callProcedure(finished);
+        mFinished = true;
         break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
@@ -226,57 +277,69 @@ bool Server::handleReply(const QString &replyData)
     return true;
 }
 
-QString Server::toBpString(const QString &file, QList<int> lines)
+QString Server::toBpString(QList<int> lines)
 {
     if (lines.isEmpty()) return QString();
-    QString res = file;
+    QString res;
     for (int line : lines) {
-        res += ':' + QString::number(line);
+        if (!res.isEmpty())
+            res += ':';
+        res += QString::number(line);
     }
     return res;
 }
 
-void Server::parseBreakLines(const QString &breakData)
+void Server::parseLinesMap(const QString &breakData)
 {
     QStringList data;
     data = breakData.split(':');
     QString file = (data.first().isEmpty() ? mBreakLinesFile : data.first());
     QList<int> lines;
+    QList<int> coLNs;
     for (int i = 1; i < data.size(); ++i) {
-        bool ok;
-        int line = data.at(i).toInt(&ok);
-        if (ok) lines << line;
+        QStringList linePair = data.at(i).split("=");
+        bool ok = (linePair.size() == 2);
+        if (ok) {
+            int line = linePair.at(0).toInt(&ok);
+            if (ok) {
+                int coLN = linePair.at(1).toInt(&ok);
+                if (ok) {
+                    lines << line;
+                    coLNs << coLN;
+                }
+            }
+        }
+        if (!ok) logMessage("Debug-Server: breakLines parse error: " + data.at(i));
     }
     if (!lines.isEmpty())
-        emit signalBreakLines(file, lines);
+        emit signalLinesMap(file, lines, coLNs);
 }
 
-void Server::addBreakpoint(const QString &filename, int line)
+void Server::addBreakpoint(int contLine)
 {
-    callProcedure(addBP, {toBpString(filename, {line})});
+    callProcedure(addBP, {QString::number(contLine)});
 }
 
-void Server::addBreakpoints(const QMap<QString, QList<int> > &breakpoints)
+void Server::addBreakpoints(const QList<int> &contLines)
 {
-    QStringList args;
-    auto iter = breakpoints.constBegin();
-    while (iter != breakpoints.constEnd()) {
-        if (!iter.value().isEmpty())
-            args << toBpString(iter.key(), iter.value());
-        ++iter;
-    }
-    if (!args.isEmpty())
-        callProcedure(addBP, args);
+    QString bps = toBpString(contLines);
+    if (!bps.isEmpty())
+        callProcedure(addBP, {bps});
 }
 
-void Server::delBreakpoint(const QString &filename, int line)
+void Server::delBreakpoint(int contLine)
 {
-    callProcedure(delBP, {toBpString(filename, {line})});
+    callProcedure(delBP, {QString::number(contLine)});
 }
 
-void Server::clearBreakpoints(const QString file)
+void Server::clearBreakpoints()
 {
-    callProcedure(delBP, {file});
+    callProcedure(delBP);
+}
+
+void Server::sendGetLinesMap()
+{
+    callProcedure(getLinesMap);
 }
 
 void Server::sendRun()
@@ -307,34 +370,6 @@ bool Server::isListening()
 quint16 Server::port()
 {
     return mServer ? mServer->serverPort() : -1;
-}
-
-void Server::newConnection()
-{
-    if (!mServer) return;
-    QTcpSocket *socket = mServer->nextPendingConnection();
-    if (mSocket) {
-        logMessage("Debug-Server: already connected to a socket");
-        if (socket) socket->deleteLater();
-        return;
-    }
-    if (!socket) return;
-    mSocket = socket;
-    connect(socket, &QTcpSocket::disconnected, this, [this]() {
-        logMessage("Debug-Server: Socket disconnected");
-        deleteSocket();
-    });
-    connect(socket, &QTcpSocket::readyRead, this, [this]() {
-        QByteArray data = mSocket->readAll();
-        if (data.endsWith("\0"))
-            data.remove(data.size() - 1, 1);
-        if (!handleReply(data)) {
-            if (!data.contains("invalidCall"))
-                callProcedure(invalidReply, QStringList() << data);
-        }
-    });
-    logMessage("Debug-Server: Socket connected to GAMS");
-    emit connected();
 }
 
 void Server::logMessage(const QString &message)

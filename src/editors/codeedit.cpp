@@ -1017,10 +1017,12 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         int line = cursorForPosition(e->pos()).blockNumber() + 1;
         int oriLine = line;
         emit adjustBreakpoint(line);
-        if (!mBreakpoints.contains(line))
-            emit addBreakpoint(line);
-        else if (oriLine == line)
-            emit delBreakpoint(line);
+        if (line >= 0) {
+            if (!mBreakpoints.contains(line))
+                emit addBreakpoint(line);
+            else if (oriLine == line)
+                emit delBreakpoint(line);
+        }
         done = true;
     }
     if (!done) {
@@ -1200,10 +1202,7 @@ void CodeEdit::showBpContext(const QPoint &pos)
         else
             emit addBreakpoint(line);
     });
-    menu.addAction("Remove breakpoints (this file)", this, [this]() {
-        emit delBreakpoints();
-    });
-    menu.addAction("Remove breakpoints (all files)", this, [this]() {
+    menu.addAction("Remove all breakpoints", this, [this]() {
         emit delAllBreakpoints();
     });
     menu.exec(viewport()->mapToGlobal(pos));

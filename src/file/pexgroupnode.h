@@ -27,7 +27,6 @@
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
 #include "syntax/textmark.h"
-#include "debugger/server.h"
 
 namespace gams {
 namespace studio {
@@ -40,6 +39,10 @@ class FileMetaRepo;
 namespace option {
 struct OptionItem;
 class Option;
+}
+namespace debugger {
+class BreakpointData;
+class Server;
 }
 
 class PExGroupNode : public PExAbstractNode
@@ -161,19 +164,18 @@ public slots:
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
-    void presetBreakLines();
+    void presetLinesMap();
     void adjustBreakpoint(const QString &filename, int &line);
     void addBreakpoint(const QString &filename, int line);
-    void addBreakpoints(const QString &filename, const QList<int> &lines);
     void delBreakpoint(const QString &filename, int line);
-    void clearBreakpoints(const QString &filename = QString());
+    void clearBreakpoints();
     void breakpoints(const QString &filename, QList<int> &bps) const;
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
     void openDebugGdx(const QString &gdxFile);
     void gotoPaused(const QString &file, int lineNr);
-    void addBreakLines(const QString &file, QList<int> lines);
+    void addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines);
 
 protected:
     friend class ProjectRepo;
@@ -203,9 +205,8 @@ private:
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
-    bool isAutoBreakLines = false;
-    QMap<QString, QList<int>> mBreakLines;
-    QMap<QString, QList<int>> mBreakpoints;
+    bool isAutoLinesMap = false;
+    debugger::BreakpointData *mBreakpointData;
     PExFileNode *mPausedInFile = nullptr;
 
 private:

@@ -99,6 +99,7 @@ SOURCES += \
     connect/schemadefinitionmodel.cpp \
     connect/schemalistmodel.cpp \
     connect/treecellresizer.cpp \
+    debugger/breakpointdata.cpp \
     debugger/debugwidget.cpp \
     debugger/server.cpp \
     editors/abstractedit.cpp \
@@ -312,6 +313,7 @@ HEADERS += \
     connect/schemadefinitionmodel.h \
     connect/schemalistmodel.h \
     connect/treecellresizer.h \
+    debugger/breakpointdata.h \
     debugger/debugwidget.h \
     debugger/server.h \
     editors/abstractedit.h \

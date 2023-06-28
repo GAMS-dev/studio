@@ -68,6 +68,7 @@
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
 #include "connect/connecteditor.h"
+#include "debugger/server.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -4380,7 +4381,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
                 edit->setFont(getEditorFont(fileMeta->fontGroup()));
             });
             if (fileMeta == project->runnableGms())
-                project->presetBreakLines();
+                project->presetLinesMap();
 
         } catch (Exception &e) {
             appendSystemLogError(e.what());
