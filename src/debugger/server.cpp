@@ -22,6 +22,7 @@
 #include <QTcpSocket>
 #include <QCollator>
 #include <QFile>
+#include <QDir>
 #include <QTimer>
 
 #include "logger.h"
@@ -192,7 +193,7 @@ bool Server::handleReply(const QString &replyData)
     QString file;
     if (reList.size()) {
         data = reList.first().split('|');
-        file = data.first();
+        file = QDir::fromNativeSeparators(data.first());
     }
 
     bool ok = false;
@@ -273,7 +274,7 @@ void Server::parseLinesMap(const QString &breakData)
 {
     QStringList data;
     data = breakData.split('|');
-    QString file = (data.first().isEmpty() ? mBreakLinesFile : data.first());
+    QString file = (data.first().isEmpty() ? mBreakLinesFile : QDir::fromNativeSeparators(data.first()));
     QList<int> lines;
     QList<int> coLNs;
     for (int i = 1; i < data.size(); ++i) {
