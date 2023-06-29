@@ -119,11 +119,13 @@ void Server::newConnection()
     });
     connect(socket, &QTcpSocket::readyRead, this, [this]() {
         QByteArray data = mSocket->readAll();
-        if (data.endsWith("\0"))
-            data.remove(data.size() - 1, 1);
-        if (!handleReply(data)) {
-            if (!data.contains("invalidCall"))
-                callProcedure(invalidReply, QStringList() << data);
+        QList<QByteArray> packets = data.split('\0');
+        for (const QByteArray &packet : packets) {
+            if (packet.isEmpty()) continue;
+            if (!handleReply(packet)) {
+                if (!packet.contains("invalidCall"))
+                    callProcedure(invalidReply, QStringList() << packet);
+            }
         }
     });
     logMessage("Debug-Server: Socket connected to GAMS");
