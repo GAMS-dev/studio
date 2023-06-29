@@ -139,13 +139,13 @@ QString Server::gdxTempFile() const
 
 void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
-
     if (!mSocket->isOpen()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
         logMessage("Debug-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
+    logMessage("Sending to GAMS: " + mCalls.value(call) + "\n" + arguments.join("\n"));
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
@@ -155,9 +155,9 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
     }
     QStringList remain(arguments);
     QString ready = keyword;
-    bool progress = false;
-    while (!remain.isEmpty()) {
-        if (ready.length() + 2 + remain.first().length() < 255) {
+    bool progress = true;
+    while (remain.length() || progress) {
+        if (remain.length() && ready.length() + 2 + remain.first().length() < 255) {
             ready += '\n' + remain.takeFirst();
             progress = true;
         }
@@ -167,11 +167,9 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
             break;
         }
         if (remain.isEmpty() || ready.length() + 2 + remain.first().length() >= 255) {
-            mSocket->write(ready.toUtf8());
-            if (!remain.isEmpty()) {
-                ready = keyword;
-                progress = false;
-            }
+            mSocket->write(ready.toUtf8() + '\0');
+            ready = keyword;
+            progress = false;
         }
     }
 }
