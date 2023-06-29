@@ -26,16 +26,18 @@ public:
     QString filename(int contLine) const;
     int fileLine(int contLine) const;
 
-    void adjustBreakpoint(const QString &filename, int &fileLine);
+    void adjustBreakpoints();
+    void adjustBreakpoint(const QString &filename, int &fileLine, bool skipExist = true);
     int addBreakpoint(const QString &filename, int fileLine);
     void delBreakpoint(const QString &filename, int fileLine);
     void delBreakpoints();
     bool isBreakpoint(const QString &filename, int fileLine) const;
+    QStringList bpFiles();
     QList<int> bpFileLines(const QString &filename) const;
     QList<int> bpContinuousLines() const;
 
 private:
-    QMap<int, QString> mStartCln4File;
+    QMap<int, QString> mLastCln4File;
     QMap<int, int> mCln2Line;
     QMap<QString, QMap<int, int> > mFileLine2Cln;
 

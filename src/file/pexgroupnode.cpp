@@ -1163,6 +1163,12 @@ bool PExProjectNode::startDebugServer()
             // TODO handle debugger::DebugWidget
         });
         connect(mDebugServer, &debugger::Server::signalMapDone, this, [this](){
+            mBreakpointData->adjustBreakpoints();
+            for (const QString &file : mBreakpointData->bpFiles()) {
+                FileMeta *meta = fileRepo()->fileMeta(file);
+                if (meta)
+                    meta->updateBreakpoints();
+            }
             mDebugServer->addBreakpoints(mBreakpointData->bpContinuousLines());
             mDebugServer->sendRun();
         });
@@ -1233,11 +1239,12 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
         node->file()->jumpTo(node->projectId(), true);
 }
 
-void PExProjectNode::gotoPaused(const QString &file, int lineNr)
+void PExProjectNode::gotoPaused(int contLine)
 {
-    QDir dir(mWorkDir);
-    QString absFile = dir.absoluteFilePath(file);
-    PExFileNode *node = projectRepo()->findFile(absFile, this);
+    QString file = mBreakpointData->filename(contLine);
+    int fileLine = mBreakpointData->fileLine(contLine);
+
+    PExFileNode *node = projectRepo()->findFile(file, this);
     if (mPausedInFile && mPausedInFile != node) {
         for (QWidget *wid : node->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
@@ -1247,7 +1254,7 @@ void PExProjectNode::gotoPaused(const QString &file, int lineNr)
     if (node) {
         for (QWidget *wid : node->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
-                ce->setPausedPos(lineNr);
+                ce->setPausedPos(fileLine);
         }
     }
     mPausedInFile = node;

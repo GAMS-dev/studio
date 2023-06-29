@@ -167,7 +167,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
             break;
         }
         if (remain.isEmpty() || ready.length() + 2 + remain.first().length() >= 255) {
-            mSocket->write(ready.toUtf8() + '\0');
+            mSocket->write(ready.toUtf8() + '\t');
             ready = keyword;
             progress = false;
         }
@@ -190,10 +190,8 @@ bool Server::handleReply(const QString &replyData)
         }
     }
     QStringList data;
-    QString file;
     if (reList.size()) {
         data = reList.first().split('|');
-        file = QDir::fromNativeSeparators(data.first());
     }
 
     bool ok = false;
@@ -215,31 +213,24 @@ bool Server::handleReply(const QString &replyData)
     }  break;
     case paused: {
         if (reList.size() < 1) {
-            logMessage("Debug-Server: [paused] Missing data for interrupt.");
+            logMessage("Debug-Server: [paused] Missing continuous line for interrupt.");
             return false;
         }
         if (reList.size() > 1)
             logMessage("Debug-Server: [paused] Only one entry expected. Additional data ignored.");
-        if (file.isEmpty()) {
-            logMessage("Debug-Server: [paused] Missing filename");
+        int line = data.at(0).toInt(&ok);
+        if (!ok) {
+            logMessage("Debug-Server: [paused] Can't parse continuous line number: " + data.at(0));
             return false;
-        }
-        if (!QFile::exists(file)) {
-            logMessage("Debug-Server: [paused] File not found: " + file);
-            return false;
-        }
-        if (data.size() < 2) {
-            logMessage("Debug-Server: [paused] Missing line number for file " + data.first());
         }
 
-        int line = data.at(1).toInt(&ok);
-        if (!ok) {
-            logMessage("Debug-Server: [paused] Can't parse line number: " + data.at(1));
-            return false;
-        }
-        emit signalPaused(file, line);
+        emit signalPaused(line);
     }   break;
-    case gdxReady:
+    case gdxReady: {
+        QString file;
+        if (reList.size())
+            file = QDir::fromNativeSeparators(data.first());
+
         if (file.isEmpty()) {
             logMessage("Debug-Server: [gdxReady] Missing name for GDX file.");
             return false;
@@ -249,7 +240,7 @@ bool Server::handleReply(const QString &replyData)
             return false;
         }
         emit signalGdxReady(file);
-        break;
+    }   break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
         return false;

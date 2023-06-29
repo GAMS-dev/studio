@@ -12,7 +12,7 @@ BreakpointData::~BreakpointData()
 
 void BreakpointData::clearLinesMap()
 {
-    mStartCln4File.clear();
+    mLastCln4File.clear();
     mCln2Line.clear();
     mFileLine2Cln.clear();
 }
@@ -21,8 +21,8 @@ bool BreakpointData::addLinesMap(const QString &filename, const QList<int> &file
 {
     if (fileLines.isEmpty() || fileLines.size() != contLines.size())
         return false;
-    if (mStartCln4File.isEmpty() || mStartCln4File.last() != filename)
-        mStartCln4File.insert(contLines.last(), filename);
+    if (mLastCln4File.isEmpty() || mLastCln4File.last() != filename)
+        mLastCln4File.insert(contLines.last(), filename);
 
     QMap<int, int> revMap = mFileLine2Cln.value(filename);
     for (int i = 0; i < fileLines.size(); ++i) {
@@ -45,7 +45,7 @@ int BreakpointData::continuousLine(const QString &filename, int fileLine) const
 
 QString BreakpointData::filename(int contLine) const
 {
-    return mStartCln4File.value(contLine);
+    return mLastCln4File.value(contLine);
 }
 
 int BreakpointData::fileLine(int contLine) const
@@ -53,8 +53,31 @@ int BreakpointData::fileLine(int contLine) const
     return mCln2Line.value(contLine, -1);
 }
 
-void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
+QStringList BreakpointData::bpFiles()
 {
+    return mActiveBp.keys();
+}
+
+void BreakpointData::adjustBreakpoints()
+{
+    QMap<QString, SortedSet> newBp;
+    for (auto iFile = mActiveBp.constBegin() ; iFile != mActiveBp.constEnd() ; ++iFile) {
+        SortedSet bps;
+        for (auto iLine = iFile.value().constBegin() ; iLine != iFile.value().constEnd() ; ++iLine) {
+            int line = iLine.key();
+            adjustBreakpoint(iFile.key(), line, false);
+            bps.insert(line, 0);
+        }
+        newBp.insert(iFile.key(), bps);
+    }
+    mActiveBp = newBp;
+}
+
+void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine, bool skipExist)
+{
+    if (skipExist && mActiveBp.value(filename).contains(fileLine))
+        return;
+
     const QMap<int, int> map = mFileLine2Cln.value(filename);
     if (map.isEmpty()) return;
 

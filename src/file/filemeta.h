@@ -78,6 +78,7 @@ public:
     void setModified(bool modified=true);
     bool isPinnable();
     void updateTabName(QTabWidget *tabWidget, int index);
+    void updateBreakpoints();
 
     QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
     int addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);

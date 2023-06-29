@@ -590,6 +590,20 @@ void FileMeta::addEditor(QWidget *edit)
         aEdit->setMarks(mFileRepo->textMarkRepo()->marks(mId));
 }
 
+void FileMeta::updateBreakpoints()
+{
+    PExProjectNode *project = mFileRepo->projectRepo()->asProject(mProjectId);
+    if (project) {
+        QList<int> bpLines;
+        project->breakpoints(mLocation, bpLines);
+        for (QWidget *wid : mEditors) {
+            if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
+                ce->breakpointsChanged(bpLines);
+            }
+        }
+    }
+}
+
 const NodeId &FileMeta::projectId() const
 {
     return mProjectId;
@@ -598,18 +612,8 @@ const NodeId &FileMeta::projectId() const
 void FileMeta::setProjectId(const NodeId &newProjectId)
 {
     mProjectId = newProjectId;
-    if (kind() == FileKind::Gms) {
-        PExProjectNode *project = mFileRepo->projectRepo()->asProject(mProjectId);
-        if (project) {
-            QList<int> bpLines;
-            project->breakpoints(mLocation, bpLines);
-            for (QWidget *wid : mEditors) {
-                if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                    ce->breakpointsChanged(bpLines);
-                }
-            }
-        }
-    }
+    if (kind() == FileKind::Gms)
+        updateBreakpoints();
 }
 
 void FileMeta::editToTop(QWidget *edit)
@@ -1275,39 +1279,19 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro) return;
                 pro->addBreakpoint(mLocation, line);
-                for (QWidget *wid : mEditors) {
-                    if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                        QList<int> lines;
-                        pro->breakpoints(mLocation, lines);
-                        ce->breakpointsChanged(lines);
-                    }
-                }
+                updateBreakpoints();
             });
             connect(codeEdit, &CodeEdit::delBreakpoint, this, [this](int line) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
-                if (pro) {
-                    pro->delBreakpoint(mLocation, line);
-                    for (QWidget *wid : mEditors) {
-                        if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QList<int> lines;
-                            pro->breakpoints(mLocation, lines);
-                            ce->breakpointsChanged(lines);
-                        }
-                    }
-                }
+                if (!pro) return;
+                pro->delBreakpoint(mLocation, line);
+                updateBreakpoints();
             });
             connect(codeEdit, &CodeEdit::delAllBreakpoints, this, [this]() {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
-                if (pro) {
-                    pro->clearBreakpoints();
-                    for (QWidget *wid : mEditors) {
-                        if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                            QList<int> lines;
-                            pro->breakpoints(mLocation, lines);
-                            ce->breakpointsChanged(lines);
-                        }
-                    }
-                }
+                if (!pro) return;
+                pro->clearBreakpoints();
+                updateBreakpoints();
             });
         }
     }

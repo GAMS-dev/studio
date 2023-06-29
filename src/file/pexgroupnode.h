@@ -174,7 +174,7 @@ public slots:
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
     void openDebugGdx(const QString &gdxFile);
-    void gotoPaused(const QString &file, int lineNr);
+    void gotoPaused(int contLine);
     void addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines);
 
 protected:

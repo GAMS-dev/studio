@@ -53,7 +53,7 @@ enum CallReply {
                     //   (sends all lines known by CMEX, packages can be split before '|'. Until we haven't another
                     //    Reply with multiple lines, we omit the repeat of "breakLines" keyword)
     linesMapDone,   //  linesMapDone (when all breakLines have been sent)
-    paused,         //  paused \n file|line  (file is relative to workdir)
+    paused,         //  paused \n contLN
     gdxReady,       //  gdxReady \n file
 };
 ///
@@ -99,7 +99,7 @@ signals:
     void signalLinesMap(const QString &file, const QList<int> &fileLines, const QList<int> &continuousLines);
     void signalMapDone();
     void signalGdxReady(const QString &gdxFile);
-    void signalPaused(const QString &file, int lineNr);
+    void signalPaused(int contLine);
 
 public slots:
     void addBreakpoint(int contLine);
