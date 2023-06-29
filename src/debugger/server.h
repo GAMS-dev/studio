@@ -97,7 +97,7 @@ signals:
     void connected();
     void addProcessData(const QByteArray &data);
     void signalLinesMap(const QString &file, const QList<int> &fileLines, const QList<int> &continuousLines);
-    void signalReady();
+    void signalMapDone();
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(const QString &file, int lineNr);
 
@@ -112,14 +112,13 @@ public slots:
     void sendInterrupt();
     void sendWriteGdx(const QString &gdxFile);
 
-    void stopWhenFinished();
+    void stopAndDelete();
 
 private slots:
     void newConnection();
 
 private:
     void init();
-    void stopAndDelete();
     void logMessage(const QString &message);
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());

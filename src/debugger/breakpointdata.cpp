@@ -21,7 +21,7 @@ bool BreakpointData::addLinesMap(const QString &filename, const QList<int> &file
 {
     if (fileLines.isEmpty() || fileLines.size() != contLines.size())
         return false;
-    if (mStartCln4File.last() != filename)
+    if (mStartCln4File.isEmpty() || mStartCln4File.last() != filename)
         mStartCln4File.insert(contLines.last(), filename);
 
     QMap<int, int> revMap = mFileLine2Cln.value(filename);

@@ -90,18 +90,6 @@ bool Server::start()
     return true;
 }
 
-void Server::stopWhenFinished()
-{
-    if (mFinished) {
-        stopAndDelete();
-    } else {
-        if (++mDelayCounter < 5)
-            QTimer::singleShot(500, this, &Server::stopWhenFinished);
-        else
-            stopAndDelete();
-    }
-}
-
 void Server::stopAndDelete()
 {
     deleteSocket();
@@ -222,7 +210,7 @@ bool Server::handleReply(const QString &replyData)
         }
     }  break;
     case linesMapDone: {
-       emit signalReady();
+       emit signalMapDone();
     }  break;
     case paused: {
         if (reList.size() < 1) {

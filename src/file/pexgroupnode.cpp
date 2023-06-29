@@ -1162,7 +1162,7 @@ bool PExProjectNode::startDebugServer()
         connect(mDebugServer, &debugger::Server::connected, this, [this]() {
             // TODO handle debugger::DebugWidget
         });
-        connect(mDebugServer, &debugger::Server::signalReady, this, [this](){
+        connect(mDebugServer, &debugger::Server::signalMapDone, this, [this](){
             mDebugServer->addBreakpoints(mBreakpointData->bpContinuousLines());
             mDebugServer->sendRun();
         });
@@ -1186,7 +1186,7 @@ bool PExProjectNode::startDebugServer()
 void PExProjectNode::stopDebugServer()
 {
     if (mDebugServer) {
-        mDebugServer->stopWhenFinished();
+        mDebugServer->stopAndDelete();
         mDebugServer = nullptr;
     }
 }
