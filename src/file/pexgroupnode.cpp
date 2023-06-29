@@ -734,8 +734,6 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
 void PExProjectNode::presetLinesMap()
 {
     if (!runnableGms()) return;
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(runnableGms()->location());
     if (mBreakpointData->hasLinesMap())
         return;
     QFile gms(runnableGms()->location());
@@ -754,16 +752,14 @@ void PExProjectNode::presetLinesMap()
                 inComment = false;
         }
         gms.close();
-        mBreakpointData->addLinesMap(relFile, lines, lines);
+//        mBreakpointData->addLinesMap(gms.fileName(), lines, lines);
         isAutoLinesMap = true;
     }
 }
 
 void PExProjectNode::adjustBreakpoint(const QString &filename, int &line)
 {
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
-    mBreakpointData->adjustBreakpoint(relFile, line);
+    mBreakpointData->adjustBreakpoint(filename, line);
 }
 
 void insertSorted(QList<int> &list, int value)
@@ -777,12 +773,10 @@ void insertSorted(QList<int> &list, int value)
 
 void PExProjectNode::addBreakpoint(const QString &filename, int line)
 {
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
-    mBreakpointData->addBreakpoint(relFile, line);
+    mBreakpointData->addBreakpoint(filename, line);
 
     if (mDebugServer) {
-        int contLine = mBreakpointData->continuousLine(relFile, line);
+        int contLine = mBreakpointData->continuousLine(filename, line);
         if (contLine >= 0)
             mDebugServer->addBreakpoint(contLine);
     }
@@ -790,12 +784,10 @@ void PExProjectNode::addBreakpoint(const QString &filename, int line)
 
 void PExProjectNode::delBreakpoint(const QString &filename, int line)
 {
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
     mBreakpointData->delBreakpoint(filename, line);
 
     if (mDebugServer) {
-        int contLine = mBreakpointData->continuousLine(relFile, line);
+        int contLine = mBreakpointData->continuousLine(filename, line);
         if (contLine >= 0)
             mDebugServer->delBreakpoint(contLine);
     }
@@ -810,9 +802,7 @@ void PExProjectNode::clearBreakpoints()
 
 void PExProjectNode::breakpoints(const QString &filename, QList<int> &bps) const
 {
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
-    bps = mBreakpointData->bpFileLines(relFile);
+    bps = mBreakpointData->bpFileLines(filename);
 }
 
 void PExProjectNode::clearErrorTexts()
@@ -1270,9 +1260,7 @@ void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &file
         mBreakpointData->clearLinesMap();
         isAutoLinesMap = false;
     }
-    QDir dir(mWorkDir);
-    QString relFile = dir.relativeFilePath(filename);
-    mBreakpointData->addLinesMap(relFile, fileLines, continuousLines);
+    mBreakpointData->addLinesMap(filename, fileLines, continuousLines);
 }
 
 PExRootNode::PExRootNode(ProjectRepo* repo)

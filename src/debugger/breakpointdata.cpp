@@ -65,10 +65,11 @@ void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
 int BreakpointData::addBreakpoint(const QString &filename, int fileLine)
 {
     const QMap<int, int> map = mFileLine2Cln.value(filename);
-    if (map.isEmpty())
-        return fileLine;
-    const auto iter = map.lowerBound(fileLine);
-    int resLine = (iter == map.constEnd()) ? map.lastKey() : iter.key();
+    int resLine = fileLine;
+    if (!map.isEmpty()) {
+        const auto iter = map.lowerBound(fileLine);
+        resLine = (iter == map.constEnd()) ? map.lastKey() : iter.key();
+    }
     SortedSet lines = mActiveBp.value(filename);
     lines.insert(resLine, 0);
     mActiveBp.insert(filename, lines);

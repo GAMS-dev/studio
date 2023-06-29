@@ -187,6 +187,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
 
 bool Server::handleReply(const QString &replyData)
 {
+    logMessage("\nFrom GAMS: " + replyData);
     QStringList reList = replyData.split('\n');
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
@@ -213,7 +214,7 @@ bool Server::handleReply(const QString &replyData)
         break;
     case linesMap: {
         if (reList.size() < 1) {
-            logMessage("Debug-Server: [breakLines] Missing data for breakable lines.");
+            logMessage("Debug-Server: [linesMap] Missing data for breakable lines.");
             return false;
         }
         for (const QString &line : reList) {
