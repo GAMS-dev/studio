@@ -37,7 +37,7 @@ enum CallReply {
     // configuring Call (Server -> GAMS)
     invalidReply,   //  invalidReply \n -the-invalid-reply-
 //    getLinesMap,    //  getLinesMap
-    addBP,          //  addBP \n contLN[:contLN] (shortstring = 255 characters)
+    addBP,          //  addBP \n contLN[|contLN] (shortstring = 255 characters)
     delBP,          //  delBP \n [contLN]
 
     // action Call (Server -> GAMS)
@@ -48,16 +48,13 @@ enum CallReply {
 
     // Reply (GAMS -> Server)
     invalidCall,    //  invalidCall \n -the-invalid-call-
-    linesMap,       //  linesMap \n file:line=contLN[:line=contLN] [\n file:line=contLN[:line=contLN]]
+    linesMap,       //  linesMap \n file|line=contLN[|line=contLN] [\n file|line=contLN[|line=contLN]]
                     //   (where contLN is the internal continous-line-number that CMEX is working with.)
-                    //   (sends all lines known by CMEX, packages can be split before ':'. Until we haven't another
+                    //   (sends all lines known by CMEX, packages can be split before '|'. Until we haven't another
                     //    Reply with multiple lines, we omit the repeat of "breakLines" keyword)
     linesMapDone,   //  linesMapDone (when all breakLines have been sent)
-    paused,         //  paused \n file:line  (file is relative to workdir)
+    paused,         //  paused \n file|line  (file is relative to workdir)
     gdxReady,       //  gdxReady \n file
-
-    // Call (GAMS -> Server) and acknowledge (Server -> GAMS)
-    finished,       //  finished
 };
 ///
 /// \brief The Server class allows debug communication to a GAMS instance
@@ -68,7 +65,7 @@ enum CallReply {
 /// The Data is formatted in a multi-line string:
 /// - the first line is the keyword of the Call/Reply
 /// - the data follows in subsequent lines, one line for each data set
-/// - a data set is split by the colon ':'
+/// - a data set is split by the pipe '|'
 /// - an assignment uses '=' (e.g. in breakLines reply)
 ///
 /// The initialization handshake procedure:

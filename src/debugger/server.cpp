@@ -59,14 +59,12 @@ void Server::init()
     mCalls.insert(stepLine, "stepLine");
     mCalls.insert(pause, "pause");
     mCalls.insert(writeGDX, "writeGDX");
-    mCalls.insert(finished, "finished");
 
     mReplies.insert("invalidCall", invalidCall);
     mReplies.insert("linesMap", linesMap);
     mReplies.insert("linesMapDone", linesMapDone);
     mReplies.insert("paused", paused);
     mReplies.insert("gdxReady", gdxReady);
-    mReplies.insert("finished", finished);
 }
 
 bool Server::start()
@@ -152,16 +150,14 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
 
     if (!mSocket->isOpen()) {
-        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1)
-                                                    : QString();
+        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
         logMessage("Debug-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
-        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1)
-                                                    : QString();
+        QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
         logMessage("Debug-Server: Undefined call '" + QString::number(int(call))
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
@@ -194,7 +190,7 @@ bool Server::handleReply(const QString &replyData)
     QStringList reList = replyData.split('\n');
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
-        if (reList.at(0).startsWith(':')) {
+        if (reList.at(0).startsWith('|')) {
             reply = linesMap;
 
         } else {
@@ -206,7 +202,7 @@ bool Server::handleReply(const QString &replyData)
     QStringList data;
     QString file;
     if (reList.size()) {
-        data = reList.first().split(':');
+        data = reList.first().split('|');
         file = data.first();
     }
 
@@ -264,10 +260,6 @@ bool Server::handleReply(const QString &replyData)
         }
         emit signalGdxReady(file);
         break;
-    case finished:
-        callProcedure(finished);
-        mFinished = true;
-        break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
         return false;
@@ -282,7 +274,7 @@ QString Server::toBpString(QList<int> lines)
     QString res;
     for (int line : lines) {
         if (!res.isEmpty())
-            res += ':';
+            res += '|';
         res += QString::number(line);
     }
     return res;
@@ -291,7 +283,7 @@ QString Server::toBpString(QList<int> lines)
 void Server::parseLinesMap(const QString &breakData)
 {
     QStringList data;
-    data = breakData.split(':');
+    data = breakData.split('|');
     QString file = (data.first().isEmpty() ? mBreakLinesFile : data.first());
     QList<int> lines;
     QList<int> coLNs;
