@@ -1242,7 +1242,7 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
     PExFileNode *node = projectRepo()->findOrCreateFileNode(absFile, this);
     if (node) {
         if (node->file()->isOpen())
-            node->file()->reload();
+            node->file()->invalidate();
         else
             node->file()->jumpTo(node->projectId(), true);
     }
