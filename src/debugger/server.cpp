@@ -35,7 +35,7 @@ const quint16 CFirstDebugPort = 3563;
 const quint16 CLastDebugPort = 4563;
 QSet<int> Server::mPortsInUse;
 
-Server::Server(const QString &path, QObject *parent) : QObject(parent)
+Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(path)
 {
     init();
     mServer = new QTcpServer(this);
