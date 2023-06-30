@@ -150,6 +150,8 @@ public:
 
     debugger::Server *debugServer() const;
 
+    QString tempGdx() const;
+
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
@@ -170,11 +172,11 @@ public slots:
     void delBreakpoint(const QString &filename, int line);
     void clearBreakpoints();
     void breakpoints(const QString &filename, QList<int> &bps) const;
+    void gotoPaused(int contLine);
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);
     void openDebugGdx(const QString &gdxFile);
-    void gotoPaused(int contLine);
     void addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines);
 
 protected:
@@ -205,6 +207,7 @@ private:
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
+    QString mTempGdx;
     bool isAutoLinesMap = false;
     debugger::BreakpointData *mBreakpointData;
     PExFileNode *mPausedInFile = nullptr;

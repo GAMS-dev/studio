@@ -2165,8 +2165,23 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
         appendSystemLogError("No group attached to process");
         return;
     }
-    if (project->debugServer() && QFile::exists(project->debugServer()->gdxTempFile()))
-        QFile::remove(project->debugServer()->gdxTempFile());
+    if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
+        QString tempGdx = project->tempGdx();
+        FileMeta *meta = mFileMetaRepo.fileMeta(tempGdx);
+        if (meta) {
+            if (meta->isOpen())
+                closeFileEditors(meta->id());
+            PExFileNode *node = project->findFile(meta);
+            if (node)
+                closeNodeConditionally(node);
+        }
+        QTimer::singleShot(200, this, [this, tempGdx]() {
+            bool done = QFile::remove(tempGdx);
+            if (!done)
+                DEB() << "Couldn't remove temp GDX file " << tempGdx;
+        });
+    }
+    project->gotoPaused(-1);
     project->stopDebugServer();
 
     if (exitCode == ecTooManyScratchDirs) {

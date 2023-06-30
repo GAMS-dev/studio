@@ -45,7 +45,11 @@ int BreakpointData::continuousLine(const QString &filename, int fileLine) const
 
 QString BreakpointData::filename(int contLine) const
 {
-    return mLastCln4File.value(contLine);
+    if (mLastCln4File.isEmpty()) return QString();
+    const auto iter = mLastCln4File.lowerBound(contLine);
+    if (iter == mLastCln4File.constEnd())
+        return mLastCln4File.last();
+    return iter.value();
 }
 
 int BreakpointData::fileLine(int contLine) const

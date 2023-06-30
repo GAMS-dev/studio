@@ -463,6 +463,11 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
     return res;
 }
 
+QString PExProjectNode::tempGdx() const
+{
+    return mTempGdx;
+}
+
 debugger::Server *PExProjectNode::debugServer() const
 {
     return mDebugServer;
@@ -1234,9 +1239,11 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
 {
     QDir dir(mWorkDir);
     QString absFile = dir.absoluteFilePath(gdxFile);
-    PExFileNode *node = projectRepo()->findFile(absFile, this);
+    PExFileNode *node = projectRepo()->findOrCreateFileNode(absFile, this);
     if (node)
         node->file()->jumpTo(node->projectId(), true);
+    else
+        DEB() << "GDX not found: " << absFile;
 }
 
 void PExProjectNode::gotoPaused(int contLine)
@@ -1254,11 +1261,14 @@ void PExProjectNode::gotoPaused(int contLine)
     if (node) {
         for (QWidget *wid : node->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
-                ce->setPausedPos(fileLine);
+                ce->setPausedPos(fileLine-1);
         }
     }
     mPausedInFile = node;
-    mDebugServer->sendWriteGdx(mDebugServer->gdxTempFile());
+    if (contLine > 0) {
+        mTempGdx = mDebugServer->gdxTempFile();
+        mDebugServer->sendWriteGdx(QDir::toNativeSeparators(mTempGdx));
+    }
 }
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)

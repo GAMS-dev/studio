@@ -139,7 +139,7 @@ QString Server::gdxTempFile() const
 
 void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
-    if (!mSocket->isOpen()) {
+    if (!mSocket || !mSocket->isOpen()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
         logMessage("Debug-Server: Socket not open, can't process '" + mCalls.value(call, "undefinedCall")
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
