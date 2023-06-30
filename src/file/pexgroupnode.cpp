@@ -1240,8 +1240,12 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
     QDir dir(mWorkDir);
     QString absFile = dir.absoluteFilePath(gdxFile);
     PExFileNode *node = projectRepo()->findOrCreateFileNode(absFile, this);
-    if (node)
-        node->file()->jumpTo(node->projectId(), true);
+    if (node) {
+        if (node->file()->isOpen())
+            node->file()->reload();
+        else
+            node->file()->jumpTo(node->projectId(), true);
+    }
     else
         DEB() << "GDX not found: " << absFile;
 }

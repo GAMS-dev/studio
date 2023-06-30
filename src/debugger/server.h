@@ -31,6 +31,14 @@ namespace gams {
 namespace studio {
 namespace debugger {
 
+enum DebugState {
+    None,
+    Prepare,
+    Running,
+    Paused,
+    Finished
+};
+
 enum CallReply {
     invalid,
 
@@ -88,6 +96,7 @@ class Server : public QObject
 public:
     explicit Server(const QString &path, QObject *parent = nullptr);
     ~Server() override;
+    DebugState state() const;
     bool isListening();
     quint16 port();
     bool start();
@@ -100,6 +109,7 @@ signals:
     void signalMapDone();
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(int contLine);
+    void stateChanged(DebugState state);
 
 public slots:
     void addBreakpoint(int contLine);
@@ -109,7 +119,7 @@ public slots:
 
     void sendRun();
     void sendStepLine();
-    void sendInterrupt();
+    void sendPause();
     void sendWriteGdx(const QString &gdxFile);
 
     void stopAndDelete();
@@ -125,6 +135,7 @@ private:
     bool handleReply(const QString &replyData);
     QString toBpString(QList<int> lines);
     void parseLinesMap(const QString &breakData);
+    void setState(DebugState state);
 
     QString mPath;
     QTcpServer *mServer = nullptr;
@@ -132,7 +143,7 @@ private:
     QHash<CallReply, QString> mCalls;
     QHash<QString, CallReply> mReplies;
     QString mBreakLinesFile;
-    bool mFinished = false;
+    DebugState mState = None;
     int mDelayCounter = 0;
 
     static QSet<int> mPortsInUse;

@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_DEBUGGER_DEBUGWIDGET_H
 
 #include <QWidget>
+#include "server.h"
 
 namespace gams {
 namespace studio {
@@ -27,12 +28,13 @@ public:
 signals:
     void sendRun();
     void sendStepLine();
-    void sendInterrupt();
+    void sendPause();
 
 private slots:
     void on_tbRun_clicked();
     void on_tbStep_clicked();
-    void on_tbStop_clicked();
+    void on_tbPause_clicked();
+    void stateChanged(DebugState state);
 
 private:
     Ui::DebugWidget *ui;

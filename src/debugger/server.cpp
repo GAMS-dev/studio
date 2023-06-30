@@ -93,6 +93,7 @@ bool Server::start()
 
 void Server::stopAndDelete()
 {
+    setState(Finished);
     deleteSocket();
     mPortsInUse.remove(mServer->serverPort());
     if (isListening()) {
@@ -129,6 +130,7 @@ void Server::newConnection()
         }
     });
     logMessage("Debug-Server: Socket connected to GAMS");
+    setState(Prepare);
     emit connected();
 }
 
@@ -224,6 +226,7 @@ bool Server::handleReply(const QString &replyData)
             return false;
         }
 
+        setState(Paused);
         emit signalPaused(line);
     }   break;
     case gdxReady: {
@@ -287,6 +290,19 @@ void Server::parseLinesMap(const QString &breakData)
         emit signalLinesMap(file, lines, coLNs);
 }
 
+void Server::setState(DebugState state)
+{
+    if (mState != state) {
+        mState = state;
+        emit stateChanged(state);
+    }
+}
+
+DebugState Server::state() const
+{
+    return mState;
+}
+
 void Server::addBreakpoint(int contLine)
 {
     callProcedure(addBP, {QString::number(contLine)});
@@ -312,14 +328,16 @@ void Server::clearBreakpoints()
 void Server::sendRun()
 {
     callProcedure(run);
+    setState(Running);
 }
 
 void Server::sendStepLine()
 {
     callProcedure(stepLine);
+    setState(Running);
 }
 
-void Server::sendInterrupt()
+void Server::sendPause()
 {
     callProcedure(pause);
 }
