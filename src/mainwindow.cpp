@@ -68,7 +68,6 @@
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
 #include "connect/connecteditor.h"
-#include "debugger/server.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -230,6 +229,7 @@ MainWindow::MainWindow(QWidget *parent)
         openFilesProcess(QStringList() << gspFile, ogProjects);
     });
     connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
+    connect(&mProjectRepo, &ProjectRepo::switchToTab, this, &MainWindow::switchToTab);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -3338,6 +3338,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_5)) {
         focusProcessLogs();
         e->accept(); return;
+    } else if (e->key() == Qt::Key_F11) {
+        on_actionRunDebugger_triggered();
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
         toggleDebugMode();
         e->accept(); return;
@@ -3622,7 +3624,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, bool debug)
+void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, debugger::DebugStartMode debug)
 {
     PExProjectNode* project = currentProject();
     if (!project) {
@@ -3631,8 +3633,8 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
     }
     bool ready = executePrepare(project, commandLineStr, std::move(process));
     if (ready) {
-        if (!debug || project->startDebugServer()) {
-            if (debug) {
+        if (debug == debugger::NoDebug || project->startDebugServer(debug)) {
+            if (debug != debugger::NoDebug) {
                 ui->debugWidget->setVisible(true);
             }
             execution(project);
@@ -3937,7 +3939,17 @@ void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 
 void MainWindow::on_actionRunDebugger_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebugger), std::make_unique<GamsProcess>(), true);
+    debugger::DebugStartMode mode = qApp->queryKeyboardModifiers().testFlag(Qt::ShiftModifier) ? debugger::StepDebug
+                                                                                               : debugger::RunDebug;
+    if (ui->debugWidget->isVisible()) {
+        if (mode == debugger::RunDebug)
+            emit ui->debugWidget->sendRun();
+        else
+            emit ui->debugWidget->sendStepLine();
+    }
+    else {
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebugger), std::make_unique<GamsProcess>(), mode);
+    }
 }
 
 
@@ -4846,6 +4858,13 @@ void MainWindow::openInPinView(QWidget *editInMainTabs)
 {
     int idx = ui->mainTabs->indexOf(editInMainTabs);
     openPinView(idx, Qt::Horizontal);
+}
+
+void MainWindow::switchToTab(QWidget *wid)
+{
+    int index = ui->mainTabs->indexOf(wid);
+    if (index < 0) return;
+    ui->mainTabs->setCurrentIndex(index);
 }
 
 void MainWindow::invalidateResultsView()

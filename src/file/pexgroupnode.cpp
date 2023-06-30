@@ -34,7 +34,6 @@
 #include "projectedit.h"
 #include "settings.h"
 #include "viewhelper.h"
-#include "debugger/server.h"
 #include "debugger/breakpointdata.h"
 
 #include <QFileInfo>
@@ -1160,14 +1159,14 @@ void PExProjectNode::clearParameters()
     if (willChange) setNeedSave();
 }
 
-bool PExProjectNode::startDebugServer()
+bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 {
     if (!mDebugServer) {
         mDebugServer = new debugger::Server(workDir(), this);
         connect(mDebugServer, &debugger::Server::connected, this, [this]() {
             // TODO handle debugger::DebugWidget
         });
-        connect(mDebugServer, &debugger::Server::signalMapDone, this, [this](){
+        connect(mDebugServer, &debugger::Server::signalMapDone, this, [this, mode]() {
             mBreakpointData->adjustBreakpoints();
             for (const QString &file : mBreakpointData->bpFiles()) {
                 FileMeta *meta = fileRepo()->fileMeta(file);
@@ -1175,7 +1174,10 @@ bool PExProjectNode::startDebugServer()
                     meta->updateBreakpoints();
             }
             mDebugServer->addBreakpoints(mBreakpointData->bpContinuousLines());
-            mDebugServer->sendRun();
+            if (mode == debugger::RunDebug)
+                mDebugServer->sendRun();
+            else
+                mDebugServer->sendStepLine();
         });
         connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
@@ -1260,7 +1262,7 @@ void PExProjectNode::gotoPaused(int contLine)
 
     PExFileNode *node = projectRepo()->findFile(file, this);
     if (mPausedInFile && mPausedInFile != node) {
-        for (QWidget *wid : node->file()->editors()) {
+        for (QWidget *wid : mPausedInFile->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
                 ce->setPausedPos(-1);
         }
@@ -1270,6 +1272,8 @@ void PExProjectNode::gotoPaused(int contLine)
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
                 ce->setPausedPos(fileLine-1);
         }
+        if (!node->file()->editors().isEmpty())
+            emit switchToTab(node->file()->topEditor());
     }
     mPausedInFile = node;
     if (contLine > 0) {

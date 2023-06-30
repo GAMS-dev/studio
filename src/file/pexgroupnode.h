@@ -27,6 +27,7 @@
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
 #include "syntax/textmark.h"
+#include "debugger/server.h"
 
 namespace gams {
 namespace studio {
@@ -127,7 +128,7 @@ public:
     void addNodesForSpecialFiles();
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
-    bool startDebugServer();
+    bool startDebugServer(gams::studio::debugger::DebugStartMode mode);
     void stopDebugServer();
 
     bool isProcess(const AbstractProcess *process) const;
@@ -159,6 +160,7 @@ signals:
     void runnableChanged();
     void addProcessData(const QByteArray &data);
     void openInPinView(QWidget *editInMainTabs);
+    void switchToTab(QWidget *wid);
 
 public slots:
     void setErrorText(int lstLine, QString text);

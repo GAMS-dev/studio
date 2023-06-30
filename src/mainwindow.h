@@ -30,6 +30,7 @@
 #include "file/projectcontextmenu.h"
 #include "file/projectrepo.h"
 #include "file/recentdata.h"
+#include "debugger/server.h"
 #include "modeldialog/libraryitem.h"
 #include "search/resultsview.h"
 #include "option/parametereditor.h"
@@ -154,7 +155,8 @@ public:
     void toggleSearchDialog();
     void toggleFullscreen();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
-    void execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr, bool debug = false);
+    void execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+                 gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
     void resetHistory();
     void clearHistory(FileMeta *file);
@@ -204,6 +206,7 @@ public slots:
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(QWidget *editInMainTabs);
+    void switchToTab(QWidget *wid);
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();

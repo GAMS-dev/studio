@@ -147,7 +147,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
-    logMessage("Sending to GAMS: " + mCalls.value(call) + "\n" + arguments.join("\n"));
+//    logMessage("Sending to GAMS: " + mCalls.value(call) + "\n" + arguments.join("\n"));
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
@@ -178,7 +178,7 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
 
 bool Server::handleReply(const QString &replyData)
 {
-    logMessage("\nFrom GAMS: " + replyData);
+//    logMessage("\nFrom GAMS: " + replyData);
     QStringList reList = replyData.split('\n');
     CallReply reply = invalid;
     if (!reList.isEmpty()) {

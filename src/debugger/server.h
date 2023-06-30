@@ -31,6 +31,12 @@ namespace gams {
 namespace studio {
 namespace debugger {
 
+enum DebugStartMode {
+    NoDebug,
+    RunDebug,
+    StepDebug,
+};
+
 enum DebugState {
     None,
     Prepare,
