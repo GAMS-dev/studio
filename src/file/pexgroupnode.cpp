@@ -1243,8 +1243,11 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
     if (node) {
         if (node->file()->isOpen())
             node->file()->invalidate();
-        else
-            node->file()->jumpTo(node->projectId(), true);
+        else {
+            node->file()->jumpTo(node->projectId(), false);
+            if (!node->file()->editors().isEmpty())
+                emit openInPinView(node->file()->editors().first());
+        }
     }
     else
         DEB() << "GDX not found: " << absFile;

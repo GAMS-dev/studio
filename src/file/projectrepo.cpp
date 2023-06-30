@@ -578,6 +578,7 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
         connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);
         connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
         connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
+        connect(project, &PExProjectNode::openInPinView, this, &ProjectRepo::openInPinView);
     }
     addToIndex(project);
     mTreeModel->insertChild(root->childCount(), root, project);

@@ -229,6 +229,7 @@ MainWindow::MainWindow(QWidget *parent)
             [this](const QString &gspFile) {
         openFilesProcess(QStringList() << gspFile, ogProjects);
     });
+    connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -4839,6 +4840,12 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
     initEdit(fm, newWid);
+}
+
+void MainWindow::openInPinView(QWidget *editInMainTabs)
+{
+    int idx = ui->mainTabs->indexOf(editInMainTabs);
+    openPinView(idx, Qt::Horizontal);
 }
 
 void MainWindow::invalidateResultsView()

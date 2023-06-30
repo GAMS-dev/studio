@@ -163,6 +163,7 @@ signals:
     void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);
+    void openInPinView(QWidget *editInMainTabs);
 
 public slots:
     void gamsProcessStateChange(gams::studio::PExGroupNode* group);

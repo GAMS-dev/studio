@@ -158,6 +158,7 @@ signals:
     void baseDirChanged(gams::studio::PExProjectNode *project);
     void runnableChanged();
     void addProcessData(const QByteArray &data);
+    void openInPinView(QWidget *editInMainTabs);
 
 public slots:
     void setErrorText(int lstLine, QString text);
