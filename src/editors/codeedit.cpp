@@ -1194,9 +1194,14 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
 void CodeEdit::showBpContext(const QPoint &pos)
 {
     int line = cursorForPosition(pos).blockNumber() + 1;
+#ifdef __APPLE__
+    QString entry = QString("%1 breakpoint at line %2\tCmd+click").arg(mBreakpoints.contains(line) ? "Remove" : "Add").arg(line);
+#else
+    QString entry = QString("%1 breakpoint at line %2\tCtrl+click").arg(mBreakpoints.contains(line) ? "Remove" : "Add").arg(line);
+#endif
 
     QMenu menu(this);
-    menu.addAction("Toggle breakpoint", this, [this, line]() {
+    menu.addAction(entry, this, [this, line]() {
         if (mBreakpoints.contains(line))
             emit delBreakpoint(line);
         else
