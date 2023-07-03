@@ -135,6 +135,7 @@ MainWindow::MainWindow(QWidget *parent)
     ui->actionPreviousBookmark->setShortcut(QKeySequence("Meta+,"));
     ui->actionNextBookmark->setShortcut(QKeySequence("Meta+."));
     ui->actionToggle_Extended_Parameter_Editor->setShortcut(QKeySequence("Meta+Alt+3"));
+    ui->actionRunDebugger->setShortcut(QKeySequence("Ctrl+F11"));
 #else
     ui->actionFull_Screen->setShortcuts({QKeySequence("Alt+Enter"), QKeySequence("Alt+Return")});
 #endif
