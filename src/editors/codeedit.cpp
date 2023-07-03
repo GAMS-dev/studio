@@ -2127,6 +2127,11 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
     QString res = AbstractEdit::getToolTipText(pos);
     if (!res.isEmpty()) return res;
     QString fileName;
+    if (pos.x() < -iconSize()) {
+        QTextCursor cursor = cursorForPosition(pos);
+        if (mBreakpoints.contains(cursor.blockNumber()+1))
+            return QString("Breakpoint at line %1").arg(cursor.blockNumber()+1);
+    }
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
         fileName = QDir::toNativeSeparators(fileName);
