@@ -1,23 +1,23 @@
-Version 1.15.0 *
+Version 1.15.0
 ==================
- - in *gams configuration editor*:
+- added debug feature to Studio. This allows to pause the execution at the beginning of execution statements and review the current data in a temporary GDX file
+- added settings to specify default numerical formatting options and show/hide attributes for the GDX Viewer
+- added search facility to the data view of the GDX Viewer
+- disable preferences menu for sets and aliases in the GDX Viewer.
+- in *gams configuration editor*:
     - move tab selection from bottom to top
-    - fix status in definition section when editing a `Key`:
+    - fixed status in definition section when editing a `Key`:
        - *Step*: change value of `Key` (eg. from `Action` to `AppendExpand`) -*expect*-> in the definition section, old key deselected and new key selected (eg. `Action` deselected and `AppendExpand` definition selected and turned green)
- - in *gams configuration/parameter file/extended parameter editor*:
+- in *gams configuration/parameter file/extended parameter editor*:
     - add `group` in parameter/option definition
     - list all available solvers for `Solver` parameter/option definition
     - fix the `DefValue` of all model types in parameter/option definition, eg. `CPLEX` is a default value of `LP`
- - in *solver option editor*:
+- in *solver option editor*:
     - fix status in definition when changing a group of option:
        - *Step*: change group of options -*expect*-> in the definition section, an option turned green only if it has been added and it belongs to that group
-  - Added search facility to the data view of the GDX Viewer
-  - Fixed location of GDX Viewer context menus
-  - Added settings to specify default numerical formatting options and showen/hidden attributes for the GDX Viewer
-  - Fixed a bug where precision=Full was not restored properly in the GDX Viewer.
-  - Disable preferences menu for sets and aliases in the GDX Viewer.
-  - fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
-- added debug feature to Studio. This allows to pause the execution at the beginning of execution statements and review the current data in a temporary GDX file
+- fixed location of GDX Viewer context menus
+- fixed a bug where precision=Full was not restored properly in the GDX Viewer.
+- fixed OpenSSL issue for Manjaro, Ubuntu 22.04 LTS and similar Linux distributions
 
 Version 1.14.5
 ==================
