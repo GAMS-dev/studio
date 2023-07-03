@@ -50,7 +50,7 @@
      </property>
      <property name="icon">
       <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/out</normaloff>:/solid/out</iconset>
+       <normaloff>:/solid/step</normaloff>:/solid/step</iconset>
      </property>
      <property name="autoRaise">
       <bool>true</bool>
@@ -64,7 +64,7 @@
      </property>
      <property name="icon">
       <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/stop</normaloff>:/solid/stop</iconset>
+       <normaloff>:/solid/pause</normaloff>:/solid/pause</iconset>
      </property>
      <property name="autoRaise">
       <bool>true</bool>

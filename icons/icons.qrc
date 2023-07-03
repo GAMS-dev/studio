@@ -94,6 +94,7 @@
         <file alias="out-in">solid/out-in.svg</file>
         <file alias="output">solid/comment-alt-lines.svg</file>
         <file alias="paste">solid/paste.svg</file>
+        <file alias="pause">solid/pause.svg</file>
         <file alias="pen">solid/pen-alt.svg</file>
         <file alias="play">solid/play.svg</file>
         <file alias="plus">solid/plus.svg</file>
@@ -115,6 +116,7 @@
         <file alias="show">solid/angle-double-down.svg</file>
         <file alias="split-h">solid/split-h.svg</file>
         <file alias="split-v">solid/split-v.svg</file>
+        <file alias="step">solid/step.svg</file>
         <file alias="stop">solid/stop.svg</file>
         <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>
