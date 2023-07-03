@@ -4428,6 +4428,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             return;
         }
         initEdit(fileMeta, edit);
+        fileMeta->setProjectId(project->id());
     }
     // set keyboard focus to editor
     if (focus && edit) {
