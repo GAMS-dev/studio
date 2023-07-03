@@ -160,6 +160,7 @@ signals:
     void runnableChanged();
     void addProcessData(const QByteArray &data);
     void openInPinView(QWidget *editInMainTabs);
+    void openFileNode(PExFileNode *node);
     void switchToTab(QWidget *wid);
 
 public slots:

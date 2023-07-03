@@ -579,6 +579,9 @@ PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QStri
         connect(project, &PExProjectNode::baseDirChanged, this, &ProjectRepo::reassignFiles);
         connect(project, &PExProjectNode::runnableChanged, this, &ProjectRepo::runnableChanged);
         connect(project, &PExProjectNode::openInPinView, this, &ProjectRepo::openInPinView);
+        connect(project, &PExProjectNode::openFileNode, this, [this](PExFileNode *node) {
+            emit openFile(node->file(), true, node->assignedProject());
+        });
         connect(project, &PExProjectNode::switchToTab, this, &ProjectRepo::switchToTab);
     }
     addToIndex(project);

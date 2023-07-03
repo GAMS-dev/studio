@@ -1270,6 +1270,8 @@ void PExProjectNode::gotoPaused(int contLine)
         }
     }
     if (node) {
+        if (!node->file()->isOpen())
+            openFileNode(node);
         for (QWidget *wid : node->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))
                 ce->setPausedPos(fileLine-1);
