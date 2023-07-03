@@ -28,7 +28,7 @@ public:
 
     void adjustBreakpoints();
     void adjustBreakpoint(const QString &filename, int &fileLine, bool skipExist = true);
-    int addBreakpoint(const QString &filename, int fileLine);
+    int addBreakpoint(const QString &filename, int fileLine, bool isRunning = false);
     void delBreakpoint(const QString &filename, int fileLine);
     void delBreakpoints();
     bool isBreakpoint(const QString &filename, int fileLine) const;

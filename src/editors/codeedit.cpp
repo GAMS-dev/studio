@@ -2220,9 +2220,9 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                     painter.setBrush(toColor(Theme::Normal_Red));
                     painter.setPen(Qt::NoPen);
                     painter.drawRoundedRect(0, top, widthForNr, fontMetrics().height(), 4, 4);
+                    painter.setPen(Qt::SolidLine);
                     painter.setPen(mark ? toColor(Theme::Edit_foldLineFg)
                                         : toColor(Theme::Edit_foldLineFg));
-                    painter.setPen(Qt::SolidLine);
                 }
                 painter.drawText(0, top, widthForNr, fontMetrics().height(), Qt::AlignRight, number);
             }

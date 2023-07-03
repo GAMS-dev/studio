@@ -763,7 +763,8 @@ void PExProjectNode::presetLinesMap()
 
 void PExProjectNode::adjustBreakpoint(const QString &filename, int &line)
 {
-    mBreakpointData->adjustBreakpoint(filename, line);
+    if (mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning)
+        mBreakpointData->adjustBreakpoint(filename, line);
 }
 
 void insertSorted(QList<int> &list, int value)
@@ -777,7 +778,8 @@ void insertSorted(QList<int> &list, int value)
 
 void PExProjectNode::addBreakpoint(const QString &filename, int line)
 {
-    mBreakpointData->addBreakpoint(filename, line);
+    bool isRunning = mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning;
+    mBreakpointData->addBreakpoint(filename, line, isRunning);
 
     if (mDebugServer) {
         int contLine = mBreakpointData->continuousLine(filename, line);
