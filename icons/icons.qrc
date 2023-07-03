@@ -117,6 +117,7 @@
         <file alias="split-h">solid/split-h.svg</file>
         <file alias="split-v">solid/split-v.svg</file>
         <file alias="step">solid/step.svg</file>
+        <file alias="step-debug">solid/step-debug.svg</file>
         <file alias="stop">solid/stop.svg</file>
         <file alias="stop2">solid/ban.svg</file>
         <file alias="terminal">solid/terminal.svg</file>

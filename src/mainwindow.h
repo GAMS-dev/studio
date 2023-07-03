@@ -436,8 +436,8 @@ private slots:
     void on_actionNavigator_triggered();
 
     void on_actionOpen_Project_triggered();
-
     void on_actionRunDebugger_triggered();
+    void on_actionStepDebugger_triggered();
 
 private:
     void zoomWidget(QWidget * widget, int range);

@@ -36,11 +36,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aCompile,
+ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aStepDebug, QAction *aCompile,
                                  QAction *aCompileGDX, QAction *aRunNeos, QAction *aRunEngine,
                                  QAction *aInterrupt, QAction *aStop, MainWindow *parent):
     QWidget(parent), ui(new Ui::ParameterEditor), actionRun(aRun), actionRun_with_GDX_Creation(aRunGDX),
-    actionRunDebug(aRunDebug), actionCompile(aCompile), actionCompile_with_GDX_Creation(aCompileGDX),
+    actionRunDebug(aRunDebug), actionStepDebug(aStepDebug), actionCompile(aCompile), actionCompile_with_GDX_Creation(aCompileGDX),
     actionRunNeos(aRunNeos), actionRunEngine(aRunEngine), actionInterrupt(aInterrupt), actionStop(aStop), main(parent)
 {
     ui->setupUi(this);
@@ -48,8 +48,8 @@ ParameterEditor::ParameterEditor(QAction *aRun, QAction *aRunGDX, QAction *aRunD
     addActions();
     mOptionTokenizer = new OptionTokenizer(QString("optgams.def"));
 
-    setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionRunDebug, actionCompile, actionCompile_with_GDX_Creation,
-                       actionRunNeos, actionRunEngine);
+    setRunsActionGroup(actionRun, actionRun_with_GDX_Creation, actionRunDebug, actionStepDebug, actionCompile,
+                       actionCompile_with_GDX_Creation, actionRunNeos, actionRunEngine);
     setInterruptActionGroup(actionInterrupt, actionStop);
 
     setFocusPolicy(Qt::StrongFocus);
@@ -233,8 +233,10 @@ QString ParameterEditor::on_runAction(RunActionState state)
        if (!gdxParam) commandLineStr.append("GDX=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
 
-    } else if (state == RunActionState::RunDebugger) {
+    } else if (state == RunActionState::RunDebug) {
        ui->gamsRunToolButton->setDefaultAction( actionRunDebug );
+    } else if (state == RunActionState::StepDebug) {
+       ui->gamsRunToolButton->setDefaultAction( actionStepDebug );
 
     } else if (state == RunActionState::Compile) {
         if (!actParam) commandLineStr.append("ACTION=C");
@@ -1047,7 +1049,7 @@ void ParameterEditor::resizeColumnsToContents()
     }
 }
 
-void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aCompile,
+void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QAction *aRunDebug, QAction *aStepDebug, QAction *aCompile,
                                          QAction *aCompileGDX, QAction *aRunNeos, QAction *aRunEngine)
 {
     mHasSSL = QSslSocket::supportsSsl();
@@ -1055,6 +1057,7 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionCompile = aCompile;
     actionRun_with_GDX_Creation = aRunGDX;
     actionRunDebug = aRunDebug;
+    actionStepDebug = aStepDebug;
     actionCompile_with_GDX_Creation = aCompileGDX;
     actionRunNeos = aRunNeos;
     actionRunEngine = aRunEngine;
@@ -1063,6 +1066,7 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     runMenu->addAction(actionRun);
     runMenu->addAction(actionRun_with_GDX_Creation);
     runMenu->addAction(actionRunDebug);
+    runMenu->addAction(actionStepDebug);
     runMenu->addSeparator();
     runMenu->addAction(actionCompile);
     runMenu->addAction(actionCompile_with_GDX_Creation);
@@ -1073,6 +1077,7 @@ void ParameterEditor::setRunsActionGroup(QAction *aRun, QAction *aRunGDX, QActio
     actionRun->setShortcutVisibleInContextMenu(true);
     actionRun_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     actionRunDebug->setShortcutVisibleInContextMenu(true);
+    actionStepDebug->setShortcutVisibleInContextMenu(true);
     actionCompile->setShortcutVisibleInContextMenu(true);
     actionCompile_with_GDX_Creation->setShortcutVisibleInContextMenu(true);
     actionRunNeos->setShortcutVisibleInContextMenu(true);
@@ -1102,6 +1107,7 @@ void ParameterEditor::setRunActionsEnabled(bool enable)
     actionRun->setEnabled(enable);
     actionRun_with_GDX_Creation->setEnabled(enable);
     actionRunDebug->setEnabled(enable);
+    actionStepDebug->setEnabled(enable);
     actionCompile->setEnabled(enable);
     actionCompile_with_GDX_Creation->setEnabled(enable);
     actionRunNeos->setEnabled(enable && mHasSSL);

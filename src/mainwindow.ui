@@ -809,6 +809,21 @@
     <string>F11</string>
    </property>
   </action>
+  <action name="actionStepDebugger">
+   <property name="icon">
+    <iconset resource="../icons/icons.qrc">
+     <normaloff>:/solid/step-debug</normaloff>:/solid/step-debug</iconset>
+   </property>
+   <property name="text">
+    <string>Step start with Debugger</string>
+   </property>
+   <property name="toolTip">
+    <string>Step start with Debugger</string>
+   </property>
+   <property name="shortcut">
+    <string>Shift+F11</string>
+   </property>
+  </action>
   <action name="actionCompile_with_GDX_Creation">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">

@@ -574,6 +574,7 @@ void MainWindow::initIcons()
     ui->actionRun->setIcon(Theme::icon(":/%1/play"));
     ui->actionRun_with_GDX_Creation->setIcon(Theme::icon(":/%1/run-gdx"));
     ui->actionRunDebugger->setIcon(Theme::icon(":/%1/run-debug"));
+    ui->actionStepDebugger->setIcon(Theme::icon(":/%1/step-debug"));
     ui->actionRunNeos->setIcon(Theme::icon(":/img/neos", false, ":/img/neos-g"));
     ui->actionRunEngine->setIcon(Theme::icon(":/img/engine", false, ":/img/engine-g"));
     ui->actionSave->setIcon(Theme::icon(":/%1/save"));
@@ -598,7 +599,7 @@ void MainWindow::initIcons()
 void MainWindow::initToolBar()
 {
     mGamsParameterEditor = new option::ParameterEditor(
-        ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionRunDebugger, ui->actionCompile,
+        ui->actionRun, ui->actionRun_with_GDX_Creation, ui->actionRunDebugger, ui->actionStepDebugger, ui->actionCompile,
         ui->actionCompile_with_GDX_Creation, ui->actionRunNeos, ui->actionRunEngine, ui->actionInterrupt, ui->actionStop, this);
 
     // this needs to be done here because the widget cannot be inserted between separators from ui file
@@ -3338,6 +3339,8 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_5)) {
         focusProcessLogs();
         e->accept(); return;
+    } else if ((e->modifiers() & Qt::ShiftModifier) && e->key() == Qt::Key_F11) {
+        on_actionStepDebugger_triggered();
     } else if (e->key() == Qt::Key_F11) {
         on_actionRunDebugger_triggered();
     } else if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_F12)) {
@@ -3939,16 +3942,21 @@ void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 
 void MainWindow::on_actionRunDebugger_triggered()
 {
-    debugger::DebugStartMode mode = qApp->queryKeyboardModifiers().testFlag(Qt::ShiftModifier) ? debugger::StepDebug
-                                                                                               : debugger::RunDebug;
     if (ui->debugWidget->isVisible()) {
-        if (mode == debugger::RunDebug)
-            emit ui->debugWidget->sendRun();
-        else
-            emit ui->debugWidget->sendStepLine();
+        emit ui->debugWidget->sendRun();
+    } else {
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), std::make_unique<GamsProcess>()
+                , debugger::RunDebug);
     }
-    else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebugger), std::make_unique<GamsProcess>(), mode);
+}
+
+void MainWindow::on_actionStepDebugger_triggered()
+{
+    if (ui->debugWidget->isVisible()) {
+        emit ui->debugWidget->sendStepLine();
+    } else {
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), std::make_unique<GamsProcess>()
+                , debugger::StepDebug);
     }
 }
 
