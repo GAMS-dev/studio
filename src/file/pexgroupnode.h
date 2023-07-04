@@ -170,7 +170,6 @@ public slots:
     void createMarks(const LogParser::MarkData &marks);
     void switchLst(const QString &lstFile);
     void registerGeneratedFile(const QString &fileName);
-    void presetLinesMap();
     void adjustBreakpoint(const QString &filename, int &line);
     void addBreakpoint(const QString &filename, int line);
     void delBreakpoint(const QString &filename, int line);
