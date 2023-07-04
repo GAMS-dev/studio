@@ -212,7 +212,6 @@ private:
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
     QString mTempGdx;
-    bool isAutoLinesMap = false;
     debugger::BreakpointData *mBreakpointData;
     PExFileNode *mPausedInFile = nullptr;
 

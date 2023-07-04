@@ -4417,9 +4417,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
             QTimer::singleShot(0, this, [this, edit, fileMeta]() {
                 edit->setFont(getEditorFont(fileMeta->fontGroup()));
             });
-            if (fileMeta == project->runnableGms())
-                project->presetLinesMap();
-
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;

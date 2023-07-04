@@ -735,32 +735,6 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
-void PExProjectNode::presetLinesMap()
-{
-    if (!runnableGms()) return;
-    if (mBreakpointData->hasLinesMap())
-        return;
-    QFile gms(runnableGms()->location());
-    if (gms.open(QFile::ReadOnly)) {
-        int i = 0;
-        QList<int> lines;
-        bool inComment = false;
-        while (!gms.atEnd()) {
-            ++i;
-            QString line = gms.readLine().simplified().replace(" ", "");
-            if (line.startsWith("$onText", Qt::CaseInsensitive))
-                inComment = true;
-            if (!line.isEmpty() && !line.startsWith('*') && !inComment)
-                lines << i;
-            if (line.startsWith("$offText", Qt::CaseInsensitive))
-                inComment = false;
-        }
-        gms.close();
-//        mBreakpointData->addLinesMap(gms.fileName(), lines, lines);
-        isAutoLinesMap = true;
-    }
-}
-
 void PExProjectNode::adjustBreakpoint(const QString &filename, int &line)
 {
     if (mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning)
@@ -1166,7 +1140,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
     if (!mDebugServer) {
         mDebugServer = new debugger::Server(workDir(), this);
         connect(mDebugServer, &debugger::Server::connected, this, [this]() {
-            // TODO handle debugger::DebugWidget
+            mBreakpointData->clearLinesMap();
         });
         connect(mDebugServer, &debugger::Server::signalMapDone, this, [this, mode]() {
             mBreakpointData->adjustBreakpoints();
@@ -1288,10 +1262,6 @@ void PExProjectNode::gotoPaused(int contLine)
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)
 {
-    if (isAutoLinesMap) {
-        mBreakpointData->clearLinesMap();
-        isAutoLinesMap = false;
-    }
     mBreakpointData->addLinesMap(filename, fileLines, continuousLines);
 }
 
