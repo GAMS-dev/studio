@@ -4861,6 +4861,8 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
     initEdit(fm, newWid);
+    mDefaultPinView.first = fm->location();
+    mDefaultPinView.second = orientation;
 }
 
 void MainWindow::openInPinView(QWidget *editInMainTabs)
