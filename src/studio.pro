@@ -101,6 +101,7 @@ SOURCES += \
     connect/treecellresizer.cpp \
     debugger/breakpointdata.cpp \
     debugger/debugwidget.cpp \
+    debugger/pincontrol.cpp \
     debugger/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
@@ -315,6 +316,7 @@ HEADERS += \
     connect/treecellresizer.h \
     debugger/breakpointdata.h \
     debugger/debugwidget.h \
+    debugger/pincontrol.h \
     debugger/server.h \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \

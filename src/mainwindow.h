@@ -500,6 +500,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
+    QPair<QString, Qt::Orientation> mDefaultPinView;
     QHash<FontGroup, qreal> mGroupFontSize;
     NodeId mFocussedLog;
 

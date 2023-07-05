@@ -2982,6 +2982,7 @@ void MainWindow::closePinView()
         edit->deleteLater();
         updateRecentEdit(edit, ui->mainTabs->currentWidget());
     }
+    mDefaultPinView.first = QString();
     Settings::settings()->setInt(skPinViewTabIndex, -1);
 }
 
