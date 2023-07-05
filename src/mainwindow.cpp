@@ -1480,8 +1480,10 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
                                                     filter, nullptr, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
-    if (fi.suffix().isEmpty())
+    if (fi.suffix().isEmpty()) {
         filePath += suffixDot;
+        fi = QFileInfo(filePath);
+    }
     if (fi.suffix().compare("gsp", Qt::CaseInsensitive) == 0) {
         projectOnly = true;
         kind = "Project";
@@ -1535,8 +1537,7 @@ void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString&
     }
 
     if (projectOnly) {
-        QFileInfo fi(filePath);
-        PExProjectNode *project = mProjectRepo.createProject(filePath, fi.path(), "", onExist_AddNr);
+        PExProjectNode *project = mProjectRepo.createProject(fi.completeBaseName(), fi.path(), "", onExist_AddNr);
         openFileNode(project);
     } else if (!projects.isEmpty()) {
         // add file to each selected project

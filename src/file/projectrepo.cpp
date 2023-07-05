@@ -542,36 +542,36 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
+PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, ProjectExistFlag mode,
                                            QString workDir, PExProjectNode::Type type)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
 
     if (type == PExProjectNode::tGams) {
-        filePath = CGamsSystemProjectName;
+        name = CGamsSystemProjectName;
     } else if (type == PExProjectNode::tCommon) {
-        if (!filePath.endsWith(".gsp", FileType::fsCaseSense())) {
-            QFileInfo fi(filePath);
-            filePath = fi.path() + '/' + fi.completeBaseName() + ".gsp";
+        if (!name.endsWith(".gsp", FileType::fsCaseSense())) {
+            QFileInfo fi(name);
+            name = path + '/' + fi.completeBaseName() + ".gsp";
         }
-        if (!filePath.contains('/')) {
-            filePath = path + '/' + filePath;
+        if (!name.contains('/')) {
+            name = path + '/' + name;
         }
     }
 
-    PExProjectNode* project = findProject(filePath);
+    PExProjectNode* project = findProject(name);
     if (project) {
         if (mode == onExist_Project) return project;
         if (mode == onExist_Null) return nullptr;
     }
 
     if (type == PExProjectNode::tCommon)
-        uniqueProjectFile(mTreeModel->rootNode(), filePath);
+        uniqueProjectFile(mTreeModel->rootNode(), name);
 
     FileMeta* runFile = runFileName.isEmpty() || type != PExProjectNode::tCommon ? nullptr
                                                                                  : mFileRepo->findOrCreateFileMeta(runFileName);
-    project = new PExProjectNode(filePath, path, runFile, workDir, type);
+    project = new PExProjectNode(name, path, runFile, workDir, type);
     if (type == PExProjectNode::tCommon) {
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);

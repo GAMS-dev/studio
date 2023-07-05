@@ -121,7 +121,7 @@ public:
     void save(PExProjectNode *project, const QVariantMap &data) const;
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString filePath, QString path, QString runFileName, ProjectExistFlag mode,
+    PExProjectNode *createProject(QString name, QString path, QString runFileName, ProjectExistFlag mode,
                                   QString workDir = QString(), PExProjectNode::Type type = PExProjectNode::tCommon);
     MultiCopyCheck getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
     void moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy);
