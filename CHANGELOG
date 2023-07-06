@@ -1,6 +1,8 @@
 Version 1.15.1 *
 ==================
 - fixed breakpoints of unused project files got mixed in
+- fixed path issue for project files.
+  - existing projects with a path starting with "." can be fixed manually using "Move Project File..."
 
 Version 1.15.0
 ==================
