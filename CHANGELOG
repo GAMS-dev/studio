@@ -1,3 +1,7 @@
+Version 1.15.1 *
+==================
+- fixed breakpoints of unused project files got mixed in
+
 Version 1.15.0
 ==================
 - added debug feature to Studio. This allows to pause the execution at the beginning of execution statements and review the current data in a temporary GDX file
