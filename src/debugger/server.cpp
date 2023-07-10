@@ -288,6 +288,7 @@ void Server::parseLinesMap(const QString &breakData)
     }
     if (!lines.isEmpty())
         emit signalLinesMap(file, lines, coLNs);
+    mBreakLinesFile = file;
 }
 
 void Server::setState(DebugState state)
