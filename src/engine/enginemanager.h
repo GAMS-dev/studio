@@ -88,6 +88,8 @@ public:
     void cleanup();
 
     void listProvider(const QString &name);
+    void fetchOAuth2Token(const QString &name, const QString &deviceCode);
+    void loginWithOIDC(const QString &idToken);
     void authorize(const QString &user, const QString &password, int expireMinutes);
     void setAuthToken(const QString &bearerToken);
     void getUsername();
@@ -108,6 +110,10 @@ signals:
     void syncKillJob(bool hard);
 
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
+    void reListProviderError(const QString &error);
+    void reFetchOAuth2Token(const QString &idToken);
+    void reFetchOAuth2TokenError(const QString &error);
+    void reLoginWithOIDC(const QString &token);
     void reAuthorize(const QString &token);
     void reGetUsername(const QString &name);
     void reAuthorizeError(const QString &error);

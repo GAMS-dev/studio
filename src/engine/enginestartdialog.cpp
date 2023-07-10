@@ -130,7 +130,10 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reListNamspaces, this, &EngineStartDialog::reListNamespaces);
     connect(mProc, &EngineProcess::reListNamespacesError, this, &EngineStartDialog::reListNamespacesError);
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
+    connect(mProc, &EngineProcess::reListProvider, this, &EngineStartDialog::reListProvider);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
+    connect(mProc, &EngineProcess::reFetchOAuth2Token, this, &EngineStartDialog::loginWithOIDC);
+    connect(mProc, &EngineProcess::reFetchOAuth2TokenError, this, &EngineStartDialog::reFetchOAuth2TokenError);
     connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
     connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reUserInstancesError);
     connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
@@ -230,9 +233,15 @@ void EngineStartDialog::focusEmptyField()
     if (inLogin()) {
         int method = ui->cbLoginMethod->currentIndex();
         if (ui->edUrl->text().isEmpty()) ui->edUrl->setFocus();
-        else if (method == 1 && authToken().isEmpty()) ui->edToken->setFocus();
-        else if (method == 0 && user().isEmpty()) ui->edUser->setFocus();
-        else if (method == 0 && ui->edPassword->isVisible() && ui->edPassword->text().isEmpty()) ui->edPassword->setFocus();
+        else if (method == 2 && ui->edSsoName->text().isEmpty())
+            ui->edSsoName->setFocus();
+        else if (method == 1 && authToken().isEmpty())
+            ui->edToken->setFocus();
+        else if (method == 0 && user().isEmpty())
+            ui->edUser->setFocus();
+        else if (method == 0 && ui->edPassword->isVisible() && ui->edPassword->text().isEmpty())
+            ui->edPassword->setFocus();
+
         else ui->bOk->setFocus();
     } else {
         if (ui->cbNamespace->count() > 1) ui->cbNamespace->setFocus();
@@ -340,6 +349,16 @@ void EngineStartDialog::authorizeError(const QString &error)
     ui->laWarn->setToolTip("Please check your username and password");
 }
 
+void EngineStartDialog::loginWithOIDC(const QString &idToken)
+{
+    mProc->loginWithOIDC(idToken);
+}
+
+void EngineStartDialog::reFetchOAuth2TokenError(const QString &error)
+{
+
+}
+
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
 {
     if (!mProc) return;
@@ -380,7 +399,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
     emit submit(start);
 }
 
-void EngineStartDialog::getVersion()
+void EngineStartDialog::getVersionAndIP()
 {
     setConnectionState(scsWaiting);
     if (mProc) {
@@ -389,7 +408,8 @@ void EngineStartDialog::getVersion()
             if (protocol(mUrl) == ucHttps && visibleCheck && ui->cbAcceptCert->isChecked())
                 mProc->setIgnoreSslErrorsCurrentUrl(true);
             mUrlChanged = false;
-            mProc->getVersions();
+            mProc->getVersion();
+            mProc->listProvider();
             return;
         }
     }
@@ -402,7 +422,8 @@ void EngineStartDialog::setCanLogin(bool value)
     value = value && !ui->edUrl->text().isEmpty()
             && (!mProc->authToken().isEmpty() ||
                   (authMethod()==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
-               || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty()))
+               || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty())
+               || (authMethod()==2 && !ui->edSsoName->text().isEmpty()))
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
@@ -433,7 +454,7 @@ void EngineStartDialog::urlEdited(const QString &text)
 {
     mProc->abortRequests();
     initUrlAndChecks(text);
-    getVersion();
+    getVersionAndIP();
     if (!isVisible() && !mHiddenMode && !inLogin())
         showLogin();
 }
@@ -442,7 +463,7 @@ void EngineStartDialog::updateLoginStates()
 {
     bool enabled = !ui->edUrl->text().isEmpty() && !user().isEmpty() && !ui->edPassword->text().isEmpty();
     if (enabled && ui->laEngineVersion->text() == CUnavailable) {
-        getVersion();
+        getVersionAndIP();
     }
     setConnectionState(mConnectState);
 }
@@ -536,12 +557,12 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     Q_UNUSED(errorText)
 
     if (mUrlChanged) {
-        getVersion();
+        getVersionAndIP();
         return;
     }
     // if the raw input failed, try next protocol/api combination
     if (!mLastSslError && fetchNextUrl()) {
-        getVersion();
+        getVersionAndIP();
         return;
     }
     // neither user-input nor user-input with modifications is valid, so reset mUrl to user-input
@@ -553,6 +574,23 @@ void EngineStartDialog::reVersionError(const QString &errorText)
     if (!isVisible()) {
         ensureOpened();
     }
+}
+
+void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &allProvider)
+{
+    int cbIndex = 3;
+    for (const QHash<QString, QVariant> &provider : allProvider) {
+        QString name = provider.value("name").toString();
+        if (ui->cbLoginMethod->count() == cbIndex)
+            ui->cbLoginMethod->addItem(name, provider);
+        else if (ui->cbLoginMethod->itemText(cbIndex) != name) {
+            ui->cbLoginMethod->setItemText(cbIndex, name);
+            ui->cbLoginMethod->setItemData(cbIndex, provider);
+        }
+        ++cbIndex;
+    }
+    while (ui->cbLoginMethod->count() > cbIndex)
+        ui->cbLoginMethod->removeItem(cbIndex);
 }
 
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel)
@@ -822,8 +860,15 @@ QString EngineStartDialog::cleanUrl(const QString url)
 void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    if (ui->cbLoginMethod->currentIndex() < 2) {
+    if (ui->cbLoginMethod->currentIndex() < 3) {
         ui->stackLoginInput->setCurrentIndex(ui->cbLoginMethod->currentIndex());
+    } else {
+        QVariantMap data = ui->cbLoginMethod->currentData().toMap();
+        if (data.value("hasSecret").toBool()) {
+//            mProc->fetchOAuth2Token(data.value("name"), );
+        } else {
+
+        }
     }
 }
 

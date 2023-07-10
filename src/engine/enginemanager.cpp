@@ -65,20 +65,36 @@ EngineManager::EngineManager(QObject* parent)
         for (const OAIIdentity_provider &ip : summary) {
             if (ip.is_oidc_Set()) {
                 QHash<QString, QVariant> provider;
-                const OAIIdentity_provider_oidc &oidc = ip.getOidc();
                 provider.insert("name", ip.getName());
                 provider.insert("label", ip.getLabel());
-                provider.insert("endpoint", oidc.getDeviceAuthorizationEndpoint());
-                provider.insert("clientId", oidc.getDeviceClientId());
-                provider.insert("hasSecret", oidc.isHasDeviceClientSecret());
-                allProvider << provider;
+                const OAIIdentity_provider_oidc &oidc = ip.getOidc();
+                if (oidc.is_device_authorization_endpoint_Set() && oidc.is_device_client_id_Set()) {
+                    provider.insert("endpoint", oidc.getDeviceAuthorizationEndpoint());
+                    provider.insert("clientId", oidc.getDeviceClientId());
+                    provider.insert("hasSecret", oidc.isHasDeviceClientSecret());
+                    allProvider << provider;
+                }
             }
         }
         emit reListProvider(allProvider);
     });
     connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
-        emit reAuthorizeError(getJsonMessageIfFound(text));
+        emit reListProviderError(getJsonMessageIfFound(text));
+    });
+    connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignal, this, [this](OAIForwarded_token_response summary) {
+        emit reFetchOAuth2Token(summary.getAccessToken());
+    });
+    connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+                emit reFetchOAuth2TokenError(getJsonMessageIfFound(text));
+            });
+    connect(mAuthApi, &OAIAuthApi::loginWithOIDCSignal, this, [this](OAIModel_auth_token summary) {
+        emit reLoginWithOIDC(summary.getToken());
+    });
+    connect(mAuthApi, &OAIAuthApi::loginWithOIDCSignalEFull, this,
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+        emit reFetchOAuth2TokenError(getJsonMessageIfFound(text));
     });
 
     // ===== initialize Namespaces API =====
@@ -348,6 +364,17 @@ bool EngineManager::isIgnoreSslErrors() const
 void EngineManager::listProvider(const QString &name)
 {
     mAuthApi->listIdentityProviders(name);
+}
+
+void EngineManager::fetchOAuth2Token(const QString &name, const QString &deviceCode)
+{
+    ::OpenAPI::OptionalParam<QString> dummy;
+    mAuthApi->fetchOAuth2TokenOnBehalf(name, QString("urn:ietf:params:oauth:grant-type:device_code"), dummy, dummy, dummy, deviceCode);
+}
+
+void EngineManager::loginWithOIDC(const QString &idToken)
+{
+    mAuthApi->loginWithOIDC(idToken);
 }
 
 void EngineManager::authorize(const QString &user, const QString &password, int expireMinutes)

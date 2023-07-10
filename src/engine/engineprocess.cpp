@@ -46,7 +46,19 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
-//    connect(mManager, &EngineManager::reListProvider, this, &EngineProcess::reListProvider);
+    connect(mManager, &EngineManager::reListProvider, this, [this](const QList<QHash<QString, QVariant> > &allProvider) {
+        if (mSsoName.isEmpty()) // ignore the list when SSO is given (is handled in AuthManager as direct connect)
+            emit reListProvider(allProvider);
+    });
+    connect(mManager, &EngineManager::reListProviderError, this, [this](const QString &error) {
+        if (mSsoName.isEmpty()) // ignore the error when SSO is given
+            emit reListProviderError(error);
+    });
+    connect(mManager, &EngineManager::reFetchOAuth2Token, this, &EngineProcess::reFetchOAuth2Token);
+    connect(mManager, &EngineManager::reFetchOAuth2TokenError, this, &EngineProcess::reFetchOAuth2Token);
+    connect(mManager, &EngineManager::reLoginWithOIDC, this, [this](const QString &token) {
+        authorize(token);
+    });
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
     connect(mManager, &EngineManager::reVersionError, this, &EngineProcess::reVersionError);
@@ -86,6 +98,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
 
 EngineProcess::~EngineProcess()
 {
+    if (mAuthManager)
+        delete mAuthManager;
     delete mManager;
 }
 
@@ -319,6 +333,14 @@ void EngineProcess::reVersionIntern(const QString &engineVersion, const QString 
     mGamsVersion = gamsVersion;
 }
 
+AuthManager *EngineProcess::authManager()
+{
+    if (!mAuthManager) {
+        mAuthManager = new AuthManager(mManager, this);
+    }
+    return mAuthManager;
+}
+
 void EngineProcess::interrupt()
 {
     bool ok = !mManager->getJobToken().isEmpty();
@@ -422,9 +444,23 @@ QUrl EngineProcess::url()
     return mManager->url();
 }
 
-void EngineProcess::listProviders(const QString &name)
+void EngineProcess::listProvider(const QString &ssoName)
 {
-    mAuthManager->listProvider(name);
+    mSsoName = ssoName;
+    if (ssoName.isEmpty())
+        mManager->listProvider(ssoName);
+    else
+        authManager()->listProvider(ssoName);
+}
+
+void EngineProcess::fetchOAuth2Token(const QString &name, const QString &deviceCode)
+{
+    mManager->fetchOAuth2Token(name, deviceCode);
+}
+
+void EngineProcess::loginWithOIDC(const QString &idToken)
+{
+    mManager->loginWithOIDC(idToken);
 }
 
 void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
@@ -435,7 +471,7 @@ void EngineProcess::authorize(const QString &username, const QString &password, 
 
 void EngineProcess::authorize(QUrl authUrl, const QString &clientId, const QString &ssoName)
 {
-
+    authManager()->authorize(authUrl, clientId);
 }
 
 void EngineProcess::authorize(const QString &authToken)
@@ -494,7 +530,7 @@ void EngineProcess::sendPostLoginRequests()
     }
 }
 
-void EngineProcess::getVersions()
+void EngineProcess::getVersion()
 {
     mManager->getVersion();
 }
@@ -687,6 +723,9 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::reAuthorize(const QString &token)
 {
+    delete mAuthManager;
+    mAuthManager = nullptr;
+
     mAuthToken = token;
     mManager->setAuthToken(token);
     if (!token.isEmpty()) {
@@ -695,11 +734,6 @@ void EngineProcess::reAuthorize(const QString &token)
         setProcState(ProcCheck);
     }
     emit authorized(token);
-}
-
-void EngineProcess::reListProvider(const QList<QHash<QString, QVariant> > &allProvider)
-{
-
 }
 
 void EngineProcess::pollStatus()

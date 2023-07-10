@@ -2,6 +2,7 @@
 #define GAMS_STUDIO_ENGINE_AUTHMANAGER_H
 
 #include <QObject>
+#include <QVariant>
 #include <QTimer>
 #include <QUrl>
 
@@ -23,15 +24,15 @@ public:
     void listProvider(const QString &name);
 
 signals:
-    void authorizeSignal(QNetworkReply *reply);
     void authorizeTimeout(QNetworkReply *reply);
-    void reProviderList(const QList<QHash<QString, QVariant> > &allProvider);
+    void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
 
 public slots:
     void authorize(QUrl authUrl, const QString &clientId);
 
 private slots:
-    void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
+    void reAuthorize(QNetworkReply *reply);
+    void processProviderList(const QList<QHash<QString, QVariant> > &allProvider);
 
 private:
     QNetworkAccessManager *mNetworkManager;

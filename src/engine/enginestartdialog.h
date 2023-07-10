@@ -96,7 +96,7 @@ protected:
     bool inLogin();
     void ensureOpened();
     void buttonClicked(QAbstractButton *button);
-    void getVersion();
+    void getVersionAndIP();
     void setCanLogin(bool value);
     void setConnectionState(ServerConnectionState state);
     void initUrlAndChecks(QString url);
@@ -111,12 +111,15 @@ private slots:
     void updateSubmitStates();
     void bLogoutClicked();
     void authorizeError(const QString &error);
+    void loginWithOIDC(const QString &idToken);
+    void reFetchOAuth2TokenError(const QString &error);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
     void reListNamespaces(const QStringList &list);
     void reListNamespacesError(const QString &error);
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
+    void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
     void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
