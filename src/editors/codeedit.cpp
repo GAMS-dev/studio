@@ -1999,6 +1999,7 @@ void CodeEdit::breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMa
 
 void CodeEdit::setPausedPos(int line)
 {
+    mLineNumberArea->repaint();
     mBreakLine = line;
     jumpTo(line);
 }
