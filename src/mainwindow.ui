@@ -289,6 +289,7 @@
     <addaction name="actionRun"/>
     <addaction name="actionRun_with_GDX_Creation"/>
     <addaction name="actionRunDebugger"/>
+    <addaction name="actionStepDebugger"/>
     <addaction name="separator"/>
     <addaction name="actionCompile"/>
     <addaction name="actionCompile_with_GDX_Creation"/>
