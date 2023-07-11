@@ -61,9 +61,9 @@ void PExLogNode::connectDebugger(bool doConnect)
     TextView *tv = ViewHelper::toTextView(wid);
     if (tv) {
         if (doConnect)
-            connect(this, &PExLogNode::addProcessData, tv, &TextView::addProcessData);
+            connect(this, &PExLogNode::addProcessLog, tv, &TextView::addProcessLog);
         else
-            disconnect(this, &PExLogNode::addProcessData, tv, &TextView::addProcessData);
+            disconnect(this, &PExLogNode::addProcessLog, tv, &TextView::addProcessLog);
     }
 
 }
@@ -129,7 +129,7 @@ void PExLogNode::logDone()
         } else {
             message = QString("LOG: no log (logoption=%1)").arg(mLogOption);
         }
-        emit tv->addProcessData(message.toUtf8());
+        emit tv->addProcessLog(message.toUtf8());
     }
     mLogFinished = true;
     mLogCloser.start();
@@ -196,7 +196,7 @@ void PExLogNode::linkToProcess(AbstractProcess *process)
 {
     QWidget *wid = file()->editors().size() ? file()->editors().first() : nullptr;
     TextView *tv = ViewHelper::toTextView(wid);
-    if (tv) connect(process, &AbstractProcess::newStdChannelData, tv, &TextView::addProcessData, Qt::UniqueConnection);
+    if (tv) connect(process, &AbstractProcess::newStdChannelData, tv, &TextView::addProcessLog, Qt::UniqueConnection);
 }
 
 } // namespace studio

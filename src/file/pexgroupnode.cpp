@@ -1153,7 +1153,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
             else
                 mDebugServer->sendStepLine();
         });
-        connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
+        connect(mDebugServer, &debugger::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
         connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::interrupt);
@@ -1225,7 +1225,7 @@ void PExProjectNode::openDebugGdx(const QString &gdxFile)
         else {
             node->file()->jumpTo(node->projectId(), false);
             if (!node->file()->editors().isEmpty())
-                emit openInPinView(node->file()->editors().first());
+                emit openInPinView(this, node->file()->editors().first());
         }
     }
     else

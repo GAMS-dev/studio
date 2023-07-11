@@ -6,18 +6,40 @@
 
 namespace gams {
 namespace studio {
+
+namespace pin {
+class PinViewWidget;
+}
+
 namespace debugger {
 
-typedef QPair<QString, Qt::Orientation> PinData;
+struct PinData;
 
-class PinControl
+class PinControl: public QObject
 {
-    QHash<PExProjectNode*, PinData> mData;
+    Q_OBJECT
 public:
-    PinControl();
-    void setPinView(const PExProjectNode *project, const QString &file, Qt::Orientation orientation);
-    QString pinFile(const PExProjectNode *project) const;
-    void clear();
+    PinControl(QObject *parent = nullptr);
+    void init(gams::studio::pin::PinViewWidget *pinView);
+    void closedPinView();
+    void setPinView(PExProjectNode *project, QWidget *pinChild, FileMeta *fileMeta);
+    bool hasPinChild(PExProjectNode *project) const;
+    void projectSwitched(PExProjectNode *project);
+    void resetToInitialView();
+
+private slots:
+    void removeView(QObject *editWidget);
+
+private:
+    PinData *pinChild(PExProjectNode *project) const;
+    bool hasPinView();
+    void debugData(QString text);
+
+private:
+    pin::PinViewWidget *mPinView = nullptr;
+    PExProjectNode *mLastProject = nullptr;
+    QWidget *mCurrentWidget = nullptr;
+    QHash<PExProjectNode*, PinData*> mData;
 };
 
 } // namespace debugger

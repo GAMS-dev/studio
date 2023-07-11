@@ -31,6 +31,7 @@
 #include "filetype.h"
 #include "filemetarepo.h"
 #include "projecttreeview.h"
+#include "pexgroupnode.h"
 
 namespace gams {
 namespace studio {
@@ -163,7 +164,7 @@ signals:
     void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);
-    void openInPinView(QWidget *editInMainTabs);
+    void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
     void switchToTab(QWidget *wid);
 
 public slots:

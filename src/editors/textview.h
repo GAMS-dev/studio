@@ -81,7 +81,7 @@ public:
     void scrollSynchronize(int dx, int dy);
 
 signals:
-    void addProcessData(const QByteArray &data);
+    void addProcessLog(const QByteArray &data);
     void blockCountChanged();
     void loadAmountChanged(int knownLineCount);
     void selectionChanged();

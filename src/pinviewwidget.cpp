@@ -92,21 +92,18 @@ Qt::Orientation PinViewWidget::orientation()
 
 bool PinViewWidget::setWidget(QWidget *widget)
 {
-    if (layout()->count() != 1)
-        return false;
+    if (mWidget) {
+        layout()->removeWidget(mWidget);
+        mWidget->setParent(nullptr);
+        mWidget = nullptr;
+    }
+    if (!widget) {
+        return true;
+    }
     widget->setSizePolicy(QSizePolicy::Policy::Preferred, QSizePolicy::Policy::MinimumExpanding);
     layout()->addWidget(widget);
     mWidget = widget;
     return true;
-}
-
-void PinViewWidget::removeWidget()
-{
-    if (mWidget) {
-        layout()->removeWidget(mWidget);
-        mWidget = nullptr;
-    }
-    setVisible(false);
 }
 
 QWidget *PinViewWidget::widget()

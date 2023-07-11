@@ -360,7 +360,7 @@ quint16 Server::port()
 
 void Server::logMessage(const QString &message)
 {
-    emit addProcessData(message.toUtf8() + '\n');
+    emit addProcessLog(message.toUtf8() + '\n');
 }
 
 void Server::deleteSocket()

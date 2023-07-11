@@ -54,7 +54,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
 
     if (kind == MemoryText) {
         MemoryMapper* mm = new MemoryMapper();
-        connect(this, &TextView::addProcessData, mm, &MemoryMapper::addProcessData);
+        connect(this, &TextView::addProcessLog, mm, &MemoryMapper::addProcessLog);
         connect(mm, &MemoryMapper::createMarks, this, &TextView::createMarks);
         connect(mm, &MemoryMapper::appendLines, this, &TextView::appendLines);
         connect(mm, &MemoryMapper::switchLst, this, &TextView::switchLst);

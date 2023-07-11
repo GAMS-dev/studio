@@ -616,7 +616,7 @@ void MemoryMapper::processPending()
     mPending = PendingNothing;
 }
 
-void MemoryMapper::addProcessData(const QByteArray &data)
+void MemoryMapper::addProcessLog(const QByteArray &data)
 {
     Q_ASSERT_X(mChunks.size(), Q_FUNC_INFO, "Need to call startRun() before adding data.");
     Chunk *chunk = mChunks.last();

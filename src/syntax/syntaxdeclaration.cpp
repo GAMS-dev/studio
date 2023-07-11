@@ -298,7 +298,7 @@ SyntaxBlock SyntaxReserved::find(const SyntaxKind entryKind, SyntaxState state, 
     if (entryKind == kind() && start > index) {
         return SyntaxBlock(this, state, index, start, false, SyntaxShift::shift);
     }
-    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::AbortKey) && state.flavor & flavorAbortCmd == 0)
+    if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::AbortKey) && (state.flavor & flavorAbortCmd) == 0)
         state.flavor += flavorAbortCmd;
     if ((kind() == SyntaxKind::Abort || kind() == SyntaxKind::Execute || kind() == SyntaxKind::ExecuteTool)
         && entryKind == kind() && (state.flavor & flavorExecDot) == 0) {

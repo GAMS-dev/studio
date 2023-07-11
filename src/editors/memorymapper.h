@@ -125,7 +125,7 @@ signals:
 
 public slots:
     void reset() override;
-    void addProcessData(const QByteArray &data);
+    void addProcessLog(const QByteArray &data);
 
 protected:
     Chunk *getChunk(int chunkNr, bool cache = true) const override;

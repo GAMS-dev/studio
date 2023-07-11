@@ -31,6 +31,7 @@
 #include "file/projectrepo.h"
 #include "file/recentdata.h"
 #include "debugger/server.h"
+#include "debugger/pincontrol.h"
 #include "modeldialog/libraryitem.h"
 #include "search/resultsview.h"
 #include "option/parametereditor.h"
@@ -205,7 +206,7 @@ public slots:
     void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
-    void openInPinView(QWidget *editInMainTabs);
+    void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
     void switchToTab(QWidget *wid);
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
@@ -458,7 +459,6 @@ private:
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
     bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
-//    void StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);
@@ -500,7 +500,7 @@ private:
     SettingsDialog *mSettingsDialog = nullptr;
     OpenPermission mOpenPermission = opNone;
     pin::PinViewWidget *mPinView = nullptr;
-    QPair<QString, Qt::Orientation> mDefaultPinView;
+    debugger::PinControl mPinControl;
     QHash<FontGroup, qreal> mGroupFontSize;
     NodeId mFocussedLog;
 

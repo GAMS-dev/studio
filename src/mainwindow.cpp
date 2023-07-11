@@ -148,10 +148,15 @@ MainWindow::MainWindow(QWidget *parent)
 
     // PinView
     ui->splitter->setCollapsible(0, false);
-    connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, &MainWindow::openPinView);
-    connect(ui->mainTabs, &TabWidget::openPinView, this, &MainWindow::openPinView);
+    connect(&mMainTabContextMenu, &MainTabContextMenu::openPinView, this, [this](int tabIndex, Qt::Orientation orientation) {
+        openPinView(tabIndex, orientation);
+    });
+    connect(ui->mainTabs, &TabWidget::openPinView, this, [this](int tabIndex, Qt::Orientation orientation) {
+        openPinView(tabIndex, orientation);
+    });
     mPinView = new pin::PinViewWidget(ui->splitter);
-    connect(mPinView, &pin::PinViewWidget::hidden, this, &MainWindow::closePinView);
+    connect(mPinView, &pin::PinViewWidget::hidden, this, [this]() { closePinView(); });
+    mPinControl.init(mPinView);
 
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
@@ -2975,14 +2980,15 @@ void MainWindow::closePinView()
 {
     QWidget *edit = mPinView->widget();
     if (edit) {
-        mPinView->removeWidget();
+        mPinView->setWidget(nullptr);
+        mPinView->setVisible(false);
         mRecent.removeEditor(edit);
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) fm->removeEditor(edit);
         edit->deleteLater();
         updateRecentEdit(edit, ui->mainTabs->currentWidget());
+        mPinControl.closedPinView();
     }
-    mDefaultPinView.first = QString();
     Settings::settings()->setInt(skPinViewTabIndex, -1);
 }
 
@@ -3728,7 +3734,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
         connect(tv, &TextView::selectionChanged, this, &MainWindow::updateStatusPos, Qt::UniqueConnection);
         connect(tv, &TextView::blockCountChanged, this, &MainWindow::updateStatusLineCount, Qt::UniqueConnection);
         connect(tv, &TextView::loadAmountChanged, this, &MainWindow::updateStatusLoadAmount, Qt::UniqueConnection);
-        connect(project, &PExProjectNode::addProcessData, tv, &TextView::addProcessData, Qt::UniqueConnection);
+        connect(project, &PExProjectNode::addProcessLog, tv, &TextView::addProcessLog, Qt::UniqueConnection);
     }
     // cleanup bookmarks
     const QVector<QString> cleanupKinds {"gdx",  "gsp", "log", "lst", "ls2", "lxi", "ref"};
@@ -3797,31 +3803,6 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     return true;
 }
 
-//void MainWindow::StartDebugIfPresent(PExLogNode *logNode, const QList<option::OptionItem> &itemList)
-//{
-//    for (const option::OptionItem &item : itemList) {
-//        if (item.key.compare("DebugPort") == 0) {
-//            bool ok;
-//            int port = item.value.toInt(&ok);
-//            if (!ok) continue;
-
-//            QWidget *wid = logNode->file()->editors().size() ? logNode->file()->editors().first() : nullptr;
-//            TextView *tv = ViewHelper::toTextView(wid);
-//            if (!tv) continue;
-
-//            if (!mDebugServer)
-//                mDebugServer = new debugger::Server(this);
-//            if (mDebugServer->isListening())
-//                mDebugServer->stop();
-//            else {
-//                connect(mDebugServer, &debugger::Server::addProcessData, tv, &TextView::addProcessData);
-//                mDebugServer->start(port);
-//            }
-//            break;
-//        }
-//    }
-//}
-
 void MainWindow::execution(PExProjectNode *project)
 {
     AbstractProcess* groupProc = project->process();
@@ -3839,6 +3820,7 @@ void MainWindow::updateRunState()
     if (PExProjectNode *project = currentProject()) {
         debugServer = project->debugServer();
         ui->debugWidget->setText("Project: " + project->name());
+        mPinControl.projectSwitched(project);
     }
     ui->debugWidget->setDebugServer(debugServer);
     ui->debugWidget->setVisible(debugServer);
@@ -4861,14 +4843,19 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     mPinView->showAndAdjust(orientation);
     Settings::settings()->setInt(skPinViewTabIndex, tabIndex);
     initEdit(fm, newWid);
-    mDefaultPinView.first = fm->location();
-    mDefaultPinView.second = orientation;
+    mPinControl.setPinView(nullptr, newWid, fm);
 }
 
-void MainWindow::openInPinView(QWidget *editInMainTabs)
+void MainWindow::openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs)
 {
-    int idx = ui->mainTabs->indexOf(editInMainTabs);
-    openPinView(idx, Qt::Horizontal);
+    FileMeta *fm = mFileMetaRepo.fileMeta(editInMainTabs);
+    if (!fm) return;
+    if (!mPinControl.hasPinChild(project)) {
+       QWidget *newWid = fm->createEdit(mPinView, project);
+       newWid->setFont(getEditorFont(fm->fontGroup()));
+       initEdit(fm, newWid);
+       mPinControl.setPinView(project, newWid, fm);
+    }
 }
 
 void MainWindow::switchToTab(QWidget *wid)

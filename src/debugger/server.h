@@ -110,7 +110,7 @@ public:
 
 signals:
     void connected();
-    void addProcessData(const QByteArray &data);
+    void addProcessLog(const QByteArray &data);
     void signalLinesMap(const QString &file, const QList<int> &fileLines, const QList<int> &continuousLines);
     void signalMapDone();
     void signalGdxReady(const QString &gdxFile);

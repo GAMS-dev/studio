@@ -48,10 +48,9 @@ public:
     void linkToProcess(AbstractProcess *process);
 
 signals:
-    void addProcessData(const QByteArray &data);
+    void addProcessLog(const QByteArray &data);
 
 public slots:
-//    void addProcessDataX(const QByteArray &data);
     void setJumpToLogEnd(bool state);
     void repaint();
     void closeLog();

@@ -43,7 +43,6 @@ public:
     void setOrientation(Qt::Orientation orientation);
     Qt::Orientation orientation();
     bool setWidget(QWidget *widget);
-    void removeWidget();
     QWidget *widget();
     void setTabName(const QString &tabName);
     void setFileName(const QString &tabName, const QString &filePath);

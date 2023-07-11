@@ -26,6 +26,7 @@
 #include "process/abstractprocess.h"
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
+#include "pexgroupnode.h"
 #include "syntax/textmark.h"
 #include "debugger/server.h"
 
@@ -158,8 +159,8 @@ signals:
     void getParameterValue(QString param, QString &value);
     void baseDirChanged(gams::studio::PExProjectNode *project);
     void runnableChanged();
-    void addProcessData(const QByteArray &data);
-    void openInPinView(QWidget *editInMainTabs);
+    void addProcessLog(const QByteArray &data);
+    void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
     void openFileNode(PExFileNode *node);
     void switchToTab(QWidget *wid);
 
