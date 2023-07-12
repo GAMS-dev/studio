@@ -1288,6 +1288,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                 pro->clearBreakpoints();
                 updateBreakpoints();
             });
+            updateBreakpoints();
         }
     }
     setProjectId(project->id());

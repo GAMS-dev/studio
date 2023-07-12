@@ -66,12 +66,14 @@ bool PinControl::hasPinView()
 
 void PinControl::debugData(QString text)
 {
+#ifdef _DEBUG
     DEB() << "---- Project " << text << ":  " << mData.count() << "  " << mLastProject;
     PExProjectNode *curPro = mData.contains(mLastProject) ? mLastProject : nullptr;
     for (auto ind = mData.begin() ; ind != mData.end() ; ++ind) {
         DEB() << ind.key() << ":  " << (ind.value() && ind.value()->fileMeta ? ind.value()->fileMeta->name() : "none")
               << (ind.key() == curPro ? "   <CURRENT>" : "");
     }
+#endif
 }
 
 void PinControl::projectSwitched(PExProjectNode *project)
