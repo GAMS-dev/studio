@@ -192,7 +192,7 @@ bool ConnectEditor::init(bool quiet)
         schemaItemModel->setToolTip(index);
     });
     connect(ui->schemaControlListView->selectionModel(), &QItemSelectionModel::currentRowChanged, this, [=](const QModelIndex &current, const QModelIndex &previous) {
-        Q_UNUSED(previous);
+        Q_UNUSED(previous)
         defmodel->loadSchemaFromName( current.data(Qt::DisplayRole).toString() );
     });
     connect(schemaItemModel, &SchemaListModel::schemaItemChanged, this, [=](const QString& schemaname) {
@@ -290,7 +290,7 @@ bool ConnectEditor::saveConnectFile(const QString &location)
 
 void ConnectEditor::openAsTextButton_clicked(bool checked)
 {
-    Q_UNUSED(checked);
+    Q_UNUSED(checked)
     MainWindow* main = getMainWindow();
     if (!main) return;
 

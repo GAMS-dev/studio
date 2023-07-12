@@ -689,7 +689,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
 
 int Option::errorCallback(int count, const char *message)
 {
-    Q_UNUSED(count);
+    Q_UNUSED(count)
     auto logger = SysLogLocator::systemLog();
     logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);

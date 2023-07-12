@@ -492,7 +492,7 @@ Qt::DropActions ConnectDataModel::supportedDropActions() const
 
 bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction action, int row, int column, const QModelIndex &parent) const
 {
-    Q_UNUSED(row);
+    Q_UNUSED(row)
     Q_UNUSED(parent)
     if (action != Qt::CopyAction)
         return false;
@@ -949,7 +949,7 @@ void ConnectDataModel::reloadConnectDataModel()
 void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
 {
     QModelIndex idx = topLeft;
-    Q_UNUSED(bottomRight);
+    Q_UNUSED(bottomRight)
     if (idx.column() != (int)DataItemColumn::Key && idx.column() != (int)DataItemColumn::Value)
         return;
 

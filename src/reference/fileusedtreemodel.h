@@ -64,7 +64,7 @@ protected:
         header << QVariant("Location")    << QVariant("Type")
                << QVariant("Global Line") << QVariant("Reference Line") << QVariant("ID");
         return header;
-    };
+    }
 
     Reference*         mReference;
     FileReferenceItem* mRootItem;

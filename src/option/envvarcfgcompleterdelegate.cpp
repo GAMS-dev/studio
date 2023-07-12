@@ -57,8 +57,8 @@ QWidget *EnvVarCfgCompleterDelegate::createEditor(QWidget *parent, const QStyleO
 
 void EnvVarCfgCompleterDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
 {
-    Q_UNUSED(editor);
-    Q_UNUSED(index);
+    Q_UNUSED(editor)
+    Q_UNUSED(index)
     mLastEditor = nullptr;
     mIsLastEditorClosed = true;
 }

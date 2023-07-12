@@ -71,8 +71,8 @@ QWidget* OptionCompleterDelegate::createEditor(QWidget* parent, const QStyleOpti
 
 void OptionCompleterDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
 {
-    Q_UNUSED(editor);
-    Q_UNUSED(index);
+    Q_UNUSED(editor)
+    Q_UNUSED(index)
     mLastEditor = nullptr;
     mIsLastEditorClosed = true;
 }

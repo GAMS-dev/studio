@@ -108,7 +108,7 @@ bool Connect::validateData(const QString &inputFileName, bool checkSchema)
                        std::string str = it->first.as<std::string>();
                        key = QString::fromStdString(str);
                     } catch(const YAML::BadConversion& e) {
-                        Q_UNUSED(e);
+                        Q_UNUSED(e)
                         invalidSchema = true;
                         break;
                     }
@@ -133,7 +133,7 @@ bool Connect::validateData(const QString &inputFileName, bool checkSchema)
         return (!invalidSchema);
 
     } catch(const YAML::ParserException& e) {
-        Q_UNUSED(e);
+        Q_UNUSED(e)
         return false;
     }
 }
@@ -339,7 +339,7 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
                                 int i = it->first.as<int>();
                                 node[i] = value;
                             } catch (const YAML::BadConversion& e) {
-                                Q_UNUSED(e);
+                                Q_UNUSED(e)
                                 std::string s = it->first.as<std::string>();
                                 node[s] = value;
                             }
@@ -486,7 +486,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                             int i = it->first.as<int>();
                             dataValue[i] = value;
                         } catch (const YAML::BadConversion& e) {
-                            Q_UNUSED(e);
+                            Q_UNUSED(e)
                             std::string s = it->first.as<std::string>();
                             dataValue[s] = value;
                         }
@@ -558,7 +558,7 @@ YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequir
                 int i = it->first.as<int>();
                 data[i] = value;
             } catch (const YAML::BadConversion& e) {
-                Q_UNUSED(e);
+                Q_UNUSED(e)
                 std::string s = it->first.as<std::string>();
                 data[s] = value;
             }
@@ -600,7 +600,7 @@ bool Connect::isTypeValid(const QList<SchemaType>& typeList, const YAML::Node &d
             validType = true;
             break;
         } catch (const YAML::BadConversion& e) {
-            Q_UNUSED(e);
+            Q_UNUSED(e)
             validType=false;
         }
    }

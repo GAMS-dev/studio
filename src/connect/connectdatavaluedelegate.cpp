@@ -69,8 +69,8 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
 
 void ConnectDataValueDelegate::destroyEditor(QWidget *editor, const QModelIndex &index) const
 {
-    Q_UNUSED(editor);
-    Q_UNUSED(index);
+    Q_UNUSED(editor)
+    Q_UNUSED(index)
     mLastEditor = nullptr;
     mIsLastEditorClosed = true;
 }

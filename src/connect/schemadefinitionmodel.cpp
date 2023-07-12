@@ -469,7 +469,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         parents << parents.last()->child(parents.last()->childCount()-1);
         QList<QVariant> listData;
         listData << "schema";
-        listData << (schemaHelper->required?"Y":"");;
+        listData << (schemaHelper->required?"Y":"");
         addTypeList(schemaHelper->types, listData);
         addValue(schemaHelper->defaultValue, listData);
         QStringList strlist = gettAllAllowedValues(schemaHelper);
@@ -546,7 +546,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                     schemaDataKeys << schemaKeyStr;
                     QList<QVariant> data;
                     data <<  schemaKeyStr;
-                    data << (schemaHelper->required?"Y":"");;
+                    data << (schemaHelper->required?"Y":"");
                     addTypeList(schemaHelper->types, data);
                     addValue(schemaHelper->defaultValue, data);
                     QStringList strlist = gettAllAllowedValues(schemaHelper);
