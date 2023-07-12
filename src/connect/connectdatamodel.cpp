@@ -2082,7 +2082,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
               QList<QVariant> sequenceDummyData;
               sequenceDummyData << (isOneofSchemaDefined ? QVariant(mapToSequenceKey + "[0]") : QVariant(mapToSequenceKey));
               sequenceDummyData << QVariant();
-              sequenceDummyData << QVariant(isOneofSchemaDefined > 0 ? (int)DataCheckState::SchemaAppend : (int)DataCheckState::ListAppend);
+              sequenceDummyData << QVariant(isOneofSchemaDefined ? (int)DataCheckState::SchemaAppend : (int)DataCheckState::ListAppend);
               QStringList keys(dataKeys);
               keys.insert(0,schemaName);
               sequenceDummyData << QVariant(QString());
