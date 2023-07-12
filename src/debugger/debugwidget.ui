@@ -90,7 +90,7 @@
      </property>
      <property name="icon">
       <iconset resource="../../icons/icons.qrc">
-       <normaloff>:/solid/stop</normaloff>:/solid/stop</iconset>
+       <normaloff>:/solid/kill</normaloff>:/solid/kill</iconset>
      </property>
      <property name="autoRaise">
       <bool>true</bool>
