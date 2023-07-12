@@ -165,7 +165,7 @@ signals:
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);
     void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
-    void switchToTab(QWidget *wid);
+    void switchToTab(FileMeta *fileMeta);
 
 public slots:
     void gamsProcessStateChange(gams::studio::PExGroupNode* group);

@@ -235,7 +235,7 @@ MainWindow::MainWindow(QWidget *parent)
         openFilesProcess(QStringList() << gspFile, ogProjects);
     });
     connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
-    connect(&mProjectRepo, &ProjectRepo::switchToTab, this, &MainWindow::switchToTab);
+    connect(&mProjectRepo, &ProjectRepo::switchToTab, this, &MainWindow::switchToMainTab);
     connect(&mProjectRepo, &ProjectRepo::setNodeExpanded, this, &MainWindow::setProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
@@ -4858,9 +4858,13 @@ void MainWindow::openInPinView(gams::studio::PExProjectNode *project, QWidget *e
     }
 }
 
-void MainWindow::switchToTab(QWidget *wid)
+void MainWindow::switchToMainTab(FileMeta *fileMeta)
 {
-    int index = ui->mainTabs->indexOf(wid);
+    int index = -1;
+    for (QWidget *wid : fileMeta->editors()) {
+       index = ui->mainTabs->indexOf(wid);
+       if (index >= 0) break;
+    }
     if (index < 0) return;
     ui->mainTabs->setCurrentIndex(index);
 }

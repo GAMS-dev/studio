@@ -162,7 +162,7 @@ signals:
     void addProcessLog(const QByteArray &data);
     void openInPinView(gams::studio::PExProjectNode *project, QWidget *editInMainTabs);
     void openFileNode(PExFileNode *node);
-    void switchToTab(QWidget *wid);
+    void switchToTab(FileMeta *fileMeta);
 
 public slots:
     void setErrorText(int lstLine, QString text);

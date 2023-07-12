@@ -1252,7 +1252,7 @@ void PExProjectNode::gotoPaused(int contLine)
                 ce->setPausedPos(fileLine-1);
         }
         if (!node->file()->editors().isEmpty())
-            emit switchToTab(node->file()->topEditor());
+            emit switchToTab(node->file());
     }
     mPausedInFile = node;
     if (contLine > 0) {

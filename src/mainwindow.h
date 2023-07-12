@@ -207,7 +207,7 @@ public slots:
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
-    void switchToTab(QWidget *wid);
+    void switchToMainTab(FileMeta *fileMeta);
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
