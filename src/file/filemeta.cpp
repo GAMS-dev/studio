@@ -547,6 +547,8 @@ void FileMeta::addEditor(QWidget *edit)
             connect(scEdit, &CodeEdit::syntaxDocAt, mHighlighter, &syntax::SyntaxHighlighter::syntaxDocAt);
             connect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
             connect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
+            if (mEditors.size() > 1)
+                updateBreakpoints();
         }
 
         if (!aEdit->viewport()->hasMouseTracking())
@@ -1288,7 +1290,6 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
                 pro->clearBreakpoints();
                 updateBreakpoints();
             });
-            updateBreakpoints();
         }
     }
     setProjectId(project->id());
