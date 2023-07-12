@@ -2001,7 +2001,15 @@ void CodeEdit::setPausedPos(int line)
 {
     mLineNumberArea->repaint();
     mBreakLine = line;
-    jumpTo(line);
+    if (line < 0) {
+        if (!mPreDebugCursor.isNull())
+            setTextCursor(mPreDebugCursor);
+        mPreDebugCursor = QTextCursor();
+    } else {
+        if (mPreDebugCursor.isNull())
+            mPreDebugCursor = textCursor();
+        jumpTo(line);
+    }
 }
 
 void CodeEdit::extraSelBlockEdit(QList<QTextEdit::ExtraSelection>& selections)

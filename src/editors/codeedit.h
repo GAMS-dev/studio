@@ -316,6 +316,7 @@ private:
     SortedIntMap mBreakpoints;
     SortedIntMap mAimedBreakpoints;
     int mBreakLine = -1;
+    QTextCursor mPreDebugCursor;
 
     static QRegularExpression mRex0LeadingSpaces;
     static QRegularExpression mRex1LeadingSpaces;
