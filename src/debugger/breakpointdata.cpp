@@ -102,7 +102,10 @@ void BreakpointData::adjustBreakpoints()
 void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
 {
     const QMap<int, int> map = mFileLine2Cln.value(filename);
-    if (map.isEmpty()) return;
+    if (map.isEmpty()) {
+        fileLine = -1;
+        return;
+    }
 
     const auto iter = map.lowerBound(fileLine);
     fileLine = (iter == map.constEnd()) ? map.lastKey() : fileLine = iter.key();

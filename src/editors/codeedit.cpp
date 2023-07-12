@@ -2143,8 +2143,11 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
         QTextCursor cursor = cursorForPosition(pos);
         if (mBreakpoints.contains(cursor.blockNumber()+1))
             return QString("Breakpoint at line %1").arg(cursor.blockNumber()+1);
-        if (mAimedBreakpoints.contains(cursor.blockNumber()+1))
+        if (mAimedBreakpoints.contains(cursor.blockNumber()+1)) {
+            if (mAimedBreakpoints.value(cursor.blockNumber()+1) < 0)
+                return QString("Breakpoint removed, no line to pause in this file.");
             return QString("Breakpoint moved to line %1").arg(mAimedBreakpoints.value(cursor.blockNumber()+1));
+        }
     }
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
