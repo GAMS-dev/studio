@@ -18,6 +18,8 @@
 #ifndef GAMS_STUDIO_DEBUGGER_BREAKPOINTDATA_H
 #define GAMS_STUDIO_DEBUGGER_BREAKPOINTDATA_H
 
+#include "common.h"
+
 #include <QList>
 #include <QMap>
 #include <QList>
@@ -26,8 +28,6 @@
 namespace gams {
 namespace studio {
 namespace debugger {
-
-typedef QMap<int, int> SortedSet; // QMap (instead of QList) handles sort and avoids double entries
 
 class BreakpointData
 {
@@ -44,21 +44,25 @@ public:
     int fileLine(int contLine) const;
 
     void adjustBreakpoints();
-    void adjustBreakpoint(const QString &filename, int &fileLine, bool skipExist = true);
     int addBreakpoint(const QString &filename, int fileLine, bool isRunning = false);
     void delBreakpoint(const QString &filename, int fileLine);
     void delBreakpoints();
-    bool isBreakpoint(const QString &filename, int fileLine) const;
+    void resetAimedBreakpoints();
     QStringList bpFiles();
-    QList<int> bpFileLines(const QString &filename) const;
+    SortedIntMap bpFileLines(const QString &filename) const;
+    SortedIntMap bpAimedFileLines(const QString &filename) const;
     QList<int> bpContinuousLines() const;
+
+private:
+    void adjustBreakpoint(const QString &filename, int &fileLine);
 
 private:
     QMap<int, QString> mLastCln4File;
     QMap<int, int> mCln2Line;
     QMap<QString, QMap<int, int> > mFileLine2Cln;
 
-    QMap<QString, SortedSet> mActiveBp;
+    QMap<QString, SortedIntMap> mActiveBp;
+    QMap<QString, SortedIntMap> mAimedBp;
 };
 
 } // namespace debugger

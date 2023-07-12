@@ -42,6 +42,7 @@ class LineNumberArea;
 class SearchWidget;
 class CodeCompleter;
 
+enum BreakpointType {bpNone, bpAimedBp, bpRealBp};
 
 struct BlockEditPos
 {
@@ -157,7 +158,6 @@ signals:
     void requestAdvancedActions(QList<QAction*>* actions);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
-    void adjustBreakpoint(int &line);
     void addBreakpoint(int line);
     void delBreakpoint(int line);
     void delAllBreakpoints();
@@ -171,7 +171,7 @@ public slots:
     virtual void pasteClipboard();
     void updateExtraSelections() override;
     void unfold(QTextBlock block) override;
-    void breakpointsChanged(const QList<int> &bpLines);
+    void breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMap &abpLines);
     void setPausedPos(int line);
 
 protected slots:
@@ -217,6 +217,7 @@ private:
     QTextBlock findFoldStart(QTextBlock block) const;
     bool unfoldBadBlock(QTextBlock block);
     void checkCursorAfterFolding();
+    BreakpointType breakpointType(int line);
 
 protected:
     class BlockEdit
@@ -312,7 +313,8 @@ private:
     int mIncludeLinkLine = -1;
     bool mLinkActive = false;
     BlockSelectState mBlockSelectState = bsNone;
-    QList<int> mBreakpoints;
+    SortedIntMap mBreakpoints;
+    SortedIntMap mAimedBreakpoints;
     int mBreakLine = -1;
 
     static QRegularExpression mRex0LeadingSpaces;

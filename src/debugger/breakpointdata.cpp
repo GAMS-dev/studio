@@ -81,24 +81,26 @@ QStringList BreakpointData::bpFiles()
 
 void BreakpointData::adjustBreakpoints()
 {
-    QMap<QString, SortedSet> newBp;
+    QMap<QString, SortedIntMap> newBp;
+    QMap<QString, SortedIntMap> newAimBp;
     for (auto iFile = mActiveBp.constBegin() ; iFile != mActiveBp.constEnd() ; ++iFile) {
-        SortedSet bps;
+        SortedIntMap bps;
+        SortedIntMap aimBps;
         for (auto iLine = iFile.value().constBegin() ; iLine != iFile.value().constEnd() ; ++iLine) {
             int line = iLine.key();
-            adjustBreakpoint(iFile.key(), line, false);
-            bps.insert(line, 0);
+            adjustBreakpoint(iFile.key(), line);
+            bps.insert(line, line);
+            aimBps.insert(iLine.key(), line);
         }
         newBp.insert(iFile.key(), bps);
+        newAimBp.insert(iFile.key(), aimBps);
     }
     mActiveBp = newBp;
+    mAimedBp = newAimBp;
 }
 
-void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine, bool skipExist)
+void BreakpointData::adjustBreakpoint(const QString &filename, int &fileLine)
 {
-    if (skipExist && mActiveBp.value(filename).contains(fileLine))
-        return;
-
     const QMap<int, int> map = mFileLine2Cln.value(filename);
     if (map.isEmpty()) return;
 
@@ -114,35 +116,57 @@ int BreakpointData::addBreakpoint(const QString &filename, int fileLine, bool is
         const auto iter = map.lowerBound(fileLine);
         resLine = (iter == map.constEnd()) ? map.lastKey() : iter.key();
     }
-    SortedSet lines = mActiveBp.value(filename);
-    lines.insert(resLine, 0);
+    SortedIntMap lines = mActiveBp.value(filename);
+    lines.insert(resLine, resLine);
     mActiveBp.insert(filename, lines);
+
+    lines = mAimedBp.value(filename);
+    lines.insert(fileLine, resLine);
+    mAimedBp.insert(filename, lines);
     return resLine;
 }
 
 void BreakpointData::delBreakpoint(const QString &filename, int fileLine)
 {
-    SortedSet lines = mActiveBp.value(filename);
+    SortedIntMap lines = mActiveBp.value(filename);
     lines.remove(fileLine);
     if (lines.isEmpty())
         mActiveBp.remove(filename);
     else
         mActiveBp.insert(filename, lines);
+
+    lines = mAimedBp.value(filename);
+    for (auto iter = lines.begin(); iter != lines.end(); ) {
+        if (iter.key() == fileLine || iter.value() == fileLine)
+            iter = lines.erase(SortedIntMap::const_iterator(iter)); // clazy complained about mixed (const)iterators
+        else
+            ++iter;
+    }
+    if (lines.isEmpty())
+        mAimedBp.remove(filename);
+    else
+        mAimedBp.insert(filename, lines);
 }
 
 void BreakpointData::delBreakpoints()
 {
     mActiveBp.clear();
+    mAimedBp.clear();
 }
 
-bool BreakpointData::isBreakpoint(const QString &filename, int fileLine) const
+void BreakpointData::resetAimedBreakpoints()
 {
-    return mActiveBp.value(filename).contains(fileLine);
+    mAimedBp = mActiveBp;
 }
 
-QList<int> BreakpointData::bpFileLines(const QString &filename) const
+SortedIntMap BreakpointData::bpFileLines(const QString &filename) const
 {
-    return mActiveBp.value(filename).keys();
+    return mActiveBp.value(filename);
+}
+
+SortedIntMap BreakpointData::bpAimedFileLines(const QString &filename) const
+{
+    return mAimedBp.value(filename);
 }
 
 QList<int> BreakpointData::bpContinuousLines() const

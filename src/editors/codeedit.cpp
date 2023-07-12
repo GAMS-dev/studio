@@ -758,6 +758,15 @@ void CodeEdit::checkCursorAfterFolding()
     }
 }
 
+BreakpointType CodeEdit::breakpointType(int line)
+{
+    if (mBreakpoints.contains(line))
+        return bpRealBp;
+    if (mAimedBreakpoints.contains(line))
+        return bpAimedBp;
+    return bpNone;
+}
+
 void CodeEdit::scrollContentsBy(int dx, int dy)
 {
     int reDx = 0;
@@ -1015,14 +1024,10 @@ void CodeEdit::mousePressEvent(QMouseEvent* e)
         }
     } else if (e->modifiers() == Qt::ControlModifier && e->pos().x() <= 0) {
         int line = cursorForPosition(e->pos()).blockNumber() + 1;
-        int oriLine = line;
-        emit adjustBreakpoint(line);
-        if (line >= 0) {
-            if (!mBreakpoints.contains(line))
-                emit addBreakpoint(line);
-            else if (oriLine == line)
-                emit delBreakpoint(line);
-        }
+        if (mBreakpoints.contains(line) || mAimedBreakpoints.contains(line))
+            emit delBreakpoint(line);
+        else
+            emit addBreakpoint(line);
         done = true;
     }
     if (!done) {
@@ -1194,15 +1199,16 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
 void CodeEdit::showBpContext(const QPoint &pos)
 {
     int line = cursorForPosition(pos).blockNumber() + 1;
+    bool hasBp = mBreakpoints.contains(line) || mAimedBreakpoints.contains(line);
 #ifdef __APPLE__
-    QString entry = QString("%1 breakpoint at line %2\tCmd+click").arg(mBreakpoints.contains(line) ? "Remove" : "Add").arg(line);
+    QString entry = QString("%1 breakpoint at line %2\tCmd+click").arg(hasBp ? "Remove" : "Add").arg(line);
 #else
-    QString entry = QString("%1 breakpoint at line %2\tCtrl+click").arg(mBreakpoints.contains(line) ? "Remove" : "Add").arg(line);
+    QString entry = QString("%1 breakpoint at line %2\tCtrl+click").arg(hasBp ? "Remove" : "Add").arg(line);
 #endif
 
     QMenu menu(this);
-    menu.addAction(entry, this, [this, line]() {
-        if (mBreakpoints.contains(line))
+    menu.addAction(entry, this, [this, line, hasBp]() {
+        if (hasBp)
             emit delBreakpoint(line);
         else
             emit addBreakpoint(line);
@@ -1984,9 +1990,10 @@ void CodeEdit::unfold(QTextBlock block)
         toggleFolding(block);
 }
 
-void CodeEdit::breakpointsChanged(const QList<int> &bpLines)
+void CodeEdit::breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMap &abpLines)
 {
     mBreakpoints = bpLines;
+    mAimedBreakpoints = abpLines;
     mLineNumberArea->repaint();
 }
 
@@ -2136,6 +2143,8 @@ QString CodeEdit::getToolTipText(const QPoint &pos)
         QTextCursor cursor = cursorForPosition(pos);
         if (mBreakpoints.contains(cursor.blockNumber()+1))
             return QString("Breakpoint at line %1").arg(cursor.blockNumber()+1);
+        if (mAimedBreakpoints.contains(cursor.blockNumber()+1))
+            return QString("Breakpoint moved to line %1").arg(mAimedBreakpoints.value(cursor.blockNumber()+1));
     }
     checkLinks(pos, true, &fileName);
     if (!fileName.isEmpty()) {
@@ -2226,8 +2235,8 @@ void CodeEdit::lineNumberAreaPaintEvent(QPaintEvent *event)
                 painter.setFont(f);
                 painter.setPen(mark ? toColor(Theme::Edit_linenrAreaMarkFg)
                                     : toColor(Theme::Edit_linenrAreaFg));
-                if (mBreakpoints.contains(blockNumber + 1)) {
-                    painter.setBrush(toColor(Theme::Normal_Red));
+                if (BreakpointType bpt = breakpointType(blockNumber + 1)) {
+                    painter.setBrush(toColor(bpt == bpRealBp ? Theme::Normal_Red : Theme::Normal_Yellow));
                     painter.setPen(Qt::NoPen);
                     painter.drawRoundedRect(0, top, widthForNr, fontMetrics().height(), 4, 4);
                     painter.setPen(Qt::SolidLine);

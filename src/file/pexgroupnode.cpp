@@ -735,12 +735,6 @@ void PExProjectNode::registerGeneratedFile(const QString &fileName)
     fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
-void PExProjectNode::adjustBreakpoint(const QString &filename, int &line)
-{
-    if (mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning)
-        mBreakpointData->adjustBreakpoint(filename, line);
-}
-
 void insertSorted(QList<int> &list, int value)
 {
     int index = 0;
@@ -753,10 +747,10 @@ void insertSorted(QList<int> &list, int value)
 void PExProjectNode::addBreakpoint(const QString &filename, int line)
 {
     bool isRunning = mGamsProcess && mGamsProcess.get()->state() != QProcess::NotRunning;
-    mBreakpointData->addBreakpoint(filename, line, isRunning);
+    int resLine = mBreakpointData->addBreakpoint(filename, line, isRunning);
 
     if (mDebugServer) {
-        int contLine = mBreakpointData->continuousLine(filename, line);
+        int contLine = mBreakpointData->continuousLine(filename, resLine);
         if (contLine >= 0)
             mDebugServer->addBreakpoint(contLine);
     }
@@ -778,11 +772,14 @@ void PExProjectNode::clearBreakpoints()
     mBreakpointData->delBreakpoints();
     if (mDebugServer)
         mDebugServer->clearBreakpoints();
+    for (const PExFileNode *node : listFiles())
+        node->file()->updateBreakpoints();
 }
 
-void PExProjectNode::breakpoints(const QString &filename, QList<int> &bps) const
+void PExProjectNode::breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const
 {
     bps = mBreakpointData->bpFileLines(filename);
+    aimedBps = mBreakpointData->bpAimedFileLines(filename);
 }
 
 void PExProjectNode::clearErrorTexts()
@@ -1178,6 +1175,9 @@ void PExProjectNode::stopDebugServer()
         mDebugServer->stopAndDelete();
         mDebugServer = nullptr;
     }
+    mBreakpointData->resetAimedBreakpoints();
+    for (const PExFileNode *node : listFiles())
+        node->file()->updateBreakpoints();
 }
 
 QProcess::ProcessState PExProjectNode::gamsProcessState() const

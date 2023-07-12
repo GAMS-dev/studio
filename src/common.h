@@ -181,6 +181,8 @@ enum OpenGroupOption {
     ogProjects
 };
 
+typedef QMap<int, int> SortedIntMap; // also used as int-set to handle sort and avoid double entries
+
 //template <typename T>
 //typename QtPrivate::QEnableIf<QtPrivate::IsQEnumHelper<T>::Value , QTextStream&>::Type
 //operator<<(QTextStream &dbg, T enumValue)

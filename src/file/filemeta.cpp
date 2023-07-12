@@ -594,11 +594,12 @@ void FileMeta::updateBreakpoints()
 {
     PExProjectNode *project = mFileRepo->projectRepo()->asProject(mProjectId);
     if (project) {
-        QList<int> bpLines;
-        project->breakpoints(mLocation, bpLines);
+        SortedIntMap bpLines;
+        SortedIntMap abpLines;
+        project->breakpoints(mLocation, bpLines, abpLines);
         for (QWidget *wid : mEditors) {
             if (CodeEdit *ce = ViewHelper::toCodeEdit(wid)) {
-                ce->breakpointsChanged(bpLines);
+                ce->breakpointsChanged(bpLines, abpLines);
             }
         }
     }
@@ -1269,12 +1270,6 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
         } else {
             connect(codeEdit, &CodeEdit::hasHRef, project, &PExProjectNode::hasHRef);
             connect(codeEdit, &CodeEdit::jumpToHRef, project, &PExProjectNode::jumpToHRef);
-
-            connect(codeEdit, &CodeEdit::adjustBreakpoint, this, [this](int &line) {
-                PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
-                if (!pro) return;
-                pro->adjustBreakpoint(location(), line);
-            });
             connect(codeEdit, &CodeEdit::addBreakpoint, this, [this](int line) {
                 PExProjectNode *pro = mFileRepo->projectRepo()->asProject(mProjectId);
                 if (!pro) return;
