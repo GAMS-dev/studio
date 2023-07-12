@@ -582,7 +582,13 @@ OTHER_FILES +=                                      \
     ../platform/macos/studio.entitlements.plist     \
     ../platform/macos/webengine.entitlements.plist  \
     ../platform/linux/gamsstudio.desktop            \
-    ../jenkinsfile                                  \
-    ../jenkinsfile-debug                             \
+    ../ci/cloudfront-deploy.sh                      \
+    ../ci/github-deploy.sh                          \
+    ../ci/.gitlab-ci-0-gams.yml                     \
+    ../ci/.gitlab-ci-1-build.yml                    \
+    ../ci/.gitlab-ci-2-test.yml                     \
+    ../ci/.gitlab-ci-3-pack.yml                     \
+    ../ci/.gitlab-ci-4-deploy.yml                   \
+    ../.gitlab-ci.yml                               \
     ../CHANGELOG                                    \
     ../version
