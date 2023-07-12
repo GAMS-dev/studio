@@ -46,6 +46,7 @@ void DebugWidget::setDebugServer(Server *server)
         disconnect(this, &DebugWidget::sendRun, mServer, &Server::sendRun);
         disconnect(this, &DebugWidget::sendStepLine, mServer, &Server::sendStepLine);
         disconnect(this, &DebugWidget::sendPause, mServer, &Server::sendPause);
+        disconnect(this, &DebugWidget::sendStop, mServer, &Server::signalStop);
         disconnect(mServer, &Server::stateChanged, this, &DebugWidget::stateChanged);
     }
     mServer = server;
@@ -53,6 +54,7 @@ void DebugWidget::setDebugServer(Server *server)
         connect(this, &DebugWidget::sendRun, mServer, &Server::sendRun);
         connect(this, &DebugWidget::sendStepLine, mServer, &Server::sendStepLine);
         connect(this, &DebugWidget::sendPause, mServer, &Server::sendPause);
+        connect(this, &DebugWidget::sendStop, mServer, &Server::signalStop);
         connect(mServer, &Server::stateChanged, this, &DebugWidget::stateChanged);
         state = mServer->state();
     }
@@ -77,6 +79,13 @@ void DebugWidget::on_tbPause_clicked()
     emit sendPause();
 }
 
+
+void DebugWidget::on_tbStop_clicked()
+{
+    emit sendStop();
+}
+
+
 void DebugWidget::stateChanged(DebugState state)
 {
     bool canPause = (state == Prepare || state == Running);
@@ -84,6 +93,7 @@ void DebugWidget::stateChanged(DebugState state)
     ui->tbStep->setEnabled(!canPause);
     ui->tbPause->setEnabled(canPause);
 }
+
 
 } // namespace debugger
 } // namespace studio

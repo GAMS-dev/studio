@@ -36,6 +36,7 @@
 #include "viewhelper.h"
 #include "debugger/breakpointdata.h"
 
+#include <QtConcurrent>
 #include <QFileInfo>
 #include <QDir>
 #include <QDesktopServices>
@@ -1155,6 +1156,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         connect(mDebugServer, &debugger::Server::addProcessData, this, &PExProjectNode::addProcessData);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
+        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::interrupt);
         connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
     }
     bool res = mDebugServer->start();
@@ -1258,6 +1260,11 @@ void PExProjectNode::gotoPaused(int contLine)
         mTempGdx = mDebugServer->gdxTempFile();
         mDebugServer->sendWriteGdx(QDir::toNativeSeparators(mTempGdx));
     }
+}
+
+void PExProjectNode::interrupt()
+{
+    QtConcurrent::run(&AbstractProcess::terminate, process());
 }
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)

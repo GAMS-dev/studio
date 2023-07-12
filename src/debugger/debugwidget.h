@@ -46,12 +46,15 @@ signals:
     void sendRun();
     void sendStepLine();
     void sendPause();
+    void sendStop();
 
 private slots:
     void on_tbRun_clicked();
     void on_tbStep_clicked();
     void on_tbPause_clicked();
     void stateChanged(DebugState state);
+
+    void on_tbStop_clicked();
 
 private:
     Ui::DebugWidget *ui;

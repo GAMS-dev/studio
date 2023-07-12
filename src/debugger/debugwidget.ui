@@ -81,6 +81,23 @@
     </widget>
    </item>
    <item>
+    <widget class="QToolButton" name="tbStop">
+     <property name="toolTip">
+      <string>Stops the execution</string>
+     </property>
+     <property name="text">
+      <string>...</string>
+     </property>
+     <property name="icon">
+      <iconset resource="../../icons/icons.qrc">
+       <normaloff>:/solid/stop</normaloff>:/solid/stop</iconset>
+     </property>
+     <property name="autoRaise">
+      <bool>true</bool>
+     </property>
+    </widget>
+   </item>
+   <item>
     <widget class="QFrame" name="frame">
      <property name="minimumSize">
       <size>

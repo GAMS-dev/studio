@@ -115,6 +115,7 @@ signals:
     void signalMapDone();
     void signalGdxReady(const QString &gdxFile);
     void signalPaused(int contLine);
+    void signalStop();
     void stateChanged(DebugState state);
 
 public slots:
