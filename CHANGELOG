@@ -5,6 +5,7 @@ Version 1.15.1 *
   - existing projects with a path starting with "." can be fixed manually using "Move Project File..."
 - fixed problem about ignored breakpoints
 - added aimed breakpoints to visualize the original selected line
+- added stop button to debug widget
 
 Version 1.15.0
 ==================
