@@ -92,7 +92,6 @@ QVariant SolverOptionTableModel::headerData(int index, Qt::Orientation orientati
             }
             return tooltipText;
         }
-        break;
     }
     case Qt::DecorationRole:
         if (Qt::CheckState(mCheckState[index].toUInt())==Qt::Checked) {
@@ -414,13 +413,11 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
     QByteArray encodedData = mimedata->data(optionMimeType(OptionDefinitionType::SolverOptionDefinition));
     QDataStream stream(&encodedData, QDataStream::ReadOnly);
     QStringList newItems;
-    int rows = 0;
 
     while (!stream.atEnd()) {
        QString text;
        stream >> text;
        newItems << text;
-       ++rows;
     }
 
     int beginRow = -1;

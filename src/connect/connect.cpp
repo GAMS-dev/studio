@@ -43,7 +43,6 @@ Connect::Connect()
         msgBox.setStandardButtons(QMessageBox::Ok);
         if (msgBox.exec() == QMessageBox::Ok) {
             EXCEPT() << "Unable to find Schema Definition File";
-            return;
         }
     }
 

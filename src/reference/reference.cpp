@@ -158,11 +158,6 @@ void Reference::loadReferenceFile(QString encodingName)
 {
     mLastErrorLine = -1;
     emit loadStarted();
-    QStringConverter::Encoding encoding = QStringConverter::Utf8;
-    {
-        QStringEncoder encode(encodingName.toLatin1());
-        if (encode.isValid()) encoding = QStringConverter::Utf8;
-    }
 
     mState = ReferenceState::Loading;
     clear();

@@ -1270,14 +1270,12 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     QList<SolverOptionItem *> items;
 
     QFile inputFile(absoluteFilePath);
-    int i = 0;
     if (inputFile.open(QFile::ReadOnly)) {
         QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
         if (!codec) codec = QTextCodec::codecForName("UTF-8");
 
         QList<int> idList;
         while (!inputFile.atEnd()) {
-            i++;
             SolverOptionItem* item = new SolverOptionItem();
             QByteArray arry = inputFile.readLine();
             // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
