@@ -2,12 +2,14 @@ Version 1.15.1 *
 ==================
 - added aimed breakpoints to visualize the original selected line
 - added stop button to debug widget
+- added on changing the project in debug mode switch pin-view to assigned file
 - fixed breakpoints of unused project files got mixed in
 - fixed path issue for project files.
   - existing projects with a path starting with "." can be fixed manually using "Move Project File..."
 - fixed problem about ignored breakpoints
 - fixed missing step-debug in GAMS menu and adjusted icon colors
 - fixed two visible current-line markers during debug
+- fixed restore text cursor position after a debug session
 
 Version 1.15.0
 ==================
