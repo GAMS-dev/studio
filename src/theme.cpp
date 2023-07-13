@@ -147,7 +147,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Normal_Red,                     QColor(187,0,0));
     mColorThemes[sNr].insert(Normal_Green,                   QColor(52,134,25));
     mColorThemes[sNr].insert(Normal_Blue,                    QColor(34,102,170));
-    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(Qt::darkYellow));
+    mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
     mColorThemes[sNr].insert(Syntax_dco,               Color(QColor(Qt::darkMagenta).darker(120)));
@@ -326,6 +326,7 @@ QHash<QString, QStringList> Theme::iconCodes() const
             set[key] << theme.value(Normal_Red).color.name();
             set[key] << theme.value(Normal_Green).color.name();
             set[key] << theme.value(Normal_Blue).color.name();
+            set[key] << theme.value(Normal_Yellow).color.name();
         }
     }
     for (auto it = theme.constBegin() ; it != theme.constEnd() ; ++it) {
@@ -376,6 +377,7 @@ QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
                 if (data.at(from) == 'R') colorCode = it.value().at(4);
                 if (data.at(from) == 'G') colorCode = it.value().at(5);
                 if (data.at(from) == 'B') colorCode = it.value().at(6);
+                if (data.at(from) == 'Y') colorCode = it.value().at(7);
             }
             while (data.length() > from && data.at(from) != '{') ++from;
             if (data.indexOf("fill:", from) != from+1) continue;
