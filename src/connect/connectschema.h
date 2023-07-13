@@ -116,7 +116,7 @@ union Value  {
 struct ValueWrapper {
     SchemaValueType   type;
     union Value value;
-    ValueWrapper()                    : type(SchemaValueType::NoValue) {  }
+    ValueWrapper()                    : type(SchemaValueType::NoValue), value() {  }
     ValueWrapper(int intval_)         : type(SchemaValueType::Integer), value(intval_)    { }
     ValueWrapper(double doubleval_)   : type(SchemaValueType::Float),   value(doubleval_) { }
     ValueWrapper(bool boolval_)       : type(SchemaValueType::Boolean), value(boolval_) { }
