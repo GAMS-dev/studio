@@ -1164,7 +1164,6 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         QStringList params = process()->parameters();
         params << ("DebugPort=" + QString::number(mDebugServer->port()));
         process()->setParameters(params);
-        DEB() << "Added port to parameters.";
     } else {
         DEB() << "Process isn't up already.";
     }
