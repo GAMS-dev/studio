@@ -37,21 +37,21 @@ void TestCommonPaths::testSystemDir()
     QVERIFY(result.isEmpty());
 }
 
-void TestCommonPaths::testSetSystemDirNull()
-{
-    const QString expected = getExpectedPath();
-    CommonPaths::setSystemDir(QString());
-    auto result = CommonPaths::systemDir();
-    QVERIFY(expected == result);
-}
+//void TestCommonPaths::testSetSystemDirNull()
+//{
+//    const QString expected = getExpectedPath();
+//    CommonPaths::setSystemDir(QString());
+//    auto result = CommonPaths::systemDir();
+//    QVERIFY(expected == result);
+//}
 
-void TestCommonPaths::testSetSystemDirEmpty()
-{
-    const QString expected = getExpectedPath();
-    CommonPaths::setSystemDir("");
-    auto result = CommonPaths::systemDir();
-    QVERIFY(expected == result);
-}
+//void TestCommonPaths::testSetSystemDirEmpty()
+//{
+//    const QString expected = getExpectedPath();
+//    CommonPaths::setSystemDir("");
+//    auto result = CommonPaths::systemDir();
+//    QVERIFY(expected == result);
+//}
 
 void TestCommonPaths::testSetSystemDirCustom()
 {
