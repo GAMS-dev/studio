@@ -1,11 +1,11 @@
 fetch-prerequisites:
   stage: fetch-prerequisites
   when: always
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - windows_x64_64.exe
+  #cache:
+  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  #  paths:
+  #    - ci/
+  #    - windows_x64_64.exe
   tags: [linux]
   needs: []
   image:
@@ -24,11 +24,11 @@ fetch-prerequisites:
 
 install-gams-leg:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - gamsdist/
+  #cache:
+  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  #  paths:
+  #    - ci/
+  #    - gamsdist/
   tags: [linux]
   needs: [fetch-prerequisites]
   image:
@@ -36,59 +36,59 @@ install-gams-leg:
     entrypoint: [""]
   script:
     - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
+      #if [ -d "gamsdist" ]; then
+      #  echo "Using gamsdist from cache..."
+      #else
         echo "Installing GAMS to gamsdist..."
         python3 ci/fetch_gams.py fetch_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
         chmod 777 linux_x64_64_sfx.exe
         GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
+      #fi
   artifacts:
     name: gamsdist-leg
     expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    paths: [gamsdist/*]
 
 install-gams-deg:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-     - ci/
-     - gamsdist/
+  #cache:
+  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  #  paths:
+  #   - ci/
+  #   - gamsdist/
   tags: [macos]
   needs: [fetch-prerequisites]
   script:
     - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
+      #if [ -d "gamsdist" ]; then
+      #  echo "Using gamsdist from cache..."
+      #else
         echo "Installing GAMS to gamsdist..."
         python3 ci/fetch_gams.py fetch_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
         GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
+      #fi
   artifacts:
     name: gamsdist-deg
     expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    paths: [gamsdist/*]
 
 install-gams-dac:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - gamsdist/
+  #cache:
+  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  #  paths:
+  #    - gamsdist/
   tags: [macos-arm64]
   dependencies: [fetch-prerequisites]
   script:
     - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
+      #if [ -d "gamsdist" ]; then
+      #  echo "Using gamsdist from cache..."
+      #else
         echo "Installing GAMS to gamsdist..."
         python3 ci/fetch_gams.py fetch_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
         GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
+      #fi
   artifacts:
     name: gamsdist-dac
     expire_in: 1 hour
@@ -96,11 +96,11 @@ install-gams-dac:
 
 install-gams-wei:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - gamsdist/
+  #cache:
+  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
+  #  paths:
+  #    - ci/
+  #    - gamsdist/
   tags: [windows]
   needs: [fetch-prerequisites]
   image:
@@ -108,13 +108,13 @@ install-gams-wei:
     entrypoint: [""]   # prevent startup.sh
   script:
     - |+
-      if (Test-Path -Path "gamsdist") {
-        echo "Using gamsdist from cache..."
-      } else {
+      #if (Test-Path -Path "gamsdist") {
+      #  echo "Using gamsdist from cache..."
+      #} else {
         echo "Installing GAMS to gamsdist..."
         python ci/fetch_gams.py install $GAMS_LICENSE
-      }
+      #}
   artifacts:
     name: gamsdist-wei
     expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    paths: [gamsdist/*]

@@ -2,7 +2,7 @@ pack-deg:
   stage: pack
   tags: [macos]
   variables:
-    qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
+    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
   dependencies: [build-deg]
   script:
     - WORKSPACE=$(pwd)
@@ -62,7 +62,7 @@ pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
-    qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
+    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
   dependencies: [build-dac]
   script:
     - WORKSPACE=$(pwd)
@@ -122,7 +122,7 @@ pack-leg:
   stage: pack
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.5:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [build-leg]
   script:
@@ -153,10 +153,10 @@ pack-wei:
   stage: pack
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [build-wei]
   variables:
-    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
+    qtpath: C:\Qt\6.5.1\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
@@ -204,10 +204,10 @@ pack-wei-debug:
     - when: always
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [build-wei-debug]
   variables:
-    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
+    qtpath: C:\Qt\6.5.1\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
