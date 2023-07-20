@@ -45,7 +45,7 @@ if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
 --description "${CHANGELOG}
 
 This version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION}. To download GAMS, please visit https://www.gams.com/latest/. To learn more about GAMS Studio, please visit https://www.gams.com/latest/docs/T_STUDIO.html"
-elif [[ ${TAG_NAME} =~ ^v[0-9]+\\.[0-9]+\\.[0-9]+-rc\\.[0-9]+$ ]]; then
+elif [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+-rc\.?[0-9]*$ ]]; then
     github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --pre-release \
 --description "${CHANGELOG}
 
@@ -62,4 +62,3 @@ if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
     sleep 16
     parallel github-release --verbose upload -R --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} --name {} --file {} ::: *.*
 fi
-
