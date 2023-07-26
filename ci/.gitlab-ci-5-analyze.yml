@@ -1,0 +1,22 @@
+codechecker-leg:
+  stage: analyze
+  tags: [linux]
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/analyzer:latest
+    entrypoint: [""]   # prevent startup.sh
+  needs: [install-gams-leg]
+  allow_failure: false
+  variables:
+    DOLLAR_GAMS: $$$$GAMS_DISTRIB
+  script:
+    - echo "GAMS_DISTRIB=$(pwd)/gamsdist" > gamsinclude.pri
+    - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
+    - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
+    - bash ci/codechecker.sh
+  after_script:
+    - cat gl-code-quality-report.json
+  artifacts:
+    reports:
+      codequality: gl-code-quality-report.json
+    paths: [gl-code-quality-report.json]
+    expire_in: '2 mos'

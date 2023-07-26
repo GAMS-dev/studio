@@ -584,11 +584,14 @@ OTHER_FILES +=                                      \
     ../platform/linux/gamsstudio.desktop            \
     ../ci/cloudfront-deploy.sh                      \
     ../ci/github-deploy.sh                          \
+    ../ci/codechecker.sh                            \
+    ../ci/skipfile.txt                              \
     ../ci/.gitlab-ci-0-gams.yml                     \
     ../ci/.gitlab-ci-1-build.yml                    \
     ../ci/.gitlab-ci-2-test.yml                     \
     ../ci/.gitlab-ci-3-pack.yml                     \
     ../ci/.gitlab-ci-4-deploy.yml                   \
+    ../ci/.gitlab-ci-5-analyze.yml                  \
     ../.gitlab-ci.yml                               \
     ../CHANGELOG                                    \
     ../version
