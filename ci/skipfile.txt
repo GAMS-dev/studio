@@ -1,5 +1,6 @@
 +*/platform/*
 +*/src/*
 +*/tests/*
+-*/extern/*
 -*/gamsdist/*
 -/opt/Qt/*

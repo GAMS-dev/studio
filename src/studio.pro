@@ -29,9 +29,9 @@ CONFIG += c++17
 include(../gamsdependency.pri)
 
 INCLUDEPATH += $$PWD/../extern
-include(../extern/dtoaloc/client.pri)
-include(../extern/engineapi/client.pri)
-include(../extern/yaml-cpp/client.pri)
+include(../extern/dtoaloc/dtoaloc.pri)
+include(../extern/engineapi/engineapi.pri)
+include(../extern/yaml-cpp/yaml-cpp.pri)
 
 OBJECTS_DIR=../objects
 MOC_DIR=../objects
