@@ -1,11 +1,11 @@
 test-deg:
   stage: test
   tags: [macos]
-  dependencies: [install-gams-deg,build-deg]
+  dependencies: [fetch-prerequisites,install-gams-deg,build-deg]
   variables:
     qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   script:
-    - GAMS_PATH=$(pwd)/gamsdist
+    - GAMS_PATH=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version`
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
     - cd build && mkdir reports
     - REPORTS_DIR=$(pwd)/reports
@@ -27,11 +27,11 @@ test-deg:
 test-dac:
   stage: test
   tags: [macos-arm64]
-  dependencies: [install-gams-dac,build-dac]
+  dependencies: [fetch-prerequisites,install-gams-dac,build-dac]
   variables:
     qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
   script:
-    - GAMS_PATH=$(pwd)/gamsdist
+    - GAMS_PATH=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version`
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
     - cd build && mkdir reports
     - REPORTS_DIR=$(pwd)/reports
@@ -56,9 +56,9 @@ test-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
     entrypoint: [""]   # prevent startup.sh
-  dependencies: [install-gams-leg,build-leg]
+  dependencies: [fetch-prerequisites,install-gams-leg,build-leg]
   script:
-    - GAMS_PATH=$(pwd)/gamsdist
+    - GAMS_PATH=/cache/gams-installs/`python3 ci/fetch_gams.py version`
     - echo ${GAMS_LICENSE} > $GAMS_PATH/gamslice.txt
     - PATH="${GAMS_PATH}:${PATH}"
     - cd build && mkdir reports
@@ -88,7 +88,8 @@ test-wei:
   variables:
     qtpath: C:\Qt\6.4.2\msvc2019_64\bin
   script:
-    - $GAMS_PATH = ($(pwd), '\gamsdist') -join ""
+    - $gmsdirname = Get-Content mygmsdir.tmp -Raw
+    - $GAMS_PATH = "C:\Cache\gams-installs\$gmsdirname"
     - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:Path = "$qtpath;$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path

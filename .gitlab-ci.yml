@@ -16,7 +16,7 @@ variables:
       description: "A value != 0 builds the Windows debug version only"
   PF_CUSTOM_BRANCH:
       value: 0
-      description: "Name of custom branch or 0 if published distribution with version as specified should be taken"
+      description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"
   PF_BUILDS_WWW_PATH:
       value: $BUILDS_WWW_PATH
       description: "URL path prefix for builds server"

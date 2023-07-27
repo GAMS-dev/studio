@@ -1,11 +1,6 @@
 fetch-prerequisites:
   stage: fetch-prerequisites
   when: always
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - windows_x64_64.exe
   tags: [linux]
   needs: []
   image:
@@ -13,108 +8,51 @@ fetch-prerequisites:
     entrypoint: [ "" ]
   script:
     # fetch helper scripts
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
+    - git clone -b no-artifacts https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
     - cp -R scripts-repo/ci .
     # fetch GAMS for Windows
-    - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+    - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING force
+    - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING buildInfo
   artifacts:
     name: fetch-prerequisites
     expire_in: 15 minutes
-    paths: [windows_x64_64.exe,ci/*]
+    paths: [windows_x64_64.exe,buildInfo.txt,ci/*]
 
 install-gams-leg:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - gamsdist/
   tags: [linux]
   needs: [fetch-prerequisites]
   image:
     name: $GAMS_CONTAINER_REGISTRY/machines/leg/builder-full:latest
     entrypoint: [""]
   script:
-    - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
-        echo "Installing GAMS to gamsdist..."
-        python3 ci/fetch_gams.py fetch_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-        chmod 777 linux_x64_64_sfx.exe
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
-  artifacts:
-    name: gamsdist-leg
-    expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-deg:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-     - ci/
-     - gamsdist/
   tags: [macos]
   needs: [fetch-prerequisites]
   script:
-    - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
-        echo "Installing GAMS to gamsdist..."
-        python3 ci/fetch_gams.py fetch_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
-  artifacts:
-    name: gamsdist-deg
-    expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-dac:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - gamsdist/
   tags: [macos-arm64]
   dependencies: [fetch-prerequisites]
   script:
-    - |+
-      if [ -d "gamsdist" ]; then
-        echo "Using gamsdist from cache..."
-      else
-        echo "Installing GAMS to gamsdist..."
-        python3 ci/fetch_gams.py fetch_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py install
-      fi
-  artifacts:
-    name: gamsdist-dac
-    expire_in: 1 hour
-    paths: [gamsdist/*]
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-wei:
   stage: install-gams
-  cache:
-    key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-    paths:
-      - ci/
-      - gamsdist/
   tags: [windows]
   needs: [fetch-prerequisites]
   image:
     name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
     entrypoint: [""]   # prevent startup.sh
   script:
-    - |+
-      if (Test-Path -Path "gamsdist") {
-        echo "Using gamsdist from cache..."
-      } else {
-        echo "Installing GAMS to gamsdist..."
-        python ci/fetch_gams.py install $GAMS_LICENSE
-      }
+    - python ci/fetch_gams.py install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
+    - python ci/fetch_gams.py version
   artifacts:
-    name: gamsdist-wei
-    expire_in: 1 hour
-    paths: [ci/*,gamsdist/*]
+    name: wei-gmsdirpath
+    expire_in: 15 minutes
+    paths: [mygmsdir.tmp]
