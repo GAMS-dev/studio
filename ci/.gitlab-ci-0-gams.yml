@@ -8,7 +8,7 @@ fetch-prerequisites:
     entrypoint: [ "" ]
   script:
     # fetch helper scripts
-    - git clone -b no-artifacts https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
     - cp -R scripts-repo/ci .
     # fetch GAMS for Windows
     - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING force
