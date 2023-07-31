@@ -5,7 +5,7 @@ build-deg:
   variables:
     qtpath: /Users/gitlab/Qt/6.4.2/macos/bin
   script:
-    - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version`\n" > gamsinclude.pri
+    - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version $PF_CUSTOM_BRANCH`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
     - mkdir build && cd build
@@ -23,7 +23,7 @@ build-dac:
   variables:
     qtpath: /Users/gitlab/Qt/6.4.3/macos/bin
   script:
-    - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version`\n" > gamsinclude.pri
+    - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`python3 ci/fetch_gams.py version $PF_CUSTOM_BRANCH`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
     - mkdir build && cd build
@@ -44,7 +44,7 @@ build-leg:
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
   script:
-    - echo "GAMS_DISTRIB=/cache/gams-installs/`python3 ci/fetch_gams.py version`" > gamsinclude.pri
+    - echo "GAMS_DISTRIB=/cache/gams-installs/`python3 ci/fetch_gams.py version $PF_CUSTOM_BRANCH`" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
     - mkdir build && cd build

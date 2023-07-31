@@ -51,7 +51,7 @@ install-gams-wei:
     entrypoint: [""]   # prevent startup.sh
   script:
     - python ci/fetch_gams.py install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
-    - python ci/fetch_gams.py version
+    - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH
   artifacts:
     name: wei-gmsdirpath
     expire_in: 15 minutes
