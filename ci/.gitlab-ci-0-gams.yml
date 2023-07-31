@@ -1,11 +1,6 @@
 fetch-prerequisites:
   stage: fetch-prerequisites
   when: always
-  #cache:
-  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-  #  paths:
-  #    - ci/
-  #    - windows_x64_64.exe
   tags: [linux]
   needs: []
   image:
@@ -25,83 +20,39 @@ fetch-prerequisites:
 
 install-gams-leg:
   stage: install-gams
-  #cache:
-  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-  #  paths:
-  #    - ci/
-  #    - gamsdist/
   tags: [linux]
   needs: [fetch-prerequisites]
   image:
     name: $GAMS_CONTAINER_REGISTRY/machines/leg/builder-full:latest
     entrypoint: [""]
   script:
-    - |+
-      #if [ -d "gamsdist" ]; then
-      #  echo "Using gamsdist from cache..."
-      #else
-        echo "Installing GAMS to gamsdist..."
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-      #fi
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-deg:
   stage: install-gams
-  #cache:
-  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-  #  paths:
-  #   - ci/
-  #   - gamsdist/
   tags: [macos]
   needs: [fetch-prerequisites]
   script:
-    - |+
-      #if [ -d "gamsdist" ]; then
-      #  echo "Using gamsdist from cache..."
-      #else
-        echo "Installing GAMS to gamsdist..."
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-      #fi
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-dac:
   stage: install-gams
-  #cache:
-  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-  #  paths:
-  #    - gamsdist/
   tags: [macos-arm64]
   dependencies: [fetch-prerequisites]
   script:
-    - |+
-      #if [ -d "gamsdist" ]; then
-      #  echo "Using gamsdist from cache..."
-      #else
-        echo "Installing GAMS to gamsdist..."
-        GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-      #fi
+    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-wei:
   stage: install-gams
-  #cache:
-  #  key: "$CI_JOB_NAME-$CI_COMMIT_REF_SLUG"
-  #  paths:
-  #    - ci/
-  #    - gamsdist/
   tags: [windows]
   needs: [fetch-prerequisites]
   image:
     name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
     entrypoint: [""]   # prevent startup.sh
   script:
-    - |+
-      #if (Test-Path -Path "gamsdist") {
-      #  echo "Using gamsdist from cache..."
-      #} else {
-        echo "Installing GAMS to gamsdist..."
-        python ci/fetch_gams.py install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
-        python ci/fetch_gams.py version
-      #}
+    - python ci/fetch_gams.py install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
+    - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH
   artifacts:
     name: wei-gmsdirpath
     expire_in: 15 minutes
     paths: [mygmsdir.tmp]
-
