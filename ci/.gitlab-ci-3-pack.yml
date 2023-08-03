@@ -155,6 +155,7 @@ pack-wei:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [build-wei]
+  variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
