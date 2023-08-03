@@ -85,14 +85,12 @@ test-wei:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [install-gams-wei,build-wei]
-  variables:
-    qtpath: C:\Qt\6.5.1\msvc2019_64\bin
   script:
     - $gmsdirname = Get-Content mygmsdir.tmp -Raw
     - $GAMS_PATH = "C:\Cache\gams-installs\$gmsdirname"
     - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
-    - $env:Path = "$qtpath;$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
+    - $env:Path = "$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
     - $env:GAMSDIR = "$GAMS_PATH;$GAMS_PATH\gbin"
     - findthisgams -q
     - cd build

@@ -140,7 +140,7 @@ pack-leg:
   - minor=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
   - patch=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
   - export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
-  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --library /usr/lib/x86_64-linux-gnu/libssl.so --desktop-file=appdir/usr/share/studio.desktop
+  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --library /usr/lib/x86_64-linux-gnu/libssl.so.1.1 --desktop-file=appdir/usr/share/studio.desktop
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
   artifacts:
@@ -155,14 +155,11 @@ pack-wei:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [build-wei]
-  variables:
-    qtpath: C:\Qt\6.5.1\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
-    - $env:Path = "$qtpath;" + $env:Path
     - '& $cmd_vcvars'
     # setup and fill studio directory
     - mkdir studio
@@ -206,14 +203,11 @@ pack-wei-debug:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   dependencies: [build-wei-debug]
-  variables:
-    qtpath: C:\Qt\6.5.1\msvc2019_64\bin
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   script:
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:VCINSTALLDIR = "$vcinsdir"
-    - $env:Path = "$qtpath;" + $env:Path
     - '& $cmd_vcvars'
     # setup and fill studio directory
     - mkdir studio

@@ -60,13 +60,11 @@ build-wei:
   dependencies: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
-     qtpath: C:\Qt\6.5.1\msvc2019_64\bin
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
     entrypoint: [""]
   script:
     - '& $cmd_vcvars'
-    - $env:Path = "$qtpath;" + $env:Path
     - $data = 
       "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
@@ -91,12 +89,10 @@ build-wei-debug:
   dependencies: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
-     qtpath: C:\Qt\6.5.1\msvc2019_64\bin
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
   script:
     - '& $cmd_vcvars'
-    - $env:Path = "$qtpath;" + $env:Path
     - $data = 
       "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
       'GAMS_DISTRIB_C_API=$$GAMS_DISTRIB/apifiles/C/api',
