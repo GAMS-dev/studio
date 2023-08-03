@@ -2692,8 +2692,11 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
     for (PExProjectNode* project: qAsConst(runningGroups)) {
         if (project->process()->terminateOption() && choice == 1)
             project->process()->terminateLocal();
-        else
+        else {
+            if (project->debugServer())
+                project->debugServer()->stopAndDelete();
             project->process()->terminate();
+        }
     }
     return true;
 }
