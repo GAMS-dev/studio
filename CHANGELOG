@@ -1,4 +1,8 @@
-Version 1.15.1 *
+Version 1.15.2 *
+==================
+- fix missing OpenSSL library on Linux
+
+Version 1.15.1
 ==================
 - added aimed breakpoints to visualize the original selected line
 - added stop button to debug widget

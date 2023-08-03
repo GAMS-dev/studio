@@ -54,7 +54,7 @@ test-leg:
   stage: test
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.4:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [fetch-prerequisites,install-gams-leg,build-leg]
   script:
@@ -83,16 +83,14 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.4:latest
   dependencies: [install-gams-wei,build-wei]
-  variables:
-    qtpath: C:\Qt\6.4.2\msvc2019_64\bin
   script:
     - $gmsdirname = Get-Content mygmsdir.tmp -Raw
     - $GAMS_PATH = "C:\Cache\gams-installs\$gmsdirname"
     - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
-    - $env:Path = "$qtpath;$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
+    - $env:Path = "$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
     - $env:GAMSDIR = "$GAMS_PATH;$GAMS_PATH\gbin"
     - findthisgams -q
     - cd build
