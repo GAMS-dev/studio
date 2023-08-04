@@ -366,9 +366,10 @@ void Server::logMessage(const QString &message)
 void Server::deleteSocket()
 {
     if (mSocket) {
-        mSocket->close();
-        mSocket->deleteLater();
+        QTcpSocket *socket = mSocket;
         mSocket = nullptr;
+        socket->close();
+        socket->deleteLater();
     }
 }
 
