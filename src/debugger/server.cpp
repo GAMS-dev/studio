@@ -95,7 +95,8 @@ void Server::stopAndDelete()
 {
     setState(Finished);
     deleteSocket();
-    mPortsInUse.remove(mServer->serverPort());
+    if (mPortsInUse.contains(mServer->serverPort()))
+        mPortsInUse.remove(mServer->serverPort());
     if (isListening()) {
         mServer->close();
         logMessage("Debug-Server stopped.");

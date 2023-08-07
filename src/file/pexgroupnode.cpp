@@ -1173,8 +1173,9 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 void PExProjectNode::stopDebugServer()
 {
     if (mDebugServer) {
-        mDebugServer->stopAndDelete();
+        debugger::Server *server = mDebugServer;
         mDebugServer = nullptr;
+        server->stopAndDelete();
     }
     mBreakpointData->resetAimedBreakpoints();
     for (const PExFileNode *node : listFiles())
