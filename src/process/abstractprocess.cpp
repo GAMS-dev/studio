@@ -49,12 +49,23 @@ QString AbstractProcess::inputFile() const
 
 void AbstractProcess::interrupt()
 {
-    mProcess.kill();
+    mProcess.terminate();
 }
 
 void AbstractProcess::terminate()
 {
+#ifdef _WIN32
     mProcess.kill();
+#else // Linux and Mac OS X
+    QString pid = QString::number(mProcess.processId());
+    QProcess proc;
+    proc.setProgram("/bin/bash");
+    QStringList args { "-c", "pkill -P " + pid};
+    proc.setArguments(args);
+    proc.start();
+    proc.waitForFinished(-1);
+#endif
+
 }
 
 void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
