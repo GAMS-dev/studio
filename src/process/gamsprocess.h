@@ -33,7 +33,6 @@ public:
     GamsProcess(QObject *parent = nullptr);
 
     void execute() override;
-    void interrupt() override;
 
     QString aboutGAMS();
 };

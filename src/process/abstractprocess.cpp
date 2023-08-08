@@ -23,6 +23,10 @@
 #include <QDir>
 #include <QMetaType>
 
+#ifdef _WIN32
+#include "Windows.h"
+#endif
+
 namespace gams {
 namespace studio {
 
@@ -49,24 +53,47 @@ QString AbstractProcess::inputFile() const
 
 void AbstractProcess::interrupt()
 {
-    mProcess.terminate();
+    interruptIntern("", "");
 }
 
 void AbstractProcess::terminate()
 {
-#ifdef _WIN32
-    mProcess.kill();
-#else // Linux and Mac OS X
+    interruptIntern("", "", true);
+}
+
+void AbstractProcess::interruptIntern(const QString &msgText, const QString &windowName, bool hardKill)
+{
     QString pid = QString::number(mProcess.processId());
+#ifdef _WIN32
+    if (hardKill) {
+        mProcess.kill();
+    } else {
+        QString fullWindowName = windowName + pid;
+        HWND receiver = FindWindowA(nullptr, fullWindowName.toUtf8().constData());
+
+        COPYDATASTRUCT cds;
+        cds.dwData = (ULONG_PTR) 1;
+        cds.lpData = (PVOID) msgText.toUtf8().constData();
+        cds.cbData = (DWORD) (msgText.length() + 1);
+        SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+    }
+
+#else // Linux and Mac OS X
+    Q_UNUSED(msgText)
+    Q_UNUSED(windowName)
     QProcess proc;
     proc.setProgram("/bin/bash");
-    QStringList args { "-c", "pkill -P " + pid};
+    QStringList args { "-c"};
+    if (hardKill)
+        args << "pkill -P " + pid;
+    else
+        args << "pkill -2 -P " + pid;
     proc.setArguments(args);
     proc.start();
     proc.waitForFinished(-1);
 #endif
-
 }
+
 
 void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
 {

@@ -66,7 +66,7 @@ void AbstractMiroProcess::execute()
 void AbstractMiroProcess::interrupt()
 {
     if (mProcess.state() == QProcess::Running || mProcess.state() == QProcess::Starting)
-        gamsInterrupt();
+        interruptIntern("GAMS Message Interrupt", "___GAMSMSGWINDOW___");
     if (mMiro.state() == QProcess::Running || mMiro.state() == QProcess::Starting)
         mMiro.terminate();
 }
@@ -74,7 +74,7 @@ void AbstractMiroProcess::interrupt()
 void AbstractMiroProcess::terminate()
 {
     if (mProcess.state() == QProcess::Running || mProcess.state() == QProcess::Starting)
-        mProcess.kill();
+        interruptIntern("GAMS Message Interrupt", "___GAMSMSGWINDOW___", true);
     if (mMiro.state() == QProcess::Running || mMiro.state() == QProcess::Starting)
         mMiro.terminate();
 }
