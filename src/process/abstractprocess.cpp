@@ -87,7 +87,7 @@ void AbstractProcess::interruptIntern(const QString &msgText, const QString &win
     if (hardKill)
         args << "pkill -P " + pid;
     else
-        args << "pkill -2 -P " + pid;
+        args << "pkill -15 -P " + pid;
     proc.setArguments(args);
     proc.start();
     proc.waitForFinished(-1);
