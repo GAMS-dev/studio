@@ -137,8 +137,6 @@ void AbstractProcess::interruptIntern(bool hardKill)
 
 #else // Linux and Mac OS X
     QString pid = QString::number(mProcess.processId());
-    Q_UNUSED(msgText)
-    Q_UNUSED(windowName)
     QProcess proc;
     proc.setProgram("/bin/bash");
     QStringList args { "-c"};
