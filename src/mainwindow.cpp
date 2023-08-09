@@ -4223,7 +4223,8 @@ void MainWindow::on_actionInterrupt_triggered()
     if (!project) return;
     mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = project->process();
-    QtConcurrent::run(&AbstractProcess::interrupt, process);
+//    QtConcurrent::run(&AbstractProcess::interrupt, process);
+    process->interrupt();
 }
 
 void MainWindow::on_actionStop_triggered()

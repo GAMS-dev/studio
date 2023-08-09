@@ -46,7 +46,7 @@ void GamsProcess::execute()
 
 void GamsProcess::interrupt()
 {
-    interruptIntern("GAMS Message Interrupt", "___GAMSMSGWINDOW___");
+    interruptIntern();
 }
 
 QString GamsProcess::aboutGAMS()

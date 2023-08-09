@@ -176,7 +176,7 @@ public slots:
     void clearBreakpoints();
     void breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const;
     void gotoPaused(int contLine);
-    void interrupt();
+    void terminate();
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

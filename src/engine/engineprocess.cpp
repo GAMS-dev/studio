@@ -323,7 +323,7 @@ void EngineProcess::interrupt()
     if (ok)
         emit mManager->syncKillJob(false);
     else
-        interruptIntern("GAMS Message Interrupt", "___GAMSMSGWINDOW___");
+        interruptIntern();
 }
 
 void EngineProcess::terminate()
@@ -332,7 +332,7 @@ void EngineProcess::terminate()
     if (ok)
         emit mManager->syncKillJob(true);
     else
-        interruptIntern("GAMS Message Interrupt", "___GAMSMSGWINDOW___", true);
+        interruptIntern(true);
     // ensure termination
     setProcState(ProcIdle);
     completed(-1);

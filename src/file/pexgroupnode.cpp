@@ -1156,7 +1156,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         connect(mDebugServer, &debugger::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
-        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::interrupt);
+        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
     }
     bool res = mDebugServer->start();
@@ -1259,7 +1259,7 @@ void PExProjectNode::gotoPaused(int contLine)
     }
 }
 
-void PExProjectNode::interrupt()
+void PExProjectNode::terminate()
 {
     QtConcurrent::run(&AbstractProcess::terminate, process());
 }

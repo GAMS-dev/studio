@@ -28,7 +28,6 @@ namespace studio {
 class GamsProcess final : public AbstractGamsProcess
 {
     Q_OBJECT
-
 public:
     GamsProcess(QObject *parent = nullptr);
 

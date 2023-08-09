@@ -87,7 +87,7 @@ protected:
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }
-    void interruptIntern(const QString &msgText, const QString &windowName, bool hardKill = false);
+    void interruptIntern(bool hardKill = false);
 
 protected:
     NodeId mGroupId = NodeId();

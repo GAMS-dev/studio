@@ -19,12 +19,15 @@
  */
 #include "abstractprocess.h"
 #include "../commonpaths.h"
+#include <QDebug>
 
 #include <QDir>
 #include <QMetaType>
 
 #ifdef _WIN32
-#include "Windows.h"
+#include <Windows.h>
+#include <tlhelp32.h>
+#include <signal.h>
 #endif
 
 namespace gams {
@@ -53,32 +56,87 @@ QString AbstractProcess::inputFile() const
 
 void AbstractProcess::interrupt()
 {
-    interruptIntern("", "");
+    interruptIntern();
 }
 
 void AbstractProcess::terminate()
 {
-    interruptIntern("", "", true);
+    interruptIntern(true);
 }
 
-void AbstractProcess::interruptIntern(const QString &msgText, const QString &windowName, bool hardKill)
+//static void StopProgramByAttachingToItsConsoleAndIssuingCtrlCEvent(Process process, int waitForExitTimeout = 2000)
+//{
+//    if (!AttachConsole((uint) process.Id))
+//    {
+//        return;
+//    }
+
+//    // Disable Ctrl-C handling for our program
+//    SetConsoleCtrlHandler(null, true);
+
+//    // Sent Ctrl-C to the attached console
+//    GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
+
+//    // Wait for the graceful end of the process.
+//    // If the process will not exit in time specified by 'waitForExitTimeout', the process will be killed
+//    using (new Timer((dummy => {if (!process.HasExited) process.Kill(); }), null, waitForExitTimeout, Timeout.Infinite))
+//    {
+//        // Must wait here. If we don't wait and re-enable Ctrl-C handling below too fast, we might terminate ourselves.
+//        process.WaitForExit();
+//    }
+
+//    FreeConsole();
+
+//    // Re-enable Ctrl-C handling or any subsequently started programs will inherit the disabled state.
+//    SetConsoleCtrlHandler(null, false);
+//}
+
+
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
-    QString pid = QString::number(mProcess.processId());
+    if (fdwCtrlType == CTRL_C_EVENT)
+        return true; // eat this signal
+
+    // pass other signals to the next handler
+    return false;
+}
+
+void AbstractProcess::interruptIntern(bool hardKill)
+{
 #ifdef _WIN32
     if (hardKill) {
         mProcess.kill();
     } else {
-        QString fullWindowName = windowName + pid;
-        HWND receiver = FindWindowA(nullptr, fullWindowName.toUtf8().constData());
+        if (!AttachConsole(mProcess.processId())) {
+            qDebug() << "Couldn't attach to console";
+            return;
+        }
+        // Add ignoring Ctrl-C handler for Studio itself
+        if (!SetConsoleCtrlHandler(CtrlHandler, true)) {
+            qDebug() << "Coudn't attach CtrlHandler";
+            return;
+        }
 
-        COPYDATASTRUCT cds;
-        cds.dwData = (ULONG_PTR) 1;
-        cds.lpData = (PVOID) msgText.toUtf8().constData();
-        cds.cbData = (DWORD) (msgText.length() + 1);
-        SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
+        // Prepare to reset the console when the process is finished
+        connect(&mProcess, &QProcess::finished, this, [this](int , QProcess::ExitStatus) {
+            FreeConsole();
+            SetConsoleCtrlHandler(nullptr, false);
+        });
+
+        // send CTRL-C  (on error print message)
+        if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)) {
+            LPVOID lpMsgBuf;
+            auto err = GetLastError();
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
+            auto error_string = QString::fromWCharArray((reinterpret_cast<LPTSTR>(lpMsgBuf)));
+            qDebug() << error_string << "  id:" << mProcess.processId();
+            LocalFree(lpMsgBuf);
+        }
     }
 
 #else // Linux and Mac OS X
+    QString pid = QString::number(mProcess.processId());
     Q_UNUSED(msgText)
     Q_UNUSED(windowName)
     QProcess proc;
