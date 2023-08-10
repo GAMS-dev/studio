@@ -92,6 +92,7 @@ void AbstractProcess::terminate()
 //}
 
 
+#ifdef _WIN32
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
 {
     if (fdwCtrlType == CTRL_C_EVENT)
@@ -100,6 +101,7 @@ BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
     // pass other signals to the next handler
     return false;
 }
+#endif // _WIN32
 
 void AbstractProcess::interruptIntern(bool hardKill)
 {
