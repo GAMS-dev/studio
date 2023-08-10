@@ -235,11 +235,15 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
 
 bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QStringList &missed, const QString &basePath)
 {
-    if (basePath.isEmpty())
-        EXCEPT() << "Base path not defined. Can't open project.";
+    if (basePath.isEmpty()) {
+        addWarning("Missing base path. Can't open project " + map.value("name").toString());
+        return false;
+    }
     QDir baseDir(basePath);
-    if (!baseDir.exists() || !baseDir.isAbsolute())
-        EXCEPT() << "Base path '" +basePath + "' not valid. Can't open project.";
+    if (!baseDir.exists() || !baseDir.isAbsolute()) {
+        addWarning("Base path '" +basePath + "' not valid. Can't open project " + map.value("name").toString());
+        return false;
+    }
 
     count = 0;
     ignored = 0;

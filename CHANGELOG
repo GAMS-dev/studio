@@ -1,6 +1,7 @@
-Version 1.15.2 *
+Version 1.15.2
 ==================
-- fix missing OpenSSL library on Linux
+- fixed missing OpenSSL library on Linux
+- fixed missing projects when a project path is missing 
 
 Version 1.15.1
 ==================
