@@ -26,7 +26,6 @@
 
 #ifdef _WIN32
 #include <Windows.h>
-#include <tlhelp32.h>
 #include <signal.h>
 #endif
 
@@ -63,34 +62,6 @@ void AbstractProcess::terminate()
 {
     interruptIntern(true);
 }
-
-//static void StopProgramByAttachingToItsConsoleAndIssuingCtrlCEvent(Process process, int waitForExitTimeout = 2000)
-//{
-//    if (!AttachConsole((uint) process.Id))
-//    {
-//        return;
-//    }
-
-//    // Disable Ctrl-C handling for our program
-//    SetConsoleCtrlHandler(null, true);
-
-//    // Sent Ctrl-C to the attached console
-//    GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0);
-
-//    // Wait for the graceful end of the process.
-//    // If the process will not exit in time specified by 'waitForExitTimeout', the process will be killed
-//    using (new Timer((dummy => {if (!process.HasExited) process.Kill(); }), null, waitForExitTimeout, Timeout.Infinite))
-//    {
-//        // Must wait here. If we don't wait and re-enable Ctrl-C handling below too fast, we might terminate ourselves.
-//        process.WaitForExit();
-//    }
-
-//    FreeConsole();
-
-//    // Re-enable Ctrl-C handling or any subsequently started programs will inherit the disabled state.
-//    SetConsoleCtrlHandler(null, false);
-//}
-
 
 #ifdef _WIN32
 BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)

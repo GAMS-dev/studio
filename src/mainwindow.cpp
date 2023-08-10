@@ -3945,7 +3945,7 @@ void MainWindow::on_actionStepDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendStepLine();
     } else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), std::make_unique<GamsProcess>()
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), std::make_unique<GamsProcess>()
                 , debugger::StepDebug);
     }
 }
