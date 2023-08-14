@@ -128,8 +128,8 @@ void TestAbstractProcess::testWorkingDirectory()
 void TestAbstractProcess::testGroupId()
 {
     const int groupId = 2;
-    process->setGroupId(groupId);
-    QCOMPARE(process->groupId(), groupId);
+    process->setProjectId(groupId);
+    QCOMPARE(process->projectId(), groupId);
 }
 
 void TestAbstractProcess::testExitCode()

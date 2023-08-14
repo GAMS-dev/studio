@@ -127,7 +127,7 @@ void AbstractMiroProcess::completed(int exitCode)
     if (exitCode)
         SysLogLocator::systemLog()->append(QString("Could not run MIRO. Exit Code: %1")
                                            .arg(exitCode), LogMsgType::Error);
-    emit finished(mGroupId, exitCode);
+    emit finished(mProjectId, exitCode);
 }
 
 void AbstractMiroProcess::subProcessCompleted(int exitCode)
@@ -135,7 +135,7 @@ void AbstractMiroProcess::subProcessCompleted(int exitCode)
     if (exitCode) {
         SysLogLocator::systemLog()->append(QString("Could not run GAMS. Exit Code: %1")
                                            .arg(exitCode), LogMsgType::Error);
-        emit finished(mGroupId, exitCode);
+        emit finished(mProjectId, exitCode);
         return;
     }
     emit executeMiro();

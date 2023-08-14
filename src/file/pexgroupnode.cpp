@@ -1158,6 +1158,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
         connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
+        connect(process(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
     }
     bool res = mDebugServer->start();
     if (process()) {
@@ -1261,7 +1262,7 @@ void PExProjectNode::gotoPaused(int contLine)
 
 void PExProjectNode::terminate()
 {
-    QtConcurrent::run(&AbstractProcess::terminate, process());
+    std::ignore = QtConcurrent::run(&AbstractProcess::terminate, process());
 }
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)

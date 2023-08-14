@@ -106,6 +106,7 @@ void AbstractProcess::interruptIntern(bool hardKill)
             qDebug() << error_string << "  id:" << mProcess.processId();
             LocalFree(lpMsgBuf);
         }
+        emit interruptGenerated();
     }
 
 #else // Linux and Mac OS X
@@ -146,7 +147,7 @@ QString AbstractProcess::workingDirectory() const
 
 void AbstractProcess::completed(int exitCode)
 {
-    emit finished(mGroupId, exitCode);
+    emit finished(mProjectId, exitCode);
 }
 
 QString AbstractProcess::nativeAppPath()
@@ -154,14 +155,14 @@ QString AbstractProcess::nativeAppPath()
     return QDir::toNativeSeparators(mApplication);
 }
 
-NodeId AbstractProcess::groupId() const
+NodeId AbstractProcess::projectId() const
 {
-    return mGroupId;
+    return mProjectId;
 }
 
-void AbstractProcess::setGroupId(const NodeId &groupId)
+void AbstractProcess::setProjectId(const NodeId &projectId)
 {
-    mGroupId = groupId;
+    mProjectId = projectId;
 }
 
 int AbstractProcess::exitCode() const

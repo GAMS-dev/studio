@@ -3793,7 +3793,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     logNode->prepareRun(logOption);
     logNode->setJumpToLogEnd(true);
 
-    groupProc->setGroupId(project->id());
+    groupProc->setProjectId(project->id());
     groupProc->setWorkingDirectory(workDir);
 
     // disable MIRO menus
@@ -4223,7 +4223,7 @@ void MainWindow::on_actionInterrupt_triggered()
     if (!project) return;
     mGamsParameterEditor->on_interruptAction();
     AbstractProcess* process = project->process();
-    QtConcurrent::run(&AbstractProcess::interrupt, process);
+    std::ignore = QtConcurrent::run(&AbstractProcess::interrupt, process);
 }
 
 void MainWindow::on_actionStop_triggered()
@@ -4530,7 +4530,7 @@ void MainWindow::closeProject(PExProjectNode* project)
 
 void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 {
-    PExProjectNode *project = mProjectRepo.asProject(proc->groupId());
+    PExProjectNode *project = mProjectRepo.asProject(proc->projectId());
     if (!project || !project->runnableGms()) return;
     QString gmsFilePath = project->runnableGms()->location();
     PExFileNode *gdxNode = project->findFile(gmsFilePath.left(gmsFilePath.lastIndexOf('.'))+"/out.gdx");
@@ -4548,7 +4548,7 @@ void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)
 
 void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 {
-    PExProjectNode *project = mProjectRepo.asProject(proc->groupId());
+    PExProjectNode *project = mProjectRepo.asProject(proc->projectId());
     if (!project || !project->runnableGms()) return;
     const QList<PExFileNode*> gdxNodes = project->findFiles(FileKind::Gdx);
     for (PExFileNode *gdxNode : gdxNodes) {
