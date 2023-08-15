@@ -120,6 +120,7 @@ void AbstractProcess::interruptIntern(bool hardKill)
         args << "pkill -2 -P " + pid;
     proc.setArguments(args);
     proc.start();
+    emit interruptGenerated();
     proc.waitForFinished(-1);
 #endif
 }
