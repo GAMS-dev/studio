@@ -96,7 +96,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
         if (deselected.indexes().size() > 0) {
             GdxSymbol* deselectedSymbol = mGdxSymbolTable->gdxSymbols().at(mSymbolTableProxyModel->mapToSource(deselected.indexes().at(0)).row());
 
-            QtConcurrent::run(&GdxSymbol::stopLoadingData, deselectedSymbol);
+            std::ignore = QtConcurrent::run(&GdxSymbol::stopLoadingData, deselectedSymbol);
         }
 
         if (reload(mCodec) != 0)
@@ -116,7 +116,7 @@ void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection des
             createSymbolView(selectedSymbol, selectedIdx);
 
         if (!selectedSymbol->isLoaded())
-            QtConcurrent::run(&GdxViewer::loadSymbol, this, selectedSymbol);
+            std::ignore = QtConcurrent::run(&GdxViewer::loadSymbol, this, selectedSymbol);
 
         if (ui->splitter->widget(1) != mSymbolViews.at(selectedIdx))
         ui->splitter->replaceWidget(1, mSymbolViews.at(selectedIdx));
@@ -516,6 +516,20 @@ void GdxViewer::showExportDialog()
 GdxSymbolTableModel *GdxViewer::gdxSymbolTable() const
 {
     return mGdxSymbolTable;
+}
+
+void GdxViewer::saveDelete()
+{
+    GdxSymbol *sym = selectedSymbol();
+    if (sym && !sym->isLoaded()) {  // we are currently loading a symbol
+        connect(sym, &GdxSymbol::loadFinished, this, [this](){ deleteLater(); });
+        connect(sym, &GdxSymbol::loadPaused, this, [this](){ deleteLater(); });
+        sym->stopLoadingData();
+        if (sym->isLoaded()) // check if loading has finished in the meantime
+            deleteLater();
+    } else {
+        deleteLater();
+    }
 }
 
 GdxViewerState *GdxViewer::state() const

@@ -117,6 +117,7 @@ public:
 
 signals:
     void loadFinished();
+    void loadPaused();
     void triggerListViewAutoResize();
 
 private:

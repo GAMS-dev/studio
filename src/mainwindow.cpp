@@ -2984,8 +2984,11 @@ void MainWindow::closePinView()
         mPinView->setVisible(false);
         mRecent.removeEditor(edit);
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
-        if (fm) fm->removeEditor(edit);
-        edit->deleteLater();
+        if (fm) {
+            fm->removeEditor(edit);
+            fm->deleteEditor(edit);
+        } else
+            edit->deleteLater();
         updateRecentEdit(edit, ui->mainTabs->currentWidget());
         mPinControl.closedPinView();
     }
@@ -4612,8 +4615,9 @@ void MainWindow::closeFileEditors(const FileId fileId, bool willReopen)
         if (edit == mRecent.editor())
             mSearchDialog->editorChanged(nullptr);
         mRecent.removeEditor(edit);
+
         fm->removeEditor(edit);
-        edit->deleteLater();
+        fm->deleteEditor(edit);
     }
     if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;

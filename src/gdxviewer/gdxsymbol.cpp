@@ -243,6 +243,7 @@ bool GdxSymbol::loadData()
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
+                emit loadPaused();
                 return false;
             }
         }
@@ -289,6 +290,7 @@ bool GdxSymbol::loadData()
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
+                emit loadPaused();
                 return false;
             }
         }

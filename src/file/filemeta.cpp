@@ -691,6 +691,14 @@ void FileMeta::removeEditor(QWidget *edit)
     }
 }
 
+void FileMeta::deleteEditor(QWidget *edit)
+{
+    if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit))
+        gdx->saveDelete();
+    else
+        edit->deleteLater();
+}
+
 bool FileMeta::hasEditor(QWidget * const &edit) const
 {
     return mEditors.contains(edit);
