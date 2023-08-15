@@ -261,8 +261,9 @@ bool GdxViewer::dragInProgress()
 
 void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
 {
-    selectedSymbol->loadData();
-    QTimer::singleShot(0,this, [this, selectedSymbol](){applySymbolState(selectedSymbol);});
+    bool ok = selectedSymbol->loadData();
+    if (ok)
+        QTimer::singleShot(0,this, [this, selectedSymbol](){applySymbolState(selectedSymbol);});
 }
 
 void GdxViewer::copySelectionToClipboard()

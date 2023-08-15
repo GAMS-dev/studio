@@ -204,7 +204,7 @@ QVariant GdxSymbol::data(const QModelIndex &index, int role) const
 }
 
 
-void GdxSymbol::loadData()
+bool GdxSymbol::loadData()
 {
     mHasInvalidUel = false;
     QMutexLocker locker(mGdxMutex);
@@ -243,7 +243,7 @@ void GdxSymbol::loadData()
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                return;
+                return false;
             }
         }
 
@@ -289,7 +289,7 @@ void GdxSymbol::loadData()
             if(stopLoading) {
                 stopLoading = false;
                 gdxDataReadDone(mGdx);
-                return;
+                return false;
             }
         }
         gdxDataReadDone(mGdx);
@@ -302,6 +302,7 @@ void GdxSymbol::loadData()
         mIsLoaded = true;
         emit loadFinished();
     }
+    return true;
 }
 
 void GdxSymbol::stopLoadingData()

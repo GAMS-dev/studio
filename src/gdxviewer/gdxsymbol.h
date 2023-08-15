@@ -63,7 +63,7 @@ public:
     int recordCount() const;
     QString explText() const;
     bool isLoaded() const;
-    void loadData();
+    bool loadData();
     void stopLoadingData();
     bool isAllDefault(int valColIdx);
     bool hasInvalidUel() const;
