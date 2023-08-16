@@ -1,7 +1,7 @@
-Version 1.15.3  *
+Version 1.15.3
 ==================
 - fixed a bug in the GDX Viewer where restoring a symbol state of a partially loaded symbol resulted in a crash.
-- fixed crash on closing a GDX Viewer instance while symbol data is loading.
+- fixed crash on closing a GDX Viewer instance while symbol data is loading
 - fixed GAMS process not terminated when closing Studio
 - improved handling of interrupt and stop
 
