@@ -95,7 +95,8 @@ void Server::stopAndDelete()
 {
     setState(Finished);
     deleteSocket();
-    mPortsInUse.remove(mServer->serverPort());
+    if (mPortsInUse.contains(mServer->serverPort()))
+        mPortsInUse.remove(mServer->serverPort());
     if (isListening()) {
         mServer->close();
         logMessage("Debug-Server stopped.");
@@ -366,9 +367,10 @@ void Server::logMessage(const QString &message)
 void Server::deleteSocket()
 {
     if (mSocket) {
-        mSocket->close();
-        mSocket->deleteLater();
+        QTcpSocket *socket = mSocket;
         mSocket = nullptr;
+        socket->close();
+        socket->deleteLater();
     }
 }
 

@@ -323,7 +323,7 @@ void EngineProcess::interrupt()
     if (ok)
         emit mManager->syncKillJob(false);
     else
-        AbstractGamsProcess::interrupt();
+        interruptIntern();
 }
 
 void EngineProcess::terminate()
@@ -332,7 +332,7 @@ void EngineProcess::terminate()
     if (ok)
         emit mManager->syncKillJob(true);
     else
-        AbstractGamsProcess::terminate();
+        interruptIntern(true);
     // ensure termination
     setProcState(ProcIdle);
     completed(-1);

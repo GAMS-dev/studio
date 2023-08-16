@@ -22,12 +22,6 @@
 #include <QStandardPaths>
 #include <QDir>
 
-#include <QDebug>
-
-#ifdef _WIN32
-#include "Windows.h"
-#endif
-
 namespace gams {
 namespace studio {
 
@@ -52,29 +46,7 @@ void GamsProcess::execute()
 
 void GamsProcess::interrupt()
 {
-    QString pid = QString::number(mProcess.processId());
-#ifdef _WIN32
-    //IntPtr receiver;
-    COPYDATASTRUCT cds;
-    const char* msgText = "GAMS Message Interrupt";
-
-    QString windowName("___GAMSMSGWINDOW___");
-    windowName += pid;
-    HWND receiver = FindWindowA(nullptr, windowName.toUtf8().constData());
-
-    cds.dwData = (ULONG_PTR) 1;
-    cds.lpData = (PVOID) msgText;
-    cds.cbData = (DWORD) (strlen(msgText) + 1);
-
-    SendMessageA(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
-#else // Linux and Mac OS X
-    QProcess proc;
-    proc.setProgram("/bin/bash");
-    QStringList args { "-c", "kill -2 " + pid};
-    proc.setArguments(args);
-    proc.start();
-    proc.waitForFinished(-1);
-#endif
+    interruptIntern();
 }
 
 QString GamsProcess::aboutGAMS()

@@ -66,8 +66,8 @@ public:
     QString workingDirectory() const;
     void setWorkingDirectory(const QString &workingDirectory);
 
-    NodeId groupId() const;
-    void setGroupId(const NodeId &groupId);
+    NodeId projectId() const;
+    void setProjectId(const NodeId &projectId);
 
     int exitCode() const;
 
@@ -76,6 +76,7 @@ signals:
     void newStdChannelData(const QByteArray &data);
     void stateChanged(QProcess::ProcessState newState);
     void newProcessCall(const QString &text, const QString &call);
+    void interruptGenerated();
 
 protected slots:
     virtual void completed(int exitCode);
@@ -87,9 +88,10 @@ protected:
     inline QString appCall(const QString &app, const QStringList &args) {
         return app + " " + args.join(" ");
     }
+    void interruptIntern(bool hardKill = false);
 
 protected:
-    NodeId mGroupId = NodeId();
+    NodeId mProjectId = NodeId();
     QProcess mProcess;
     QMutex mOutputMutex;
 

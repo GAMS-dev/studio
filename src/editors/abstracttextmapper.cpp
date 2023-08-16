@@ -488,8 +488,8 @@ bool AbstractTextMapper::findText(QRegularExpression searchRegex, QTextDocument:
 
         QRegularExpressionMatch match;
 
-        if (backwards) textBlock.lastIndexOf(searchRegex, ind, &match);
-        else textBlock.indexOf(searchRegex, ind, &match);
+        if (backwards) std::ignore = textBlock.lastIndexOf(searchRegex, ind, &match);
+        else std::ignore = textBlock.indexOf(searchRegex, ind, &match);
 
         if (match.hasMatch() || match.hasPartialMatch()) {
 

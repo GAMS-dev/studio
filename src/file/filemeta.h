@@ -86,6 +86,7 @@ public:
     QWidget* topEditor() const;
     void editToTop(QWidget* edit);
     void removeEditor(QWidget* edit);
+    void deleteEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib, bool init = true);
     void save(const QString& newLocation = "");

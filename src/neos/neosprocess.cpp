@@ -217,7 +217,7 @@ void NeosProcess::interrupt()
 {
     bool ok;
     mManager->killJob(ok); // This is currently ignored by the server
-    if (!ok) AbstractGamsProcess::interrupt();
+    if (!ok) interruptIntern();
     setProcState(ProcIdle);
     completed(-1);
 }
@@ -226,14 +226,14 @@ void NeosProcess::terminate()
 {
     bool ok = false;
     mManager->killJob(ok); // This is currently ignored by the server
-    if (!ok) AbstractGamsProcess::interrupt();
+    if (!ok) interruptIntern(true);
     setProcState(ProcIdle);
     completed(-1);
 }
 
 void NeosProcess::terminateLocal()
 {
-    AbstractGamsProcess::interrupt();
+    interruptIntern();
     setProcState(ProcIdle);
     completed(-1);
 }

@@ -19,9 +19,15 @@
  */
 #include "abstractprocess.h"
 #include "../commonpaths.h"
+#include <QDebug>
 
 #include <QDir>
 #include <QMetaType>
+
+#ifdef _WIN32
+#include <Windows.h>
+#include <signal.h>
+#endif
 
 namespace gams {
 namespace studio {
@@ -49,13 +55,76 @@ QString AbstractProcess::inputFile() const
 
 void AbstractProcess::interrupt()
 {
-    mProcess.kill();
+    interruptIntern();
 }
 
 void AbstractProcess::terminate()
 {
-    mProcess.kill();
+    interruptIntern(true);
 }
+
+#ifdef _WIN32
+BOOL WINAPI CtrlHandler(DWORD fdwCtrlType)
+{
+    if (fdwCtrlType == CTRL_C_EVENT)
+        return true; // eat this signal
+
+    // pass other signals to the next handler
+    return false;
+}
+#endif // _WIN32
+
+void AbstractProcess::interruptIntern(bool hardKill)
+{
+#ifdef _WIN32
+    if (hardKill) {
+        mProcess.kill();
+    } else {
+        if (!AttachConsole(mProcess.processId())) {
+            qDebug() << "Couldn't attach to console";
+            return;
+        }
+        // Add ignoring Ctrl-C handler for Studio itself
+        if (!SetConsoleCtrlHandler(CtrlHandler, true)) {
+            qDebug() << "Coudn't attach CtrlHandler";
+            return;
+        }
+
+        // Prepare to reset the console when the process is finished
+        connect(&mProcess, &QProcess::finished, this, [this](int , QProcess::ExitStatus) {
+            FreeConsole();
+            SetConsoleCtrlHandler(nullptr, false);
+        });
+
+        // send CTRL-C  (on error print message)
+        if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)) {
+            LPVOID lpMsgBuf;
+            auto err = GetLastError();
+            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
+                nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
+            auto error_string = QString::fromWCharArray((reinterpret_cast<LPTSTR>(lpMsgBuf)));
+            qDebug() << error_string << "  id:" << mProcess.processId();
+            LocalFree(lpMsgBuf);
+        }
+        emit interruptGenerated();
+    }
+
+#else // Linux and Mac OS X
+    QString pid = QString::number(mProcess.processId());
+    QProcess proc;
+    proc.setProgram("/bin/bash");
+    QStringList args { "-c"};
+    if (hardKill)
+        args << "pkill -P " + pid;
+    else
+        args << "pkill -2 -P " + pid;
+    proc.setArguments(args);
+    proc.start();
+    proc.waitForFinished(-1);
+    emit interruptGenerated();
+#endif
+}
+
 
 void AbstractProcess::setWorkingDirectory(const QString &workingDirectory)
 {
@@ -79,7 +148,7 @@ QString AbstractProcess::workingDirectory() const
 
 void AbstractProcess::completed(int exitCode)
 {
-    emit finished(mGroupId, exitCode);
+    emit finished(mProjectId, exitCode);
 }
 
 QString AbstractProcess::nativeAppPath()
@@ -87,14 +156,14 @@ QString AbstractProcess::nativeAppPath()
     return QDir::toNativeSeparators(mApplication);
 }
 
-NodeId AbstractProcess::groupId() const
+NodeId AbstractProcess::projectId() const
 {
-    return mGroupId;
+    return mProjectId;
 }
 
-void AbstractProcess::setGroupId(const NodeId &groupId)
+void AbstractProcess::setProjectId(const NodeId &projectId)
 {
-    mGroupId = groupId;
+    mProjectId = projectId;
 }
 
 int AbstractProcess::exitCode() const

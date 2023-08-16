@@ -69,6 +69,8 @@ public:
 
     GdxSymbolTableModel *gdxSymbolTable() const;
 
+    void saveDelete();
+
 public slots:
     void invalidate();
     int reload(QTextCodec* codec, bool quiet=false, bool triggerReload=true);

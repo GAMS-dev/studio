@@ -1156,8 +1156,9 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         connect(mDebugServer, &debugger::Server::addProcessLog, this, &PExProjectNode::addProcessLog);
         connect(mDebugServer, &debugger::Server::signalGdxReady, this, &PExProjectNode::openDebugGdx);
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
-        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::interrupt);
+        connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
+        connect(process(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
     }
     bool res = mDebugServer->start();
     if (process()) {
@@ -1173,8 +1174,9 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 void PExProjectNode::stopDebugServer()
 {
     if (mDebugServer) {
-        mDebugServer->stopAndDelete();
+        debugger::Server *server = mDebugServer;
         mDebugServer = nullptr;
+        server->stopAndDelete();
     }
     mBreakpointData->resetAimedBreakpoints();
     for (const PExFileNode *node : listFiles())
@@ -1258,9 +1260,9 @@ void PExProjectNode::gotoPaused(int contLine)
     }
 }
 
-void PExProjectNode::interrupt()
+void PExProjectNode::terminate()
 {
-    QtConcurrent::run(&AbstractProcess::terminate, process());
+    std::ignore = QtConcurrent::run(&AbstractProcess::terminate, process());
 }
 
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)

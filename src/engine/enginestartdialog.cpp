@@ -809,6 +809,7 @@ QString EngineStartDialog::cleanUrl(const QString url)
 
 void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
 {
+    Q_UNUSED(index)
     if (ui->cbLoginMethod->currentIndex() < 2) {
         ui->stackLoginInput->setCurrentIndex(ui->cbLoginMethod->currentIndex());
     }
