@@ -32,6 +32,7 @@
 #include "settings.h"
 #include "exportdialog.h"
 #include "numericalformatcontroller.h"
+#include "tabenabledmenu.h"
 
 #include <QClipboard>
 #include <QWidgetAction>
@@ -225,7 +226,7 @@ void GdxSymbolView::showFilter(QPoint p)
     int column = tableView->horizontalHeader()->logicalIndexAt(p);
 
     if(mSym->isLoaded() && column>=0 && column<mSym->filterColumnCount()) {
-        mColumnFilterMenu = new QMenu(this);
+        mColumnFilterMenu = new TabEnabledMenu(this);
         connect(mColumnFilterMenu, &QMenu::aboutToHide, this, &GdxSymbolView::freeFilterMenu);
         QWidgetAction *filter = nullptr;
         if (column<mSym->dim())
