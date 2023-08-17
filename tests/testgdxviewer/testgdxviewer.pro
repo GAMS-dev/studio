@@ -53,6 +53,7 @@ SOURCES += \
     $$SRCPATH/gdxviewer/nestedheaderview.cpp \
     $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/quickselectlistview.cpp \
+    $$SRCPATH/gdxviewer/tabenabledmenu.cpp \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.cpp \
     $$SRCPATH/gdxviewer/tableviewmodel.cpp \
     $$SRCPATH/gdxviewer/valuefilter.cpp \
@@ -98,6 +99,7 @@ HEADERS += \
     $$SRCPATH/gdxviewer/numericalformatcontroller.cpp \
     $$SRCPATH/gdxviewer/nestedheaderview.h \
     $$SRCPATH/gdxviewer/quickselectlistview.h \
+    $$SRCPATH/gdxviewer/tabenabledmenu.h \
     $$SRCPATH/gdxviewer/tableviewdomainmodel.h \
     $$SRCPATH/gdxviewer/tableviewmodel.h \
     $$SRCPATH/gdxviewer/valuefilter.h \
