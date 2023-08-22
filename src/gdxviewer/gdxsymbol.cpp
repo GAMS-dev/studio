@@ -23,6 +23,7 @@
 #include "nestedheaderview.h"
 #include "columnfilter.h"
 #include "valuefilter.h"
+#include "gdxviewer.h"
 
 #include <QMutex>
 #include <QSet>
@@ -148,7 +149,10 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    return mFilterRecCount;
+    if (mFilterRecCount > GdxViewer::MAX_DISPLAY_RECORDS)
+        return GdxViewer::MAX_DISPLAY_RECORDS;
+    else
+        return mFilterRecCount;
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
