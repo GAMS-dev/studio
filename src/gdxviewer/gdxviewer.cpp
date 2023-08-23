@@ -42,8 +42,6 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-const int GdxViewer::MAX_DISPLAY_RECORDS = 107374182;
-
 GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
     : AbstractView(parent),
     ui(new Ui::GdxViewer),
@@ -266,9 +264,9 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
     bool ok = selectedSymbol->loadData();
     if (ok) {
         QTimer::singleShot(0,this, [this, selectedSymbol](){applySymbolState(selectedSymbol);});
-        if (selectedSymbol->recordCount() > GdxViewer::MAX_DISPLAY_RECORDS) {
+        if (selectedSymbol->isDataTruncated()) {
             auto logger = SysLogLocator::systemLog();
-            logger->append("GDX Symbol '" + selectedSymbol->name() + "' in file '" + mGdxFile + "' has too many records to be displayed and will be truncated." , LogMsgType::Warning);
+            logger->append("GDX Symbol '" + selectedSymbol->name() + "' in file '" + mGdxFile + "' has too many records to be displayed and might be truncated depending on applied filters shrinking the actual number of displayed records." , LogMsgType::Warning);
         }
     }
 }

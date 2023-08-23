@@ -35,6 +35,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
+const int GdxSymbol::MAX_DISPLAY_RECORDS = 107374182;
 
 const QList<QString> GdxSymbol::superScript = QList<QString>({
                                          QString(u8"\u2070"),
@@ -149,10 +150,14 @@ int GdxSymbol::rowCount(const QModelIndex &parent) const
 {
     if (parent.isValid())
         return 0;
-    if (mFilterRecCount > GdxViewer::MAX_DISPLAY_RECORDS)
-        return GdxViewer::MAX_DISPLAY_RECORDS;
-    else
+    if (isDataTruncated()) {
+        emit truncatedData(true);
+        return GdxSymbol::MAX_DISPLAY_RECORDS;
+    }
+    else {
+        emit truncatedData(false);
         return mFilterRecCount;
+    }
 }
 
 int GdxSymbol::columnCount(const QModelIndex &parent) const
@@ -467,6 +472,11 @@ void GdxSymbol::initNumericalBounds()
             mMaxDouble[i] = INT_MIN;
         }
     }
+}
+
+bool GdxSymbol::isDataTruncated() const
+{
+    return mFilterRecCount > GdxSymbol::MAX_DISPLAY_RECORDS;
 }
 
 int GdxSymbol::numericalColumnCount() const

@@ -115,10 +115,13 @@ public:
 
     QRegularExpression searchRegEx() const;
 
+    bool isDataTruncated() const;
+
 signals:
     void loadFinished();
     void loadPaused();
     void triggerListViewAutoResize();
+    void truncatedData(bool isTruncated) const;
 
 private:
     void calcDefaultColumns();
@@ -131,6 +134,8 @@ private:
     QRegularExpression mSearchRegEx;
 
 private:
+    static const int MAX_DISPLAY_RECORDS;
+
     void initNumericalBounds();
     gdxHandle_t mGdx = nullptr;
     int mNr;

@@ -54,7 +54,9 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tbDomLeft->hide();
     ui->tbDomRight->hide();
     ui->laError->hide();
+    ui->laTruncatedData->hide();
     ui->laError->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
+    ui->laTruncatedData->setStyleSheet("color:"+toColor(Theme::Normal_Red).name()+";");
 
     mDefaultSymbolView = DefaultSymbolView(Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView));
 
@@ -328,6 +330,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
 {
     mSym = sym;
     mGdxSymbolTable = symbolTable;
+    connect(mSym, &GdxSymbol::truncatedData, this, &GdxSymbolView::setTruncatedDataVisible);
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
     showDefaultView(symViewState);
@@ -1062,6 +1065,11 @@ void GdxSymbolView::onSearch(bool backward)
         if (matchAndSelect(row, vToL[visualCol], tv))
             return;
     }
+}
+
+void GdxSymbolView::setTruncatedDataVisible(bool visible)
+{
+    ui->laTruncatedData->setVisible(visible);
 }
 
 void GdxSymbolView::markSearchResults()
