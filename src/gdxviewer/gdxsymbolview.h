@@ -95,8 +95,8 @@ private slots:
     void tvFilterScrollRight();
     void onResizeColumnsLV();
     void onResizeColumnsTV();
-
     void onSearch(bool backward=false);
+    void setTruncatedDataVisible(bool visible);
 
 private:
     Ui::GdxSymbolView *ui;

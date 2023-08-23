@@ -71,8 +71,6 @@ public:
 
     void saveDelete();
 
-    static const int MAX_DISPLAY_RECORDS;
-
 public slots:
     void invalidate();
     int reload(QTextCodec* codec, bool quiet=false, bool triggerReload=true);
