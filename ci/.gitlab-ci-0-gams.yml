@@ -10,13 +10,10 @@ fetch-prerequisites:
     # fetch helper scripts
     - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
     - cp -R scripts-repo/ci .
-    # fetch GAMS for Windows
-    - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING force
-    - python3 ci/fetch_gams.py fetch_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING buildInfo
   artifacts:
     name: fetch-prerequisites
     expire_in: 15 minutes
-    paths: [windows_x64_64.exe,buildInfo.txt,ci/*]
+    paths: [ci/*]
 
 install-gams-leg:
   stage: install-gams
@@ -50,7 +47,7 @@ install-gams-wei:
     name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
     entrypoint: [""]   # prevent startup.sh
   script:
-    - python ci/fetch_gams.py install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
+    - python ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
     - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH
   artifacts:
     name: wei-gmsdirpath
