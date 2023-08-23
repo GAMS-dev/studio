@@ -47,7 +47,7 @@ install-gams-wei:
     name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
     entrypoint: [""]   # prevent startup.sh
   script:
-    - python ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $GAMS_LICENSE $SSH_KEY_PORTING
+    - python ci/fetch_gams.py fetch_and_install_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING $GAMS_LICENSE
     - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH
   artifacts:
     name: wei-gmsdirpath
