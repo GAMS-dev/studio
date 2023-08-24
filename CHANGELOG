@@ -1,6 +1,7 @@
 Version 1.15.4 *
 ==================
 - fixed path selection for GAMS license installation
+- fixed the GDX Viewer not displaying symbol data with too many records by only showing the first ~107 million entries
 
 Version 1.15.3
 ==================
