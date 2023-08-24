@@ -62,6 +62,11 @@ ValueFilterWidget::~ValueFilterWidget()
     delete ui;
 }
 
+void ValueFilterWidget::setFocusOnOpen()
+{
+    ui->leMin->setFocus();
+}
+
 void ValueFilterWidget::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)

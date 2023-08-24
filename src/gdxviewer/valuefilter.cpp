@@ -39,7 +39,8 @@ ValueFilter::ValueFilter(GdxSymbol *symbol, int valueColumn, QWidget *parent)
 
 QWidget *ValueFilter::createWidget(QWidget *parent)
 {
-    return new ValueFilterWidget(this, parent);
+    mWidget = new ValueFilterWidget(this, parent);
+    return mWidget;
 }
 
 void ValueFilter::updateFilter()
@@ -155,6 +156,11 @@ void ValueFilter::setCurrentMin(double currentMin)
 void ValueFilter::setCurrentMax(double currentMax)
 {
     mCurrentMax = currentMax;
+}
+
+void ValueFilter::setFocus()
+{
+    static_cast<ValueFilterWidget *>(mWidget)->setFocusOnOpen();
 }
 
 } // namespace gdxviewer

@@ -53,6 +53,11 @@ ColumnFilterFrame::~ColumnFilterFrame()
     delete mModel;
 }
 
+void ColumnFilterFrame::setFocusOnOpen()
+{
+    ui.leSearch->setFocus();
+}
+
 void ColumnFilterFrame::mousePressEvent(QMouseEvent *event)
 {
     Q_UNUSED(event)

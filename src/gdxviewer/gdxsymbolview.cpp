@@ -236,6 +236,10 @@ void GdxSymbolView::showFilter(QPoint p)
         mColumnFilterMenu->addAction(filter);
         mColumnFilterMenu->setFont(font());
         mColumnFilterMenu->popup(tableView->mapToGlobal(p));
+        if (column<mSym->dim())
+            mSym->columnFilter(column)->setFocus();
+        else
+            mSym->valueFilter(column-mSym->dim())->setFocus();
     }
 }
 

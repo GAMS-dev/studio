@@ -64,6 +64,8 @@ public:
     void setCurrentMin(double currentMin);
     void setCurrentMax(double currentMax);
 
+    void setFocus();
+
 private:
     GdxSymbol* mSymbol = nullptr;
     int mValueColumn;
@@ -82,6 +84,8 @@ private:
     bool mShowMInf = true;
     bool mShowEps = true;
     bool mShowAcronym = true;
+
+    QWidget *mWidget = nullptr;
 };
 
 } // namespace gdxviewer
