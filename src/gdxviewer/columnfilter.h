@@ -32,10 +32,12 @@ class ColumnFilter : public QWidgetAction
 public:
     ColumnFilter(GdxSymbol* symbol, int column, QWidget *parent = nullptr);
     QWidget* createWidget(QWidget * parent) override;
+    void setFocus();
 
 private:
     GdxSymbol* mSymbol;
     int mColumn;
+    QWidget *mWidget = nullptr;
 };
 
 } // namespace gdxviewer

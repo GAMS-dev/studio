@@ -35,6 +35,7 @@ class ColumnFilterFrame : public QFrame
 public:
     explicit ColumnFilterFrame(GdxSymbol* symbol, int column, QWidget *parent = nullptr);
     ~ColumnFilterFrame() override;
+    void setFocusOnOpen();
 
 protected:
     //mouse events overwritten to prevent closing of the filter menu if user click on empty spaces regions within the frame

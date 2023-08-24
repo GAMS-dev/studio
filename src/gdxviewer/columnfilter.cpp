@@ -32,7 +32,13 @@ ColumnFilter::ColumnFilter(GdxSymbol *symbol, int column, QWidget *parent)
 
 QWidget *ColumnFilter::createWidget(QWidget *parent)
 {
-    return new ColumnFilterFrame(mSymbol, mColumn, parent);
+    mWidget = new ColumnFilterFrame(mSymbol, mColumn, parent);
+    return mWidget;
+}
+
+void ColumnFilter::setFocus()
+{
+    static_cast<ColumnFilterFrame *>(mWidget)->setFocusOnOpen();
 }
 
 } // namespace gdxviewer

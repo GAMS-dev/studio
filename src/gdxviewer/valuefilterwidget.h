@@ -40,6 +40,7 @@ class ValueFilterWidget : public QWidget
 public:
     explicit ValueFilterWidget(ValueFilter* valueFilter, QWidget *parent = nullptr);
     ~ValueFilterWidget();
+    void setFocusOnOpen();
 
 protected:
     void keyPressEvent(QKeyEvent *e) override;
