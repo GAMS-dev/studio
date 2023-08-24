@@ -266,7 +266,7 @@ void GdxViewer::loadSymbol(GdxSymbol* selectedSymbol)
         QTimer::singleShot(0,this, [this, selectedSymbol](){
             if (selectedSymbol->isDataTruncated()) {
                 auto logger = SysLogLocator::systemLog();
-                QString msg = "GDX Symbol '" + selectedSymbol->name() + "' in file '" + mGdxFile + "' has too many records to be displayed and might be truncated depending on applied filters shrinking the actual number of displayed records.";
+                QString msg = "GDX Symbol '" + selectedSymbol->name() + "' in file '" + mGdxFile + "' has too many records to be displayed and might be truncated depending on applied filters reducing the actual number of displayed records.";
                 logger->append(msg, LogMsgType::Warning);
             }
             applySymbolState(selectedSymbol);
