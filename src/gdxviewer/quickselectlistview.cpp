@@ -42,8 +42,24 @@ void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
             emit quickSelect();
         }
         event->accept();
-    }
-    else
+    } else if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier) {
+        QModelIndex idxTo = this->indexAt(event->pos());
+        if (idxTo.isValid()) {
+            int start = 0;
+            int end = idxTo.row();
+            QModelIndexList indexList = this->selectedIndexes();
+            if (indexList.size() > 0)
+                start = this->selectedIndexes().at(0).row();
+            if (start > end) {
+                int tmp = start;
+                start = end;
+                end = tmp;
+            }
+            bool checked = this->model()->data(idxTo, Qt::CheckStateRole).toBool();
+            for (int i = start; i<=end; i++)
+                model()->setData(model()->index(i,0), !checked, Qt::CheckStateRole);
+        }
+    } else
         QListView::mouseReleaseEvent(event);
 }
 
