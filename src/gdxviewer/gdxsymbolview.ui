@@ -80,7 +80,7 @@
         </font>
        </property>
        <property name="toolTip">
-        <string>Symbol has too many records to be displayed and is visually truncated.</string>
+        <string>Symbol exceeds the maximum number of records (~107 million) that can be displayed and is visually truncated.</string>
        </property>
        <property name="text">
         <string>Data truncated!</string>
