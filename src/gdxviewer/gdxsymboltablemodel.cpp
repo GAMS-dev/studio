@@ -88,14 +88,19 @@ QVariant GdxSymbolTableModel::data(const QModelIndex &index, int role) const
 {
     if (!index.isValid())
         return QVariant();
-    if (role == Qt::DisplayRole) {
+    if (role == Qt::DisplayRole || role == Qt::UserRole) {
         GdxSymbol* symbol = mGdxSymbols.at(index.row());
         switch(index.column()) {
             case 0: return symbol->nr();
             case 1: return symbol->name();
             case 2: return typeAsString(symbol->type());
             case 3: return symbol->dim();
-            case 4: return symbol->recordCount();
+            case 4: {
+                if (role == Qt::DisplayRole)
+                    return QString("%L1").arg(symbol->recordCount());
+                else  // Qt::UserRole used for sorting in the QFilterProxyModel
+                    return symbol->recordCount();
+            }
             case 5: return symbol->isLoaded();
             case 6: return symbol->explText();
         }

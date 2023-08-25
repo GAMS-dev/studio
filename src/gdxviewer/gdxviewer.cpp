@@ -328,6 +328,7 @@ int GdxViewer::init(bool quiet)
 
     mSymbolTableProxyModel = new QSortFilterProxyModel(this);
     mSymbolTableProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    mSymbolTableProxyModel->setSortRole(Qt::UserRole);
     mSymbolTableProxyModel->setSourceModel(mGdxSymbolTable);
     mSymbolTableProxyModel->setFilterKeyColumn(1);
     mSymbolTableProxyModel->setFilterCaseSensitivity(Qt::CaseInsensitive);
