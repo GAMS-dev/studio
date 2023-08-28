@@ -36,7 +36,7 @@
    <item>
     <widget class="gams::studio::gdxviewer::QuickSelectListView" name="lvLabels">
      <property name="toolTip">
-      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of labels occurring in this column. Check or uncheck labels to decide which are displayed as soon as the filter is applied.&lt;/p&gt;&lt;p&gt;Use middle-click to select a specific label and automatically deselect all others.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+      <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;List of labels occurring in this column. Check or uncheck labels to decide which are displayed as soon as the filter is applied.&lt;/p&gt;&lt;p&gt;Use middle-click to select a specific label and automatically deselect all others.&lt;/p&gt;&lt;p&gt;Shift+left-click allows to select/deselect a range of labels.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
      </property>
      <property name="selectionMode">
       <enum>QAbstractItemView::SingleSelection</enum>
