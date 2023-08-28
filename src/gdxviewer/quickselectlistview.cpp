@@ -31,6 +31,14 @@ QuickSelectListView::QuickSelectListView(QWidget *parent) :
 
 }
 
+void QuickSelectListView::mousePressEvent(QMouseEvent *event)
+{
+    if (event->button() == Qt::LeftButton && event->modifiers() & Qt::ShiftModifier)
+        event->accept();
+    else
+        QListView::mousePressEvent(event);
+}
+
 void QuickSelectListView::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::MiddleButton || (event->button() == Qt::LeftButton && event->modifiers() & Qt::ControlModifier)) {

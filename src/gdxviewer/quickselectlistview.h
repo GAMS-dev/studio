@@ -38,6 +38,7 @@ signals:
     void quickSelect();
 
 protected:
+    void mousePressEvent(QMouseEvent * event) override;
     void mouseReleaseEvent(QMouseEvent * event) override;
 
 };
