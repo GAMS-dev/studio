@@ -160,7 +160,7 @@ void ReferenceViewer::updateStyle()
 void ReferenceViewer::selectSearchField() const
 {
     SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
-    if (tabWidget)
+    if (tabWidget && !toFileUsedReferenceWidget(ui->tabWidget->currentWidget()))
         tabWidget->selectSearchField();
 }
 
