@@ -159,8 +159,8 @@ void ReferenceViewer::updateStyle()
 
 void ReferenceViewer::selectSearchField() const
 {
-    SymbolReferenceWidget* tabWidget = static_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
-    if (tabWidget && !toFileUsedReferenceWidget(ui->tabWidget->currentWidget()))
+    SymbolReferenceWidget* tabWidget = qobject_cast<SymbolReferenceWidget*>(ui->tabWidget->currentWidget());
+    if (tabWidget)
         tabWidget->selectSearchField();
 }
 
