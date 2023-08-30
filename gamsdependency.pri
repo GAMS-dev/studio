@@ -72,9 +72,7 @@ INCLUDEPATH += $$GAMS_DISTRIB_C_API     \
                $$GAMS_DISTRIB_CPP_API
 
 SOURCES += \
-    $$GAMS_DISTRIB_C_API/gcmt.c   \
     $$GAMS_DISTRIB_C_API/c4umcc.c \
-    $$GAMS_DISTRIB_C_API/gclgms.c \
     $$GAMS_DISTRIB_C_API/palmcc.c \
     $$GAMS_DISTRIB_C_API/gdxcc.c  \
     $$GAMS_DISTRIB_C_API/optcc.c  \
