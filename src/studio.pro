@@ -171,7 +171,6 @@ SOURCES += \
     gdxviewer/tableviewmodel.cpp \
     gdxviewer/valuefilter.cpp \
     gdxviewer/valuefilterwidget.cpp \
-    gotodialog.cpp \
     headerviewproxy.cpp \
     keys.cpp \
     logger.cpp \
@@ -389,7 +388,6 @@ HEADERS += \
     gdxviewer/tableviewmodel.h \
     gdxviewer/valuefilter.h \
     gdxviewer/valuefilterwidget.h \
-    gotodialog.h \
     headerviewproxy.h \
     keys.h \
     logger.h \
@@ -529,7 +527,6 @@ FORMS += \
     gdxviewer/gdxsymbolview.ui \
     gdxviewer/gdxviewer.ui \
     gdxviewer/valuefilterwidget.ui \
-    gotodialog.ui \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     miro/mirodeploydialog.ui \

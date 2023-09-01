@@ -57,7 +57,6 @@ class MainWindow;
 namespace gams {
 namespace studio {
 
-class GoToDialog;
 class SettingsDialog;
 class AbstractProcess;
 class FileEventHandler;
@@ -337,7 +336,6 @@ private slots:
 
     void on_actionSettings_triggered();
     void on_actionSearch_triggered();
-    void on_actionGo_To_triggered();
     void on_actionRedo_triggered();
     void on_actionUndo_triggered();
     void on_actionPaste_triggered();
@@ -485,13 +483,11 @@ private:
     bool enabledPrintAction();
     void checkGamsLicense();
     void checkSslLibrary();
-    void goToLine(int result);
     QString readGucValue(QString key);
     void initCompleterActions();
 
 private:
     Ui::MainWindow *ui;
-    GoToDialog *mGotoDialog;
     FileMetaRepo mFileMetaRepo;
     ProjectRepo mProjectRepo;
     TextMarkRepo mTextMarkRepo;

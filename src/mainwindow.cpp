@@ -48,7 +48,6 @@
 #include "search/searchlocator.h"
 #include "search/searchresultmodel.h"
 #include "search/resultsview.h"
-#include "gotodialog.h"
 #include "autosavehandler.h"
 #include "tabdialog.h"
 #include "help/helpdata.h"
@@ -84,7 +83,6 @@ static const QStringList COpenAltText {"&Open in New Project...",
 MainWindow::MainWindow(QWidget *parent)
     : QMainWindow(parent),
       ui(new Ui::MainWindow),
-      mGotoDialog(new GoToDialog(this)),
       mFileMetaRepo(this),
       mProjectRepo(this),
       mTextMarkRepo(this),
@@ -271,7 +269,6 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::openTerminal, this, &MainWindow::actionTerminalTriggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::openGdxDiffDialog, this, &MainWindow::actionGDX_Diff_triggered);
     connect(&mProjectContextMenu, &ProjectContextMenu::resetGdxStates, this, &MainWindow::actionResetGdxStates);
-    connect(mGotoDialog, &QDialog::finished, this, &MainWindow::goToLine);
 
     ui->mainTabs->tabBar()->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->mainTabs->tabBar(), &QTabBar::customContextMenuRequested, this, &MainWindow::mainTabContextMenuRequested);
@@ -326,6 +323,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
             &search::SearchDialog::updateDialogState);
 
+    connect(ui->actionGo_To, &QAction::triggered, this, [this]{
+        mNavigatorInput->setText("");
+        on_actionNavigator_triggered();
+        auto keyEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Colon, Qt::NoModifier, ":");
+        emit mNavigatorInput->sendKeyEvent(keyEvent);
+    });
     connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
     connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
@@ -5080,13 +5083,6 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         tabData.insert("mainTabRecent", "WELCOME_PAGE");
 }
 
-// TODO(RG): remove this together with the whole goto dialog, later
-void MainWindow::goToLine(int result)
-{
-    if (result)
-        jumpToLine(mGotoDialog->lineNumber());
-}
-
 void MainWindow::jumpToLine(int line)
 {
     CodeEdit *codeEdit = ViewHelper::toCodeEdit(mRecent.editor());
@@ -5101,17 +5097,6 @@ void MainWindow::jumpToLine(int line)
 search::ResultsView *MainWindow::resultsView() const
 {
     return mResultsView;
-}
-
-void MainWindow::on_actionGo_To_triggered()
-{
-    if (!currentEdit()) return;
-    if (!ViewHelper::toCodeEdit(currentEdit()) && !ViewHelper::toTextView(currentEdit()))
-        return;
-
-    int numberLines = linesInEditor();
-    mGotoDialog->maxLineCount(numberLines);
-    mGotoDialog->open();
 }
 
 int MainWindow::linesInEditor(QWidget* editor) {
