@@ -31,9 +31,14 @@ CommandLineParser::CommandLineParser()
 
 CommandLineParseResult CommandLineParser::parseCommandLine()
 {
-    const QCommandLineOption helpOption = addHelpOption();
-    const QCommandLineOption versionOption = addVersionOption();
     addPositionalArgument("files", "List of files to be opened.", "[files]");
+    QStringList helpOpt;
+#ifdef _WIN64
+    helpOpt << "?";
+#endif
+    helpOpt << "h" << "help";
+    addOption({helpOpt, "Displays help on commandline options."});
+    const QCommandLineOption versionOption = addVersionOption();
     addOption({"ignore-settings", "Ignore settings files for loading and saving."});
     addOption({"reset-settings", "Reset all settings including views to default."});
     addOption({"reset-view", "Reset views and window positions only."});
@@ -43,7 +48,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         return CommandLineError;
     if (isSet(versionOption))
         return CommandLineVersionRequested;
-    if (isSet(helpOption))
+    if (isSet("?") || isSet("h") || isSet("-help"))
         return CommandLineHelpRequested;
     if (isSet("ignore-settings"))
         mIgnoreSettings = true;
