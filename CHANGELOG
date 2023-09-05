@@ -1,6 +1,7 @@
 Version 1.15.5 *
 ==================
 - fixed crash in Reference File Viewer when searching for a symbol in FileUsed tab
+- remove commandline option "--help-all" from help page
 
 Version 1.15.4 
 ==================
