@@ -48,7 +48,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         return CommandLineError;
     if (isSet(versionOption))
         return CommandLineVersionRequested;
-    if (isSet("?") || isSet("h") || isSet("-help"))
+    if (isSet("help"))
         return CommandLineHelpRequested;
     if (isSet("ignore-settings"))
         mIgnoreSettings = true;
