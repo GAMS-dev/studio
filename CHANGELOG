@@ -1,3 +1,7 @@
+Version 1.15.5 *
+==================
+- fixed crash in Reference File Viewer when searching for a symbol in FileUsed tab
+
 Version 1.15.4 
 ==================
 - fixed path selection for GAMS license installation
