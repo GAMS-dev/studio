@@ -1,3 +1,7 @@
+Version 1.16.0 *
+==================
+- added support for `Shift + Left Click` to select/deselect multiple labels in the GDX Viewer filters
+
 Version 1.15.4 
 ==================
 - fixed path selection for GAMS license installation
