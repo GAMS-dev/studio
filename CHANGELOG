@@ -1,7 +1,7 @@
-Version 1.15.5 *
+Version 1.15.5
 ==================
 - fixed crash in Reference File Viewer when searching for a symbol in FileUsed tab
-- remove commandline option "--help-all" from help page
+- removed the obsolete studio command line option "--help-all"
 
 Version 1.15.4 
 ==================
