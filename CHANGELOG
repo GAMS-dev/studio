@@ -4,6 +4,11 @@ Version 1.16.0 *
 - GDX Viewer symbol record count and symbol number are now displayed with thousands separator for improved readability.
 - removed the Go to line dialog, now the Navigator offers this functionality instead
 
+Version 1.15.5
+==================
+- fixed crash in Reference File Viewer when searching for a symbol in FileUsed tab
+- removed the obsolete studio command line option "--help-all"
+
 Version 1.15.4 
 ==================
 - fixed path selection for GAMS license installation
