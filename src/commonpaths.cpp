@@ -142,6 +142,11 @@ QString CommonPaths::userModelLibraryDir()
 
 QString CommonPaths::gamsLicenseFilePath(const QStringList &dataPaths)
 {
+    for (const auto &path : dataPaths) {
+        auto filePath = path + "/" +LicenseFile;
+        if (QFileInfo::exists(filePath))
+            return QDir::cleanPath(filePath);
+    }
     if (!dataPaths.isEmpty())
         return QDir::cleanPath(dataPaths.first() + "/" + LicenseFile);
     return QDir::cleanPath(systemDir() + "/" + LicenseFile);

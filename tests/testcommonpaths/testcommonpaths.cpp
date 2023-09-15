@@ -216,11 +216,24 @@ void TestCommonPaths::testGamsLicenseFilePath_data()
     QTest::newRow("empty") << QStringList() << CommonPaths::systemDir() + "/" +
                               CommonPaths::licenseFile();
 
-    QTest::newRow("file") << QStringList(".")
-                          << QString(".") + "/" + CommonPaths::licenseFile();
+    QTest::newRow("file") << QStringList(".") << QString(".") + "/" +
+                             CommonPaths::licenseFile();
+    QFile file1(QDir(".").path() + "/" + CommonPaths::licenseFile());
+    if (!file1.open(QFile::WriteOnly))
+        QFAIL("Error creating test file");
 
-    QTest::newRow("dir") << QStringList("./testing")
-                         << QString("./testing") + "/" + CommonPaths::licenseFile();
+    QStringList paths {"nodir", "./test"};
+    QTest::newRow("subfolder") << paths << paths.at(1) + "/" +
+                                  CommonPaths::licenseFile();
+    if (!QDir().mkpath("./test"))
+        QFAIL("Error creating test directory");
+    else
+        file1.close();
+    QFile file2(QDir("./test").path() + "/" + CommonPaths::licenseFile());
+    if (!file2.open(QFile::WriteOnly))
+        QFAIL("Error creating test file");
+    else
+        file2.close();
 }
 
 void TestCommonPaths::testGamsLicenseFilePath()
