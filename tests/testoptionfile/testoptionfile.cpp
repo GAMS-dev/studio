@@ -287,13 +287,13 @@ void TestOptionFile::testOptionGroup_data()
 
     QTest::newRow("bool_0")      << "bool_0"         << 1 << "gr_FirstGroup" << "boolean";
     QTest::newRow("bool_1")      << "bool_1"         << 1 << "gr_FirstGroup" << "boolean";
-    QTest::newRow("bool_1")      << "bool_2"         << 1 << "gr_FirstGroup" << "boolean";
-    QTest::newRow("bool_2")      << "bool_3"         << 1 << "gr_FirstGroup" << "boolean";
+    QTest::newRow("bool_2")      << "bool_2"         << 1 << "gr_FirstGroup" << "boolean";
+    QTest::newRow("bool_3")      << "bool_3"         << 1 << "gr_FirstGroup" << "boolean";
 
     QTest::newRow("int_0")      << "int_0"         << 1 << "gr_FirstGroup" << "integer";
     QTest::newRow("int_1")      << "int_1"         << 1 << "gr_FirstGroup" << "integer";
-    QTest::newRow("int_1")      << "int_2"         << 1 << "gr_FirstGroup" << "integer";
-    QTest::newRow("int_2")      << "int_3"         << 1 << "gr_FirstGroup" << "integer";
+    QTest::newRow("int_2")      << "int_2"         << 1 << "gr_FirstGroup" << "integer";
+    QTest::newRow("int_3")      << "int_3"         << 1 << "gr_FirstGroup" << "integer";
 
     QTest::newRow("EnumInt_1")   << "EnumInt_1"      << 1 << "gr_FirstGroup" << "enumint";
     QTest::newRow("EnumInt_2")   << "EnumInt_2"      << 1 << "gr_FirstGroup" << "enumint";

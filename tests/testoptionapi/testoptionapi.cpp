@@ -164,8 +164,8 @@ void TestOptionAPI::testReadFromStr_data()
     QTest::addColumn<int>("errorCode");
 
     // comment
-    QTest::newRow("*---------------------------------------------------------------------------*")
-            << "*---------------------------------------------------------------------------*"
+    QTest::newRow("*--------------------------------------------------------------------------*")
+            << "*--------------------------------------------------------------------------*"
             << "" << false << false << "" << false << -1;
     QTest::newRow("* ask MINOS to construct an OPT file tuned for the problem")
             << "* ask CPLEX to construct an OPT file tuned for the problem"

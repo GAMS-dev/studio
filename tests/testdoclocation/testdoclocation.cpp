@@ -48,8 +48,6 @@ void TestDocLocation::testSolverAnchor_data()
     QTest::newRow("CPLEX_advind")    << "CPLEX" << "advind" << docs + "/S_CPLEX.html" << "CPLEXadvind";
     QTest::newRow("CPLEX_lpmethod")  << "CPLEX" << "lpmethod" << docs + "/S_CPLEX.html" << "CPLEXlpmethod";
     QTest::newRow("CPLEX_tuning")    << "CPLEX" << "tuning" << docs + "/S_CPLEX.html" << "CPLEXtuning";
-    QTest::newRow("CPLEX_advind")    << "CPLEX" << "advind" << docs + "/S_CPLEX.html" << "CPLEXadvind";
-    QTest::newRow("CPLEX_advind")    << "CPLEX" << "advind" << docs + "/S_CPLEX.html" << "CPLEXadvind";
 
     QTest::newRow("EXAMINER_dumpGamsPoint")  << "EXAMINER" << "dumpGamsPoint" << docs + "/S_EXAMINER.html" << "EXAMINERdumpGamsPoint";
     QTest::newRow("EXAMINER_fCheckDVAR")     << "EXAMINER" << "fCheckDVAR"    << docs + "/S_EXAMINER.html" << "EXAMINERfCheckDVAR";
