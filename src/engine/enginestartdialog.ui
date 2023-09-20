@@ -9,8 +9,8 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>599</width>
-    <height>322</height>
+    <width>537</width>
+    <height>333</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -285,6 +285,79 @@
            </item>
            <item row="0" column="1">
             <widget class="QLineEdit" name="edSsoName"/>
+           </item>
+           <item row="1" column="1">
+            <widget class="QWidget" name="ssoPane" native="true">
+             <layout class="QGridLayout" name="gridLayout_8" columnstretch="0,1,0">
+              <property name="leftMargin">
+               <number>0</number>
+              </property>
+              <property name="topMargin">
+               <number>0</number>
+              </property>
+              <property name="rightMargin">
+               <number>0</number>
+              </property>
+              <property name="bottomMargin">
+               <number>0</number>
+              </property>
+              <property name="verticalSpacing">
+               <number>4</number>
+              </property>
+              <item row="0" column="1">
+               <widget class="QLabel" name="laSsoLink">
+                <property name="mouseTracking">
+                 <bool>true</bool>
+                </property>
+                <property name="text">
+                 <string>[missing Link]</string>
+                </property>
+                <property name="openExternalLinks">
+                 <bool>true</bool>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="0">
+               <widget class="QLabel" name="label_3">
+                <property name="text">
+                 <string>and enter code</string>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="0">
+               <widget class="QLabel" name="label_2">
+                <property name="text">
+                 <string>Please visit</string>
+                </property>
+               </widget>
+              </item>
+              <item row="1" column="1">
+               <widget class="QLabel" name="laSsoCode">
+                <property name="font">
+                 <font>
+                  <bold>true</bold>
+                 </font>
+                </property>
+                <property name="text">
+                 <string/>
+                </property>
+                <property name="textInteractionFlags">
+                 <set>Qt::TextSelectableByMouse</set>
+                </property>
+               </widget>
+              </item>
+              <item row="0" column="2" rowspan="2">
+               <widget class="QPushButton" name="bCopyCode">
+                <property name="toolTip">
+                 <string>Copies the code to clipboard&lt;br&gt;and opens the link in the default browser</string>
+                </property>
+                <property name="text">
+                 <string>Copy and Visit</string>
+                </property>
+               </widget>
+              </item>
+             </layout>
+            </widget>
            </item>
           </layout>
          </widget>

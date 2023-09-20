@@ -4167,6 +4167,21 @@ void MainWindow::showEngineStartDialog()
     if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
+    connect(dialog, &engine::EngineStartDialog::engineUrlValidated, this, [this, dialog](const QString &url) {
+        if (Settings::settings()->toString(SettingsKey::skEngineUrl).compare(url) != 0) {
+            Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
+            Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
+            Settings::settings()->setString(SettingsKey::skEngineSsoName, dialog->ssoName());
+            Settings::settings()->setBool(SettingsKey::skEngineIsSelfCert, dialog->isCertAccepted());
+            Settings::settings()->setInt(SettingsKey::skEngineAuthMethod, dialog->authMethod());
+            if (Settings::settings()->toBool(SettingsKey::skEngineStoreUserToken))
+                Settings::settings()->setString(SettingsKey::skEngineUserToken, mEngineAuthToken);
+            else
+                Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
+            updateAndSaveSettings();
+        }
+    });
+
     dialog->start();
 }
 
@@ -4236,7 +4251,7 @@ void MainWindow::on_actionStop_triggered()
     if (!project) return;
     mGamsParameterEditor->on_stopAction();
     AbstractProcess* process = project->process();
-    QtConcurrent::run(&GamsProcess::terminate, process);
+    std::ignore = QtConcurrent::run(&GamsProcess::terminate, process);
 }
 
 void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool createMissing)

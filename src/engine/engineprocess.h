@@ -68,10 +68,9 @@ public:
     bool setUrl(const QString &url);
     QUrl url();
     void listProvider(const QString &ssoName = QString());
-    void fetchOAuth2Token(const QString &name, const QString &deviceCode);
-    void loginWithOIDC(const QString &idToken);
     void authorize(const QString &username, const QString &password, int expireMinutes);
-    void authorize(QUrl authUrl, const QString &clientId, const QString &ssoName);
+    void authorizeSso(const QString &ssoName);
+    void authorizeProviderName(const QString &providerName);
     void authorize(const QString &authToken);
     void initUsername(const QString &user);
     void setAuthToken(const QString &bearerToken);
@@ -94,8 +93,7 @@ public:
 signals:
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
     void reListProviderError(const QString &error);
-    void reFetchOAuth2Token(const QString &idToken);
-    void reFetchOAuth2TokenError(const QString &error);
+    void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void authorized(const QString &token);
     void authorizeError(const QString &error);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
@@ -130,6 +128,7 @@ protected slots:
     void jobIsQueued();
     void reGetOutputFile(const QByteArray &data);
     void reError(const QString &errorText);
+    void reDeviceAccessToken(const QString &idToken);
     void reAuthorize(const QString &token);
 
 private slots:

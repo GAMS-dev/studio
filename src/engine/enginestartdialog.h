@@ -82,6 +82,7 @@ public:
 
 signals:
     void submit(bool start);
+    void engineUrlValidated(const QString &validUrl);
 
 public slots:
     void authorizeChanged(QString authToken);
@@ -104,6 +105,7 @@ protected:
     UrlCheck protocol(QString url);
     QString cleanUrl(const QString url);
     void updateUrlEdit();
+    bool openInBrowser(const QString &text);
 
 private slots:
     void urlEdited(const QString &text);
@@ -111,8 +113,7 @@ private slots:
     void updateSubmitStates();
     void bLogoutClicked();
     void authorizeError(const QString &error);
-    void loginWithOIDC(const QString &idToken);
-    void reFetchOAuth2TokenError(const QString &error);
+    void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
     void reListNamespaces(const QStringList &list);
@@ -128,8 +129,8 @@ private slots:
     void selfSignedCertFound(int sslError);
     void certAcceptChanged();
     void hideCert();
-
     void on_cbLoginMethod_currentIndexChanged(int index);
+    void on_bCopyCode_clicked();
 
 private:
     Ui::EngineStartDialog *ui;

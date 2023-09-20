@@ -46,18 +46,13 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(&mProcess, QOverload<int, QProcess::ExitStatus>::of(&QProcess::finished), this, &EngineProcess::compileCompleted);
 
     mManager = new EngineManager(this);
-    connect(mManager, &EngineManager::reListProvider, this, [this](const QList<QHash<QString, QVariant> > &allProvider) {
-        if (mSsoName.isEmpty()) // ignore the list when SSO is given (is handled in AuthManager as direct connect)
-            emit reListProvider(allProvider);
-    });
-    connect(mManager, &EngineManager::reListProviderError, this, [this](const QString &error) {
-        if (mSsoName.isEmpty()) // ignore the error when SSO is given
-            emit reListProviderError(error);
-    });
-    connect(mManager, &EngineManager::reFetchOAuth2Token, this, &EngineProcess::reFetchOAuth2Token);
-    connect(mManager, &EngineManager::reFetchOAuth2TokenError, this, &EngineProcess::reFetchOAuth2Token);
+    // mManager->reListProvider is connected in AuthManager
     connect(mManager, &EngineManager::reLoginWithOIDC, this, [this](const QString &token) {
+        DEB() << "Logged in woth OIDC - new JWToken: " << token;
         authorize(token);
+    });
+    connect(mManager, &EngineManager::reLoginWithOIDCError, this, [this](const QString &message) {
+        DEB() << "Error getting JWToken: " << message;
     });
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);
@@ -337,6 +332,11 @@ AuthManager *EngineProcess::authManager()
 {
     if (!mAuthManager) {
         mAuthManager = new AuthManager(mManager, this);
+        connect(mAuthManager, &AuthManager::reListProvider, this, &EngineProcess::reListProvider);
+        connect(mAuthManager, &AuthManager::reListProviderError, this, &EngineProcess::reListProviderError);
+        connect(mAuthManager, &AuthManager::reDeviceAccessToken, this, &EngineProcess::reDeviceAccessToken);
+        connect(mAuthManager, &AuthManager::showVerificationCode, this, &EngineProcess::showVerificationCode);
+        connect(mAuthManager, &AuthManager::error, this, &EngineProcess::authorizeError);
     }
     return mAuthManager;
 }
@@ -447,20 +447,7 @@ QUrl EngineProcess::url()
 void EngineProcess::listProvider(const QString &ssoName)
 {
     mSsoName = ssoName;
-    if (ssoName.isEmpty())
-        mManager->listProvider(ssoName);
-    else
-        authManager()->listProvider(ssoName);
-}
-
-void EngineProcess::fetchOAuth2Token(const QString &name, const QString &deviceCode)
-{
-    mManager->fetchOAuth2Token(name, deviceCode);
-}
-
-void EngineProcess::loginWithOIDC(const QString &idToken)
-{
-    mManager->loginWithOIDC(idToken);
+    authManager()->listProvider(ssoName);
 }
 
 void EngineProcess::authorize(const QString &username, const QString &password, int expireMinutes)
@@ -469,9 +456,14 @@ void EngineProcess::authorize(const QString &username, const QString &password, 
     setProcState(ProcCheck);
 }
 
-void EngineProcess::authorize(QUrl authUrl, const QString &clientId, const QString &ssoName)
+void EngineProcess::authorizeSso(const QString &ssoName)
 {
-    authManager()->authorize(authUrl, clientId);
+    authManager()->listProvider(ssoName);
+}
+
+void EngineProcess::authorizeProviderName(const QString &providerName)
+{
+    authManager()->deviceAuthRequest(providerName);
 }
 
 void EngineProcess::authorize(const QString &authToken)
@@ -719,6 +711,12 @@ void EngineProcess::reError(const QString &errorText)
     disconnect(&mPollTimer, &QTimer::timeout, this, &EngineProcess::pollStatus);
     emit newStdChannelData("\n"+errorText.toUtf8()+"\n");
     completed(-1);
+}
+
+void EngineProcess::reDeviceAccessToken(const QString &idToken)
+{
+    DEB() << "Send token further: " << idToken;
+    mManager->loginWithOIDC(idToken);
 }
 
 void EngineProcess::reAuthorize(const QString &token)

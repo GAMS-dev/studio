@@ -112,8 +112,9 @@ signals:
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
     void reListProviderError(const QString &error);
     void reFetchOAuth2Token(const QString &idToken);
-    void reFetchOAuth2TokenError(const QString &error);
+    void reFetchOAuth2TokenError(int responseCode, const QString &error);
     void reLoginWithOIDC(const QString &token);
+    void reLoginWithOIDCError(const QString &error);
     void reAuthorize(const QString &token);
     void reGetUsername(const QString &name);
     void reAuthorizeError(const QString &error);

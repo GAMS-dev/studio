@@ -28,6 +28,8 @@
 #include <QUrl>
 #include <QSslError>
 #include <QSslSocket>
+#include <QClipboard>
+#include <QDesktopServices>
 
 namespace gams {
 namespace studio {
@@ -41,6 +43,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
+    installEventFilter(ui->laSsoLink);
     setCanLogin(false);
     QFont f = ui->laWarn->font();
     f.setBold(true);
@@ -71,6 +74,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->laAvailable->setVisible(false);
     ui->laAvailDisk->setVisible(false);
     ui->laAvailVolume->setVisible(false);
+    ui->ssoPane->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
         ui->laLogo->setPixmap(QPixmap(QString::fromUtf8(":/img/engine-logo-w")));
@@ -124,6 +128,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
     connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorizeChanged);
+    connect(mProc, &EngineProcess::showVerificationCode, this, &EngineStartDialog::showVerificationCode);
     connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
     connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
@@ -132,8 +137,6 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::reVersion, this, &EngineStartDialog::reVersion);
     connect(mProc, &EngineProcess::reListProvider, this, &EngineStartDialog::reListProvider);
     connect(mProc, &EngineProcess::reVersionError, this, &EngineStartDialog::reVersionError);
-    connect(mProc, &EngineProcess::reFetchOAuth2Token, this, &EngineStartDialog::loginWithOIDC);
-    connect(mProc, &EngineProcess::reFetchOAuth2TokenError, this, &EngineStartDialog::reFetchOAuth2TokenError);
     connect(mProc, &EngineProcess::reUserInstances, this, &EngineStartDialog::reUserInstances);
     connect(mProc, &EngineProcess::reUserInstancesError, this, &EngineStartDialog::reUserInstancesError);
     connect(mProc, &EngineProcess::quotaHint, this, &EngineStartDialog::quotaHint);
@@ -168,11 +171,11 @@ void EngineStartDialog::initData(const QString &_url, const int authMethod, cons
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
     ui->cbLoginMethod->setCurrentIndex(authMethod);
-    ui->stackLoginInput->setCurrentIndex(authMethod);
+    ui->stackLoginInput->setCurrentIndex(qMin(authMethod, 2));
     if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
     if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
     if (mProc && authMethod == 2) {
-        mProc->setAuthToken(_userToken.trimmed());
+        ui->edSsoName->setText(ssoName.trimmed());
     }
     ui->edUser->setText(_user.trimmed());
     ui->nUser->setText(_user.trimmed());
@@ -263,6 +266,8 @@ bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
         updateUrlEdit();
+    if (watched == ui->laSsoLink && event->type() == QEvent::MouseButtonRelease)
+        openInBrowser(ui->laSsoLink->text());
     return QDialog::eventFilter(watched, event);
 }
 
@@ -349,14 +354,13 @@ void EngineStartDialog::authorizeError(const QString &error)
     ui->laWarn->setToolTip("Please check your username and password");
 }
 
-void EngineStartDialog::loginWithOIDC(const QString &idToken)
+void EngineStartDialog::showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete)
 {
-    mProc->loginWithOIDC(idToken);
-}
+    ui->laSsoCode->setText(userCode.isEmpty() ? "[missing Code]" : userCode);
+    ui->laSsoLink->setText(verifyUri.isEmpty() ? "[missing Link]" : verifyUri);
 
-void EngineStartDialog::reFetchOAuth2TokenError(const QString &error)
-{
-
+    bool ok = !userCode.isEmpty() && !verifyUri.isEmpty();
+    ui->ssoPane->setVisible(ok);
 }
 
 void EngineStartDialog::buttonClicked(QAbstractButton *button)
@@ -375,9 +379,10 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
             break;
         case 2: {
             // SSO authorization
-            mProc->authorize(ui->edToken->document()->toPlainText().trimmed());
+            mProc->listProvider(ui->edSsoName->text().trimmed());
         }   break;
         default:
+            mProc->authorizeProviderName(ui->cbLoginMethod->currentText());
             break;
         }
         return;
@@ -423,7 +428,8 @@ void EngineStartDialog::setCanLogin(bool value)
             && (!mProc->authToken().isEmpty() ||
                   (authMethod()==0 && !user().isEmpty() && (!ui->edPassword->text().isEmpty()))
                || (authMethod()==1 && !ui->edToken->document()->toPlainText().isEmpty())
-               || (authMethod()==2 && !ui->edSsoName->text().isEmpty()))
+               || (authMethod()==2 && !ui->edSsoName->text().isEmpty())
+               || (authMethod() > 2))
             && (!ui->cbAcceptCert->isVisible() || ui->cbAcceptCert->isChecked());
     if (value != ui->bOk->isEnabled()) {
         ui->bOk->setEnabled(value);
@@ -548,6 +554,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             showSubmit();
             mProc->listJobs();
         }
+        emit engineUrlValidated(mValidUrl);
     }
 }
 
@@ -860,17 +867,44 @@ QString EngineStartDialog::cleanUrl(const QString url)
 void EngineStartDialog::on_cbLoginMethod_currentIndexChanged(int index)
 {
     Q_UNUSED(index)
-    if (ui->cbLoginMethod->currentIndex() < 3) {
+    if (ui->cbLoginMethod->currentIndex() < 2) {
         ui->stackLoginInput->setCurrentIndex(ui->cbLoginMethod->currentIndex());
     } else {
-        QVariantMap data = ui->cbLoginMethod->currentData().toMap();
-        if (data.value("hasSecret").toBool()) {
-//            mProc->fetchOAuth2Token(data.value("name"), );
-        } else {
+        ui->stackLoginInput->setCurrentIndex(2);
+        ui->laSso->setVisible(ui->cbLoginMethod->currentIndex() == 2);
+        ui->edSsoName->setVisible(ui->cbLoginMethod->currentIndex() == 2);
 
-        }
+        setCanLogin(ui->cbLoginMethod->currentIndex() > 2 || !ui->edSsoName->text().isEmpty());
     }
+    if (!mValidUrl.isEmpty())
+        emit engineUrlValidated(mValidUrl);
 }
+
+bool EngineStartDialog::openInBrowser(const QString &text)
+{
+    if (text.isEmpty() || !text.startsWith("http")) {
+        DEB() << "invalid link";
+        return false;
+    }
+    QDesktopServices::openUrl(QUrl(text));
+    return true;
+}
+
+void EngineStartDialog::on_bCopyCode_clicked()
+{
+    if (!openInBrowser(ui->laSsoLink->text()))
+        return;
+    if (ui->laSsoCode->text().isEmpty() || ui->laSsoCode->text().startsWith("[")) {
+        DEB() << "missing code";
+        return;
+    }
+    QClipboard *clip = QGuiApplication::clipboard();
+    QString text = ui->laSsoCode->text();
+    QTimer::singleShot(10, this, [text, clip]() {
+        clip->setText(text);
+    });
+}
+
 
 } // namespace engine
 } // namespace studio
