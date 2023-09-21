@@ -113,6 +113,7 @@ private slots:
     void updateSubmitStates();
     void bLogoutClicked();
     void authorizeError(const QString &error);
+    void reGetUsername(const QString &user);
     void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
@@ -131,6 +132,8 @@ private slots:
     void hideCert();
     void on_cbLoginMethod_currentIndexChanged(int index);
     void on_bCopyCode_clicked();
+
+    void on_bShowLogin_clicked();
 
 private:
     Ui::EngineStartDialog *ui;
@@ -155,6 +158,7 @@ private:
     QString mEngineVersion;
     QString mGamsVersion;
     int mAuthExpireMinutes = 60*2;
+    int mAuthIndex = 0;
 
     static const QString CUnavailable;
     static QRegularExpression mRexVersion;

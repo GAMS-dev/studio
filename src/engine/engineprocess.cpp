@@ -77,10 +77,11 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::reGetLog, this, &EngineProcess::reGetLog);
     connect(mManager, &EngineManager::jobIsQueued, this, &EngineProcess::jobIsQueued);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
-    connect(mManager, &EngineManager::reGetUsername, this, [this]() {
+    connect(mManager, &EngineManager::reGetUsername, this, [this](const QString &name) {
         setProcState(ProcCheck);
         listJobs();
         listNamespaces();
+        emit reGetUsername(name);
         emit authorized(mAuthToken);
     });
     connect(mManager, &EngineManager::reGetUsernameError, this, &EngineProcess::authorizeError);
@@ -503,6 +504,11 @@ bool EngineProcess::isIgnoreSslErrors() const
     return mManager->isIgnoreSslErrors();
 }
 
+void EngineProcess::getUsername()
+{
+    mManager->getUsername();
+}
+
 void EngineProcess::listJobs()
 {
     mManager->listJobs();
@@ -726,11 +732,8 @@ void EngineProcess::reAuthorize(const QString &token)
 
     mAuthToken = token;
     mManager->setAuthToken(token);
-    if (!token.isEmpty()) {
-        listJobs();
-        listNamespaces();
-        setProcState(ProcCheck);
-    }
+    if (!token.isEmpty())
+        mManager->getUsername();
     emit authorized(token);
 }
 

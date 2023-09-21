@@ -78,6 +78,7 @@ public:
     void setNamespace(const QString &nSpace);
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
+    void getUsername();
     void listJobs();
     void listNamespaces();
     void sendPostLoginRequests();
@@ -96,6 +97,7 @@ signals:
     void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void authorized(const QString &token);
     void authorizeError(const QString &error);
+    void reGetUsername(const QString &user);
     void procStateChanged(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void requestAcceptSslErrors();
     void sslValidation(const QString &errorMessage);

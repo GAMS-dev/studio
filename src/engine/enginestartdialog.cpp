@@ -115,6 +115,7 @@ void EngineStartDialog::setHiddenMode(bool preferHidden)
 
 void EngineStartDialog::start()
 {
+    //TODO: introduce an initial page showing "check authorization"
     if (!mProc) return;
     if (ui->edUrl->text().isEmpty())
         showLogin();
@@ -130,6 +131,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
     connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorizeChanged);
     connect(mProc, &EngineProcess::showVerificationCode, this, &EngineStartDialog::showVerificationCode);
     connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
+    connect(mProc, &EngineProcess::reGetUsername, this, &EngineStartDialog::reGetUsername);
     connect(mProc, &EngineProcess::reListJobs, this, &EngineStartDialog::reListJobs);
     connect(mProc, &EngineProcess::reListJobsError, this, &EngineStartDialog::reListJobsError);
     connect(mProc, &EngineProcess::reListNamspaces, this, &EngineStartDialog::reListNamespaces);
@@ -170,7 +172,8 @@ void EngineStartDialog::initData(const QString &_url, const int authMethod, cons
     mUrl = cleanUrl(_url);
     ui->edUrl->setText(mUrl);
     ui->nUrl->setText(mUrl);
-    ui->cbLoginMethod->setCurrentIndex(authMethod);
+    mAuthIndex = authMethod;
+    ui->cbLoginMethod->setCurrentIndex(qMin(authMethod, 2));
     ui->stackLoginInput->setCurrentIndex(qMin(authMethod, 2));
     if (mProc && authMethod == 0) mProc->initUsername(_user.trimmed());
     if (mProc && authMethod == 1) mProc->setAuthToken(_userToken.trimmed());
@@ -352,6 +355,11 @@ void EngineStartDialog::authorizeError(const QString &error)
 {
     ui->laWarn->setText("Could not log in: " + error.trimmed());
     ui->laWarn->setToolTip("Please check your username and password");
+}
+
+void EngineStartDialog::reGetUsername(const QString &user)
+{
+    ui->edUser->setText(user);
 }
 
 void EngineStartDialog::showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete)
@@ -552,7 +560,7 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
             showLogin();
         else {
             showSubmit();
-            mProc->listJobs();
+            mProc->getUsername();
         }
         emit engineUrlValidated(mValidUrl);
     }
@@ -598,6 +606,10 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
     while (ui->cbLoginMethod->count() > cbIndex)
         ui->cbLoginMethod->removeItem(cbIndex);
+    if (mAuthIndex >= 0 && ui->cbLoginMethod->currentIndex() != mAuthIndex && ui->cbLoginMethod->count() > mAuthIndex) {
+        ui->cbLoginMethod->setCurrentIndex(mAuthIndex);
+        mAuthIndex = -1;
+    }
 }
 
 void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel)
@@ -903,6 +915,12 @@ void EngineStartDialog::on_bCopyCode_clicked()
     QTimer::singleShot(10, this, [text, clip]() {
         clip->setText(text);
     });
+}
+
+void EngineStartDialog::on_bShowLogin_clicked()
+{
+    mProc->abortRequests();
+    showLogin();
 }
 
 
