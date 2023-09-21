@@ -371,7 +371,6 @@ void EngineManager::listProvider(const QString &name)
 void EngineManager::fetchOAuth2Token(const QString &name, const QString &deviceCode)
 {
     ::OpenAPI::OptionalParam<QString> dummy;
-    DEB() << name << " , " << deviceCode;
     mAuthApi->fetchOAuth2TokenOnBehalf(name, QString("urn:ietf:params:oauth:grant-type:device_code"), dummy, dummy, dummy, deviceCode);
 }
 

@@ -721,7 +721,6 @@ void EngineProcess::reError(const QString &errorText)
 
 void EngineProcess::reDeviceAccessToken(const QString &idToken)
 {
-    DEB() << "Send token further: " << idToken;
     mManager->loginWithOIDC(idToken);
 }
 
