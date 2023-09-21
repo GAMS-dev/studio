@@ -447,7 +447,6 @@ void TestGamsOption::testOptionSynonym_data()
     QTest::newRow("SO")    << "SO" << "SaveObfuscate";
     QTest::newRow("XSO")   << "XSO" << "XSaveObfuscate";
     QTest::newRow("RN")    << "RN" << "RestartNamed";
-    QTest::newRow("PW")    << "PW" << "PageWidth";
 
     QTest::newRow("AsyncSolLst") << "" << "AsyncSolLst";
     QTest::newRow("Bratio")      << "" << "Bratio";
@@ -575,7 +574,6 @@ void TestGamsOption::testOptionGroup_data()
     QTest::newRow("multipass_1")   << "multipass"  << 1 << "general" << "General options" << "enumint";
     QTest::newRow("noNewVarEqu_1") << "noNewVarEqu"  << 1 << "general" << "General options" << "enumint";
     QTest::newRow("output_1")      << "output"       << 1 << "general" << "General options" << "string";
-    QTest::newRow("ParmFile_1")    << "ParmFile"     << 1 << "general" << "General options" << "immediate";
     QTest::newRow("ParmFile_1")    << "ParmFile"     << 1 << "general" << "General options" << "immediate";
     QTest::newRow("reference_1")   << "reference"    << 1 << "general" << "General options" << "string";
     QTest::newRow("suppress_1")    << "suppress"     << 1 << "general" << "General options" << "enumint";
