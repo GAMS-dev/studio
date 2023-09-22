@@ -53,6 +53,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     });
     connect(mManager, &EngineManager::reLoginWithOIDCError, this, [this](const QString &message) {
         DEB() << "Error getting JWToken: " << message;
+        emit authorizeError(message);
     });
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersion);
     connect(mManager, &EngineManager::reVersion, this, &EngineProcess::reVersionIntern);

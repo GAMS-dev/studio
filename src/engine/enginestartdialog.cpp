@@ -371,6 +371,7 @@ void EngineStartDialog::reListProviderError(const QString &error)
 
 void EngineStartDialog::showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete)
 {
+    Q_UNUSED(verifyUriComplete)
     ui->laSsoCode->setText(userCode.isEmpty() ? "[missing Code]" : userCode);
     ui->laSsoLink->setText(verifyUri.isEmpty() ? "[missing Link]" : verifyUri);
 

@@ -425,10 +425,11 @@ void AuthManager::processReply(QNetworkReply *reply, int &responseCode, QJsonObj
     QString typeHeader;
     QString encodingHeader;
     if (reply->rawHeaderPairs().count() > 0) {
-        for (const QPair<QString, QString> &item : reply->rawHeaderPairs()) {
-            if(item.first.compare(QString("Content-Type"), Qt::CaseInsensitive) == 0)
+        for (const auto &item : reply->rawHeaderPairs()) {
+            QString key = item.first;
+            if(key.compare(QString("Content-Type"), Qt::CaseInsensitive) == 0)
                 typeHeader = item.second;
-            if(item.first.compare(QString("Content-Encoding"), Qt::CaseInsensitive) == 0)
+            if(key.compare(QString("Content-Encoding"), Qt::CaseInsensitive) == 0)
                 encodingHeader = item.second;
         }
     }
