@@ -6,6 +6,7 @@ Version 1.16.0 *
 - fixed check for GAMS license
 - fixed crash when reading a corrupted ref-file
 - reworked check for update feature, with HTTPS support and without the GAMS C4U library
+- added authorize to GAMS Engine using an authorization provider
 
 Version 1.15.5
 ==================
