@@ -261,14 +261,14 @@ SOURCES += \
     settings.cpp \
     settingsdialog.cpp \
     statuswidgets.cpp \
-    support/checkforupdatewrapper.cpp \
+    support/checkforupdate.cpp \
     support/distributionvalidator.cpp \
     support/gamslicenseinfo.cpp         \
     support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
     support/solvertablemodel.cpp        \
-    support/updatechecker.cpp \
     support/updatewidget.cpp \
+    support/versioninfoloader.cpp \
     svgengine.cpp \
     syntax/basehighlighter.cpp \
     syntax/blockdata.cpp \
@@ -479,14 +479,14 @@ HEADERS += \
     settings.h \
     settingsdialog.h \
     statuswidgets.h \
-    support/checkforupdatewrapper.h \
+    support/checkforupdate.h \
     support/distributionvalidator.h \
     support/gamslicenseinfo.h       \
     support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
     support/solvertablemodel.h      \
-    support/updatechecker.h \
     support/updatewidget.h \
+    support/versioninfoloader.h \
     svgengine.h \
     syntax.h \
     syntax/basehighlighter.h \

@@ -23,7 +23,7 @@ TEMPLATE = subdirs
 SUBDIRS +=                              \
            testabstractprocess          \
            testblockcode                \
-           testcheckforupdatewrapper    \
+           testcheckforupdate           \
            testcommonpaths              \
            testdialogfilefilter         \
            testdoclocation              \
@@ -39,6 +39,7 @@ SUBDIRS +=                              \
            testsettings                 \
            testcompleter                \
            testconnect                  \
-           testservicelocators
+           testservicelocators \
+           testversioninfoloader
 #           testsolverconfiginfo
 #           testfilemapper               \

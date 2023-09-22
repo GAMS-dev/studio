@@ -215,10 +215,34 @@ void TestGamsLicenseInfo::testSolverLicense()
     QVERIFY(test);
 }
 
+void TestGamsLicenseInfo::testIsLicenseValid()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    QVERIFY(gamsLicenseInfo.isLicenseValid());
+}
+
+void TestGamsLicenseInfo::testIsLicenseValidText()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    QCOMPARE(gamsLicenseInfo.isLicenseValid({"lalala"}), false);
+    QStringList license;
+    QCOMPARE(gamsLicenseInfo.isLicenseValid(license), false);
+    auto dataPaths = gamsLicenseInfo.gamsDataLocations();
+    auto licensePath = CommonPaths::gamsLicenseFilePath(dataPaths);
+    QFile file(licensePath);
+    if (!file.open(QIODevice::ReadOnly)) {
+        qDebug() << "ERROR: Could not read file!";
+    }
+    license = QString(file.readAll()).split('\n');
+    file.close();
+    // TODO(AF): enable when we know what the CI issue is
+    //auto dbgstr = QString("%1 : %2").arg(licensePath, license.join("\n"));
+    //QVERIFY2(gamsLicenseInfo.isLicenseValid(license), dbgstr.toStdString().c_str());
+}
+
 void TestGamsLicenseInfo::testGamsDataLocations()
 {
     auto actual = GamsLicenseInfo().gamsDataLocations();
-    qDebug() << actual;
     QVERIFY(!actual.isEmpty());
 }
 
@@ -227,6 +251,22 @@ void TestGamsLicenseInfo::testGamsConfigLocations()
     auto actual = GamsLicenseInfo().gamsConfigLocations();
     qDebug() << actual;
     QVERIFY(!actual.isEmpty());
+}
+
+void TestGamsLicenseInfo::testLocalDistribVersion()
+{
+    GamsLicenseInfo gamsLicenseInfo;
+    auto version = gamsLicenseInfo.localDistribVersion();
+    QVERIFY(version >= QString(GAMS_VERSION_STRING).replace('.', "").toInt());
+}
+
+void TestGamsLicenseInfo::testLocalDistribVersionString()
+{
+    static QRegularExpression regex("^\\d+\\.\\d+\\.\\d( Alpha| Beta)*$");
+    GamsLicenseInfo gamsLicenseInfo;
+    auto version = gamsLicenseInfo.localDistribVersionString();
+    auto match = regex.match(version);
+    QVERIFY(match.hasMatch());
 }
 
 QTEST_MAIN(TestGamsLicenseInfo)

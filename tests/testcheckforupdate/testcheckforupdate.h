@@ -17,15 +17,15 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TESTCHECKFORUPDATEWRAPPER_H
-#define TESTCHECKFORUPDATEWRAPPER_H
+#ifndef TESTCHECKFORUPDATE_H
+#define TESTCHECKFORUPDATE_H
 
-#include <QtTest/QTest>
+#include <QtTest>
 
 namespace gams {
 namespace studio {
 namespace support {
-class CheckForUpdateWrapper;
+class CheckForUpdate;
 }
 }
 }
@@ -37,31 +37,22 @@ class TestCheckForUpdateWrapper : public QObject
 private slots:
     void initTestCase();
 
-    void testCheckForUpdateWrapper();
-
-    void testIsValid();
-
-    void testMessage();
-
-    void testClearMessage();
-
+    void testDefaultConstructor();
     void testCheckForUpdate();
 
-    void testCheckForUpdateShort();
+    void testLocalDistribVersion();
+    void testLocalDistribVersionShort();
 
-    void testCurrentDistribVersion();
+    void testRemoteDistribVersion();
 
-    void testCurrentDistribVersionShort();
+    void testIsLocalDistribLatest();
 
-    void testLastDistribVersion();
+    void testLocalStudioVersion();
 
-    void testLastDistribVersionShort();
+    void testVersionInformationShort();
 
-    void testDistribIsLast();
-
-    void testStudioVersion();
-
-    void testDistribVersionString();
+private:
+    gams::studio::support::CheckForUpdate* mC4U;
 };
 
-#endif // TESTCHECKFORUPDATEWRAPPER_H
+#endif // TESTCHECKFORUPDATE_H

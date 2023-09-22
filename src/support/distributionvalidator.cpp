@@ -18,7 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "distributionvalidator.h"
-#include "checkforupdatewrapper.h"
+#include "checkforupdate.h"
 #include "commonpaths.h"
 #include "process.h"
 #include "settings.h"
@@ -38,14 +38,16 @@ QRegularExpression DistributionValidator::RegEx = QRegularExpression("^GAMS Rele
 DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
 {
-
+    CommonPaths::setSystemDir();
+    mC4U = new CheckForUpdate(this);
+    connect(mC4U, &CheckForUpdate::versionInformationAvailable,
+            this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 }
 
 void DistributionValidator::run()
 {
     checkBitness();
     checkCompatibility();
-    checkForUpdates();
 }
 
 void DistributionValidator::checkBitness()
@@ -97,21 +99,16 @@ void DistributionValidator::checkCompatibility()
     }
 }
 
-void DistributionValidator::checkForUpdates()
+void DistributionValidator::checkForUpdates(const QString &text)
 {
     if (!Settings::settings()->toBool(skAutoUpdateCheck))
         return;
     auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
     if (QDate::currentDate() < nextCheckDate)
         return;
-    QString message;
-    support::CheckForUpdateWrapper c4u;
-    if (!c4u.isValid())
-        return;
     Settings::settings()->setDate(skLastUpdateCheckDate, QDate::currentDate());
     Settings::settings()->setDate(skNextUpdateCheckDate, nextCheckUpdate());
-    message = c4u.checkForUpdateShort();
-    emit newGamsVersion(message);
+    emit newGamsVersion(text);
 }
 
 QDate DistributionValidator::nextCheckUpdate()

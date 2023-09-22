@@ -53,8 +53,9 @@ GamsLicenseInfo::GamsLicenseInfo()
 
     int rc; // additional return code, not used here
     auto dataPaths = gamsDataLocations();
+    mLicenseFilePath = CommonPaths::gamsLicenseFilePath(dataPaths);
     mLicenseAvailable = palLicenseReadU(mPAL,
-                                        CommonPaths::gamsLicenseFilePath(dataPaths).toStdString().c_str(),
+                                        mLicenseFilePath.toStdString().c_str(),
                                         msg,
                                         &rc);
 }
@@ -137,14 +138,19 @@ QStringList GamsLicenseInfo::licenseFromClipboard()
     return licenseLines;
 }
 
+bool GamsLicenseInfo::isLicenseValid() const
+{
+    return mLicenseAvailable;
+}
+
 bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
 {
     int i = 1;
     for (const auto& line: license) {
-        palLicenseRegisterGAMS(mPAL, i++, line.toStdString().c_str());
+        palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
     palLicenseRegisterGAMSDone(mPAL);
-    return palLicenseValidation(mPAL) ? false : true;
+    return !palLicenseValidation(mPAL);
 }
 
 QStringList GamsLicenseInfo::gamsDataLocations()
@@ -197,6 +203,89 @@ QStringList GamsLicenseInfo::gamsConfigLocations()
         configPaths << buffer+offset[i];
     }
     return configPaths;
+}
+
+int GamsLicenseInfo::localDistribVersion()
+{
+    char buffer[GMS_SSSIZE];
+    palGetGold(mPAL, buffer);
+    return 10*palGetVer(mPAL)+atoi(buffer);
+}
+
+QString GamsLicenseInfo::localDistribVersionString()
+{
+    char relbuf[GMS_SSSIZE];
+    palGetRel(mPAL, relbuf);
+    char goldbuf[GMS_SSSIZE];
+    palGetGold(mPAL, goldbuf);
+    QString postfix;
+    if (palIsAlfa(mPAL))
+        postfix = " Alpha";
+    else if (palIsBeta(mPAL))
+        postfix = " Beta";
+    return QString("%1.%2%3").arg(relbuf, goldbuf, postfix);
+}
+
+QString GamsLicenseInfo::licesneFilePath() const
+{
+    return mLicenseFilePath;
+}
+
+bool GamsLicenseInfo::isAlpha() const
+{
+    return palIsAlpha(mPAL);
+}
+
+bool GamsLicenseInfo::isBeta() const
+{
+    return palIsBeta(mPAL);
+}
+
+bool GamsLicenseInfo::isCurrentEvaluation(int evalDate)
+{
+    return evalDate >= palGetJul(mPAL);
+}
+
+bool GamsLicenseInfo::isCurrentMaintenance(int mainDate)
+{
+    return mainDate >= palGetJul(mPAL);
+}
+
+bool GamsLicenseInfo::isLicenseValidationSuccessful() const
+{
+    return !palLicenseValidation(mPAL);
+}
+
+bool GamsLicenseInfo::isLicenseValidForPlatform() const
+{
+    return false;//palLicenseValidation
+}
+
+bool GamsLicenseInfo::isGenericLicense() const
+{
+    char platform[GMS_SSSIZE];
+    palLicenseGetPlatform(mPAL, platform);
+    return !QString(platform).compare("GEN", Qt::CaseInsensitive);
+}
+
+int GamsLicenseInfo::evaluationLicenseData()
+{
+    return palLicenseGetEvalDate(mPAL);
+}
+
+int GamsLicenseInfo::licenseData()
+{
+    return palLicenseGetMaintDate(mPAL);
+}
+
+int GamsLicenseInfo::julian()
+{
+    return palGetJul(mPAL);
+}
+
+int GamsLicenseInfo::today()
+{
+    return palGetToday(mPAL);
 }
 
 QString GamsLicenseInfo::solverCodes(int solverId) const

@@ -20,11 +20,8 @@
 #include "gamslicensingdialog.h"
 #include "ui_gamslicensingdialog.h"
 #include "process.h"
-#include "checkforupdatewrapper.h"
 #include "solvertablemodel.h"
 #include "commonpaths.h"
-#include "editors/abstractsystemlogger.h"
-#include "editors/sysloglocator.h"
 #include "gamslicenseinfo.h"
 #include "theme.h"
 
@@ -77,7 +74,8 @@ QString GamsLicensingDialog::gamsLicense()
 {
     QStringList about;
     about << "<b><big>GAMS Distribution ";
-    about << CheckForUpdateWrapper::distribVersionString();
+    GamsLicenseInfo licenseInfo;
+    about << licenseInfo.localDistribVersionString();
     about << "</big></b><br/><br/>";
 
     GamsProcess gproc;
@@ -116,7 +114,7 @@ void GamsLicensingDialog::createLicenseFile(QWidget *parent)
     if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
         return;
 
-    QFile licenseFile(licenseInfo.gamsDataLocations().first() + "/" + CommonPaths::licenseFile());
+    QFile licenseFile(licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile());
     if (licenseFile.exists()) {
         auto result = QMessageBox::question(parent,
                                             "Overwrite current GAMS license file?",

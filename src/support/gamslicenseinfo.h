@@ -55,11 +55,41 @@ public:
 
     QStringList licenseFromClipboard();
 
+    bool isLicenseValid() const;
+
     bool isLicenseValid(const QStringList &license);
 
     QStringList gamsDataLocations();
 
     QStringList gamsConfigLocations();
+
+    int localDistribVersion();
+
+    QString localDistribVersionString();
+
+    QString licesneFilePath() const;
+
+    bool isAlpha() const;
+
+    bool isBeta() const;
+
+    bool isCurrentEvaluation(int evalDate);
+
+    bool isCurrentMaintenance(int mainDate);
+
+    bool isLicenseValidationSuccessful() const;
+
+    bool isLicenseValidForPlatform() const;
+
+    bool isGenericLicense() const;
+
+    int evaluationLicenseData();
+
+    int licenseData();
+
+    int julian();
+
+    int today();
 
 private:
     QString solverCodes(int solverId) const;
@@ -67,6 +97,7 @@ private:
     static int errorCallback(int count, const char *message);
 
 private:
+    QString mLicenseFilePath;
     SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
     bool mLicenseAvailable = false;

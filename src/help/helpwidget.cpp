@@ -33,9 +33,8 @@
 #include "ui_helpwidget.h"
 
 #include "bookmarkdialog.h"
-#include "support/checkforupdatewrapper.h"
+#include "support/checkforupdate.h"
 #include "commonpaths.h"
-#include "gclgms.h"
 #include "helpdata.h"
 #include "helppage.h"
 #include "theme.h"
@@ -46,7 +45,8 @@ namespace help {
 
 HelpWidget::HelpWidget(QWidget *parent) :
     QWidget(parent),
-    ui(new Ui::HelpWidget)
+    ui(new Ui::HelpWidget),
+    mC4U(new support::CheckForUpdate(this))
 {
     ui->setupUi(this);
     ui->actionHome->setIcon(Theme::icon(":/%1/home"));
@@ -648,18 +648,14 @@ QUrl HelpWidget::getStartPageUrl()
 
 QUrl HelpWidget::getOnlineStartPageUrl()
 {
-    support::CheckForUpdateWrapper c4uWrapper;
-    if (!c4uWrapper.isValid())
-        return HelpData::getLatestOnlineHelpUrl();
-
-    if (c4uWrapper.distribIsLatest()) {
+    if (mC4U->isLocalDistribLatest()) {
         return HelpData::getLatestOnlineHelpUrl();
     } else {
-        int marjorversion = c4uWrapper.currentDistribVersion()/100;
+        int marjorversion = mC4U->localDistribVersion()/100;
         if (marjorversion>=26)
             return QUrl( QString("https://www.gams.com/%1/").arg( marjorversion ), QUrl::TolerantMode);
         else
-          return QUrl( QString("https://www.gams.com/%1/").arg( c4uWrapper.currentDistribVersionShort() ), QUrl::TolerantMode );
+            return QUrl( QString("https://www.gams.com/%1/").arg( mC4U->localDistribVersionShort() ), QUrl::TolerantMode );
     }
 }
 
@@ -669,22 +665,9 @@ bool HelpWidget::isDocumentAvailable(const QString &path, const QString &chapter
     return (!dir.canonicalPath().isEmpty() && QFileInfo::exists(dir.canonicalPath()));
 }
 
-bool HelpWidget::isCurrentReleaseTheLatestVersion()
-{
-    support::CheckForUpdateWrapper c4uWrapper;
-    if (c4uWrapper.isValid())
-       return (c4uWrapper.currentDistribVersion() == c4uWrapper.lastDistribVersion());
-    else
-        return true;
-}
-
 QString HelpWidget::getCurrentReleaseVersion()
 {
-    support::CheckForUpdateWrapper c4uWrapper;
-    if (c4uWrapper.isValid())
-       return c4uWrapper.currentDistribVersionShort();
-    else
-        return "latest";
+    return mC4U->localDistribVersionShort();
 }
 
 void HelpWidget::getErrorHTMLText(QString &htmlText, const QUrl &url)

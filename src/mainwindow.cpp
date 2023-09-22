@@ -66,7 +66,6 @@
 #include "support/gamslicenseinfo.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
-#include "connect/connecteditor.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -399,12 +398,12 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->actionUpdate, &QAction::triggered,
             this, [this]{
         on_actionSettings_triggered();
-        mSettingsDialog->focusUpdateTab(true);
+        mSettingsDialog->focusUpdateTab();
     });
     connect(ui->updateWidget, &support::UpdateWidget::openSettings,
             this, [this]{
         on_actionSettings_triggered();
-        mSettingsDialog->focusUpdateTab(false);
+        mSettingsDialog->focusUpdateTab();
     });
 
     // Themes

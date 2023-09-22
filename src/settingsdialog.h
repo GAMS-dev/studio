@@ -32,13 +32,13 @@ class QAbstractButton;
 namespace gams {
 namespace studio {
 
+namespace support {
+class CheckForUpdate;
+}
+
 class MainWindow;
 class Settings;
 class ThemeWidget;
-
-namespace support {
-class UpdateChecker;
-}
 
 class SettingsDialog : public QDialog
 {
@@ -53,8 +53,6 @@ public:
     bool preventThemeChanging();
     bool hasDelayedBaseThemeChange();
     int engineInitialExpire() const;
-
-    void focusUpdateTab(bool checkUpdate);
 
 protected:
     void closeEvent(QCloseEvent *event) override;
@@ -73,6 +71,7 @@ signals:
 
 public slots:
     void delayBaseThemeChange(bool valid);
+    void focusUpdateTab();
     void open() override;
 
 private slots:
@@ -109,7 +108,6 @@ private slots:
     void on_tb_userLibRemove_clicked();
     void on_tb_userLibOpen_clicked();
 
-    void checkGamsUpdates();
     void checkGamsVersion(const QString &text);
     void anchorClicked(const QUrl &link);
 
@@ -144,10 +142,11 @@ private:
     bool mDelayedBaseThemeChange = false;
     bool mMiroSettingsEnabled = true;
     int mEngineInitialExpire = 0;
-    support::UpdateChecker *mUpdateChecker;
     QDate mLastCheckDate;
 
     bool mRestoreSqZeroes = false;
+
+    support::CheckForUpdate* mC4U;
 };
 
 }

@@ -28,6 +28,8 @@ namespace gams {
 namespace studio {
 namespace support {
 
+class CheckForUpdate;
+
 class DistributionValidator
     : public QThread
 {
@@ -55,12 +57,13 @@ private:
     ///
     void checkCompatibility();
 
-    void checkForUpdates();
+    void checkForUpdates(const QString &text);
 
     QDate nextCheckUpdate();
 
 private:
     static QRegularExpression RegEx;
+    CheckForUpdate* mC4U = nullptr;
 };
 
 }

@@ -34,6 +34,11 @@ class QToolButton;
 
 namespace gams {
 namespace studio {
+
+namespace support {
+class CheckForUpdate;
+}
+
 namespace help {
 
 namespace Ui {
@@ -114,7 +119,6 @@ private:
     QUrl getStartPageUrl();
     QUrl getOnlineStartPageUrl();
     bool isDocumentAvailable(const QString& path, const QString& chapter);
-    bool isCurrentReleaseTheLatestVersion();
     QString getCurrentReleaseVersion();
 
     void getErrorHTMLText(QString& htmlText, const QUrl& url);
@@ -124,6 +128,8 @@ private:
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
+
+    support::CheckForUpdate* mC4U;
 };
 
 } // namespace help

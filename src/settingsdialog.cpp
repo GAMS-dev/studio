@@ -32,7 +32,7 @@
 #include "themewidget.h"
 #include "viewhelper.h"
 #include "miro/mirocommon.h"
-#include "support/updatechecker.h"
+#include "support/checkforupdate.h"
 #include <numerics/doubleformatter.h>
 #include <gdxviewer/numericalformatcontroller.h>
 
@@ -43,9 +43,12 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
     , mMain(parent)
-    , mUpdateChecker(new support::UpdateChecker(this))
+    , mC4U(new support::CheckForUpdate(this))
 {
     ui->setupUi(this);
+    ui->updateBrowser->setPlainText("Checking for updates...");
+    connect(mC4U, &support::CheckForUpdate::versionInformationAvailable,
+            this, [this]{ ui->updateBrowser->setText(mC4U->versionInformation()); });
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->tabWidget->setCurrentIndex(0);
     ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
@@ -158,10 +161,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){ ui->updateIntervalBox->setEnabled(checked); });
     adjustSize();
 
-    connect(ui->checkUpdateButton, &QPushButton::clicked,
-            this, &SettingsDialog::checkGamsUpdates);
-    connect(mUpdateChecker, &support::UpdateChecker::messageAvailable,
-            this, &SettingsDialog::checkGamsVersion);
+    connect(ui->checkUpdateButton, &QPushButton::clicked, this, &SettingsDialog::focusUpdateTab);
     connect(ui->updateIntervalBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this]{ ui->nextCheckLabel->setText(nextCheckDate().toString()); });
 
@@ -568,10 +568,11 @@ int SettingsDialog::engineInitialExpire() const
     return mEngineInitialExpire;
 }
 
-void SettingsDialog::focusUpdateTab(bool checkUpdate)
+void SettingsDialog::focusUpdateTab()
 {
-    if (checkUpdate) checkGamsUpdates();
+    ui->updateBrowser->setHtml("Checking for updates...");
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    mC4U->checkForUpdate();
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -983,12 +984,6 @@ void SettingsDialog::on_btEngineDialog_clicked()
     emit reactivateEngineDialog();
 }
 
-void SettingsDialog::checkGamsUpdates()
-{
-    ui->updateBrowser->setText(tr("Checking for updates..."));
-    mUpdateChecker->start();
-}
-
 void SettingsDialog::checkGamsVersion(const QString &text)
 {
     mLastCheckDate = QDate::currentDate();
@@ -1000,7 +995,7 @@ void SettingsDialog::checkGamsVersion(const QString &text)
 void SettingsDialog::anchorClicked(const QUrl &link)
 {
     auto urlStr = link.url(QUrl::DecodeReserved);
-    if (urlStr.startsWith("https://www.gams.com")) {
+    if (urlStr.startsWith("https://")) {
         QDesktopServices::openUrl(QUrl(urlStr));
     } else {
         auto path = QDir::toNativeSeparators(QFileInfo(urlStr).absoluteFilePath().toLatin1());
