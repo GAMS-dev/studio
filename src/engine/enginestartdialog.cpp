@@ -129,6 +129,7 @@ void EngineStartDialog::setProcess(EngineProcess *process)
 {
     mProc = process;
     connect(mProc, &EngineProcess::authorized, this, &EngineStartDialog::authorizeChanged);
+    connect(mProc, &EngineProcess::reListProviderError, this, &EngineStartDialog::reListProviderError);
     connect(mProc, &EngineProcess::showVerificationCode, this, &EngineStartDialog::showVerificationCode);
     connect(mProc, &EngineProcess::authorizeError, this, &EngineStartDialog::authorizeError);
     connect(mProc, &EngineProcess::reGetUsername, this, &EngineStartDialog::reGetUsername);
@@ -360,6 +361,12 @@ void EngineStartDialog::authorizeError(const QString &error)
 void EngineStartDialog::reGetUsername(const QString &user)
 {
     ui->edUser->setText(user);
+}
+
+void EngineStartDialog::reListProviderError(const QString &error)
+{
+    ui->laWarn->setText("Error: " + error.trimmed());
+    ui->laWarn->setToolTip("Please select a valid provider");
 }
 
 void EngineStartDialog::showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete)

@@ -114,6 +114,7 @@ private slots:
     void bLogoutClicked();
     void authorizeError(const QString &error);
     void reGetUsername(const QString &user);
+    void reListProviderError(const QString &error);
     void showVerificationCode(const QString &userCode, const QString &verifyUri, const QString &verifyUriComplete);
     void reListJobs(qint32 count);
     void reListJobsError(const QString &error);
