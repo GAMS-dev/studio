@@ -4,6 +4,7 @@ Version 1.16.0 *
 - GDX Viewer symbol record count and symbol number are now displayed with thousands separator for improved readability.
 - removed the Go to line dialog, now the Navigator offers this functionality instead
 - fixed check for GAMS license
+- fixed crash when reading a corrupted ref-file
 - reworked check for update feature, with HTTPS support and without the GAMS C4U library
 
 Version 1.15.5
