@@ -25,7 +25,7 @@ namespace studio {
 namespace reference {
 
 FileUsedTreeModel::FileUsedTreeModel(QObject *parent) :
-    QAbstractItemModel(parent), mReference(nullptr)
+    QAbstractItemModel(parent), mReference(nullptr), mRootItem(nullptr)
 {
     setupTreeItemModelData();
 }
@@ -114,7 +114,7 @@ int FileUsedTreeModel::rowCount(const QModelIndex &parent) const
     else
         parentItem = static_cast<FileReferenceItem*>(parent.internalPointer());
 
-    return parentItem->childCount();
+    return parentItem ? parentItem->childCount() : 0;
 }
 
 int FileUsedTreeModel::columnCount(const QModelIndex &parent) const
