@@ -29,9 +29,6 @@ variables:
   PF_BUILDS_SSH_USER:
       value: $BUILDS_SSH_USER
       description: "Username used for SSH connection to builds server"
-  PF_GAMS_LICENSE:
-      value: $GAMS_LICENSE
-      description: "GAMS license string used for testing"
 
 include: ['ci/.gitlab-ci-0-gams.yml'
          ,'ci/.gitlab-ci-1-build.yml'
