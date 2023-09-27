@@ -59,7 +59,6 @@ test-leg:
   dependencies: [fetch-prerequisites,install-gams-leg,build-leg]
   script:
     - GAMS_PATH=/cache/gams-installs/`python3 ci/fetch_gams.py version`
-    - echo ${GAMS_LICENSE} > $GAMS_PATH/gamslice.txt
     - PATH="${GAMS_PATH}:${PATH}"
     - cd build && mkdir reports
     - REPORTS_DIR=$(pwd)/reports
@@ -88,7 +87,6 @@ test-wei:
   script:
     - $gmsdirname = Get-Content mygmsdir.tmp -Raw
     - $GAMS_PATH = "C:\Cache\gams-installs\$gmsdirname"
-    - Out-File -FilePath $GAMS_PATH\gamslice.txt -InputObject $PF_GAMS_LICENSE -Encoding ASCII
     - $WORKSPACE = $([System.IO.Directory]::GetCurrentDirectory())
     - $env:Path = "$GAMS_PATH;$GAMS_PATH\gbin;" + $env:Path
     - $env:GAMSDIR = "$GAMS_PATH;$GAMS_PATH\gbin"

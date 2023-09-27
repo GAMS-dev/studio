@@ -23,21 +23,21 @@ install-gams-leg:
     name: $GAMS_CONTAINER_REGISTRY/machines/leg/builder-full:latest
     entrypoint: [""]
   script:
-    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+    - python3 ci/fetch_gams.py fetch_and_install_leg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-deg:
   stage: install-gams
   tags: [macos]
   needs: [fetch-prerequisites]
   script:
-    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+    - python3 ci/fetch_gams.py fetch_and_install_deg $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-dac:
   stage: install-gams
   tags: [macos-arm64]
   dependencies: [fetch-prerequisites]
   script:
-    - GAMS_LICENSE=$GAMS_LICENSE python3 ci/fetch_gams.py fetch_and_install_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+    - python3 ci/fetch_gams.py fetch_and_install_dac $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
 
 install-gams-wei:
   stage: install-gams
@@ -47,7 +47,7 @@ install-gams-wei:
     name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
     entrypoint: [""]   # prevent startup.sh
   script:
-    - python ci/fetch_gams.py fetch_and_install_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING $GAMS_LICENSE
+    - python ci/fetch_gams.py fetch_and_install_wei $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
     - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH
   artifacts:
     name: wei-gmsdirpath
