@@ -1,7 +1,7 @@
 Version 1.16.0
 ==================
 - added support for `Shift + Left Click` to select/deselect multiple labels in the GDX Viewer filters
-- added thousands seperator to symbol record count count and symbol number in GDX Viewer
+- added thousands seperator to symbol record count and symbol number in GDX Viewer
 - removed the Go To dialog, as the Navigator offers this functionality instead
 - fixed check for GAMS license
 - fixed crash when reading a corrupted ref-file
