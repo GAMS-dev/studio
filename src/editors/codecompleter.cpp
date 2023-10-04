@@ -403,7 +403,8 @@ void CodeCompleterModel::removeTempData(CodeCompleterType type)
     }
     QMap<int, CodeCompleterType> addType;
     QMap<int, CodeCompleterType>::iterator it = mType.find(range.y());
-    it = mType.erase(it);
+    if (it != mType.end())
+        it = mType.erase(it);
     while (it != mType.end()) {
         addType.insert(it.key() - range.y() + range.x(), it.value());
         it = mType.erase(it);
