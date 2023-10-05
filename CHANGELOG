@@ -1,3 +1,7 @@
+Version 1.16.1 *
+==================
+- fixed crash on using nested $echo commands"
+
 Version 1.16.0
 ==================
 - added support for `Shift + Left Click` to select/deselect multiple labels in the GDX Viewer filters
