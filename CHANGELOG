@@ -2,6 +2,7 @@ Version 1.16.1 *
 ==================
 - fixed crash on using nested $echo commands"
 - fixed label for engine SSO login providers
+- fixed model library dialog description location
 
 Version 1.16.0
 ==================
