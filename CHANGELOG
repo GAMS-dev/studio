@@ -1,10 +1,11 @@
 Version 1.16.1 *
 ==================
-- fixed crash on using nested $echo commands"
+- fixed crash on using nested $echo commands
 - fixed label for engine SSO login providers
 - fixed model library dialog description location
 - fixed recovering partly saved auto-save file
 - fixed recovering outdated auto-save file
+- improved performance of Navigator for sessions with a lot of known files
 
 Version 1.16.0
 ==================
@@ -21,7 +22,7 @@ Version 1.15.5
 - fixed crash in Reference File Viewer when searching for a symbol in FileUsed tab
 - removed the obsolete studio command line option "--help-all"
 
-Version 1.15.4 
+Version 1.15.4
 ==================
 - fixed path selection for GAMS license installation
 - fixed the GDX Viewer not displaying symbol data with too many records by only showing the first ~107 million entries
@@ -37,7 +38,7 @@ Version 1.15.3
 Version 1.15.2
 ==================
 - fixed missing OpenSSL library on Linux
-- fixed missing projects when a project path is missing 
+- fixed missing projects when a project path is missing
 
 Version 1.15.1
 ==================
