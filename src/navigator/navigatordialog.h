@@ -65,7 +65,6 @@ private:
     void collectFileSystem(QVector<NavigatorContent> &content);
     void collectLineNavigation(QVector<NavigatorContent> &content);
     void collectQuickActions(QVector<NavigatorContent> &content);
-    bool valueExists(FileMeta *fm, const QVector<NavigatorContent>& content);
     void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);

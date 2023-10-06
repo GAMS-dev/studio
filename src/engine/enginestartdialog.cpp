@@ -398,7 +398,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
             mProc->listProvider(ui->edSsoName->text().trimmed());
         }   break;
         default:
-            mProc->authorizeProviderName(ui->cbLoginMethod->currentText());
+            mProc->authorizeProviderName(ui->cbLoginMethod->currentData().toHash().value("name").toString());
             break;
         }
         return;
@@ -603,11 +603,11 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
 {
     int cbIndex = 3;
     for (const QHash<QString, QVariant> &provider : allProvider) {
-        QString name = provider.value("name").toString();
-        if (ui->cbLoginMethod->count() == cbIndex)
-            ui->cbLoginMethod->addItem(name, provider);
-        else if (ui->cbLoginMethod->itemText(cbIndex) != name) {
-            ui->cbLoginMethod->setItemText(cbIndex, name);
+        QString label = provider.value("label").toString();
+        if (ui->cbLoginMethod->count() == cbIndex) {
+            ui->cbLoginMethod->addItem(label, provider);
+        } else if (ui->cbLoginMethod->itemText(cbIndex) != label) {
+            ui->cbLoginMethod->setItemText(cbIndex, label);
             ui->cbLoginMethod->setItemData(cbIndex, provider);
         }
         ++cbIndex;

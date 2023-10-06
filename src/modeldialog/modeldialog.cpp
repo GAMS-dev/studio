@@ -100,7 +100,7 @@ ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
     connect(ui->tabWidget, &QTabWidget::currentChanged, this, &ModelDialog::storeSelectedTab);
 
     if (mHasGlbErrors) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setText("Some model libraries could not be loaded due to parsing problems in the corresponding GLB files. See the system output for details.");
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.setIcon(QMessageBox::Critical);
@@ -243,7 +243,7 @@ LibraryItem *ModelDialog::selectedLibraryItem() const
 
 void ModelDialog::on_pbDescription_clicked()
 {
-    QMessageBox msgBox;
+    QMessageBox msgBox(this);
     msgBox.setWindowTitle("Description for '" + mSelectedLibraryItem->name() + "' from " + mSelectedLibraryItem->library()->name());
     msgBox.setText(mSelectedLibraryItem->name());
     msgBox.setInformativeText(mSelectedLibraryItem->longDescription());

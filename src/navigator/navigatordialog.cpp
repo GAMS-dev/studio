@@ -180,9 +180,8 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
     collectLogs(content);
 
     for (FileMeta* fm : mMain->fileRepo()->fileMetas()) {
-        if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
+        if (!fm->location().endsWith("~log"))
             content.append(NavigatorContent(fm, "Known Files"));
-        }
     }
 }
 
@@ -193,9 +192,8 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
 
     for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
         FileMeta* fm = f->file();
-        if (!valueExists(fm, content)) {
+        if (!fm->location().endsWith("~log"))
             content.append(NavigatorContent(fm, "Current Project"));
-        }
     }
 }
 
@@ -203,9 +201,8 @@ void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
 {
     const auto files = mMain->fileRepo()->openFiles();
     for (FileMeta* fm : files) {
-        if (!valueExists(fm, content) && !fm->location().endsWith("~log")) {
+        if (!fm->location().endsWith("~log"))
             content.append(NavigatorContent(fm, "Open Tabs"));
-        }
     }
 }
 
@@ -529,15 +526,6 @@ bool NavigatorDialog::conditionallyClose()
     if (QApplication::activeWindow() == this)
         return false;
     else return QDialog::close();
-}
-
-bool NavigatorDialog::valueExists(FileMeta* fm, const QVector<NavigatorContent>& content)
-{
-    for (NavigatorContent c : content) {
-        if (c.getFileMeta() == fm)
-            return true;
-    }
-    return false;
 }
 
 QDir NavigatorDialog::findClosestPath(const QString& path)

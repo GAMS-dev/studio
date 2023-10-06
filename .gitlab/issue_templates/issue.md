@@ -7,5 +7,6 @@ t.b.d.
 - [ ] t.b.d.
 - [ ] Update CHANGELOG
 - [ ] Update GAMS documentation
+- [ ] Code documentation
 - [ ] Profiling
 - [ ] Unit Tests

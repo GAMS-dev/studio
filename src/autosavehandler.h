@@ -43,6 +43,7 @@ public:
 private:
     MainWindow *mMainWindow;
     const QString mAutosavedFileMarker = "~$";
+    const QString mTempFileMarker = "~~$";
 };
 
 } // namespace studio

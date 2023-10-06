@@ -533,26 +533,26 @@ QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
     return nodes;
 }
 
-bool MainWindow::handleFileChanges(FileMeta* fc, bool willReopen)
+bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
 {
-    if (!fc) return true;
+    if (!fm) return true;
 
     int ret = QMessageBox::Discard;
-    if (fc->editors().size() == 1 && fc->isModified()) {
+    if (fm->editors().size() == 1 && fm->isModified()) {
         // only ask, if this is the last editor of this file
-        ret = showSaveChangesMsgBox(fc->name() + " has been modified.");
+        ret = showSaveChangesMsgBox(fm->name() + " has been modified.");
     }
     if (ret == QMessageBox::Cancel)
         return false;
 
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fc->save();
-        closeFileEditors(fc->id(), willReopen);
+        fm->save();
+        closeFileEditors(fm->id(), willReopen);
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fc->setModified(false);
-        closeFileEditors(fc->id(), willReopen);
+        fm->setModified(false);
+        closeFileEditors(fm->id(), willReopen);
     }
     return true;
 }
@@ -685,6 +685,7 @@ void MainWindow::timerEvent(QTimerEvent *event)
 
 bool MainWindow::event(QEvent *event)
 {
+    // TODO(JM) reminder
     // According to Qt 6.4 reference this should fix hidden menus in full-screen. Doesn't so, but keep to check further
     //    see: https://doc.qt.io/qt-6/windows-issues.html#fullscreen-opengl-based-windows
 //#if defined(Q_OS_WIN)
@@ -1961,6 +1962,16 @@ void MainWindow::fileChanged(const FileId fileId)
                     updateRunState();
             }
         }
+    }
+}
+
+void MainWindow::fileModifiedChanged(const FileId fileId, bool modified)
+{
+    if (!modified) {
+        // remove austosave file if exists
+        FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
+        if (!fm) return;
+        mAutosaveHandler->clearAutosaveFiles({fm->location()});
     }
 }
 
@@ -4478,11 +4489,14 @@ void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
     }
     if (ViewHelper::toCodeEdit(edit)) {
         AbstractEdit *ae = ViewHelper::toAbstractEdit(edit);
-        if (!ae->isReadOnly())
+        if (!ae->isReadOnly()) {
             connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+            connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
+        }
     } else if (fileMeta->kind() == FileKind::Gsp || fileMeta->kind() == FileKind::Opt || fileMeta->kind() == FileKind::Pf
                || fileMeta->kind() == FileKind::Guc || fileMeta->kind() == FileKind::Efi || fileMeta->kind() == FileKind::GCon) {
         connect(fileMeta, &FileMeta::changed, this, &MainWindow::fileChanged, Qt::UniqueConnection);
+        connect(fileMeta, &FileMeta::modifiedChanged, this, &MainWindow::fileModifiedChanged, Qt::UniqueConnection);
     } else if (fileMeta->kind() == FileKind::Ref) {
         reference::ReferenceViewer *refView = ViewHelper::toReferenceViewer(edit);
         connect(refView, &reference::ReferenceViewer::jumpTo, this, &MainWindow::on_referenceJumpTo);
