@@ -115,6 +115,7 @@ public slots:
 
 signals:
     void changed(gams::studio::FileId fileId);
+    void modifiedChanged(gams::studio::FileId fileId, bool modified);
     void documentOpened();
     void documentClosed();
     void editableFileSizeCheck(const QFile &file, bool &canOpen);

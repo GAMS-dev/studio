@@ -1100,6 +1100,7 @@ void FileMeta::setModified(bool modified)
              if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(e)) efi->setModified(modified);
         }
     }
+    emit modifiedChanged(mId, modified);
 }
 
 bool FileMeta::isPinnable()

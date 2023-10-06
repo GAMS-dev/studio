@@ -223,6 +223,7 @@ private slots:
     void activeTabChanged(int index);
     void tabBarClicked(int index);
     void fileChanged(const gams::studio::FileId fileId);
+    void fileModifiedChanged(const gams::studio::FileId fileId, bool modified);
     void fileClosed(const gams::studio::FileId fileId);
     void fileEvent(const gams::studio::FileEvent &e);
     void logTabRenamed(QWidget *wid, const QString &newName);

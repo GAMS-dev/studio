@@ -113,17 +113,21 @@ void AutosaveHandler::saveChangedFiles()
         PExFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
         if (!node) continue; // skips unassigned widgets like the welcome-page
         QString filepath = QFileInfo(node->location()).path();
+        QString tempFile = filepath+"/"+mTempFileMarker+node->name();
         QString autosaveFile = filepath+"/"+mAutosavedFileMarker+node->name();
         if (node->isModified() && (node->file()->kind() == FileKind::Gms || node->file()->kind() == FileKind::Txt)) {
-            QFile file(autosaveFile);
+            QFile file(tempFile);
             file.open(QFile::WriteOnly);
             QTextStream out(&file);
             out << node->document()->toPlainText();
             out.flush();
             file.close();
+            file.rename(autosaveFile);
         } else if (QFileInfo::exists(autosaveFile)) {
-                QFile::remove(autosaveFile);
+            QFile::remove(autosaveFile);
         }
+        if (QFileInfo::exists(tempFile))
+            QFile::remove(tempFile);
     }
 }
 
