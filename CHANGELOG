@@ -1,11 +1,11 @@
-Version 1.16.1 *
+Version 1.16.1
 ==================
 - fixed crash on using nested $echo commands
 - fixed label for engine SSO login providers
 - fixed model library dialog description location
-- fixed recovering partly saved auto-save file
+- fixed partly saved auto-save file
 - fixed recovering outdated auto-save file
-- improved performance of Navigator for sessions with a lot of known files
+- improved performance of Navigator for sessions with a lot of files
 
 Version 1.16.0
 ==================
