@@ -9,7 +9,7 @@ codechecker-leg:
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
   script:
-    - echo "GAMS_DISTRIB=/cache/gams-installs/`python3 ci/fetch_gams.py version`" > gamsinclude.pri
+    - echo "GAMS_DISTRIB=/cache/gams-installs/`python3 ci/fetch_gams.py version $PF_CUSTOM_BRANCH $SSH_KEY_PORTING`" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
     - bash ci/codechecker.sh
