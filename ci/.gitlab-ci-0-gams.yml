@@ -8,7 +8,7 @@ fetch-prerequisites:
     entrypoint: [ "" ]
   script:
     # fetch helper scripts
-    - git clone -b immutable-and-unique https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
+    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
     - cp -R scripts-repo/ci .
   artifacts:
     name: fetch-prerequisites
