@@ -277,7 +277,7 @@ void TextViewEdit::mousePressEvent(QMouseEvent *e)
 void TextViewEdit::mouseMoveEvent(QMouseEvent *e)
 {
     if (e->buttons() == Qt::LeftButton && !(e->modifiers() & CAnyModifier)) {
-        mScrollDelta = e->y() < 0 ? e->y() : (e->y() < viewport()->height() ? 0 : e->y() - viewport()->height());
+        mScrollDelta = e->position().y() < 0 ? e->position().y() : (e->position().y() < viewport()->height() ? 0 : e->position().y() - viewport()->height());
         if (mScrollDelta) {
             if (!mScrollTimer.isActive()) {
                 mScrollTimer.start(0);

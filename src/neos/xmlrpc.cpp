@@ -23,7 +23,6 @@
 #include <QDebug>
 #include <QVariantMap>
 #include <QDateTime>
-#include "iostream"
 
 namespace gams {
 namespace studio {
@@ -52,8 +51,8 @@ XmlRpc::XmlRpc()
 bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
 {
     xml.writeStartElement("value");
-    switch (var.type()) {
-    case QVariant::List: {        // <array><data>…</data></array>
+    switch (var.typeId()) {
+    case QMetaType::QVariantList: {        // <array><data>…</data></array>
         xml.writeStartElement("array");
         xml.writeStartElement("data");
         QVariantList list = var.toList();
@@ -63,26 +62,26 @@ bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
         xml.writeEndElement();
         xml.writeEndElement();
     }   break;
-    case QVariant::ByteArray:   // <base64>..==</base64>
+    case QMetaType::QByteArray:   // <base64>..==</base64>
         xml.writeTextElement("base64", var.toByteArray().toBase64());
         break;
-    case QVariant::Bool:        // <boolean>1</boolean>
+    case QMetaType::Bool:        // <boolean>1</boolean>
         xml.writeTextElement("boolean", var.toString());
         break;
-    case QVariant::DateTime:    // <dateTime.iso8601>20200414T16:23:55</dateTime.iso8601>
+    case QMetaType::QDateTime:    // <dateTime.iso8601>20200414T16:23:55</dateTime.iso8601>
         xml.writeTextElement("dateTime.iso8601", var.toDateTime().toString(Qt::ISODate));
         break;
-    case QVariant::Double:      // <double>-0.32653</double>
+    case QMetaType::Double:      // <double>-0.32653</double>
         xml.writeTextElement("double", var.toString());
         break;
-    case QVariant::UInt:
-    case QVariant::Int:         // <int>32</int> or <i4>32</i4>
+    case QMetaType::UInt:
+    case QMetaType::Int:         // <int>32</int> or <i4>32</i4>
         xml.writeTextElement("int", var.toString());
         break;
-    case QVariant::String:      // <string>..</string>
+    case QMetaType::QString:      // <string>..</string>
         xml.writeTextElement("string", var.toString());
         break;
-    case QVariant::Hash: {      // <struct><member><name>…</name><value>..</value></member></struct>
+    case QMetaType::QVariantHash: {      // <struct><member><name>…</name><value>..</value></member></struct>
         xml.writeStartElement("struct");
         QVariantHash map = var.toHash();
         QVariantHash::const_iterator it;
@@ -96,7 +95,7 @@ bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
     }   break;
     default:
         errorText = "XML-Error: Unsupported QVariant of type ";
-        errorText.append(QByteArray::number(var.type()));
+        errorText.append(QByteArray::number(var.typeId()));
         qDebug() << errorText;
         return false;
     }
@@ -245,3 +244,4 @@ QVariantList XmlRpc::parseParams(QIODevice *device, QString &method)
 } // namespace neos
 } // namespace studio
 } // namespace gams
+

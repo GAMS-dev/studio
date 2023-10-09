@@ -79,12 +79,11 @@ QString findFixedFont()
     if (QFontInfo(font).fixedPitch())
         return QFontInfo(font).family();
 
-    QFontDatabase fdb;
-    QStringList list = fdb.families();
+    QStringList list = QFontDatabase::families();
     for (int i = 0; i < list.size(); ++i) {
-        if (fdb.isPrivateFamily(list.at(i)))
+            if (QFontDatabase::isPrivateFamily(list.at(i)))
             continue;
-        if (fdb.isFixedPitch(list.at(i))) {
+        if (QFontDatabase::isFixedPitch(list.at(i))) {
             return list.at(i);
         }
     }
@@ -648,7 +647,7 @@ bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group
 
 bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
 {
-    switch (QMetaType::Type(value.type())) {
+    switch (QMetaType::Type(value.typeId())) {
     case QMetaType::Double: group[key] = value.toDouble(); break;
     case QMetaType::ULongLong:
     case QMetaType::LongLong: group[key] = value.toLongLong(); break;

@@ -70,7 +70,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     ui->tvListView->addAction(cpComma);
     ui->tvTableView->addAction(cpComma);
 
-    QAction* cpTab = mContextMenuLV.addAction("Copy (tab-separated)", this, [this]() { copySelectionToClipboard("\t"); }, QKeySequence("Ctrl+Shift+C"));
+    QAction* cpTab = mContextMenuLV.addAction("Copy (tab-separated)", QKeySequence("Ctrl+Shift+C"), this, [this]() { copySelectionToClipboard("\t"); });
     mContextMenuTV.addAction(cpTab);
     cpTab->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     cpTab->setShortcutVisibleInContextMenu(true);
@@ -83,7 +83,7 @@ GdxSymbolView::GdxSymbolView(QWidget *parent) :
     mContextMenuLV.addSeparator();
     mContextMenuTV.addSeparator();
 
-    QAction* aResizeColumn = mContextMenuLV.addAction("Auto Resize Columns", this, [this]() { autoResizeColumns(); }, QKeySequence("Ctrl+R"));
+    QAction* aResizeColumn = mContextMenuLV.addAction("Auto Resize Columns", QKeySequence("Ctrl+R"), this, [this]() { autoResizeColumns(); });
     mContextMenuTV.addAction(aResizeColumn);
     aResizeColumn->setShortcutContext(Qt::WidgetWithChildrenShortcut);
     aResizeColumn->setShortcutVisibleInContextMenu(true);
