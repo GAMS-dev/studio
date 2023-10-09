@@ -37,21 +37,21 @@ void TestCommonPaths::testSystemDir()
     QVERIFY(result.isEmpty());
 }
 
-//void TestCommonPaths::testSetSystemDirNull()
-//{
-//    const QString expected = getExpectedPath();
-//    CommonPaths::setSystemDir(QString());
-//    auto result = CommonPaths::systemDir();
-//    QVERIFY(expected == result);
-//}
+void TestCommonPaths::testSetSystemDirNull()
+{
+    const QString expected = getExpectedPath();
+    CommonPaths::setSystemDir(QString());
+    auto result = CommonPaths::systemDir();
+    QVERIFY2(expected == result, QString("result is %1").arg(result).toLatin1().data());
+}
 
-//void TestCommonPaths::testSetSystemDirEmpty()
-//{
-//    const QString expected = getExpectedPath();
-//    CommonPaths::setSystemDir("");
-//    auto result = CommonPaths::systemDir();
-//    QVERIFY(expected == result);
-//}
+void TestCommonPaths::testSetSystemDirEmpty()
+{
+    const QString expected = getExpectedPath();
+    CommonPaths::setSystemDir("");
+    auto result = CommonPaths::systemDir();
+    QVERIFY2(expected == result, QString("result is %1").arg(result).toLatin1().data());
+}
 
 void TestCommonPaths::testSetSystemDirCustom()
 {
@@ -249,7 +249,7 @@ void TestCommonPaths::testGamsLicenseFilePath()
 QString TestCommonPaths::getExpectedPath()
 {
 #if __APPLE__
-    if (qgetenv("PATH").contains("gamsdist")) { // GitLab CI path
+    if (qgetenv("PATH").contains("gams-installs")) { // GitLab CI path
         return QFileInfo(QStandardPaths::findExecutable("gams")).canonicalPath();
     }
     return QFileInfo(QStandardPaths::findExecutable("gams",

@@ -31,8 +31,8 @@ private slots:
 
     void testSystemDir();
 
-//    void testSetSystemDirNull();
-//    void testSetSystemDirEmpty();
+    void testSetSystemDirNull();
+    void testSetSystemDirEmpty();
     void testSetSystemDirCustom();
     void testSetSystemDirNoGAMS();
     void testSetSystemDirAPPIMAGE();
