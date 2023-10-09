@@ -382,7 +382,7 @@ MainWindow::MainWindow(QWidget *parent)
     mHistory.files().clear();
     const QVariantList joHistory = Settings::settings()->toList(skHistory);
     for (const QVariant &jRef: joHistory) {
-        if (!jRef.canConvert(QMetaType::QVariantMap)) continue;
+        if (!jRef.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
         QVariantMap map = jRef.toMap();
         if (map.contains("file")) {
             mHistory.files() << map.value("file").toString();
@@ -2828,7 +2828,7 @@ void MainWindow::restoreFromSettings()
     const QVariantList joHelp = settings->toList(skHelpBookmarks);
     QMap<QString, QString> bookmarkMap;
     for (const QVariant &joVal: joHelp) {
-        if (!joVal.canConvert(QMetaType::QVariantMap)) continue;
+        if (!joVal.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
         QVariantMap entry = joVal.toMap();
         bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
     }
@@ -5051,7 +5051,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
         }
     }
     QApplication::processEvents(QEventLoop::AllEvents, 10);
-    if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QMetaType::QVariantList)) {
+    if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QMetaType(QMetaType::QVariantList))) {
         NewTabStrategy tabStrategy = curTab.isEmpty() ? tabAtEnd : tabBeforeCurrent;
         QVariantList tabArray = tabData.value("mainTabs").toList();
         QStringList skippedFiles;
