@@ -236,6 +236,8 @@ pack-wei-debug:
       }
     # zip studio directory... for MR artifact exposure
     - cd ..
+    - tree /F
+    - Get-ChildItem -Path studio | Measure-Object -Property Length -Sum
     - Compress-Archive -Path studio -DestinationPath GAMS_Studio-wei-debug-x86_64.zip
   artifacts:
     name: "GAMS_Studio-wei-debug-x86_64"
