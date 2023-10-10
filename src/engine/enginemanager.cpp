@@ -435,7 +435,8 @@ void EngineManager::listNamespaces()
     mNamespacesApi->listNamespaces();
 }
 
-void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance)
+void EngineManager::submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile,
+                              QList<QString> params, const QString &instance, const QString &tag)
 {
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
@@ -446,7 +447,7 @@ void EngineManager::submitJob(QString modelName, QString nSpace, QString zipFile
     if (!instance.isEmpty())
         labels << QString("instance=%1").arg(instance);
 
-    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, dummy, dummyL, model);
+    mJobsApi->createJob(modelName, nSpace, dummy, dummy, dummyL, dummyL, QString("solver.log"), params, dummyL, labels, tag, dummyL, model);
 }
 
 void EngineManager::getJobStatus()

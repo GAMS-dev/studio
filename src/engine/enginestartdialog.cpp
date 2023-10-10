@@ -74,6 +74,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui->laAvailable->setVisible(false);
     ui->laAvailDisk->setVisible(false);
     ui->laAvailVolume->setVisible(false);
+    ui->laAvailVolSec->setVisible(false);
     ui->ssoPane->setVisible(false);
 
     if (Theme::instance()->baseTheme(Theme::instance()->activeTheme()) != 0)
@@ -323,6 +324,7 @@ void EngineStartDialog::showSubmit()
     ui->laAvailable->setVisible(mProc->inKubernetes());
     ui->laAvailDisk->setVisible(mProc->inKubernetes());
     ui->laAvailVolume->setVisible(mProc->inKubernetes());
+    ui->laAvailVolSec->setVisible(mProc->inKubernetes());
     updateSubmitStates();
     if (!mHiddenMode)
         ensureOpened();
@@ -416,6 +418,7 @@ void EngineStartDialog::buttonClicked(QAbstractButton *button)
         if (data.size() == 4)
             mProc->setSelectedInstance(data.first().toString());
     }
+    mProc->setJobTag(ui->edJobTag->text().trimmed());
     mProc->setNamespace(ui->cbNamespace->currentText());
     emit submit(start);
 }
@@ -664,6 +667,7 @@ void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList
         ui->laAvailDisk->setText("unlimited");
         ui->laAvailDisk->setToolTip("");
         ui->laAvailVolume->setVisible(false);
+        ui->laAvailVolSec->setVisible(false);
         return;
     }
     ui->laAvailDisk->setVisible(diskHint.size() > 0);
@@ -674,7 +678,10 @@ void EngineStartDialog::quotaHint(const QStringList &diskHint, const QStringList
     ui->laAvailVolume->setVisible(volumeHint.size() > 0);
     if (ui->laAvailVolume->isVisible()) {
         ui->laAvailVolume->setText(volumeHint.at(0));
-        ui->laAvailVolume->setToolTip(volumeHint.size() > 1 ? "Limited by " + volumeHint.at(1) : "");
+        ui->laAvailVolSec->setVisible(volumeHint.size() > 2);
+        if (ui->laAvailVolSec->isVisible())
+            ui->laAvailVolSec->setText(volumeHint.at(1));
+        ui->laAvailVolume->setToolTip(volumeHint.size() > 2 ? "Limited by " + volumeHint.at(2) : "");
     }
 }
 
@@ -929,6 +936,22 @@ void EngineStartDialog::on_bShowLogin_clicked()
 {
     mProc->abortRequests();
     showLogin();
+}
+
+
+void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
+{
+    if (!mProc) return;
+    int parallel = 0;
+    if (ui->cbInstance->itemData(index).canConvert(QMetaType(QMetaType::QVariantList))) {
+        QVariantList list = ui->cbInstance->itemData(index).toList();
+        bool ok = false;
+        if (list.size() > 3)
+            parallel = list.at(3).toInt(&ok);
+        if (!ok) parallel = -1;
+    }
+
+    mProc->updateQuota(parallel);
 }
 
 

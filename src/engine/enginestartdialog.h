@@ -136,6 +136,8 @@ private slots:
 
     void on_bShowLogin_clicked();
 
+    void on_cbInstance_currentIndexChanged(int index);
+
 private:
     Ui::EngineStartDialog *ui;
     EngineProcess *mProc;
