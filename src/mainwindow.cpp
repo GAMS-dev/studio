@@ -4137,9 +4137,15 @@ void MainWindow::showEngineStartDialog()
                      Settings::settings()->toString(SettingsKey::skEngineNamespace),
                      Settings::settings()->toString(SettingsKey::skEngineUserInstance),
                      Settings::settings()->toBool(SettingsKey::skEngineForceGdx));
+    dialog->setJobTag(mEngineJobTag);
+
+    connect(dialog, &engine::EngineStartDialog::jobTagChanged, dialog, [this](const QString &jobTag) {
+        mEngineJobTag = jobTag;
+    });
 
     connect(proc, &engine::EngineProcess::authorized, this, [this, dialog](const QString &token) {
         mEngineAuthToken = token;
+        mEngineJobTag = dialog->jobTag();
         Settings::settings()->setString(SettingsKey::skEngineUrl, dialog->url());
         Settings::settings()->setString(SettingsKey::skEngineUser, dialog->user());
         Settings::settings()->setString(SettingsKey::skEngineSsoName, dialog->ssoName());

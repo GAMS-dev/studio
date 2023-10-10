@@ -557,6 +557,7 @@ private:
     QScopedPointer<miro::MiroDeployDialog> mMiroDeployDialog;
     bool mMiroRunning = false;
     QString mEngineAuthToken;
+    QString mEngineJobTag;
     bool mEngineNoDialog = false;
 };
 

@@ -267,6 +267,16 @@ int EngineStartDialog::authMethod()
     return qBound(0, ui->cbLoginMethod->currentIndex(), ui->cbLoginMethod->count());
 }
 
+QString EngineStartDialog::jobTag()
+{
+    return ui->edJobTag->text();
+}
+
+void EngineStartDialog::setJobTag(const QString &jobTag)
+{
+    ui->edJobTag->setText(jobTag);
+}
+
 bool EngineStartDialog::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == ui->edUrl && event->type() == QEvent::FocusOut)
@@ -952,6 +962,12 @@ void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
     }
 
     mProc->updateQuota(parallel);
+}
+
+
+void EngineStartDialog::on_edJobTag_editingFinished()
+{
+    emit jobTagChanged(ui->edJobTag->text().trimmed());
 }
 
 
