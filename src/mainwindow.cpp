@@ -382,7 +382,7 @@ MainWindow::MainWindow(QWidget *parent)
     mHistory.files().clear();
     const QVariantList joHistory = Settings::settings()->toList(skHistory);
     for (const QVariant &jRef: joHistory) {
-        if (!jRef.canConvert(QVariant::Map)) continue;
+        if (!jRef.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
         QVariantMap map = jRef.toMap();
         if (map.contains("file")) {
             mHistory.files() << map.value("file").toString();
@@ -2197,7 +2197,7 @@ void MainWindow::postGamsRun(NodeId origin, int exitCode)
             if (node)
                 closeNodeConditionally(node);
         }
-        QTimer::singleShot(200, this, [this, tempGdx]() {
+        QTimer::singleShot(200, this, [tempGdx]() {
             bool done = QFile::remove(tempGdx);
             if (!done)
                 DEB() << "Couldn't remove temp GDX file " << tempGdx;
@@ -2828,7 +2828,7 @@ void MainWindow::restoreFromSettings()
     const QVariantList joHelp = settings->toList(skHelpBookmarks);
     QMap<QString, QString> bookmarkMap;
     for (const QVariant &joVal: joHelp) {
-        if (!joVal.canConvert(QVariant::Map)) continue;
+        if (!joVal.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
         QVariantMap entry = joVal.toMap();
         bookmarkMap.insert(entry.value("location").toString(), entry.value("name").toString());
     }
@@ -2883,7 +2883,7 @@ void MainWindow::openProject(const QString gspFile)
                     mOpenPermission = opAll;
                     QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
                 });
-                connect(dialog, &path::PathRequest::accepted, this, [this, map, dialog, gspFile]() {
+                connect(dialog, &path::PathRequest::accepted, this, [this, map, gspFile]() {
                     mProjectRepo.read(map, gspFile);
                 });
                 mOpenPermission = opNoGsp;
@@ -5051,7 +5051,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
         }
     }
     QApplication::processEvents(QEventLoop::AllEvents, 10);
-    if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QVariant::List)) {
+    if (tabData.contains("mainTabs") && tabData.value("mainTabs").canConvert(QMetaType(QMetaType::QVariantList))) {
         NewTabStrategy tabStrategy = curTab.isEmpty() ? tabAtEnd : tabBeforeCurrent;
         QVariantList tabArray = tabData.value("mainTabs").toList();
         QStringList skippedFiles;
@@ -5955,13 +5955,14 @@ void MainWindow::on_actionPrint_triggered()
 
 #ifdef __APPLE__
     int ret = mPrintDialog->exec();
-    if (ret == QDialog::Accepted)
+    if (ret == QDialog::Accepted) {
         if (numberLines>5000) {
              int answer = msgBox.exec();
              if (answer == QMessageBox::No)
                  return;
         }
         printDocument();
+    }
 #else
     if (numberLines>5000) {
         int answer = msgBox.exec();

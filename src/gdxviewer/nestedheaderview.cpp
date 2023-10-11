@@ -308,7 +308,7 @@ void NestedHeaderView::dragMoveEvent(QDragMoveEvent *event)
         dimIdxStart = event->mimeData()->data("GDXDRAGDROP/COL").toInt();
         dragOrientationStart = Qt::Vertical;
     }
-    dimIdxEnd = pointToDropDimension(event->pos());
+    dimIdxEnd = pointToDropDimension(event->position().toPoint());
     dragOrientationEnd = orientation();
     decideAcceptDragEvent(event);
     viewport()->update();

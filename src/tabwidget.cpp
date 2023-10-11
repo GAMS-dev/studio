@@ -39,7 +39,7 @@ TabWidget::TabWidget(QWidget *parent)
 void TabWidget::mouseReleaseEvent(QMouseEvent *event)
 {
     if (event->button() == Qt::MiddleButton) {
-        int index = tabBar()->tabAt(tabBar()->mapFromGlobal(event->globalPos()));
+        int index = tabBar()->tabAt(tabBar()->mapFromGlobal(event->globalPosition().toPoint()));
         emit closeTab(index);
         event->accept();
         return;
@@ -73,7 +73,7 @@ bool TabWidget::eventFilter(QObject *sender, QEvent *event)
     } else if (event->type() == QEvent::MouseButtonPress) {
         QMouseEvent *me = static_cast<QMouseEvent*>(event);
         if (me->button() == Qt::LeftButton && me->modifiers().testFlag(Qt::ControlModifier)) {
-            int index = tabBar()->tabAt(tabBar()->mapFromGlobal(me->globalPos()));
+            int index = tabBar()->tabAt(tabBar()->mapFromGlobal(me->globalPosition().toPoint()));
             Qt::Orientation orient = (me->modifiers().testFlag(Qt::ShiftModifier) ? Qt::Vertical : Qt::Horizontal);
             emit openPinView(index, orient);
             return true;

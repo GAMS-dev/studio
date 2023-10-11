@@ -245,7 +245,7 @@ void BaseHighlighter::applyFormatChanges()
             return range.start < preeditAreaStart
                     || range.start + range.length > preeditAreaStart + preeditAreaLength;
         };
-        const auto it = std::remove_if(ranges.begin(), ranges.end(),
+        auto it = std::remove_if(ranges.begin(), ranges.end(),
                                        isOutsidePreeditArea);
         if (it != ranges.end()) {
             ranges.erase(it, ranges.end());

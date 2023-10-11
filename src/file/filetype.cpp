@@ -31,6 +31,7 @@ namespace gams {
 namespace studio {
 
 const QStringList FileType::CInvalidUserTypes {"", "ref", "gdx", "log", "lst", "lxi", "opt", "yaml", "exe", "efi"};
+const QRegularExpression FileType::CRexCommaSep = QRegularExpression("\\h*,\\h*");
 
 QList<FileType*> FileType::mFileTypes {
     new FileType(FileKind::Gsp, {"gsp" ,"pro"}, "GAMS Studio Project", false),
@@ -160,7 +161,7 @@ FileType& FileType::from(FileKind kind)
 
 QStringList FileType::validateSuffixList(const QString &commaSeparatedList, QStringList *invalid)
 {
-    QStringList res = commaSeparatedList.split(QRegularExpression("\\h*,\\h*"), Qt::SkipEmptyParts);
+    QStringList res = commaSeparatedList.split(CRexCommaSep, Qt::SkipEmptyParts);
     for (const QString &suf : CInvalidUserTypes) {
         if (res.contains(suf, Qt::CaseInsensitive)) {
             res.removeAll(suf);

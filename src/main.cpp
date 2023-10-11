@@ -49,11 +49,6 @@ int main(int argc, char *argv[])
     // to temporarily add additional information enable the following line
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
 
-    if (!prepareScaling())
-        QApplication::setAttribute(Qt::AA_EnableHighDpiScaling);
-
-    // if we manage do get real highDPI icons into the system this may help (currently it scales up lo-res icons)
-    QApplication::setAttribute(Qt::AA_UseHighDpiPixmaps);
     Application app(argc, argv);
 
     QSystemSemaphore sem(app.serverName(), 1, QSystemSemaphore::Open);

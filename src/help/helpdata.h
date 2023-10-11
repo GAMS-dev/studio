@@ -232,7 +232,6 @@ public:
 
     inline static int getURLIndexFrom(const QString &urlStr)  {
         int index = -1;
-        QStringList pathList;
         for(const QString &path : getPathList()) {
             index++;
             if (urlStr.lastIndexOf(path) > -1)

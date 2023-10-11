@@ -426,7 +426,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         setTextCursor(cur);
         if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber()) {
             QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
-            QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+            QMouseEvent me(QEvent::MouseMove, mousePos, QCursor::pos(), Qt::NoButton, qApp->mouseButtons(), e->modifiers());
             mouseMoveEvent(&me);
         }
         return;
@@ -566,7 +566,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     AbstractEdit::keyPressEvent(e);
     if (e->key() == Qt::Key_Control || topBlock != firstVisibleBlock().blockNumber() || vertScroll != verticalScrollBar()->sliderPosition()) {
         QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
-        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+        QMouseEvent me(QEvent::MouseMove, mousePos, QCursor::pos(), Qt::NoButton, qApp->mouseButtons(), e->modifiers());
         mouseMoveEvent(&me);
     }
 }
@@ -922,7 +922,7 @@ void CodeEdit::keyReleaseEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Control) {
         QPoint mousePos = viewport()->mapFromGlobal(QCursor::pos());
-        QMouseEvent me(QEvent::MouseMove, mousePos, Qt::NoButton, qApp->mouseButtons(), e->modifiers());
+        QMouseEvent me(QEvent::MouseMove, mousePos, QCursor::pos(), Qt::NoButton, qApp->mouseButtons(), e->modifiers());
         mouseMoveEvent(&me);
     }
     // return pressed: ignore here
@@ -2790,7 +2790,7 @@ void LineNumberArea::mousePressEvent(QMouseEvent *event)
 {
     QPoint pos = event->pos();
     pos.setX(pos.x()-width());
-    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    QMouseEvent e(event->type(), pos, mapToGlobal(pos), event->button(), event->buttons(), event->modifiers());
     if (mCodeEditor->showFolding() && e.pos().x() > -mCodeEditor->iconSize()) {
         QTextBlock block = mCodeEditor->cursorForPosition(e.pos()).block();
         block = mCodeEditor->findFoldStart(block);
@@ -2822,7 +2822,7 @@ void LineNumberArea::mouseMoveEvent(QMouseEvent *event)
         event->accept();
         return;
     }
-    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    QMouseEvent e(event->type(), pos, mapToGlobal(pos), event->button(), event->buttons(), event->modifiers());
     mCodeEditor->mouseMoveEvent(&e);
 }
 
@@ -2835,7 +2835,7 @@ void LineNumberArea::mouseReleaseEvent(QMouseEvent *event)
         return;
     }
     pos.setX(pos.x()-width());
-    QMouseEvent e(event->type(), pos, event->button(), event->buttons(), event->modifiers());
+    QMouseEvent e(event->type(), pos, mapToGlobal(pos), event->button(), event->buttons(), event->modifiers());
     mCodeEditor->mouseReleaseEvent(&e);
 }
 

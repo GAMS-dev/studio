@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "projecttreeview.h"
-#include "logger.h"
 #include "projecttreemodel.h"
 #include "filemeta.h"
 #include <QApplication>
@@ -92,7 +91,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
             if (idNr > 0) idList << NodeId(idNr); // skips the root node
         }
         // [workaround] sometimes the dropAction isn't set correctly
-        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier))
+        if (!event->modifiers().testFlag(Qt::ControlModifier))
             event->setDropAction(Qt::MoveAction);
         else
             event->setDropAction(Qt::CopyAction);
@@ -103,7 +102,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::CopyAction);
     }
     QList<QModelIndex> newSelection;
-    emit dropFiles(indexAt(event->pos()), pathList, idList, event->dropAction(), newSelection);
+    emit dropFiles(indexAt(event->position().toPoint()), pathList, idList, event->dropAction(), newSelection);
     if (newSelection.isEmpty()) {
         selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
     } else {
@@ -127,15 +126,15 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
             }
         }
     }
-    if ((event->mimeData()->hasUrls() || isIntern) && !event->mouseButtons().testFlag(Qt::RightButton)) {
-        if (event->pos().y() > size().height()-50 || event->pos().y() < 50) {
+    if ((event->mimeData()->hasUrls() || isIntern) && !event->buttons().testFlag(Qt::RightButton)) {
+        if (event->position().y() > size().height()-50 || event->position().y() < 50) {
             startAutoScroll();
         } else {
             stopAutoScroll();
         }
         ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
-        QModelIndex ind = indexAt(event->pos());
-        if (!event->keyboardModifiers().testFlag(Qt::ControlModifier) && isIntern) {
+        QModelIndex ind = indexAt(event->position().toPoint());
+        if (!event->modifiers().testFlag(Qt::ControlModifier) && isIntern) {
             event->setDropAction(Qt::MoveAction);
         } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())
                             || FileMeta::hasExistingFolder(event->mimeData()->urls())) {

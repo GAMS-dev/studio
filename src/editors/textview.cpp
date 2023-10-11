@@ -27,8 +27,6 @@
 #include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
-#include "search/search.h"
-#include "search/searchlocator.h"
 #include "search/searchworker.h"
 
 #include <QScrollBar>
@@ -382,20 +380,20 @@ bool TextView::eventFilter(QObject *watched, QEvent *event)
 {
     if (watched == verticalScrollBar() && mStayAtTail) {
         if (event->type() == QEvent::MouseButtonPress) {
-            mSliderMouseStart = static_cast<QMouseEvent*>(event)->y();
+            mSliderMouseStart = static_cast<QMouseEvent*>(event)->position().y();
             mSliderStartedAtTail = *mStayAtTail;
             if (mSliderStartedAtTail) *mStayAtTail = false;
         }
         if (event->type() == QEvent::MouseMove) {
             QMouseEvent *me = static_cast<QMouseEvent*>(event);
-            if (me->buttons().testFlag(Qt::LeftButton) && me->y() > verticalScrollBar()->height() - verticalScrollBar()->width())
+            if (me->buttons().testFlag(Qt::LeftButton) && me->position().y() > verticalScrollBar()->height() - verticalScrollBar()->width())
                 mSliderStartedAtTail = true;
         }
         if (event->type() == QEvent::MouseButtonRelease) {
             QMouseEvent *me = static_cast<QMouseEvent*>(event);
-            if (mSliderStartedAtTail && (mSliderMouseStart-3 < me->y())) {
+            if (mSliderStartedAtTail && (mSliderMouseStart-3 < me->position().y())) {
                 *mStayAtTail = true;
-            } else if (mSliderMouseStart-3 > me->y()) {
+            } else if (mSliderMouseStart-3 > me->position().y()) {
                 *mStayAtTail = false;
             }
         }

@@ -43,7 +43,7 @@ EngineStartDialog::EngineStartDialog(QWidget *parent) :
     ui(new Ui::EngineStartDialog), mProc(nullptr)
 {
     ui->setupUi(this);
-    installEventFilter(ui->laSsoLink);
+    ui->laSsoLink->installEventFilter(this);
     setCanLogin(false);
     QFont f = ui->laWarn->font();
     f.setBold(true);

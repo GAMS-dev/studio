@@ -396,7 +396,7 @@ QByteArray AuthManager::createContent(const QHash<QString, QVariant> &data)
         }
         if (!res.isEmpty())
             res += "&";
-        res += QString("%1=%2").arg(QUrl::toPercentEncoding(it.key())).arg(QUrl::toPercentEncoding(value)).toUtf8();
+        res += QString("%1=%2").arg(QUrl::toPercentEncoding(it.key()), QUrl::toPercentEncoding(value)).toUtf8();
     }
     return res;
 }

@@ -219,8 +219,8 @@ PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* run
     : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
     , mProjectFile(filePath)
     , mWorkDir(workDir)
-    , mGamsProcess(new GamsProcess())
     , mType(type)
+    , mGamsProcess(new GamsProcess())
 {
     mBreakpointData = new debugger::BreakpointData();
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
