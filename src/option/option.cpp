@@ -570,9 +570,10 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
              /* only for gams "solver" option */
              if (mOptionDefinitionFile.compare("optgams.def", Qt::CaseInsensitive)==0 &&
                  opt.name.compare("solver", Qt::CaseInsensitive)==0                      ) {
-                 for(const QString &s : solverConfigInfo.solverNames()) {
-                    opt.valueList.append( OptionValue( QVariant(s), QString(), false, false));
-                 }
+                const auto names = solverConfigInfo.solverNames();
+                for(const QString &s : names) {
+                   opt.valueList.append( OptionValue( QVariant(s), QString(), false, false));
+                }
              }
              opt.deprecated = optIsDeprecated(mOPTHandle, name);
              opt.valid = (helpContextNr != 0);

@@ -75,6 +75,7 @@ private:
     static int mGmsFixedTypes;
     static QStringList mUserGamsTypes;
     static const QStringList CInvalidUserTypes;
+    const static QRegularExpression CRexCommaSep;
 
     static QStringList mSolverNames;
 };
