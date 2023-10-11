@@ -625,7 +625,7 @@ void EngineProcess::reQuota(const QList<QuotaData *> &data)
     updateQuota(1);
 }
 
-void EngineProcess::updateQuota(int parallel)
+void EngineProcess::updateQuota(qreal parallel)
 {
     QPair<QString, QList<int>> diskRemain("", {-1, -1});
     QPair<QString, QList<int>> volRemain("", {-1, -1});
@@ -665,7 +665,7 @@ void EngineProcess::updateQuota(int parallel)
     QStringList availVolume;
     if (volRemain.second.at(0) >= 0) {
         if (parallel < 1) parallel = 1;
-        int allSecs = volRemain.second.at(0) / parallel;
+        int allSecs = int(qreal(volRemain.second.at(0)) / parallel);
         QString val;
         int h = (allSecs / 3600);
         int m = ((allSecs - (h*3600)) / 60);

@@ -952,12 +952,12 @@ void EngineStartDialog::on_bShowLogin_clicked()
 void EngineStartDialog::on_cbInstance_currentIndexChanged(int index)
 {
     if (!mProc) return;
-    int parallel = 0;
+    double parallel = 0;
     if (ui->cbInstance->itemData(index).canConvert(QMetaType(QMetaType::QVariantList))) {
         QVariantList list = ui->cbInstance->itemData(index).toList();
         bool ok = false;
         if (list.size() > 3)
-            parallel = list.at(3).toInt(&ok);
+            parallel = list.at(3).toDouble(&ok);
         if (!ok) parallel = -1;
     }
 

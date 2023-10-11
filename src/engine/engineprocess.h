@@ -87,7 +87,7 @@ public:
     void getVersion();
     void addLastCert();
     bool inKubernetes() const;
-    void updateQuota(int parallel);
+    void updateQuota(qreal parallel);
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
