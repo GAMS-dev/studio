@@ -654,11 +654,11 @@ void EngineProcess::updateQuota(int parallel)
     if (diskRemain.second.at(0) >= 0) {
         QString val;
         if (diskRemain.second.at(0) > 100000000)
-            val = QString::number(diskRemain.second.at(0) / 1000000000, 'g', 2) + " GB";
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000000000, 'g', 3) + " GB";
         else if (diskRemain.second.at(0) > 100000)
-            val = QString::number(diskRemain.second.at(0) / 1000000, 'g', 2) + " MB";
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000000, 'g', 3) + " MB";
         else
-            val = QString::number(diskRemain.second.at(0) / 1000, 'g', 3) + " kb";
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000, 'g', 3) + " kb";
         availDisk << val;
         availDisk << diskRemain.first;
     }
