@@ -81,8 +81,8 @@ EngineManager::EngineManager(QObject* parent)
         emit reListProvider(allProvider);
     });
     connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
-        emit reListProviderError(getJsonMessageIfFound(text));
+            [this](OAIHttpRequestWorker *w, QNetworkReply::NetworkError , QString ) {
+        emit reListProviderError(w->error_str);
     });
     connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignal, this, [this](OAIForwarded_token_response summary) {
         emit reFetchOAuth2Token(summary.getIdToken());
