@@ -1,5 +1,5 @@
 stages:
-  - fetch-prerequisites
+  - fetch-scripts
   - install-gams
   - build
   - test
@@ -7,7 +7,20 @@ stages:
   - deploy
   - analyze
 
+include:
+  - project: 'devel/ciscripts'
+    file: .install-jobs.yml
+  - project: 'devel/ciscripts'
+    file: .shared-vars.yml
+  - 'ci/.gitlab-ci-0-gams.yml'
+  - 'ci/.gitlab-ci-1-build.yml'
+  - 'ci/.gitlab-ci-2-test.yml'
+  - 'ci/.gitlab-ci-3-pack.yml'
+  - 'ci/.gitlab-ci-4-deploy.yml'
+  - 'ci/.gitlab-ci-5-analyze.yml'
+
 variables:
+  extends: .shared-variables
   GAMS_CONTAINER_REGISTRY:
       value: registry.gams.com/devel
       description: "URL to the GAMS container registry"
@@ -17,24 +30,3 @@ variables:
   PF_CUSTOM_BRANCH:
       value: 0
       description: "Name of custom branch, or X.Y.Z for published distribution, or 0 if version is specified in text file with lines GAMS_DISTRIB_MAJOR=X, GAMS_DISTRIB_MINOR=Y, GAMS_DISTRIB_GOLD=Z"
-  PF_BUILDS_WWW_PATH:
-      value: $BUILDS_WWW_PATH
-      description: "URL path prefix for builds server"
-  PF_BUILDS_SSH_PORT:
-      value: $BUILDS_SSH_PORT
-      description: "Port used for SSH connection to builds server"
-  PF_BUILDS_SSH_SERVER:
-      value: $BUILDS_SSH_SERVER
-      description: "URL of the build server"
-  PF_BUILDS_SSH_USER:
-      value: $BUILDS_SSH_USER
-      description: "Username used for SSH connection to builds server"
-
-include: ['ci/.gitlab-ci-0-gams.yml'
-         ,'ci/.gitlab-ci-1-build.yml'
-         ,'ci/.gitlab-ci-2-test.yml'
-         ,'ci/.gitlab-ci-3-pack.yml'
-         ,'ci/.gitlab-ci-4-deploy.yml'
-         ,'ci/.gitlab-ci-5-analyze.yml'
-         ]
-

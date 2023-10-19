@@ -1,5 +1,4 @@
 deploy-cloudfront:
-  when: on_success
   stage: deploy
   tags: [linux]
   image:
@@ -15,7 +14,6 @@ deploy-cloudfront:
     - TAG_NAME=$CI_COMMIT_TAG ./ci/cloudfront-deploy.sh
 
 deploy-github:
-  when: on_success
   stage: deploy
   tags: [linux]
   image:
