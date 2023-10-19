@@ -4818,6 +4818,7 @@ void MainWindow::toggleSearchDialog()
                    );
 
             mSearchDialog->show();
+            mSearchDialog->move(p);
        }
     }
 }
