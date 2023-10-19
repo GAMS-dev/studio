@@ -13,6 +13,7 @@ Version 1.16.2
 - fixed error message when host not found
 - fixed rare crash in search
 - fixed search result not clickable after changing search term
+- fixed position of search dialog not saving when closing with close button in titlebar
 
 Version 1.16.1
 ==================
