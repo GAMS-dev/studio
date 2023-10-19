@@ -6,6 +6,7 @@ Version 1.16.2 *
 - added JobTag for job identification
 - fixed error message too long when host not found
 - fixed alignment in Engine login dialog
+- fixed rare crash in search
 
 Version 1.16.1
 ==================

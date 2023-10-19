@@ -85,6 +85,8 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 void ResultsView::keyPressEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        if (!ui->tableView->selectionModel()->hasSelection())
+            ui->tableView->selectRow(0);
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
         e->accept();
     } else if (e == Hotkey::SearchFindPrev) {
