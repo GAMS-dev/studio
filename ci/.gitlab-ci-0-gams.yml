@@ -1,55 +1,11 @@
-fetch-prerequisites:
-  stage: fetch-prerequisites
-  when: always
-  tags: [linux]
-  needs: []
-  image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/leg/builder-full:latest
-    entrypoint: [ "" ]
-  script:
-    # fetch helper scripts
-    - git clone https://gitlab-ci-token:${CI_JOB_TOKEN}@$GITLAB_CISCRIPTS_URL scripts-repo
-    - cp -R scripts-repo/ci .
-  artifacts:
-    name: fetch-prerequisites
-    expire_in: 15 minutes
-    paths: [ci/*]
-
 install-gams-leg:
-  stage: install-gams
-  tags: [linux]
-  needs: [fetch-prerequisites]
-  image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/leg/builder-full:latest
-    entrypoint: [""]
-  script:
-    - python3 ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+  extends: .install-gams-leg
 
 install-gams-deg:
-  stage: install-gams
-  tags: [macos]
-  needs: [fetch-prerequisites]
-  script:
-    - python3 ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+  extends: .install-gams-deg
 
 install-gams-dac:
-  stage: install-gams
-  tags: [macos-arm64]
-  dependencies: [fetch-prerequisites]
-  script:
-    - python3 ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
+  extends: .install-gams-dac
 
 install-gams-wei:
-  stage: install-gams
-  tags: [windows]
-  needs: [fetch-prerequisites]
-  image:
-    name: $GAMS_CONTAINER_REGISTRY/machines/wei/builder-full:latest
-    entrypoint: [""]   # prevent startup.sh
-  script:
-    - python ci/fetch_gams.py fetch_and_install $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-    - python ci/fetch_gams.py version $PF_CUSTOM_BRANCH $SSH_KEY_PORTING
-  artifacts:
-    name: wei-gmsdirpath
-    expire_in: 15 minutes
-    paths: [mygmsdir.tmp]
+  extends: .install-gams-wei
