@@ -63,7 +63,7 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
     Result r = mResultList->at(selectedRow);
 
-    mMain->searchDialog()->jumpToResult(selectedRow);
+    mMain->searchDialog()->jumpToResult(r);
 
     emit updateMatchLabel(selectedRow+1, mResultList->size());
     selectItem(selectedRow);

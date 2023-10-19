@@ -98,7 +98,6 @@ private:
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
-    void jumpToResult(int matchNr);
 
     int NavigateOutsideCache(Direction direction, bool firstLevel);
     int NavigateInsideCache(Direction direction);

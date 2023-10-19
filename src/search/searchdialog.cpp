@@ -781,11 +781,15 @@ bool SearchDialog::checkSearchTerm()
     return true;
 }
 
-void SearchDialog::jumpToResult(int matchNr)
-{
-    if (!(matchNr > -1 && matchNr < mSearch.results().size())) return;
+void SearchDialog::jumpToResult(int index) {
+    if (!mSearch.hasCache() || !(index > -1 && index < mSearch.results().size())) return;
 
-    Result r = mSearch.results().at(matchNr);
+    Result r = mSearch.results().at(index);
+    jumpToResult(r);
+}
+
+void SearchDialog::jumpToResult(Result r)
+{
     if (!QFileInfo::exists(r.filepath())) {
         SysLogLocator::systemLog()->append("File not found: " + r.filepath(), LogMsgType::Error);
         return;

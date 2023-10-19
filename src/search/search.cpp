@@ -301,15 +301,6 @@ int Search::findNextEntryInCache(Search::Direction direction) {
     return -1; // not found
 }
 
-/// Does a check if matchNr is valid and jumps to the corresponding result
-/// \brief Search::jumpToResult
-/// \param matchNr index of match in cache
-///
-void Search::jumpToResult(int matchNr)
-{
-    mSearchDialog->jumpToResult(matchNr);
-}
-
 ///
 /// \brief SearchDialog::selectNextMatch steps through words in a document
 /// \param direction
@@ -370,7 +361,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
         matchNr = findNextEntryInCache(direction);
         found = matchNr != -1;
 
-        jumpToResult(matchNr);
+        mSearchDialog->jumpToResult(matchNr);
     }
 
     if (!found && firstLevel) selectNextMatch(direction, false);
@@ -400,7 +391,7 @@ int Search::NavigateInsideCache(Direction direction)
         mOutsideOfList = false;
     }
     // navigate to match
-    jumpToResult(matchNr);
+    mSearchDialog->jumpToResult(matchNr);
 
     return matchNr;
 }
