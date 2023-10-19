@@ -117,6 +117,7 @@ protected:
     void showEvent(QShowEvent *event);
     void keyPressEvent(QKeyEvent *e);
     void closeEvent(QCloseEvent *event);
+    void moveEvent(QMoveEvent *event);
 
 private:
     void restoreSettings();
@@ -143,6 +144,7 @@ private:
     QWidget* mCurrentEditor = nullptr;
     MainWindow* mMain = nullptr;
     AbstractSearchFileHandler* mFileHandler = nullptr;
+    QPoint mLastPosition;
 
     Search mSearch;
     int mFilesInScope;

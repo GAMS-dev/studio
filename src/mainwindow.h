@@ -154,7 +154,6 @@ public:
     void toggleDistractionFreeMode();
     void toggleSearchDialog();
     void toggleFullscreen();
-    void setSearchWidgetPos(const QPoint& searchWidgetPos);
     void execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
                  gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
@@ -505,7 +504,6 @@ private:
     search::SearchDialog *mSearchDialog = nullptr;
     search::ResultsView *mResultsView = nullptr;
     NavigatorDialog *mNavigatorDialog = nullptr;
-    QPoint mSearchWidgetPos;
 #ifdef QWEBENGINE
     help::HelpWidget *mHelpWidget = nullptr;
 #endif

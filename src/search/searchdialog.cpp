@@ -59,6 +59,8 @@ void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event)
     emit toggle();
+    if (!mLastPosition.isNull())
+        move(mLastPosition);
 
     if (!mSearch.isSearching()) {
         updateDialogState();
@@ -69,6 +71,12 @@ void SearchDialog::closeEvent(QCloseEvent *event)
 {
     event->ignore();
     QDialog::closeEvent(event);
+}
+
+void SearchDialog::moveEvent(QMoveEvent *event)
+{
+    QDialog::moveEvent(event);
+    mLastPosition = event->pos();
 }
 
 void SearchDialog::restoreSettings()

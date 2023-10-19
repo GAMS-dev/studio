@@ -4803,25 +4803,21 @@ void MainWindow::toggleSearchDialog()
             mSearchDialog->activateWindow();
             mSearchDialog->autofillSearchDialog();
         } else {
-            if (mSearchWidgetPos.isNull()) { // first time opening
-                int margin = 25;
+            int margin = 25;
 
-                int wDiff = frameGeometry().width() - geometry().width();
-                int hDiff = frameGeometry().height() - geometry().height();
+            int wDiff = frameGeometry().width() - geometry().width();
+            int hDiff = frameGeometry().height() - geometry().height();
 
-                int wSize = mSearchDialog->width() + wDiff;
-                int hSize = mSearchDialog->height() + hDiff;
+            int wSize = mSearchDialog->width() + wDiff;
+            int hSize = mSearchDialog->height() + hDiff;
 
-                QPoint p(qMin(pos().x() + (width() - margin),
-                            QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
-                        qMin(pos().y() + hDiff + margin,
-                            QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
-                       );
-                mSearchWidgetPos = p;
-            }
+            QPoint p(qMin(pos().x() + (width() - margin),
+                        QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                    qMin(pos().y() + hDiff + margin,
+                        QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
+                   );
 
             mSearchDialog->show();
-            mSearchDialog->move(mSearchWidgetPos);
        }
     }
 }
@@ -5762,11 +5758,6 @@ void MainWindow::openGdxDiffFile()
     }
     PExFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, projectDiff);
     openFile(node->file());
-}
-
-void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
-{
-    mSearchWidgetPos = searchWidgetPos;
 }
 
 void MainWindow::toggleFullscreen()
