@@ -1,11 +1,11 @@
-Version 1.16.2 *
+Version 1.16.2
 ==================
 - enhanced GAMS Engine dialog
-- added GB for available space
-- compute remain time depending on instance factor and always show remaining seconds
-- added JobTag for job identification
-- fixed error message too long when host not found
-- fixed alignment in Engine login dialog
+    - added GB for available space
+    - compute remain time depending on instance factor and always show remaining seconds
+    - added JobTag for job identification
+    - fixed alignment
+- fixed error message when host not found
 - fixed rare crash in search
 - fixed search result not clickable after changing search term
 
