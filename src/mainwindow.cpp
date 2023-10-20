@@ -330,7 +330,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
-    connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
