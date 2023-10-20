@@ -117,6 +117,7 @@ int ResultsView::selectNextItem(bool backwards)
     else if (newIndex > mResultList->size()-1)
         newIndex = 0;
 
+    ui->tableView->selectRow(newIndex);
     return newIndex;
 }
 
