@@ -81,7 +81,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate(int hits);
-    void updateMatchLabel(int current = 0);
+    void updateMatchLabel(int current = 0, int max = -1);
     void on_btn_clear_clicked();
     void filesChanged();
     void relaySearchResults(bool showResults, QList<gams::studio::search::Result>* results);

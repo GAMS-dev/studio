@@ -672,9 +672,9 @@ void SearchDialog::autofillSearchDialog()
         ui->combo_path->setEditText(fsc->assignedProject()->workDir());
 }
 
-void SearchDialog::updateMatchLabel(int current)
+void SearchDialog::updateMatchLabel(int current, int max)
 {
-    int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
+    int size = max != -1 ? max : qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
     QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : "");
 
     if (current == 0) {
