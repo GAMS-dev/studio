@@ -95,6 +95,8 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
 
 EngineProcess::~EngineProcess()
 {
+    while (!mQuotaData.isEmpty())
+        delete mQuotaData.takeLast();
     if (mAuthManager)
         delete mAuthManager;
     delete mManager;
@@ -260,7 +262,7 @@ void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus
 
         QString instance;
         if (mInKubernetes) instance = mUserInstance;
-        mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance);
+        mManager->submitJob(modlName, mNamespace, zip, remoteParameters(), instance, mJobTag);
         setProcState(Proc3Queued);
     }
 }
@@ -529,6 +531,12 @@ void EngineProcess::sendPostLoginRequests()
     }
 }
 
+void EngineProcess::getQuota()
+{
+    if (mInKubernetes)
+        mManager->getQuota();
+}
+
 void EngineProcess::getVersion()
 {
     mManager->getVersion();
@@ -611,11 +619,19 @@ void EngineProcess::reGetLog(const QByteArray &data)
 
 void EngineProcess::reQuota(const QList<QuotaData *> &data)
 {
+    while (!mQuotaData.isEmpty())
+        delete mQuotaData.takeLast();
+    mQuotaData = data;
+    updateQuota(1);
+}
+
+void EngineProcess::updateQuota(qreal parallel)
+{
     QPair<QString, QList<int>> diskRemain("", {-1, -1});
     QPair<QString, QList<int>> volRemain("", {-1, -1});
-    QPair<QString, QList<int>> parallel("", {-1, -1});
 
-    for (QuotaData *q : data) {
+    // data contains the inherited quotas from the topmost invitor to the user
+    for (QuotaData *q : mQuotaData) {
         if (q->disk.remain() >= 0) {
             if (diskRemain.second.at(0) < 0 || diskRemain.second.at(0) >= q->disk.remain()) {
                 if (diskRemain.second.at(0) > q->disk.remain()) diskRemain.first = "";
@@ -632,50 +648,42 @@ void EngineProcess::reQuota(const QList<QuotaData *> &data)
                 volRemain.second[1] = q->volume.max;
             }
         }
-//        if (q->parallel >= 0) {
-//            if (parallel.second.at(0) < 0 || parallel.second.at(0) > q->volume.remain()) {
-//                if (parallel.second.at(0) > q->volume.remain()) parallel.first = "";
-//                parallel.first += (parallel.first.isEmpty() ? "" : " and ") + q->name;
-//                parallel.second[0] = q->parallel;
-//                parallel.second[1] = q->parallel;
-//            }
-//        }
     }
+
     QStringList availDisk;
     if (diskRemain.second.at(0) >= 0) {
         QString val;
-        if (diskRemain.second.at(0) > 100000)
-            val = QString::number(diskRemain.second.at(0) / 1000000, 'g', 2) + " MB";
+        if (diskRemain.second.at(0) > 100000000)
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000000000, 'g', 3) + " GB";
+        else if (diskRemain.second.at(0) > 100000)
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000000, 'g', 3) + " MB";
         else
-            val = QString::number(diskRemain.second.at(0) / 1000, 'g', 3) + " kb";
+            val = QString::number(qreal(diskRemain.second.at(0)) / 1000, 'g', 3) + " kb";
         availDisk << val;
         availDisk << diskRemain.first;
     }
     QStringList availVolume;
     if (volRemain.second.at(0) >= 0) {
+        if (parallel < 1) parallel = 1;
+        int allSecs = int(qreal(volRemain.second.at(0)) / parallel);
         QString val;
-        int h = (volRemain.second.at(0) / 3600);
-        int m = ((volRemain.second.at(0) - (h*3600)) / 60);
-        int s = int(volRemain.second.at(0)) - (h*3600) - (m*60);
-        DEB() << "seconds " << volRemain.second.at(0) << "   h:" << h;
+        int h = (allSecs / 3600);
+        int m = ((allSecs - (h*3600)) / 60);
+        int s = int(allSecs) - (h*3600) - (m*60);
         if (h)
             val = QString::number(h) + (m>9 ? ":" : ":0") + QString::number(m) + " h";
         else
             val = QString::number(m) + (s>9 ? "." : ".0") + QString::number(s) + " min";
         availVolume << val;
+        availVolume << ("(" + QString::number(allSecs) + " s)");
         availVolume << volRemain.first;
     }
-//    QStringList availParallel;
-//    if (volRemain.second.at(0) >= 0) {
-//        availParallel << QString::number(parallel.second.at(0));
-//        availParallel << parallel.first;
-//    }
     emit quotaHint(availDisk, availVolume);
 }
 
 void EngineProcess::reQuotaError(const QString &errorText)
 {
-    emit quotaHint(QStringList() << "unknown" << errorText, QStringList() << "" << "");
+    emit quotaHint(QStringList() << errorText << "unknown", QStringList() << "" << "");
 }
 
 void EngineProcess::jobIsQueued()
@@ -1092,6 +1100,11 @@ bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
     }
     file.close();
     return list.size() > listSize;
+}
+
+void EngineProcess::setJobTag(const QString &jobTag)
+{
+    mJobTag = jobTag;
 }
 
 void EngineProcess::setSelectedInstance(const QString &selectedInstance)

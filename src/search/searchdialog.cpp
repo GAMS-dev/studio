@@ -672,9 +672,9 @@ void SearchDialog::autofillSearchDialog()
         ui->combo_path->setEditText(fsc->assignedProject()->workDir());
 }
 
-void SearchDialog::updateMatchLabel(int current)
+void SearchDialog::updateMatchLabel(int current, int max)
 {
-    int size = qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
+    int size = max != -1 ? max : qMin(MAX_SEARCH_RESULTS, mSearch.results().size());
     QString files = (mFilesInScope > 1 ? " in " + QString::number(mFilesInScope) + " files." : "");
 
     if (current == 0) {
@@ -781,11 +781,15 @@ bool SearchDialog::checkSearchTerm()
     return true;
 }
 
-void SearchDialog::jumpToResult(int matchNr)
-{
-    if (!(matchNr > -1 && matchNr < mSearch.results().size())) return;
+void SearchDialog::jumpToResult(int index) {
+    if (!mSearch.hasCache() || !(index > -1 && index < mSearch.results().size())) return;
 
-    Result r = mSearch.results().at(matchNr);
+    Result r = mSearch.results().at(index);
+    jumpToResult(r);
+}
+
+void SearchDialog::jumpToResult(Result r)
+{
     if (!QFileInfo::exists(r.filepath())) {
         SysLogLocator::systemLog()->append("File not found: " + r.filepath(), LogMsgType::Error);
         return;

@@ -10,7 +10,7 @@
     <x>0</x>
     <y>0</y>
     <width>537</width>
-    <height>333</height>
+    <height>345</height>
    </rect>
   </property>
   <property name="sizePolicy">
@@ -26,10 +26,10 @@
    <item row="2" column="0">
     <widget class="QStackedWidget" name="stackedWidget">
      <property name="currentIndex">
-      <number>2</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="pageLogin">
-      <layout class="QGridLayout" name="gridLayout" columnstretch="0,0">
+      <layout class="QGridLayout" name="gridLayout" columnstretch="1,7">
        <property name="topMargin">
         <number>0</number>
        </property>
@@ -92,10 +92,10 @@
        <item row="2" column="0" colspan="2">
         <widget class="QStackedWidget" name="stackLoginInput">
          <property name="currentIndex">
-          <number>2</number>
+          <number>0</number>
          </property>
          <widget class="QWidget" name="pageUserPw">
-          <layout class="QGridLayout" name="gridLayout_5">
+          <layout class="QGridLayout" name="gridLayout_5" columnstretch="1,7">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -139,7 +139,7 @@
           </layout>
          </widget>
          <widget class="QWidget" name="pageToken">
-          <layout class="QGridLayout" name="gridLayout_6">
+          <layout class="QGridLayout" name="gridLayout_6" columnstretch="1,7">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -175,7 +175,7 @@
           </layout>
          </widget>
          <widget class="QWidget" name="pageSSO">
-          <layout class="QGridLayout" name="gridLayout_7">
+          <layout class="QGridLayout" name="gridLayout_7" columnstretch="1,7">
            <property name="leftMargin">
             <number>0</number>
            </property>
@@ -490,6 +490,13 @@
               </widget>
              </item>
              <item>
+              <widget class="QLabel" name="laAvailVolSec">
+               <property name="text">
+                <string>(z s)</string>
+               </property>
+              </widget>
+             </item>
+             <item>
               <spacer name="horizontalSpacer_4">
                <property name="orientation">
                 <enum>Qt::Horizontal</enum>
@@ -514,6 +521,20 @@
           </item>
           <item row="0" column="1">
            <widget class="QComboBox" name="cbNamespace"/>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="laJobTag">
+            <property name="text">
+             <string>Job Tag</string>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QLineEdit" name="edJobTag">
+            <property name="placeholderText">
+             <string>-optional-</string>
+            </property>
+           </widget>
           </item>
          </layout>
         </widget>

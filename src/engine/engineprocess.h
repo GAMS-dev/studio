@@ -82,14 +82,18 @@ public:
     void listJobs();
     void listNamespaces();
     void sendPostLoginRequests();
+    void getQuota();
     void setSelectedInstance(const QString &selectedInstance);
     void getVersion();
     void addLastCert();
     bool inKubernetes() const;
+    void updateQuota(qreal parallel);
 
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
     void abortRequests();
+
+    void setJobTag(const QString &jobTag);
 
 signals:
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
@@ -173,6 +177,7 @@ private:
     QString mGamsVersion;
     bool mInKubernetes = false;
     QString mUserInstance;
+    QString mJobTag;
     bool mHasPreviousWorkOption = false;
     bool mForcePreviousWork = false;
     bool mForceGdx = true;
@@ -181,6 +186,7 @@ private:
     bool mStoredIgnoreSslState = false;
     QElapsedTimer mQueuedTimer;
     QList<QFileInfo> mProtectedFiles;
+    QList<QuotaData *> mQuotaData;
 
     QString mJobNumber;
     QString mJobPassword;

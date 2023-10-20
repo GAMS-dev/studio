@@ -79,10 +79,13 @@ public:
     void focusEmptyField();
     void setEngineVersion(QString version);
     int authMethod();
+    QString jobTag();
+    void setJobTag(const QString &jobTag);
 
 signals:
     void submit(bool start);
     void engineUrlValidated(const QString &validUrl);
+    void jobTagChanged(const QString &jobTag);
 
 public slots:
     void authorizeChanged(QString authToken);
@@ -135,6 +138,10 @@ private slots:
     void on_bCopyCode_clicked();
 
     void on_bShowLogin_clicked();
+
+    void on_cbInstance_currentIndexChanged(int index);
+
+    void on_edJobTag_editingFinished();
 
 private:
     Ui::EngineStartDialog *ui;

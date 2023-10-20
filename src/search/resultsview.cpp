@@ -63,7 +63,7 @@ void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
     Result r = mResultList->at(selectedRow);
 
-    mMain->searchDialog()->jumpToResult(selectedRow);
+    mMain->searchDialog()->jumpToResult(r);
 
     emit updateMatchLabel(selectedRow+1, mResultList->size());
     selectItem(selectedRow);
@@ -85,6 +85,8 @@ void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
 void ResultsView::keyPressEvent(QKeyEvent* e)
 {
     if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
+        if (!ui->tableView->selectionModel()->hasSelection())
+            ui->tableView->selectRow(0);
         on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
         e->accept();
     } else if (e == Hotkey::SearchFindPrev) {
@@ -115,6 +117,7 @@ int ResultsView::selectNextItem(bool backwards)
     else if (newIndex > mResultList->size()-1)
         newIndex = 0;
 
+    ui->tableView->selectRow(newIndex);
     return newIndex;
 }
 

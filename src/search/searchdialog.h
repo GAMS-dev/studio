@@ -66,7 +66,14 @@ public:
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
 
     void setSearchStatus(Search::Status status, int hits = 0);
-    void jumpToResult(int matchNr);
+
+    /// \brief jumpToResult jumps to a search result identified by an index. does not jump if the search cache is outdated.
+    /// \param index index of a search result in a valid cache
+    void jumpToResult(int index);
+
+    /// \brief jumpToResult jumpts to a search result identified by a Result object. Jump position can be wrong if the document changed since the result was generated.
+    /// \param r SearchResult to jump to
+    void jumpToResult(Result r);
 
 public slots:
     void on_searchNext();
@@ -74,7 +81,7 @@ public slots:
     void on_documentContentChanged(int from, int charsRemoved, int charsAdded);
     void finalUpdate();
     void intermediateUpdate(int hits);
-    void updateMatchLabel(int current = 0);
+    void updateMatchLabel(int current = 0, int max = -1);
     void on_btn_clear_clicked();
     void filesChanged();
     void relaySearchResults(bool showResults, QList<gams::studio::search::Result>* results);

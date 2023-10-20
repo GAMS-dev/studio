@@ -99,7 +99,7 @@ public:
     void getQuota();
     void listJobs();
     void listNamespaces();
-    void submitJob(QString modelName, QString nSpace, QString zipFile, QList<QString> params, QString instance);
+    void submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile, QList<QString> params, const QString &instance, const QString &tag);
     void getJobStatus();
     void getLog();
     void getOutputFile();
