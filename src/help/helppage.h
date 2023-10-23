@@ -33,7 +33,11 @@ class HelpPage : public QWebEnginePage
 public:
     HelpPage(QObject *parent = nullptr);
 
+private slots:
+    void onUrlChanged(const QUrl & url);
+
 protected:
+    QWebEnginePage *createWindow(QWebEnginePage::WebWindowType type) override;
     bool acceptNavigationRequest(const QUrl& url, QWebEnginePage::NavigationType type, bool isMainFrame) override;
 
 };

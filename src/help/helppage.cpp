@@ -29,11 +29,26 @@ HelpPage::HelpPage(QObject *parent) : QWebEnginePage(parent)
 {
 }
 
+void HelpPage::onUrlChanged(const QUrl &url)
+{
+    if(HelpPage *page = qobject_cast<HelpPage *>(sender())){
+        setUrl(url);
+        page->deleteLater();
+    }
+}
+
+QWebEnginePage *HelpPage::createWindow(WebWindowType type)
+{
+    Q_UNUSED(type)
+    HelpPage *page = new HelpPage(this);
+    connect(page, &QWebEnginePage::urlChanged, this, &HelpPage::onUrlChanged);
+    return page;
+}
+
 bool HelpPage::acceptNavigationRequest(const QUrl &url, QWebEnginePage::NavigationType type, bool isMainFrame)
 {
     if (url.path().toLower().endsWith(".pdf")) {
-        QDesktopServices::openUrl(url);
-        return true;
+        return QDesktopServices::openUrl(url);
     }
     return QWebEnginePage::acceptNavigationRequest(url, type, isMainFrame);
 }
