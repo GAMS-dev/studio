@@ -40,7 +40,6 @@ class SearchWorker : public QObject
 public:
     SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
     SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project, bool showResults);
-    ~SearchWorker();
     void findInFiles();
 
 signals:

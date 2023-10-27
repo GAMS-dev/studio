@@ -99,8 +99,27 @@ void SearchDialog::on_btn_Replace_clicked()
     if (!checkSearchTerm()) return;
     insertHistory();
 
-    mSearch.start(true, false, false);
+    mSearch.start(createSearchParameters(false, true, false));
     mSearch.replaceNext(ui->txt_replace->text());
+}
+
+Search::SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards)
+{
+    Search::SearchParameters parameters;
+    parameters.regex = createRegex();
+    parameters.searchTerm = searchTerm();
+
+    parameters.useRegex = regex();
+    parameters.caseSensitive = caseSens();
+    parameters.searchBackwards = searchBackwards;
+    parameters.showResults = showResults;
+    parameters.ignoreReadonly = ignoreReadonly;
+
+    parameters.scope = selectedScope();
+    parameters.path = ui->combo_path->currentText();
+    parameters.includeSubdirs = ui->cb_subdirs->isChecked();
+
+    return parameters;
 }
 
 void SearchDialog::on_btn_ReplaceAll_clicked()
@@ -121,7 +140,7 @@ void SearchDialog::on_btn_FindAll_clicked()
         clearResultsView();
         insertHistory();
 
-        mSearch.start(false, false, true);
+        mSearch.start(createSearchParameters(true, false, false));
     } else {
         mSearch.stop();
     }
@@ -568,7 +587,6 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
         return;
     else mSearchStatus = status;
 
-    QString searching = "Searching ";
     QString dotAnim = ".";
     QString files = (mFilesInScope > 1 ? ("; " + QString::number(mFilesInScope) + " files searched") : "");
 
@@ -579,7 +597,7 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 
     switch (status) {
     case Search::Searching:
-        ui->lbl_nrResults->setText(searching + files + " (" + QString::number(hits) + ") "
+        ui->lbl_nrResults->setText("Searching (" + QString::number(hits) + ") "
                                    + dotAnim.repeated(mSearchAnimation++ % 4));
         break;
     case Search::Ok:

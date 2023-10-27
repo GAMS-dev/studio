@@ -59,9 +59,28 @@ public:
         Forward,
         Backward
     };
+
+    struct SearchParameters
+    {
+        QRegularExpression regex;
+        QString searchTerm;
+
+        bool useRegex;
+        bool caseSensitive;
+        bool searchBackwards;
+        bool showResults;
+        bool ignoreReadonly;
+        bool includeSubdirs;
+
+        Search::Scope scope;
+        QString path;
+        QSet<FileMeta*> files;
+    };
+
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
 
-    void start(bool ignoreReadonly, bool searchBackwards, bool showResults);
+    void start(SearchParameters parameters);
+    void runSearch(QSet<QString> files);
     void stop();
 
     void findNext(Direction direction);
@@ -72,7 +91,7 @@ public:
     bool isSearching() const;
     QList<Result> results() const;
     QList<Result> filteredResultList(QString fileLocation);
-    const QFlags<QTextDocument::FindFlag> &options() const;
+    bool caseSensitive() const;
     const QRegularExpression regex() const;
     Search::Scope scope() const;
     bool hasSearchSelection();
@@ -88,12 +107,12 @@ signals:
     void selectResult(int matchNr);
 
 private:
+
     void findInDoc(FileMeta* fm);
     void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
-    void setParameters(bool ignoreReadonly, bool searchBackwards = false);
 
-    int replaceOpened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
+    int replaceOpened(FileMeta* fm, SearchParameters parameters, QString replaceTerm);
     int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
 
     QPair<int, int> cursorPosition();
@@ -105,6 +124,8 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
+    QFlags<QTextDocument::FindFlag> createSearchOptions(Search::SearchParameters parameters, Direction direction = Direction::Forward);
+
 private slots:
     void finished();
 
@@ -112,14 +133,12 @@ private:
     SearchDialog* mSearchDialog;
     QList<Result> mResults;
     QHash<QString, QList<Result>> mResultHash;
-    QSet<FileMeta*> mFiles;
-    QRegularExpression mRegex;
-    QString mSearchTerm;
-    QFlags<QTextDocument::FindFlag> mOptions;
-    Scope mScope;
+    SearchParameters mLastSearchParameters;
+
     AbstractSearchFileHandler* mFileHandler;
     FileId mSearchSelectionFile;
-    QThread mThread;
+    QThread mFileThread;
+    QThread mSearchThread;
 
     bool mSearching = false;
     bool mJumpQueued = false;

@@ -60,7 +60,6 @@ public:
 
     void autofillSearchDialog();
 
-    QList<Result> filteredResultList(QString file) const;
     Search* search();
 
     QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
@@ -141,6 +140,7 @@ private:
     void checkRegex();
     void updateComponentAvailability();
     void updateClearButton();
+    Search::SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards);
 
 private:
     Ui::SearchDialog *ui;

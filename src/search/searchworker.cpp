@@ -19,10 +19,8 @@
  */
 #include <QFile>
 #include <QRegularExpression>
-#include "searchresultmodel.h"
 #include "searchworker.h"
 #include "file/filemeta.h"
-#include "viewhelper.h"
 
 namespace gams {
 namespace studio {
@@ -49,14 +47,13 @@ SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList
     mFindInSelection = false;
 }
 
-SearchWorker::~SearchWorker()
-{
-}
-
 void SearchWorker::findInFiles()
 {
     bool cacheFull = false;
     NodeId projectGroup = mProject;
+    int filecounter = 0;
+    emit update(0); // initial update to set label to "Searching"
+
     for (FileMeta* fm : std::as_const(mFiles)) {
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
@@ -71,7 +68,7 @@ void SearchWorker::findInFiles()
             while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;
-                if (lineCounter % 500 == 0 && thread()->isInterruptionRequested()) break;
+                if (thread()->isInterruptionRequested()) break;
 
                 QByteArray arry = file.readLine();
                 // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
@@ -106,7 +103,9 @@ void SearchWorker::findInFiles()
             }
             file.close();
         }
-        emit update(mMatches->size());
+
+        if (filecounter++ % 1000 == 0)
+            emit update(mMatches->size());
     }
     emit showResults(mShowResults, mMatches);
     if (!mFindInSelection) thread()->quit();

@@ -23,7 +23,6 @@
 #include "search/abstractsearchfilehandler.h"
 #include "mainwindow.h"
 
-class MainWindow;
 namespace gams {
 namespace studio {
 namespace search {
