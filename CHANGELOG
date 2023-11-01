@@ -1,3 +1,7 @@
+Version 1.17.0 *
+==================
+- fixed help view resulting on empty page when document linked to a page in new tab or new window.
+
 Version 1.16.2
 ==================
 - enhanced GAMS Engine dialog
