@@ -75,6 +75,10 @@ public:
     /// \param r SearchResult to jump to
     void jumpToResult(Result r);
 
+    void show(QPoint pos);
+    QPoint lastPosition();
+    bool hasLastPosition();
+
 public slots:
     void on_searchNext();
     void on_searchPrev();
@@ -105,7 +109,6 @@ private slots:
 
 signals:
     void closeResults();
-    void setWidgetPosition(const QPoint& searchWidgetPos);
     void openHelpDocument(QString doc, QString anchor);
     void selectResult(int matchNr);
     void invalidateResultsView();

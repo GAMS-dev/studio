@@ -4816,8 +4816,7 @@ void MainWindow::toggleSearchDialog()
                         QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
                    );
 
-            mSearchDialog->show();
-            mSearchDialog->move(p);
+            mSearchDialog->show(mSearchDialog->hasLastPosition() ? mSearchDialog->lastPosition() : p);
        }
     }
 }

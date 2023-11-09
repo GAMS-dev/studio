@@ -59,12 +59,10 @@ void SearchDialog::showEvent(QShowEvent *event)
 {
     Q_UNUSED(event)
     emit toggle();
-    if (!mLastPosition.isNull())
-        move(mLastPosition);
+    move(mLastPosition);
 
-    if (!mSearch.isSearching()) {
+    if (!mSearch.isSearching())
         updateDialogState();
-    }
 }
 
 void SearchDialog::closeEvent(QCloseEvent *event)
@@ -301,7 +299,6 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
-        emit setWidgetPosition(pos());
         hide();
         if (mFileHandler->fileNode(mCurrentEditor)) {
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))
@@ -834,6 +831,22 @@ void SearchDialog::jumpToResult(Result r)
     NodeId nodeId = (r.parentGroup().isValid()) ? r.parentGroup() : fn->assignedProject()->id();
     fn->file()->jumpTo(nodeId, true, r.lineNr()-1, qMax(r.colNr(), 0), r.length());
 
+}
+
+void SearchDialog::show(QPoint pos)
+{
+    QDialog::show();
+    move(pos);
+}
+
+QPoint SearchDialog::lastPosition()
+{
+    return mLastPosition;
+}
+
+bool SearchDialog::hasLastPosition()
+{
+    return !mLastPosition.isNull();
 }
 
 void SearchDialog::setSearchedFiles(int files)
