@@ -78,6 +78,7 @@ public:
     };
 
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
+    ~Search();
 
     void start(SearchParameters parameters);
     void runSearch(QSet<QString> files);

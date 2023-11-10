@@ -18,6 +18,8 @@ void FileWorker::collectFiles()
                                              : QDirIterator::NoIteratorFlags;
     QDirIterator it(dir.path(), QDir::Files, options);
     while (it.hasNext()) {
+        if (thread()->isInterruptionRequested()) break;
+
         QString path = it.next();
         if (path.isEmpty()) break;
 
