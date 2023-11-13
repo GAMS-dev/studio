@@ -1844,7 +1844,7 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 {
     if (oldProj && oldProj != proj) {
         // node changed from valid: store current command-line
-        oldProj->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
+        oldProj->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
     }
 
     if (proj) {
@@ -1903,11 +1903,6 @@ void MainWindow::activeTabChanged(int index)
     } else {
         ui->menuEncoding->setEnabled(false);
     }
-
-    PExProjectNode *oldProj = mProjectRepo.findProject(mRecent.editor());
-    PExProjectNode *proj = mProjectRepo.findProject(editWidget);
-    loadCommandLines(oldProj, proj);
-    updateRunState();
     searchDialog()->updateDialogState();
     updateToolbar(mainTabs()->currentWidget());
 
@@ -3911,6 +3906,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
     Q_UNUSED(old)
     QWidget *wid = now;
+    PExProjectNode *projOld = mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
@@ -3926,6 +3922,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             mNavigationHistory->setCurrentEdit(mRecent.editor(), pinKind);
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
+            loadCommandLines(projOld, mRecent.project());
             updateRunState();
             break;
         }
@@ -4460,10 +4457,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         } else {
             tabWidget->setCurrentWidget(edit);
             tabWidget->currentWidget()->setFocus();
-            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
-                if (!ViewHelper::toGamsConfigEditor((edit)))
-                    activeTabChanged(tabWidget->indexOf(edit));
-            }
+//            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
+//                if (!ViewHelper::toGamsConfigEditor((edit)))
+//                    activeTabChanged(tabWidget->indexOf(edit));
+//            }
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
