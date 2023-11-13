@@ -1847,12 +1847,12 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
         oldProj->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
     }
 
-    if (proj) {
-        // switched to valid node
-        mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
-    } else {
+    if (!proj) {
         // switched to welcome page
         mGamsParameterEditor->loadCommandLine(QStringList());
+    } else if (oldProj != proj) {
+        // switched to valid node
+        mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
     }
 }
 
@@ -3904,6 +3904,7 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
+    if (old == now) return;
     Q_UNUSED(old)
     QWidget *wid = now;
     PExProjectNode *projOld = mRecent.project();
@@ -4457,10 +4458,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         } else {
             tabWidget->setCurrentWidget(edit);
             tabWidget->currentWidget()->setFocus();
-//            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
-//                if (!ViewHelper::toGamsConfigEditor((edit)))
-//                    activeTabChanged(tabWidget->indexOf(edit));
-//            }
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
