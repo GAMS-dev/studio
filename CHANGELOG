@@ -1,3 +1,7 @@
+Version 1.16.3
+==================
+- fix keep command line changes for the project when switching to another project
+
 Version 1.16.2
 ==================
 - enhanced GAMS Engine dialog
