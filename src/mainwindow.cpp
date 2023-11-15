@@ -3569,8 +3569,16 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
 
         if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
-                if (!mProjectRepo.findProject(files.first()))
+                PExProjectNode *pro = mProjectRepo.findProject(item);
+                if (!pro) {
                     openProject(item);
+                    if (files.size() == 1)
+                        QTimer::singleShot(0, this, [this, item](){
+                            PExProjectNode *pro = mProjectRepo.findProject(item);
+                            openFileNode(pro); // open project
+                        });
+                } else if (files.size() == 1)
+                    openFileNode(pro); // open project
             } else {
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
