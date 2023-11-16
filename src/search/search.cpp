@@ -80,12 +80,13 @@ void Search::start(Search::SearchParameters parameters)
     if (!parameters.files.empty())
         qWarning() << "already files in search parameters.";
 
-    FileWorker* sw = new FileWorker(parameters);
-    sw->moveToThread(&mFileThread);
+    FileWorker* fw = new FileWorker(parameters);
+    fw->moveToThread(&mFileThread);
 
-    connect(&mFileThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
-    connect(&mFileThread, &QThread::started, sw, &FileWorker::collectFiles, Qt::UniqueConnection);
-    connect(sw, &FileWorker::filesCollected, this, &Search::runSearch, Qt::UniqueConnection);
+    connect(&mFileThread, &QThread::finished, fw, &QObject::deleteLater);
+    connect(&mFileThread, &QThread::started, fw, &FileWorker::collectFiles);
+    connect(fw, &FileWorker::filesCollected, this, &Search::runSearch);
+    connect(fw, &FileWorker::filesCollected, &mFileThread, &QThread::quit);
 
     mFileThread.start();
     mFileThread.setPriority(QThread::LowPriority); // search is a background task
