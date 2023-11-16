@@ -2,6 +2,7 @@ Version 1.16.3
 ==================
 - fix keep command line changes for the project when switching to another project
 - fixed dbl-click on gsp-file does not activate project
+- fixed position of search dialog not saving when closing with close button in titlebar
 
 Version 1.16.2
 ==================
@@ -13,7 +14,6 @@ Version 1.16.2
 - fixed error message when host not found
 - fixed rare crash in search
 - fixed search result not clickable after changing search term
-- fixed position of search dialog not saving when closing with close button in titlebar
 
 Version 1.16.1
 ==================
