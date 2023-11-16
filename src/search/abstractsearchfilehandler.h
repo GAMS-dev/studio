@@ -40,6 +40,8 @@ public:
     virtual PExFileNode* fileNode(QWidget* widget) = 0;
     virtual PExFileNode* findFileNode(QString filepath) = 0;
     virtual PExProjectNode* createProject(QString name, QString path) = 0;
+
+    virtual FileMeta* findFile(QString filepath) = 0;
     virtual FileMeta* findOrCreateFile(QString filepath) = 0;
     virtual PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) = 0;
     virtual QVector<PExProjectNode*> projects() = 0;

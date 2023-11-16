@@ -476,6 +476,7 @@ HEADERS += \
     search/search.h \
     search/searchdialog.h \
     search/searchfilehandler.h \
+    search/searchhelpers.h \
     search/searchlocator.h \
     search/searchresultmodel.h \
     search/searchresultviewitemdelegate.h \

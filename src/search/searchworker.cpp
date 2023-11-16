@@ -19,6 +19,7 @@
  */
 #include <QFile>
 #include <QRegularExpression>
+#include "search/searchhelpers.h"
 #include "searchworker.h"
 #include "file/filemeta.h"
 
@@ -26,9 +27,9 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from, QPoint to,
+SearchWorker::SearchWorker(SearchFile file, QRegularExpression regex, QPoint from, QPoint to,
                            QList<Result> *list, bool showResults)
-    : mFiles(QList<FileMeta*>() << file), mMatches(list), mRegex(regex), mFrom(from), mTo(to),
+    : mFiles(QList<SearchFile>() << file), mMatches(list), mRegex(regex), mFrom(from), mTo(to),
       mShowResults(showResults)
 {
     // for now, searching with bounds works without extra thread
@@ -39,32 +40,35 @@ SearchWorker::SearchWorker(FileMeta* file, QRegularExpression regex, QPoint from
     mTo += QPoint(0,1);
 }
 
-SearchWorker::SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list,
-                           NodeId project, bool showResults)
+SearchWorker::SearchWorker(QList<SearchFile> fml, QRegularExpression regex,
+                           QList<Result> *list, bool showResults)
     : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0)),
-      mProject(project), mShowResults(showResults)
+      mShowResults(showResults)
 {
     mFindInSelection = false;
 }
 
 void SearchWorker::findInFiles()
 {
+    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "find in files";
     bool cacheFull = false;
-    NodeId projectGroup = mProject;
+    NodeId projectGroup;
     int filecounter = 0;
     emit update(0); // initial update to set label to "Searching"
 
-    for (FileMeta* fm : std::as_const(mFiles)) {
+    for (const SearchFile &sf : mFiles) {
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
-        if (!mProject.isValid())
-            projectGroup = fm->projectId();
+        if (sf.fileMeta)
+            projectGroup = sf.fileMeta->projectId();
 
         int lineCounter = 0;
-        QFile file(fm->location());
+        QFile file(sf.path);
         if (file.open(QFile::ReadOnly)) {
 
-            QTextCodec *codec = fm->codec();
+            QTextCodec *codec = nullptr;
+            if (sf.fileMeta) sf.fileMeta->codec();
+
             while (!file.atEnd() && !cacheFull) { // read file
 
                 lineCounter++;

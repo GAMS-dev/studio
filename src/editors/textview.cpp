@@ -27,6 +27,7 @@
 #include "editorhelper.h"
 #include "editors/navigationhistorylocator.h"
 #include "editors/navigationhistory.h"
+#include "search/searchhelpers.h"
 #include "search/searchworker.h"
 
 #include <QScrollBar>
@@ -293,7 +294,7 @@ void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, Q
     }
     if (!mEdit->hasSearchSelection()) return;
 
-    SearchWorker sw(file, searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(),
+    SearchWorker sw(SearchFile(file), searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(),
                     results, showResults);
     sw.findInFiles();
 }

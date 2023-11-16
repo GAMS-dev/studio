@@ -50,7 +50,7 @@ Search::~Search()
     mSearchThread.deleteLater();
 }
 
-void Search::start(Search::SearchParameters parameters)
+void Search::start(SearchParameters parameters)
 {
     if (mSearching) return;
 
@@ -92,25 +92,21 @@ void Search::start(Search::SearchParameters parameters)
     mFileThread.setPriority(QThread::LowPriority); // search is a background task
 }
 
-void Search::runSearch(QSet<QString> files)
+void Search::runSearch(QList<SearchFile> files)
 {
+    mSearchDialog->setSearchedFiles(files.count());
     mSearchDialog->setSearchStatus(Search::Searching);
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "searching...";
+    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "sorting...";
 
-    QList<FileMeta*> unmodified;
-    QList<FileMeta*> modified; // need to be treated differently
+    QList<SearchFile> unmodified;
+    QList<SearchFile> modified; // need to be treated differently
 
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
-    for (QString path : qAsConst(files)) {
-        PExFileNode* node = mFileHandler->findFileNode(path);
+    for (const SearchFile& sf : qAsConst(files)) {
 
-        if (!node) {
-            qDebug()/*rogo:delete*/<<QTime::currentTime()<< "no FM for " << path;
-            // TODO(rogo): rework search to work with path! do not rely on FileMeta
-        } else {
-            // TODO(rogo): but when we have FM we can do this:
-            FileMeta* fm = node->file();
-
+        // not doing this would be faster
+        FileMeta* fm = sf.fileMeta;
+        if (fm) {
             // skip certain file types
             if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
                 continue;
@@ -120,10 +116,10 @@ void Search::runSearch(QSet<QString> files)
                 if (fm == currentFile) modified.insert(0, fm);
                 else modified << fm;
             } else {
-                if (fm == currentFile) unmodified.insert(0, fm);
-                else unmodified << fm;
+                if (fm == currentFile) unmodified.insert(0, sf);
             }
         }
+        unmodified << sf;
     }
 
     qDebug()/*rogo:delete*/<<QTime::currentTime()<< "done with sorting";
@@ -132,7 +128,7 @@ void Search::runSearch(QSet<QString> files)
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
                              ? currentFile->projectId() : NodeId();
     SearchWorker* sw = new SearchWorker(unmodified, mLastSearchParameters.regex, &mResults,
-                                        projectNode, mLastSearchParameters.showResults);
+                                        mLastSearchParameters.showResults);
     sw->moveToThread(&mSearchThread);
 
     connect(&mSearchThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
@@ -143,8 +139,8 @@ void Search::runSearch(QSet<QString> files)
     mSearchThread.start();
     mSearchThread.setPriority(QThread::LowPriority); // search is a background task
 
-    for (FileMeta* fm : std::as_const(modified))
-        findInDoc(fm);
+    for (SearchFile sf : qAsConst(modified))
+        findInDoc(sf.fileMeta);
 }
 
 void Search::stop()
@@ -156,7 +152,7 @@ void Search::stop()
 void Search::activeFileChanged()
 {
     if (!mLastSearchParameters.files.contains(
-            mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))
+            SearchFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())))
         )
         mCacheAvailable = false;
 }
@@ -170,7 +166,7 @@ void Search::reset()
     mLastMatchInOpt = -1;
     mSearchDialog->setSearchStatus(Status::Clear);
 
-    mLastSearchParameters = Search::SearchParameters();
+    mLastSearchParameters = SearchParameters();
 
     mSearchDialog->setSearchedFiles(0);
 
@@ -360,7 +356,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         emit selectResult(matchNr);
 }
 
-QFlags<QTextDocument::FindFlag> Search::createSearchOptions(Search::SearchParameters parameters, Direction direction) {
+QFlags<QTextDocument::FindFlag> Search::createSearchOptions(SearchParameters parameters, Direction direction) {
     QFlags<QTextDocument::FindFlag> searchOptions;
     searchOptions.setFlag(QTextDocument::FindBackward, direction == Direction::Backward);
     searchOptions.setFlag(QTextDocument::FindCaseSensitively, parameters.caseSensitive);
@@ -517,7 +513,7 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-int Search::replaceOpened(FileMeta* fm, Search::SearchParameters parameters, QString replaceTerm)
+int Search::replaceOpened(FileMeta* fm, SearchParameters parameters, QString replaceTerm)
 {
     qCritical() << "Not implemented";
 //    AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
@@ -551,7 +547,7 @@ bool Search::hasCache() const
     return mCacheAvailable;
 }
 
-Search::Scope Search::scope() const
+Scope Search::scope() const
 {
     return mLastSearchParameters.scope;
 }

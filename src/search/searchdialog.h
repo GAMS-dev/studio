@@ -25,6 +25,7 @@
 
 #include "search.h"
 #include "mainwindow.h"
+#include "searchhelpers.h"
 #include "abstractsearchfilehandler.h"
 
 namespace gams {
@@ -52,7 +53,7 @@ public:
     bool wholeWords();
     QString searchTerm();
 
-    Search::Scope selectedScope();
+    Scope selectedScope();
     void setSelectedScope(int index);
 
     void clearResultsView();
@@ -62,7 +63,7 @@ public:
 
     Search* search();
 
-    QSet<FileMeta*> filterFiles(QSet<FileMeta *> files, bool ignoreReadOnly);
+    QList<SearchFile> filterFiles(QList<SearchFile> files, bool ignoreReadOnly);
 
     void setSearchStatus(Search::Status status, int hits = 0);
 
@@ -123,7 +124,7 @@ protected:
 
 private:
     void restoreSettings();
-    QSet<FileMeta*> getFilesByScope(bool ignoreReadOnly = false);
+    QList<SearchFile> getFilesByScope(bool ignoreReadOnly = false);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();
@@ -140,7 +141,7 @@ private:
     void checkRegex();
     void updateComponentAvailability();
     void updateClearButton();
-    Search::SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards);
+    SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards);
 
 private:
     Ui::SearchDialog *ui;

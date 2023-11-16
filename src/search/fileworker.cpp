@@ -1,17 +1,37 @@
+/*
+ * This file is part of the GAMS Studio project.
+ *
+ * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
+ */
 #include "fileworker.h"
 
 namespace gams {
 namespace studio {
 namespace search {
 
-FileWorker::FileWorker(Search::SearchParameters parameters) : mParameters(parameters)
+FileWorker::FileWorker(SearchParameters parameters) : mParameters(parameters)
 { }
 
 void FileWorker::collectFiles()
 {
-    QSet<QString> files;
+    QList<SearchFile> files;
     QDir dir(mParameters.path);
 
+    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "start collecting files";
 
     QDirIterator::IteratorFlag options = mParameters.includeSubdirs
                                              ? QDirIterator::Subdirectories
@@ -23,9 +43,8 @@ void FileWorker::collectFiles()
         QString path = it.next();
         if (path.isEmpty()) break;
 
-        files.insert(path);
+        files << SearchFile(path);
     }
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "found " << files.count() << " files";
 
     emit filesCollected(files);
 }

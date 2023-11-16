@@ -33,13 +33,15 @@ class FileMeta;
 
 namespace search {
 
+class SearchFile;
+
 class SearchResultModel;
 class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(FileMeta *file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
-    SearchWorker(QList<FileMeta*> fml, QRegularExpression regex, QList<Result> *list, NodeId project, bool showResults);
+    SearchWorker(SearchFile file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
+    SearchWorker(QList<SearchFile> fml, QRegularExpression regex, QList<Result> *list, bool showResults);
     void findInFiles();
 
 signals:
@@ -47,12 +49,11 @@ signals:
     void showResults(bool showResults, QList<gams::studio::search::Result> *results);
 
 private:
-    QList<FileMeta*> mFiles;
+    QList<SearchFile> mFiles;
     QList<Result>* mMatches;
     QRegularExpression mRegex;
     QPoint mFrom = QPoint(0,0);
     QPoint mTo = QPoint(0,0);
-    NodeId mProject;
     bool mFindInSelection = true;
     bool mShowResults = false;
 

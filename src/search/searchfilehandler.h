@@ -40,6 +40,8 @@ public:
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFileNode(QString filepath) override;
     PExProjectNode* createProject(QString name, QString path) override;
+
+    FileMeta* findFile(QString filepath) override;
     FileMeta* findOrCreateFile(QString filepath) override;
     PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) override;
     QVector<PExProjectNode*> projects() override;

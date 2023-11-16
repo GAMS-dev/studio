@@ -22,11 +22,13 @@
 
 #include <QObject>
 #include "file/filemeta.h"
+#include "searchhelpers.h"
 #include "searchresultmodel.h"
 
 namespace gams {
 namespace studio {
 namespace search {
+
 
 class SearchDialog;
 class AbstractSearchFileHandler;
@@ -34,15 +36,6 @@ class Search : public QObject
 {
     Q_OBJECT
 public:
-    enum Scope {
-        Selection,
-        ThisFile,
-        ThisProject,
-        OpenTabs,
-        AllFiles,
-        Folder
-    };
-
     enum Status {
         Searching,
         NoResults,
@@ -60,28 +53,11 @@ public:
         Backward
     };
 
-    struct SearchParameters
-    {
-        QRegularExpression regex;
-        QString searchTerm;
-
-        bool useRegex;
-        bool caseSensitive;
-        bool searchBackwards;
-        bool showResults;
-        bool ignoreReadonly;
-        bool includeSubdirs;
-
-        Search::Scope scope;
-        QString path;
-        QSet<FileMeta*> files;
-    };
-
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
     ~Search();
 
     void start(SearchParameters parameters);
-    void runSearch(QSet<QString> files);
+    void runSearch(QList<SearchFile> files);
     void stop();
 
     void findNext(Direction direction);
@@ -94,7 +70,7 @@ public:
     QList<Result> filteredResultList(QString fileLocation);
     bool caseSensitive() const;
     const QRegularExpression regex() const;
-    Search::Scope scope() const;
+    Scope scope() const;
     bool hasSearchSelection();
     void reset();
     void invalidateCache();
@@ -125,7 +101,7 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
-    QFlags<QTextDocument::FindFlag> createSearchOptions(Search::SearchParameters parameters, Direction direction = Direction::Forward);
+    QFlags<QTextDocument::FindFlag> createSearchOptions(SearchParameters parameters, Direction direction = Direction::Forward);
 
 private slots:
     void finished();

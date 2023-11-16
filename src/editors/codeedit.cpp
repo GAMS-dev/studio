@@ -21,6 +21,7 @@
 #include <QPalette>
 #include <QDir>
 #include <QMimeData>
+#include <QRegularExpression>
 
 #include "editors/codeedit.h"
 #include "codecompleter.h"
@@ -2084,7 +2085,7 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
         return;
 
     QRegularExpression regEx = search->regex();
-    bool limitHighlighting = search->scope() == Search::Scope::Selection;
+    bool limitHighlighting = search->scope() == Scope::Selection;
 
     QTextBlock block = firstVisibleBlock();
     int top = qRound(blockBoundingGeometry(block).translated(contentOffset()).top());
