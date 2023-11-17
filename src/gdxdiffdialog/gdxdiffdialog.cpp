@@ -83,6 +83,12 @@ QStringList GdxDiffDialog::gdxDiffParamters()
         args << "DiffOnly";
     if (ui->cbIgnoreSetText->isChecked())
         args << "SetDesc=0";
+    if (ui->cbCmpDefaults->isChecked())
+        args << "CmpDefaults";
+    if (ui->cbCmpDomains->isChecked())
+        args << "CmpDomains";
+    if (ui->cbIgnoreOrder->isChecked())
+        args << "IgnoreOrder";
     return args;
 }
 

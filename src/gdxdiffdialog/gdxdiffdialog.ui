@@ -7,7 +7,7 @@
     <x>0</x>
     <y>0</y>
     <width>603</width>
-    <height>269</height>
+    <height>292</height>
    </rect>
   </property>
   <property name="minimumSize">
@@ -139,6 +139,50 @@
    </item>
    <item>
     <layout class="QGridLayout" name="gridLayout">
+     <item row="2" column="2">
+      <widget class="QCheckBox" name="cbFieldOnly">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt;. The variables and equations will be written as parameters for the selected subfield. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Diff Only&lt;/span&gt; and it requires a value for &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt; other than &lt;span style=&quot; font-weight:600;&quot;&gt;All&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Field Only</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="cbDiffOnly">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Differences for variables and equations will be written as parameters. Each parameter will have an additional index which is used to store the field name. Only fields that are different will be written. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field Only&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Diff Only</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="0">
+      <widget class="QCheckBox" name="cbIgnoreSetText">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ignore explanatory text of set elements.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Ignore Set Text</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="0">
+      <widget class="QLabel" name="label_4">
+       <property name="text">
+        <string>Eps:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="0" column="1">
+      <widget class="QLabel" name="label_5">
+       <property name="text">
+        <string>RelEps:</string>
+       </property>
+      </widget>
+     </item>
      <item row="1" column="2">
       <widget class="QComboBox" name="cbFieldToCompare">
        <property name="sizePolicy">
@@ -187,54 +231,10 @@
        </item>
       </widget>
      </item>
-     <item row="2" column="2">
-      <widget class="QCheckBox" name="cbFieldOnly">
+     <item row="1" column="0">
+      <widget class="QLineEdit" name="lineEdit_4">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt;. The variables and equations will be written as parameters for the selected subfield. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Diff Only&lt;/span&gt; and it requires a value for &lt;span style=&quot; font-weight:600;&quot;&gt;Field To Compare&lt;/span&gt; other than &lt;span style=&quot; font-weight:600;&quot;&gt;All&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Field Only</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="0">
-      <widget class="QLabel" name="label_4">
-       <property name="text">
-        <string>Eps:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="0">
-      <widget class="QCheckBox" name="cbIgnoreSetText">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ignore explanatory text of set elements.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Ignore Set Text</string>
-       </property>
-      </widget>
-     </item>
-     <item row="2" column="1">
-      <widget class="QCheckBox" name="cbDiffOnly">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Differences for variables and equations will be written as parameters. Each parameter will have an additional index which is used to store the field name. Only fields that are different will be written. This option can not be used in combination with &lt;span style=&quot; font-weight:600;&quot;&gt;Field Only&lt;/span&gt;.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
-       </property>
-       <property name="text">
-        <string>Diff Only</string>
-       </property>
-      </widget>
-     </item>
-     <item row="0" column="1">
-      <widget class="QLabel" name="label_5">
-       <property name="text">
-        <string>RelEps:</string>
-       </property>
-      </widget>
-     </item>
-     <item row="1" column="1">
-      <widget class="QLineEdit" name="lineEdit_5">
-       <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Relative difference&lt;/span&gt; for comparisons. If the value of RelEps is exceeded, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Absolute difference&lt;/span&gt; for comparisons. If the difference between two values exceeds Eps, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="inputMethodHints">
         <set>Qt::ImhNone</set>
@@ -251,16 +251,46 @@
        </property>
       </widget>
      </item>
-     <item row="1" column="0">
-      <widget class="QLineEdit" name="lineEdit_4">
+     <item row="1" column="1">
+      <widget class="QLineEdit" name="lineEdit_5">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Absolute difference&lt;/span&gt; for comparisons. If the difference between two values exceeds Eps, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Relative difference&lt;/span&gt; for comparisons. If the value of RelEps is exceeded, a difference will be reported.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="inputMethodHints">
         <set>Qt::ImhNone</set>
        </property>
        <property name="text">
         <string>0.0</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QCheckBox" name="cbCmpDefaults">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls if default values for symbols, e.g. 0 for parameters, are reported as differences or not.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Compare Defaults</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="cbCmpDomains">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls if different domains for the same symbol are reported as a difference.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Compare Domains</string>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="2">
+      <widget class="QCheckBox" name="cbIgnoreOrder">
+       <property name="toolTip">
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ignore UEL order of input files. This reduces the size of the output file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+       </property>
+       <property name="text">
+        <string>Ignore Order</string>
        </property>
       </widget>
      </item>
