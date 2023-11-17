@@ -330,7 +330,6 @@ MainWindow::MainWindow(QWidget *parent)
     });
     connect(mSearchDialog, &search::SearchDialog::updateResults, this, &MainWindow::updateResults);
     connect(mSearchDialog, &search::SearchDialog::closeResults, this, &MainWindow::closeResultsView);
-    connect(mSearchDialog, &search::SearchDialog::setWidgetPosition, this, &MainWindow::setSearchWidgetPos);
     connect(mSearchDialog, &search::SearchDialog::openHelpDocument, this, &MainWindow::receiveOpenDoc);
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
@@ -1843,15 +1842,15 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 {
     if (oldProj && oldProj != proj) {
         // node changed from valid: store current command-line
-        oldProj->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData());
+        oldProj->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
     }
 
-    if (proj) {
-        // switched to valid node
-        mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
-    } else {
+    if (!proj) {
         // switched to welcome page
         mGamsParameterEditor->loadCommandLine(QStringList());
+    } else if (oldProj != proj) {
+        // switched to valid node
+        mGamsParameterEditor->loadCommandLine(proj->getRunParametersHistory());
     }
 }
 
@@ -1902,11 +1901,6 @@ void MainWindow::activeTabChanged(int index)
     } else {
         ui->menuEncoding->setEnabled(false);
     }
-
-    PExProjectNode *oldProj = mProjectRepo.findProject(mRecent.editor());
-    PExProjectNode *proj = mProjectRepo.findProject(editWidget);
-    loadCommandLines(oldProj, proj);
-    updateRunState();
     searchDialog()->updateDialogState();
     updateToolbar(mainTabs()->currentWidget());
 
@@ -3573,8 +3567,16 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
 
         if (f.isFile()) {
             if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
-                if (!mProjectRepo.findProject(files.first()))
+                PExProjectNode *pro = mProjectRepo.findProject(item);
+                if (!pro) {
                     openProject(item);
+                    if (files.size() == 1)
+                        QTimer::singleShot(0, this, [this, item](){
+                            PExProjectNode *pro = mProjectRepo.findProject(item);
+                            openFileNode(pro); // open project
+                        });
+                } else if (files.size() == 1)
+                    openFileNode(pro); // open project
             } else {
                 PExFileNode *node = addNode("", item, project);
                 openFileNode(node);
@@ -3908,8 +3910,10 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
+    if (old == now) return;
     Q_UNUSED(old)
     QWidget *wid = now;
+    PExProjectNode *projOld = mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
@@ -3925,6 +3929,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             mNavigationHistory->setCurrentEdit(mRecent.editor(), pinKind);
             if (mStartedUp)
                 mProjectRepo.editorActivated(mRecent.editor(), false);
+            loadCommandLines(projOld, mRecent.project());
             updateRunState();
             break;
         }
@@ -4455,10 +4460,6 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         } else {
             tabWidget->setCurrentWidget(edit);
             tabWidget->currentWidget()->setFocus();
-            if (tabWidget == ui->mainTabs && tabWidget->indexOf(edit) >= 0) {
-                if (!ViewHelper::toGamsConfigEditor((edit)))
-                    activeTabChanged(tabWidget->indexOf(edit));
-            }
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
@@ -4796,25 +4797,21 @@ void MainWindow::toggleSearchDialog()
             mSearchDialog->activateWindow();
             mSearchDialog->autofillSearchDialog();
         } else {
-            if (mSearchWidgetPos.isNull()) { // first time opening
-                int margin = 25;
+            int margin = 25;
 
-                int wDiff = frameGeometry().width() - geometry().width();
-                int hDiff = frameGeometry().height() - geometry().height();
+            int wDiff = frameGeometry().width() - geometry().width();
+            int hDiff = frameGeometry().height() - geometry().height();
 
-                int wSize = mSearchDialog->width() + wDiff;
-                int hSize = mSearchDialog->height() + hDiff;
+            int wSize = mSearchDialog->width() + wDiff;
+            int hSize = mSearchDialog->height() + hDiff;
 
-                QPoint p(qMin(pos().x() + (width() - margin),
-                            QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
-                        qMin(pos().y() + hDiff + margin,
-                            QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
-                       );
-                mSearchWidgetPos = p;
-            }
+            QPoint p(qMin(pos().x() + (width() - margin),
+                        QGuiApplication::primaryScreen()->virtualGeometry().width()) - wSize,
+                    qMin(pos().y() + hDiff + margin,
+                        QGuiApplication::primaryScreen()->virtualGeometry().height() - hSize)
+                   );
 
-            mSearchDialog->show();
-            mSearchDialog->move(mSearchWidgetPos);
+            mSearchDialog->show(mSearchDialog->hasLastPosition() ? mSearchDialog->lastPosition() : p);
        }
     }
 }
@@ -5755,11 +5752,6 @@ void MainWindow::openGdxDiffFile()
     }
     PExFileNode *node = mProjectRepo.findOrCreateFileNode(diffFile, projectDiff);
     openFile(node->file());
-}
-
-void MainWindow::setSearchWidgetPos(const QPoint& searchWidgetPos)
-{
-    mSearchWidgetPos = searchWidgetPos;
 }
 
 void MainWindow::toggleFullscreen()

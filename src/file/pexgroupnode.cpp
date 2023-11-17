@@ -1118,7 +1118,7 @@ void PExProjectNode::setParameter(const QString &kind, const QString &path)
         else if (kind == "ref")
             fullPath += ".ref";
         else
-            DEB() << "WARNING: unhandled parameter!" << fullPath << "is missing extension.";
+            DEB() << "WARNING: unhandled parameter! " << fullPath << " is missing extension.";
     }
     if (mParameterHash.value(kind) != fullPath) {
         mParameterHash.insert(kind, fullPath);

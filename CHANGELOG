@@ -2,6 +2,16 @@ Version 1.17.0 *
 ==================
 - fixed help view resulting on empty page when document linked to a page in new tab or new window.
 
+Version 1.16.3
+==================
+- fixed lost command line changes when switching to another project
+- fixed double click on gsp-file not activating project
+- fixed position of search dialog not saving when closing with close button in titlebar
+- relaxed boundaries of the GDX Viewer splitter to allow for more resizing flexibility
+- fixed 2nd page of the GAMS Engine dialog on macOS
+- reduced allowed SSL warnings when the user accepts self-certified GAMS Engine connection
+- changed Engine instance size to GiB
+
 Version 1.16.2
 ==================
 - enhanced GAMS Engine dialog

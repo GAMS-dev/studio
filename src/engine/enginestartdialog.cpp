@@ -643,7 +643,7 @@ void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double>
     for (const QPair<QString, QList<double> > &entry : instances) {
         if (entry.second.size() != 3) continue;
         if (entry.first == defaultLabel) cur = ui->cbInstance->count();
-        QString text("%1 (%2 vCPU, %3 MiB RAM, %4x)");
+        QString text("%1 (%2 vCPU, %3 GB RAM, %4x)");
         text = text.arg(entry.first).arg(entry.second[0]).arg(entry.second[1]).arg(entry.second[2]);
         QVariantList data;
         data << entry.first << entry.second[0] << entry.second[1] << entry.second[2];
