@@ -6,6 +6,7 @@ Version 1.16.3
 - relaxed boundaries of the GDX Viewer splitter to allow for more resizing flexibility
 - fixed 2nd page of the GAMS Engine dialog on macOS
 - Reduced allowed SSL warnings when the user accepts self-certified GAMS Engine connection
+- Display Engine instance size in GiB
 
 Version 1.16.2
 ==================

@@ -137,7 +137,8 @@ EngineManager::EngineManager(QObject* parent)
         QList<QPair<QString, QList<double>>> instList;
         for (const OAIModel_instance_info &ii : infoList) {
             QList<double> list;
-            list << ii.getCpuRequest() << ii.getMemoryRequest() << ii.getMultiplier();
+            qreal memGb = qreal(ii.getMemoryRequest()) / 1000.;
+            list << ii.getCpuRequest() << memGb << ii.getMultiplier();
             instList << QPair<QString, QList<double>>(ii.getLabel(), list);
         }
         emit reUserInstances(instList, iiDef.getLabel());
