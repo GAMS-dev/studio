@@ -283,16 +283,22 @@ void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatu
 
 void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &errors)
 {
-    reply->ignoreSslErrors();
+    QList<QSslError> acceptableErrors;
     QString data("\n*** SSL errors:\n");
     int sslError = 0;
     for (const QSslError &err : errors) {
         data.append(QString(" [%1] %2\n").arg(err.error()).arg(err.errorString()));
         if (err.error() == QSslError::SelfSignedCertificate ||
-                err.error() == QSslError::SelfSignedCertificateInChain ||
-                err.error() == QSslError::CertificateStatusUnknown)
+            err.error() == QSslError::SelfSignedCertificateInChain ||
+            err.error() == QSslError::CertificateStatusUnknown) {
             sslError = err.error();
+            if (err.error() != QSslError::CertificateStatusUnknown)
+                acceptableErrors << err;
+        }
     }
+    if (!acceptableErrors.isEmpty())
+        reply->ignoreSslErrors(acceptableErrors);
+
     emit newStdChannelData(data.toUtf8());
     DEB() << data;
     if (sslError)

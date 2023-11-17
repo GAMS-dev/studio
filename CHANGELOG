@@ -5,6 +5,7 @@ Version 1.16.3
 - fixed position of search dialog not saving when closing with close button in titlebar
 - relaxed boundaries of the GDX Viewer splitter to allow for more resizing flexibility
 - fixed 2nd page of the GAMS Engine dialog on macOS
+- Reduced allowed SSL warnings when the user accepts self-certified GAMS Engine connection
 
 Version 1.16.2
 ==================
