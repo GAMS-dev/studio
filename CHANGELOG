@@ -4,6 +4,7 @@ Version 1.16.3
 - fixed dbl-click on gsp-file does not activate project
 - fixed position of search dialog not saving when closing with close button in titlebar
 - relaxed boundaries of the GDX Viewer splitter to allow for more resizing flexibility
+- fixed 2nd page of the GAMS Engine dialog on macOS
 
 Version 1.16.2
 ==================
