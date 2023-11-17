@@ -204,7 +204,7 @@ void NestedHeaderView::paintSection(QPainter *painter, const QRect &rect, int lo
             pen.setColor(palette().text().color());
 
             // do not highlight search matches in dummy columns or var/equ attributes (e.g. level, marginal, ...)
-            if (!sym()->needDummyColumn() && sym()->type() != GMS_DT_VAR && sym()->type() != GMS_DT_EQU || i<dim()-1) {
+            if ((!sym()->needDummyColumn() && sym()->type() != GMS_DT_VAR && sym()->type() != GMS_DT_EQU) || i<dim()-1) {
                 if (!((TableViewModel *)model())->sym()->searchRegEx().pattern().isEmpty() && ((TableViewModel *)model())->sym()->searchRegEx().match(textSearch).hasMatch()) {
                     pen.setColor(QColor(Qt::white));
                     QPen pen2 = pen;

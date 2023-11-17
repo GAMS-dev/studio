@@ -507,15 +507,15 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
     case SchemaType::String: {
         std::string str = "[value]";
         for(int i=0; i<allowedValues.size(); i++) {
-            ValueWrapper str = allowedValues.at(0);
-            if (std::string(str.value.stringval).compare("default")==0) {
+            ValueWrapper vw = allowedValues.at(0);
+            if (vw.value.stringval && std::string(vw.value.stringval).compare("default")==0) {
                str = "default";
                break;
             }
         }
         node = ( defaultValue.type==SchemaValueType::NoValue
                               ? (allowedValues.size() > 0 ? std::string(allowedValues.at(0).value.stringval) : str)
-                              : std::string(defaultValue.value.stringval) );
+                              : std::string(defaultValue.value.stringval ? defaultValue.value.stringval : "") );
         break;
     }
     case SchemaType::Integer: {

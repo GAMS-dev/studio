@@ -22,12 +22,10 @@
 
 #include <QProcess>
 #include <QFileInfoList>
-#include <memory>
 #include "process/abstractprocess.h"
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
 #include "pexgroupnode.h"
-#include "syntax/textmark.h"
 #include "debugger/server.h"
 
 namespace gams {
@@ -134,7 +132,7 @@ public:
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
-    void setProcess(std::unique_ptr<AbstractProcess> process);
+    void setProcess(AbstractProcess* process);
     AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, PExFileNode *lstNode);
 
@@ -203,7 +201,7 @@ private:
     QString mWorkDir;
     QString mNameExt;
     Type mType = tCommon;
-    std::unique_ptr<AbstractProcess> mGamsProcess;
+    QScopedPointer<AbstractProcess> mGamsProcess;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;

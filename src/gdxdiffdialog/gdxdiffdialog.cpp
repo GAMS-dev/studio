@@ -60,7 +60,6 @@ GdxDiffDialog::~GdxDiffDialog()
     v = ui->lineEdit_5->validator();
     ui->lineEdit_5->setValidator(nullptr);
     delete v;
-    mProc.release();
     delete ui;
 }
 

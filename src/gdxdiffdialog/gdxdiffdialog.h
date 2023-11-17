@@ -21,7 +21,6 @@
 #define GAMS_STUDIO_GDXDIFFDIALOG_H
 
 #include <QDialog>
-#include <memory>
 
 namespace gams {
 namespace studio {
@@ -86,7 +85,7 @@ private:
     QString mLastInput1;
     QString mLastInput2;
 
-    std::unique_ptr<GdxDiffProcess> mProc;
+    QSharedPointer<GdxDiffProcess> mProc;
     gdxviewer::GdxViewer* mDiffGdxViewer = nullptr;
     FileMeta* mDiffFm = nullptr;
     bool mWasCanceled = false;

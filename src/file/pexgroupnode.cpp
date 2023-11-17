@@ -230,12 +230,16 @@ PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* run
     }
 }
 
-void PExProjectNode::setProcess(std::unique_ptr<AbstractProcess> process)
+///
+/// \brief Set the process.
+/// \remark Takes ownership of the of the process pointer.
+///
+void PExProjectNode::setProcess(AbstractProcess* process)
 {
-    if (mGamsProcess == process) return;
+    if (mGamsProcess.get() == process) return;
     if (mGamsProcess)
         mGamsProcess->disconnect();
-    mGamsProcess = std::move(process);
+    mGamsProcess.reset(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
 }
 

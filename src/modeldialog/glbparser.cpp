@@ -88,7 +88,7 @@ bool GlbParser::parseFile(QString glbFile)
     if (!checkListSize(splitList, 2) || !checkKey(splitList[0], "InitialSort"))
         return false;
     int initSortCol = splitList[1].trimmed().toInt() - 1;
-    std::shared_ptr<Library> library = std::make_shared<Library>(name, version, nrColumns, columns, initSortCol, toolTips, colOrder, mGlbFile);
+    QSharedPointer<Library> library(new Library(name, version, nrColumns, columns, initSortCol, toolTips, colOrder, mGlbFile));
 
     // read models
     QString line;

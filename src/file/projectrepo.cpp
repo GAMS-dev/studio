@@ -235,6 +235,8 @@ TextMarkRepo *ProjectRepo::textMarkRepo() const
 
 bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QStringList &missed, const QString &basePath)
 {
+    count = 0;
+    ignored = 0;
     if (basePath.isEmpty()) {
         addWarning("Missing base path. Can't open project " + map.value("name").toString());
         return false;
@@ -245,8 +247,6 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
         return false;
     }
 
-    count = 0;
-    ignored = 0;
     missed.clear();
     QString runFile = map.value("file").toString();
     QString runPath = runFile.isEmpty() ? "" : QDir::cleanPath(baseDir.absoluteFilePath(runFile));
@@ -308,6 +308,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             int ignored;
             QStringList missed;
             checkRead(projectMap, count, ignored, missed, projectPath);
+            // TODO (JM) Please fix the default value of count and ignored in some cases you compare random values
             if (count == ignored + missed.count()) {
                 message = "Couldn't restore missing project " + gspFile;
                 SysLogLocator::systemLog()->append(message);

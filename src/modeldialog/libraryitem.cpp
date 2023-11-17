@@ -23,12 +23,22 @@ namespace gams {
 namespace studio {
 namespace modeldialog {
 
-LibraryItem::LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files, int suffixNumber):
-    mLibrary(library), mDescription(description), mLongDescription(longDescription), mFiles(files), mValues(values), mSuffixNumber(suffixNumber)
+LibraryItem::LibraryItem(QSharedPointer<Library> library,
+                         QStringList values,
+                         QString description,
+                         QString longDescription,
+                         QStringList files,
+                         int suffixNumber)
+    : mLibrary(library)
+    , mDescription(description)
+    , mLongDescription(longDescription)
+    , mFiles(files)
+    , mValues(values)
+    , mSuffixNumber(suffixNumber)
 {
 }
 
-std::shared_ptr<Library> LibraryItem::library() const
+QSharedPointer<Library> LibraryItem::library() const
 {
     return mLibrary;
 }

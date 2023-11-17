@@ -21,7 +21,7 @@
 #define LIBRARYITEM_H
 
 #include "library.h"
-#include <memory>
+#include <QSharedPointer>
 
 namespace gams {
 namespace studio {
@@ -30,9 +30,14 @@ namespace modeldialog {
 class LibraryItem
 {
 public:
-    LibraryItem(std::shared_ptr<Library> library, QStringList values, QString description, QString longDescription, QStringList files, int suffixNumber);
+    LibraryItem(QSharedPointer<Library> library,
+                QStringList values,
+                QString description,
+                QString longDescription,
+                QStringList files,
+                int suffixNumber);
 
-    std::shared_ptr<Library> library() const;
+    QSharedPointer<Library> library() const;
     QStringList values() const;
     QString name() const;
     QStringList files() const;
@@ -40,7 +45,7 @@ public:
     QString nameWithSuffix() const;
 
 private:
-    std::shared_ptr<Library> mLibrary;
+    QSharedPointer<Library> mLibrary;
     QString mDescription;
     QString mLongDescription;
     QStringList mFiles;

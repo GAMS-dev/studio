@@ -90,6 +90,8 @@ void PinControl::debugData(QString text)
         DEB() << ind.key() << ":  " << (ind.value() && ind.value()->fileMeta ? ind.value()->fileMeta->name() : "none")
               << (ind.key() == curPro ? "   <CURRENT>" : "");
     }
+#else
+    Q_UNUSED(text);
 #endif
 }
 

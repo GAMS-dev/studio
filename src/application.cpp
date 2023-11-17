@@ -77,7 +77,7 @@ void Application::init()
     Settings::createSettings(mCmdParser.ignoreSettings(),
                              mCmdParser.resetSettings(),
                              mCmdParser.resetView());
-    mMainWindow = std::unique_ptr<MainWindow>(new MainWindow());
+    mMainWindow = QSharedPointer<MainWindow>(new MainWindow());
     mMainWindow->appendSystemLogInfo("Started: " + QCoreApplication::arguments().join(" "));
     mMainWindow->openFiles(mCmdParser.files());
     if (!mOpenPathOnInit.isEmpty()) {
@@ -93,9 +93,9 @@ QString Application::serverName() const
     return mServerName;
 }
 
-MainWindow* Application::mainWindow() const
+QSharedPointer<MainWindow> Application::mainWindow() const
 {
-    return mMainWindow.get();
+    return mMainWindow;
 }
 
 bool Application::notify(QObject* object, QEvent* event)

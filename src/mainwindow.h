@@ -155,7 +155,7 @@ public:
     void toggleSearchDialog();
     void toggleFullscreen();
     void setSearchWidgetPos(const QPoint& searchWidgetPos);
-    void execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr,
+    void execute(QString commandLineStr, AbstractProcess* process = nullptr,
                  gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
     void resetHistory();
@@ -457,7 +457,7 @@ private:
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(PExProjectNode *project, QString commandLineStr, std::unique_ptr<AbstractProcess> process = nullptr);
+    bool executePrepare(PExProjectNode *project, QString commandLineStr, AbstractProcess* process = nullptr);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);

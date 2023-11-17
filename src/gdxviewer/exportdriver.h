@@ -23,7 +23,6 @@
 #include "exportmodel.h"
 
 #include <QString>
-#include <memory>
 #include <process/connectprocess.h>
 
 
@@ -50,7 +49,7 @@ private:
     const QString PROJ_SUFFIX = "_proj_";
     const QString FILTER_SUFFIX = "_filter_";
 
-    std::unique_ptr<ConnectProcess> mProc = nullptr;
+    QScopedPointer<ConnectProcess> mProc;
     GdxViewer *mGdxViewer = nullptr;
     ExportModel *mExportModel = nullptr;
     QString generateInstructions(QString gdxFile, QString output, bool applyFilters);

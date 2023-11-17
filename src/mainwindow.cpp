@@ -457,7 +457,6 @@ MainWindow::~MainWindow()
     delete mNavigatorDialog;
     delete mNavigatorInput;
     delete mPrintDialog;
-    delete mMiroDeployDialog.take();
     FileType::clear();
     HeaderViewProxy::deleteInstance();
 }
@@ -3080,14 +3079,14 @@ void MainWindow::on_actionBase_mode_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
+    auto miroProcess = new miro::MiroProcess;
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Base);
 
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), miroProcess);
 }
 
 void MainWindow::on_actionConfiguration_mode_triggered()
@@ -3095,14 +3094,14 @@ void MainWindow::on_actionConfiguration_mode_triggered()
     if (!validMiroPrerequisites())
         return;
 
-    auto miroProcess = std::make_unique<miro::MiroProcess>(new miro::MiroProcess);
+    auto miroProcess = new miro::MiroProcess;
     miroProcess->setSkipModelExecution(ui->actionSkip_model_execution->isChecked());
     miroProcess->setWorkingDirectory(mRecent.project()->workDir());
     miroProcess->setModelName(mRecent.project()->mainModelName());
     miroProcess->setMiroPath(miro::MiroCommon::path(Settings::settings()->toString(skMiroInstallPath)));
     miroProcess->setMiroMode(miro::MiroMode::Configuration);
 
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(miroProcess));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), miroProcess);
 }
 
 void MainWindow::on_actionStop_MIRO_triggered()
@@ -3154,7 +3153,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
     if (!mRecent.project())
         return;
 
-    auto process = std::make_unique<miro::MiroDeployProcess>(new miro::MiroDeployProcess());
+    auto process = new miro::MiroDeployProcess();
     process->setMiroPath(miro::MiroCommon::path( Settings::settings()->toString(skMiroInstallPath)));
     process->setWorkingDirectory(mRecent.project()->workDir());
     process->setModelName(mRecent.project()->mainModelName());
@@ -3173,7 +3172,7 @@ void MainWindow::miroDeploy(bool testDeploy, miro::MiroDeployMode mode)
         process->setBaseMode(true);
     }
 
-    execute(mGamsParameterEditor->getCurrentCommandLineData(), std::move(process));
+    execute(mGamsParameterEditor->getCurrentCommandLineData(), process);
 }
 
 void MainWindow::setMiroRunning(bool running)
@@ -3654,14 +3653,14 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess> process, debugger::DebugStartMode debug)
+void MainWindow::execute(QString commandLineStr, AbstractProcess* process, debugger::DebugStartMode debug)
 {
     PExProjectNode* project = currentProject();
     if (!project) {
         DEB() << "Nothing to be executed.";
         return;
     }
-    bool ready = executePrepare(project, commandLineStr, std::move(process));
+    bool ready = executePrepare(project, commandLineStr, process);
     if (ready) {
         if (debug == debugger::NoDebug || project->startDebugServer(debug)) {
             if (debug != debugger::NoDebug) {
@@ -3678,7 +3677,7 @@ void MainWindow::execute(QString commandLineStr, std::unique_ptr<AbstractProcess
 }
 
 
-bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr, std::unique_ptr<AbstractProcess> process)
+bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr, AbstractProcess* process)
 {
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
@@ -3799,7 +3798,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     }
     option::Option *opt = mGamsParameterEditor->getOptionTokenizer()->getOption();
     if (process)
-        project->setProcess(std::move(process));
+        project->setProcess(process);
     AbstractProcess* groupProc = project->process();
     int logOption = 0;
     groupProc->setParameters(project->analyzeParameters(gmsFilePath, groupProc->defaultParameters(), itemList, opt, logOption));
@@ -3935,12 +3934,12 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 
 void MainWindow::on_actionRun_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), std::make_unique<GamsProcess>());
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Run), nullptr);
 }
 
 void MainWindow::on_actionRun_with_GDX_Creation_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), std::make_unique<GamsProcess>());
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunWithGDXCreation), nullptr);
 }
 
 void MainWindow::on_actionRunDebugger_triggered()
@@ -3948,8 +3947,7 @@ void MainWindow::on_actionRunDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendRun();
     } else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), std::make_unique<GamsProcess>()
-                , debugger::RunDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::RunDebug), nullptr, debugger::RunDebug);
     }
 }
 
@@ -3958,20 +3956,18 @@ void MainWindow::on_actionStepDebugger_triggered()
     if (ui->debugWidget->isVisible()) {
         emit ui->debugWidget->sendStepLine();
     } else {
-        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), std::make_unique<GamsProcess>()
-                , debugger::StepDebug);
+        execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, debugger::StepDebug);
     }
 }
 
-
 void MainWindow::on_actionCompile_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), std::make_unique<GamsProcess>());
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::Compile), nullptr);
 }
 
 void MainWindow::on_actionCompile_with_GDX_Creation_triggered()
 {
-    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), std::make_unique<GamsProcess>());
+    execute(mGamsParameterEditor->on_runAction(option::RunActionState::CompileWithGDXCreation), nullptr);
 }
 
 void MainWindow::on_actionRunNeos_triggered()
@@ -4054,10 +4050,10 @@ neos::NeosProcess *MainWindow::createNeosProcess()
 {
     PExProjectNode *project = currentProject();
     if (!project) return nullptr;
-    auto neosProcess = std::make_unique<neos::NeosProcess>(new neos::NeosProcess());
+    auto neosProcess = new neos::NeosProcess();
     neosProcess->setWorkingDirectory(mRecent.project()->workDir());
     mGamsParameterEditor->on_runAction(option::RunActionState::RunNeos);
-    project->setProcess(std::move(neosProcess));
+    project->setProcess(neosProcess);
     neos::NeosProcess *neosPtr = static_cast<neos::NeosProcess*>(project->process());
     connect(neosPtr, &neos::NeosProcess::procStateChanged, this, &MainWindow::remoteProgress);
     return neosPtr;
@@ -4226,8 +4222,8 @@ engine::EngineProcess *MainWindow::createEngineProcess()
         DEB() << "Could not create GAMS Engine process";
         return nullptr;
     }
-    auto engineProcess = std::make_unique<engine::EngineProcess>(new engine::EngineProcess());
-    connect(engineProcess.get(), &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
+    auto engineProcess = new engine::EngineProcess();
+    connect(engineProcess, &engine::EngineProcess::procStateChanged, this, &MainWindow::remoteProgress);
     engineProcess->setWorkingDirectory(mRecent.project()->workDir());
     QString commandLineStr = mGamsParameterEditor->getCurrentCommandLineData();
     const QList<option::OptionItem> itemList = mGamsParameterEditor->getOptionTokenizer()->tokenize(commandLineStr);
@@ -4235,7 +4231,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
         if (item.key.compare("previousWork", Qt::CaseInsensitive) == 0)
             engineProcess->setHasPreviousWorkOption(true);
     }
-    project->setProcess(std::move(engineProcess));
+    project->setProcess(engineProcess);
     return qobject_cast<engine::EngineProcess*>(project->process());
 }
 
@@ -4418,10 +4414,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
-            if (nodes.size()) {
-                if (nodes.first()->assignedProject())
-                    project = nodes.first()->assignedProject();
-            } else {
+            if (nodes.size())
+                project = nodes.first()->assignedProject();
+            if (!project) {
                 QFileInfo file(fileMeta->location());
                 project = mProjectRepo.createProject(file.completeBaseName(), file.absolutePath(),
                                                      file.absoluteFilePath(), onExist_AddNr);

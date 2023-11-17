@@ -24,7 +24,6 @@
 #include "support/distributionvalidator.h"
 #include "mainwindow.h"
 
-#include <memory>
 #include <QApplication>
 #include <QLocalServer>
 
@@ -43,7 +42,7 @@ public:
     /// \brief Get the application MainWindow.
     /// \return MainWindow managed by <c>Application</c> class.
     ///
-    MainWindow* mainWindow() const;
+    QSharedPointer<MainWindow> mainWindow() const;
 
     bool notify(QObject *object, QEvent *event) override;
 
@@ -107,7 +106,7 @@ private:
     void listen();
 
 private:
-    std::unique_ptr<MainWindow> mMainWindow;
+    QSharedPointer<MainWindow> mMainWindow;
     CommandLineParser mCmdParser;
     support::DistributionValidator mDistribValidator;
     QString mOpenPathOnInit;
