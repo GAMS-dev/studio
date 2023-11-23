@@ -26,12 +26,10 @@ namespace search {
 FileWorker::FileWorker(SearchParameters parameters) : mParameters(parameters)
 { }
 
-void FileWorker::collectFiles()
+void FileWorker::collectFilesInFolder()
 {
     QList<SearchFile> files;
     QDir dir(mParameters.path);
-
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "start collecting files";
 
     QDirIterator::IteratorFlag options = mParameters.includeSubdirs
                                              ? QDirIterator::Subdirectories

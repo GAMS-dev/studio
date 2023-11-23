@@ -33,13 +33,14 @@ class FileWorker : public QObject
 
 public:
     FileWorker(SearchParameters parameters);
-    void collectFiles();
+    void collectFilesInFolder();
 
 signals:
     void filesCollected(QList<SearchFile> files);
 
 private:
     SearchParameters mParameters;
+
 
 };
 

@@ -75,21 +75,21 @@ void Search::start(SearchParameters parameters)
     if (mSearchDialog->selectedScope() == Scope::Selection) {
         findInSelection(parameters.showResults);
         return;
-    } // else
+    } else if (mSearchDialog->selectedScope() != Scope::Folder) {
+        runSearch(mSearchDialog->getFilesByScope());
+    } else {
+        // async file collection
+        FileWorker* fw = new FileWorker(parameters);
+        fw->moveToThread(&mFileThread);
 
-    if (!parameters.files.empty())
-        qWarning() << "already files in search parameters.";
+        connect(&mFileThread, &QThread::finished, fw, &QObject::deleteLater);
+        connect(&mFileThread, &QThread::started, fw, &FileWorker::collectFilesInFolder);
+        connect(fw, &FileWorker::filesCollected, this, &Search::runSearch);
+        connect(fw, &FileWorker::filesCollected, &mFileThread, &QThread::quit);
 
-    FileWorker* fw = new FileWorker(parameters);
-    fw->moveToThread(&mFileThread);
-
-    connect(&mFileThread, &QThread::finished, fw, &QObject::deleteLater);
-    connect(&mFileThread, &QThread::started, fw, &FileWorker::collectFiles);
-    connect(fw, &FileWorker::filesCollected, this, &Search::runSearch);
-    connect(fw, &FileWorker::filesCollected, &mFileThread, &QThread::quit);
-
-    mFileThread.start();
-    mFileThread.setPriority(QThread::LowPriority); // search is a background task
+        mFileThread.start();
+        mFileThread.setPriority(QThread::LowPriority); // search is a background task
+    }
 }
 
 void Search::runSearch(QList<SearchFile> files)
@@ -139,7 +139,7 @@ void Search::runSearch(QList<SearchFile> files)
     mSearchThread.start();
     mSearchThread.setPriority(QThread::LowPriority); // search is a background task
 
-    for (SearchFile sf : qAsConst(modified))
+    for (const SearchFile &sf : qAsConst(modified))
         findInDoc(sf.fileMeta);
 }
 

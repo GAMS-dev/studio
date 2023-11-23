@@ -50,7 +50,6 @@ SearchWorker::SearchWorker(QList<SearchFile> fml, QRegularExpression regex,
 
 void SearchWorker::findInFiles()
 {
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "find in files";
     bool cacheFull = false;
     NodeId projectGroup;
     int filecounter = 0;

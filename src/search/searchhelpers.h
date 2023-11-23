@@ -41,12 +41,12 @@ namespace search {
         QString path;
         FileMeta* fileMeta;
 
-        SearchFile(FileMeta* fm) : path(fm->location()), fileMeta(fm) { }
+        SearchFile(FileMeta* fm) : path(fm ? fm->location() : ""), fileMeta(fm) { }
         SearchFile(QString path, FileMeta* fm = nullptr) : path(path), fileMeta(fm) { }
 
         bool operator==(const SearchFile &rhs) const
         {
-            return fileMeta == rhs.fileMeta &&
+            return fileMeta && fileMeta == rhs.fileMeta &&
                    path == rhs.path;
         }
     };
@@ -55,6 +55,8 @@ namespace search {
     {
         QRegularExpression regex;
         QString searchTerm;
+
+        FileMeta* currentFile = nullptr;
 
         bool useRegex;
         bool caseSensitive;
@@ -67,7 +69,6 @@ namespace search {
         QString path;
         QList<SearchFile> files;
     };
-
 
 }
 }

@@ -115,6 +115,8 @@ SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ign
     parameters.showResults = showResults;
     parameters.ignoreReadonly = ignoreReadonly;
 
+    parameters.currentFile = mFileHandler->fileMeta(mCurrentEditor);
+
     parameters.scope = selectedScope();
     parameters.path = ui->combo_path->currentText();
     parameters.includeSubdirs = ui->cb_subdirs->isChecked();

@@ -25,6 +25,7 @@
 #include <QRegularExpression>
 #include <QPoint>
 #include "result.h"
+#include "searchhelpers.h"
 
 namespace gams {
 namespace studio {
@@ -32,8 +33,6 @@ namespace studio {
 class FileMeta;
 
 namespace search {
-
-class SearchFile;
 
 class SearchResultModel;
 class SearchWorker : public QObject
