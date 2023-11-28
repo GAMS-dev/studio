@@ -105,10 +105,12 @@ SOURCES += \
     debugger/server.cpp \
     editors/abstractedit.cpp \
     editors/abstracttextmapper.cpp \
+    editors/chunktextmapper.cpp \
     editors/codecompleter.cpp \
     editors/codeedit.cpp \
     editors/defaultsystemlogger.cpp \
     editors/editorhelper.cpp \
+    editors/fastfilemapper.cpp \
     editors/filemapper.cpp \
     editors/logparser.cpp \
     editors/memorymapper.cpp \
@@ -323,10 +325,12 @@ HEADERS += \
     editors/abstractedit.h \
     editors/abstractsystemlogger.h \
     editors/abstracttextmapper.h \
+    editors/chunktextmapper.h \
     editors/codecompleter.h \
     editors/codeedit.h \
     editors/defaultsystemlogger.h \
     editors/editorhelper.h \
+    editors/fastfilemapper.h \
     editors/filemapper.h \
     editors/logparser.h \
     editors/memorymapper.h \

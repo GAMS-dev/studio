@@ -20,7 +20,7 @@
 #ifndef MEMORYMAPPER_H
 #define MEMORYMAPPER_H
 
-#include "abstracttextmapper.h"
+#include "chunktextmapper.h"
 #include "logparser.h"
 #include <QMutex>
 #include <QTimer>
@@ -44,7 +44,7 @@ public:
     int count() { return data.count(); }
 };
 
-class MemoryMapper : public AbstractTextMapper
+class MemoryMapper : public ChunkTextMapper
 {
     Q_OBJECT
 private: // types
@@ -100,7 +100,7 @@ private: // types
 public:
     explicit MemoryMapper(QObject *parent = nullptr);
     ~MemoryMapper() override;
-    AbstractTextMapper::Kind kind() const override { return AbstractTextMapper::memoryMapper; }
+    ChunkTextMapper::Kind kind() const override { return ChunkTextMapper::memoryMapper; }
 
     void setLogParser(LogParser *parser);
     LogParser *logParser();

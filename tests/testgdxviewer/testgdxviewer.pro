@@ -30,6 +30,7 @@ SOURCES += \
     $$SRCPATH/abstractview.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/editors/abstracttextmapper.cpp \
+    $$SRCPATH/editors/chunktextmapper.cpp \
     $$SRCPATH/editors/defaultsystemlogger.cpp \
     $$SRCPATH/editors/editorhelper.cpp \
     $$SRCPATH/editors/filemapper.cpp \
@@ -76,6 +77,7 @@ HEADERS += \
     $$SRCPATH/commonpaths.h \
     $$SRCPATH/editors/abstractsystemlogger.h \
     $$SRCPATH/editors/abstracttextmapper.h \
+    $$SRCPATH/editors/chunktextmapper.h \
     $$SRCPATH/editors/defaultsystemlogger.h \
     $$SRCPATH/editors/editorhelper.h \
     $$SRCPATH/editors/filemapper.h \

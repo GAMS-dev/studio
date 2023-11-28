@@ -27,6 +27,7 @@ INCLUDEPATH += $$SRCPATH \
 
 HEADERS += \
     $$SRCPATH/editors/abstracttextmapper.h \
+    $$SRCPATH/editors/chunktextmapper.h \
     $$SRCPATH/editors/logparser.h \
     $$SRCPATH/editors/memorymapper.h \
     $$SRCPATH/file/dynamicfile.h \
@@ -36,6 +37,7 @@ HEADERS += \
 
 SOURCES += \
     $$SRCPATH/editors/abstracttextmapper.cpp \
+    $$SRCPATH/editors/chunktextmapper.cpp \
     $$SRCPATH/editors/logparser.cpp \
     $$SRCPATH/editors/memorymapper.cpp \
     $$SRCPATH/file/dynamicfile.cpp \

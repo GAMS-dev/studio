@@ -20,7 +20,7 @@
 #ifndef TEXTVIEW_H
 #define TEXTVIEW_H
 
-#include "abstracttextmapper.h"
+#include "chunktextmapper.h"
 #include "syntax/textmarkrepo.h"
 #include "editors/abstractedit.h"
 #include "editors/logparser.h"

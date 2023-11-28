@@ -27,7 +27,7 @@
 #include <QTextDocument>
 #include <QMutex>
 #include <QTimer>
-#include "abstracttextmapper.h"
+#include "chunktextmapper.h"
 //#include "syntax.h"
 
 namespace gams {
@@ -38,7 +38,7 @@ namespace studio {
 /// Opens a file into (equal sized) chunks of QByteArrays that are loaded on request. Uses indexes to build the lines
 /// for the model on the fly.
 ///
-class FileMapper: public AbstractTextMapper
+class FileMapper: public ChunkTextMapper
 {
     Q_OBJECT
 public:
@@ -59,6 +59,9 @@ public slots:
     virtual void reset() override;
 
 protected:
+    QList<size_t> scanLF();
+    QList<size_t> scanLF1();
+    QList<size_t> scanLF2();
     Chunk *getChunk(int chunkNr, bool cache = true) const override;
 
 private slots:

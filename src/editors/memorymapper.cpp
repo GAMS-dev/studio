@@ -32,7 +32,7 @@ static int CParseLinesMax = 23;     // The maximum count of gathered lines befor
 static int CRefreshTimeMax = 100;    // The maximum time (in ms) to wait until the output is updated (after changed)
 static int CKeptRunCount = 5;
 
-MemoryMapper::MemoryMapper(QObject *parent) : AbstractTextMapper (parent)
+MemoryMapper::MemoryMapper(QObject *parent) : ChunkTextMapper (parent)
 {
     mRunFinishedTimer.setInterval(10);
     mRunFinishedTimer.setSingleShot(true);
@@ -133,7 +133,7 @@ QVector<bool> MemoryMapper::markedLines(int localLineNrFrom, int lineCount) cons
 
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
+ChunkTextMapper::Chunk *MemoryMapper::addChunk(bool startUnit)
 {
     // IF we already have an empty chunk at the end, take it
     if (mChunks.size() && !mChunks.last()->size()) {
@@ -275,7 +275,7 @@ MemoryMapper::LineRef MemoryMapper::logLineToRef(const int &lineNr)
     return res;
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::nextChunk(AbstractTextMapper::Chunk *chunk)
+ChunkTextMapper::Chunk *MemoryMapper::nextChunk(ChunkTextMapper::Chunk *chunk)
 {
     if (!chunk) return nullptr;
     int i = mChunks.indexOf(chunk);
@@ -283,7 +283,7 @@ AbstractTextMapper::Chunk *MemoryMapper::nextChunk(AbstractTextMapper::Chunk *ch
     return nullptr;
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::prevChunk(AbstractTextMapper::Chunk *chunk)
+ChunkTextMapper::Chunk *MemoryMapper::prevChunk(ChunkTextMapper::Chunk *chunk)
 {
     if (!chunk) return nullptr;
     int i = mChunks.indexOf(chunk);
@@ -608,7 +608,7 @@ void MemoryMapper::processPending()
 {
     mPendingTimer.stop();
     if (mPending.testFlag(PendingBlockCountChange)) {
-        emitBlockCountChanged();
+        emit blockCountChanged();
     }
     if (mPending.testFlag(PendingContentChange)) {
         fetchDisplay();
@@ -674,7 +674,7 @@ void MemoryMapper::reset()
     mUnits.clear();
     invalidateSize();
     mLineCount = 0;
-    AbstractTextMapper::reset();
+    ChunkTextMapper::reset();
     addChunk(true);
     newPending(PendingBlockCountChange);
     newPending(PendingContentChange);
@@ -682,7 +682,7 @@ void MemoryMapper::reset()
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount) const
 {
-    return AbstractTextMapper::lines(localLineNrFrom, lineCount);
+    return ChunkTextMapper::lines(localLineNrFrom, lineCount);
 }
 
 QString MemoryMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
@@ -912,10 +912,10 @@ int MemoryMapper::lastChunkWithLineNr() const
 
 int MemoryMapper::visibleLineCount() const
 {
-    return AbstractTextMapper::visibleLineCount() / (debugMode() ? 2 : 1);
+    return ChunkTextMapper::visibleLineCount() / (debugMode() ? 2 : 1);
 }
 
-AbstractTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr, bool cache) const
+ChunkTextMapper::Chunk *MemoryMapper::getChunk(int chunkNr, bool cache) const
 {
     Q_UNUSED(cache)
     if (chunkNr >= 0 && mChunks.size() > chunkNr)
