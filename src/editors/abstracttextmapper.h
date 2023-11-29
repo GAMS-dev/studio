@@ -120,7 +120,7 @@ public:
     virtual QPoint searchSelectionStart() = 0;
     virtual QPoint searchSelectionEnd() = 0;
     void setLineMarkers(const QList<int> lines);
-    QList<int> lineMarkers();
+    QList<int> lineMarkers() const;
 
     virtual void dumpPos() const = 0;
 
@@ -135,7 +135,8 @@ signals:
 protected:
     AbstractTextMapper(QObject *parent = nullptr);
     int maxLineWidth() const;
-    virtual bool updateMaxTop() = 0;
+    virtual bool updateMaxTop() { return true; }
+    virtual void setDelimiter(const QByteArray &delim) const;
 
 private:
     mutable QByteArray mDelimiter;

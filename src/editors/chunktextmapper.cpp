@@ -401,7 +401,7 @@ QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount) const
 
 QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const
 {
-    if (!mLineMarkers.isEmpty()) {
+    if (!lineMarkers().isEmpty()) {
         int absTopLine = visibleTopLine();
         if (absTopLine >= 0) {
             QTextCharFormat fmt;
@@ -410,7 +410,7 @@ QString ChunkTextMapper::lines(int localLineNrFrom, int lineCount, QVector<LineF
             LineFormat markedLine(0, 0, fmt);
             markedLine.lineMarked = true;
             for (int i = absTopLine; i < absTopLine + lineCount; ++i) {
-                if (mLineMarkers.contains(i))
+                if (lineMarkers().contains(i))
                     formats << markedLine;
                 else
                     formats << LineFormat();
@@ -936,9 +936,9 @@ void ChunkTextMapper::initDelimiter(Chunk *chunk) const
             if (chunk->bArray.at(i) == '\n' || chunk->bArray.at(i) == '\r') {
                 if (chunk->bArray.size() > i+1 && chunk->bArray.at(i) != chunk->bArray.at(i+1)
                         && (chunk->bArray.at(i+1) == '\n' || chunk->bArray.at(i+1) == '\r')) {
-                    mDelimiter = chunk->bArray.mid(i, 2);
+                    setDelimiter(chunk->bArray.mid(i, 2));
                 } else {
-                    mDelimiter = chunk->bArray.mid(i, 1);
+                    setDelimiter(chunk->bArray.mid(i, 1));
                 }
                 break;
             }

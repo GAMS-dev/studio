@@ -90,7 +90,7 @@ void AbstractTextMapper::setLineMarkers(const QList<int> lines)
     mLineMarkers = lines;
 }
 
-QList<int> AbstractTextMapper::lineMarkers()
+QList<int> AbstractTextMapper::lineMarkers() const
 {
     return mLineMarkers;
 }
@@ -117,6 +117,11 @@ void AbstractTextMapper::copyToClipboard()
 int AbstractTextMapper::maxLineWidth() const
 {
     return mMaxLineWidth;
+}
+
+void AbstractTextMapper::setDelimiter(const QByteArray &delim) const
+{
+    mDelimiter = delim;
 }
 
 void AbstractTextMapper::setDebugMode(bool debug)
