@@ -29,7 +29,13 @@ namespace support {
 namespace Ui {
 class GamsLicensingDialog;
 }
+class GamsLicenseInfo;
 
+///
+/// \brief The GamsLicensingDialog class represents the implementation of the
+///        <a href="https://gams.com/latest/docs/T_STUDIO.html#STUDIO_GAMS_LICENSING">GAMS Licensing</a>
+///        dialog.
+///
 class GamsLicensingDialog : public QDialog
 {
     Q_OBJECT
@@ -41,13 +47,18 @@ public:
     static QString studioInfo();
     static QString aboutStudio();
     static QString header();
-    static void createLicenseFile(QWidget *parent);
+    static void createLicenseFileFromClipboard(QWidget *parent);
+
+private slots:
+    void on_copylicense_clicked();
+
+    void on_installButton_clicked();
 
 private:
     QString gamsLicense();
 
-private slots:
-    void on_copylicense_clicked();
+    static void writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
+                                 QWidget *parent, bool clipboard);
 
 private:
     Ui::GamsLicensingDialog *ui;

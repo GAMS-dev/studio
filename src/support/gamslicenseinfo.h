@@ -32,6 +32,11 @@ namespace gams {
 namespace studio {
 namespace support {
 
+///
+/// \brief The GamsLicenseInfo class provides information about a
+///        GAMS license as well as information about available
+///        solvers.
+///
 class GamsLicenseInfo
 {
 public:
@@ -54,6 +59,8 @@ public:
     QString solverLicense(const QString &name, int id) const;
 
     QStringList licenseFromClipboard();
+
+    QStringList licenseFromFile(const QString &fileName);
 
     bool isLicenseValid() const;
 

@@ -5984,7 +5984,7 @@ void MainWindow::checkGamsLicense()
                               " The license will be recognized and installed automatically."
                               " For more options, please check the GAMS documentation.";
     try {
-        support::GamsLicensingDialog::createLicenseFile(this);
+        support::GamsLicensingDialog::createLicenseFileFromClipboard(this);
         auto dataPaths = support::GamsLicenseInfo().gamsDataLocations();
         auto licenseFile = QDir::toNativeSeparators(CommonPaths::gamsLicenseFilePath(dataPaths));
         if (QFileInfo::exists(licenseFile)) {

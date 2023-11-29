@@ -269,4 +269,25 @@ void TestGamsLicenseInfo::testLocalDistribVersionString()
     QVERIFY(match.hasMatch());
 }
 
+void TestGamsLicenseInfo::testLicenseFromFile()
+{
+    GamsLicenseInfo licenseInfo;
+    auto val1 = licenseInfo.licenseFromFile("notthere.txt");
+    QCOMPARE(val1, QStringList());
+    auto val2 = licenseInfo.licenseFromFile("notatxt.dat");
+    QCOMPARE(val2, QStringList());
+
+    QFile testFile("lic.txt");
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        testFile.write("123\n");
+        testFile.write("abc \n");
+        testFile.write(" -+_ \n");
+        testFile.close();
+    }
+    QStringList lic;
+    lic << "123" << "abc" << "-+_";
+    auto val3 = licenseInfo.licenseFromFile("lic.txt");
+    QCOMPARE(val3, lic);
+}
+
 QTEST_MAIN(TestGamsLicenseInfo)

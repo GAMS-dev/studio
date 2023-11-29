@@ -132,7 +132,18 @@ QStringList GamsLicenseInfo::licenseFromClipboard()
     QStringList licenseLines = clipboard->text().split('\n', Qt::SkipEmptyParts);
     if (licenseLines.isEmpty())
         QStringList();
+    for (int i=0; i<licenseLines.size(); ++i)
+        licenseLines[i] = licenseLines[i].trimmed();
+    return licenseLines;
+}
 
+QStringList GamsLicenseInfo::licenseFromFile(const QString &fileName)
+{
+    QFile file(fileName);
+    QStringList licenseLines;
+    if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
+        licenseLines = QString(file.readAll()).split("\n", Qt::SkipEmptyParts);
+    }
     for (int i=0; i<licenseLines.size(); ++i)
         licenseLines[i] = licenseLines[i].trimmed();
     return licenseLines;

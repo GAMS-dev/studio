@@ -65,6 +65,8 @@ private slots:
 
     void testLocalDistribVersion();
     void testLocalDistribVersionString();
+
+    void testLicenseFromFile();
 };
 
 #endif // TESTGAMSLICENSEINFO_H

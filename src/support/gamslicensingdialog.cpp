@@ -31,6 +31,7 @@
 #include <QMessageBox>
 #include <QSortFilterProxyModel>
 #include <QFontDatabase>
+#include <QFileDialog>
 
 namespace gams {
 namespace studio {
@@ -41,9 +42,7 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) 
     ui(new Ui::GamsLicensingDialog)
 {
     ui->setupUi(this);
-
-    createLicenseFile(parent);
-
+    createLicenseFileFromClipboard(parent);
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
@@ -107,33 +106,40 @@ QString GamsLicensingDialog::gamsLicense()
     return about.join("");
 }
 
-void GamsLicensingDialog::createLicenseFile(QWidget *parent)
+void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
+                                           QWidget *parent, bool clipboard)
 {
-    GamsLicenseInfo licenseInfo;
-    auto license = licenseInfo.licenseFromClipboard();
-    if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
-        return;
-
     QFile licenseFile(licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile());
     if (licenseFile.exists()) {
-        auto result = QMessageBox::question(parent,
-                                            "Overwrite current GAMS license file?",
-                                            "It looks like there is a GAMS license in the clipboard. "
-                                            "Do you want to overwrite your current license file from this clipboard text? "
-                                            "Your current license location is: " +
-                                            QDir::toNativeSeparators(licenseFile.fileName()));
+        QString text;
+        if (clipboard) {
+            text.append("It looks like there is a GAMS license in the clipboard. ");
+            text.append("Do you want to overwrite your current license file from this clipboard text? ");
+            text.append("Your current license location is: ");
+            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        } else {
+            text.append("Do you want to overwrite your current license file with the selected license? ");
+            text.append("Your current license location is: ");
+            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        }
+        auto result = QMessageBox::question(parent, "Overwrite current GAMS license file?", text);
         if (result == QMessageBox::No)
             return;
     } else {
-        auto result = QMessageBox::question(parent,
-                                            "Create GAMS license file?",
-                                            "It looks like there is a GAMS license in the clipboard. "
-                                            "Do you want to create a license file from this clipboard text? "
-                                            "Your GAMS license location will be: " +
-                                            QDir::toNativeSeparators(licenseFile.fileName()));
+        QString text;
+        if (clipboard) {
+            text.append("It looks like there is a GAMS license in the clipboard. ");
+            text.append("Do you want to create a license file from this clipboard text? ");
+            text.append("Your GAMS license location will be: ");
+            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        } else {
+            text.append("Do you want to create a license file based on the selected license? ");
+            text.append("Your GAMS license location will be: ");
+            text.append(QDir::toNativeSeparators(licenseFile.fileName()));
+        }
+        auto result = QMessageBox::question(parent, "Create GAMS license file?", text);
         if (result == QMessageBox::No)
             return;
-
         auto licensePath = QFileInfo(licenseFile).absolutePath();
         QDir(licensePath).mkpath(".");
     }
@@ -146,9 +152,18 @@ void GamsLicensingDialog::createLicenseFile(QWidget *parent)
         QMessageBox::critical(parent,
                               "Unable to write gamslice.txt",
                               "Unable to write " +
-                              QDir::toNativeSeparators(licenseFile.fileName()) +
-                              ": " + licenseFile.errorString());
+                                  QDir::toNativeSeparators(licenseFile.fileName()) +
+                                  ": " + licenseFile.errorString());
     }
+}
+
+void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
+{
+    GamsLicenseInfo licenseInfo;
+    auto license = licenseInfo.licenseFromClipboard();
+    if (license.isEmpty() || !licenseInfo.isLicenseValid(license))
+        return;
+    writeLicenseFile(licenseInfo, license, parent, true);
 }
 
 void GamsLicensingDialog::on_copylicense_clicked()
@@ -156,6 +171,24 @@ void GamsLicensingDialog::on_copylicense_clicked()
     GamsProcess gproc;
     QClipboard *clip = QGuiApplication::clipboard();
     clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS().replace("#L", ""));
+}
+
+void GamsLicensingDialog::on_installButton_clicked()
+{
+    auto fileName = QFileDialog::getOpenFileName(this,
+                                                 "Open License File",
+                                                 QDir::homePath(),
+                                                 tr("Text Files (*.txt)"));
+    if (fileName.isEmpty() || !fileName.endsWith(".txt"))
+        return;
+    GamsLicenseInfo licenseInfo;
+    auto license = licenseInfo.licenseFromFile(fileName);
+    if (license.isEmpty() || !licenseInfo.isLicenseValid(license)) {
+        QMessageBox::critical(this, "Invalid License", "The selected license file is invalid and has not been installed.");
+        return;
+    }
+    writeLicenseFile(licenseInfo, license, this, false);
+    ui->label->setText(gamsLicense());
 }
 
 QString GamsLicensingDialog::header()

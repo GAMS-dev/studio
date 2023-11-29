@@ -94,7 +94,7 @@
               <x>0</x>
               <y>0</y>
               <width>600</width>
-              <height>374</height>
+              <height>376</height>
              </rect>
             </property>
             <layout class="QHBoxLayout" name="horizontalLayout_3">
@@ -164,6 +164,13 @@
             </size>
            </property>
           </spacer>
+         </item>
+         <item>
+          <widget class="QPushButton" name="installButton">
+           <property name="text">
+            <string>Install License File</string>
+           </property>
+          </widget>
          </item>
          <item>
           <widget class="QPushButton" name="copylicense">

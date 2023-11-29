@@ -1,6 +1,7 @@
 Version 1.17.0 *
 ==================
 - fixed help view resulting on empty page when document linked to a page in new tab or new window.
+- added install license button for the `GAMS Licensing` dialog.
 
 Version 1.16.3
 ==================
