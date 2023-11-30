@@ -68,7 +68,7 @@ private:
     enum PosAncState {PosAfterAnc, PosEqualAnc, PosBeforeAnc};
 
 private:
-    QList<qint64> scanLF();
+    QList<qint64> scanLF(QList<qint64> &lf);
     QPoint endPosition();
     QString readLines(int lineNr, int count) const;
     bool adjustLines(int &lineNr, int &count) const;

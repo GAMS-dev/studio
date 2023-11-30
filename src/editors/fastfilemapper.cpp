@@ -35,7 +35,7 @@ bool FastFileMapper::openFile(const QString &fileName, bool initAnchor)
             DEB() << "Could not open file " << fileName;
             return false;
         }
-        mLines = scanLF();
+        scanLF(mLines);
         DEB() << "elapsed: " << et.elapsed();
         initDelimiter();
         updateMaxTop();
@@ -324,11 +324,11 @@ QList<qint64> subScanLF(char*data, int len, qint64 offset)
     return res;
 }
 
-QList<qint64> FastFileMapper::scanLF()
+QList<qint64> FastFileMapper::scanLF(QList<qint64> &lf)
 {
     const int threadMax = 32;
     mFile.reset();
-    QList<qint64> lf;
+    lf.clear();
     lf.reserve(mFile.size() / 45);
     lf << 0.;
     QDataStream ds(&mFile);
