@@ -8,6 +8,8 @@
 namespace gams {
 namespace studio {
 
+const int MAX_CHAR_PER_BLOCK = 1024*1024*1024;
+
 FastFileMapper::FastFileMapper(QObject *parent)
     : gams::studio::AbstractTextMapper{parent}
 {}
@@ -44,6 +46,11 @@ bool FastFileMapper::openFile(const QString &fileName, bool initAnchor)
     return false;
 }
 
+QString FastFileMapper::fileName() const
+{
+    return mFile.fileName();
+}
+
 qint64 FastFileMapper::size() const
 {
     return mSize;
@@ -56,12 +63,12 @@ AbstractTextMapper::Kind FastFileMapper::kind() const
 
 void FastFileMapper::startRun()
 {
-    // TODO(JM) implement
+    closeAndReset();
 }
 
 void FastFileMapper::endRun()
 {
-    // TODO(JM) implement
+    reload();
 }
 
 bool FastFileMapper::setVisibleTopLine(double region)
@@ -90,10 +97,9 @@ int FastFileMapper::visibleTopLine() const
 
 void FastFileMapper::scrollToPosition()
 {
-    // TODO(JM) implement
-    // int lineNr = position();
-    // if (pos.y() < visibleLineCount() / 5 || pos.y() == cursorBeyondEnd || pos.y() > (visibleLineCount() * 4) / 5)
-    //     setVisibleTopLine(cm->startLineNr + mPosition.localLine - visibleLineCount() / 2);
+    int localLine = position(true).y();
+    if (localLine < visibleLineCount() / 5 || localLine == cursorBeyondEnd || localLine > (visibleLineCount() * 4) / 5)
+        setVisibleTopLine(position().y() - visibleLineCount() / 2);
 }
 
 int FastFileMapper::lineCount() const
@@ -139,14 +145,21 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFo
 
 bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
+    bool backwards = flags.testFlag(QTextDocument::FindBackward);
+    int part = backwards ? 2 : 1;
+
     // TODO(JM) implement
     return false;
 }
 
 QString FastFileMapper::selectedText() const
 {
-    // TODO(JM) implement
-    return QString();
+    if (mAnchor == mPosition) return QString();
+    PosAncState pas = posAncState();
+    QString res = readLines(mPosition.y(), mPosition.y() - mAnchor.y() + 1);
+    int from = (pas == PosBeforeAnc) ? mPosition.x() : mAnchor.x();
+    int len = res.length() - from - (pas == PosAfterAnc) ? mPosition.x() : mAnchor.x();
+    return res.mid(from, len);
 }
 
 QString FastFileMapper::positionLine() const
@@ -192,7 +205,10 @@ QPoint FastFileMapper::position(bool local) const
 {
     if (!local)
         return mPosition;
-    return QPoint(mPosition.x(), mPosition.y() - visibleTopLine());
+    int localLine = mPosition.y() - visibleTopLine();
+    if (localLine < 0) return QPoint(0, cursorBeforeStart);
+    if (localLine > visibleLineCount()) return QPoint(0, cursorBeyondEnd);
+    return QPoint(mPosition.x(), localLine);
 }
 
 QPoint FastFileMapper::anchor(bool local) const
@@ -237,29 +253,39 @@ bool FastFileMapper::atTail()
 
 void FastFileMapper::updateSearchSelection()
 {
-    // TODO(JM) implement
+    if (posAncState() == PosBeforeAnc) {
+        mSearchSelectionStart = mPosition;
+        mSearchSelectionEnd = mAnchor;
+    } else {
+        mSearchSelectionStart = mAnchor;
+        mSearchSelectionEnd = mPosition;
+    }
+    setSearchSelectionActive(mSearchSelectionStart != mSearchSelectionEnd);
 }
 
 void FastFileMapper::clearSearchSelection()
 {
-    // TODO(JM) implement
+    mSearchSelectionStart = QPoint();
+    mSearchSelectionEnd = QPoint();
+    setSearchSelectionActive(false);
 }
 
 QPoint FastFileMapper::searchSelectionStart()
 {
-    // TODO(JM) implement
-    return QPoint();
+    return mSearchSelectionStart;
 }
 
 QPoint FastFileMapper::searchSelectionEnd()
 {
-    // TODO(JM) implement
-    return QPoint();
+    return mSearchSelectionEnd;
 }
 
 void FastFileMapper::dumpPos() const
 {
-    // TODO(JM) implement
+    DEB() << "anc: " << mAnchor << ",  p " << (mLines.at(mAnchor.y()) + mAnchor.x());
+    DEB() << "pos: " << mPosition << ",  p " << (mLines.at(mPosition.y()) + mPosition.x());
+    DEB() << "top: " << mVisibleTopLine;
+    DEB() << "max: " << mVisibleLineCount;
 }
 
 void FastFileMapper::reset()
@@ -347,6 +373,14 @@ QPoint FastFileMapper::endPosition()
 
 QString FastFileMapper::readLines(int lineNr, int count) const
 {
+    if (count < 0) {
+        lineNr += count;
+        count = -count;
+    }
+    if (count > MAX_CHAR_PER_BLOCK) {
+        count = MAX_CHAR_PER_BLOCK;
+        DEB() << "Error reading data: requested size exceeds 2^30 characters";
+    }
     QString res;
     QTextStream ds(&mFile);
     ds.seek(mLines.at(lineNr));
@@ -384,6 +418,24 @@ void FastFileMapper::initDelimiter() const
     char delim[2];
     ds.readRawData(delim, 2);
     setDelimiter((delim[0] == '\r') ? "\r\n" : "\n");
+}
+
+bool FastFileMapper::reload()
+{
+    QString fileName = mFile.fileName();
+    if (!size() && !fileName.isEmpty()) {
+        return openFile(fileName, false);
+    }
+    return size();
+}
+
+FastFileMapper::PosAncState FastFileMapper::posAncState() const
+{
+    if (mPosition == mAnchor)
+        return PosEqualAnc;
+    if (mPosition.y() != mAnchor.y())
+        return mPosition.y() > mAnchor.y() ? PosAfterAnc : PosBeforeAnc;
+    return mPosition.x() > mAnchor.x() ? PosAfterAnc : PosBeforeAnc;
 }
 
 } // namespace studio

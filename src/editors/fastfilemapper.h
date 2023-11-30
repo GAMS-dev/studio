@@ -17,6 +17,7 @@ public:
     virtual AbstractTextMapper::Kind kind() const;
 
     bool openFile(const QString &fileName, bool initAnchor);
+    QString fileName() const;
     qint64 size() const override;
 
     void startRun() override;
@@ -64,11 +65,17 @@ private slots:
     void closeAndReset();
 
 private:
+    enum PosAncState {PosAfterAnc, PosEqualAnc, PosBeforeAnc};
+
+private:
     QList<qint64> scanLF();
     QPoint endPosition();
     QString readLines(int lineNr, int count) const;
     bool adjustLines(int &lineNr, int &count) const;
     void initDelimiter() const;
+    bool reload();
+    PosAncState posAncState() const;
+
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness
     qint64 mSize = 0;
@@ -78,6 +85,8 @@ private:
     int mVisibleLineCount = 0;
     QPoint mPosition;
     QPoint mAnchor;
+    QPoint mSearchSelectionStart;
+    QPoint mSearchSelectionEnd;
 
 };
 

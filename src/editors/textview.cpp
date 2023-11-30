@@ -18,7 +18,8 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "textview.h"
-#include "filemapper.h"
+// #include "filemapper.h"
+#include "fastfilemapper.h"
 #include "memorymapper.h"
 #include "logger.h"
 #include "textviewedit.h"
@@ -46,7 +47,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     setViewportMargins(0,0,0,0);
     setSizeAdjustPolicy(QAbstractScrollArea::AdjustIgnored);
     if (kind == FileText) {
-        mMapper = new FileMapper();
+        mMapper = new FastFileMapper();
     }
     int mib = Settings::settings()->toInt(skDefaultCodecMib);
     QTextCodec *codec = QTextCodec::codecForMib(mib);
@@ -124,7 +125,7 @@ bool TextView::loadFile(const QString &fileName, QTextCodec *codec, bool initAnc
     if (mTextKind != FileText) return false;
     mMapper->setCodec(codec);
 
-    if (!static_cast<FileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
+    if (!static_cast<FastFileMapper*>(mMapper)->openFile(fileName, initAnchor)) return false;
     recalcVisibleLines();
     if (initAnchor)
         mMapper->setVisibleTopLine(0);
@@ -134,7 +135,7 @@ bool TextView::loadFile(const QString &fileName, QTextCodec *codec, bool initAnc
 
 void TextView::print(QPagedPaintDevice *printer)
 {
-    QString fileName = static_cast<FileMapper*>(mMapper)->fileName();
+    QString fileName = static_cast<FastFileMapper*>(mMapper)->fileName();
     if(fileName.isEmpty()) return;
     QString text;
     QFile file(fileName);
