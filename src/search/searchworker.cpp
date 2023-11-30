@@ -40,9 +40,9 @@ SearchWorker::SearchWorker(SearchFile file, QRegularExpression regex, QPoint fro
     mTo += QPoint(0,1);
 }
 
-SearchWorker::SearchWorker(QList<SearchFile> fml, QRegularExpression regex,
+SearchWorker::SearchWorker(QList<SearchFile> files, QRegularExpression regex,
                            QList<Result> *list, bool showResults)
-    : mFiles(fml), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0)),
+    : mFiles(files), mMatches(list), mRegex(regex), mFrom(QPoint(0,0)), mTo(QPoint(0,0)),
       mShowResults(showResults)
 {
     mFindInSelection = false;

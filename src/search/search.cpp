@@ -56,9 +56,8 @@ void Search::start(SearchParameters parameters)
 
     mLastSearchParameters = parameters;
 
-    // setup
-    mResults.clear();
-    mResultHash.clear();
+    resetResults();
+
 
     mSearching = true;
     mSearchDialog->setSearchStatus(Search::CollectingFiles);
@@ -96,7 +95,6 @@ void Search::runSearch(QList<SearchFile> files)
 {
     mSearchDialog->setSearchedFiles(files.count());
     mSearchDialog->setSearchStatus(Search::Searching);
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "sorting...";
 
     QList<SearchFile> unmodified;
     QList<SearchFile> modified; // need to be treated differently
@@ -122,7 +120,6 @@ void Search::runSearch(QList<SearchFile> files)
         unmodified << sf;
     }
 
-    qDebug()/*rogo:delete*/<<QTime::currentTime()<< "done with sorting";
 
     // start background task first
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
@@ -132,6 +129,7 @@ void Search::runSearch(QList<SearchFile> files)
     sw->moveToThread(&mSearchThread);
 
     connect(&mSearchThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
+    connect(&mSearchThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
     connect(&mSearchThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
     connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
     connect(sw, &SearchWorker::showResults, mSearchDialog, &SearchDialog::relaySearchResults, Qt::UniqueConnection);
@@ -241,7 +239,7 @@ void Search::findNext(Direction direction)
         emit invalidateResults();
         emit updateUI();
 
-         // generate new cache
+        // generate new cache
         start(mSearchDialog->createSearchParameters(false, false, direction == Search::Backward));
     }
     selectNextMatch(direction);
