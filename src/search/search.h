@@ -62,7 +62,7 @@ public:
 
     void findNext(Direction direction);
     void replaceNext(QString replacementText);
-    void replaceAll(QString replacementText);
+    void replaceAll(SearchParameters parameters);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
     bool isSearching() const;
@@ -89,8 +89,8 @@ private:
     void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-    int replaceOpened(FileMeta* fm, SearchParameters parameters, QString replaceTerm);
-    int replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm);
+    int replaceOpened(FileMeta* fm, SearchParameters parameters);
+    int replaceUnopened(FileMeta* fm, SearchParameters parameters);
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
@@ -101,7 +101,7 @@ private:
     void checkFileChanged(FileId fileId);
     bool hasResultsForFile(QString filePath);
 
-    QFlags<QTextDocument::FindFlag> createSearchOptions(SearchParameters parameters, Direction direction = Direction::Forward);
+    QFlags<QTextDocument::FindFlag> createFindFlags(SearchParameters parameters, Direction direction = Direction::Forward);
 
 private slots:
     void finished();

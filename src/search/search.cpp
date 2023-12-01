@@ -27,6 +27,7 @@
 #include "searchdialog.h"
 #include "searchworker.h"
 #include "editors/abstractedit.h"
+#include "editors/sysloglocator.h"
 #include "editors/textview.h"
 #include "fileworker.h"
 #include "viewhelper.h"
@@ -58,7 +59,6 @@ void Search::start(SearchParameters parameters)
 
     resetResults();
 
-
     mSearching = true;
     mSearchDialog->setSearchStatus(Search::CollectingFiles);
     mSearchDialog->updateDialogState();
@@ -81,10 +81,10 @@ void Search::start(SearchParameters parameters)
         FileWorker* fw = new FileWorker(parameters);
         fw->moveToThread(&mFileThread);
 
-        connect(&mFileThread, &QThread::finished, fw, &QObject::deleteLater);
         connect(&mFileThread, &QThread::started, fw, &FileWorker::collectFilesInFolder);
         connect(fw, &FileWorker::filesCollected, this, &Search::runSearch);
         connect(fw, &FileWorker::filesCollected, &mFileThread, &QThread::quit);
+        connect(&mFileThread, &QThread::finished, fw, &QObject::deleteLater);
 
         mFileThread.start();
         mFileThread.setPriority(QThread::LowPriority); // search is a background task
@@ -120,7 +120,6 @@ void Search::runSearch(QList<SearchFile> files)
         unmodified << sf;
     }
 
-
     // start background task first
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
                              ? currentFile->projectId() : NodeId();
@@ -149,9 +148,8 @@ void Search::stop()
 
 void Search::activeFileChanged()
 {
-    if (!mLastSearchParameters.files.contains(
-            SearchFile(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor())))
-        )
+    FileMeta* current = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
+    if (current && !mResultHash.contains(current->location()))
         mCacheAvailable = false;
 }
 
@@ -220,7 +218,7 @@ void Search::findInDoc(FileMeta* fm)
 
     do {
         item = fm->document()->find(mLastSearchParameters.regex, lastItem,
-                                    createSearchOptions(mLastSearchParameters));
+                                    createFindFlags(mLastSearchParameters));
         if (item != lastItem) lastItem = item;
         else break;
 
@@ -354,7 +352,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         emit selectResult(matchNr);
 }
 
-QFlags<QTextDocument::FindFlag> Search::createSearchOptions(SearchParameters parameters, Direction direction) {
+QFlags<QTextDocument::FindFlag> Search::createFindFlags(SearchParameters parameters, Direction direction) {
     QFlags<QTextDocument::FindFlag> searchOptions;
     searchOptions.setFlag(QTextDocument::FindBackward, direction == Direction::Backward);
     searchOptions.setFlag(QTextDocument::FindCaseSensitively, parameters.caseSensitive);
@@ -366,7 +364,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     int matchNr = -1;
     bool found = false;
 
-    QFlags<QTextDocument::FindFlag> options = createSearchOptions(mLastSearchParameters, direction);
+    QFlags<QTextDocument::FindFlag> options = createFindFlags(mLastSearchParameters, direction);
 
     // do not move cursor in document that is not in scope:
     if (mSearchDialog->getFilesByScope().contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
@@ -447,60 +445,59 @@ bool Search::hasResultsForFile(QString filePath) {
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString replaceTerm)
+int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
 {
-    qCritical() << "Not implemented";
-//    QFile file(fm->location());
-//    QTextCodec *codec = fm->codec();
+    QFile file(fm->location());
+    QTextCodec *codec = fm->codec();
     int hits = 0;
 
-//    if (!file.open(QFile::ReadWrite)) {
-//        SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
-//        return 0;
-//    }
+    if (!file.open(QFile::ReadWrite)) {
+        SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
+        return 0;
+    }
 
-//    QString content;
-//    while (!file.atEnd()) {
-//        QByteArray arry = file.readLine();
-//        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
-//        if (arry.endsWith('\n')) {
-//            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
-//                arry.chop(2);
-//            else
-//                arry.chop(1);
-//        }
+    QString content;
+    while (!file.atEnd()) {
+        QByteArray arry = file.readLine();
+        // TODO(JM) when switching back to QTextStream this can be removed, as stream doesn't append the \n
+        if (arry.endsWith('\n')) {
+            if (arry.length() > 1 && arry.at(arry.length()-2) == '\r')
+                arry.chop(2);
+            else
+                arry.chop(1);
+        }
 
-//        QString line = codec ? codec->toUnicode(arry) : QString(arry);
+        QString line = codec ? codec->toUnicode(arry) : QString(arry);
 
-//        if (regex.captureCount() > 0) {
-//            QRegularExpressionMatchIterator matchIter = regex.globalMatch(line);
+        if (parameters.regex.captureCount() > 0) {
+            QRegularExpressionMatchIterator matchIter = parameters.regex.globalMatch(line);
 
-//            // iterate over matches in this line
-//            while(matchIter.hasNext()) {
-//                QRegularExpressionMatch match = matchIter.next();
-//                QString modifiedReplaceTerm = replaceTerm;
+            // iterate over matches in this line
+            while(matchIter.hasNext()) {
+                QRegularExpressionMatch match = matchIter.next();
+                QString modifiedReplaceTerm = parameters.replaceTerm;
 
-//                // replace capture groups placeholders with content
-//                for(int i = 1; i <= regex.captureCount(); i++) {
-//                    QRegularExpression replaceGroup("\\$" + QString::number(i));
-//                    QString captured = match.capturedTexts().at(i);
-//                    modifiedReplaceTerm.replace(replaceGroup, captured);
-//                }
+                // replace capture groups placeholders with content
+                for(int i = 1; i <= parameters.regex.captureCount(); i++) {
+                    QRegularExpression replaceGroup("\\$" + QString::number(i));
+                    QString captured = match.capturedTexts().at(i);
+                    modifiedReplaceTerm.replace(replaceGroup, captured);
+                }
 
-//                // replace match with filled replace term
-//                line.replace(match.capturedStart(), match.capturedLength(), modifiedReplaceTerm);
-//                hits++;
-//            }
-//        } else {
-//            hits += line.count(regex);
-//            line.replace(regex, replaceTerm);
-//        }
-//        content += line + "\n";
-//    }
+                // replace match with filled replace term
+                line.replace(match.capturedStart(), match.capturedLength(), modifiedReplaceTerm);
+                hits++;
+            }
+        } else {
+            hits += line.count(parameters.regex);
+            line.replace(parameters.regex, parameters.replaceTerm);
+        }
+        content += line + "\n";
+    }
 
-//    file.seek(0);
-//    file.write(codec ? codec->fromUnicode(content) : content.toUtf8());
-//    file.close();
+    file.seek(0);
+    file.write(codec ? codec->fromUnicode(content) : content.toUtf8());
+    file.close();
     return hits;
 }
  ///
@@ -511,16 +508,15 @@ int Search::replaceUnopened(FileMeta* fm, QRegularExpression regex, QString repl
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-int Search::replaceOpened(FileMeta* fm, SearchParameters parameters, QString replaceTerm)
+int Search::replaceOpened(FileMeta* fm, SearchParameters parameters)
 {
-    qCritical() << "Not implemented";
-//    AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
+    AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
 
     int hits = 0;
-//    if (ae && fm->editors().size() > 0) {
-//        hits = ae->replaceAll(fm, parameters.regex, replaceTerm, createSearchOptions(parameters),
-//                              mSearchDialog->selectedScope() == Scope::Selection);
-//    }
+    if (ae && fm->editors().size() > 0) {
+        hits = ae->replaceAll(fm, parameters.regex, parameters.replaceTerm,
+                              createFindFlags(parameters), mSearchDialog->selectedScope() == Scope::Selection);
+    }
     return hits;
 }
 
@@ -587,117 +583,18 @@ QList<Result> Search::filteredResultList(QString fileLocation)
 
 void Search::replaceNext(QString replacementText)
 {
-    qCritical() /*rogo:delete*/ << "Not implemented!";
-//    AbstractEdit* edit = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor());
-//    if (!edit) return;
+    AbstractEdit* edit = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor());
+    if (!edit) return;
 
-//    edit->replaceNext(mRegex, replacementText, mSearchDialog->selectedScope() == Search::Selection);
+    edit->replaceNext(mLastSearchParameters.regex, replacementText, mSearchDialog->selectedScope() == Scope::Selection);
 
-//    start(true, false, false); // refresh cache
-//    selectNextMatch();
+    start(mSearchDialog->createSearchParameters(false, true)); // refresh cache
+    selectNextMatch();
 }
 
-void Search::replaceAll(QString replacementText)
+void Search::replaceAll(SearchParameters parameters)
 {
-    // TODO: get parameters
-    qCritical() /*rogo:delete*/ << "Not implemented!";
-//    if (mRegex.pattern().isEmpty()) return;
-
-//    QList<FileMeta*> opened;
-//    QList<FileMeta*> unopened;
-
-//    int matchedFiles = 0;
-
-//    QList<FileMeta*> searchFiles;
-
-    // sort and filter FMs by editability and modification state
-    for (FileMeta* fm : std::as_const(mFiles)) {
-        if (!fm->isReadOnly()) {
-            searchFiles.append(fm);
-        } else continue;
-//        if (fm->document()) {
-//            if (!opened.contains(fm)) opened << fm;
-//        } else {
-//            if (!unopened.contains(fm)) unopened << fm;
-//        }
-
-//        matchedFiles++;
-//    }
-
-//    // user interaction
-//    QString replaceTerm = replacementText;
-//    QMessageBox msgBox;
-//    if (mFiles.size() == 0) {
-//        msgBox.setText("No files matching criteria.");
-//        msgBox.setStandardButtons(QMessageBox::Ok);
-//        msgBox.exec();
-//        return;
-
-//    } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Search::Selection) {
-//        msgBox.setText("Are you sure you want to replace all occurrences of '" + mSearchTerm
-//                       + "' with '" + replaceTerm + "' in file " + searchFiles.first()->name() + "?");
-//    } else if (mSearchDialog->selectedScope() == Search::Selection) {
-//        msgBox.setText("Are you sure you want to replace all occurrences of '" + mSearchTerm
-//                       + "' with '" + replaceTerm + "' in the selected text in file "
-//                       + searchFiles.first()->name() + "?");
-//    } else {
-//        msgBox.setText("Are you sure you want to replace all occurrences of '" +
-//                       mSearchTerm + "' with '" + replaceTerm + "' in " + QString::number(matchedFiles) + " files? " +
-//                       "This action cannot be undone!");
-//        QString detailedText;
-//        msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
-
-//        for (FileMeta* fm : qAsConst(searchFiles))
-//            detailedText.append(fm->location()+"\n");
-//        detailedText.append("\nThese files do not necessarily have any matches in them. "
-//                            "This is just a representation of the selected scope in the search window. "
-//                            "Press \"Preview\" to see actual matches that will be replaced.");
-//        msgBox.setDetailedText(detailedText);
-//    }
-//    QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
-//    QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-//    QPushButton *preview = msgBox.addButton("Preview", QMessageBox::RejectRole);
-//    msgBox.setDefaultButton(preview);
-
-        for (FileMeta* fm : std::as_const(searchFiles))
-            detailedText.append(fm->location()+"\n");
-        detailedText.append("\nThese files do not necessarily have any matches in them. "
-                            "This is just a representation of the selected scope in the search window. "
-                            "Press \"Preview\" to see actual matches that will be replaced.");
-        msgBox.setDetailedText(detailedText);
-    }
-    QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
-    QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
-    QPushButton *preview = msgBox.addButton("Preview", QMessageBox::RejectRole);
-    msgBox.setDefaultButton(preview);
-//    int hits = 0;
-//    msgBox.exec();
-//    if (msgBox.clickedButton() == ok) {
-
-//        mSearchDialog->setSearchStatus(Search::Replacing);
-
-        for (FileMeta* fm : std::as_const(opened))
-            hits += replaceOpened(fm, mRegex, replaceTerm);
-
-        for (FileMeta* fm : std::as_const(unopened))
-            hits += replaceUnopened(fm, mRegex, replaceTerm);
-
-//        mSearchDialog->searchParameterChanged();
-//    } else if (msgBox.clickedButton() == preview) {
-//        start(true, false, true);
-//        return;
-//    } else if (msgBox.clickedButton() == cancel) {
-//        return;
-//    }
-
-//    QMessageBox ansBox;
-//    if (hits == 1)
-//        ansBox.setText("1 occurrences of '" + mSearchTerm + "' was replaced with '" + replaceTerm + "'.");
-//    else
-//        ansBox.setText(QString::number(hits) + " occurrences of '" + mSearchTerm
-//                        + "' were replaced with '" + replaceTerm + "'.");
-//    ansBox.addButton(QMessageBox::Ok);
-//    ansBox.exec();
+   // TODO!
 }
 
 }

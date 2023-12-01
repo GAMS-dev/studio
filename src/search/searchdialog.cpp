@@ -108,6 +108,7 @@ SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ign
     SearchParameters parameters;
     parameters.regex = createRegex();
     parameters.searchTerm = searchTerm();
+    parameters.replaceTerm = ui->txt_replace->text();
 
     parameters.useRegex = regex();
     parameters.caseSensitive = caseSens();
@@ -131,7 +132,7 @@ void SearchDialog::on_btn_ReplaceAll_clicked()
     clearResultsView();
     insertHistory();
 
-    mSearch.replaceAll(ui->txt_replace->text());
+    mSearch.replaceAll(createSearchParameters(false, true));
 }
 
 void SearchDialog::on_btn_FindAll_clicked()

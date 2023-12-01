@@ -141,7 +141,7 @@ private:
     void checkRegex();
     void updateComponentAvailability();
     void updateClearButton();
-    SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly, bool searchBackwards);
+    SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly = false, bool searchBackwards = false);
 
 private:
     Ui::SearchDialog *ui;

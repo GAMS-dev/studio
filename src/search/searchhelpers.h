@@ -55,6 +55,7 @@ namespace search {
     {
         QRegularExpression regex;
         QString searchTerm;
+        QString replaceTerm;
 
         FileMeta* currentFile = nullptr;
 
@@ -67,7 +68,6 @@ namespace search {
 
         Scope scope;
         QString path;
-        QList<SearchFile> files;
     };
 
 }
