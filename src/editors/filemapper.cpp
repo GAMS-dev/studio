@@ -54,27 +54,10 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
         et.start();
         mFile.setFileName(fileName);
         mSize = mFile.size();
-//        scanLF();
         if (!mFile.open(QFile::ReadOnly)) {
             DEB() << "Could not open file " << fileName;
             return false;
         }
-        QList<size_t> lf = scanLF();
-//        QList<size_t> lf1 = scanLF1();
-//        QList<size_t> lf2 = scanLF2();
-//        int check = 0;
-//        for (int i = 0; i < qMin(lf1.size(), lf.size()); ++i) {
-//            if (lf1.at(i) != lf.at(i) && check == 0) {
-//                ++check;
-//            }
-//            if (check < 10 && check > 0) {
-//                ++check;
-//                DEB() << i << "  lf1: " << lf1.at(i) << "  lf2: " << lf.at(i);
-//                if (check == 10)
-//                    break;
-//            }
-//        }
-        DEB() << "elapsed: " << et.elapsed();
         int chunkCount = int(mFile.size()/chunkSize())+1;
         initChunkCount(chunkCount);
         Chunk *chunk = getChunk(0);
@@ -87,115 +70,6 @@ bool FileMapper::openFile(const QString &fileName, bool initAnchor)
         }
     }
     return false;
-}
-
-QList<size_t> subScanLF(char*data, int len, qint64 offset)
-{
-    QList<size_t> res;
-    res.reserve(5000);
-    for (int i = 0; i < len; ++i) {
-        if (data[i] == '\n')
-            res.append(offset + i + 1);
-    }
-    return res;
-}
-
-QList<size_t> FileMapper::scanLF() // count: 17613879  raw-reading: 384ms   reading-with-loop: 450ms  LF-check-reading: 3950ms
-{
-    const int threadMax = 32;
-    mFile.reset();
-    QList<size_t> lf;
-    lf.reserve(mFile.size() / 45);
-    lf << 0.;
-    QDataStream ds(&mFile);
-    int len = 1024*512;
-    char *data[threadMax];
-    for (int i = 0; i < threadMax; ++i)
-        data[i] = new char[len];
-    qint64 start = 0;
-
-    QList< QFuture< QList<size_t> > > fut;
-    int threadCount = 0;
-    while (!ds.atEnd()) {
-        int len1 = ds.readRawData(data[threadCount], len);
-        qint64 offset = start;
-        fut << QtConcurrent::run(subScanLF, data[threadCount], len1, offset);
-        start += len1;
-        ++threadCount;
-        if (threadCount >= threadMax || ds.atEnd())  {
-            for (int i = 0; i < fut.count(); ++i) {
-                lf << fut.at(i).result();
-            }
-            fut.clear();
-            threadCount = 0;
-        }
-    }
-    lf.squeeze();
-    for (int i = 0; i < threadMax; ++i)
-        delete data[i];
-//    DEB() << "THREAD    :  File: " << mFile.fileName() << "  size(count):" << mSize << " (" << start << ")  " << "lines: " << lf.size();
-    return lf;
-}
-
-QList<size_t> FileMapper::scanLF1() // lines: 17617937    time: 3840 ms
-{
-    mFile.reset();
-    QList<size_t> lf;
-    lf.reserve(mFile.size() / 45);
-    lf << 0.;
-
-    QDataStream ds(&mFile);
-    int len = 1024*512;
-    char data[1024*512];
-    qint64 start = 0;
-    bool cr = false;
-    bool lfEnd = false;
-    int empty = 0;
-
-
-    while (!ds.atEnd()) {
-        len = ds.readRawData(data, len);
-        for (int i = 0; i < len; ++i) {
-            if (data[i] == '\r') {
-                cr = true;
-                if (lfEnd) {
-                    ++empty;
-                    lfEnd = false;
-                }
-            } else {
-                lfEnd = false;
-                if (cr && data[i] == '\n') {
-                    lf.append(start + i + 1);
-                    lfEnd = true;
-                }
-                cr = false;
-            }
-        }
-        start += len;
-    }
-    lf.squeeze();
-    DEB() << "DATASTREAM:  File: " << mFile.fileName() << "  size(count):" << mSize << " (" << start << ")  " << "lines: " << lf.size();
-    return lf;
-}
-
-QList<size_t> FileMapper::scanLF2() // lines: 17613879    start: 1481841627    empty: 412   time: 31047
-{
-    mFile.reset();
-    QList<size_t> lf;
-    lf.reserve(mFile.size() / 45);
-    QTextStream ds(&mFile);
-    QString line;
-    int empty = 0;
-    qint64 start = 0;
-    while (!ds.atEnd()) {
-        line = ds.readLine();
-        if (line.isEmpty()) ++empty;
-        lf.append(start);
-        start += line.length()+2;
-    }
-    lf.squeeze();
-    DEB() << "LINEREADER:  File: " << mFile.fileName() << "  size(count):" << mSize << " (" << start << ")  " << "lines: " << lf.size();
-    return lf;
 }
 
 bool FileMapper::reload()

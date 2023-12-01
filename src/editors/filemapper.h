@@ -59,9 +59,6 @@ public slots:
     virtual void reset() override;
 
 protected:
-    QList<size_t> scanLF();
-    QList<size_t> scanLF1();
-    QList<size_t> scanLF2();
     Chunk *getChunk(int chunkNr, bool cache = true) const override;
 
 private slots:

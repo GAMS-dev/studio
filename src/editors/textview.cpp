@@ -473,6 +473,7 @@ int TextView::firstErrorLine()
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {
     QPoint pos = mMapper->position(true);
+    mMapper->dumpPos();
     bool cursorIsValid = pos.y() > AbstractTextMapper::cursorInvalid;
     QTextCursor::MoveMode mode = event->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
                                                                                 : QTextCursor::MoveAnchor;
@@ -724,14 +725,14 @@ void TextView::updatePosAndAnchor()
                   : anchor.y() == AbstractTextMapper::cursorBeyondEnd ?
                         mEdit->document()->lastBlock()
                       : mEdit->document()->findBlockByNumber(qMax(0, anchor.y()));
-        int p = block.position() + qBound(0, anchor.x(), block.length()-1);
+        int p = block.position() + qBound(0, anchor.x(), qMax(0, block.length()-1));
         cursor.setPosition(p);
         block = pos.y() == AbstractTextMapper::cursorBeforeStart ?
                     mEdit->document()->firstBlock()
                   : pos.y() == AbstractTextMapper::cursorBeyondEnd ?
                         mEdit->document()->lastBlock()
                       : mEdit->document()->findBlockByNumber(qMax(0, pos.y()));
-        p = block.position() + qBound(0, pos.x(), block.length()-1);
+        p = block.position() + qBound(0, pos.x(), qMax(0, block.length()-1));
         cursor.setPosition(p, QTextCursor::KeepAnchor);
     } else {
         QTextBlock block = pos.y() == AbstractTextMapper::cursorBeforeStart ?
@@ -739,7 +740,7 @@ void TextView::updatePosAndAnchor()
                   : pos.y() == AbstractTextMapper::cursorBeyondEnd ?
                         mEdit->document()->lastBlock()
                       : mEdit->document()->findBlockByNumber(qMax(0, pos.y()));
-        int p = block.position() + qBound(0, pos.x(), block.length()-1);
+        int p = block.position() + qBound(0, pos.x(), qMax(0, block.length()-1));
         cursor.setPosition(p);
     }
     disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);

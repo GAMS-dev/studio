@@ -75,6 +75,7 @@ private:
     void initDelimiter() const;
     bool reload();
     PosAncState posAncState() const;
+    int lineLength(int line);
 
 private:
     mutable QFile mFile;                // mutable to provide consistant logical const-correctness
@@ -85,6 +86,7 @@ private:
     int mVisibleLineCount = 0;
     QPoint mPosition;
     QPoint mAnchor;
+    int mCursorColumn = 0;
     QPoint mSearchSelectionStart;
     QPoint mSearchSelectionEnd;
 

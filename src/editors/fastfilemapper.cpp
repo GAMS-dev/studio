@@ -23,8 +23,8 @@ bool FastFileMapper::openFile(const QString &fileName, bool initAnchor)
         closeAndReset();
 
         if (initAnchor) {
-            mPosition = QPoint();
-            mAnchor = QPoint();
+            mPosition = QPoint(0,-1);
+            mAnchor = QPoint(0,-1);
         }
 
         QElapsedTimer et;
@@ -154,7 +154,7 @@ bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::Fin
 
 QString FastFileMapper::selectedText() const
 {
-    if (mAnchor == mPosition) return QString();
+    if (mAnchor == mPosition || mPosition.y() <= AbstractTextMapper::cursorInvalid) return QString();
     PosAncState pas = posAncState();
     QString res = readLines(mPosition.y(), mPosition.y() - mAnchor.y() + 1);
     int from = (pas == PosBeforeAnc) ? mPosition.x() : mAnchor.x();
@@ -171,13 +171,22 @@ QString FastFileMapper::positionLine() const
 
 void FastFileMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::MoveMode mode)
 {
-    mPosition = QPoint(visibleTopLine() + localLineNr, charNr);
+    bool toEnd = (localLineNr > 0) && (charNr == -1);
+    if (toEnd) --localLineNr;
+    int absLine = visibleTopLine() + localLineNr;
+    if (charNr == -2)
+        charNr = mCursorColumn;
+    else if (toEnd)
+        charNr = lineLength(absLine);
+
+    mPosition = QPoint(charNr, absLine);
     if (mode == QTextCursor::MoveAnchor)
         mAnchor = mPosition;
 }
 
 void FastFileMapper::setPosToAbsStart(QTextCursor::MoveMode mode)
 {
+    mCursorColumn = 0;
     mPosition = QPoint();
     if (mode == QTextCursor::MoveAnchor)
         mAnchor = mPosition;
@@ -186,6 +195,7 @@ void FastFileMapper::setPosToAbsStart(QTextCursor::MoveMode mode)
 void FastFileMapper::setPosToAbsEnd(QTextCursor::MoveMode mode)
 {
     mPosition = endPosition();
+    mCursorColumn = mPosition.x();
     if (mode == QTextCursor::MoveAnchor)
         mAnchor = mPosition;
 }
@@ -198,7 +208,12 @@ void FastFileMapper::selectAll()
 
 void FastFileMapper::clearSelection()
 {
-    mAnchor = mPosition;
+    if (mAnchor != mPosition)
+        mAnchor = mPosition;
+    else {
+        mPosition = QPoint(0,-1);
+        mAnchor = QPoint(0,-1);
+    }
 }
 
 QPoint FastFileMapper::position(bool local) const
@@ -291,8 +306,8 @@ void FastFileMapper::dumpPos() const
 void FastFileMapper::reset()
 {
     AbstractTextMapper::reset();
-    mPosition = QPoint();
-    mAnchor = QPoint();
+    mPosition = QPoint(0,-1);
+    mAnchor = QPoint(0,-1);
     mVisibleTopLine = 0;
 }
 
@@ -393,8 +408,8 @@ QString FastFileMapper::readLines(int lineNr, int count) const
 
 bool FastFileMapper::adjustLines(int &lineNr, int &count) const
 {
-    int fromLine = qBound(0, lineNr, mLines.count()-1);
-    int toLine = qBound (0, count + lineNr, mLines.count());
+    int fromLine = qBound(0, lineNr, qMax(0, mLines.count()-1));
+    int toLine = qBound(0, count + lineNr, mLines.count());
     if (fromLine == lineNr && count == toLine - fromLine)
         return true;
     lineNr = fromLine;
@@ -436,6 +451,13 @@ FastFileMapper::PosAncState FastFileMapper::posAncState() const
     if (mPosition.y() != mAnchor.y())
         return mPosition.y() > mAnchor.y() ? PosAfterAnc : PosBeforeAnc;
     return mPosition.x() > mAnchor.x() ? PosAfterAnc : PosBeforeAnc;
+}
+
+int FastFileMapper::lineLength(int lineNr)
+{
+    // codec regarding line length
+    QString line = readLines(lineNr, 1);
+    return line.length();
 }
 
 } // namespace studio
