@@ -83,7 +83,6 @@ private:
     QList<qint64> mLines;
     QMutex mMutex;
     int mVisibleTopLine = -1;
-    int mVisibleLineCount = 0;
     QPoint mPosition;
     QPoint mAnchor;
     int mCursorColumn = 0;

@@ -78,7 +78,7 @@ bool FastFileMapper::setVisibleTopLine(double region)
 
 bool FastFileMapper::setVisibleTopLine(int lineNr)
 {
-    int validLineNr = qMax(0, qMin(lineNr, mLines.size() - mVisibleLineCount));
+    int validLineNr = qMax(0, qMin(lineNr, mLines.size() - visibleLineCount()));
     mVisibleTopLine = validLineNr;
     return lineNr == validLineNr;
 }
@@ -173,8 +173,10 @@ void FastFileMapper::setPosRelative(int localLineNr, int charNr, QTextCursor::Mo
 {
     bool toEnd = (localLineNr > 0) && (charNr == -1);
     if (toEnd) --localLineNr;
-    int absLine = visibleTopLine() + localLineNr;
-    if (charNr == -2)
+    int absLine = qMax(0, qMin(visibleTopLine() + localLineNr, lineCount()-1));
+    if (charNr >= 0)
+        mCursorColumn = charNr;
+    else if (charNr == -2)
         charNr = mCursorColumn;
     else if (toEnd)
         charNr = lineLength(absLine);
@@ -263,7 +265,7 @@ int FastFileMapper::selectionSize() const
 
 bool FastFileMapper::atTail()
 {
-    return lineCount() >= 0 && mVisibleTopLine + mVisibleLineCount >= lineCount();
+    return lineCount() >= 0 && mVisibleTopLine + visibleLineCount() >= lineCount();
 }
 
 void FastFileMapper::updateSearchSelection()
@@ -297,10 +299,16 @@ QPoint FastFileMapper::searchSelectionEnd()
 
 void FastFileMapper::dumpPos() const
 {
-    DEB() << "anc: " << mAnchor << ",  p " << (mLines.at(mAnchor.y()) + mAnchor.x());
-    DEB() << "pos: " << mPosition << ",  p " << (mLines.at(mPosition.y()) + mPosition.x());
+    if (mAnchor.y() < 0)
+        DEB() << "anc: " << mAnchor;
+    else
+        DEB() << "anc: " << mAnchor << ",  p " << (mLines.at(mAnchor.y()) + mAnchor.x());
+    if (mPosition.y() < 0)
+        DEB() << "anc: " << mPosition;
+    else
+        DEB() << "pos: " << mPosition << ",  p " << (mLines.at(mPosition.y()) + mPosition.x());
     DEB() << "top: " << mVisibleTopLine;
-    DEB() << "max: " << mVisibleLineCount;
+    DEB() << "max: " << visibleLineCount();
 }
 
 void FastFileMapper::reset()
@@ -388,6 +396,8 @@ QPoint FastFileMapper::endPosition()
 
 QString FastFileMapper::readLines(int lineNr, int count) const
 {
+    if (count == 0)
+        return QString();
     if (count < 0) {
         lineNr += count;
         count = -count;
@@ -396,19 +406,18 @@ QString FastFileMapper::readLines(int lineNr, int count) const
         count = MAX_CHAR_PER_BLOCK;
         DEB() << "Error reading data: requested size exceeds 2^30 characters";
     }
-    QString res;
+    int toLine = lineNr + count;
+    bool atEnd = (toLine == mLines.count());
+    qint64 readSize = (atEnd ? size() : mLines.at(toLine) - delimiter().length()) - mLines.at(lineNr);
+    if (readSize == 0) return QString();
     QTextStream ds(&mFile);
     ds.seek(mLines.at(lineNr));
-    int toLine = lineNr + count;
-    bool atEnd = toLine == mLines.count() || mLines.at(toLine) == size();
-    qint64 readSize = (atEnd ? size() : mLines.at(toLine) - delimiter().length()) - mLines.at(lineNr);
-    res = ds.read(readSize);
-    return res;
+    return ds.read(readSize);
 }
 
 bool FastFileMapper::adjustLines(int &lineNr, int &count) const
 {
-    int fromLine = qBound(0, lineNr, qMax(0, mLines.count()-1));
+    int fromLine = qMax(0, qMin(lineNr, mLines.count()-1));
     int toLine = qBound(0, count + lineNr, mLines.count());
     if (fromLine == lineNr && count == toLine - fromLine)
         return true;
@@ -457,6 +466,7 @@ int FastFileMapper::lineLength(int lineNr)
 {
     // codec regarding line length
     QString line = readLines(lineNr, 1);
+    DEB() << "lineLen: " << line.length() << "  delimLen: " << delimiter().size();
     return line.length();
 }
 
