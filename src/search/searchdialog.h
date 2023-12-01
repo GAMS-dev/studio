@@ -27,6 +27,7 @@
 #include "mainwindow.h"
 #include "searchhelpers.h"
 #include "abstractsearchfilehandler.h"
+#include "searchhelpers.h"
 
 namespace gams {
 namespace studio {
@@ -124,7 +125,7 @@ protected:
 
 private:
     void restoreSettings();
-    QList<SearchFile> getFilesByScope(bool ignoreReadOnly = false);
+    QList<SearchFile> getFilesByScope(SearchParameters parameters);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();

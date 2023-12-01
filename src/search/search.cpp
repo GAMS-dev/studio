@@ -75,7 +75,7 @@ void Search::start(SearchParameters parameters)
         findInSelection(parameters.showResults);
         return;
     } else if (mSearchDialog->selectedScope() != Scope::Folder) {
-        runSearch(mSearchDialog->getFilesByScope());
+        runSearch(mSearchDialog->getFilesByScope(parameters));
     } else {
         // async file collection
         FileWorker* fw = new FileWorker(parameters);
@@ -367,7 +367,7 @@ int Search::NavigateOutsideCache(Direction direction, bool firstLevel)
     QFlags<QTextDocument::FindFlag> options = createFindFlags(mLastSearchParameters, direction);
 
     // do not move cursor in document that is not in scope:
-    if (mSearchDialog->getFilesByScope().contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
+    if (mSearchDialog->getFilesByScope(mLastSearchParameters).contains(mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor()))) {
         if (AbstractEdit* e = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor())) {
 
             QTextCursor tc = e->textCursor();
@@ -594,7 +594,102 @@ void Search::replaceNext(QString replacementText)
 
 void Search::replaceAll(SearchParameters parameters)
 {
-   // TODO!
+    if (parameters.regex.pattern().isEmpty()) return;
+
+    QList<FileMeta*> opened;
+    QList<FileMeta*> unopened;
+
+    // sort and filter FMs by editability and modification state
+    QList<SearchFile> files = mSearchDialog->filterFiles(mSearchDialog->getFilesByScope(parameters), true);
+    mLastSearchParameters = parameters;
+
+    int matchedFiles = 0;
+
+    for (const SearchFile &file : files) {
+        FileMeta* fm = file.fileMeta;
+
+        if (!fm)
+            fm = mFileHandler->findFile(file.path);
+
+        if (fm && fm->document()) {
+            if (!opened.contains(fm)) opened << fm;
+        } else {
+            if (!unopened.contains(fm)) unopened << fm;
+        }
+
+        matchedFiles++;
+    }
+
+    QString fileName = !files.count()
+                           ? "" : files.first().fileMeta ? files.first().fileMeta->name()
+                                                         : QFileInfo(files.first().path).fileName();
+
+    // user interaction
+    QMessageBox msgBox;
+    if (files.size() == 0) {
+        msgBox.setText("No files matching criteria.");
+        msgBox.setStandardButtons(QMessageBox::Ok);
+        msgBox.exec();
+        return;
+
+    } else if (matchedFiles == 1 && mSearchDialog->selectedScope() != Scope::Selection) {
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + parameters.searchTerm
+                       + "' with '" + parameters.replaceTerm + "' in file " + fileName + "?");
+    } else if (mSearchDialog->selectedScope() == Scope::Selection) {
+        msgBox.setText("Are you sure you want to replace all occurrences of '" + parameters.searchTerm
+                       + "' with '" + parameters.replaceTerm + "' in the selected text in file "
+                       + fileName + "?");
+    } else {
+        msgBox.setText("Are you sure you want to replace all occurrences of '" +
+                       parameters.searchTerm + "' with '" + parameters.replaceTerm + "' in "
+                       + QString::number(matchedFiles) + " files? " +
+                       "This action cannot be undone!");
+        QString detailedText;
+        msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
+
+        for (const SearchFile &file : qAsConst(files))
+            detailedText.append(file.path+"\n");
+
+        detailedText.append("\nThese files do not necessarily have any matches in them. "
+                            "This is just a representation of the selected scope in the search window. "
+                            "Press \"Preview\" to see actual matches that will be replaced.");
+        msgBox.setDetailedText(detailedText);
+    }
+    QPushButton *ok = msgBox.addButton(QMessageBox::Ok);
+    QPushButton *cancel = msgBox.addButton(QMessageBox::Cancel);
+    QPushButton *preview = msgBox.addButton("Preview", QMessageBox::RejectRole);
+    msgBox.setDefaultButton(preview);
+
+    int hits = 0;
+    msgBox.exec();
+    if (msgBox.clickedButton() == ok) {
+
+        mSearchDialog->setSearchStatus(Search::Replacing);
+
+        for (FileMeta* fm : qAsConst(opened))
+            hits += replaceOpened(fm, parameters);
+
+        for (FileMeta* fm : qAsConst(unopened))
+            hits += replaceUnopened(fm, parameters);
+
+        mSearchDialog->searchParameterChanged();
+    } else if (msgBox.clickedButton() == preview) {
+        parameters.showResults = true;
+        start(parameters);
+        return;
+    } else if (msgBox.clickedButton() == cancel) {
+        return;
+    }
+
+    QMessageBox ansBox;
+    if (hits == 1)
+        ansBox.setText("1 occurrences of '" + parameters.searchTerm + "' was replaced with '"
+                       + parameters.replaceTerm + "'.");
+    else
+        ansBox.setText(QString::number(hits) + " occurrences of '" + parameters.searchTerm
+                        + "' were replaced with '" + parameters.replaceTerm + "'.");
+    ansBox.addButton(QMessageBox::Ok);
+    ansBox.exec();
 }
 
 }

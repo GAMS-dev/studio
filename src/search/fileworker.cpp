@@ -26,7 +26,7 @@ namespace search {
 FileWorker::FileWorker(SearchParameters parameters) : mParameters(parameters)
 { }
 
-void FileWorker::collectFilesInFolder()
+QList<SearchFile> FileWorker::collectFilesInFolder()
 {
     QList<SearchFile> files;
     QDir dir(mParameters.path);
@@ -45,6 +45,7 @@ void FileWorker::collectFilesInFolder()
     }
 
     emit filesCollected(files);
+    return files;
 }
 
 }

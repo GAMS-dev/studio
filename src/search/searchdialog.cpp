@@ -20,6 +20,7 @@
 #include <QFileDialog>
 #include <QTextDocumentFragment>
 #include <QRegularExpression>
+#include "search/fileworker.h"
 #include "searchdialog.h"
 #include "ui_searchdialog.h"
 #include "settings.h"
@@ -204,7 +205,7 @@ void SearchDialog::updateDialogState()
     repaint();
 }
 
-QList<SearchFile> SearchDialog::getFilesByScope(bool ignoreReadOnly)
+QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
 {
     QList<SearchFile> files;
     switch (ui->combo_scope->currentIndex()) {
@@ -239,27 +240,13 @@ QList<SearchFile> SearchDialog::getFilesByScope(bool ignoreReadOnly)
             break;
         }
         case Scope::Folder: {
-            QDir dir(ui->combo_path->currentText());
-            if (ui->combo_path->currentText().isEmpty() || !dir.exists()){
-                setSearchStatus(Search::InvalidPath);
-                return QList<SearchFile>();
-            }
-
-            QDirIterator::IteratorFlag options = ui->cb_subdirs->isChecked()
-                                                    ? QDirIterator::Subdirectories
-                                                    : QDirIterator::NoIteratorFlags;
-            QDirIterator it(dir.path(), QDir::Files, options);
-            while (it.hasNext()) {
-                QString path = it.next();
-                if (path.isEmpty()) break;
-
-                files << SearchFile(path);
-            }
+            FileWorker fw(parameters);
+            files << fw.collectFilesInFolder();
         }
         default: break;
     }
 
-    return filterFiles(files, ignoreReadOnly);
+    return filterFiles(files, parameters.ignoreReadonly);
 }
 
 QList<SearchFile> SearchDialog::filterFiles(QList<SearchFile> files, bool ignoreReadOnly)
@@ -276,6 +263,8 @@ QList<SearchFile> SearchDialog::filterFiles(QList<SearchFile> files, bool ignore
 
     // create list of exclude filters
     QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
+    excludeFilter << ".gdx" << ".zip" ;
+
     QList<QRegularExpression> excludeFilterList;
     for (const QString &s : std::as_const(excludeFilter)) {
         QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
@@ -488,7 +477,7 @@ void SearchDialog::updateComponentAvailability()
 {
     // activate search for certain filetypes, unless scope is set to Folder then always activate.
     bool allFiles = selectedScope() == Scope::Folder;
-    bool activateSearch = allFiles || getFilesByScope().size() > 0 ||
+    bool activateSearch = allFiles || getFilesByScope(createSearchParameters(false)).size() > 0 ||
                                         (ViewHelper::editorType(mCurrentEditor) == EditorType::source
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::txt
                                             || ViewHelper::editorType(mCurrentEditor) == EditorType::lxiLst
@@ -498,7 +487,7 @@ void SearchDialog::updateComponentAvailability()
     bool validRegex = !regex() || re.isValid();
 
     bool activateSearchButtons = activateSearch && validRegex;
-    bool replacableFileInScope = allFiles || getFilesByScope(true).size() > 0;
+    bool replacableFileInScope = allFiles || getFilesByScope(createSearchParameters(false, true)).size() > 0;
     bool activateReplace = (allFiles || replacableFileInScope) && validRegex;
 
     // replace actions (!readonly):
