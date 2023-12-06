@@ -144,7 +144,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
     mLastInput1 = ui->leInput1->text().trimmed();
     mLastInput2 = ui->leInput2->text().trimmed();
     if (mLastInput1.isEmpty() || mLastInput2.isEmpty()) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("GDX Diff");
         msgBox.setText("Please specify two GDX files to be compared.");
         msgBox.setStandardButtons(QMessageBox::Ok);
@@ -157,7 +157,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         mLastInput1 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput1);
 
     if (!QFile(mLastInput1).exists()) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("GDX Diff");
         msgBox.setText("Input file (1) does not exist:\n" + mLastInput1);
         msgBox.setStandardButtons(QMessageBox::Ok);
@@ -170,7 +170,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         mLastInput2 = QDir::toNativeSeparators(mWorkingDir + QDir::separator() + mLastInput2);
 
     if (!QFile(mLastInput2).exists()) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("GDX Diff");
         msgBox.setText("Input file (2) does not exist:\n" + mLastInput2);
         msgBox.setStandardButtons(QMessageBox::Ok);
@@ -188,7 +188,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::on_pbOK_clicked()
         mLastDiffFile = mLastDiffFile + ".gdx";
 
     if (QFileInfo::exists(mLastDiffFile)) {
-        QMessageBox msgBox;
+        QMessageBox msgBox(this);
         msgBox.setWindowTitle("Overwrite Existing File");
         msgBox.setText(QFileInfo(mLastDiffFile).fileName() + " already exists.\nDo you want to overwrite it?");
         msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
@@ -286,7 +286,7 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::diffDone()
         mWasCanceled = false;
         mLastDiffFile = mProc->diffFile();
         if (mLastDiffFile.isEmpty()) { // give an error pop up that no diff file was created
-            QMessageBox msgBox;
+            QMessageBox msgBox(this);
             msgBox.setWindowTitle("GDX Diff");
             msgBox.setText("Unable to create diff file. gdxdiff return code: " + QString::number(mProc->exitCode()) + ". See the system output for details.");
             msgBox.setStandardButtons(QMessageBox::Ok);
