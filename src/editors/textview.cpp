@@ -473,7 +473,6 @@ int TextView::firstErrorLine()
 void TextView::editKeyPressEvent(QKeyEvent *event)
 {
     QPoint pos = mMapper->position(true);
-    mMapper->dumpPos();
     bool cursorIsValid = pos.y() > AbstractTextMapper::cursorInvalid;
     QTextCursor::MoveMode mode = event->modifiers().testFlag(Qt::ShiftModifier) ? QTextCursor::KeepAnchor
                                                                                 : QTextCursor::MoveAnchor;

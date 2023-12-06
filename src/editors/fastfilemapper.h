@@ -10,11 +10,31 @@ namespace studio {
 
 class FastFileMapper : public AbstractTextMapper
 {
+private:
+    friend class LinesCache;
+    class LinesCache
+    {
+        FastFileMapper *mMapper;
+        mutable QString mCache;
+        mutable int mLastLineLength = -1;
+        mutable QList<qint64> mLineChar;    // start of lines in mCache (these are characters, not bytes!)
+        mutable int mCacheOffsetLine;
+    public:
+        LinesCache(FastFileMapper *mapper) : mMapper(mapper) { reset(); }
+        virtual ~LinesCache() {}
+        void reset() const;
+        QString getLines(int lineNr, int count) const;
+        int lineLength(int lineNr) const;
+
+    private:
+        void moveCache(int lineNr, int count) const;
+    };
+
     Q_OBJECT
 public:
     explicit FastFileMapper(QObject *parent = nullptr);
     ~FastFileMapper() override;
-    virtual AbstractTextMapper::Kind kind() const;
+    virtual AbstractTextMapper::Kind kind() const override;
 
     bool openFile(const QString &fileName, bool initAnchor);
     QString fileName() const;
@@ -70,25 +90,23 @@ private:
 private:
     QList<qint64> scanLF(QList<qint64> &lf);
     QPoint endPosition();
-    QString readLines(int lineNr, int count) const;
     bool adjustLines(int &lineNr, int &count) const;
     void initDelimiter() const;
     bool reload();
     PosAncState posAncState() const;
-    int lineLength(int line);
 
 private:
-    mutable QFile mFile;                // mutable to provide consistant logical const-correctness
+    mutable QFile mFile;            // mutable to provide consistant logical const-correctness
     qint64 mSize = 0;
-    QList<qint64> mLines;
+    QList<qint64> mLineByte;        // the n-th byte where each line starts (in contrast to the n-th char, see UTF-8)
     QMutex mMutex;
+    LinesCache mCache;
     int mVisibleTopLine = -1;
     QPoint mPosition;
     QPoint mAnchor;
     int mCursorColumn = 0;
     QPoint mSearchSelectionStart;
     QPoint mSearchSelectionEnd;
-
 };
 
 } // namespace studio
