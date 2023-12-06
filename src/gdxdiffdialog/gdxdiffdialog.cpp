@@ -266,6 +266,9 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::reset()
     ui->cbFieldOnly->setChecked(false);
     ui->cbIgnoreSetText->setChecked(false);
     ui->cbFieldToCompare->setCurrentIndex(0);
+    ui->cbCmpDefaults->setChecked(false);
+    ui->cbCmpDomains->setChecked(false);
+    ui->cbIgnoreOrder->setChecked(false);
     mPrepopulateDiff = true;
     prepopulateDiff();
 }
