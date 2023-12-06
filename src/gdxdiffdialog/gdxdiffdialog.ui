@@ -267,7 +267,7 @@
      <item row="3" column="0">
       <widget class="QCheckBox" name="cbCmpDefaults">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls if default values for symbols, e.g. 0 for parameters, are reported as differences or not.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Controls if default values for symbols, e.g. 0 for parameters, are reported as differences if they are found in one file and missing in the other or not.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Compare Defaults</string>
@@ -287,7 +287,7 @@
      <item row="3" column="2">
       <widget class="QCheckBox" name="cbIgnoreOrder">
        <property name="toolTip">
-        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ignore UEL order of input files. This reduces the size of the output file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+        <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Ignore UEL order of input files. This can reduce the size of the output file.&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
        </property>
        <property name="text">
         <string>Ignore Order</string>
