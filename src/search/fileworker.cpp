@@ -23,8 +23,17 @@ namespace gams {
 namespace studio {
 namespace search {
 
-FileWorker::FileWorker(SearchParameters parameters, AbstractSearchFileHandler* fh) : mParameters(parameters), mFileHandler(fh)
+FileWorker::FileWorker(AbstractSearchFileHandler* fh) : mFileHandler(fh)
 { }
+
+FileWorker::FileWorker(SearchParameters params, AbstractSearchFileHandler* fh)
+    : mParameters(params), mFileHandler(fh)
+{ }
+
+void FileWorker::setParameters(SearchParameters parameters)
+{
+    mParameters = parameters;
+}
 
 QList<SearchFile> FileWorker::collectFilesInFolder()
 {
@@ -54,7 +63,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
     // create list of include filter regexes
     QList<QRegularExpression> includeFilterList;
-    for (const QString &s : qAsConst(params.includeFilter)) {
+    for (const QString &s : std::as_const(params.includeFilter)) {
         QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
         includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
@@ -64,23 +73,23 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
     excludeFilter << ".gdx" << ".zip" ;
 
     QList<QRegularExpression> excludeFilterList;
-    for (const QString &s : qAsConst(excludeFilter)) {
+    for (const QString &s : std::as_const(excludeFilter)) {
         QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
         excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
 
     // filter files
     QList<SearchFile> res;
-    for (const SearchFile &sf : qAsConst(files)) {
+    for (const SearchFile &sf : std::as_const(files)) {
         bool include = includeFilterList.count() == 0;
 
-        for (const QRegularExpression &wildcard : qAsConst(includeFilterList)) {
+        for (const QRegularExpression &wildcard : std::as_const(includeFilterList)) {
             include = wildcard.match(sf.path).hasMatch();
             if (include) break; // one match is enough, dont overwrite result
         }
 
         if (include)
-            for (const QRegularExpression &wildcard : qAsConst(excludeFilterList)) {
+            for (const QRegularExpression &wildcard : std::as_const(excludeFilterList)) {
                 include = !wildcard.match(sf.path).hasMatch();
                 if (!include) break;
             }

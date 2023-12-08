@@ -35,6 +35,7 @@
 namespace gams {
 namespace studio {
 namespace search {
+using Qt::UniqueConnection;
 
 Search::Search(SearchDialog *sd, AbstractSearchFileHandler* fileHandler) : mSearchDialog(sd), mFileHandler(fileHandler)
 {
@@ -100,7 +101,7 @@ void Search::runSearch(QList<SearchFile> files)
     QList<SearchFile> modified; // need to be treated differently
 
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
-    for (const SearchFile& sf : qAsConst(files)) {
+    for (const SearchFile& sf : std::as_const(files)) {
 
         if (FileMeta* fm = sf.fileMeta) {
             // skip certain file types
@@ -124,11 +125,11 @@ void Search::runSearch(QList<SearchFile> files)
                                         mLastSearchParameters.showResults);
     sw->moveToThread(&mSearchThread);
 
-    connect(&mSearchThread, &QThread::finished, this, &Search::finished, Qt::UniqueConnection);
-    connect(&mSearchThread, &QThread::finished, sw, &QObject::deleteLater, Qt::UniqueConnection);
-    connect(&mSearchThread, &QThread::started, sw, &SearchWorker::findInFiles, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, Qt::UniqueConnection);
-    connect(sw, &SearchWorker::showResults, mSearchDialog, &SearchDialog::relaySearchResults, Qt::UniqueConnection);
+    connect(&mSearchThread, &QThread::finished, this, &Search::finished, UniqueConnection);
+    connect(&mSearchThread, &QThread::finished, sw, &QObject::deleteLater, UniqueConnection);
+    connect(&mSearchThread, &QThread::started, sw, &SearchWorker::findInFiles, UniqueConnection);
+    connect(sw, &SearchWorker::update, mSearchDialog, &SearchDialog::intermediateUpdate, UniqueConnection);
+    connect(sw, &SearchWorker::showResults, mSearchDialog, &SearchDialog::relaySearchResults, UniqueConnection);
 
     mSearchThread.start();
     mSearchThread.setPriority(QThread::LowPriority); // search is a background task
@@ -689,6 +690,6 @@ void Search::replaceAll(SearchParameters parameters)
     ansBox.exec();
 }
 
-}
+} // namespace search
 }
 }
