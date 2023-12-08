@@ -387,7 +387,7 @@ void ProjectTreeModel::setCurrent(const QModelIndex& ind)
         if (mi != changeList.at(0))
             changeList << mi << gatherChildren(mi);
 
-        for (const QModelIndex &mi2 : qAsConst(changeList))
+        for (const QModelIndex &mi2 : std::as_const(changeList))
             emit dataChanged(mi2, mi2);
     }
 }

@@ -361,7 +361,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
                 project->setNeedSave();
             QVariantList optList = projectData.value("options").toList();
             if (!optList.isEmpty()) {
-                for (const QVariant &opt : qAsConst(optList)) {
+                for (const QVariant &opt : std::as_const(optList)) {
                     QString par = opt.toString();
                     project->addRunParametersHistory(par);
                 }
@@ -492,7 +492,7 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
         QStringList folders;
         folders = relPath.split('/');
         folders.removeLast();
-        for (const QString &folderName : qAsConst(folders)) {
+        for (const QString &folderName : std::as_const(folders)) {
             newParent = findOrCreateFolder(folderName, newParent, isAbs);
             isAbs = false;
         }
@@ -609,7 +609,7 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
     for (const PExFileNode *node : nodes)
         srcAll << node->location();
 
-    for (const QString &source : qAsConst(srcAll)) {
+    for (const QString &source : std::as_const(srcAll)) {
         if (!QFile::exists(source)) {
             missFiles << source;
         } else {
@@ -882,7 +882,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     for (QModelIndex ind: mTreeModel->popDeclined()) {
         selModel->select(ind, QItemSelectionModel::Deselect);
     }
-    for (QModelIndex group: qAsConst(groups)) {
+    for (QModelIndex group: std::as_const(groups)) {
         if (!mTreeView->isExpanded(group)) {
             mTreeView->setExpanded(group, true);
             for (int row = 0; row < mTreeModel->rowCount(group); ++row) {
@@ -903,7 +903,7 @@ void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStri
 void ProjectRepo::stepRunAnimation()
 {
     mRunAnimateIndex = ((mRunAnimateIndex+1) % mRunIconCount);
-    for (PExProjectNode* project: qAsConst(mRunnigGroups)) {
+    for (PExProjectNode* project: std::as_const(mRunnigGroups)) {
         QModelIndex ind = mTreeModel->index(project);
         if (ind.isValid())
             emit mTreeModel->dataChanged(ind, ind);
@@ -921,7 +921,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         PExGroupNode *group = asGroup(id);
         if (group && group->type() == NodeType::group) {
             QVector<PExFileNode*> groupFiles = group->listFiles();
-            for (PExFileNode* file: qAsConst(groupFiles)) {
+            for (PExFileNode* file: std::as_const(groupFiles)) {
                 files << file->location();
                 addIds << file->id();
             }
@@ -935,7 +935,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project = aNode->assignedProject();
     } else {
         QString validFile;
-        for (const QString &filePath: qAsConst(files)) {
+        for (const QString &filePath: std::as_const(files)) {
             if (!filePath.endsWith(".gsp", Qt::CaseInsensitive)) {
                 validFile = filePath;
                 break;
@@ -957,7 +957,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
     QList<NodeId> newIds;
-    for (const QString &item: qAsConst(files)) {
+    for (const QString &item: std::as_const(files)) {
         QFileInfo f(item);
         QDir d(item);
 
@@ -976,7 +976,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             filesNotFound << item;
         }
     }
-    for (const NodeId &id: qAsConst(newIds)) {
+    for (const NodeId &id: std::as_const(newIds)) {
         QModelIndex mi = mTreeModel->index(id);
         newSelection << mi;
     }
@@ -987,7 +987,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         project->setRunnableGms(gmsFiles.first()->file());
     }
     if (act & Qt::MoveAction) {
-        for (const NodeId &nodeId: qAsConst(knownIds)) {
+        for (const NodeId &nodeId: std::as_const(knownIds)) {
             PExAbstractNode* aNode = node(nodeId);
             PExFileNode* file = aNode->toFile();
             if (!file) continue;
@@ -1002,7 +1002,7 @@ void ProjectRepo::reassignFiles(PExProjectNode *project)
 {
     QVector<PExFileNode *> files = project->listFiles();
     FileMeta *runGms = project->runnableGms();
-    for (PExFileNode *file: qAsConst(files))
+    for (PExFileNode *file: std::as_const(files))
         addToProject(project, file);
     emit openRecentFile();
     project->setRunnableGms(runGms);
@@ -1131,7 +1131,7 @@ void ProjectRepo::fileChanged(FileId fileId)
         }
         nodeChanged(node->id());
     }
-    for (PExGroupNode *group: qAsConst(groups)) {
+    for (PExGroupNode *group: std::as_const(groups)) {
         nodeChanged(group->id());
     }
 }

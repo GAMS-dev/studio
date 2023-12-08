@@ -171,7 +171,7 @@ void FileSystemModel::selectAllFiles(const QDir &dir)
         indices << idx;
     }
     if (idx.isValid()) {
-        for (const QModelIndex &idx: qAsConst(indices)) {
+        for (const QModelIndex &idx: std::as_const(indices)) {
             emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
         }
         emit selectionCountChanged(mSelectedFiles.count());
@@ -197,7 +197,7 @@ void FileSystemModel::clearSelection()
 {
     QSet<QModelIndex> indices;
     QSet<QString> remove;
-    for (const QString &file : qAsConst(mSelectedFiles)) {
+    for (const QString &file : std::as_const(mSelectedFiles)) {
         QModelIndex idx = index(rootDirectory().absoluteFilePath(file));
         bool filtered;
         emit isFiltered(idx, filtered);
@@ -209,10 +209,10 @@ void FileSystemModel::clearSelection()
             }
         }
     }
-    for (const QString &file: qAsConst(remove))
+    for (const QString &file: std::as_const(remove))
         mSelectedFiles.remove(file);
     invalidateDirStates();
-    for (const QModelIndex &idx : qAsConst(indices))
+    for (const QModelIndex &idx : std::as_const(indices))
         emit dataChanged(idx, idx, QVector<int>() << Qt::CheckStateRole);
     emit selectionCountChanged(mSelectedFiles.count());
 }
@@ -220,7 +220,7 @@ void FileSystemModel::clearSelection()
 QStringList FileSystemModel::selectedFiles(bool addWriteBackState)
 {
     QStringList selection;
-    for (const auto &file: qAsConst(mSelectedFiles))
+    for (const auto &file: std::as_const(mSelectedFiles))
         selection << file;
     if (addWriteBackState) {
         for (int i = 0; i < selection.count(); ++i) {
@@ -244,11 +244,11 @@ void FileSystemModel::setSelectedFiles(const QStringList &files)
             mSelectedFiles << file;
     }
     QStringList missFiles;
-    for (const QString &file : qAsConst(mSelectedFiles)) {
+    for (const QString &file : std::as_const(mSelectedFiles)) {
         if (!QFileInfo::exists(rootDirectory().absoluteFilePath(file)))
             missFiles << file;
     }
-    for (const QString &file: qAsConst(missFiles)) {
+    for (const QString &file: std::as_const(missFiles)) {
         mSelectedFiles.remove(file);
     }
     if (missFiles.count()) emit missingFiles(missFiles);

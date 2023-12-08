@@ -268,10 +268,10 @@ void SyntaxHighlighter::highlightBlock(const QString& text)
     }
 
     // check post highlights
-    for (const QPoint &p : qAsConst(postHighlights)) {
+    for (const QPoint &p : std::as_const(postHighlights)) {
         for (int i = p.x(); i <= p.y(); ++i) {
             if (text.at(i) == '%') {
-                for (SyntaxAbstract* testSyntax : qAsConst(mPostSyntax)) {
+                for (SyntaxAbstract* testSyntax : std::as_const(mPostSyntax)) {
                     if (testSyntax) {
                         SyntaxBlock nextBlock = testSyntax->find(SyntaxKind::Standard, SyntaxState(), text, i);
                         if (nextBlock.isValid()) {
@@ -463,7 +463,7 @@ void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Theme::ColorSlot slot)
 
 void SyntaxHighlighter::reloadColors()
 {
-    for (SyntaxAbstract* syntax: qAsConst(mKinds)) {
+    for (SyntaxAbstract* syntax: std::as_const(mKinds)) {
         syntax->assignColorSlot(syntax->colorSlot());
     }
 }

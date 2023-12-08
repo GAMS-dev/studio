@@ -82,7 +82,7 @@ void Search::start(bool ignoreReadonly, bool searchBackwards, bool showResults)
     QList<FileMeta*> modified; // need to be treated differently
 
     FileMeta* currentFile = mSearchDialog->fileHandler()->fileMeta(mSearchDialog->currentEditor());
-    for(FileMeta* fm : qAsConst(mFiles)) {
+    for(FileMeta* fm : std::as_const(mFiles)) {
         // skip certain file types
         if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
             continue;
@@ -110,7 +110,7 @@ void Search::start(bool ignoreReadonly, bool searchBackwards, bool showResults)
     mThread.start();
     mThread.setPriority(QThread::LowPriority); // search is a background task
 
-    for (FileMeta* fm : qAsConst(modified))
+    for (FileMeta* fm : std::as_const(modified))
         findInDoc(fm);
 }
 
@@ -489,7 +489,7 @@ void Search::finished()
 {
     mSearching = false;
 
-    for (const Result &r : qAsConst(mResults))
+    for (const Result &r : std::as_const(mResults))
         mResultHash[r.filepath()].append(r);
 
     mCacheAvailable = mResults.count() > 0;
@@ -571,7 +571,7 @@ void Search::replaceAll(QString replacementText)
     QList<FileMeta*> searchFiles;
 
     // sort and filter FMs by editability and modification state
-    for (FileMeta* fm : qAsConst(mFiles)) {
+    for (FileMeta* fm : std::as_const(mFiles)) {
         if (!fm->isReadOnly()) {
             searchFiles.append(fm);
         } else continue;
@@ -608,7 +608,7 @@ void Search::replaceAll(QString replacementText)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (FileMeta* fm : qAsConst(searchFiles))
+        for (FileMeta* fm : std::as_const(searchFiles))
             detailedText.append(fm->location()+"\n");
         detailedText.append("\nThese files do not necessarily have any matches in them. "
                             "This is just a representation of the selected scope in the search window. "
@@ -627,10 +627,10 @@ void Search::replaceAll(QString replacementText)
         mSearchDialog->setSearchStatus(Search::Replacing);
         setParameters(true);
 
-        for (FileMeta* fm : qAsConst(opened))
+        for (FileMeta* fm : std::as_const(opened))
             hits += replaceOpened(fm, mRegex, replaceTerm);
 
-        for (FileMeta* fm : qAsConst(unopened))
+        for (FileMeta* fm : std::as_const(unopened))
             hits += replaceUnopened(fm, mRegex, replaceTerm);
 
         mSearchDialog->searchParameterChanged();

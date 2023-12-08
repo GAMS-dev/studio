@@ -110,7 +110,7 @@ QString FileType::defaultSuffix() const
 FileType &FileType::from(const QString &fileName)
 {
      QFileInfo fi(fileName);
-     for (FileType *ft: qAsConst(mFileTypes)) {
+     for (FileType *ft: std::as_const(mFileTypes)) {
          if (ft->mKind == FileKind::Guc) {
             if (ft->mSuffix.contains(fi.suffix(), Qt::CaseInsensitive) &&
                 QString::compare("gamsconfig",fi.completeBaseName(), Qt::CaseInsensitive)==0 ) {
@@ -152,7 +152,7 @@ FileType &FileType::from(const QString &fileName)
 
 FileType& FileType::from(FileKind kind)
 {
-    for (FileType *ft: qAsConst(mFileTypes)) {
+    for (FileType *ft: std::as_const(mFileTypes)) {
         if (ft->mKind == kind)
             return *ft;
     }

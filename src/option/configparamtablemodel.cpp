@@ -462,14 +462,14 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
 
         QList<ParamConfigItem *> itemList;
         QList<int> overrideIdRowList;
-        for (const QString &text : qAsConst(newItems)) {
+        for (const QString &text : std::as_const(newItems)) {
             QStringList textList = text.split("=");
             int optionid = mOption->getOptionDefinition(textList.at(0)).number;
             itemList.append(new ParamConfigItem(optionid, textList.at( COLUMN_PARAM_KEY ), textList.at( COLUMN_PARAM_VALUE )));
             QModelIndexList indices = match(index(COLUMN_PARAM_KEY,COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
-              for(QModelIndex idx : qAsConst(indices)) { overrideIdRowList.append(idx.row()); }
+              for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
 //          }
          }
          std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
@@ -700,10 +700,10 @@ void ConfigParamTableModel::on_removeConfigParamItem()
 void ConfigParamTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
-    for(ParamConfigItem* item : qAsConst(mOptionItem)) {
+    for(ParamConfigItem* item : std::as_const(mOptionItem)) {
         idList << item->optionId;
     }
-    for(ParamConfigItem* item : qAsConst(mOptionItem)) {
+    for(ParamConfigItem* item : std::as_const(mOptionItem)) {
         item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
     }
     emit headerDataChanged(Qt::Vertical, 0, mOptionItem.size());

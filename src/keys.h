@@ -92,7 +92,7 @@ public:
     inline bool contains(int keycode) const {
         for (const QKeySequence &seq: mSequence) {
             for (int i = 0; i < seq.count(); ++i) {
-                int mask = seq[uint(i)] & ~Qt::KeyboardModifierMask;
+                int mask = seq[uint(i)].toCombined() & ~Qt::KeyboardModifierMask;
                 if (mask == keycode) return true;
             }
         }

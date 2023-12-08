@@ -56,7 +56,7 @@ GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
     setFocusProxy(ui->GamsCfgTabWidget);
     QList<QHeaderView*> headers;
     headers << mParamConfigEditor->headers() << mEnvVarConfigEditor->headers();
-    for (QHeaderView *header : qAsConst(headers)) {
+    for (QHeaderView *header : std::as_const(headers)) {
         headerRegister(header);
     }
 }

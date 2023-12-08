@@ -150,7 +150,7 @@ private:
     void setEditPositions(QVector<QPoint> edPositions);
     bool checkActivelySavedAndReset();
     void updateEditsCompleter();
-    void linkDocument(QTextDocument *doc);
+    void linkDocument(QTextDocument *doc = nullptr);
     void unlinkAndFreeDocument();
     void refreshType();
     void updateSyntaxColors();

@@ -57,7 +57,7 @@ void SearchWorker::findInFiles()
 {
     bool cacheFull = false;
     NodeId projectGroup = mProject;
-    for (FileMeta* fm : qAsConst(mFiles)) {
+    for (FileMeta* fm : std::as_const(mFiles)) {
         if (cacheFull || thread()->isInterruptionRequested()) break;
 
         if (!mProject.isValid())

@@ -107,7 +107,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
     } else {
         selectionModel()->clearSelection();
-        for (QModelIndex idx: qAsConst(newSelection)) {
+        for (QModelIndex idx: std::as_const(newSelection)) {
             selectionModel()->select(idx, QItemSelectionModel::Select);
         }
     }

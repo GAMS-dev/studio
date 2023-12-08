@@ -96,7 +96,7 @@ void FileSystemWidget::setModelName(const QString &modelName)
         return;
     }
     QStringList uncommonFiles;
-    for (const QString &rawFile: qAsConst(mUncommonFiles)) {
+    for (const QString &rawFile: std::as_const(mUncommonFiles)) {
         uncommonFiles << rawFile.arg(modelName.toLower());
     }
     QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");

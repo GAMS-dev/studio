@@ -97,7 +97,7 @@ void DynamicFile::runBackupCircle()
     if (file.exists()) file.remove();
 
     QString destName;
-    for (const QString &sourceName: qAsConst(names)) {
+    for (const QString &sourceName: std::as_const(names)) {
         if (!destName.isEmpty()) {
             file.setFileName(sourceName);
             if (file.exists()) file.rename(destName);

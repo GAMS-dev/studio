@@ -69,7 +69,7 @@ void FileMeta::setLocation(QString location)
         mFileRepo->watch(this);
         mName = mData.type->kind() == FileKind::Log ? '['+QFileInfo(mLocation).completeBaseName()+']'
                                                     : QFileInfo(mLocation).fileName();
-        for (QWidget*wid: qAsConst(mEditors)) {
+        for (QWidget*wid: std::as_const(mEditors)) {
             ViewHelper::setLocation(wid, location);
         }
         mAutoReload = mData.type->autoReload();
@@ -115,7 +115,7 @@ QStringList FileMeta::pathList(QList<QUrl> urls)
 void FileMeta::invalidate()
 {
     if (kind() == FileKind::Gdx) {
-        for (QWidget *wid: qAsConst(mEditors)) {
+        for (QWidget *wid: std::as_const(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 gdxViewer->invalidate();
             }
@@ -134,7 +134,7 @@ FileMeta::~FileMeta()
 QVector<QPoint> FileMeta::getEditPositions()
 {
     QVector<QPoint> res;
-    for (QWidget* widget: qAsConst(mEditors)) {
+    for (QWidget* widget: std::as_const(mEditors)) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QTextCursor cursor = edit->textCursor();
@@ -147,7 +147,7 @@ QVector<QPoint> FileMeta::getEditPositions()
 void FileMeta::setEditPositions(QVector<QPoint> edPositions)
 {
     int i = 0;
-    for (QWidget* widget: qAsConst(mEditors)) {
+    for (QWidget* widget: std::as_const(mEditors)) {
         AbstractEdit* edit = ViewHelper::toAbstractEdit(widget);
         if (edit) {
             QPoint pos = (i < edPositions.size()) ? edPositions.at(i) : QPoint(0, 0);
@@ -181,6 +181,7 @@ void FileMeta::linkDocument(QTextDocument *doc)
 {
     // The very first editor opened for this FileMeta should pass it's document here. It takes over parency
     if (kind() != FileKind::Gdx) {
+        if (!doc) doc = new QTextDocument(this);
         mDocument = doc;
         doc->setParent(this);
         mDocument->setDocumentLayout(new QPlainTextDocumentLayout(mDocument));
@@ -234,7 +235,7 @@ void FileMeta::refreshType()
             mHighlighter = nullptr;
             disconnect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
             disconnect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
-            for (QWidget *edit : qAsConst(mEditors)) {
+            for (QWidget *edit : std::as_const(mEditors)) {
                 CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
                 if (scEdit && mHighlighter) {
                     disconnect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
@@ -250,7 +251,7 @@ void FileMeta::refreshType()
             mHighlighter = new syntax::SyntaxHighlighter(mDocument);
             connect(mDocument, &QTextDocument::contentsChange, this, &FileMeta::contentsChange);
             connect(mDocument, &QTextDocument::blockCountChanged, this, &FileMeta::blockCountChanged);
-            for (QWidget *edit : qAsConst(mEditors)) {
+            for (QWidget *edit : std::as_const(mEditors)) {
                 CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
                 if (scEdit && mHighlighter) {
                     connect(scEdit, &CodeEdit::requestSyntaxKind, mHighlighter, &syntax::SyntaxHighlighter::syntaxKind);
@@ -383,7 +384,7 @@ void FileMeta::updateMarks()
     QMutexLocker mx(&mDirtyLinesMutex);
 
     // update changed editors
-    for (QWidget *w: qAsConst(mEditors)) {
+    for (QWidget *w: std::as_const(mEditors)) {
         if (AbstractEdit * ed = ViewHelper::toAbstractEdit(w))
             ed->marksChanged(mDirtyLines);
         if (TextView * tv = ViewHelper::toTextView(w))
@@ -410,7 +411,7 @@ void FileMeta::reload()
 
 void FileMeta::updateView()
 {
-    for (QWidget *wid: qAsConst(mEditors)) {
+    for (QWidget *wid: std::as_const(mEditors)) {
         if (TextView* tv = ViewHelper::toTextView(wid)) {
             tv->recalcVisibleLines();
         }
@@ -421,7 +422,7 @@ void FileMeta::updateSyntaxColors()
 {
     if (mHighlighter) {
         mHighlighter->reloadColors();
-        for (QWidget *w: qAsConst(mEditors)) {
+        for (QWidget *w: std::as_const(mEditors)) {
             if (ViewHelper::toCodeEdit(w)) {
                 mHighlighter->rehighlight();
             }
@@ -432,7 +433,7 @@ void FileMeta::updateSyntaxColors()
 
 void FileMeta::initEditorColors()
 {
-    for (QWidget *w: qAsConst(mEditors)) {
+    for (QWidget *w: std::as_const(mEditors)) {
         if (reference::ReferenceViewer *rv = ViewHelper::toReferenceViewer(w)) {
             rv->updateStyle();
             continue;
@@ -461,7 +462,7 @@ void FileMeta::initEditorColors()
 void FileMeta::updateEditorColors()
 {
     initEditorColors();
-    for (QWidget *w: qAsConst(mEditors)) {
+    for (QWidget *w: std::as_const(mEditors)) {
         if (AbstractEdit *ce = ViewHelper::toAbstractEdit(w))
             ce->updateExtraSelections();
         if (CodeEdit *ce = ViewHelper::toCodeEdit(w))
@@ -482,7 +483,7 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
     if (event->type() == QEvent::ApplicationFontChange || event->type() == QEvent::FontChange) {
         const QFont *f = nullptr;
         QList<QWidget*> syncEdits;
-        for (QWidget *wid : qAsConst(mEditors)) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (lxiviewer::LxiViewer *lst = ViewHelper::toLxiViewer(wid)) {
                 if (lst->textView()->edit() == sender)
                     f = &lst->textView()->edit()->font();
@@ -501,7 +502,7 @@ bool FileMeta::eventFilter(QObject *sender, QEvent *event)
             }
         }
         if (f) {
-            for (QWidget *wid : qAsConst(syncEdits)) {
+            for (QWidget *wid : std::as_const(syncEdits)) {
                 if (!wid->font().isCopyOf(*f))
                     wid->setFont(*f);
             }
@@ -717,7 +718,7 @@ void FileMeta::load(int codecMib, bool init)
         return;
     }
     if (kind() == FileKind::Gdx) {
-        for (QWidget *wid: qAsConst(mEditors)) {
+        for (QWidget *wid: std::as_const(mEditors)) {
             if (gdxviewer::GdxViewer *gdxViewer = ViewHelper::toGdxViewer(wid)) {
                 gdxViewer->setHasChanged(init);
                 gdxViewer->reload(mCodec);
@@ -726,7 +727,7 @@ void FileMeta::load(int codecMib, bool init)
         return;
     }
     if (kind() == FileKind::TxtRO || kind() == FileKind::Lst) {
-        for (QWidget *wid: qAsConst(mEditors)) {
+        for (QWidget *wid: std::as_const(mEditors)) {
             if (TextView *tView = ViewHelper::toTextView(wid)) {
                 tView->loadFile(location(), mCodec, init);
             }
@@ -738,7 +739,7 @@ void FileMeta::load(int codecMib, bool init)
         return;
     }
     if (kind() == FileKind::Ref) {
-        for (QWidget *wid: qAsConst(mEditors)) {
+        for (QWidget *wid: std::as_const(mEditors)) {
             reference::ReferenceViewer *refViewer = ViewHelper::toReferenceViewer(wid);
             if (refViewer) refViewer->reloadFile(mCodec->name());
         }
@@ -746,7 +747,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         bool done = false;
-        for (QWidget *wid : qAsConst(mEditors)) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(wid)) {
                 done = true;
                 so->on_reloadSolverOptionFile(mCodec->name());
@@ -756,7 +757,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::GCon) {
         bool done = false;
-        for (QWidget *wid : qAsConst(mEditors)) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (connect::ConnectEditor *cyaml = ViewHelper::toGamsConnectEditor(wid)) {
                 done = true;
                 cyaml->on_reloadConnectFile();
@@ -766,7 +767,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::Guc) {
         bool done = false;
-        for (QWidget *wid : qAsConst(mEditors)) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (option::GamsConfigEditor *cfge = ViewHelper::toGamsConfigEditor(wid)) {
                 done = true;
                 cfge->on_reloadGamsUserConfigFile();
@@ -776,7 +777,7 @@ void FileMeta::load(int codecMib, bool init)
     }
     if (kind() == FileKind::Efi) {
         bool done = false;
-        for (QWidget *wid : qAsConst(mEditors)) {
+        for (QWidget *wid : std::as_const(mEditors)) {
             if (efi::EfiEditor *ee = ViewHelper::toEfiEditor(wid)) {
                 done = true;
                 ee->load(location());
@@ -792,8 +793,7 @@ void FileMeta::load(int codecMib, bool init)
         EXCEPT() << "FileMeta" << '\t' << "Size for editable files exceeded: " << file.fileName();
 
     if (!mDocument) {
-        QTextDocument *doc = new QTextDocument(this);
-        linkDocument(doc);
+        linkDocument();
     }
     if (!file.fileName().isEmpty() && file.exists()) {
         if (!file.open(QFile::ReadOnly | QFile::Text))
@@ -994,7 +994,7 @@ void FileMeta::marksChanged(QSet<int> lines)
 
 void FileMeta::reloadDelayed()
 {
-    for (QWidget *wid: qAsConst(mEditors)) {
+    for (QWidget *wid: std::as_const(mEditors)) {
         if (TextView *tv = ViewHelper::toTextView(wid)) {
             tv->reset();
         }
@@ -1081,22 +1081,22 @@ void FileMeta::setModified(bool modified)
     if (document()) {
         document()->setModified(modified);
     } else if (kind() == FileKind::GCon) {
-        for (QWidget *e : qAsConst(mEditors)) {
+        for (QWidget *e : std::as_const(mEditors)) {
              connect::ConnectEditor *ce = ViewHelper::toGamsConnectEditor(e);
              if (ce) ce->setModified(modified);
         }
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
-          for (QWidget *e : qAsConst(mEditors)) {
+          for (QWidget *e : std::as_const(mEditors)) {
                option::SolverOptionWidget *so = ViewHelper::toSolverOptionEdit(e);
                if (so) so->setModified(modified);
           }
     } else if (kind() == FileKind::Guc) {
-        for (QWidget *e : qAsConst(mEditors)) {
+        for (QWidget *e : std::as_const(mEditors)) {
              option::GamsConfigEditor *gco = ViewHelper::toGamsConfigEditor(e);
              if (gco) gco->setModified(modified);
         }
     } else if (kind() == FileKind::Efi) {
-        for (QWidget *e : qAsConst(mEditors)) {
+        for (QWidget *e : std::as_const(mEditors)) {
              if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(e)) efi->setModified(modified);
         }
     }
@@ -1163,7 +1163,7 @@ void FileMeta::setCodec(QTextCodec *codec)
     } else {
         mCodec = codec;
     }
-    for (QWidget *wid: qAsConst(mEditors)) {
+    for (QWidget *wid: std::as_const(mEditors)) {
         if (TextView *tv = ViewHelper::toTextView(wid)) {
             if (tv->logParser())
                 tv->logParser()->setCodec(mCodec);

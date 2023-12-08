@@ -362,7 +362,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
         }
         QPushButton *invert = new QPushButton("  Invert Selection  ", mVisibleValColWidget);
         connect(invert, &QPushButton::clicked, this, [this]() {
-            for (QCheckBox *cb : qAsConst(mShowValColActions))
+            for (QCheckBox *cb : std::as_const(mShowValColActions))
                 cb->setChecked(!cb->isChecked());
         });
         layout->addWidget(invert);
@@ -712,7 +712,7 @@ QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
     int minCol = std::numeric_limits<int>::max();
     int maxCol = std::numeric_limits<int>::min();
 
-    for (const QModelIndex &idx : qAsConst(selection)) {
+    for (const QModelIndex &idx : std::as_const(selection)) {
         int currentRow = idx.row();
         int currentCol = idx.column();
         if (tv->isColumnHidden(currentCol))
@@ -886,7 +886,7 @@ void GdxSymbolView::saveState(GdxSymbolViewState* symViewState)
     symViewState->setAutoResizeTV(mAutoResizeTV);
 
     QVector<bool> showAttributes;
-    for (QCheckBox* cb : qAsConst(mShowValColActions))
+    for (QCheckBox* cb : std::as_const(mShowValColActions))
         showAttributes.append(cb->isChecked());
     symViewState->setShowAttributes(showAttributes);
 

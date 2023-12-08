@@ -139,7 +139,7 @@ void EnvVarConfigEditor::on_selectRow(int logicalIndex)
 void EnvVarConfigEditor::showContextMenu(const QPoint &pos)
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : qAsConst(indexSelection)) {
+    for(QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     updateActionsState();
@@ -318,7 +318,7 @@ bool EnvVarConfigEditor::isEverySelectionARow() const
 void EnvVarConfigEditor::on_actionInsert_triggered()
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : qAsConst(indexSelection)) {
+    for(QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -369,7 +369,7 @@ void EnvVarConfigEditor::on_actionInsert_triggered()
 void EnvVarConfigEditor::on_actionDelete_triggered()
 {
     QModelIndexList indexSelection = ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : qAsConst(indexSelection)) {
+    for(QModelIndex index : std::as_const(indexSelection)) {
         ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
     if  (!isThereARow() || !isThereARowSelection() || !isEverySelectionARow())
@@ -399,7 +399,7 @@ void EnvVarConfigEditor::on_actionDelete_triggered()
 void EnvVarConfigEditor::on_actionMoveUp_triggered()
 {
     QModelIndexList indexSelection =ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : qAsConst(indexSelection)) {
+    for(QModelIndex index : std::as_const(indexSelection)) {
        ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 
@@ -424,7 +424,7 @@ void EnvVarConfigEditor::on_actionMoveUp_triggered()
 void EnvVarConfigEditor::on_actionMoveDown_triggered()
 {
     QModelIndexList indexSelection =ui->EnvVarConfigTableView->selectionModel()->selectedIndexes();
-    for(QModelIndex index : qAsConst(indexSelection)) {
+    for(QModelIndex index : std::as_const(indexSelection)) {
        ui->EnvVarConfigTableView->selectionModel()->select( index, QItemSelectionModel::Select|QItemSelectionModel::Rows );
     }
 

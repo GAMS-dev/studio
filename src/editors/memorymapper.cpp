@@ -237,7 +237,7 @@ bool MemoryMapper::ensureSpace(qint64 bytes)
 void MemoryMapper::recalcLineCount()
 {
     int lineCount = 0;
-    for (const Unit &u: qAsConst(mUnits)) {
+    for (const Unit &u: std::as_const(mUnits)) {
         if (u.folded) ++lineCount;
         else {
             for (int i = 0; i < u.chunkCount; ++i) {
@@ -345,7 +345,7 @@ int MemoryMapper::firstErrorLine()
     if (mMarkers.isEmpty()) return -1;
     int res = 0;
     Chunk *chunkOfErr1 = mMarkers.at(0).chunk;
-    for (Chunk *chunk : qAsConst(mChunks)) {
+    for (Chunk *chunk : std::as_const(mChunks)) {
         if (chunk == chunkOfErr1) break;
         res += chunk->lineCount();
     }
@@ -357,7 +357,7 @@ void MemoryMapper::runFinished()
 {
     mMarkers.clear();
     mMarkers.reserve(mMarksHead.size() + mMarksTail.size());
-    for (const int &lineNr: qAsConst(mMarksHead)) {
+    for (const int &lineNr: std::as_const(mMarksHead)) {
         LineRef ref = logLineToRef(lineNr);
         if (ref.chunk) mMarkers << ref;
     }
@@ -785,7 +785,7 @@ void MemoryMapper::dump()
     DEB() << "\n";
     DEB() << "---- size: " << mSize << "  lineCount: " << lineCount();
     int sum = 0;
-    for (Chunk *chunk : qAsConst(mChunks)) {
+    for (Chunk *chunk : std::as_const(mChunks)) {
 //        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
 //            QString line;
 //            for (int i = chunk->lineBytes.at(lineNr); i < chunk->lineBytes.at(lineNr+1); ++i) {

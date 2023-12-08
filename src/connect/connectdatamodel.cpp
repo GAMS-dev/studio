@@ -1045,13 +1045,13 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
             types = schema->getTypeAsStringList( slist );
             allowedValues = schema->getAllowedValueAsStringList( slist );
         }
-        for (const QString& t : qAsConst(types) ) {
+        for (const QString& t : std::as_const(types) ) {
             if (t.compare("string")==0 || t.compare("dict")==0 || t.compare("list")==0) {
                if (allowedValues.isEmpty()) {
                    valid = true;
                    break;
                } else {
-                      for (const QString& v : qAsConst(allowedValues)) {
+                      for (const QString& v : std::as_const(allowedValues)) {
                           if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
                               valid = true;
                               break;
@@ -1094,7 +1094,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                               }
                           }
                       } else {
-                          for (const QString& v : qAsConst(allowedValues)) {
+                          for (const QString& v : std::as_const(allowedValues)) {
                               if (v.compare(item->data((int)DataItemColumn::Value).toString())==0) {
                                   valid = true;
                                   break;

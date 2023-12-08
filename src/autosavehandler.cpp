@@ -47,7 +47,7 @@ QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
             QDir dir(path);
             dir.setNameFilters(filters);
             QStringList files = dir.entryList(filters);
-            for (auto file : qAsConst(files)) {
+            for (auto file : std::as_const(files)) {
                 if (file.startsWith(mAutosavedFileMarker)) {
                     QString autosaveFilePath = path+"/"+file;
                     file.replace(mAutosavedFileMarker, "");
@@ -71,13 +71,12 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
     QString fileText = (autosaveFiles.size() == 1) ? "\""+autosaveFiles.first()+"\" was"
                                                    : QString::number(autosaveFiles.size())+" files were";
     fileText.replace(mAutosavedFileMarker,"");
-    int decision = QMessageBox::question(mMainWindow,
-                                         "Recover autosave files",
-                                         "Studio has shut down unexpectedly.\n"
-                                         +fileText+" not saved correctly.\nDo you "
-                                         "want to recover your last modifications?",
-                                         "Recover", "Discard", QString());
-    if (decision == 0) {
+    QMessageBox::StandardButton decision = QMessageBox::question(mMainWindow,
+                                                                 "Recover autosave files",
+                                                                 "Studio has shut down unexpectedly.\n"
+                                                                 +fileText+" not saved correctly.\nDo you "
+                                                                 "want to recover your last modifications?");
+    if (decision == QMessageBox::Yes) {
         for (const auto& autosaveFile : autosaveFiles) {
             QString originalversion = autosaveFile;
             originalversion.replace(mAutosavedFileMarker, "");

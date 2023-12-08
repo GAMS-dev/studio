@@ -1251,7 +1251,7 @@ void MainWindow::pushDockSizes()
 
     QList<QDockWidget*> dwList;
     dwList << mGamsParameterEditor->extendedEditor() << ui->dockProjectView << ui->dockProcessLog << ui->dockHelpView;
-    for (QDockWidget* dw : qAsConst(dwList)) {
+    for (QDockWidget* dw : std::as_const(dwList)) {
         if (!dw->isVisible() || dw->isFloating()) continue;
         Qt::DockWidgetArea area = dockWidgetArea(dw);
         switch (area) {
@@ -1278,7 +1278,7 @@ void MainWindow::popDockSizes()
     QList<int> dwSizesH;
     QList<QDockWidget*> dwResizeV;
     QList<int> dwSizesV;
-    for (QDockWidget* dw : qAsConst(dwList)) {
+    for (QDockWidget* dw : std::as_const(dwList)) {
         if (!dw->isVisible() || dw->isFloating()) continue;
         Qt::DockWidgetArea area = dockWidgetArea(dw);
         switch (area) {
@@ -1624,7 +1624,7 @@ void MainWindow::openFolder(QString path, PExProjectNode *project)
             project = projectRepo()->createProject(dir.dirName(), path, "", onExist_Project);
     }
 
-    for (const QString &file : qAsConst(allFiles))
+    for (const QString &file : std::as_const(allFiles))
         projectRepo()->findOrCreateFileNode(file, project);
 }
 
@@ -1660,7 +1660,7 @@ void MainWindow::on_actionSave_As_triggered()
             filters = ViewHelper::dialogFileFilterAll();
 
             QString selFilter = filters.first();
-            for (const QString &f: qAsConst(filters)) {
+            for (const QString &f: std::as_const(filters)) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
                     break;
@@ -2140,7 +2140,7 @@ void MainWindow::processFileEvents()
     // add events that have been skipped due too early processing
     if (!scheduledEvents.isEmpty()) {
         QMutexLocker locker(&mFileMutex);
-        for (const FileEventData &data : qAsConst(scheduledEvents)) {
+        for (const FileEventData &data : std::as_const(scheduledEvents)) {
             int i = mFileEvents.indexOf(data);
             if (i >= 0) {
                 if (mFileEvents.at(i).time > data.time) continue;
@@ -2695,7 +2695,7 @@ bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> proje
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
     if (choice == 2) return false;
-    for (PExProjectNode* project: qAsConst(runningGroups)) {
+    for (PExProjectNode* project: std::as_const(runningGroups)) {
         if (project->process()->terminateOption() && choice == 1)
             project->process()->terminateLocal();
         else {
@@ -3597,7 +3597,7 @@ void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
 
     if (!filesNotFound.empty()) {
         QString msgText("The following files could not be opened:");
-        for(const QString &s : qAsConst(filesNotFound))
+        for(const QString &s : std::as_const(filesNotFound))
             msgText.append("\n" + s);
         QMessageBox msgBox;
         msgBox.setIcon(QMessageBox::Warning);
@@ -3715,7 +3715,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
         if (ret == QMessageBox::Cancel) {
             return false;
         } else if (msgBox.clickedButton() == discardButton) {
-            for (FileMeta *file: qAsConst(modifiedFiles))
+            for (FileMeta *file: std::as_const(modifiedFiles))
                 if (file->kind() != FileKind::Log && file->kind() != FileKind::Gsp) {
                     try {
                         file->load(file->codecMib());
@@ -3727,7 +3727,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
         }
     }
     if (doSave) {
-        for (FileMeta *file: qAsConst(modifiedFiles)) file->save();
+        for (FileMeta *file: std::as_const(modifiedFiles)) file->save();
     }
 
     // clear the TextMarks for this group
@@ -4359,7 +4359,7 @@ void MainWindow::invalidateTheme()
 
 void MainWindow::rehighlightOpenFiles()
 {
-    for (const QString &fileName : qAsConst(mOpenTabsList)) {
+    for (const QString &fileName : std::as_const(mOpenTabsList)) {
         FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
         if (meta->isOpen() && meta->highlighter())
             meta->highlighter()->rehighlight();
@@ -4540,7 +4540,7 @@ void MainWindow::closeProject(PExProjectNode* project)
     }
 
     if (requestCloseChanged(changedFiles)) {
-        for (FileMeta *file: qAsConst(openFiles)) {
+        for (FileMeta *file: std::as_const(openFiles)) {
             closeFileEditors(file->id());
         }
         for (PExFileNode *node: project->listFiles()) {
@@ -5075,7 +5075,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     return false;
             }
         }
-        for (const QString &file : qAsConst(skippedFiles)) {
+        for (const QString &file : std::as_const(skippedFiles)) {
             if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
                 file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
                 PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);

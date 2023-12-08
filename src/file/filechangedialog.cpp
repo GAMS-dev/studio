@@ -36,7 +36,7 @@ FileChangeDialog::FileChangeDialog(QWidget *parent) :
     mButtons.at(int(Result::rKeep))->setObjectName("btKeep");
     mButtons.at(int(Result::rKeep))->setAutoDefault(true);
     setIcon(Warning);
-    for (QAbstractButton *button : qAsConst(mButtons)) {
+    for (QAbstractButton *button : std::as_const(mButtons)) {
         addButton(button, AcceptRole);
         connect(button, &QAbstractButton::clicked, this, &FileChangeDialog::buttonClicked);
     }

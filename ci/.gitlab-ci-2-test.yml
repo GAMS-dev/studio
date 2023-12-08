@@ -3,7 +3,7 @@ test-deg:
   tags: [macos]
   dependencies: [install-gams-deg,build-deg]
   variables:
-    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   script:
     - GAMS_PATH=$HOME/cache/gams-installs/`cat gams_folder_deg.txt`
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
@@ -29,7 +29,7 @@ test-dac:
   tags: [macos-arm64]
   dependencies: [install-gams-dac,build-dac]
   variables:
-    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   script:
     - GAMS_PATH=$HOME/cache/gams-installs/`cat gams_folder_dac.txt`
     - PATH="${qtpath}:${GAMS_PATH}:${PATH}"
@@ -54,7 +54,7 @@ test-leg:
   stage: test
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.6:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [install-gams-leg,build-leg]
   script:
@@ -82,7 +82,7 @@ test-wei:
   tags: [windows]
   allow_failure: true
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.6:latest
   dependencies: [install-gams-wei,build-wei]
   script:
     - $gmsdirname = Get-Content mygmsdir.tmp -Raw

@@ -189,7 +189,7 @@ public:
     );
 
     bool hasType(SchemaType tt) {
-       for (const SchemaType t : qAsConst(types)) {
+       for (const SchemaType t : std::as_const(types)) {
           if (t==tt) return true;
        }
        return false;

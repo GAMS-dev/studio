@@ -284,7 +284,7 @@ void GdxViewer::copySelectionToClipboard()
         return;
     std::sort(selection.begin(), selection.end());
     QString text;
-    for (QModelIndex idx : qAsConst(selection))
+    for (QModelIndex idx : std::as_const(selection))
         text += idx.data().toString() + ",";
     text = text.chopped(1);
 
@@ -377,7 +377,7 @@ void GdxViewer::freeSymbols()
     gdxClose(mGdx);
     locker.unlock();
 
-    for (GdxSymbolView* view : qAsConst(mSymbolViews)) {
+    for (GdxSymbolView* view : std::as_const(mSymbolViews)) {
         if(view) {
             view->freeFilterMenu();
             delete view;
@@ -446,7 +446,7 @@ void GdxViewer::saveState()
     }
     mState->setSymbolTableHeaderState(ui->tvSymbols->horizontalHeader()->saveState());
     mState->setSymbolFilter(ui->lineEdit->text());
-    for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
+    for (GdxSymbolView* symView : std::as_const(mSymbolViews)) {
         if (symView && symView->sym()->isLoaded()) {
             GdxSymbolViewState* symViewState = mState->addSymbolViewState(symView->sym()->name());
             symView->saveState(symViewState);
@@ -580,7 +580,7 @@ GdxSymbolView *GdxViewer::symbolViewByName(QString name)
         sym = mGdxSymbolTable->gdxSymbols().at(sym->subType());
         name = sym->name();
     }
-    for (GdxSymbolView* symView : qAsConst(mSymbolViews)) {
+    for (GdxSymbolView* symView : std::as_const(mSymbolViews)) {
         if (symView && symView->sym()->name().toLower() == name.toLower())
             return symView;
     }

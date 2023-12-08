@@ -85,7 +85,7 @@ void GamsOptionDefinitionModel::modifyOptionDefinitionItem(const OptionItem &opt
                                              Qt::DisplayRole,
                                              QString::number(optionItem.optionId) , 1);
     beginResetModel();
-    for(QModelIndex idx : qAsConst(indices)) {
+    for(QModelIndex idx : std::as_const(indices)) {
         QModelIndex node = index(idx.row(), OptionDefinitionModel::COLUMN_ENTRY_NUMBER);
 
         OptionDefinitionItem* nodeItem = static_cast<OptionDefinitionItem*>(node.internalPointer());

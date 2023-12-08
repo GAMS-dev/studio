@@ -705,7 +705,7 @@ SyntaxBlock SyntaxCommentEndline::validTail(const QString &line, int index, Synt
 SyntaxSubDCO::SyntaxSubDCO(SharedSyntaxData *sharedData): SyntaxAbstract(SyntaxKind::SubDCO, sharedData)
 {
     QList<QPair<QString, QString>> list = SyntaxData::execute();
-    for (const QPair<QString,QString> &entry : qAsConst(list)) {
+    for (const QPair<QString,QString> &entry : std::as_const(list)) {
         mSubDCOs << entry.first;
     }
     mSubKinds << SyntaxKind::SubDCO << SyntaxKind::DcoBody;

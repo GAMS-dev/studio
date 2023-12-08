@@ -278,7 +278,7 @@ void SettingsDialog::loadSettings()
 
     // update page
     ui->autoUpdateBox->setCheckState(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
-    ui->updateIntervalBox->setEnabled(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
+    ui->updateIntervalBox->setEnabled(mSettings->toBool(skAutoUpdateCheck));
     ui->updateIntervalBox->setCurrentIndex(mSettings->toInt(skUpdateInterval));
     mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
@@ -289,7 +289,7 @@ void SettingsDialog::on_tabWidget_currentChanged(int index)
 {
     if (mInitializing && ui->tabWidget->widget(index) == ui->tabColors) {
         mInitializing = false;
-        for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+        for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
             wid->refresh();
         }
     }
@@ -520,7 +520,7 @@ void SettingsDialog::themeModified()
 {
     setModified();
     emit themeChanged();
-    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+    for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -852,7 +852,7 @@ void SettingsDialog::initColorPage()
 
 void SettingsDialog::setThemeEditable(bool editable)
 {
-    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+    for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
     ui->btRenameTheme->setEnabled(editable);
@@ -923,7 +923,7 @@ void SettingsDialog::on_btCopyTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->insertItem(i+shift, Theme::instance()->themes().at(i));
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+    for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
 }
@@ -935,7 +935,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
     int shift = mFixedThemeCount-2;
     ui->cbThemes->removeItem(old+shift);
     ui->cbThemes->setCurrentIndex(i+shift);
-    for (ThemeWidget *wid : qAsConst(mColorWidgets)) {
+    for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }
 }

@@ -631,7 +631,7 @@ bool Option::readDefinitionFile(const QString &optionFilePath, const QString &op
                  if (modeltypes.contains(nameStr)) {
                      opt.defaultValue = solverConfigInfo.defaultSolverFormodelTypeName( modeltypes.value(nameStr) );
                      QStringList solvers = solverConfigInfo.solversForModelType( modeltypes[nameStr] );
-                     for (const QString &s : qAsConst(solvers)) {
+                     for (const QString &s : std::as_const(solvers)) {
                          opt.valueList.append( OptionValue(QVariant(s), "", false, false ) );
                      }
                  }

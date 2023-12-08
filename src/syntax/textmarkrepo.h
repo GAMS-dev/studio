@@ -41,7 +41,7 @@ public:
         if (isEmpty()) return nullptr;
         QList<TextMark*> marks = values(firstKey());
         TextMark* res = nullptr;
-        for (TextMark* mark: qAsConst(marks)) {
+        for (TextMark* mark: std::as_const(marks)) {
             if (mark->type() != TextMark::error) continue;
             if (groupId.isValid() && groupId != mark->groupId()) continue;
             if (!res || res->column() > mark->column())

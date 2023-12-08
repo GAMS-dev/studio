@@ -47,7 +47,7 @@ SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidge
     int row = 0;
     QFont boldFont = font();
     boldFont.setBold(true);
-    for (int mib: qAsConst(mibs)) {
+    for (int mib: std::as_const(mibs)) {
         QRadioButton *rad = new QRadioButton("");
         rad->setStyleSheet("::indicator {subcontrol-position: center; subcontrol-origin: padding;}");
         rad->setChecked(mib == defaultMib);

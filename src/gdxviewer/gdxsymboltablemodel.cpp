@@ -48,7 +48,7 @@ GdxSymbolTableModel::GdxSymbolTableModel(gdxHandle_t gdx, QMutex* gdxMutex, QTex
 
 GdxSymbolTableModel::~GdxSymbolTableModel()
 {
-    for(auto gdxSymbol : qAsConst(mGdxSymbols)) {
+    for(auto gdxSymbol : std::as_const(mGdxSymbols)) {
         mGdxSymbolByName.remove(gdxSymbol->name());
         delete gdxSymbol;
     }

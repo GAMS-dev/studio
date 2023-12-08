@@ -605,7 +605,7 @@ const QList<TextMark *> AbstractEdit::marksAtMouse() const
     QTextCursor cur = cursorForPositionCut(mousePos);
     if (cur.isNull()) return res;
     QList<TextMark*> marks = mMarks->values(absoluteBlockNr(cur.blockNumber()));
-    for (TextMark* mark: qAsConst(marks)) {
+    for (TextMark* mark: std::as_const(marks)) {
         if ((!mark->groupId().isValid() || mark->groupId() == projectId()))
             res << mark;
     }

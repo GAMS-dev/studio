@@ -435,7 +435,7 @@ QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line,
                     locations << QDir::fromNativeSeparators(path) + "/inclib";
             }
             QString rawName = fName;
-            for (QString loc : qAsConst(locations)) {
+            for (QString loc : std::as_const(locations)) {
                 if (!QDir::isAbsolutePath(loc))
                     loc = workDir() + '/' + loc;
                 fName = loc + '/' + rawName;
@@ -838,7 +838,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
     defaultArgumentList      << "logoption" << "ide" << "errorlog" << "errmsg" << "pagesize" << "lstTitleleftaligned" ;
     defaultArgumentValueList << "3"         << "1"   << "99"       << "1"      << "0"        << "1"                   ;
     int position = 0;
-    for (const QString &arg : qAsConst(defaultArgumentList)) {
+    for (const QString &arg : std::as_const(defaultArgumentList)) {
         defaultArgumentIdList << opt->getOrdinalNumber(arg);
         if (defaultArgumentIdList.last() == opt->getOrdinalNumber("logoption")) {
             int lo = defaultArgumentValueList.at(position).toInt(&ok);
@@ -955,7 +955,7 @@ QStringList PExProjectNode::analyzeParameters(const QString &gmsLocation, const 
     QStringList output { CommonPaths::nativePathForProcess(gmsLocation) };
     // normalize gams parameter format
     position = 0;
-    for(int id : qAsConst(defaultArgumentIdList)) {
+    for(int id : std::as_const(defaultArgumentIdList)) {
         if (defaultArgumentIdList.contains(id))
             output.append( QString("%1=%2").arg(defaultArgumentList.at(position), defaultArgumentValueList.at(position)));
         else

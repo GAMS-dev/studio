@@ -100,7 +100,7 @@ void ThemeWidget::baseInit()
 {
     QList<QFrame*> frames;
     frames << ui->colorFG << ui->colorBG1 << ui->colorBG2;
-    for (QFrame *frame : qAsConst(frames)) {
+    for (QFrame *frame : std::as_const(frames)) {
         QPalette pal = frame->parentWidget()->palette();
         QColor c = pal.color(QPalette::Button);
         c = (c.black() < 128) ? c.darker(105) : c.lighter(115);

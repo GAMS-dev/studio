@@ -525,7 +525,7 @@ SyntaxSimpleKeyword::SyntaxSimpleKeyword(SyntaxKind kind, SharedSyntaxData *shar
         setExtraKeywordChars("._ ");
         QList<QPair<QString, QString>> list2;
         list2.append(systemEmpData);
-        for (const QPair<QString, QString> &entry : qAsConst(list)) {
+        for (const QPair<QString, QString> &entry : std::as_const(list)) {
             list2.append(QPair<QString, QString>(QStringLiteral(u"system.")+entry.first, entry.second));
         }
         mKeywords.insert(int(kind), new DictList(list2));

@@ -117,7 +117,7 @@ ProjectContextMenu::ProjectContextMenu()
                 }
             }
         } else { // when no information on solver option definition file names
-           for (const QString &filename : qAsConst(optFiles)) {
+           for (const QString &filename : std::as_const(optFiles)) {
                QString solvername = filename.mid(QString("opt").length());
                solvername.replace(".def", "");
                if (QString::compare("gams", solvername ,Qt::CaseInsensitive)==0)
@@ -164,7 +164,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
     bool isGamsSys = false;
     bool isProjectEfi = false;
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         if (PExProjectNode *project = node->toProject())
             if (project->type() != PExProjectNode::tCommon)
                 isGamsSys = true;
@@ -227,7 +227,7 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     }
     bool hasGdx = false;
     bool hasOpenGdx = false;
-    for (PExAbstractNode *node : qAsConst(mNodes)) {
+    for (PExAbstractNode *node : std::as_const(mNodes)) {
         PExFileNode *fileNode = node->toFile();
         if (fileNode && fileNode->file()->kind() == FileKind::Gdx) {
             hasGdx = true;
@@ -309,14 +309,14 @@ void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
     mActions[actAddNewOpt]->setVisible(isProject && !isGamsSys);
-    for (QAction* action : qAsConst(mSolverOptionActions))
+    for (QAction* action : std::as_const(mSolverOptionActions))
         action->setVisible(isProject);
     mActions[actAddNewPf]->setVisible(isProject && !isGamsSys);
 }
 
 void ProjectContextMenu::onCloseFile()
 {
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExFileNode *file = node->toFile();
         if (file) emit closeFile(file);
     }
@@ -325,7 +325,7 @@ void ProjectContextMenu::onCloseFile()
 void ProjectContextMenu::onAddExisitingFile()
 {
     QVector<PExProjectNode*> projects;
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -343,8 +343,8 @@ void ProjectContextMenu::onAddExisitingFile()
                                                     DONT_RESOLVE_SYMLINKS_ON_MACOS);
     if (filePaths.isEmpty()) return;
 
-    for (PExProjectNode *project: qAsConst(projects)) {
-        for (const QString &filePath: qAsConst(filePaths)) {
+    for (PExProjectNode *project: std::as_const(projects)) {
+        for (const QString &filePath: std::as_const(filePaths)) {
             emit addExistingFile(project, filePath);
         }
     }
@@ -353,7 +353,7 @@ void ProjectContextMenu::onAddExisitingFile()
 void ProjectContextMenu::onAddNewFile()
 {
     QVector<PExProjectNode*> projects;
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -367,7 +367,7 @@ void ProjectContextMenu::onAddNewFile()
 void ProjectContextMenu::onAddNewPfFile()
 {
     QVector<PExProjectNode*> projects;
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -385,11 +385,11 @@ void ProjectContextMenu::setParent(QWidget *parent)
 
 void ProjectContextMenu::onCloseGroup()
 {
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExGroupNode *group = node->toGroup();
         if (!group) continue;
         QVector<PExFileNode*> files = group->listFiles();
-        for (PExFileNode* file : qAsConst(files)) {
+        for (PExFileNode* file : std::as_const(files)) {
             emit closeFile(file);
         }
     }
@@ -397,7 +397,7 @@ void ProjectContextMenu::onCloseGroup()
 
 void ProjectContextMenu::onCloseProject()
 {
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (project) emit closeProject(project);
@@ -425,7 +425,7 @@ void ProjectContextMenu::onCopyProject()
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
     QVector<PExProjectNode*> groups;
-    for (PExAbstractNode *node: qAsConst(mNodes)) {
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -463,7 +463,7 @@ void ProjectContextMenu::onGdxDiff()
 void ProjectContextMenu::onGdxReset()
 {
     QStringList files;
-    for (PExAbstractNode *node : qAsConst(mNodes)) {
+    for (PExAbstractNode *node : std::as_const(mNodes)) {
         PExFileNode *fileNode = node->toFile();
         if (fileNode && fileNode->file()->kind() == FileKind::Gdx)
             files << fileNode->location();

@@ -206,7 +206,7 @@ void TableViewModel::calcLabelsInRows()
             uelsInRows[c].insert(mTvRowHeaders[r][c]);
     }
     for (int c=0; c<uelsInRows.size(); c++) {
-        for(const uint &uel : qAsConst(uelsInRows[c]))
+        for(const uint &uel : std::as_const(uelsInRows[c]))
             mlabelsInRows[c].append(mGdxSymbolTable->uel2Label(int(uel)));
     }
 }

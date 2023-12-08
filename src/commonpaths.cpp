@@ -182,7 +182,7 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
     case StandardDataPath: return GamsStandardDataPaths;
     default: {
         QStringList res = GamsStandardConfigPaths;
-        for (const QString &path : qAsConst(GamsStandardDataPaths))
+        for (const QString &path : std::as_const(GamsStandardDataPaths))
             if (!res.contains(path)) res << path;
         return res; }
     }

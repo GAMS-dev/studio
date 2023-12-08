@@ -159,7 +159,7 @@ void ModelDialog::updateSelectedLibraryItem()
 
 void ModelDialog::clearSelections()
 {
-    for (auto tv : qAsConst(tableViewList))
+    for (auto tv : std::as_const(tableViewList))
         tv->clearSelection();
 }
 

@@ -419,14 +419,14 @@ bool GamsParameterTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAc
 
         QList<OptionItem> itemList;
         QList<int> overrideIdRowList;
-        for (const QString &text : qAsConst(newItems)) {
+        for (const QString &text : std::as_const(newItems)) {
             QStringList textList = text.split("=");
             int optionid = mOption->getOptionDefinition(textList.at(0)).number;
             itemList.append(OptionItem(optionid, textList.at( COLUMN_OPTION_KEY ), textList.at( COLUMN_OPTION_VALUE )));
             QModelIndexList indices = match(index(GamsParameterTableModel::COLUMN_OPTION_KEY, GamsParameterTableModel::COLUMN_ENTRY_NUMBER), Qt::DisplayRole,
                                             QVariant(optionid), Qt::MatchRecursive);
 //          if (settings && settings->overridExistingOption()) {
-              for(QModelIndex idx : qAsConst(indices)) { overrideIdRowList.append(idx.row()); }
+              for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
 //          }
          }
          std::sort(overrideIdRowList.begin(), overrideIdRowList.end());

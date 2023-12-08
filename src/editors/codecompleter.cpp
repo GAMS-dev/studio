@@ -80,7 +80,7 @@ void CodeCompleterModel::initData()
     }
     mType.insert(mData.size()-1, ccDcoEnd);
 
-    for (const QList<QPair<QString, QString>>::ConstIterator &it : qAsConst(delayedIterators)) {
+    for (const QList<QPair<QString, QString>>::ConstIterator &it : std::as_const(delayedIterators)) {
         mData << '$' + it->first;
         mDescription << it->second;
     }
@@ -398,7 +398,7 @@ void CodeCompleterModel::removeTempData(CodeCompleterType type)
             removedDescriptions << mDescriptIndex.at(i);
         mDescriptIndex.removeAt(i);
     }
-    for (const int &i : qAsConst(removedDescriptions)) {
+    for (const int &i : std::as_const(removedDescriptions)) {
         mDescription.removeAt(i);
     }
     QMap<int, CodeCompleterType> addType;
@@ -461,7 +461,7 @@ void CodeCompleterModel::setActiveNameSuffix(QString suffix)
     QStringList addData;
     int lastAddedDescIndex = -1;
     for (int i = 0; i < mData.length(); ++i) {
-        for (const QString &keyword: qAsConst(suffAssigns)) {
+        for (const QString &keyword: std::as_const(suffAssigns)) {
             if (mData.at(i).compare(keyword, Qt::CaseInsensitive) == 0) {
                 addData << mData.at(i) + '.' + suffName;
                 if (lastAddedDescIndex != i) {

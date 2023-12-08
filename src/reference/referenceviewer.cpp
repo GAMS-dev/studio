@@ -138,7 +138,7 @@ ReferenceViewer::ReferenceViewer(QString referenceFile, QString encodingName, QW
     }
     setFocusProxy(ui->tabWidget);
 
-    for (QHeaderView *header : qAsConst(headers)) {
+    for (QHeaderView *header : std::as_const(headers)) {
         headerRegister(header);
     }
 

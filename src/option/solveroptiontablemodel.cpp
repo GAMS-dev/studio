@@ -436,7 +436,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
 
         QList<SolverOptionItem *> itemList;
         QList<int> overrideIdRowList;
-        for (const QString &text : qAsConst(newItems)) {
+        for (const QString &text : std::as_const(newItems)) {
             QString lineComment = mOption->isEOLCharDefined() ? QString(mOption->getEOLChars().at(0)) : QString("*");
             if (text.startsWith(lineComment)) {
                 itemList.append(new SolverOptionItem(-1, text, "", "", true));
@@ -451,7 +451,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
                 QModelIndexList indices = match(index(0, getColumnEntryNumber()), Qt::DisplayRole, QVariant(optionid), Qt::MatchRecursive);
 
                 if (settings && settings->toBool(skSoOverrideExisting)) {
-                    for(const QModelIndex &idx : qAsConst(indices)) { overrideIdRowList.append(idx.row()); }
+                    for(const QModelIndex &idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
                 }
             }
         }
@@ -531,7 +531,7 @@ bool SolverOptionTableModel::dropMimeData(const QMimeData* mimedata, Qt::DropAct
             }
         } // else entry not exist
 
-        for (SolverOptionItem * item : qAsConst(itemList)) {
+        for (SolverOptionItem * item : std::as_const(itemList)) {
             if (item->disabled) {
                 insertRows(beginRow, 1, QModelIndex());
                 QModelIndex idx = index(beginRow, COLUMN_OPTION_KEY);
@@ -776,10 +776,10 @@ void SolverOptionTableModel::on_groupDefinitionReloaded()
 void SolverOptionTableModel::updateRecurrentStatus()
 {
     QList<int> idList;
-    for(SolverOptionItem* item : qAsConst(mOptionItem)) {
+    for(SolverOptionItem* item : std::as_const(mOptionItem)) {
         idList << item->optionId;
     }
-    for(SolverOptionItem* item : qAsConst(mOptionItem)) {
+    for(SolverOptionItem* item : std::as_const(mOptionItem)) {
         item->recurrent = (!item->disabled && item->optionId != -1 && idList.count(item->optionId) > 1);
     }
     emit headerDataChanged(Qt::Vertical, 0, mOptionItem.size());

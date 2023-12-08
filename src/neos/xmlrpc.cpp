@@ -56,7 +56,7 @@ bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
         xml.writeStartElement("array");
         xml.writeStartElement("data");
         QVariantList list = var.toList();
-        for (const QVariant &v : qAsConst(list)) {
+        for (const QVariant &v : std::as_const(list)) {
             if (!putVariant(xml, v, errorText)) return false;
         }
         xml.writeEndElement();

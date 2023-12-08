@@ -284,7 +284,7 @@ void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
             it.remove();
         }
     }
-    for (TextMark *mark: qAsConst(parked)) {
+    for (TextMark *mark: std::as_const(parked)) {
         mark->setLine(lineShift<0 ? qMax(mark->line()+lineShift, firstLine): mark->line()+lineShift);
         marks->insert(mark->line(), mark);
     }
@@ -302,7 +302,7 @@ void TextMarkRepo::setDebugMode(bool debug)
         keys << int(it.key());
     }
     std::sort(keys.begin(), keys.end());
-    for (int key: qAsConst(keys)) {
+    for (int key: std::as_const(keys)) {
         DEB() << key << ": " << mMarks.value(FileId(key))->size();
     }
 }

@@ -43,7 +43,7 @@ Theme::Theme(QObject *parent) : QObject(parent)
 
 Theme::~Theme()
 {
-    for (SvgEngine *eng: qAsConst(mEngines))
+    for (SvgEngine *eng: std::as_const(mEngines))
         eng->unbind();
     mEngines.clear();
 }

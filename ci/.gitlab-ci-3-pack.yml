@@ -2,7 +2,7 @@ pack-deg:
   stage: pack
   tags: [macos]
   variables:
-    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   dependencies: [build-deg]
   script:
     - WORKSPACE=$(pwd)
@@ -62,7 +62,7 @@ pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
-    qtpath: /Users/gitlab/Qt/6.5.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   dependencies: [build-dac]
   script:
     - WORKSPACE=$(pwd)
@@ -122,7 +122,7 @@ pack-leg:
   stage: pack
   tags: [linux]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.6:latest
     entrypoint: [""]   # prevent startup.sh
   dependencies: [build-leg]
   script:
@@ -140,7 +140,8 @@ pack-leg:
   - minor=$(grep "^STUDIO_MINOR_VERSION=" version | cut -f2 -d"=")
   - patch=$(grep "^STUDIO_PATCH_LEVEL=" version | cut -f2 -d"=")
   - export VERSION=$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL
-  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --library /usr/lib/x86_64-linux-gnu/libssl.so.1.1 --desktop-file=appdir/usr/share/studio.desktop
+  # --exclude-library=/usr/lib/x86_64-linux-gnu/libnss3.so --exclude-library=/usr/lib/x86_64-linux-gnu/libnssutil3.so
+  - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --output=appimage --desktop-file=appdir/usr/share/studio.desktop
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
   artifacts:
@@ -153,7 +154,7 @@ pack-wei:
   stage: pack
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.6:latest
   dependencies: [build-wei]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
@@ -202,7 +203,7 @@ pack-wei-debug:
     - when: always
   tags: [windows]
   image:
-    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.5:latest
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/builder-qt6.6:latest
   dependencies: [build-wei-debug]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC

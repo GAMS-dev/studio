@@ -246,7 +246,7 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
                                            QDir::NoDot | QDir::AllEntries,
                                            QDir::Name | QDir::DirsFirst);
-    for (const QFileInfo &entry : qAsConst(localEntryInfoList)) {
+    for (const QFileInfo &entry : std::as_const(localEntryInfoList)) {
         content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
     }
 }

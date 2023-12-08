@@ -240,18 +240,18 @@ void GdxSymbolViewState::write(QVariantMap &map) const
     map.insert("intValues", ints);
 
     QString showAttr;
-    for (bool a : qAsConst(mShowAttributes))
+    for (bool a : std::as_const(mShowAttributes))
         showAttr += (a ? '1' : '0');
     map.insert("showAttributes", showAttr);
 
     QString tvDimOrder;
-    for (int order : qAsConst(mTvDimOrder))
+    for (int order : std::as_const(mTvDimOrder))
         tvDimOrder += (tvDimOrder.isEmpty() ? "" : ",") + QString::number(order);
     map.insert("tvDimOrder", tvDimOrder);
 
     bool semicolon = false;
     QString labelLists;
-    for (const QStringList &list : qAsConst(mUncheckedLabels)) {
+    for (const QStringList &list : std::as_const(mUncheckedLabels)) {
         QString labels;
         bool comma = false;
         for (const QString &label : list) {
@@ -267,7 +267,7 @@ void GdxSymbolViewState::write(QVariantMap &map) const
 
     semicolon = false;
     QString valFilterStates;
-    for (const ValueFilterState &state : qAsConst(mValueFilterState)) {
+    for (const ValueFilterState &state : std::as_const(mValueFilterState)) {
         QString valFilterState = QString::number(state.min, 'g', QLocale::FloatingPointShortest);
         valFilterState += ',' + QString::number(state.max, 'g', QLocale::FloatingPointShortest) + ',';
         valFilterState += QString(state.active ? "1" : "0") + (state.exclude ? "1" : "0") +
@@ -283,7 +283,7 @@ void GdxSymbolViewState::write(QVariantMap &map) const
     map.insert("tableViewFilterHeader", mTableViewFilterHeaderState.toBase64());
 
     QString tableViewColumns;
-    for (int columnWidth : qAsConst(mTableViewColumnWidths)) {
+    for (int columnWidth : std::as_const(mTableViewColumnWidths)) {
         if (!tableViewColumns.isEmpty()) tableViewColumns += ',';
         tableViewColumns += QString::number(columnWidth);
     }
