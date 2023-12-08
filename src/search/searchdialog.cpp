@@ -38,7 +38,8 @@ namespace studio {
 namespace search {
 
 SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent) :
-    QDialog(parent), ui(new Ui::SearchDialog), mMain(parent), mFileHandler(fileHandler), mSearch(this, fileHandler)
+    QDialog(parent), mFileWorker(fileHandler), ui(new Ui::SearchDialog), mMain(parent),
+    mFileHandler(fileHandler), mSearch(this, fileHandler)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -210,7 +211,7 @@ void SearchDialog::updateDialogState()
 QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
 {
     QList<SearchFile> files;
-    FileWorker fw(parameters, mFileHandler);
+    mFileWorker.setParameters(parameters);
     switch (ui->combo_scope->currentIndex()) {
         case Scope::ThisFile: {
             if (mCurrentEditor)
@@ -224,7 +225,7 @@ QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
 
             for (PExFileNode *c :p->assignedProject()->listFiles())
                 files << SearchFile(c->file());
-            files = fw.filterFiles(files, parameters);
+            files = mFileWorker.filterFiles(files, parameters);
             break;
         }
         case Scope::Selection: {
@@ -236,17 +237,17 @@ QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
         case Scope::OpenTabs: {
             for(FileMeta* fm : mFileHandler->openFiles())
                 files << SearchFile(fm);
-            files = fw.filterFiles(files, parameters);
+            files = mFileWorker.filterFiles(files, parameters);
             break;
         }
         case Scope::AllFiles: {
             for(FileMeta* fm : mFileHandler->fileMetas())
                 files << SearchFile(fm);
-            files = fw.filterFiles(files, parameters);
+            files = mFileWorker.filterFiles(files, parameters);
             break;
         }
         case Scope::Folder: {
-            files << fw.collectFilesInFolder();
+            files << mFileWorker.collectFilesInFolder();
         }
         default: break;
     }

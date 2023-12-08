@@ -25,6 +25,7 @@
 
 #include "search.h"
 #include "mainwindow.h"
+#include "search/fileworker.h"
 #include "searchhelpers.h"
 #include "abstractsearchfilehandler.h"
 #include "searchhelpers.h"
@@ -141,6 +142,7 @@ private:
     void updateComponentAvailability();
     void updateClearButton();
     SearchParameters createSearchParameters(bool showResults, bool ignoreReadonly = false, bool searchBackwards = false);
+    FileWorker mFileWorker;
 
 private:
     Ui::SearchDialog *ui;
