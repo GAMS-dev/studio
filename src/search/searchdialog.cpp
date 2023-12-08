@@ -553,8 +553,10 @@ void SearchDialog::setSearchStatus(Search::Status status, int hits)
 
     switch (status) {
     case Search::Searching:
-        ui->lbl_nrResults->setText("Searching" + inXFiles + ". (Results: " + QString::number(hits) + ")"
-                                    + dotAnim.repeated(mSearchAnimation++ % 4));
+        ui->lbl_nrResults->setText("Searching" + inXFiles
+                                   + dotAnim.repeated(mSearchAnimation++ % 4)
+                                   + " (Results: " + QString::number(hits) + ")"
+                                    );
         break;
     case Search::Ok:
         ui->lbl_nrResults->setText(QString::number(hits) + ((hits == 1)
