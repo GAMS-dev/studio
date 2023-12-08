@@ -21,6 +21,7 @@
 #define FILEWORKER_H
 
 #include <QObject>
+#include "search/abstractsearchfilehandler.h"
 #include "searchhelpers.h"
 
 namespace gams {
@@ -32,15 +33,16 @@ class FileWorker : public QObject
     Q_OBJECT
 
 public:
-    FileWorker(SearchParameters parameters);
+    FileWorker(SearchParameters parameters, AbstractSearchFileHandler *fh);
     QList<SearchFile> collectFilesInFolder();
+    QList<SearchFile> filterFiles(QList<SearchFile> files, SearchParameters params);
 
 signals:
     void filesCollected(QList<SearchFile> files);
 
 private:
     SearchParameters mParameters;
-
+    AbstractSearchFileHandler* mFileHandler;
 
 };
 

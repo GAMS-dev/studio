@@ -78,7 +78,7 @@ void Search::start(SearchParameters parameters)
         runSearch(mSearchDialog->getFilesByScope(parameters));
     } else {
         // async file collection
-        FileWorker* fw = new FileWorker(parameters);
+        FileWorker* fw = new FileWorker(parameters, mFileHandler);
         fw->moveToThread(&mFileThread);
 
         connect(&mFileThread, &QThread::started, fw, &FileWorker::collectFilesInFolder);
@@ -102,9 +102,7 @@ void Search::runSearch(QList<SearchFile> files)
     FileMeta* currentFile = mFileHandler->fileMeta(mSearchDialog->currentEditor());
     for (const SearchFile& sf : qAsConst(files)) {
 
-        // not doing this would be faster
-        FileMeta* fm = sf.fileMeta;
-        if (fm) {
+        if (FileMeta* fm = sf.fileMeta) {
             // skip certain file types
             if (fm->kind() == FileKind::Gdx || fm->kind() == FileKind::Ref)
                 continue;
@@ -116,8 +114,7 @@ void Search::runSearch(QList<SearchFile> files)
             } else {
                 if (fm == currentFile) unmodified.insert(0, sf);
             }
-        }
-        unmodified << sf;
+        } else unmodified << sf;
     }
 
     // start background task first
@@ -600,7 +597,7 @@ void Search::replaceAll(SearchParameters parameters)
     QList<FileMeta*> unopened;
 
     // sort and filter FMs by editability and modification state
-    QList<SearchFile> files = mSearchDialog->filterFiles(mSearchDialog->getFilesByScope(parameters), true);
+    QList<SearchFile> files = mSearchDialog->getFilesByScope(parameters);
     mLastSearchParameters = parameters;
 
     int matchedFiles = 0;

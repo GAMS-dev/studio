@@ -64,8 +64,6 @@ public:
 
     Search* search();
 
-    QList<SearchFile> filterFiles(QList<SearchFile> files, bool ignoreReadOnly);
-
     void setSearchStatus(Search::Status status, int hits = 0);
 
     /// \brief jumpToResult jumps to a search result identified by an index. does not jump if the search cache is outdated.

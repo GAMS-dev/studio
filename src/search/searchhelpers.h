@@ -63,11 +63,13 @@ namespace search {
         bool caseSensitive;
         bool searchBackwards;
         bool showResults;
-        bool ignoreReadonly;
+        bool ignoreReadOnly;
         bool includeSubdirs;
 
         Scope scope;
         QString path;
+        QStringList excludeFilter;
+        QStringList includeFilter;
     };
 
 }

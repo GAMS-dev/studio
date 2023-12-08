@@ -115,12 +115,14 @@ SearchParameters SearchDialog::createSearchParameters(bool showResults, bool ign
     parameters.caseSensitive = caseSens();
     parameters.searchBackwards = searchBackwards;
     parameters.showResults = showResults;
-    parameters.ignoreReadonly = ignoreReadonly;
+    parameters.ignoreReadOnly = ignoreReadonly;
 
     parameters.currentFile = mFileHandler->fileMeta(mCurrentEditor);
 
     parameters.scope = selectedScope();
     parameters.path = ui->combo_path->currentText();
+    parameters.excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
+    parameters.includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
     parameters.includeSubdirs = ui->cb_subdirs->isChecked();
 
     return parameters;
@@ -208,6 +210,7 @@ void SearchDialog::updateDialogState()
 QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
 {
     QList<SearchFile> files;
+    FileWorker fw(parameters, mFileHandler);
     switch (ui->combo_scope->currentIndex()) {
         case Scope::ThisFile: {
             if (mCurrentEditor)
@@ -221,6 +224,7 @@ QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
 
             for (PExFileNode *c :p->assignedProject()->listFiles())
                 files << SearchFile(c->file());
+            files = fw.filterFiles(files, parameters);
             break;
         }
         case Scope::Selection: {
@@ -232,66 +236,21 @@ QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
         case Scope::OpenTabs: {
             for(FileMeta* fm : mFileHandler->openFiles())
                 files << SearchFile(fm);
+            files = fw.filterFiles(files, parameters);
             break;
         }
         case Scope::AllFiles: {
             for(FileMeta* fm : mFileHandler->fileMetas())
                 files << SearchFile(fm);
+            files = fw.filterFiles(files, parameters);
             break;
         }
         case Scope::Folder: {
-            FileWorker fw(parameters);
             files << fw.collectFilesInFolder();
         }
         default: break;
     }
-
-    return filterFiles(files, parameters.ignoreReadonly);
-}
-
-QList<SearchFile> SearchDialog::filterFiles(QList<SearchFile> files, bool ignoreReadOnly)
-{
-    bool ignoreWildcard = selectedScope() == Scope::ThisFile || selectedScope() == Scope::Selection;
-
-    // create list of include filter regexes
-    QStringList includeFilter = ui->combo_filePattern->currentText().split(',', Qt::SkipEmptyParts);
-    QList<QRegularExpression> includeFilterList;
-    for (const QString &s : std::as_const(includeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
-        includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
-    }
-
-    // create list of exclude filters
-    QStringList excludeFilter = ui->combo_fileExcludePattern->currentText().split(',', Qt::SkipEmptyParts);
-    excludeFilter << ".gdx" << ".zip" ;
-
-    QList<QRegularExpression> excludeFilterList;
-    for (const QString &s : std::as_const(excludeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
-        excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
-    }
-
-    // filter files
-    QList<SearchFile> res;
-    for (const SearchFile &sf : qAsConst(files)) {
-        bool include = includeFilterList.count() == 0;
-
-        for (const QRegularExpression &wildcard : qAsConst(includeFilterList)) {
-            include = wildcard.match(sf.path).hasMatch();
-            if (include) break; // one match is enough, dont overwrite result
-        }
-
-        if (include)
-        for (const QRegularExpression &wildcard : std::as_const(excludeFilterList)) {
-            include = !wildcard.match(fm->location()).hasMatch();
-            if (!include) break;
-        }
-
-        FileMeta* fm = mFileHandler->findFile(sf.path);
-        if ((include || ignoreWildcard) && (!ignoreReadOnly || (fm && !fm->isReadOnly())))
-            res << sf.path;
-    }
-    return res;
+    return files;
 }
 
 void SearchDialog::on_searchNext()

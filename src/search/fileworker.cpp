@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 namespace search {
 
-FileWorker::FileWorker(SearchParameters parameters) : mParameters(parameters)
+FileWorker::FileWorker(SearchParameters parameters, AbstractSearchFileHandler* fh) : mParameters(parameters), mFileHandler(fh)
 { }
 
 QList<SearchFile> FileWorker::collectFilesInFolder()
@@ -45,7 +45,52 @@ QList<SearchFile> FileWorker::collectFilesInFolder()
     }
 
     emit filesCollected(files);
-    return files;
+    return filterFiles(files, mParameters);
+}
+
+QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParameters params)
+{
+    bool ignoreWildcard = params.scope == Scope::ThisFile || params.scope == Scope::Selection;
+
+    // create list of include filter regexes
+    QList<QRegularExpression> includeFilterList;
+    for (const QString &s : qAsConst(params.includeFilter)) {
+        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    }
+
+    // create list of exclude filters
+    QStringList excludeFilter = params.excludeFilter;
+    excludeFilter << ".gdx" << ".zip" ;
+
+    QList<QRegularExpression> excludeFilterList;
+    for (const QString &s : qAsConst(excludeFilter)) {
+        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
+    }
+
+    // filter files
+    QList<SearchFile> res;
+    for (const SearchFile &sf : qAsConst(files)) {
+        bool include = includeFilterList.count() == 0;
+
+        for (const QRegularExpression &wildcard : qAsConst(includeFilterList)) {
+            include = wildcard.match(sf.path).hasMatch();
+            if (include) break; // one match is enough, dont overwrite result
+        }
+
+        if (include)
+            for (const QRegularExpression &wildcard : qAsConst(excludeFilterList)) {
+                include = !wildcard.match(sf.path).hasMatch();
+                if (!include) break;
+            }
+
+        // if we can get an fm check if that file is read only
+        FileMeta* fm = mFileHandler->findFile(sf.path);
+        if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly())))
+            res << sf.path;
+    }
+    return res;
 }
 
 }
