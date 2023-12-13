@@ -67,4 +67,5 @@ private:
 }
 }
 }
+
 #endif // GAMSLICENSINGDIALOG_H

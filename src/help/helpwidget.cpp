@@ -37,6 +37,7 @@
 #include "commonpaths.h"
 #include "helpdata.h"
 #include "helppage.h"
+#include "settings.h"
 #include "theme.h"
 
 namespace gams {
@@ -46,7 +47,7 @@ namespace help {
 HelpWidget::HelpWidget(QWidget *parent) :
     QWidget(parent),
     ui(new Ui::HelpWidget),
-    mC4U(new support::CheckForUpdate(this))
+    mC4U(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this))
 {
     ui->setupUi(this);
     ui->actionHome->setIcon(Theme::icon(":/%1/home"));

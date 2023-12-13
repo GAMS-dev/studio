@@ -38,11 +38,13 @@ VersionInfoLoader::VersionInfoLoader(QObject *parent)
     , mStudioRegEx("^\\[(\\d+)\\.(\\d+\\.\\d+\\.\\d+),\\d+]$")
 {
     mWebCtrlDistrib->setStrictTransportSecurityEnabled(true);
+    mWebCtrlDistrib->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     connect(mWebCtrlDistrib, &QNetworkAccessManager::finished,
             this, &VersionInfoLoader::distribDownloadFinished);
     connect(mWebCtrlDistrib, &QNetworkAccessManager::sslErrors,
             this, &VersionInfoLoader::sslErrors);
     mWebCtrlStudio->setStrictTransportSecurityEnabled(true);
+    mWebCtrlStudio->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     connect(mWebCtrlStudio, &QNetworkAccessManager::finished,
             this, &VersionInfoLoader::studioDownloadFinished);
     connect(mWebCtrlStudio, &QNetworkAccessManager::sslErrors,
@@ -53,7 +55,10 @@ VersionInfoLoader::VersionInfoLoader(QObject *parent)
 
 VersionInfoLoader::~VersionInfoLoader()
 {
-
+    if (mResult.isRunning())
+        mResult.waitForFinished();
+    delete mWebCtrlDistrib;
+    delete mWebCtrlStudio;
 }
 
 void VersionInfoLoader::requestRemoteData()
@@ -163,7 +168,7 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
         reply->deleteLater();
         emit continueProcessing();
     };
-    auto result = QtConcurrent::run(process);
+    mResult = QtConcurrent::run(process);
 }
 
 void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)

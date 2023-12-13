@@ -119,6 +119,8 @@ private slots:
 
     void updateNumericalPrecision();
 
+    void checkForUpdates();
+
 private:
     void saveSettings();
     void loadSettings();
@@ -129,6 +131,8 @@ private:
 
     QString changeSeparators(const QString &commaSeparatedList, const QString &newSeparator);
     QDate nextCheckDate() const;
+
+    void setCheckForUpdateState();
 
 private:
     Ui::SettingsDialog *ui;

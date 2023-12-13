@@ -37,7 +37,7 @@ class TestCheckForUpdateWrapper : public QObject
 private slots:
     void initTestCase();
 
-    void testDefaultConstructor();
+    void testConstructor();
     void testCheckForUpdate();
 
     void testLocalDistribVersion();

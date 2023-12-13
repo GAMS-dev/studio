@@ -30,6 +30,9 @@ namespace support {
 
 class CheckForUpdate;
 
+///
+/// \brief Checks the bitness and GAMS to GAMS Studio compatibilty.
+///
 class DistributionValidator
     : public QThread
 {
@@ -43,7 +46,6 @@ public:
 signals:
     void newError(const QString&);
     void newWarning(const QString&);
-    void newGamsVersion(const QString &message);
 
 private:
     ///
@@ -57,13 +59,8 @@ private:
     ///
     void checkCompatibility();
 
-    void checkForUpdates(const QString &text);
-
-    QDate nextCheckUpdate();
-
 private:
     static QRegularExpression RegEx;
-    CheckForUpdate* mC4U = nullptr;
 };
 
 }

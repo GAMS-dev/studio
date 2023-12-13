@@ -84,8 +84,6 @@ private slots:
 
     void warning(const QString &message);
 
-    void showGamsUpdateWidget(const QString &text);
-
     ///
     /// \brief Bind a new connection for command line argument awareness
     ///

@@ -22,6 +22,7 @@
 
 #include <QObject>
 #include <QByteArray>
+#include <QFuture>
 #include <QMap>
 #include <QNetworkAccessManager>
 #include <QNetworkRequest>
@@ -32,6 +33,10 @@ namespace gams {
 namespace studio {
 namespace support {
 
+///
+/// \brief Fetches GAMS and GAMS Studio version information from
+///        <a href="https://gams.com">https://gams.com</a>.
+///
 class VersionInfoLoader : public QObject
 {
     Q_OBJECT
@@ -88,6 +93,8 @@ private:
     QString mRemoteStudioVersionString;
     QStringList mErrorStrings;
     QMap<int, qint64> mDistribVersions;
+
+    QFuture<void> mResult;
 };
 
 }

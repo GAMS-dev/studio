@@ -18,10 +18,9 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "distributionvalidator.h"
-#include "checkforupdate.h"
+
 #include "commonpaths.h"
 #include "process.h"
-#include "settings.h"
 
 #include <QDate>
 #include <QStringList>
@@ -39,9 +38,6 @@ DistributionValidator::DistributionValidator(QObject *parent)
     : QThread(parent)
 {
     CommonPaths::setSystemDir();
-    mC4U = new CheckForUpdate(this);
-    connect(mC4U, &CheckForUpdate::versionInformationAvailable,
-            this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 }
 
 void DistributionValidator::run()
@@ -97,28 +93,6 @@ void DistributionValidator::checkCompatibility()
     else {
         emit newError("Could not validate GAMS Distribution version.");
     }
-}
-
-void DistributionValidator::checkForUpdates(const QString &text)
-{
-    if (!Settings::settings()->toBool(skAutoUpdateCheck))
-        return;
-    auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
-    if (QDate::currentDate() < nextCheckDate)
-        return;
-    Settings::settings()->setDate(skLastUpdateCheckDate, QDate::currentDate());
-    Settings::settings()->setDate(skNextUpdateCheckDate, nextCheckUpdate());
-    emit newGamsVersion(text);
-}
-
-QDate DistributionValidator::nextCheckUpdate()
-{
-    auto interval = static_cast<UpdateCheckInterval>(Settings::settings()->toInt(skUpdateInterval));
-    if (interval == UpdateCheckInterval::Daily)
-        return QDate::currentDate().addDays(1);
-    if (interval == UpdateCheckInterval::Weekly)
-        return QDate::currentDate().addDays(7);
-    return QDate::currentDate().addMonths(1);
 }
 
 }

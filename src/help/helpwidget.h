@@ -129,7 +129,7 @@ private:
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
     void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
 
-    support::CheckForUpdate* mC4U;
+    QScopedPointer<support::CheckForUpdate> mC4U;
 };
 
 } // namespace help

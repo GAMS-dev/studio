@@ -86,6 +86,9 @@ class TabBarStyle;
 namespace pin {
 class PinViewWidget;
 }
+namespace support {
+class CheckForUpdate;
+}
 
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
@@ -486,6 +489,9 @@ private:
     QString readGucValue(QString key);
     void initCompleterActions();
 
+    void checkForUpdates(const QString &text);
+    QDate nextUpdateCheck();
+
 private:
     Ui::MainWindow *ui;
     FileMetaRepo mFileMetaRepo;
@@ -557,6 +563,8 @@ private:
     QString mEngineAuthToken;
     QString mEngineJobTag;
     bool mEngineNoDialog = false;
+
+    QScopedPointer<support::CheckForUpdate> mC4U;
 };
 
 }

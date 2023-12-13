@@ -29,18 +29,21 @@ using namespace gams::studio::support;
 void TestCheckForUpdateWrapper::initTestCase()
 {
     CommonPaths::setSystemDir(GAMS_DISTRIB_PATH);
-    mC4U = new CheckForUpdate(this);
+    mC4U = new CheckForUpdate(false, this);
 }
 
-void TestCheckForUpdateWrapper::testDefaultConstructor()
+void TestCheckForUpdateWrapper::testConstructor()
 {
-    CheckForUpdate c4u;
+    CheckForUpdate c4u(true);
     QSignalSpy spy(&c4u, &CheckForUpdate::versionInformationAvailable);
     spy.wait(3000);
 
     QCOMPARE(spy.count(), 1);
     QVERIFY(!c4u.versionInformation().isEmpty());
-    QVERIFY(c4u.versionInformationShort().isEmpty());
+    if (c4u.localDistribVersion() < c4u.remoteDistribVersion())
+        QVERIFY(!c4u.versionInformationShort().isEmpty());
+    else
+        QVERIFY(c4u.versionInformationShort().isEmpty());
     QVERIFY(c4u.localDistribVersion() > 0);
     QVERIFY(!c4u.localDistribVersionShort().isEmpty());
     QVERIFY(c4u.remoteDistribVersion() > 0);
@@ -49,7 +52,7 @@ void TestCheckForUpdateWrapper::testDefaultConstructor()
 
 void TestCheckForUpdateWrapper::testCheckForUpdate()
 {
-    CheckForUpdate c4u;
+    CheckForUpdate c4u(true);
     QSignalSpy spy(&c4u, &CheckForUpdate::versionInformationAvailable);
     spy.wait(3000);
 
@@ -64,7 +67,7 @@ void TestCheckForUpdateWrapper::testCheckForUpdate()
     QVERIFY(c4u.remoteDistribVersion() > 0);
     QVERIFY(c4u.localStudioVersion() > 0);
 
-    c4u.checkForUpdate();
+    c4u.checkForUpdate(true);
     spy.wait(3000);
 
     QCOMPARE(spy.count(), 2);

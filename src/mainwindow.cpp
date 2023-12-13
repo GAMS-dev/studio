@@ -64,6 +64,7 @@
 #include "keys.h"
 #include "tabbarstyle.h"
 #include "support/gamslicenseinfo.h"
+#include "support/checkforupdate.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
 
@@ -404,6 +405,10 @@ MainWindow::MainWindow(QWidget *parent)
         on_actionSettings_triggered();
         mSettingsDialog->focusUpdateTab();
     });
+
+    mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
+            this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 
     // Themes
     ViewHelper::changeAppearance();
@@ -6066,6 +6071,27 @@ void MainWindow::on_actionNavigator_triggered()
     mNavigatorInput->setFocus(Qt::ShortcutFocusReason);
 }
 
+void MainWindow::checkForUpdates(const QString &text)
+{
+    if (!Settings::settings()->toBool(skAutoUpdateCheck))
+        return;
+    auto nextCheckDate = Settings::settings()->toDate(skNextUpdateCheckDate);
+    if (QDate::currentDate() < nextCheckDate)
+        return;
+    Settings::settings()->setDate(skLastUpdateCheckDate, QDate::currentDate());
+    Settings::settings()->setDate(skNextUpdateCheckDate, nextUpdateCheck());
+    showGamsUpdateWidget(text);
+}
+
+QDate MainWindow::nextUpdateCheck()
+{
+    auto interval = static_cast<UpdateCheckInterval>(Settings::settings()->toInt(skUpdateInterval));
+    if (interval == UpdateCheckInterval::Daily)
+        return QDate::currentDate().addDays(1);
+    if (interval == UpdateCheckInterval::Weekly)
+        return QDate::currentDate().addDays(7);
+    return QDate::currentDate().addMonths(1);
+}
 
 }
 }
