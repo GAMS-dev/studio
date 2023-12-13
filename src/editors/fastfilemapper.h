@@ -15,7 +15,7 @@ private:
     class LinesCache
     {
         FastFileMapper *mMapper;
-        mutable QString mCache;
+        mutable QString mData;
         mutable int mLastLineLength = -1;
         mutable QList<qint64> mLineChar;    // start of lines in mCache (these are characters, not bytes!)
         mutable int mCacheOffsetLine;
@@ -23,11 +23,12 @@ private:
         LinesCache(FastFileMapper *mapper) : mMapper(mapper) { reset(); }
         virtual ~LinesCache() {}
         void reset() const;
+        const QString loadCache(int lineNr, int count) const;
         QString getLines(int lineNr, int count) const;
+        QPoint posForOffset(int offset);
         int lineLength(int lineNr) const;
-
-    private:
-        void moveCache(int lineNr, int count) const;
+        int firstCacheLine() { return mCacheOffsetLine; }
+        int lastCacheLine() { return mCacheOffsetLine + mLineChar.size() - 1; }
     };
 
     Q_OBJECT
@@ -94,17 +95,20 @@ private:
     void initDelimiter() const;
     bool reload();
     PosAncState posAncState() const;
+    bool isBefore(const QPoint &textPos1, const QPoint &textPos2);
 
 private:
     mutable QFile mFile;            // mutable to provide consistant logical const-correctness
     qint64 mSize = 0;
     QList<qint64> mLineByte;        // the n-th byte where each line starts (in contrast to the n-th char, see UTF-8)
-    QMutex mMutex;
+    mutable QMutex mMutex;
     LinesCache mCache;
     int mVisibleTopLine = -1;
+    int mCursorColumn = 0;
     QPoint mPosition;
     QPoint mAnchor;
-    int mCursorColumn = 0;
+    QPoint mSearchPos;
+    QPoint mSearchEndPos;
     QPoint mSearchSelectionStart;
     QPoint mSearchSelectionEnd;
 };

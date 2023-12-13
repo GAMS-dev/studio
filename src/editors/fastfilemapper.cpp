@@ -145,9 +145,54 @@ QString FastFileMapper::lines(int localLineNrFrom, int lineCount, QVector<LineFo
 bool FastFileMapper::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool backwards = flags.testFlag(QTextDocument::FindBackward);
-    int part = backwards ? 2 : 1;
+    int liSpan = 199; // maximal 200 lines per call
+    if (!continueFind) {
+        mSearchPos = mPosition;
+        if (hasSelection()) {
+            if (backwards && isBefore(mAnchor, mPosition)) mSearchPos = mAnchor;
+            if (!backwards && isBefore(mPosition, mAnchor)) mSearchPos = mAnchor;
+            liSpan = qMin(liSpan, qAbs(mAnchor.y() - mPosition.y()));
+        }
+        mSearchEndPos = (mSearchPos == mPosition) ? mAnchor : mPosition;
+    }
+    if (backwards) {
+        // keep liCount positive (it's switched later
+        if (mSearchPos.y() - liSpan < 0)
+            liSpan = -mSearchPos.y();
+    } else {
+        if (mSearchPos.y() + liSpan > lineCount())
+            liSpan = lineCount() - mSearchPos.y();
+    }
+    if (continueFind &&
+        qMin(mSearchPos.y(), mSearchPos.y() + liSpan) < mSearchEndPos.y() &&
+        qMax(mSearchPos.y(), mSearchPos.y() + liSpan) > mSearchEndPos.y())
+        liSpan = mSearchEndPos.y() - mSearchPos.y();
 
-    // TODO(JM) implement
+    QRegularExpressionMatch match;
+    const QString data = mCache.loadCache(mSearchPos.y(), liSpan + (backwards ? -1 : 1));
+    int index = backwards ? data.lastIndexOf(searchRegex, mSearchPos.x() - mCache.lineLength(mSearchPos.y()), &match)
+                          : data.indexOf(searchRegex, mSearchPos.x(), &match);
+    if (index >= 0) {
+        QPoint pos = mCache.posForOffset(index);
+        if (pos.y() != mSearchEndPos.y() || (backwards ? pos.x() < mSearchEndPos.x()
+                                                       : pos.x() > mSearchEndPos.x() + match.capturedLength())) {
+            mAnchor = pos;
+            mPosition = mAnchor;
+            mPosition.rx() += match.capturedLength();
+            scrollToPosition();
+            continueFind = false;
+            mCache.reset();
+            return true;
+        }
+    }
+
+    if (mSearchEndPos.y() == (backwards ? mCache.firstCacheLine() : mCache.lastCacheLine())) {
+        continueFind = false;
+    } else {
+        mSearchPos.setY(qMin(qMax(mSearchPos.y() + liSpan, 0), lineCount()));
+        mSearchPos.setX(0);
+    }
+    mCache.reset();
     return false;
 }
 
@@ -160,7 +205,7 @@ QString FastFileMapper::selectedText() const
     QString res = mCache.getLines(p1.y(), p2.y() - p1.y() + 1);
     int from = p1.x();
     int len = res.length() - from - mCache.lineLength(p2.y()) + p2.x();
-    return res.mid(from, len);
+    return res.sliced(from, len);
 }
 
 QString FastFileMapper::positionLine() const
@@ -403,6 +448,7 @@ bool FastFileMapper::adjustLines(int &lineNr, int &count) const
 
 void FastFileMapper::initDelimiter() const
 {
+    // TODO(JM) add support of UTF-16 and UTF-32
     setDelimiter("");
     if (mLineByte.count() < 2) return;
     mFile.reset();
@@ -437,11 +483,16 @@ FastFileMapper::PosAncState FastFileMapper::posAncState() const
     return mPosition.x() > mAnchor.x() ? PosAfterAnc : PosBeforeAnc;
 }
 
+bool FastFileMapper::isBefore(const QPoint &textPos1, const QPoint &textPos2)
+{
+    return textPos1.y() < textPos2.y() || (textPos1.y() == textPos2.y() && textPos1.x() < textPos2.x());
+}
+
 
 void FastFileMapper::LinesCache::reset() const
 {
     // resets all caches (mapper pointer is kept)
-    mCache = "";
+    mData = "";
     mLastLineLength = -1;
     mLineChar.clear();
     mCacheOffsetLine = 0;
@@ -457,18 +508,27 @@ QString FastFileMapper::LinesCache::getLines(int lineNr, int count) const
         lineNr += count;
         count = -count;
     }
-    if (lineNr < mCacheOffsetLine || lineNr + count > mCacheOffsetLine + mLineChar.size() - 1) {
+    if (lineNr < mCacheOffsetLine || lineNr + count >= mCacheOffsetLine + mLineChar.size()) {
         // if a part is missing, move cache
         int fromLine = qMax(0, lineNr - CExtraLines);
-        int lineCount = qMin(mMapper->lineCount(), count + CExtraLines * 2);
-        if (fromLine + lineCount > mMapper->lineCount())
-            fromLine -= fromLine + lineCount - mMapper->lineCount();
-        moveCache(fromLine, lineCount);
+        int lineCount = qMin(mMapper->lineCount() - fromLine, count + CExtraLines * 2);
+        loadCache(fromLine, lineCount);
     }
     int localLine = lineNr - mCacheOffsetLine;
     qint64 from = mLineChar.at(localLine);
     qint64 to = mLineChar.at(localLine + count);
-    return mCache.mid(from, to - from - mMapper->delimiter().size());
+    return mData.sliced(from, to - from - mMapper->delimiter().size());
+}
+
+QPoint FastFileMapper::LinesCache::posForOffset(int offset)
+{
+    int a = 0;
+    int b = mLineChar.size()-1;
+    while (a + 1 < b) {
+        int i = (a + b) / 2;
+        (offset > mLineChar.at(i) ? a : b) = i;
+    }
+    return QPoint(offset - mLineChar.at(a), a + mCacheOffsetLine);
 }
 
 int FastFileMapper::LinesCache::lineLength(int lineNr) const
@@ -485,12 +545,14 @@ int FastFileMapper::LinesCache::lineLength(int lineNr) const
     return mLineChar.at(localLine + 1) - mLineChar.at(localLine) - mMapper->delimiter().size();
 }
 
-void FastFileMapper::LinesCache::moveCache(int lineNr, int count) const
+const QString FastFileMapper::LinesCache::loadCache(int lineNr, int count) const
 {
-    // TODO apply codec (default from main-file)
-    if (count == 0) return;
+    if (count == 0) {
+        mData.clear();
+        return mData;
+    }
     if (count < 0) {
-        lineNr += count;
+        lineNr += count + 1;
         count = -count;
     }
     mCacheOffsetLine = lineNr;
@@ -502,22 +564,31 @@ void FastFileMapper::LinesCache::moveCache(int lineNr, int count) const
         readSize = CMaxCharsPerBlock;
         DEB() << "Error reading data: requested size exceeds 2^30 characters";
     }
-    if (readSize == 0)
-        return;
-    QTextStream ts(&mMapper->mFile);
-    ts.seek(mMapper->mLineByte.at(lineNr));
-    mCache = ts.read(readSize);
+    if (readSize == 0) {
+        mData.clear();
+        return mData;
+    }
+    QByteArray bArray;
+    int bSize = 0;
+    {
+        QMutexLocker locker(&mMapper->mMutex);
+        mMapper->mFile.seek(mMapper->mLineByte.at(lineNr));
+        bArray.resize(readSize);
+        bSize = int(mMapper->mFile.read(bArray.data(), readSize));
+    }
+    mData = mMapper->codec() ? mMapper->codec()->toUnicode(bArray) : QString(bArray);
     mLineChar.clear();
     mLineChar.reserve(count+1);
     mLineChar.append(0);
-    for (qint64 i = 0; i < mCache.length(); ++i) {
-        if (mCache.at(i) == '\n')
+    for (qint64 i = 0; i < mData.length(); ++i) {
+        if (mData.at(i) == '\n')
             mLineChar.append(i+1);
     }
-    mLineChar.append(mCache.length() + mMapper->delimiter().size());
+    mLineChar.append(mData.length() + mMapper->delimiter().size());
     // the last line is requested more frequently - remember size
     if (mLastLineLength < 0 && mCacheOffsetLine + count == mMapper->lineCount() - 1)
         mLastLineLength = mLineChar.last() - mLineChar.at(mLineChar.size() - 2) - mMapper->delimiter().size();
+    return mData;
 }
 
 } // namespace studio
