@@ -57,8 +57,6 @@ Application::Application(int& argc, char** argv)
             this, &Application::error);
     connect(&mDistribValidator, &support::DistributionValidator::newWarning,
             this, &Application::warning);
-    connect(&mDistribValidator, &support::DistributionValidator::newGamsVersion,
-            this, &Application::showGamsUpdateWidget);
 }
 
 Application::~Application()
@@ -184,11 +182,6 @@ bool Application::event(QEvent *event)
             mOpenPathOnInit = openEvent->url().path();
     }
     return QApplication::event(event);
-}
-
-void Application::showGamsUpdateWidget(const QString &text)
-{
-    if (mMainWindow) mMainWindow->showGamsUpdateWidget(text);
 }
 
 void Application::parseCmdArgs()

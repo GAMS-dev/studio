@@ -1,3 +1,8 @@
+Version 1.16.4 *
+==================
+- fixed check for update crash, when Studio is opened and immediately closed
+- fixed check for update issues like redirect policy (NoLessSafeRedirectPolicy) and check behavior
+
 Version 1.16.3
 ==================
 - fixed lost command line changes when switching to another project

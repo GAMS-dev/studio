@@ -43,10 +43,10 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
     , mMain(parent)
-    , mC4U(new support::CheckForUpdate(this))
+    , mC4U(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this))
 {
     ui->setupUi(this);
-    ui->updateBrowser->setPlainText("Checking for updates...");
+    setCheckForUpdateState();
     connect(mC4U, &support::CheckForUpdate::versionInformationAvailable,
             this, [this]{ ui->updateBrowser->setText(mC4U->versionInformation()); });
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
@@ -161,7 +161,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){ ui->updateIntervalBox->setEnabled(checked); });
     adjustSize();
 
-    connect(ui->checkUpdateButton, &QPushButton::clicked, this, &SettingsDialog::focusUpdateTab);
+    connect(ui->checkUpdateButton, &QPushButton::clicked, this, &SettingsDialog::checkForUpdates);
     connect(ui->updateIntervalBox, static_cast<void (QComboBox::*)(int)>(&QComboBox::currentIndexChanged),
             this, [this]{ ui->nextCheckLabel->setText(nextCheckDate().toString()); });
 
@@ -570,9 +570,9 @@ int SettingsDialog::engineInitialExpire() const
 
 void SettingsDialog::focusUpdateTab()
 {
-    ui->updateBrowser->setHtml("Checking for updates...");
+    setCheckForUpdateState();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    mC4U->checkForUpdate();
+    mC4U->checkForUpdate(Settings::settings()->toBool(skAutoUpdateCheck));
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -903,6 +903,14 @@ QDate SettingsDialog::nextCheckDate() const
     return mLastCheckDate.addMonths(1);
 }
 
+void SettingsDialog::setCheckForUpdateState()
+{
+    if (Settings::settings()->toBool(skAutoUpdateCheck))
+        ui->updateBrowser->setPlainText("Checking for updates...");
+    else
+        ui->updateBrowser->setPlainText("Please press the Check Now button to manually trigger the update check.");
+}
+
 void SettingsDialog::on_btn_resetHistory_clicked()
 {
     mMain->resetHistory();
@@ -1024,6 +1032,13 @@ void SettingsDialog::on_rb_decSepStudio_toggled(bool checked)
 void SettingsDialog::updateNumericalPrecision()
 {
     mRestoreSqZeroes = gdxviewer::NumericalFormatController::update(ui->cbFormat, ui->sbPrecision, ui->cbSqueezeTrailingZeroes, mRestoreSqZeroes);
+}
+
+void SettingsDialog::checkForUpdates()
+{
+    setCheckForUpdateState();
+    ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
+    mC4U->checkForUpdate(true);
 }
 
 }

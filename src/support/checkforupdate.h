@@ -30,27 +30,18 @@ namespace support {
 class GamsLicenseInfo;
 class VersionInfoLoader;
 
+///
+/// \brief Handels all steps required to perform the check for update process.
+///
 class CheckForUpdate : public QObject
 {
     Q_OBJECT
 
 public:
-    ///
-    /// \brief CheckForUpdateWrapper.
-    /// \remark Loads the c4u library.
-    ///
-    CheckForUpdate(QObject* parent = nullptr);
+    CheckForUpdate(bool downloadVersions, QObject* parent = nullptr);
 
-    ///
-    /// \brief CheckForUpdateWrapper.
-    /// \remark Frees the c4u library.
-    ///
     ~CheckForUpdate();
 
-    ///
-    /// \brief versionInformation
-    /// \return
-    ///
     QString versionInformation() const;
 
     ///
@@ -96,7 +87,7 @@ public:
     int localStudioVersion() const;
 
 public slots:
-    void checkForUpdate();
+    void checkForUpdate(bool downloadVersions);
 
 signals:
     void versionInformationAvailable();
@@ -112,8 +103,8 @@ private:
     QString addLiTag(const QString& text);
 
 private:
-    GamsLicenseInfo* mLicenseInfo;
-    VersionInfoLoader* mVersionInfoLoader;
+    QScopedPointer<GamsLicenseInfo> mLicenseInfo;
+    QScopedPointer<VersionInfoLoader> mVersionInfoLoader;
 
     QRegularExpression mDistribRegEx;
     QRegularExpression mStudioRegEx;

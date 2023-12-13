@@ -23,23 +23,21 @@
 #include "versioninfoloader.h"
 
 #include <QDir>
-#include <cstring>
 
 namespace gams {
 namespace studio {
 namespace support {
 
-
-CheckForUpdate::CheckForUpdate(QObject* parent)
+CheckForUpdate::CheckForUpdate(bool downloadVersions, QObject* parent)
     : QObject(parent)
     , mLicenseInfo(new GamsLicenseInfo)
     , mVersionInfoLoader(new VersionInfoLoader(this))
     , mDistribRegEx("^\\[(\\d+),\\d+]$")
     , mStudioRegEx("^\\[(\\d+)\\.(\\d+\\.\\d+\\.\\d+),\\d+]$")
 {
-    connect(mVersionInfoLoader, &VersionInfoLoader::finished,
+    connect(mVersionInfoLoader.get(), &VersionInfoLoader::finished,
             this, &CheckForUpdate::updateVersionInformation);
-    checkForUpdate();
+    checkForUpdate(downloadVersions);
 }
 
 CheckForUpdate::~CheckForUpdate()
@@ -86,9 +84,9 @@ int CheckForUpdate::localStudioVersion() const
     return mLocalStudioVersion;
 }
 
-void CheckForUpdate::checkForUpdate()
+void CheckForUpdate::checkForUpdate(bool downloadVersions)
 {
-    mLicenseInfo = new GamsLicenseInfo;
+    mLicenseInfo.reset(new GamsLicenseInfo);
     mToday = mLicenseInfo->today();
     mMainDate = mLicenseInfo->licenseData();
     mEvalDate = mLicenseInfo->evaluationLicenseData();
@@ -102,7 +100,9 @@ void CheckForUpdate::checkForUpdate()
     mVersionInfoLoader->setRemoteStudioVersion(mLocalStudioVersion);
     mDistribVersionInfo = "";
     mStudioVersionInfo = "";
-    mVersionInfoLoader->requestRemoteData();
+    if (downloadVersions) {
+        mVersionInfoLoader->requestRemoteData();
+    }
 }
 
 void CheckForUpdate::updateVersionInformation()
