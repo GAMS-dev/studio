@@ -122,6 +122,7 @@ private:
     bool mCacheAvailable = false;
     bool mOutsideOfList = false;
     int mLastMatchInOpt = -1;
+    bool mStopRequested = false;
 
     bool mSplitSearchContinue = false;
 };

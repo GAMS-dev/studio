@@ -94,6 +94,13 @@ void Search::start(SearchParameters parameters)
 
 void Search::runSearch(QList<SearchFile> files)
 {
+    if (mStopRequested) {
+        mStopRequested = false;
+        mSearching = false;
+        mSearchDialog->finalUpdate();
+        return;
+    }
+
     mSearchDialog->setSearchedFiles(files.count());
     mSearchDialog->setSearchStatus(Search::Searching);
 
@@ -134,12 +141,13 @@ void Search::runSearch(QList<SearchFile> files)
     mSearchThread.start();
     mSearchThread.setPriority(QThread::LowPriority); // search is a background task
 
-    for (const SearchFile &sf : qAsConst(modified))
+    for (const SearchFile &sf : std::as_const(modified))
         findInDoc(sf.fileMeta);
 }
 
 void Search::stop()
 {
+    mStopRequested = true;
     mFileThread.requestInterruption();
     mSearchThread.requestInterruption();
 }
@@ -645,7 +653,7 @@ void Search::replaceAll(SearchParameters parameters)
         QString detailedText;
         msgBox.setInformativeText("Click \"Show Details...\" to show selected files.");
 
-        for (const SearchFile &file : qAsConst(files))
+        for (const SearchFile &file : std::as_const(files))
             detailedText.append(file.path+"\n");
 
         detailedText.append("\nThese files do not necessarily have any matches in them. "
@@ -664,10 +672,10 @@ void Search::replaceAll(SearchParameters parameters)
 
         mSearchDialog->setSearchStatus(Search::Replacing);
 
-        for (FileMeta* fm : qAsConst(opened))
+        for (FileMeta* fm : std::as_const(opened))
             hits += replaceOpened(fm, parameters);
 
-        for (FileMeta* fm : qAsConst(unopened))
+        for (FileMeta* fm : std::as_const(unopened))
             hits += replaceUnopened(fm, parameters);
 
         mSearchDialog->searchParameterChanged();
