@@ -146,7 +146,7 @@ void Search::runSearch(QList<SearchFile> files)
         findInDoc(sf.fileMeta);
 }
 
-void Search::stop()
+void Search::requestStop()
 {
     mStopRequested = true;
     mFileThread.requestInterruption();
@@ -173,7 +173,8 @@ void Search::reset()
 
     mSearchDialog->setSearchedFiles(0);
 
-    stop();
+    mFileThread.requestInterruption();
+    mSearchThread.requestInterruption();
 
     emit invalidateResults();
 }

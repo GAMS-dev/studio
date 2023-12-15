@@ -149,7 +149,7 @@ void SearchDialog::on_btn_FindAll_clicked()
 
         mSearch.start(createSearchParameters(true, false, false));
     } else {
-        mSearch.stop();
+        mSearch.requestStop();
     }
 }
 

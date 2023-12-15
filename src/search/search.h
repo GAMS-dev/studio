@@ -58,7 +58,7 @@ public:
 
     void start(SearchParameters parameters);
     void runSearch(QList<SearchFile> files);
-    void stop();
+    void requestStop();
 
     void findNext(Direction direction);
     void replaceNext(QString replacementText);
