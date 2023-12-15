@@ -60,15 +60,16 @@ void Search::start(SearchParameters parameters)
 
     resetResults();
 
-    mSearching = true;
-    mSearchDialog->setSearchStatus(Search::CollectingFiles);
-    mSearchDialog->updateDialogState();
-
-    // early abort
-    if (parameters.regex.pattern().isEmpty()) {
+    // check for early abort
+    if (parameters.regex.pattern().isEmpty() ||
+        (mSearchDialog->selectedScope() == Scope::Folder && parameters.path.isEmpty())) {
         mSearchDialog->setSearchStatus(Search::Clear);
         mSearchDialog->finalUpdate();
         return;
+    } else {
+        mSearching = true;
+        mSearchDialog->setSearchStatus(Search::CollectingFiles);
+        mSearchDialog->updateDialogState();
     }
 
     // selection scope special treatment

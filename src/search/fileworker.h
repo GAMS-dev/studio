@@ -28,6 +28,14 @@ namespace gams {
 namespace studio {
 namespace search {
 
+///
+/// \brief The FileWorker class
+/// The FileWorker is used to handle collecting, sorting and filtering of files to be searched.
+/// It can be used either synchronously or asynchronously, depending on the use case.
+/// Use setParameters to pass all search options either by manually creating a SearchParameters object
+/// or by using SearchDialog::createSearchParameters to extract everything necessary from the Search Dialog  .
+/// Connect the filesCollected signal to further handle the file list once everything is done.
+///
 class FileWorker : public QObject
 {
     Q_OBJECT

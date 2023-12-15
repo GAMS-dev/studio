@@ -38,6 +38,12 @@ void FileWorker::setParameters(SearchParameters parameters)
 QList<SearchFile> FileWorker::collectFilesInFolder()
 {
     QList<SearchFile> files;
+
+    if (mParameters.path.isEmpty()) {
+        qWarning() << "SearchParameter path is empty but needed for file collection in folder";
+        return files;
+    }
+
     QDir dir(mParameters.path);
 
     QDirIterator::IteratorFlag options = mParameters.includeSubdirs
