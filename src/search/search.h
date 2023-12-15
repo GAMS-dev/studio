@@ -53,6 +53,9 @@ public:
         Backward
     };
 
+    Search(const Search &s) = delete;
+    Search& operator=(const Search&) = delete;
+
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
     ~Search();
 
