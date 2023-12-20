@@ -1,6 +1,7 @@
 Version 1.17.0 *
 ==================
 - fixed help view resulting on empty page when document linked to a page in new tab or new window.
+- added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
 - added install license button for the `GAMS Licensing` dialog.
 - upgraded Studio to Qt 6.6.1 on all platforms
 
