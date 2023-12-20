@@ -2,6 +2,7 @@ Version 1.16.4 *
 ==================
 - fixed check for update crash, when Studio is opened and immediately closed
 - fixed check for update issues like redirect policy (NoLessSafeRedirectPolicy) and check behavior
+- fixed wrong sorting behavior in the export dialog of the GDX Viewer
 
 Version 1.16.3
 ==================
