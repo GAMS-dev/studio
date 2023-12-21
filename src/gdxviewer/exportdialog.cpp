@@ -69,6 +69,7 @@ ExportDialog::ExportDialog(GdxViewer *gdxViewer, QWidget *parent) :
 
     mProxyModel = new QSortFilterProxyModel(this);
     mProxyModel->setSortCaseSensitivity(Qt::CaseInsensitive);
+    mProxyModel->setSortRole(Qt::UserRole);
     mProxyModel->setSourceModel(mExportModel);
 
     ui->tableView->setModel(mProxyModel);

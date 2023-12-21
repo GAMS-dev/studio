@@ -5,10 +5,11 @@ Version 1.17.0 *
 - added install license button for the `GAMS Licensing` dialog.
 - upgraded Studio to Qt 6.6.1 on all platforms
 
-Version 1.16.4 *
+Version 1.16.4
 ==================
 - fixed check for update crash, when Studio is opened and immediately closed
-- fixed check for update issues like redirect policy (NoLessSafeRedirectPolicy) and check behavior
+- fixed check for update redirect policy (NoLessSafeRedirectPolicy) and check for update behavior when disabled
+- fixed wrong sorting behavior in the export dialog of the GDX Viewer
 
 Version 1.16.3
 ==================
