@@ -46,14 +46,16 @@ QStringList CommonPaths::GamsStandardConfigPaths;
 QStringList CommonPaths::GamsStandardDataPaths;
 
 #if defined(__APPLE__) || defined(__unix__)
-    const QString CommonPaths::ConfigFile = "gmscmpun.txt";
+    const QString CommonPaths::ConfigFile      = "gmscmpun.txt";
     const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::AppLocalDataLocation);
-    const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)  + "/GAMS";
+    const QString CommonPaths::GamsConfigPath  = QStandardPaths::writableLocation(QStandardPaths::ConfigLocation)  + "/GAMS";
+    const QString CommonPaths::GamsConnectSchemaDir = "GMSPython/lib/python3.12/site-packages/gams/connect/agents/schema";
 
 #else
-    const QString CommonPaths::ConfigFile = "gmscmpnt.txt";
+    const QString CommonPaths::ConfigFile      = "gmscmpnt.txt";
     const QString CommonPaths::UserLicensePath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    const QString CommonPaths::GamsConfigPath = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS";
+    const QString CommonPaths::GamsConfigPath  = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation) + "/GAMS";
+    const QString CommonPaths::GamsConnectSchemaDir = "GMSPython/Lib/site-packages/gams/connect/agents/schema";
 #endif
 
 const QString CommonPaths::GamsUserConfigFile = "gamsconfig.yaml";
@@ -190,21 +192,15 @@ QStringList CommonPaths::gamsStandardPaths(StandardPathType pathType)
 
 QString CommonPaths::gamsConnectSchemaDir()
 {
-#ifdef __APPLE__
-    QString GamsConnectSchemaDir      = "apifiles/Python/gams/gams_connect/agents/schema";
-    QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
-#elif defined(__unix__)
-     QString GamsConnectSchemaDir = "apifiles/Python/gams/gams_connect/agents/schema";
-     QString GmsPythonConnectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
-#else
-    QString GamsConnectSchemaDir      = "apifiles/Python/gams/gams_connect/agents/schema";
-    QString GmsPythonConnectSchemaDir = "GMSPython/Lib/site-packages/gams/connect/agents/schema";
-#endif
-    QString dirpath = QDir::cleanPath(systemDir()+QDir::separator()+GmsPythonConnectSchemaDir);
+    QString dirpath = QDir::cleanPath(systemDir()+QDir::separator()+GamsConnectSchemaDir);
     if (QDir(dirpath).exists())
         return dirpath;
 
-    return QDir::cleanPath(systemDir()+QDir::separator()+GamsConnectSchemaDir);
+#if defined(__unix__) || defined(__APPLE__)
+    QString connectSchemaDir = "GMSPython/lib/python3.8/site-packages/gams/connect/agents/schema";
+    dirpath = QDir::cleanPath(systemDir()+QDir::separator()+connectSchemaDir);
+#endif
+    return dirpath;
 }
 
 QString CommonPaths::defaultWorkingDir()
