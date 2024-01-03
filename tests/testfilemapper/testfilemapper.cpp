@@ -92,7 +92,16 @@ void TestFileMapper::testFile()
     DEB() << "size " << size;
     QCOMPARE(mMapper->size(), size);
     QCOMPARE(mMapper->lineCount(), 5000);
-    QCOMPARE(mMapper->checkField(FastFileMapper::fVirtualLastLineEnd), 500020);
+#ifdef _WIN32
+    // for 2-byte linebreaks \r\n
+    qint64 lineLen = 100;
+#else
+    // for 1-byte linebreaks \n
+    qint64 lineLen = 99;
+#endif
+    qint64 calculatedSize = (5000 * lineLen) + 20;
+    QCOMPARE(mMapper->checkField(FastFileMapper::fVirtualLastLineEnd), calculatedSize);
+
     QCOMPARE(mMapper->visibleTopLine(), 0);
     mMapper->lines(0, 20);
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheFirst), 0);
@@ -145,11 +154,22 @@ void TestFileMapper::testPosAndAnchor()
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheFirst), 4970);
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 5000);
     mMapper->setPosRelative(18, 0);
-    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), 499800);
+
+#ifdef _WIN32
+    // for 2-byte linebreaks \r\n
+    qint64 lineLen = 100;
+#else
+    // for 1-byte linebreaks \n
+    qint64 lineLen = 99;
+#endif
+    qint64 offset = 4998 * lineLen;
+    DEB() << "pos " << offset;
+    QCOMPARE(mMapper->checkField(FastFileMapper::fVirtualLastLineEnd), (5000 * lineLen) + 20);
+    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), offset);
     mMapper->setPosRelative(19, 0);
-    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), 499900);
+    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), offset + lineLen);
     mMapper->setPosRelative(20, 0); // when set beyond EOF, it's set to EOF
-    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), 499900);
+    QCOMPARE(mMapper->checkField(FastFileMapper::fPosLineStartInFile), offset + lineLen);
 }
 
 
