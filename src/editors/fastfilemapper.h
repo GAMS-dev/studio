@@ -4,9 +4,21 @@
 #include "abstracttextmapper.h"
 #include <QFile>
 #include <QMutex>
+#include <QQueue>
 
 namespace gams {
 namespace studio {
+
+struct CacheElement
+{
+    CacheElement(int _line, int _count): line(_line), count(_count) {}
+    CacheElement(int _line, int _count, const QString &_lines): line(_line), count(_count), lines(_lines) {}
+    int line;
+    int count;
+    QString lines;
+    bool operator==(const CacheElement &other) const { return line == other.line && count == other.count; }
+    void operator =(const CacheElement &other) { line = other.line; count = other.count; lines = other.lines; }
+};
 
 class FastFileMapper : public AbstractTextMapper
 {
@@ -19,20 +31,25 @@ private:
         mutable int mLastLineLength = -1;
         mutable QList<qint64> mLineChar;    // start of lines in mCache (these are characters, not bytes!)
         mutable int mCacheOffsetLine;
+        mutable QQueue<CacheElement> mDirectCache;
     public:
         LinesCache(FastFileMapper *mapper) : mMapper(mapper) { reset(); }
         virtual ~LinesCache() {}
         void reset() const;
         const QString loadCache(int lineNr, int count) const;
         QString getLines(int lineNr, int count) const;
+        int cachedLineCount() const;
         QPoint posForOffset(int offset);
         int lineLength(int lineNr) const;
-        int firstCacheLine() { return mCacheOffsetLine; }
-        int lastCacheLine() { return mCacheOffsetLine + mLineChar.size() - 1; }
+        int firstCacheLine() const { return mCacheOffsetLine; }
+        int lastCacheLine() const { return mCacheOffsetLine + mLineChar.size() - 1; }
+        qint64 linePos(int line) const;
     };
 
     Q_OBJECT
 public:
+    enum Field { fVirtualLastLineEnd, fCacheFirst, fCacheLast, fPosLineStartInFile };
+
     explicit FastFileMapper(QObject *parent = nullptr);
     ~FastFileMapper() override;
     virtual AbstractTextMapper::Kind kind() const override;
@@ -77,6 +94,9 @@ public:
     QPoint searchSelectionStart() override;
     QPoint searchSelectionEnd() override;
     void dumpPos() const override;
+    qint64 checkField(Field field) const;
+
+    void setOverscanLines(int newOverscanLines);
 
 public slots:
     void reset() override;
@@ -103,6 +123,7 @@ private:
     QList<qint64> mLineByte;        // the n-th byte where each line starts (in contrast to the n-th char, see UTF-8)
     mutable QMutex mMutex;
     LinesCache mCache;
+    int mOverscanLines = 50;
     int mVisibleTopLine = -1;
     int mCursorColumn = 0;
     QPoint mPosition;

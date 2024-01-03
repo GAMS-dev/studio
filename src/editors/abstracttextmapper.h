@@ -48,6 +48,10 @@ struct LineFormat {
         extraLstFormat = other.extraLstFormat; extraLstHRef = other.extraLstHRef; lineMarked = other.lineMarked;
         return *this;
     }
+    bool operator ==(const LineFormat &other) const {
+        return start == other.start && end == other.end && format == other.format &&
+            extraLstFormat == other.extraLstFormat && extraLstHRef == other.extraLstHRef && lineMarked == other.lineMarked;
+    }
     int start = -1;
     int end = -1;
     QTextCharFormat format;

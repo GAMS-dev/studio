@@ -3773,9 +3773,9 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
     disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
-    if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
-        ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
-    }
+    // if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
+    //     ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
+    // }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
     connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);

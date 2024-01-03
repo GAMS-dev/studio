@@ -39,7 +39,7 @@ SUBDIRS +=                              \
            testsettings                 \
            testcompleter                \
            testconnect                  \
+           testfilemapper               \
            testservicelocators \
            testversioninfoloader
 #           testsolverconfiginfo
-#           testfilemapper               \

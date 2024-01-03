@@ -20,10 +20,10 @@
 #ifndef TESTFILEMAPPER_H
 #define TESTFILEMAPPER_H
 
-#include "editors/filemapper.h"
+#include "editors/fastfilemapper.h"
 #include <QtTest/QTest>
 
-using gams::studio::FileMapper;
+using gams::studio::FastFileMapper;
 
 class TestFileMapper : public QObject
 {
@@ -36,18 +36,10 @@ private slots:
     void cleanup();
 
     void testFile();
-    void testReadChunk0();
-    void testReadChunk1();
-    void testMoveBackAChunk();
-    void testFetchBeyondChunk();
-    void testReadLines();
-    void testUpdateLineCounting();
-    void testPeekChunkLineNrs();
-    void testLineNrEstimation();
     void testPosAndAnchor();
 
 private:
-    FileMapper *mMapper;
+    FastFileMapper *mMapper;
     QDir mCurrentPath;
 };
 

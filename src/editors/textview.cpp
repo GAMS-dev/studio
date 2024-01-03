@@ -85,7 +85,7 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
     connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
-    connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
+    // connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
     connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
@@ -446,8 +446,11 @@ void TextView::jumpToEnd()
 
 void TextView::setLineMarker(int line)
 {
-    mMapper->setLineMarkers(QList<int>() << line);
-    topLineMoved();
+    const QList<int> markers = mMapper->lineMarkers();
+    if (markers.size() != 1 || markers.first() != line) {
+        mMapper->setLineMarkers(QList<int>() << line);
+        topLineMoved();
+    }
 }
 
 void TextView::updateView()
@@ -623,39 +626,45 @@ void TextView::topLineMoved()
         disconnect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
         mEdit->setTextCursor(QTextCursor(mEdit->document()));
         connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
-        QVector<LineFormat> formats;
+        QList<LineFormat> formats;
         QString dat = mMapper->lines(0, mMapper->visibleLineCount()+1, formats);
-        mEdit->setPlainText(dat);
-        QTextCursor cur(mEdit->document());
-        cur.select(QTextCursor::Document);
-        cur.setCharFormat(QTextCharFormat());
-        QVector<bool> lineMarked;
-        for (int row = 0; row < mEdit->blockCount() && row < formats.size(); ++row) {
-            lineMarked << formats.at(row).lineMarked;
-            if (formats.at(row).start < 0) continue;
-            const LineFormat &format = formats.at(row);
-            QTextBlock block = mEdit->document()->findBlockByNumber(row);
-            QTextCursor cursor(block);
-            if (format.extraLstFormat) {
-                cursor.setPosition(block.position()+3, QTextCursor::KeepAnchor);
-                QTextCharFormat extraFormat = *format.extraLstFormat;
-                extraFormat.setAnchor(true);
-                extraFormat.setAnchorHref(format.extraLstHRef);
-                cursor.setCharFormat(extraFormat);
+        if (mCurrentVisibleTopLine != mMapper->visibleTopLine() || mCurrentDataLength != dat.size()) {
+            mCurrentVisibleTopLine = mMapper->visibleTopLine();
+            mCurrentDataLength = dat.size();
+            mEdit->setPlainText(dat);
+        }
+        if (mCurrentFormats != formats) {
+            mCurrentFormats = formats;
+            QTextCursor cur(mEdit->document());
+            cur.select(QTextCursor::Document);
+            cur.setCharFormat(QTextCharFormat());
+            QList<bool> lineMarked;
+            for (int row = 0; row < mEdit->blockCount() && row < formats.size(); ++row) {
+                lineMarked << formats.at(row).lineMarked;
+                if (formats.at(row).start < 0) continue;
+                const LineFormat &format = formats.at(row);
+                QTextBlock block = mEdit->document()->findBlockByNumber(row);
+                QTextCursor cursor(block);
+                if (format.extraLstFormat) {
+                    cursor.setPosition(block.position()+3, QTextCursor::KeepAnchor);
+                    QTextCharFormat extraFormat = *format.extraLstFormat;
+                    extraFormat.setAnchor(true);
+                    extraFormat.setAnchorHref(format.extraLstHRef);
+                    cursor.setCharFormat(extraFormat);
+                }
+                cursor.setPosition(block.position()+format.start);
+                cursor.setPosition(block.position()+format.end, QTextCursor::KeepAnchor);
+                cursor.setCharFormat(format.format);
             }
-            cursor.setPosition(block.position()+format.start);
-            cursor.setPosition(block.position()+format.end, QTextCursor::KeepAnchor);
-            cursor.setCharFormat(format.format);
+            mEdit->setLineMarked(lineMarked);
         }
         updatePosAndAnchor();
-        mEdit->setLineMarked(lineMarked);
         mEdit->updateExtraSelections();
         mEdit->protectWordUnderCursor(false);
         if (mEdit->verticalScrollBar()->sliderPosition())
             mEdit->verticalScrollBar()->setSliderPosition(0);
         mEdit->horizontalScrollBar()->setSliderPosition(mHScrollValue);
         mEdit->horizontalScrollBar()->setValue(mEdit->horizontalScrollBar()->sliderPosition());
-
         if (wasRecording) NavigationHistoryLocator::navigationHistory()->startRecord();
     }
 }
@@ -683,6 +692,7 @@ void TextView::setDebugMode(bool debug)
     if (mMapper->debugMode() != debug) {
         mMapper->setDebugMode(debug);
         if (mMapper->lineCount() > 0) {
+            mCurrentVisibleTopLine = -1;
             updateView();
             topLineMoved();
         }

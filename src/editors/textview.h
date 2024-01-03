@@ -138,6 +138,9 @@ private:
     bool mSliderStartedAtTail = false;
     int mSliderMouseStart = 0;
     QPoint mScrollPos;
+    int mCurrentVisibleTopLine = -1;
+    int mCurrentDataLength = -1;
+    QList<LineFormat> mCurrentFormats;
 
 private:
 
