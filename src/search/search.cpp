@@ -57,6 +57,7 @@ void Search::start(SearchParameters parameters)
     if (mSearching) return;
 
     mLastSearchParameters = parameters;
+    mStopRequested = false;
 
     resetResults();
 
