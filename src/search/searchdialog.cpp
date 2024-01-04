@@ -235,13 +235,13 @@ QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
             break;
         }
         case Scope::OpenTabs: {
-            for(FileMeta* fm : mFileHandler->openFiles())
+            for (FileMeta* fm : mFileHandler->openFiles())
                 files << SearchFile(fm);
             files = mFileWorker.filterFiles(files, parameters);
             break;
         }
         case Scope::AllFiles: {
-            for(FileMeta* fm : mFileHandler->fileMetas())
+            for (FileMeta* fm : mFileHandler->fileMetas())
                 files << SearchFile(fm);
             files = mFileWorker.filterFiles(files, parameters);
             break;

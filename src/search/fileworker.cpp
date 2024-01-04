@@ -59,8 +59,9 @@ QList<SearchFile> FileWorker::collectFilesInFolder()
         files << SearchFile(path);
     }
 
-    emit filesCollected(files);
-    return filterFiles(files, mParameters);
+    QList<SearchFile> filteredList = filterFiles(files, mParameters);
+    emit filesCollected(filteredList);
+    return filteredList;
 }
 
 QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParameters params)
@@ -76,7 +77,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
     // create list of exclude filters
     QStringList excludeFilter = params.excludeFilter;
-    excludeFilter << ".gdx" << ".zip" ;
+    excludeFilter << ".gdx" << ".zip";
 
     QList<QRegularExpression> excludeFilterList;
     for (const QString &s : std::as_const(excludeFilter)) {
@@ -89,14 +90,17 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
     for (const SearchFile &sf : std::as_const(files)) {
         bool include = includeFilterList.count() == 0;
 
+        // check if file fits inclusion filter
         for (const QRegularExpression &wildcard : std::as_const(includeFilterList)) {
             include = wildcard.match(sf.path).hasMatch();
             if (include) break; // one match is enough, dont overwrite result
         }
 
+        // check if file is included but shall be exlcuded
         if (include)
             for (const QRegularExpression &wildcard : std::as_const(excludeFilterList)) {
                 include = !wildcard.match(sf.path).hasMatch();
+
                 if (!include) break;
             }
 
