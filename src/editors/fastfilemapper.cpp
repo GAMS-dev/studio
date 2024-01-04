@@ -34,19 +34,7 @@ bool FastFileMapper::openFile(const QString &fileName, bool initAnchor)
             DEB() << "Could not open file " << fileName;
             return false;
         }
-        // QElapsedTimer ti;
-        // ti.start();
         scanLF(mLineByte);
-        // DEB() << "1: " << ti.elapsed();
-        // ti.start();
-        // QList<qint64>lb2;
-        // scanLF2(lb2);
-        // DEB() << "2: " << ti.elapsed();
-        initDelimiter();
-        if (delimiter().isEmpty())
-            DEB() << "File contains no linebreak";
-        else
-            mLineByte.replace(mLineByte.size()-1, mLineByte.at(mLineByte.size()-1) + delimiter().size());
         updateMaxTop();
         setVisibleTopLine(0);
         emit loadAmountChanged(mLineByte.count());
@@ -418,6 +406,26 @@ void FastFileMapper::closeAndReset()
     reset();
 }
 
+
+QByteArray scanDelim(char*data, int len)
+{
+    bool hasCR = false;
+    int zeros = 0;                                  // can be used to detect UTF-16 (zeros==1) or UTF-32 (zeros==3)
+    for (int i = 0; i < len; ++i) {
+        if (data[i] == '\r')
+            hasCR = true;
+        else if (data[i] == '\n')
+            return QByteArray(hasCR ? "\r\n" : "\n");
+        else if (data[i] != '\0')                   // skip zeros (UTF-16, UTF-32, or similar unicode encodings)
+            ++zeros;
+        else {
+            hasCR = false;
+            zeros = 0;
+        }
+    }
+    return QByteArray();
+}
+
 QList<qint64> subScanLF(char*data, int len, qint64 offset)
 {
     QList<qint64> res;
@@ -433,6 +441,8 @@ QList<qint64> FastFileMapper::scanLF(QList<qint64> &lf)
 {
     // TODO(JM) This is fast enough on SSD but should be threadded for non-blocking function on HDD
     const int threadMax = 16;
+    setDelimiter("");
+    bool hasDelim = false;
     mFile.reset();
     lf.clear();
     lf.reserve(mFile.size() / 45);
@@ -440,15 +450,27 @@ QList<qint64> FastFileMapper::scanLF(QList<qint64> &lf)
     QDataStream ds(&mFile);
     int len = 1024*512;
     char *data[threadMax];
-    for (int i = 0; i < threadMax; ++i)
+    QList<qint64> dataOffsets;
+    dataOffsets.reserve(threadMax);
+    for (int i = 0; i < threadMax; ++i) {
         data[i] = new char[len];
+        dataOffsets << 0;
+    }
     qint64 start = 0;
 
     QList< QFuture< QList<qint64> > > fut;
     int threadCount = 0;
     while (!ds.atEnd()) {
         int len1 = ds.readRawData(data[threadCount], len);
+
+        if (!hasDelim) {
+            QByteArray delim = scanDelim(data[threadCount], len1);
+            setDelimiter(delim.isEmpty() ? QByteArray("\n") : delim);
+            hasDelim = true;
+        }
+
         qint64 offset = start;
+        dataOffsets.replace(threadCount, offset);
         fut << QtConcurrent::run(subScanLF, data[threadCount], len1, offset);
         start += len1;
         ++threadCount;
@@ -460,6 +482,7 @@ QList<qint64> FastFileMapper::scanLF(QList<qint64> &lf)
             threadCount = 0;
         }
     }
+
     lf << mFile.size() + delimiter().size();
     lf.squeeze();
     for (int i = 0; i < threadMax; ++i)
@@ -483,25 +506,6 @@ bool FastFileMapper::adjustLines(int &lineNr, int &count) const
     lineNr = fromLine;
     count = toLine - fromLine;
     return false;
-}
-
-void FastFileMapper::initDelimiter() const
-{
-    // TODO(JM) add support of UTF-16 and UTF-32
-    setDelimiter("");
-    if (lineCount() < 2) return;
-    mFile.reset();
-    QDataStream ds(&mFile);
-    int start = mLineByte.at(1)-2;
-    if (start < 0) {
-        setDelimiter("\n");
-        return;
-    }
-    if (start > 0)
-        ds.skipRawData(start);
-    char delim[2];
-    ds.readRawData(delim, 2);
-    setDelimiter((delim[0] == '\r') ? "\r\n" : "\n");
 }
 
 bool FastFileMapper::reload()

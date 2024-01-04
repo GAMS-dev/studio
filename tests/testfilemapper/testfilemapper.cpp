@@ -108,7 +108,8 @@ void TestFileMapper::testFile()
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 40);
     mMapper->setVisibleTopLine(4980);
     QString lines = mMapper->lines(4980 - mMapper->visibleTopLine(), 20);
-    DEB() << "TAIL:\n ... " << lines.mid(lines.size() - 200);
+    DEB() << "TAIL: \"" << lines.mid(lines.size() - 3) << "\"";
+    QCOMPARE(lines.mid(lines.size() - 3), QString("END"));
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheFirst), 4970);
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 5000);
 }
@@ -150,7 +151,7 @@ void TestFileMapper::testPosAndAnchor()
 
     mMapper->setVisibleTopLine(4980);
     QString lines = mMapper->lines(4980 - mMapper->visibleTopLine(), 20);
-    DEB() << "TAIL:\n ... " << lines.mid(lines.size() - 200);
+    DEB() << "TAIL:\n" << lines.mid(lines.size() - 207);
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheFirst), 4970);
     QCOMPARE(mMapper->checkField(FastFileMapper::fCacheLast), 5000);
     mMapper->setPosRelative(18, 0);

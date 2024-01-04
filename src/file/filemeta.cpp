@@ -1182,7 +1182,7 @@ bool FileMeta::isOpen() const
     return !mEditors.isEmpty();
 }
 
-QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int codecMib, bool forcedAsTextEdit)
+QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, int codecMib, bool forcedAsTextEdit)
 {
     QWidget* res = nullptr;
     if (codecMib == -1) codecMib = FileMeta::codecMib();
@@ -1303,7 +1303,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, int code
     }
     setProjectId(project->id());
     ViewHelper::setLocation(res, location());
-
+    res->setFont(font);
     addEditor(res);
     return res;
 }

@@ -80,7 +80,7 @@ public:
     void updateTabName(QTabWidget *tabWidget, int index);
     void updateBreakpoints();
 
-    QWidget *createEdit(QWidget *parent, PExProjectNode *project, int codecMib = -1, bool forcedAsTextEdit = false);
+    QWidget *createEdit(QWidget *parent, PExProjectNode *project, const QFont &font, int codecMib = -1, bool forcedAsTextEdit = false);
     int addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib = -1, NewTabStrategy tabStrategy = tabAfterCurrent);
     const QWidgetList editors() const;
     QWidget* topEditor() const;

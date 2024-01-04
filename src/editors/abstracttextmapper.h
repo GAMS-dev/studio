@@ -28,6 +28,7 @@
 #include <QTextDocument>
 #include <QPoint>
 #include <QtCore5Compat/QTextCodec>
+#include <QMutex>
 
 #include "search/result.h"
 
@@ -83,7 +84,7 @@ public:
     void setCodec(QTextCodec *codec);
     bool isEmpty() const;
     virtual qint64 size() const;
-    virtual QByteArray& delimiter() const { return mDelimiter; }
+    virtual QByteArray delimiter() const;
 
     virtual void setVisibleLineCount(int visibleLines);
     virtual int visibleLineCount() const;
@@ -144,6 +145,7 @@ protected:
 
 private:
     mutable QByteArray mDelimiter;
+    mutable QMutex mMutex;
 
     bool mIsSearchSelectionActive = false;
     QList<int> mLineMarkers;

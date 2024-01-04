@@ -20,6 +20,7 @@
 #include <QGuiApplication>
 #include <QClipboard>
 #include <QtMath>
+#include <QMutexLocker>
 
 #include "abstracttextmapper.h"
 #include "exception.h"
@@ -68,6 +69,12 @@ void AbstractTextMapper::reset()
 qint64 AbstractTextMapper::size() const
 {
     return 0;
+}
+
+QByteArray AbstractTextMapper::delimiter() const
+{
+    QMutexLocker locker(&mMutex);
+    return mDelimiter;
 }
 
 void AbstractTextMapper::setVisibleLineCount(int visibleLines)
@@ -121,6 +128,7 @@ int AbstractTextMapper::maxLineWidth() const
 
 void AbstractTextMapper::setDelimiter(const QByteArray &delim) const
 {
+    QMutexLocker locker(&mMutex);
     mDelimiter = delim;
 }
 

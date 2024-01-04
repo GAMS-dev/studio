@@ -112,7 +112,6 @@ private:
     QList<qint64> scanLF(QList<qint64> &lf);
     QPoint endPosition();
     bool adjustLines(int &lineNr, int &count) const;
-    void initDelimiter() const;
     bool reload();
     PosAncState posAncState() const;
     bool isBefore(const QPoint &textPos1, const QPoint &textPos2);

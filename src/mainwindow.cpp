@@ -3748,9 +3748,9 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
 
     logNode->resetLst();
     if (!logNode->file()->isOpen()) {
-        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+        QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), getEditorFont(fgLog), logNode->file()->codecMib());
         logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-        wid->setFont(getEditorFont(fgLog));
+        // wid->setFont(getEditorFont(fgLog));
         if (TextView* tv = ViewHelper::toTextView(wid))
             tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth : AbstractEdit::NoWrap);
     }
@@ -4287,9 +4287,9 @@ void MainWindow::changeToLog(PExAbstractNode *node, bool openOutput, bool create
     if (createMissing) {
         moveToEnd = true;
         if (!logNode->file()->isOpen()) {
-            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), logNode->file()->codecMib());
+            QWidget *wid = logNode->file()->createEdit(ui->logTabs, logNode->assignedProject(), getEditorFont(fgLog), logNode->file()->codecMib());
             logNode->file()->addToTab(ui->logTabs, wid, logNode->file()->codecMib());
-            wid->setFont(getEditorFont(fgLog));
+            // wid->setFont(getEditorFont(fgLog));
             if (TextView * tv = ViewHelper::toTextView(wid))
                 tv->setLineWrapMode(settings->toBool(skEdLineWrapProcess) ? AbstractEdit::WidgetWidth
                                                                           : AbstractEdit::NoWrap);
@@ -4439,14 +4439,11 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 //            QTextCodec *codec = QTextCodec::codecForMib(codecMib);
 //            DEB() << "file " << fileMeta->name() << "   codec" << (codec ? codec->name() : QString("???"));
 
-            edit = fileMeta->createEdit(tabWidget, project, codecMib, forcedAsTextEditor);
+            edit = fileMeta->createEdit(tabWidget, project, getEditorFont(fileMeta->fontGroup()), codecMib, forcedAsTextEditor);
             int tabIndex = fileMeta->addToTab(tabWidget, edit, codecMib, tabStrategy);
             PExAbstractNode *node = mProjectRepo.findFile(fileMeta, project);
             if (!node) node = project;
             updateTabIcon(node, tabIndex);
-            QTimer::singleShot(0, this, [this, edit, fileMeta]() {
-                edit->setFont(getEditorFont(fileMeta->fontGroup()));
-            });
         } catch (Exception &e) {
             appendSystemLogError(e.what());
             return;
@@ -4877,8 +4874,8 @@ void MainWindow::openPinView(int tabIndex, Qt::Orientation orientation)
     project::ProjectEdit *pEd = ViewHelper::toProjectEdit(wid);
     QString tabName = pEd ? pEd->tabName(NameModifier::editState) : fm->name(NameModifier::editState);
 
-    QWidget *newWid = fm->createEdit(mPinView, pro);
-    newWid->setFont(getEditorFont(fm->fontGroup()));
+    QWidget *newWid = fm->createEdit(mPinView, pro, getEditorFont(fm->fontGroup()));
+    // newWid->setFont(getEditorFont(fm->fontGroup()));
     mPinView->setWidget(newWid);
     mPinView->setFontGroup(fm->fontGroup());
     mPinView->setFileName(tabName, QDir::toNativeSeparators(fm->location()));
@@ -4893,8 +4890,8 @@ void MainWindow::openInPinView(gams::studio::PExProjectNode *project, QWidget *e
     FileMeta *fm = mFileMetaRepo.fileMeta(editInMainTabs);
     if (!fm) return;
     if (!mPinControl.hasPinChild(project)) {
-       QWidget *newWid = fm->createEdit(mPinView, project);
-       newWid->setFont(getEditorFont(fm->fontGroup()));
+       QWidget *newWid = fm->createEdit(mPinView, project, getEditorFont(fm->fontGroup()));
+       // newWid->setFont(getEditorFont(fm->fontGroup()));
        initEdit(fm, newWid);
        mPinControl.setPinView(project, newWid, fm);
     }
