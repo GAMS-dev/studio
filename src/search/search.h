@@ -53,11 +53,12 @@ public:
         Backward
     };
 
-    Search(const Search &s) = delete;
-    Search& operator=(const Search&) = delete;
-
     Search(SearchDialog *sd, AbstractSearchFileHandler *fileHandler);
     ~Search();
+    Search(const Search &) = delete;
+    Search(Search &&) = delete;
+    Search& operator=(const Search &) = delete;
+    Search& operator=(Search &&) = delete;
 
     void start(SearchParameters parameters);
     void runSearch(QList<SearchFile> files);
