@@ -34,7 +34,7 @@ public:
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
-    void setContent(const QVector<NavigatorContent> &content);
+    void setContent(const QSet<NavigatorContent> &content);
     QVector<NavigatorContent> content() const;
     QDir currentDir() const;
     void setCurrentDir(const QDir &dir);

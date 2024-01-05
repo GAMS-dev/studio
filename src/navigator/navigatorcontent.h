@@ -17,6 +17,7 @@
 #ifndef NAVIGATORCONTENT_H
 #define NAVIGATORCONTENT_H
 
+#include <QObject>
 #include "file/filemeta.h"
 
 namespace gams {
@@ -30,6 +31,9 @@ public:
     NavigatorContent(const QFileInfo &file, const QString &additionalText);
     NavigatorContent(const QString &txt, const QString &additionalText, const QString &prefix, FileMeta* currentFile = nullptr);
     NavigatorContent(const QString &txt, std::function<void ()> function);
+
+    bool operator==(const NavigatorContent &other) const;
+
     bool isValid();
 
     FileMeta *fileMeta() const;
@@ -47,6 +51,11 @@ private:
     QString mInsertPrefix;
     std::function<void()> mFunction;
 };
+
+inline uint qHash(const NavigatorContent &key, uint seed){
+    return qHash(key.text(), seed) ^ qHash(key.fileMeta(), seed+1);
+}
+
 
 }
 }

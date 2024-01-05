@@ -55,16 +55,16 @@ private:
     void inputChanged();
     void changeEvent(QEvent*) override;
 
-    void collectHelpContent(QVector<NavigatorContent> &content);
+    void collectHelpContent(QSet<NavigatorContent> &content);
     void handleLineNavigation(QVector<NavigatorContent> &content, int lineNr);
-    void collectAllFiles(QVector<NavigatorContent> &content);
+    void collectAllFiles(QSet<NavigatorContent> &content);
     void collectOpenFiles(QVector<NavigatorContent> &content);
-    void collectInProject(QVector<NavigatorContent> &content);
-    void collectTabs(QVector<NavigatorContent> &content);
-    void collectLogs(QVector<NavigatorContent> &content);
-    void collectFileSystem(QVector<NavigatorContent> &content);
-    void collectLineNavigation(QVector<NavigatorContent> &content);
-    void collectQuickActions(QVector<NavigatorContent> &content);
+    void collectInProject(QSet<NavigatorContent> &content);
+    void collectTabs(QSet<NavigatorContent> &content);
+    void collectLogs(QSet<NavigatorContent> &content);
+    void collectFileSystem(QSet<NavigatorContent> &content);
+    void collectLineNavigation(QSet<NavigatorContent> &content);
+    void collectQuickActions(QSet<NavigatorContent> &content);
     void updateContent();
     void selectFileOrFolder(NavigatorContent nc);
     void selectHelpContent(NavigatorContent nc);

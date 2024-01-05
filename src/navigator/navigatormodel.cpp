@@ -17,6 +17,7 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#include <QSet>
 #include "navigatormodel.h"
 
 namespace gams {
@@ -27,10 +28,10 @@ NavigatorModel::NavigatorModel(QObject *parent) :
     QAbstractTableModel(parent)
 { }
 
-void NavigatorModel::setContent(const QVector<NavigatorContent> &content)
+void NavigatorModel::setContent(const QSet<NavigatorContent> &content)
 {
     beginResetModel();
-    mContent = content;
+    mContent = content.values();
     endResetModel();
 }
 

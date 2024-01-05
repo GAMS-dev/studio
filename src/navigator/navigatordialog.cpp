@@ -109,7 +109,7 @@ void NavigatorDialog::changeEvent(QEvent*)
 
 void NavigatorDialog::updateContent()
 {
-    QVector<NavigatorContent> content = QVector<NavigatorContent>();
+    QSet<NavigatorContent> content = QSet<NavigatorContent>();
     QString input = mInput->text();
 
     if (input.startsWith("?")) {
@@ -161,19 +161,19 @@ void NavigatorDialog::updateContent()
         highlightCurrentFile();
 }
 
-void NavigatorDialog::collectHelpContent(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectHelpContent(QSet<NavigatorContent> &content)
 {
-    content.append(NavigatorContent(":number", "jump to line number", ":",
+    content.insert(NavigatorContent(":number", "jump to line number", ":",
                                     mMain->fileRepo()->fileMeta(mMain->recent()->editor())));
-    content.append(NavigatorContent("filename", "filter all files", ""));
-    content.append(NavigatorContent("P filename", "filter files in current project", "P "));
-    content.append(NavigatorContent("T filename", "filter open tabs", "T "));
-    content.append(NavigatorContent("L filename", "filter logs", "L "));
-    content.append(NavigatorContent("F filename", "files in filesystem", "F "));
-    content.append(NavigatorContent("X quick action", "access often used Studio functions", "X "));
+    content.insert(NavigatorContent("filename", "filter all files", ""));
+    content.insert(NavigatorContent("P filename", "filter files in current project", "P "));
+    content.insert(NavigatorContent("T filename", "filter open tabs", "T "));
+    content.insert(NavigatorContent("L filename", "filter logs", "L "));
+    content.insert(NavigatorContent("F filename", "files in filesystem", "F "));
+    content.insert(NavigatorContent("X quick action", "access often used Studio functions", "X "));
 }
 
-void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectAllFiles(QSet<NavigatorContent> &content)
 {
     collectTabs(content);
     collectInProject(content);
@@ -181,11 +181,11 @@ void NavigatorDialog::collectAllFiles(QVector<NavigatorContent> &content)
 
     for (FileMeta* fm : mMain->fileRepo()->fileMetas()) {
         if (!fm->location().endsWith("~log"))
-            content.append(NavigatorContent(fm, "Known Files"));
+            content.insert(NavigatorContent(fm, "Known Files"));
     }
 }
 
-void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectInProject(QSet<NavigatorContent> &content)
 {
     PExFileNode* currentFile = mMain->projectRepo()->findFileNode(mMain->currentEdit());
     if (!currentFile) return;
@@ -193,20 +193,20 @@ void NavigatorDialog::collectInProject(QVector<NavigatorContent> &content)
     for (PExFileNode* f : currentFile->assignedProject()->listFiles()) {
         FileMeta* fm = f->file();
         if (!fm->location().endsWith("~log"))
-            content.append(NavigatorContent(fm, "Current Project"));
+            content.insert(NavigatorContent(fm, "Current Project"));
     }
 }
 
-void NavigatorDialog::collectTabs(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectTabs(QSet<NavigatorContent> &content)
 {
     const auto files = mMain->fileRepo()->openFiles();
     for (FileMeta* fm : files) {
         if (!fm->location().endsWith("~log"))
-            content.append(NavigatorContent(fm, "Open Tabs"));
+            content.insert(NavigatorContent(fm, "Open Tabs"));
     }
 }
 
-void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectLogs(QSet<NavigatorContent> &content)
 {
     const auto projects = mMain->projectRepo()->projects();
     for (PExProjectNode* project : projects) {
@@ -215,11 +215,11 @@ void NavigatorDialog::collectLogs(QVector<NavigatorContent> &content)
         FileMeta* fm = log->file();
         if (fm->editors().empty()) continue;
 
-        content.append(NavigatorContent(fm, "Open Logs"));
+        content.insert(NavigatorContent(fm, "Open Logs"));
     }
 }
 
-void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectFileSystem(QSet<NavigatorContent> &content)
 {
     QString textInput = mInput->text();
     textInput.remove(mPrefixRegex);
@@ -246,12 +246,13 @@ void NavigatorDialog::collectFileSystem(QVector<NavigatorContent> &content)
     QFileInfoList localEntryInfoList = mSelectedDirectory.entryInfoList(
                                            QDir::NoDot | QDir::AllEntries,
                                            QDir::Name | QDir::DirsFirst);
-    for (const QFileInfo &entry : std::as_const(localEntryInfoList)) {
-        content.append(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
-    }
+
+    for (const QFileInfo &entry : std::as_const(localEntryInfoList))
+        content.insert(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
+
 }
 
-void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectLineNavigation(QSet<NavigatorContent> &content)
 {
     FileMeta* fm = nullptr;
     QFileInfo fi;
@@ -272,67 +273,67 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     if (fm) {
         // if has editors, get line number
         if (fm->editors().count()) {
-            content.append(
+            content.insert(
                         NavigatorContent(fm, "Max Lines: " + QString::number(mMain->linesInEditor(
                                                                 fm->editors().constFirst())))
                         );
         } else {  // unknown line number
-            content.append(NavigatorContent(fm, "Max Lines: Unknown"));
+            content.insert(NavigatorContent(fm, "Max Lines: Unknown"));
         }
 
     } else {
         // unkown files have no fileMeta, so use QFileInfo instead
-        content.append(NavigatorContent(fi, "Max Lines: Unknown"));
+        content.insert(NavigatorContent(fi, "Max Lines: Unknown"));
     }
 }
 
-void NavigatorDialog::collectQuickActions(QVector<NavigatorContent> &content)
+void NavigatorDialog::collectQuickActions(QSet<NavigatorContent> &content)
 {
     // dialogs
-    content.append(NavigatorContent("Open Settings",
+    content.insert(NavigatorContent("Open Settings",
                                     std::bind(&MainWindow::on_actionSettings_triggered, mMain)));
-    content.append(NavigatorContent("Open Model Library Explorer",
+    content.insert(NavigatorContent("Open Model Library Explorer",
                                     std::bind(&MainWindow::on_actionGAMS_Library_triggered, mMain)));
-    content.append(NavigatorContent("Open Terminal",
+    content.insert(NavigatorContent("Open Terminal",
                                     std::bind(&MainWindow::on_actionTerminal_triggered, mMain)));
-    content.append(NavigatorContent("GDX Diff",
+    content.insert(NavigatorContent("GDX Diff",
                                     std::bind(&MainWindow::on_actionGDX_Diff_triggered, mMain)));
 
     // projects and files
-    content.append(NavigatorContent("New Project",
+    content.insert(NavigatorContent("New Project",
                                     std::bind(&MainWindow::on_actionNew_Project_triggered, mMain)));
-    content.append(NavigatorContent("Open...",
+    content.insert(NavigatorContent("Open...",
                                     std::bind(&MainWindow::on_actionOpen_triggered, mMain)));
-    content.append(NavigatorContent("Open Folder...",
+    content.insert(NavigatorContent("Open Folder...",
                                     std::bind(&MainWindow::on_actionOpen_Folder_triggered, mMain)));
-    content.append(NavigatorContent("Save All",
+    content.insert(NavigatorContent("Save All",
                                     std::bind(&MainWindow::on_actionSave_All_triggered, mMain)));
-    content.append(NavigatorContent("Close All",
+    content.insert(NavigatorContent("Close All",
                                     std::bind(&MainWindow::on_actionClose_All_triggered, mMain)));
-    content.append(NavigatorContent("Clean scratch dirs",
+    content.insert(NavigatorContent("Clean scratch dirs",
                                     std::bind(&MainWindow::on_actionDeleteScratchDirs_triggered, mMain)));
-    content.append(NavigatorContent("Edit Default GAMS Configuration",
+    content.insert(NavigatorContent("Edit Default GAMS Configuration",
                                     std::bind(&MainWindow::on_actionEditDefaultConfig_triggered, mMain)));
 
     // views
-    content.append(NavigatorContent("Toggle Fullscreen",
+    content.insert(NavigatorContent("Toggle Fullscreen",
                                     std::bind(&MainWindow::toggleFullscreen, mMain)));
-    content.append(NavigatorContent("Toggle Distraction-free mode",
+    content.insert(NavigatorContent("Toggle Distraction-free mode",
                                     std::bind(&MainWindow::toggleDistractionFreeMode, mMain)));
 
     // run
-    content.append(NavigatorContent("Run GAMS",
+    content.insert(NavigatorContent("Run GAMS",
                                     std::bind(&MainWindow::on_actionRun_triggered, mMain)));
-    content.append(NavigatorContent("Run GAMS with GDX creation",
+    content.insert(NavigatorContent("Run GAMS with GDX creation",
                                     std::bind(&MainWindow::on_actionRun_with_GDX_Creation_triggered, mMain)));
-    content.append(NavigatorContent("Run NEOS",
+    content.insert(NavigatorContent("Run NEOS",
                                     std::bind(&MainWindow::on_actionRunNeos_triggered, mMain)));
-    content.append(NavigatorContent("Run GAMS Engine",
+    content.insert(NavigatorContent("Run GAMS Engine",
                                     std::bind(&MainWindow::on_actionRunEngine_triggered, mMain)));
 
-    content.append(NavigatorContent("Run MIRO base mode",
+    content.insert(NavigatorContent("Run MIRO base mode",
                                     std::bind(&MainWindow::on_actionBase_mode_triggered, mMain)));
-    content.append(NavigatorContent("Run MIRO configuration mode",
+    content.insert(NavigatorContent("Run MIRO configuration mode",
                                     std::bind(&MainWindow::on_actionConfiguration_mode_triggered, mMain)));
 }
 

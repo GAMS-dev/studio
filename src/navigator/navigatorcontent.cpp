@@ -55,6 +55,12 @@ NavigatorContent::NavigatorContent(const QString &txt, std::function<void ()> fu
 
 }
 
+bool NavigatorContent::operator==(const NavigatorContent &other) const
+{
+    return fileMeta() == other.fileMeta() &&
+           mText == other.text();
+}
+
 bool NavigatorContent::isValid()
 {
     return !mAdditionalInfo.isEmpty() || mFunction.target<void>();
