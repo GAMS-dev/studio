@@ -24,13 +24,17 @@ NavigatorContent::NavigatorContent() { }
 // known files
 NavigatorContent::NavigatorContent(FileMeta* file, const QString &additionalText) {
     mFileMeta = file;
-    if (file) mFileInfo = QFileInfo(file->location());
+    if (file) {
+        mFileInfo = QFileInfo(file->location());
+        mText = mFileInfo.fileName();
+    }
     mAdditionalInfo = additionalText;
 }
 
 // unknown files
 NavigatorContent::NavigatorContent(const QFileInfo &file, const QString &additionalText) {
     mFileInfo = file;
+    mText = file.fileName();
     mAdditionalInfo = additionalText;
 }
 
@@ -56,32 +60,32 @@ bool NavigatorContent::isValid()
     return !mAdditionalInfo.isEmpty() || mFunction.target<void>();
 }
 
-FileMeta *NavigatorContent::getFileMeta()
+FileMeta *NavigatorContent::fileMeta() const
 {
     return mFileMeta;
 }
 
-QFileInfo NavigatorContent::fileInfo()
+QFileInfo NavigatorContent::fileInfo() const
 {
     return mFileInfo;
 }
 
-QString NavigatorContent::text()
+QString NavigatorContent::text() const
 {
-    return mText;
+    return mText.isEmpty() ? fileInfo().fileName() : mText;
 }
 
-QString NavigatorContent::additionalInfo()
+QString NavigatorContent::additionalInfo() const
 {
     return mAdditionalInfo;
 }
 
-QString NavigatorContent::prefix()
+QString NavigatorContent::prefix() const
 {
     return mInsertPrefix;
 }
 
-void NavigatorContent::executeQuickAction()
+void NavigatorContent::executeQuickAction() const
 {
     mFunction();
 }

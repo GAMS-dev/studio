@@ -266,7 +266,7 @@ void NavigatorDialog::collectLineNavigation(QVector<NavigatorContent> &content)
     } else if (mLastSelectedItem.isValid()) {
         nc = mLastSelectedItem;
     }
-    fm = nc.getFileMeta();
+    fm = nc.fileMeta();
     fi = nc.fileInfo();
 
     if (fm) {
@@ -388,8 +388,8 @@ void NavigatorDialog::autocomplete()
     if (!nc.prefix().isEmpty()) { // help content
         FileMeta* fm = mMain->fileRepo()->fileMeta(mMain->recent()->editor());
         if (fm) mInput->setText(prefix + fm->location() + postfix);
-    } else if (nc.getFileMeta()) {
-        mInput->setText(prefix + (nc.text().isEmpty() ? nc.fileInfo().fileName() : nc.text()) + postfix);
+    } else if (nc.fileMeta()) {
+        mInput->setText(prefix + nc.text() + postfix);
     } else {
         mInput->setText(prefix + nc.fileInfo().absoluteFilePath() + postfix);
     }
@@ -405,7 +405,7 @@ void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
 
 void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
 {
-    if (FileMeta* fm = nc.getFileMeta()) {
+    if (FileMeta* fm = nc.fileMeta()) {
         if (fm->location().endsWith("~log"))
             mMain->jumpToTab(fm);
         else mMain->openFile(fm, true);

@@ -79,9 +79,7 @@ QVariant NavigatorModel::data(const QModelIndex &index, int role) const
         QFileInfo f = nc.fileInfo();
 
         if (index.column() == 0) { // file name: show text if available, otherwise fileinfo
-            if (!nc.text().isEmpty())
-                return nc.text();
-            else return f.fileName();
+            return nc.text();
 
         } else if (index.column() == 1) { // path: relative path if contains less than 4 .., otherwise absolute
             if (f.fileName().contains("..")) // detect ".." and hide path
