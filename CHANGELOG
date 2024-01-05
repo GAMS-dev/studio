@@ -1,8 +1,13 @@
 Version 1.17.0 *
 ==================
-- fixed help view resulting on empty page when document linked to a page in new tab or new window.
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
-- added install license button for the `GAMS Licensing` dialog.
+- added install license button for the `GAMS Licensing` dialog
+- fixed help view resulting on empty page when document linked to a page in new tab or new window
+- fixed unresponsive Abort button in search dialog
+- fixed performance when searching very large folders
+- fixed Navigator very slow after large searches
+- fixed wording in Search Dialog label when search is running
+- fixed Search not properly interrupted when pressing Abort
 - upgraded Studio to Qt 6.6.1 on all platforms
 
 Version 1.16.4
