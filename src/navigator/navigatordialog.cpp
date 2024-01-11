@@ -224,14 +224,18 @@ void NavigatorDialog::collectFileSystem(QSet<NavigatorContent> &content)
     QString textInput = mInput->text();
     textInput.remove(mPrefixRegex);
 
+    // make relative path absolute to avoid misinterpretation
+    if (mDirSelectionOngoing && !(textInput.startsWith("/") || textInput.startsWith("\\")))
+        textInput = mNavModel->currentDir().absolutePath() + "/" + textInput;
+
     QDir dir(textInput);
     if (!mDirSelectionOngoing) {
         mSelectedDirectory = mNavModel->currentDir();
         mDirSelectionOngoing = true;
     } else if (dir.exists()) {
-        if (dir.isRelative()) {
+        if (dir.isRelative())
             mSelectedDirectory.setPath(mNavModel->currentDir().absolutePath() + QDir::separator() + textInput);
-        } else mSelectedDirectory = dir;
+        else mSelectedDirectory = dir;
 
         textInput.append(QDir::separator()); // we need paths to end in seperator for better usability
     } else {
@@ -249,7 +253,6 @@ void NavigatorDialog::collectFileSystem(QSet<NavigatorContent> &content)
 
     for (const QFileInfo &entry : std::as_const(localEntryInfoList))
         content.insert(NavigatorContent(entry, entry.isDir() ? "Directory" : "File"));
-
 }
 
 void NavigatorDialog::collectLineNavigation(QSet<NavigatorContent> &content)
@@ -533,7 +536,7 @@ QDir NavigatorDialog::findClosestPath(const QString& path)
 {
     QString tryPath = path;
 
-    int i = 10;
+    int loopCounter = 255;
     while(tryPath.length() > 0) {
         tryPath = tryPath.left(tryPath.length()-1);
         if (tryPath.isEmpty()) tryPath = mNavModel->currentDir().absolutePath();
@@ -544,7 +547,7 @@ QDir NavigatorDialog::findClosestPath(const QString& path)
         }
 
         // infinite loop safeguard
-        if (i-- == 0)
+        if (loopCounter-- == 0)
             break;
     }
     return QDir();
