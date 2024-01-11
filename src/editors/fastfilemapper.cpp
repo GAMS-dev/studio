@@ -630,7 +630,8 @@ QPoint FastFileMapper::LinesCache::posForOffset(int offset)
     int b = cachedLineCount();
     while (a + 1 < b) {
         int i = (a + b) / 2;
-        (offset > mLineChar.at(i) ? a : b) = i;
+        if (offset > mLineChar.at(i)) a = i;
+        else b = i;
     }
     return QPoint(offset - mLineChar.at(a), a + mCacheOffsetLine);
 }
