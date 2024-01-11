@@ -26,6 +26,7 @@
 #include <QApplication>
 #include "fastfilemapper.h"
 
+using gams::studio::FastFileMapper;
 const QString testFileName("testtextmapper.tmp");
 
 void TestFileMapper::initTestCase()

@@ -16,9 +16,6 @@ FastFileMapper::FastFileMapper(QObject *parent)
     , mCache(this)
 {}
 
-FastFileMapper::~FastFileMapper()
-{}
-
 bool FastFileMapper::openFile(const QString &fileName, bool initAnchor)
 {
     if (!fileName.isEmpty()) {

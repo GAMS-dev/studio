@@ -23,8 +23,6 @@
 #include "editors/fastfilemapper.h"
 #include <QtTest/QTest>
 
-using gams::studio::FastFileMapper;
-
 class TestFileMapper : public QObject
 {
     Q_OBJECT
@@ -39,7 +37,7 @@ private slots:
     void testPosAndAnchor();
 
 private:
-    FastFileMapper *mMapper;
+    gams::studio::FastFileMapper *mMapper;
     QDir mCurrentPath;
 };
 

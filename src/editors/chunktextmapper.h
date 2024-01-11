@@ -118,7 +118,6 @@ protected:
     };
 
 public:
-    ~ChunkTextMapper() override;
     qint64 size() const override;
 
     void setVisibleLineCount(int visibleLines) override;

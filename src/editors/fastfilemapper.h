@@ -23,7 +23,6 @@ private:
         mutable int mCacheOffsetLine;
     public:
         LinesCache(FastFileMapper *mapper) : mMapper(mapper) { reset(); }
-        virtual ~LinesCache() {}
         void reset() const;
         const QString loadCache(int lineNr, int count) const;
         QString getLines(int lineNr, int count) const;
@@ -40,7 +39,6 @@ public:
     enum Field { fVirtualLastLineEnd, fCacheFirst, fCacheLast, fPosLineStartInFile };
 
     explicit FastFileMapper(QObject *parent = nullptr);
-    ~FastFileMapper() override;
     virtual AbstractTextMapper::Kind kind() const override;
 
     bool openFile(const QString &fileName, bool initAnchor);

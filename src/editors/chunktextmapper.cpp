@@ -35,9 +35,6 @@ ChunkTextMapper::ChunkTextMapper(QObject *parent): AbstractTextMapper(parent)
     setPosAbsolute(nullptr, 0, 0);
 }
 
-ChunkTextMapper::~ChunkTextMapper()
-{}
-
 bool ChunkTextMapper::updateMaxTop() // to be updated on change of size or mVisibleLineCount
 {
     if (isEmpty()) return false;
