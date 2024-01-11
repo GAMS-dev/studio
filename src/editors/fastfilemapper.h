@@ -5,20 +5,10 @@
 #include <QFile>
 #include <QMutex>
 #include <QQueue>
+#include <QFuture>
 
 namespace gams {
 namespace studio {
-
-struct CacheElement
-{
-    CacheElement(int _line, int _count): line(_line), count(_count) {}
-    CacheElement(int _line, int _count, const QString &_lines): line(_line), count(_count), lines(_lines) {}
-    int line;
-    int count;
-    QString lines;
-    bool operator==(const CacheElement &other) const { return line == other.line && count == other.count; }
-    void operator =(const CacheElement &other) { line = other.line; count = other.count; lines = other.lines; }
-};
 
 class FastFileMapper : public AbstractTextMapper
 {
@@ -31,7 +21,6 @@ private:
         mutable int mLastLineLength = -1;
         mutable QList<qint64> mLineChar;    // start of lines in mCache (these are characters, not bytes!)
         mutable int mCacheOffsetLine;
-        mutable QQueue<CacheElement> mDirectCache;
     public:
         LinesCache(FastFileMapper *mapper) : mMapper(mapper) { reset(); }
         virtual ~LinesCache() {}
@@ -109,7 +98,7 @@ private:
     enum PosAncState {PosAfterAnc, PosEqualAnc, PosBeforeAnc};
 
 private:
-    QList<qint64> scanLF(QList<qint64> &lf);
+    bool scanLF();
     QPoint endPosition();
     bool adjustLines(int &lineNr, int &count) const;
     bool reload();
@@ -121,6 +110,10 @@ private:
     qint64 mSize = 0;
     QList<qint64> mLineByte;        // the n-th byte where each line starts (in contrast to the n-th char, see UTF-8)
     mutable QMutex mMutex;
+    mutable qreal mLoadAmount = 0.;
+    mutable int mBytesPerLine = 50;
+    bool mInterruptThreads = false;
+    QFuture<void> mLoading;
     LinesCache mCache;
     int mOverscanLines = 50;
     int mVisibleTopLine = -1;
