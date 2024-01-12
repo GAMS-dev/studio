@@ -1,3 +1,7 @@
+Version 1.16.5 *
+==================
+- fixed stop and terminate buttons for macOS and Linux
+
 Version 1.16.4
 ==================
 - fixed check for update crash, when Studio is opened and immediately closed
