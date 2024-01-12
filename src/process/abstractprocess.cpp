@@ -19,7 +19,6 @@
  */
 #include "abstractprocess.h"
 #include "../commonpaths.h"
-#include <QDebug>
 
 #include <QDir>
 #include <QMetaType>
@@ -27,6 +26,10 @@
 #ifdef _WIN32
 #include <Windows.h>
 #include <signal.h>
+#elif __APPLE__
+#else
+#include <signal.h>
+#include <sys/types.h>
 #endif
 
 namespace gams {
@@ -108,19 +111,21 @@ void AbstractProcess::interruptIntern(bool hardKill)
         }
         emit interruptGenerated();
     }
-
-#else // Linux and Mac OS X
-    QString pid = QString::number(mProcess.processId());
-    QProcess proc;
-    proc.setProgram("/bin/bash");
-    QStringList args { "-c"};
+#elif __APPLE__
     if (hardKill)
-        args << "pkill -P " + pid;
+        mProcess.kill();
     else
-        args << "pkill -2 -P " + pid;
-    proc.setArguments(args);
-    proc.start();
-    proc.waitForFinished(-1);
+        mProcess.terminate();
+    mProcess.waitForFinished(-1);
+    emit interruptGenerated();
+#else // Linux
+    auto pid = mProcess.processId();
+    if (!pid)
+        return;
+    if (hardKill)
+        kill(pid, SIGKILL);
+    else
+        kill(pid, SIGTERM);
     emit interruptGenerated();
 #endif
 }

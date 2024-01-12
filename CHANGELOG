@@ -9,6 +9,7 @@ Version 1.17.0 *
 - fixed wording in Search Dialog label when search is running
 - fixed Search not properly interrupted when pressing Abort
 - upgraded Studio to Qt 6.6.1 on all platforms
+- fixed stop and terminate buttons for macOS and Linux
 
 Version 1.16.4
 ==================
