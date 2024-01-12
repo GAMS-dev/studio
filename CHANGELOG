@@ -11,6 +11,7 @@ Version 1.17.0 *
 - fixed Search not properly interrupted when pressing Abort
 - fixed stop and terminate buttons for macOS and Linux
 - upgraded Studio to Qt 6.6.1 on all platforms
+- improved highlighting of the system log tab, when new messages are available. In case of warnings and errors the tab will be focused.
 
 Version 1.16.4
 ==================

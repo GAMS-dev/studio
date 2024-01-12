@@ -30,11 +30,16 @@ class SystemLogHighlighter;
 
 class SystemLogEdit : public AbstractEdit, public AbstractSystemLogger
 {
+    Q_OBJECT
+
 public:
     SystemLogEdit(QWidget *parent = nullptr);
     void append(const QString &msg, LogMsgType type = LogMsgType::Warning) override;
 
     EditorType type() const override;
+
+signals:
+    void newMessage(bool focus);
 
 protected:
     void mouseMoveEvent(QMouseEvent *event) override;

@@ -81,6 +81,7 @@ SOURCES += \
     autosavehandler.cpp \
     colors/palettemanager.cpp \
     commandlineparser.cpp \
+    common.cpp \
     commonpaths.cpp \
     confirmdialog.cpp \
     connect/clickablelabel.cpp \

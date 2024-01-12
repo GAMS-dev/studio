@@ -200,6 +200,14 @@ enum ProcessExitCode {
     ecNeosExitWithErrors = 111,
 };
 
+///
+/// \brief Static view strings to reduce to duplications
+///        of string constants.
+///
+struct ViewStrings
+{
+    static const QString SystemLog;
+};
 
 }
 }

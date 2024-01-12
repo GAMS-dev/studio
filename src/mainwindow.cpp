@@ -2579,7 +2579,7 @@ void MainWindow::on_actionShow_System_Log_triggered()
 {
     int index = ui->logTabs->indexOf(mSyslog);
     if (index < 0) {
-        ui->logTabs->addTab(mSyslog, "System");
+        ui->logTabs->addTab(mSyslog, ViewStrings::SystemLog);
         ui->logTabs->setCurrentWidget(mSyslog);
     } else {
         ui->logTabs->setCurrentIndex(index);
@@ -3773,9 +3773,6 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
     if (settings->toBool(skEdClearLog)) logNode->clearLog();
 
     disconnect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
-    // if (!ui->logTabs->children().contains(logNode->file()->editors().first())) {
-    //     ui->logTabs->addTab(logNode->file()->editors().first(), logNode->name(NameModifier::editState));
-    // }
     ui->logTabs->setCurrentWidget(logNode->file()->editors().first());
     ui->dockProcessLog->setVisible(true);
     connect(ui->logTabs, &QTabWidget::currentChanged, this, &MainWindow::tabBarClicked);
@@ -3820,7 +3817,7 @@ bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr,
         setMiroRunning(true);
         connect(groupProc, &AbstractProcess::finished, this, [this](){setMiroRunning(false);});
     }
-    connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall);
+    connect(groupProc, &AbstractProcess::newProcessCall, this, &MainWindow::newProcessCall, Qt::UniqueConnection);
     connect(groupProc, &AbstractProcess::finished, this, &MainWindow::postGamsRun, Qt::UniqueConnection);
 
     logNode->linkToProcess(groupProc);
@@ -3902,6 +3899,7 @@ void MainWindow::initDelayedElements()
         appendSystemLogWarning(warn);
 
     checkGamsLicense();
+    connect(mSyslog, &SystemLogEdit::newMessage, this, &MainWindow::updateSystemLogTab);
 }
 
 void MainWindow::openDelayedFiles()
@@ -3967,6 +3965,18 @@ void MainWindow::on_actionStepDebugger_triggered()
         emit ui->debugWidget->sendStepLine();
     } else {
         execute(mGamsParameterEditor->on_runAction(option::RunActionState::StepDebug), nullptr, debugger::StepDebug);
+    }
+}
+
+void MainWindow::updateSystemLogTab(bool focus)
+{
+    if (focus) {
+        on_actionShow_System_Log_triggered();
+    } else {
+        if (ui->logTabs->indexOf(mSyslog) < 0) {
+            ui->logTabs->insertTab(0, mSyslog, ViewStrings::SystemLog);
+        }
+        ui->logTabs->updateSystemLogTab();
     }
 }
 
@@ -5031,7 +5041,6 @@ void MainWindow::updateTabSize(int size)
     }
 
     mSyslog->updateTabSize();
-
 }
 
 bool MainWindow::readTabs(const QVariantMap &tabData)

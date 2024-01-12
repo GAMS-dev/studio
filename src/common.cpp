@@ -17,42 +17,12 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef TABWIDGET_H
-#define TABWIDGET_H
-
-#include <QTabWidget>
-#include <QToolButton>
+#include "common.h"
 
 namespace gams {
 namespace studio {
 
-class TabWidget : public QTabWidget
-{
-    Q_OBJECT
-
-public:
-    TabWidget(QWidget *parent = nullptr);
-
-public slots:
-    void updateSystemLogTab();
-    void resetSystemLogTab(int index);
-
-signals:
-    void closeTab(int);
-    void openPinView(int tabIndex, Qt::Orientation orientation);
-
-protected:
-    void mouseReleaseEvent(QMouseEvent *event) override;
-    bool eventFilter(QObject*sender, QEvent* event) override;
-
-private:
-    QToolButton *bLeft = nullptr;
-    QToolButton *bRight = nullptr;
-    int mWheelSum = 0;
-    int mMsgCount = 0;
-};
+const QString ViewStrings::SystemLog = "System";
 
 }
 }
-
-#endif // TABWIDGET_H

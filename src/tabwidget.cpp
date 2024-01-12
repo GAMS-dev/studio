@@ -18,6 +18,7 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "tabwidget.h"
+#include "common.h"
 
 #include <QMouseEvent>
 #include <QTabBar>
@@ -34,6 +35,25 @@ TabWidget::TabWidget(QWidget *parent)
         if (tb) (bLeft ? bRight : bLeft) = tb;
     }
     tabBar()->installEventFilter(this);
+    connect(this, &TabWidget::currentChanged, this, &TabWidget::resetSystemLogTab);
+}
+
+void TabWidget::updateSystemLogTab()
+{
+    ++mMsgCount;
+    setTabText(0, QString("%1 (%2)").arg(ViewStrings::SystemLog).arg(mMsgCount));
+    tabBar()->setStyleSheet("QTabBar::tab:first { font-weight: bold; }");
+}
+
+void TabWidget::resetSystemLogTab(int index)
+{
+    if (index)
+        return;
+    if (tabText(0).startsWith(ViewStrings::SystemLog)) {
+        mMsgCount = 0;
+        setTabText(0, ViewStrings::SystemLog);
+        tabBar()->setStyleSheet("QTabBar::tab:first { font-weight: normal; }");
+    }
 }
 
 void TabWidget::mouseReleaseEvent(QMouseEvent *event)
@@ -44,7 +64,6 @@ void TabWidget::mouseReleaseEvent(QMouseEvent *event)
         event->accept();
         return;
     }
-
     QTabWidget::mouseReleaseEvent(event);
 }
 

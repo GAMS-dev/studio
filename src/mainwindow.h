@@ -441,6 +441,8 @@ private slots:
     void on_actionRunDebugger_triggered();
     void on_actionStepDebugger_triggered();
 
+    void updateSystemLogTab(bool focus);
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();
