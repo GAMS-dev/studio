@@ -180,7 +180,7 @@ void NavigatorDialog::collectAllFiles(QSet<NavigatorContent> &content)
     collectLogs(content);
 
     for (FileMeta* fm : mMain->fileRepo()->fileMetas()) {
-        if (!fm->location().endsWith("~log"))
+        if (!fm->location().endsWith("~log") && QFileInfo(fm->location()).isFile())
             content.insert(NavigatorContent(fm, "Known Files"));
     }
 }
