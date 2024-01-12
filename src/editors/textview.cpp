@@ -459,8 +459,10 @@ void TextView::updateView()
         jumpToEnd();
     } else {
         if (verticalScrollBar()->maximum()) {
+            verticalScrollBar()->blockSignals(true);
             verticalScrollBar()->setSliderPosition(qAbs(mMapper->visibleTopLine()));
             verticalScrollBar()->setValue(verticalScrollBar()->sliderPosition());
+            verticalScrollBar()->blockSignals(false);
             if (mMapper->kind() == AbstractTextMapper::fileMapper) topLineMoved();
         } else topLineMoved();
     }
