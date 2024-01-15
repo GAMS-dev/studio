@@ -40,7 +40,7 @@ else
 fi
 
 ## create a GitHub release
-if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
     github-release release --user $GITHUB_ORGA --repo $GITHUB_REPO --tag ${TAG_NAME} \
 --description "${CHANGELOG}
 
@@ -53,7 +53,7 @@ This version of GAMS Studio requires GAMS ${GAMS_DISTRIB_MAJOR_VERSION}. To down
 fi
 
 ## upload artifacts to GitHub
-if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
     cd artifacts
     mv $(find *arm_64.dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-arm_64.dmg"
     mv $(find *x86_64.dmg) "GAMS_Studio-$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL-x86_64.dmg"
