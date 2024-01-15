@@ -36,7 +36,7 @@ s3cmd ls -r $URL --access_key=${S3_ACCESS_KEY} --secret_key=${S3_SECRET_KEY}
 cd ..
 
 ## Update gams.com for final releases
-if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+$ ]]; then
+if [[ ${TAG_NAME} =~ ^v[0-9]+\.[0-9]+\.[0-9]+.*$ ]]; then
     ## prepare GAMS Studio version line
     DATE=$(date +"%y%m%d")
     LINE="[$STUDIO_MAJOR_VERSION$STUDIO_MINOR_VERSION$STUDIO_PATCH_LEVEL.$STUDIO_MAJOR_VERSION.$STUDIO_MINOR_VERSION.$STUDIO_PATCH_LEVEL,$DATE]"
