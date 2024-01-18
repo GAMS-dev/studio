@@ -1,4 +1,4 @@
-Version 1.17.0
+Version 1.17.0 *
 ==================
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
 - added install license button for the "GAMS Licensing" dialog
@@ -11,6 +11,8 @@ Version 1.17.0
 - fixed wording in Search Dialog label when search is running
 - fixed Search not properly interrupted when pressing Abort
 - fixed stop and interrupt buttons for macOS and Linux
+- fixed help view crash due to an dependency issue
+- fixed `Error loading V8 startup snapshot file` due to a missing dependency
 - upgraded Studio to Qt 6.6.1 on all platforms
 - added highlighting of the system log tab when new messages are available. In case of warnings and errors the tab will be focused.
 

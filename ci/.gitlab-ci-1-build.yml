@@ -1,7 +1,7 @@
 build-deg:
   stage: build
   tags: [macos]
-  dependencies: [install-gams-deg]
+  needs: [install-gams-deg]
   variables:
     qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   script:
@@ -19,7 +19,7 @@ build-deg:
 build-dac:
   stage: build
   tags: [macos-arm64]
-  dependencies: [install-gams-dac]
+  needs: [install-gams-dac]
   variables:
     qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
   script:
@@ -40,7 +40,7 @@ build-leg:
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/builder-qt6.6:latest
     entrypoint: [""]   # prevent startup.sh
-  dependencies: [install-gams-leg]
+  needs: [install-gams-leg]
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
   script:
@@ -57,7 +57,7 @@ build-leg:
 build-wei:
   stage: build
   tags: [windows]
-  dependencies: [install-gams-wei]
+  needs: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
@@ -86,7 +86,7 @@ build-wei-debug:
       when: never
     - when: on_success
   tags: [windows]
-  dependencies: [install-gams-wei]
+  needs: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
