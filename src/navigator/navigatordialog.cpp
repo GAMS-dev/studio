@@ -147,6 +147,7 @@ void NavigatorDialog::updateContent()
         collectQuickActions(content);
 
     } else {
+        mCurrentMode = NavigatorMode::AllFiles;
         setFilter(input);
         collectAllFiles(content);
     }
