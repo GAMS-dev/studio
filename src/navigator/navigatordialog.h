@@ -99,7 +99,7 @@ private:
     bool mDirSelectionOngoing = false;
     QDir mSelectedDirectory;
     QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
-    QRegularExpression mPostfixRegex = QRegularExpression("(:\\d*)"); // has trailing line number
+    QRegularExpression mPostfixRegex = QRegularExpression("[^$\\w](:\\d*)"); // has trailing line number
     NavigatorContent mLastSelectedItem;
     bool mUseRegex = false;
     bool mWholeWords = false;
