@@ -32,6 +32,7 @@
 #include "support/solverconfiginfo.h"
 #include "editors/navigationhistory.h"
 #include "editors/navigationhistorylocator.h"
+#include "textfilesaver.h"
 
 #include <QTabWidget>
 #include <QFileInfo>
@@ -841,16 +842,17 @@ void FileMeta::save(const QString &newLocation)
 
     mFileRepo->unwatch(this);
     if (document()) {
-        if (!file.open(QFile::WriteOnly | QFile::Text))
+        TextFileSaver saver;
+        if (!saver.open(location))
             EXCEPT() << "Can't save " << location;
         std::optional<QStringConverter::Encoding> enc = QStringConverter::encodingForName((mCodec ? mCodec->name() : QString("UTF-8")).toLatin1());
         if (enc.has_value()) {
             QStringEncoder encode = QStringEncoder(enc.value());
-            file.write(encode(document()->toPlainText()));
+            saver.write(encode(document()->toPlainText()));
         } else {
-            file.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
+            saver.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
         }
-        file.close();
+        saver.close();
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
         if (PEd) PEd->save();

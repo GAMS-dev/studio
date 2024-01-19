@@ -31,6 +31,7 @@
 #include "editors/textview.h"
 #include "fileworker.h"
 #include "viewhelper.h"
+#include "file/textfilesaver.h"
 
 namespace gams {
 namespace studio {
@@ -460,19 +461,6 @@ int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
     QTextCodec *codec = fm->codec();
     int hits = 0;
 
-    // Find a temp-file name
-    QString tempFileName = fm->location()+".~tmp";
-    int counter = 0;
-    while (QFile::exists(tempFileName + (counter ? QString::number(counter) : ""))) {
-        ++counter;
-        if (counter > 9) break;
-    }
-    if (counter > 9) {
-        SysLogLocator::systemLog()->append("Skipped file, please cleanup temporary file names of kind " + fm->location()+".~tmp%", LogMsgType::Error);
-        return 0;
-    }
-    tempFileName += (counter ? QString::number(counter) : "");
-
     if (!file.open(QFile::ReadOnly | QFile::Text)) {
         SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
         return 0;
@@ -519,16 +507,11 @@ int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
     file.close();
 
     // write temp-file
-    QFile tempFile(tempFileName);
-    if (!tempFile.open(QFile::WriteOnly | QFile::Text)) {
-        SysLogLocator::systemLog()->append("Unable to open file " + fm->location(), LogMsgType::Error);
+    TextFileSaver outFile;
+    if (!outFile.open(fm->location()))
         return 0;
-    }
-    tempFile.write(codec ? codec->fromUnicode(content) : content.toUtf8());
-    tempFile.close();
-
-    file.remove();
-    QFile::rename(tempFileName, fm->location());
+    outFile.write(codec ? codec->fromUnicode(content) : content.toUtf8());
+    outFile.close();
 
     return hits;
 }

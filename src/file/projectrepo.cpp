@@ -31,6 +31,7 @@
 #include "viewhelper.h"
 #include "settings.h"
 #include "editors/sysloglocator.h"
+#include "file/textfilesaver.h"
 
 namespace gams {
 namespace studio {
@@ -422,8 +423,8 @@ void ProjectRepo::write(QVariantList &projects) const
 void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
 {
     QString fileName = project->fileName();
-    QFile file(fileName);
-    if (file.open(QFile::WriteOnly)) {
+    TextFileSaver file;
+    if (file.open(fileName)) {
         file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
         file.close();
         project->setNeedSave(false);

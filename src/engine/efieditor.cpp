@@ -19,6 +19,7 @@
  */
 #include "efieditor.h"
 #include "ui_efieditor.h"
+#include "file/textfilesaver.h"
 #include <QFile>
 #include <QTextStream>
 
@@ -97,8 +98,8 @@ void EfiEditor::selectFilter()
 
 void EfiEditor::save(const QString &fileName)
 {
-    QFile file(fileName);
-    if (file.open(QFile::WriteOnly | QFile::Text)) {
+    TextFileSaver file;
+    if (file.open(fileName)) {
         const QStringList lines = ui->fsWidget->selectedFiles();
         for (const QString &line : lines) {
             file.write(line.toUtf8());

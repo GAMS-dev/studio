@@ -83,8 +83,8 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
             mMainWindow->openFilePath(destFile.fileName(), nullptr, ogFindGroup);
-            if (srcFile.open(QFile::ReadWrite)) {
-                if (destFile.open(QFile::ReadWrite)) {
+            if (srcFile.open(QFile::ReadOnly)) {
+                if (destFile.open(QFile::WriteOnly)) {
                     QTextStream in(&srcFile);
                     QString line = in.readAll() ;
                     QWidget* editor = mMainWindow->recent()->editor();

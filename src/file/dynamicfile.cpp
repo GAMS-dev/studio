@@ -72,7 +72,7 @@ void DynamicFile::openFile()
 {
     QMutexLocker locker(&mMutex);
     if (!mFile.isOpen()) {
-        mFile.open(QFile::ReadWrite);
+        mFile.open(QFile::WriteOnly);
         mFile.seek(mEnd);
     }
 }

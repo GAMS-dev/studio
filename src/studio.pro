@@ -146,6 +146,7 @@ SOURCES += \
     file/projecttreemodel.cpp \
     file/projecttreeview.cpp \
     file/recentdata.cpp \
+    file/textfilesaver.cpp \
     file/treeitemdelegate.cpp \
     fileeventhandler.cpp \
     filesystemmodel.cpp \
@@ -367,6 +368,7 @@ HEADERS += \
     file/projecttreemodel.h \
     file/projecttreeview.h \
     file/recentdata.h \
+    file/textfilesaver.h \
     file/treeitemdelegate.h \
     fileeventhandler.h \
     filesystemmodel.h \
