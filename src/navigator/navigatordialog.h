@@ -100,6 +100,7 @@ private:
     QDir mSelectedDirectory;
     QRegularExpression mPrefixRegex = QRegularExpression("^(\\w) "); // starts with prefix
     QRegularExpression mPostfixRegex = QRegularExpression("[^$\\w](:\\d*)"); // has trailing line number
+    QRegularExpression mWindowsPath = QRegularExpression("^\\w\\:\\\\");
     NavigatorContent mLastSelectedItem;
     bool mUseRegex = false;
     bool mWholeWords = false;

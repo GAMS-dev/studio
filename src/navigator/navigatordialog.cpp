@@ -226,7 +226,7 @@ void NavigatorDialog::collectFileSystem(QSet<NavigatorContent> &content)
     textInput.remove(mPrefixRegex);
 
     // make relative path absolute to avoid misinterpretation
-    if (mDirSelectionOngoing && !(textInput.startsWith("/") || textInput.startsWith("\\")))
+    if (mDirSelectionOngoing && !(textInput.startsWith("/") || textInput.contains(mWindowsPath)))
         textInput = mNavModel->currentDir().absolutePath() + "/" + textInput;
 
     QDir dir(textInput);
