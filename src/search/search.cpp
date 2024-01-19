@@ -505,14 +505,14 @@ int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
         content += line + "\n";
     }
     file.close();
-
-    // write temp-file
-    TextFileSaver outFile;
-    if (!outFile.open(fm->location()))
-        return 0;
-    outFile.write(codec ? codec->fromUnicode(content) : content.toUtf8());
-    outFile.close();
-
+    if (hits) {
+        // write temp-file
+        TextFileSaver outFile;
+        if (!outFile.open(fm->location()))
+            return 0;
+        outFile.write(codec ? codec->fromUnicode(content) : content.toUtf8());
+        outFile.close();
+    }
     return hits;
 }
  ///
