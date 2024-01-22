@@ -2,7 +2,7 @@ Version 1.17.0 *
 ==================
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
 - added install license button for the "GAMS Licensing" dialog
-- improved LST viewer speed
+- added highlighting of the system log tab when new messages are available. In case of warnings and errors the tab will be focused.
 - fixed LST viewer sometimes jumping to wrong position in file
 - fixed help view showing empty page when document linked to a page in new tab or new window
 - fixed unresponsive Abort button in Search Dialog
@@ -13,8 +13,10 @@ Version 1.17.0 *
 - fixed stop and interrupt buttons for macOS and Linux
 - fixed help view crash due to an dependency issue
 - fixed `Error loading V8 startup snapshot file` due to a missing dependency
+- fixed when using "Replace All" in unopened files extra characters were appended
+- improved file handling during unexpected events while writing a file, i.e. write to temporary file and rename after success
+- improved LST viewer performance
 - upgraded Studio to Qt 6.6.1 on all platforms
-- added highlighting of the system log tab when new messages are available. In case of warnings and errors the tab will be focused.
 
 Version 1.16.4
 ==================
