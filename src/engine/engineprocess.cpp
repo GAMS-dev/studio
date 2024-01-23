@@ -572,6 +572,7 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
     Q_UNUSED(message)
     mQueuedTimer.start();
     mManager->setToken(token);
+    emit jobCreated(token);
     emit newStdChannelData(QString("\n--- GAMS Engine at %1\n").arg(mManager->url().toString()).toUtf8());
     QString newLstEntry("--- switch LOG to %1-server.lst[LS2:\"%2\"]\nTOKEN: %3\n\n");
     QString lstPath = mWorkPath+"/"+modelName()+"-server.lst";
@@ -685,6 +686,13 @@ void EngineProcess::updateQuota(qreal parallel)
         availVolume << volRemain.first;
     }
     emit quotaHint(availDisk, availVolume);
+}
+
+void EngineProcess::resume(const QString &engineJobToken)
+{
+    mManager->setToken(engineJobToken);
+    setProcState(Proc4Monitor);
+    pollStatus();
 }
 
 void EngineProcess::reQuotaError(const QString &errorText)

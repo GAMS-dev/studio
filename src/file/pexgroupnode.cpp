@@ -468,6 +468,16 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
     return res;
 }
 
+QString PExProjectNode::engineJobToken() const
+{
+    return mEngineJobToken;
+}
+
+void PExProjectNode::setEngineJobToken(const QString &engineJobToken)
+{
+    mEngineJobToken = engineJobToken;
+}
+
 QString PExProjectNode::tempGdx() const
 {
     return mTempGdx;

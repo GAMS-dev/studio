@@ -2182,7 +2182,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
     }
     PExProjectNode* project = mProjectRepo.findProject(origin);
     if (!project) {
-        appendSystemLogError("No group attached to process");
+        appendSystemLogError("No project attached to process");
         return;
     }
     if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
@@ -2264,6 +2264,8 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
         if (lstNode && !alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
+    if (!project->engineJobToken().isEmpty())
+        project->setEngineJobToken("");
     updateRunState();
 }
 
@@ -3899,6 +3901,7 @@ void MainWindow::initDelayedElements()
         appendSystemLogWarning(warn);
 
     checkGamsLicense();
+    checkForEngingJob();
     connect(mSyslog, &SystemLogEdit::newMessage, this, &MainWindow::updateSystemLogTab);
 }
 
@@ -3997,7 +4000,7 @@ void MainWindow::on_actionRunNeos_triggered()
 
 void MainWindow::on_actionRunEngine_triggered()
 {
-    showEngineStartDialog();
+    initEngineStartDialog();
 }
 
 QString MainWindow::readGucValue(const QString &key)
@@ -4134,7 +4137,19 @@ void MainWindow::sslUserDecision(QAbstractButton *button)
     }
 }
 
-void MainWindow::showEngineStartDialog()
+void MainWindow::checkForEngingJob()
+{
+    for (PExProjectNode *project : mProjectRepo.projects()) {
+        if (!project->engineJobToken().isEmpty()) {
+            QMessageBox::StandardButton button = QMessageBox::question(this, "Resume GAMS Engine Job?", "Studio was left with a running GAMS Engine job.\nTry to resume?");
+            if (button == QMessageBox::Yes) {
+                initEngineStartDialog(true);
+            }
+        }
+    }
+}
+
+void MainWindow::initEngineStartDialog(bool resume)
 {
     // prepare process
     engine::EngineProcess *proc = createEngineProcess();
@@ -4173,30 +4188,10 @@ void MainWindow::showEngineStartDialog()
             Settings::settings()->setString(SettingsKey::skEngineUserToken, QString());
         updateAndSaveSettings();
     });
-    connect(proc, &engine::EngineProcess::releaseGdxFile, this, [this](const QString &gdxFilePath) {
-        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
-        if (fm) {
-            for (QWidget *wid : fm->editors()) {
-                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
-                    gdx->invalidate();
-                }
-            }
-        }
-    });
-    connect(proc, &engine::EngineProcess::reloadGdxFile, this, [this](const QString &gdxFilePath) {
-        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
-        if (fm) {
-            for (QWidget *wid : fm->editors()) {
-                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
-                    gdx->reload(fm->codec());
-                }
-            }
-        }
-    });
 
     dialog->setModal(true);
     dialog->setProcess(proc);
-    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
+    dialog->setHiddenMode(resume || (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)));
     if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
@@ -4214,8 +4209,10 @@ void MainWindow::showEngineStartDialog()
             updateAndSaveSettings();
         }
     });
-
-    dialog->start();
+    if (resume)
+        prepareEngineProcess();
+    else
+        dialog->start();
 }
 
 void MainWindow::engineSubmit(bool start)
@@ -4252,6 +4249,26 @@ engine::EngineProcess *MainWindow::createEngineProcess()
             engineProcess->setHasPreviousWorkOption(true);
     }
     project->setProcess(engineProcess);
+    connect(engineProcess, &engine::EngineProcess::releaseGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->invalidate();
+                }
+            }
+        }
+    });
+    connect(engineProcess, &engine::EngineProcess::reloadGdxFile, this, [this](const QString &gdxFilePath) {
+        FileMeta * fm = mFileMetaRepo.fileMeta(gdxFilePath);
+        if (fm) {
+            for (QWidget *wid : fm->editors()) {
+                if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(wid)) {
+                    gdx->reload(fm->codec());
+                }
+            }
+        }
+    });
     return qobject_cast<engine::EngineProcess*>(project->process());
 }
 
@@ -4262,11 +4279,28 @@ void MainWindow::prepareEngineProcess()
     AbstractProcess* process = project->process();
     engine::EngineProcess *engineProcess = qobject_cast<engine::EngineProcess*>(process);
     if (!engineProcess) return;
+    NodeId pid = project->id();
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
-
-    updateAndSaveSettings();
+    connect(engineProcess, &engine::EngineProcess::jobCreated, this, [this, pid](const QString &token) { //    void jobCreated(const QString &token);
+        if (PExProjectNode *project = mProjectRepo.findProject(pid)) {
+            project->setEngineJobToken(token);
+            updateAndSaveSettings();
+        }
+    });
     executePrepare(project, mGamsParameterEditor->getCurrentCommandLineData());
-    execution(project);
+    if (project->engineJobToken().isEmpty())
+        execution(project);
+    else
+        resumeEngine(project, engineProcess);
+}
+
+void MainWindow::resumeEngine(PExProjectNode *project, engine::EngineProcess *engineProcess)
+{
+    // TODO(JM) also store and restore CLP of former run
+    engineProcess->setUrl(Settings::settings()->toString(SettingsKey::skEngineUrl));
+    engineProcess->resume(project->engineJobToken());
+    ui->toolBar->repaint();
+    ui->dockProcessLog->raise();
 }
 
 void MainWindow::on_actionInterrupt_triggered()

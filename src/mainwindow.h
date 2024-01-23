@@ -394,11 +394,12 @@ private slots:
 
     void showNeosStartDialog();
     void prepareNeosProcess();
-    void showEngineStartDialog();
+    void initEngineStartDialog(bool resume = false);
     void engineSubmit(bool start);
     engine::EngineProcess *createEngineProcess();
     void prepareEngineProcess();
     void sslValidation(const QString &errorMessage);
+    void resumeEngine(PExProjectNode *project, engine::EngineProcess *engineProcess);
     void sslUserDecision(QAbstractButton *button);
 
 protected:
@@ -420,6 +421,7 @@ protected:
     void initGamsStandardPaths();
     QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
+    void checkForEngingJob();
 
 private slots:
     void updateAndSaveSettings();

@@ -360,6 +360,9 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             emit setNodeExpanded(mTreeModel->index(project), expand);
             if (projectChangedMarker)
                 project->setNeedSave();
+            if (projectData.contains("engineJobToken")) {
+                project->setEngineJobToken(projectData.value("engineJobToken").toString());
+            }
             QVariantList optList = projectData.value("options").toList();
             if (!optList.isEmpty()) {
                 for (const QVariant &opt : std::as_const(optList)) {
@@ -455,6 +458,8 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     projectObject.insert("name", project->name());
     projectObject.insert("options", project->getRunParametersHistory());
+    if (!project->engineJobToken().isEmpty())
+        projectObject.insert("engineJobToken", project->engineJobToken());
     emit isNodeExpanded(mTreeModel->index(project), expand);
     if (!expand) projectObject.insert("expand", false);
     QVariantList subArray;

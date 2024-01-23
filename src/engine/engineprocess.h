@@ -89,6 +89,7 @@ public:
     bool inKubernetes() const;
     void updateQuota(qreal parallel);
 
+    void resume(const QString &engineJobToken);
     bool forceGdx() const;
     void setForceGdx(bool forceGdx);
     void abortRequests();
@@ -118,6 +119,7 @@ signals:
     void allPendingRequestsCompleted();
     void releaseGdxFile(const QString &gdxFilePath);
     void reloadGdxFile(const QString &gdxFilePath);
+    void jobCreated(const QString &token);
 
 public slots:
     void setPollSlow(bool pollSlow);

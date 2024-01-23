@@ -127,8 +127,12 @@ public:
     void addNodesForSpecialFiles();
     void setParameter(const QString& kind, const QString& path);
     void clearParameters();
+
+    debugger::Server *debugServer() const;
     bool startDebugServer(gams::studio::debugger::DebugStartMode mode);
     void stopDebugServer();
+    QString engineJobToken() const;
+    void setEngineJobToken(const QString &engineJobToken);
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;
@@ -142,15 +146,12 @@ public:
     bool isClosing() const;
 
     const QString &fileName() const;
-
     const QString &nameExt() const;
     void setNameExt(const QString &newNameExt);
-
     Type type() const;
 
-    debugger::Server *debugServer() const;
-
     QString tempGdx() const;
+
 
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
@@ -203,6 +204,7 @@ private:
     QString mNameExt;
     Type mType = tCommon;
     QScopedPointer<AbstractProcess> mGamsProcess;
+    QString mEngineJobToken;
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
