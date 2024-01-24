@@ -238,7 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::isNodeExpanded, this, &MainWindow::isProjectNodeExpanded);
     connect(&mProjectRepo, &ProjectRepo::gamsProcessStateChanged, this, &MainWindow::gamsProcessStateChanged);
     connect(&mProjectRepo, &ProjectRepo::getParameterValue, this, &MainWindow::getParameterValue);
-    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, [this](FileId fileId){ closeFileEditors(fileId);});
+    connect(&mProjectRepo, &ProjectRepo::closeFileEditors, this, [this](const FileId &fileId){ closeFileEditors(fileId);});
     connect(&mProjectRepo, &ProjectRepo::openRecentFile, this, &MainWindow::openRecentFile);
     connect(&mProjectRepo, &ProjectRepo::logTabRenamed, this, &MainWindow::logTabRenamed);
     connect(&mProjectRepo, &ProjectRepo::refreshProjectTabName, this, [this](QWidget *wid) {
@@ -260,7 +260,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this,
-            [this](QString filePath, PExProjectNode* knownProject, OpenGroupOption opt, bool focus) {
+            [this](const QString &filePath, PExProjectNode* knownProject, OpenGroupOption opt, bool focus) {
         openFilePath(filePath, knownProject, opt, focus);
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::selectAll, this, &MainWindow::on_actionSelect_All_triggered);
@@ -1027,12 +1027,12 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
     mLibProcess->execute();
 }
 
-void MainWindow::receiveModLibLoad(QString gmsFile, bool forceOverwrite)
+void MainWindow::receiveModLibLoad(const QString &gmsFile, bool forceOverwrite)
 {
     openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms", forceOverwrite);
 }
 
-void MainWindow::receiveOpenDoc(QString doc, QString anchor)
+void MainWindow::receiveOpenDoc(const QString &doc, const QString &anchor)
 {
     QString link = CommonPaths::systemDir() + "/" + doc;
     link = QFileInfo(link).canonicalFilePath();
@@ -1084,7 +1084,7 @@ QList<int> MainWindow::encodingMIBs()
     return res;
 }
 
-void MainWindow::setEncodingMIBs(QString mibList, int active)
+void MainWindow::setEncodingMIBs(const QString &mibList, int active)
 {
     QList<int> mibs;
     const QStringList strMibs = mibList.split(",");
@@ -1094,7 +1094,7 @@ void MainWindow::setEncodingMIBs(QString mibList, int active)
     setEncodingMIBs(mibs, active);
 }
 
-void MainWindow::setEncodingMIBs(QList<int> mibs, int active)
+void MainWindow::setEncodingMIBs(const QList<int> &mibs, int active)
 {
     while (mCodecGroupSwitch->actions().size()) {
         QAction *act = mCodecGroupSwitch->actions().constLast();
@@ -1430,7 +1430,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialog(QVector<PExProjectNode*> projects, const QString& solverName, FileKind fileKind)
+void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const QString& solverName, FileKind fileKind)
 {
     QString path;
     bool projectOnly = fileKind == FileKind::Gsp;
@@ -1594,7 +1594,7 @@ void MainWindow::on_actionOpen_Folder_triggered()
     openFolder(folder);
 }
 
-void MainWindow::openFolder(QString path, PExProjectNode *project)
+void MainWindow::openFolder(const QString &path, PExProjectNode *project)
 {
     if (path.isEmpty()) return;
 
@@ -1940,7 +1940,7 @@ void MainWindow::tabBarClicked(int index)
     }
 }
 
-void MainWindow::fileChanged(const FileId fileId)
+void MainWindow::fileChanged(const FileId &fileId)
 {
     mProjectRepo.fileChanged(fileId);
     FileMeta *fm = mFileMetaRepo.fileMeta(fileId);
@@ -1963,7 +1963,7 @@ void MainWindow::fileChanged(const FileId fileId)
     }
 }
 
-void MainWindow::fileModifiedChanged(const FileId fileId, bool modified)
+void MainWindow::fileModifiedChanged(const FileId &fileId, bool modified)
 {
     if (!modified) {
         // remove austosave file if exists
@@ -1973,12 +1973,12 @@ void MainWindow::fileModifiedChanged(const FileId fileId, bool modified)
     }
 }
 
-void MainWindow::fileClosed(const FileId fileId)
+void MainWindow::fileClosed(const FileId &fileId)
 {
     Q_UNUSED(fileId)
 }
 
-FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
+FileProcessKind MainWindow::fileChangedExtern(const FileId &fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     // file has not been loaded: nothing to do
@@ -2016,7 +2016,7 @@ FileProcessKind MainWindow::fileChangedExtern(FileId fileId)
     return file->isModified() ? FileProcessKind::changedConflict : FileProcessKind::changedExternOnly;
 }
 
-FileProcessKind MainWindow::fileDeletedExtern(FileId fileId)
+FileProcessKind MainWindow::fileDeletedExtern(const FileId &fileId)
 {
     FileMeta *file = mFileMetaRepo.fileMeta(fileId);
     if (!file) return FileProcessKind::ignore;
@@ -2174,7 +2174,7 @@ void MainWindow::appendSystemLogWarning(const QString &text) const
     mSyslog->append(text, LogMsgType::Warning);
 }
 
-void MainWindow::postGamsRun(NodeId origin, int exitCode)
+void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
 {
     if (origin == -1) {
         appendSystemLogError("No fileId set to process");
@@ -2610,7 +2610,7 @@ void MainWindow::resetHistory()
     historyChanged();
 }
 
-void MainWindow::addToOpenedFiles(QString filePath)
+void MainWindow::addToOpenedFiles(const QString &filePath)
 {
     if (!QFileInfo::exists(filePath)) return;
 
@@ -2651,7 +2651,7 @@ void MainWindow::historyChanged()
     Settings::settings()->setList(skHistory, joHistory);
 }
 
-bool MainWindow::terminateProcessesConditionally(QVector<PExProjectNode *> projects)
+bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *> &projects)
 {
     if (projects.isEmpty()) return true;
     QVector<PExProjectNode *> runningGroups;
@@ -2839,7 +2839,7 @@ void MainWindow::restoreFromSettings()
 
 }
 
-void MainWindow::openProject(const QString gspFile)
+void MainWindow::openProject(const QString &gspFile)
 {
     if (mOpenPermission == opNoGsp) {
         if (!mDelayedFiles.contains(gspFile, FileType::fsCaseSense()))
@@ -3034,7 +3034,7 @@ void MainWindow::on_actionGDX_Diff_triggered()
     actionGDX_Diff_triggered(path);
 }
 
-void MainWindow::actionGDX_Diff_triggered(QString workingDirectory, QString input1, QString input2)
+void MainWindow::actionGDX_Diff_triggered(const QString &workingDirectory, const QString &input1, const QString &input2)
 {
     mGdxDiffDialog->setRecentPath(workingDirectory);
     if (!input1.isEmpty()) { // function call was triggered from the context menu
@@ -3430,8 +3430,8 @@ bool MainWindow::eventFilter(QObject* sender, QEvent* event)
     return false;
 }
 
-PExFileNode* MainWindow::openFilePath(QString filePath, PExProjectNode* knownProject, OpenGroupOption opt,
-                                            bool focus, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
+PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* knownProject, OpenGroupOption opt,
+                                      bool focus, bool forcedAsTextEditor, NewTabStrategy tabStrategy)
 {
     if (!QFileInfo::exists(filePath))
         EXCEPT() << "File not found: " << filePath;
@@ -3551,7 +3551,7 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
-void MainWindow::openFiles(QStringList files, OpenGroupOption opt)
+void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
 {
     if (files.size() == 0) return;
     if (mOpenPermission == opNone) {
@@ -3660,7 +3660,7 @@ void MainWindow::dockWidgetShow(QDockWidget *dw, bool show)
     }
 }
 
-void MainWindow::execute(QString commandLineStr, AbstractProcess* process, debugger::DebugStartMode debug)
+void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process, debugger::DebugStartMode debug)
 {
     PExProjectNode* project = currentProject();
     if (!project) {
@@ -3684,7 +3684,7 @@ void MainWindow::execute(QString commandLineStr, AbstractProcess* process, debug
 }
 
 
-bool MainWindow::executePrepare(PExProjectNode* project, QString commandLineStr, AbstractProcess* process)
+bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandLineStr, AbstractProcess* process)
 {
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
@@ -4000,7 +4000,7 @@ void MainWindow::on_actionRunEngine_triggered()
     showEngineStartDialog();
 }
 
-QString MainWindow::readGucValue(QString key)
+QString MainWindow::readGucValue(const QString &key)
 {
     QString res;
     const QStringList paths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
@@ -4097,7 +4097,7 @@ void MainWindow::prepareNeosProcess()
     }
 }
 
-void MainWindow::sslValidation(QString errorMessage)
+void MainWindow::sslValidation(const QString &errorMessage)
 {
     if (mIgnoreSslErrors || errorMessage.isEmpty()) {
         updateAndSaveSettings();
@@ -4635,7 +4635,7 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
 /// Closes all open editors and tabs related to a file and remove option history
 /// \param fileId
 ///
-void MainWindow::closeFileEditors(const FileId fileId, bool willReopen)
+void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
 {
     FileMeta* fm = mFileMetaRepo.fileMeta(fileId);
     if (!fm) return;
@@ -4701,7 +4701,7 @@ PExFileNode* MainWindow::addNode(const QString &path, const QString &fileName, P
     return node;
 }
 
-void MainWindow::on_referenceJumpTo(reference::ReferenceItem item)
+void MainWindow::on_referenceJumpTo(const reference::ReferenceItem &item)
 {
     QFileInfo fi(item.location);
     if (fi.isFile()) {
@@ -4923,7 +4923,7 @@ void MainWindow::invalidateResultsView()
     if (resultsView()) resultsView()->setOutdated();
 }
 
-void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, QString fontFamily)
+void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, const QString &fontFamily)
 {
 //    if (mGroupFontSize.value(fontGroup, 0) != fontSize) {
     if (fontGroup == fgTable && mInitialTableFontSize < 0) {
@@ -4997,7 +4997,7 @@ void MainWindow::extraSelectionsUpdated()
         tv->updateExtraSelections();
 }
 
-void MainWindow::updateFonts(qreal fontSize, QString fontFamily)
+void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 {
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);

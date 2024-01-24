@@ -35,7 +35,7 @@ AutosaveHandler::AutosaveHandler(MainWindow *mainWindow)
 
 }
 
-QStringList AutosaveHandler::checkForAutosaveFiles(QStringList list)
+QStringList AutosaveHandler::checkForAutosaveFiles(const QStringList &list)
 {
     QStringList filters { "*.gms", "*.txt" };
     QStringList autsaveFiles;

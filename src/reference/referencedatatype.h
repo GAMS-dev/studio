@@ -63,7 +63,7 @@ public:
 
 private:
     static void clear();
-    ReferenceDataType(ReferenceType type, QString name, QString typeDescription);
+    ReferenceDataType(ReferenceType type, const QString& name, const QString &typeDescription);
 
     const ReferenceType mType;
     const QStringList mName;

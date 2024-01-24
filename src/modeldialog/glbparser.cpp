@@ -31,7 +31,7 @@ GlbParser::GlbParser()
 
 }
 
-bool GlbParser::parseFile(QString glbFile)
+bool GlbParser::parseFile(const QString &glbFile)
 {
     mLibraryItems.clear();
     mLineNr = 0;
@@ -184,7 +184,7 @@ bool GlbParser::checkListSize(const QStringList& list, int expectedSize)
     return true;
 }
 
-bool GlbParser::checkKey(QString key, QString expected)
+bool GlbParser::checkKey(const QString &key, const QString &expected)
 {
     if (!key.startsWith(expected)) {
         mErrorMessage = "Error while loading model library from GLB file: " + mGlbFile + "(line " + QString::number(mLineNr) + "): Expected '" + expected + "' but found '" + key + "'";

@@ -27,7 +27,7 @@ namespace gams {
 namespace studio {
 namespace neos {
 
-NeosStartDialog::NeosStartDialog(QString eMail, QWidget *parent) :
+NeosStartDialog::NeosStartDialog(const QString &eMail, QWidget *parent) :
     QDialog(parent, Qt::WindowSystemMenuHint | Qt::WindowTitleHint | Qt::WindowCloseButtonHint),
     ui(new Ui::NeosStartDialog)
 {

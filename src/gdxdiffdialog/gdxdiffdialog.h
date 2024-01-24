@@ -47,8 +47,8 @@ public:
     ~GdxDiffDialog() override;
 
     void setRecentPath(const QString &recentPath);
-    void setInput1(QString filePath);
-    void setInput2(QString filePath);
+    void setInput1(const QString &filePath);
+    void setInput2(const QString &filePath);
     void reset();
     QString lastDiffFile() const;
     QString lastInput1() const;

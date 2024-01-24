@@ -45,7 +45,7 @@ ModelDialog::ModelDialog(QWidget *parent)
 
 }
 
-ModelDialog::ModelDialog(QString userLibPath, QWidget *parent)
+ModelDialog::ModelDialog(const QString &userLibPath, QWidget *parent)
     : QDialog(parent),
       ui(new Ui::ModelDialog),
       mUserLibPath(userLibPath)
@@ -168,7 +168,7 @@ void ModelDialog::storeSelectedTab()
     mLastTabIndex = ui->tabWidget->currentIndex();
 }
 
-void ModelDialog::addLibrary(QList<LibraryItem> items, bool isUserLibrary)
+void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary)
 {
     QTableView* tableView;
     QSortFilterProxyModel* proxyModel;

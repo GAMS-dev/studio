@@ -32,9 +32,9 @@ class DynamicFile : public QObject
 {
     Q_OBJECT
 public:
-    DynamicFile(QString fileName, int backups = 0, QObject *parent = nullptr);
+    DynamicFile(const QString &fileName, int backups = 0, QObject *parent = nullptr);
     virtual ~DynamicFile();
-    void appendLine(QString line);
+    void appendLine(const QString &line);
     void confirmLastLine();
 
 private slots:

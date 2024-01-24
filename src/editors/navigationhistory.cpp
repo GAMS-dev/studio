@@ -168,7 +168,7 @@ QWidget *NavigationHistory::currentEdit() const
     return mCurrentEdit;
 }
 
-bool NavigationHistory::itemValid(CursorHistoryItem item)
+bool NavigationHistory::itemValid(const CursorHistoryItem &item)
 {
     return item.edit != nullptr;
 }

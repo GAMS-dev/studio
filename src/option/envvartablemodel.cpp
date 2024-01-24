@@ -29,7 +29,7 @@ namespace option {
 QRegularExpression EnvVarTableModel::mRexVersion("^[1-9][0-9](\\.([0-9])(\\.([0-9]))?)?$");
 
 
-EnvVarTableModel::EnvVarTableModel(QList<EnvVarConfigItem *> itemList, QObject *parent):
+EnvVarTableModel::EnvVarTableModel(const QList<EnvVarConfigItem *> &itemList, QObject *parent):
     QAbstractTableModel(parent), mEnvVarItem(itemList)
 {
     mHeader << "Name"  << "Value" << "minVersion" << "maxVersion" << "pathVariable";

@@ -42,7 +42,7 @@ namespace search {
         FileMeta* fileMeta;
 
         SearchFile(FileMeta* fm) : path(fm ? fm->location() : ""), fileMeta(fm) { }
-        SearchFile(QString path, FileMeta* fm = nullptr) : path(path), fileMeta(fm) { }
+        SearchFile(const QString &path, FileMeta* fm = nullptr) : path(path), fileMeta(fm) { }
 
         bool operator==(const SearchFile &rhs) const
         {

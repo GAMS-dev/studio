@@ -65,7 +65,7 @@ void StatusWidgets::setFileName(const QString &fileName)
     mFileName->setBaseText(fileName);
 }
 
-void StatusWidgets::setEncoding(QString encodingName)
+void StatusWidgets::setEncoding(const QString &encodingName)
 {
     mEditEncode->setText(encodingName);
 }

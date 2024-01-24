@@ -256,8 +256,7 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
 
 ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlist, bool onlyRequiredAttribute)
 {
-    QString schemaname = schemastrlist.first();
-    ConnectSchema* s = mSchema[schemaname];
+    ConnectSchema* s = mSchema[schemastrlist.first()];
     YAML::Node data;
     if (!s)
         return new ConnectData(data);

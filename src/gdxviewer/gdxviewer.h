@@ -50,9 +50,9 @@ class GdxViewer : public AbstractView
     Q_OBJECT
 
 public:
-    GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
+    GdxViewer(const QString &gdxFile, const QString &systemDirectory, QTextCodec* codec, QWidget *parent = nullptr);
     ~GdxViewer() override;
-    void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    void updateSelectedSymbol(const QItemSelection &selected, const QItemSelection& deselected);
     GdxSymbol* selectedSymbol();
     void createSymbolView(GdxSymbol* sym, int symbolIndex);
     void setHasChanged(bool value);
@@ -64,7 +64,7 @@ public:
     GdxSymbolView *symbolViewByName(QString name);
     QString gdxFile() const;
     GdxViewerState *state() const;
-    void readState(QVariantMap map);
+    void readState(const QVariantMap& map);
     void writeState(const QString &location);
 
     GdxSymbolTableModel *gdxSymbolTable() const;

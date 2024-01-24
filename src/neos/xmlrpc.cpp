@@ -48,7 +48,7 @@ XmlRpc::XmlRpc()
 
 }
 
-bool putVariant(QXmlStreamWriter &xml, QVariant var, QByteArray &errorText)
+bool putVariant(QXmlStreamWriter &xml, const QVariant& var, QByteArray &errorText)
 {
     xml.writeStartElement("value");
     switch (var.typeId()) {

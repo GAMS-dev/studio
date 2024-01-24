@@ -116,7 +116,7 @@ bool SymbolReferenceWidget::isModelLoaded() const
     return mSymbolTableModel->isModelLoaded();
 }
 
-void SymbolReferenceWidget::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
+void SymbolReferenceWidget::updateSelectedSymbol(const QItemSelection &selected, const QItemSelection &deselected)
 {
     Q_UNUSED(deselected)
     if (selected.indexes().size() > 0) {

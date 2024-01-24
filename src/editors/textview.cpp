@@ -276,7 +276,7 @@ void TextView::setLineWrapMode(QPlainTextEdit::LineWrapMode mode)
     mEdit->setLineWrapMode(QPlainTextEdit::NoWrap);
 }
 
-bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
+bool TextView::findText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind)
 {
     bool found = mMapper->findText(searchRegex, flags, continueFind);
     if (found) {
@@ -287,7 +287,7 @@ bool TextView::findText(QRegularExpression searchRegex, QTextDocument::FindFlags
     return found;
 }
 
-void TextView::findInSelection(QRegularExpression searchRegex, FileMeta* file, QList<search::Result> *results, bool showResults)
+void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file, QList<search::Result> *results, bool showResults)
 {
     if (!mEdit->hasSearchSelection()) {
         mEdit->updateSearchSelection();
@@ -794,7 +794,7 @@ void TextView::updateTheme()
     topLineMoved();
 }
 
-void TextView::marksChanged(const QSet<int> dirtyLines)
+void TextView::marksChanged(const QSet<int> &dirtyLines)
 {
     mEdit->marksChanged(dirtyLines);
 }

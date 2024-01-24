@@ -156,7 +156,7 @@ void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
     rehighlightBlock(fromBlock);
 }
 
-QTextBlock cutEnd(QTextBlock block, int altLine, QTextDocument *doc)
+QTextBlock cutEnd(const QTextBlock& block, int altLine, QTextDocument *doc)
 {
     if (block.isValid() && (block < doc->lastBlock() || block == doc->lastBlock())) return block;
     if (block.isValid()) return doc->lastBlock();
@@ -305,7 +305,7 @@ QTextBlock BaseHighlighter::nextDirty()
     return mCurrentBlock.next();
 }
 
-void BaseHighlighter::setDirty(QTextBlock fromBlock, QTextBlock toBlock)
+void BaseHighlighter::setDirty(const QTextBlock& fromBlock, const QTextBlock& toBlock)
 {
     Q_ASSERT_X(fromBlock.isValid() && toBlock.isValid(), "BaseHighlighter::setDirty()", "invalid block");
     if (toBlock < fromBlock) return;

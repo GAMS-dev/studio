@@ -60,7 +60,7 @@ class BlockData : public QTextBlockUserData
 public:
     BlockData() {}
     ~BlockData() override;
-    static BlockData *fromTextBlock(QTextBlock block);
+    static BlockData *fromTextBlock(const QTextBlock& block);
     QChar charForPos(int relPos);
     QVector<ParenthesesPos> parentheses() const;
     void setParentheses(const NestingData &nestingData);

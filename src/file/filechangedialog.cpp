@@ -45,7 +45,7 @@ FileChangeDialog::FileChangeDialog(QWidget *parent) :
 FileChangeDialog::~FileChangeDialog()
 {}
 
-void FileChangeDialog::show(QString filePath, bool deleted, bool modified, int count)
+void FileChangeDialog::show(const QString &filePath, bool deleted, bool modified, int count)
 {
     mCbAll->setChecked(false);
     setWindowTitle(QString("File %1").arg(deleted ? "vanished" : "changed"));

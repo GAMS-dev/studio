@@ -365,7 +365,7 @@ int TableViewModel::type()
     return mSym->type();
 }
 
-void TableViewModel::setTableView(int colDim, QVector<int> tvDims)
+void TableViewModel::setTableView(int colDim, const QVector<int> &tvDims)
 {
     beginResetModel();
     if (colDim!=-1) {

@@ -55,7 +55,7 @@ public:
 
     int type();
 
-    void setTableView(int colDim = -1, QVector<int> tvDims = QVector<int>());
+    void setTableView(int colDim = -1, const QVector<int> &tvDims = QVector<int>());
 
     void setTableViewNoArgs();
 

@@ -104,7 +104,7 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
     }
 }
 
-void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
+void FileMetaRepo::toggleBookmark(const FileId &fileId, int lineNr, int posInLine)
 {
     if (mTextMarkRepo->marks(fileId, lineNr, -1, TextMark::bookmark, 1).isEmpty()) {
         // add bookmark
@@ -115,7 +115,7 @@ void FileMetaRepo::toggleBookmark(FileId fileId, int lineNr, int posInLine)
     }
 }
 
-void FileMetaRepo::jumpToNextBookmark(bool back, FileId refFileId, int refLineNr)
+void FileMetaRepo::jumpToNextBookmark(bool back, const FileId &refFileId, int refLineNr)
 {
     TextMark *bookmark = nullptr;
     if (mTextMarkRepo->hasBookmarks(refFileId)) {
@@ -251,7 +251,7 @@ bool FileMetaRepo::equals(const QFileInfo &fi1, const QFileInfo &fi2)
     return (fi1.exists() || fi2.exists()) ? fi1 == fi2 : fi1.absoluteFilePath() == fi2.absoluteFilePath();
 }
 
-void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
+void FileMetaRepo::updateRenamed(FileMeta *file, const QString &oldLocation)
 {
     if (FileType::fsCaseSense()) {
         mFileNames.remove(oldLocation);
@@ -262,7 +262,7 @@ void FileMetaRepo::updateRenamed(FileMeta *file, QString oldLocation)
     }
 }
 
-void FileMetaRepo::setUserGamsTypes(QStringList suffix)
+void FileMetaRepo::setUserGamsTypes(const QStringList &suffix)
 {
     QStringList changed;
     for (const QString &suf : suffix) {
@@ -291,7 +291,7 @@ void FileMetaRepo::setUserGamsTypes(QStringList suffix)
     }
 }
 
-void FileMetaRepo::openFile(FileMeta *fm, NodeId groupId, bool focus, int codecMib)
+void FileMetaRepo::openFile(FileMeta *fm, const NodeId &groupId, bool focus, int codecMib)
 {
     if (!mProjectRepo) EXCEPT() << "Missing initialization. Method init() need to be called.";
     PExProjectNode* project = mProjectRepo->findProject(groupId);
@@ -373,12 +373,12 @@ void FileMetaRepo::checkMissing()
     }
 }
 
-void FileMetaRepo::fontChangeRequest(FileMeta *fileMeta, QFont f)
+void FileMetaRepo::fontChangeRequest(FileMeta *fileMeta, const QFont &f)
 {
     emit setGroupFontSize(fileMeta->fontGroup(), f.pointSizeF());
 }
 
-void FileMetaRepo::getIcon(QIcon &icon, FileMeta *file, NodeId projectId)
+void FileMetaRepo::getIcon(QIcon &icon, FileMeta *file, const NodeId &projectId)
 {
     PExProjectNode *project = mProjectRepo->asProject(projectId);
     PExAbstractNode *node = mProjectRepo->findFile(file, project);
@@ -399,7 +399,7 @@ void FileMetaRepo::init(TextMarkRepo *textMarkRepo, ProjectRepo *projectRepo)
     mProjectRepo = projectRepo;
 }
 
-FileMeta* FileMetaRepo::findOrCreateFileMeta(QString location, FileType *knownType)
+FileMeta* FileMetaRepo::findOrCreateFileMeta(const QString &location, FileType *knownType)
 {
     if (location.isEmpty()) return nullptr;
     FileMeta* res = fileMeta(location);

@@ -201,7 +201,7 @@ public:
     static int version(Scope scope);
     static void useRelocatedPathForTests();
     static QList<SettingsKey> viewKeys();
-    static QString themeFileName(QString baseName);
+    static QString themeFileName(const QString &baseName);
 
     QStringList takeInitWarnings();
     void loadFile(Scope scopeFilter);
@@ -226,28 +226,28 @@ public:
     void setSize(SettingsKey key, const QSize &value);
     void setPoint(SettingsKey key, const QPoint &value);
     void setIntList(SettingsKey key, const QList<int> &value);
-    void setString(SettingsKey key, QString value) { setValue(key, value);}
-    void setByteArray(SettingsKey key, QByteArray value) { setValue(key, value);}
-    bool setMap(SettingsKey key, QVariantMap value);
-    bool setList(SettingsKey key, QVariantList value);
+    void setString(SettingsKey key, const QString &value) { setValue(key, value);}
+    void setByteArray(SettingsKey key, const QByteArray &value) { setValue(key, value);}
+    bool setMap(SettingsKey key, const QVariantMap &value);
+    bool setList(SettingsKey key, const QVariantList &value);
     bool setDate(SettingsKey key, QDate value);
 
     void importSettings(const QString &path);
     void exportSettings(const QString &path);
 
-    void exportTheme(const QVariant &vTheme, QString fileName);
+    void exportTheme(const QVariant &vTheme, const QString &fileName);
     QVariantMap importTheme(const QString &filepath);
 
     void updateSettingsFiles();
 
     void reload();
-    void resetKeys(QList<SettingsKey> keys);
+    void resetKeys(const QList<SettingsKey> &keys);
 
 private:
     typedef QVariantMap Data;
     struct KeyData {
         KeyData() {}
-        KeyData(Settings::Scope _scope, QStringList _keys, QVariant _initial)
+        KeyData(Settings::Scope _scope, const QStringList &_keys, const QVariant &_initial)
             : scope(_scope), keys(_keys), initial(_initial) {}
         Settings::Scope scope;
         QStringList keys;
@@ -268,9 +268,9 @@ private:
 private:
     Settings(bool ignore, bool reset, bool resetView);
     ~Settings();
-    QSettings *newQSettings(QString name);
+    QSettings *newQSettings(const QString& name);
     QHash<SettingsKey, KeyData> generateKeys();
-    bool safelyAdd(QHash<SettingsKey, KeyData> &hash, SettingsKey key, Scope scope, QStringList jsKey, QVariant defaultValue);
+    bool safelyAdd(QHash<SettingsKey, KeyData> &hash, SettingsKey key, Scope scope, const QStringList &jsKey, const QVariant &defaultValue);
     KeyData keyData(SettingsKey key) { return mKeys.value(key); }
     bool canWrite() {return mCanWrite && !mBlock; }
 
@@ -280,23 +280,23 @@ private:
     void initDefault();
     void addVersionInfo(Scope scope, QVariantMap &map);
     void saveFile(Scope scope);
-    void loadMap(Scope scope, QVariantMap map);
+    void loadMap(Scope scope, const QVariantMap &map);
     QVariant read(SettingsKey key);
     void saveThemes();
     void loadThemes();
 
     QVariant value(SettingsKey key) const;
-    bool setValue(SettingsKey key, QVariant value);
+    bool setValue(SettingsKey key, const QVariant &value);
 
     QVariant directValue(const Scope &scope, const QString &key) const;
     QVariant directValue(const Scope &scope, const QString &group, const QString &key) const;
-    bool setDirectValue(const Scope &scope, const QString &key, QVariant value);
-    bool setDirectValue(const Scope &scope, const QString &group, const QString &key, QVariant value);
-    bool addToMap(QVariantMap &group, const QString &key, QVariant value);
+    bool setDirectValue(const Scope &scope, const QString &key, const QVariant &value);
+    bool setDirectValue(const Scope &scope, const QString &group, const QString &key, const QVariant &value);
+    bool addToMap(QVariantMap &group, const QString &key, const QVariant &value);
     QString keyText(SettingsKey key);
 
-    bool isValidVersion(const QString currentVersion);
-    int compareVersion(QString currentVersion, QString otherVersion);
+    bool isValidVersion(const QString &currentVersion);
+    int compareVersion(const QString &currentVersion, const QString &otherVersion);
 };
 
 }

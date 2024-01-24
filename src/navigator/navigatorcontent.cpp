@@ -22,21 +22,21 @@ namespace studio {
 NavigatorContent::NavigatorContent() { }
 
 // known files
-NavigatorContent::NavigatorContent(FileMeta* file, QString additionalText) {
+NavigatorContent::NavigatorContent(FileMeta* file, const QString &additionalText) {
     mFileMeta = file;
     if (file) mFileInfo = QFileInfo(file->location());
     mAdditionalInfo = additionalText;
 }
 
 // unknown files
-NavigatorContent::NavigatorContent(QFileInfo file, QString additionalText) {
+NavigatorContent::NavigatorContent(const QFileInfo &file, const QString &additionalText) {
     mFileInfo = file;
     mAdditionalInfo = additionalText;
 }
 
 // help content
-NavigatorContent::NavigatorContent(QString txt, QString additionalText,
-                                   QString prefix, FileMeta* currentFile) {
+NavigatorContent::NavigatorContent(const QString &txt, const QString &additionalText,
+                                   const QString &prefix, FileMeta* currentFile) {
     mText = txt;
     mAdditionalInfo = additionalText;
     mInsertPrefix = prefix;
@@ -44,9 +44,11 @@ NavigatorContent::NavigatorContent(QString txt, QString additionalText,
 }
 
 // quick actions
-NavigatorContent::NavigatorContent(QString txt, std::function<void()> function) {
-    mText = txt;
-    mFunction = function;
+NavigatorContent::NavigatorContent(const QString &txt, std::function<void ()> function)
+    : mText(txt)
+    , mFunction(std::move(function))
+{
+
 }
 
 bool NavigatorContent::isValid()

@@ -30,8 +30,8 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsConfigEditor::GamsConfigEditor(QString fileName, QString optionFilePath,
-                                   FileId id, QWidget *parent) :
+GamsConfigEditor::GamsConfigEditor(const QString &fileName, const QString &optionFilePath,
+                                   const FileId &id, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::GamsConfigEditor),
     mFileId(id),

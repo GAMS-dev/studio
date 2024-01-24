@@ -38,7 +38,7 @@ GdxViewerState::~GdxViewerState()
     }
 }
 
-GdxSymbolViewState* GdxViewerState::symbolViewState(QString name) const
+GdxSymbolViewState* GdxViewerState::symbolViewState(const QString& name) const
 {
     if (mSymbolViewState.contains(name))
         return mSymbolViewState[name];
@@ -46,14 +46,14 @@ GdxSymbolViewState* GdxViewerState::symbolViewState(QString name) const
         return NULL;
 }
 
-GdxSymbolViewState* GdxViewerState::addSymbolViewState(QString name)
+GdxSymbolViewState* GdxViewerState::addSymbolViewState(const QString& name)
 {
     deleteSymbolViewState(name);
     mSymbolViewState[name] = new GdxSymbolViewState();
     return mSymbolViewState[name];
 }
 
-void GdxViewerState::deleteSymbolViewState(QString name)
+void GdxViewerState::deleteSymbolViewState(const QString& name)
 {
     if (mSymbolViewState.contains(name)) {
         delete mSymbolViewState[name];

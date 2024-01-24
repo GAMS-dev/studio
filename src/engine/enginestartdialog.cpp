@@ -100,7 +100,7 @@ EngineStartDialog::~EngineStartDialog()
     delete ui;
 }
 
-void EngineStartDialog::authorizeChanged(QString authToken)
+void EngineStartDialog::authorizeChanged(const QString &authToken)
 {
     Q_UNUSED(authToken)
     if (mProc->authToken().isEmpty())
@@ -257,7 +257,7 @@ void EngineStartDialog::focusEmptyField()
     }
 }
 
-void EngineStartDialog::setEngineVersion(QString version)
+void EngineStartDialog::setEngineVersion(const QString &version)
 {
     ui->laEngineVersion->setText(version);
 }
@@ -633,7 +633,7 @@ void EngineStartDialog::reListProvider(const QList<QHash<QString, QVariant> > &a
     }
 }
 
-void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel)
+void EngineStartDialog::reUserInstances(const QList<QPair<QString, QList<double> > > &instances, const QString &defaultLabel)
 {
     QVariantList datList = ui->cbInstance->currentData().toList();
     QString lastInst = datList.count() ? datList.first().toString() : "";
@@ -815,7 +815,7 @@ void EngineStartDialog::updateConnectStateAppearance()
     }
 }
 
-void EngineStartDialog::initUrlAndChecks(QString url)
+void EngineStartDialog::initUrlAndChecks(const QString &url)
 {
     mValidSelfCertUrl = "";
     mLastSslError = 0;
@@ -878,7 +878,7 @@ bool EngineStartDialog::fetchNextUrl()
     return false;
 }
 
-EngineStartDialog::UrlCheck EngineStartDialog::protocol(QString url)
+EngineStartDialog::UrlCheck EngineStartDialog::protocol(const QString &url)
 {
     if (url.startsWith("http://", Qt::CaseInsensitive))
         return ucHttp;
@@ -887,7 +887,7 @@ EngineStartDialog::UrlCheck EngineStartDialog::protocol(QString url)
     return ucNone;
 }
 
-QString EngineStartDialog::cleanUrl(const QString url)
+QString EngineStartDialog::cleanUrl(const QString &url)
 {
     QString res = url.trimmed();
     if (res.startsWith("http://", Qt::CaseInsensitive)) {

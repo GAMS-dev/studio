@@ -253,7 +253,7 @@ bool Server::handleReply(const QString &replyData)
     return true;
 }
 
-QString Server::toBpString(QList<int> lines)
+QString Server::toBpString(const QList<int> &lines)
 {
     if (lines.isEmpty()) return QString();
     QString res;

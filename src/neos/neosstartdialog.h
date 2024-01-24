@@ -41,7 +41,7 @@ class NeosStartDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit NeosStartDialog(QString eMail, QWidget *parent = nullptr);
+    explicit NeosStartDialog(const QString &eMail, QWidget *parent = nullptr);
     ~NeosStartDialog() override;
     void setProcess(neos::NeosProcess *proc);
 

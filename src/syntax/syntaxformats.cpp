@@ -381,7 +381,7 @@ SyntaxDcoBody::SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData *sharedData)
                "SyntaxDcoBody", QString("invalid SyntaxKind: %1").arg(syntaxKindName(kind)).toLatin1());
 }
 
-void SyntaxDcoBody::setCommentChars(QVector<QChar> chars)
+void SyntaxDcoBody::setCommentChars(const QVector<QChar> &chars)
 {
     mEolComChars = chars;
 }
@@ -570,7 +570,7 @@ SyntaxBlock SyntaxFormula::validTail(const QString &line, int index, SyntaxState
     return SyntaxBlock(this, state, index, end, SyntaxShift::shift);
 }
 
-void SyntaxFormula::setSpecialDynamicChars(QVector<QChar> chars)
+void SyntaxFormula::setSpecialDynamicChars(const QVector<QChar> &chars)
 {
     mSpecialDynamicChars = chars;
     if (kind() == SyntaxKind::Formula)
@@ -659,14 +659,14 @@ SyntaxBlock SyntaxAssign::validTail(const QString &line, int index, SyntaxState 
     return SyntaxBlock(this);
 }
 
-SyntaxCommentEndline::SyntaxCommentEndline(SharedSyntaxData *sharedData, QString commentChars)
+SyntaxCommentEndline::SyntaxCommentEndline(SharedSyntaxData *sharedData, const QString &commentChars)
     : SyntaxAbstract(SyntaxKind::CommentEndline, sharedData)
 {
     mSharedData->registerCommentEndLine(this);
     setCommentChars(commentChars);
 }
 
-void SyntaxCommentEndline::setCommentChars(QString commentChars)
+void SyntaxCommentEndline::setCommentChars(const QString &commentChars)
 {
     if (commentChars.length() == 1 || commentChars.length() == 2)
         mCommentChars = commentChars;

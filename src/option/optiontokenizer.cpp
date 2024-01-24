@@ -1265,7 +1265,7 @@ void OptionTokenizer::parseOptionString(const QString &text, QString &keyStr, QS
     return;
 }
 
-QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, QString encodingName)
+QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absoluteFilePath, const QString &encodingName)
 {
     QList<SolverOptionItem *> items;
 
@@ -1301,7 +1301,7 @@ QList<SolverOptionItem *> OptionTokenizer::readOptionFile(const QString &absolut
     return items;
 }
 
-bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QString encodingName)
+bool OptionTokenizer::writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, const QString &encodingName)
 {
     bool hasBeenLogged = false;
 

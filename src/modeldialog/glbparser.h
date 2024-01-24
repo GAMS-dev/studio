@@ -32,7 +32,7 @@ class GlbParser
 {
 public:
     GlbParser();
-    bool parseFile(QString glbFile);
+    bool parseFile(const QString &glbFile);
     QList<LibraryItem> libraryItems() const;
     QString errorMessage() const;
 
@@ -40,7 +40,7 @@ private:
     QList<LibraryItem> mLibraryItems;
     QString mErrorMessage;
     bool checkListSize(const QStringList& list, int expectedSize);
-    bool checkKey(QString key, QString expected);
+    bool checkKey(const QString &key, const QString &expected);
     QString readLine(QTextStream& in);
     int mLineNr = 0;
     QString mGlbFile;

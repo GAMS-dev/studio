@@ -34,7 +34,7 @@ class SelectEncodings : public QDialog
     Q_OBJECT
 
 public:
-    explicit SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent = nullptr);
+    explicit SelectEncodings(const QList<int> &selectedMibs, int defaultMib, QWidget *parent = nullptr);
     ~SelectEncodings() override;
     QList<int> selectedMibs();
     int defaultCodec();

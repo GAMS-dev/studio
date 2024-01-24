@@ -32,7 +32,7 @@ typedef int SymbolId;
 
 struct ReferenceItem {
     ReferenceItem() { }
-    ReferenceItem(SymbolId id, ReferenceDataType::ReferenceType type, QString loc, int line, int col) :
+    ReferenceItem(SymbolId id, ReferenceDataType::ReferenceType type, const QString &loc, int line, int col) :
         symbolID(id), referenceType(type), location(loc), lineNumber(line), columnNumber(col) { }
 
     SymbolId symbolID = -1;
@@ -45,7 +45,7 @@ struct ReferenceItem {
 class SymbolReferenceItem
 {
 public:
-    SymbolReferenceItem(SymbolId id, QString name, SymbolDataType::SymbolType type);
+    SymbolReferenceItem(SymbolId id, const QString &name, SymbolDataType::SymbolType type);
     ~SymbolReferenceItem();
 
     QString name() const;

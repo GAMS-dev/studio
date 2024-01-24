@@ -79,8 +79,8 @@ enum struct Hotkey {
 class KeySeqList
 {
 public:
-    KeySeqList(const QKeySequence &seq, QString title);
-    KeySeqList(const char *seq, QString title);
+    KeySeqList(const QKeySequence &seq, const QString &title);
+    KeySeqList(const char *seq, const QString &title);
     KeySeqList& operator =(const KeySeqList &other);
     KeySeqList& operator =(const QKeySequence &other);
     KeySeqList& operator <<(const KeySeqList &other);
@@ -99,7 +99,7 @@ public:
         return false;
     }
     QKeySequence first() const { return mSequence.isEmpty() ? QKeySequence() : mSequence.first(); }
-    bool operator ==(KeySeqList other) const;
+    bool operator==(const KeySeqList &other) const;
 private:
     QList<QKeySequence> mSequence;
     QString mTitle;
@@ -141,10 +141,10 @@ inline bool operator==(Hotkey hotkey, int keycode) { return Keys::instance().key
 inline bool operator!=(int keycode, Hotkey hotkey) { return !Keys::instance().keySequence(hotkey).contains(keycode); }
 inline bool operator!=(Hotkey hotkey, int keycode) { return !Keys::instance().keySequence(hotkey).contains(keycode); }
 
-inline bool operator==(QKeyEvent *e, KeySeqList keySeq) { return (e ? keySeq.matches(e) : false); }
-inline bool operator==(KeySeqList keySeq, QKeyEvent *e) { return (e ? keySeq.matches(e) : false); }
-inline bool operator!=(QKeyEvent *e, KeySeqList keySeq) { return !(e ? keySeq.matches(e) : false); }
-inline bool operator!=(KeySeqList keySeq, QKeyEvent *e) { return !(e ? keySeq.matches(e) : false); }
+inline bool operator==(QKeyEvent *e, const KeySeqList& keySeq) { return (e ? keySeq.matches(e) : false); }
+inline bool operator==(const KeySeqList& keySeq, QKeyEvent *e) { return (e ? keySeq.matches(e) : false); }
+inline bool operator!=(QKeyEvent *e, const KeySeqList& keySeq) { return !(e ? keySeq.matches(e) : false); }
+inline bool operator!=(const KeySeqList& keySeq, QKeyEvent *e) { return !(e ? keySeq.matches(e) : false); }
 
 constexpr inline uint qHash(Hotkey key) noexcept { return uint(key); }
 

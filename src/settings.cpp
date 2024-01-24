@@ -56,18 +56,18 @@ QString pointToString(QPoint p) {
 QString sizeToString(QSize s) {
     return QString("%1,%2").arg(s.width()).arg(s.height());
 }
-QList<int> toIntArray(QString s) {
+QList<int> toIntArray(const QString &s) {
     QList<int> res;
     const QStringList list = s.split(',');
     for (const QString &v: list) res << v.toInt();
     return res;
 }
-QPoint stringToPoint(QString s) {
+QPoint stringToPoint(const QString &s) {
     QList<int> a = toIntArray(s);
     if (a.size() == 2) return QPoint(a.at(0), a.at(1));
     return QPoint();
 }
-QSize stringToSize(QString s) {
+QSize stringToSize(const QString& s) {
     QList<int> a = toIntArray(s);
     if (a.size() == 2) return QSize(a.at(0), a.at(1));
     return QSize();
@@ -216,7 +216,7 @@ Settings::~Settings()
     }
 }
 
-QSettings *Settings::newQSettings(QString name)
+QSettings *Settings::newQSettings(const QString& name)
 {
     QSettings *res = nullptr;
     res = new QSettings(QSettings::defaultFormat(), QSettings::UserScope, GAMS_ORGANIZATION_STR, name);
@@ -246,7 +246,7 @@ QString settingsKeyName(SettingsKey key) {
     return res;
 }
 
-bool Settings::safelyAdd(QHash<SettingsKey, Settings::KeyData> &hash, SettingsKey key, Scope scope, QStringList jsKey, QVariant defaultValue)
+bool Settings::safelyAdd(QHash<SettingsKey, Settings::KeyData> &hash, SettingsKey key, Scope scope, const QStringList &jsKey, const QVariant &defaultValue)
 {
     bool res = true;
     if (hash.contains(key)) {
@@ -423,7 +423,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
 void Settings::initDefault()
 {
     for (QHash<SettingsKey, KeyData>::const_iterator di = mKeys.constBegin() ; di != mKeys.constEnd() ; ++di) {
-        KeyData dat = di.value();
+        const KeyData &dat = di.value();
         setValue(di.key(), dat.initial);
     }
 }
@@ -458,7 +458,7 @@ QList<SettingsKey> Settings::viewKeys()
     };
 }
 
-void Settings::resetKeys(QList<SettingsKey> keys)
+void Settings::resetKeys(const QList<SettingsKey> &keys)
 {
     for (const SettingsKey &key : keys) {
         KeyData dat = mKeys.value(key);
@@ -543,12 +543,12 @@ void Settings::setIntList(SettingsKey key, const QList<int> &value)
     setValue(key, stringVal);
 }
 
-bool Settings::setMap(SettingsKey key, QVariantMap value)
+bool Settings::setMap(SettingsKey key, const QVariantMap &value)
 {
     return setValue(key, value);
 }
 
-bool Settings::setList(SettingsKey key, QVariantList value)
+bool Settings::setList(SettingsKey key, const QVariantList &value)
 {
     return setValue(key, value);
 }
@@ -558,7 +558,7 @@ bool Settings::setDate(SettingsKey key, QDate value)
     return setValue(key, value.toString(Qt::ISODate));
 }
 
-bool Settings::isValidVersion(const QString currentVersion)
+bool Settings::isValidVersion(const QString &currentVersion)
 {
     for (const QChar &c: currentVersion)
         if (c != '.' && (c < '0' || c > '9')) return false;
@@ -569,7 +569,7 @@ bool Settings::isValidVersion(const QString currentVersion)
     return true;
 }
 
-int Settings::compareVersion(QString currentVersion, QString otherVersion)
+int Settings::compareVersion(const QString &currentVersion, const QString &otherVersion)
 {
     QStringList curntList = currentVersion.split('.');
     QStringList otherList = otherVersion.split('.');
@@ -599,7 +599,7 @@ QVariant Settings::value(SettingsKey key) const
     return QVariant();
 }
 
-bool Settings::setValue(SettingsKey key, QVariant value)
+bool Settings::setValue(SettingsKey key, const QVariant &value)
 {
     KeyData dat = mKeys.value(key);
     if (dat.keys.length() == 1)
@@ -622,7 +622,7 @@ QVariant Settings::directValue(const Settings::Scope &scope, const QString &grou
     return jo.value(key);
 }
 
-bool Settings::setDirectValue(const Settings::Scope &scope, const QString &key, QVariant value)
+bool Settings::setDirectValue(const Settings::Scope &scope, const QString &key, const QVariant &value)
 {
     if (!mData.contains(scope)) // ensure that entry for the scope exists
         mData.insert(scope, Data());
@@ -630,7 +630,7 @@ bool Settings::setDirectValue(const Settings::Scope &scope, const QString &key, 
     return true;
 }
 
-bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group, const QString &key, QVariant value)
+bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group, const QString &key, const QVariant &value)
 {
     if (!mData.contains(scope)) // ensure that entry for the scope exists
         mData.insert(scope, Data());
@@ -645,7 +645,7 @@ bool Settings::setDirectValue(const Settings::Scope &scope, const QString &group
     return true;
 }
 
-bool Settings::addToMap(QVariantMap &group, const QString &key, QVariant value)
+bool Settings::addToMap(QVariantMap &group, const QString &key, const QVariant &value)
 {
     switch (QMetaType::Type(value.typeId())) {
     case QMetaType::Double: group[key] = value.toDouble(); break;
@@ -719,7 +719,7 @@ void Settings::saveFile(Scope scope)
     settings->sync();
 }
 
-void Settings::loadMap(Scope scope, QVariantMap map)
+void Settings::loadMap(Scope scope, const QVariantMap &map)
 {
     for (QVariantMap::const_iterator it = map.constBegin() ; it != map.constEnd() ; ++it) {
         QVariant var = it.value();
@@ -780,7 +780,7 @@ void Settings::saveThemes()
     }
 }
 
-void Settings::exportTheme(const QVariant &vTheme, QString fileName)
+void Settings::exportTheme(const QVariant &vTheme, const QString &fileName)
 {
     QVariantMap theme = vTheme.toMap();
     QString name = theme.value("name").toString();
@@ -984,7 +984,7 @@ void Settings::exportSettings(const QString &path)
     }
 }
 
-QString Settings::themeFileName(QString baseName)
+QString Settings::themeFileName(const QString &baseName)
 {
     return CThemePrefix+baseName.toLower()+".json";
 }

@@ -167,7 +167,7 @@ QString CommonPaths::defaultGamsUserConfigFile()
     return QDir::cleanPath(gamsUserConfigDir() + "/" + GamsUserConfigFile);
 }
 
-void CommonPaths::setGamsStandardPaths(QStringList gamsPaths, StandardPathType pathType)
+void CommonPaths::setGamsStandardPaths(const QStringList &gamsPaths, StandardPathType pathType)
 {
     switch (pathType) {
     case StandardConfigPath: GamsStandardConfigPaths = gamsPaths; break;

@@ -63,7 +63,7 @@ public:
     static const QStringList invalidUserGamsTypes();
 
 private:
-    FileType(FileKind kind, QStringList suffix, QString description, bool autoReload);
+    FileType(FileKind kind, const QStringList &suffix, const QString &description, bool autoReload);
 
     const FileKind mKind;
     const QStringList mSuffix;

@@ -29,7 +29,7 @@ namespace studio {
 
 NodeId PExAbstractNode::mNextNodeId = 0;
 
-PExAbstractNode::PExAbstractNode(QString name, NodeType type)
+PExAbstractNode::PExAbstractNode(const QString &name, NodeType type)
     : QObject(), mId(mNextNodeId++), mParent(nullptr), mName(name), mType(type)
 {}
 

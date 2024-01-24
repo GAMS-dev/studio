@@ -94,9 +94,9 @@ public:
     void commentLine();
     void moveLines(bool moveLinesUp);
     int minIndentCount(int fromLine = -1, int toLine = -1);
-    void wordInfo(QTextCursor cursor, QString &word, int &intKind);
+    void wordInfo(const QTextCursor &cursor, QString &word, int &intKind);
     void getPositionAndAnchor(QPoint &pos, QPoint &anchor);
-    PositionPair matchParentheses(QTextCursor cursor, bool all = false, int *foldCount = nullptr) const;
+    PositionPair matchParentheses(const QTextCursor &cursor, bool all = false, int *foldCount = nullptr) const;
     void setOverwriteMode(bool overwrite) override;
     bool overwriteMode() const override;
     void extendedRedo();
@@ -112,8 +112,10 @@ public:
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
-    void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope) override;
-    int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options,
+    void replaceNext(const QRegularExpression &regex,
+                     const QString &replacementText, bool selectionScope) override;
+    int replaceAll(FileMeta *fm, const QRegularExpression &regex,
+                   const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options,
                    bool selectionScope) override;
 
 protected:
@@ -141,7 +143,7 @@ protected:
     QPoint toolTipPos(const QPoint &mousePos) override;
     QString getToolTipText(const QPoint &pos) override;
     bool ensureUnfolded(int line) override;
-    QString resolveHRef(QString href);
+    QString resolveHRef(const QString &href);
     QString getIncludeFile(int line, int &fileStart, QString &code);
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
     void jumpToCurrentLink(const QPoint &mousePos) override;
@@ -170,12 +172,12 @@ public slots:
     virtual void selectAllText();
     virtual void pasteClipboard();
     void updateExtraSelections() override;
-    void unfold(QTextBlock block) override;
+    void unfold(const QTextBlock &block) override;
     void breakpointsChanged(const SortedIntMap &bpLines, const SortedIntMap &abpLines);
     void setPausedPos(int line);
 
 protected slots:
-    void marksChanged(const QSet<int> dirtyLines = QSet<int>()) override;
+    void marksChanged(const QSet<int> &dirtyLines = QSet<int>()) override;
 
 private slots:
     void blockCountHasChanged(int newBlockCount);
@@ -194,14 +196,14 @@ private:
     friend class LineNumberArea;
 
     void adjustIndent(QTextCursor cursor);
-    void truncate(QTextBlock block);
+    void truncate(const QTextBlock &block);
     int textCursorColumn(QPoint mousePos);
     void startBlockEdit(int blockNr, int colNr);
     void endBlockEdit(bool adjustCursor = true);
     QStringList clipboard(bool* isBlock = nullptr); // on relevant Block-Edit data returns multiple strings
     CharType charType(QChar c);
-    bool hasLineComment(QTextBlock startBlock, int lastBlockNr);
-    void applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr);
+    bool hasLineComment(const QTextBlock &startBlock, int lastBlockNr);
+    void applyLineComment(QTextCursor cursor, const QTextBlock &startBlock, int lastBlockNr);
     void checkCompleterAutoOpen();
     bool prepareCompleter();
     void showCompleter();
@@ -234,7 +236,7 @@ protected:
         void stopCursorTimer();
         void refreshCursors();
         void paintEvent(QPaintEvent *e);
-        void replaceBlockText(QString text);
+        void replaceBlockText(const QString &text);
         void replaceBlockText(const QStringList &inTexts);
         void updateExtraSelections();
         void adjustCursor();

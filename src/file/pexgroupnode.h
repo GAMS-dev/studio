@@ -63,13 +63,13 @@ public:
     virtual PExFileNode *findFile(const FileMeta *fileMeta) const;
     QList<PExFileNode*> findFiles(FileKind kind) const;
     PExProjectNode *findProject(const AbstractProcess *process) const;
-    PExProjectNode *findProject(FileId runId) const;
+    PExProjectNode *findProject(const FileId &runId) const;
     const QVector<PExFileNode *> listFiles() const;
     void moveChildNode(int from, int to);
     const QList<PExAbstractNode*> &childNodes() const { return mChildNodes; }
 
 public slots:
-    void hasFile(QString fName, bool &exists);
+    void hasFile(const QString &fName, bool &exists);
 
 protected:
     friend class ProjectRepo;
@@ -77,7 +77,7 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExGroupNode(QString name, QString location, NodeType type = NodeType::group);
+    PExGroupNode(const QString &name, const QString &location, NodeType type = NodeType::group);
     virtual void appendChild(PExAbstractNode *child);
     virtual void removeChild(PExAbstractNode *child);
     virtual void setLocation(const QString &newLocation);
@@ -114,7 +114,7 @@ public:
     QString errorText(int lstLine) override;
     void clearErrorTexts();
     bool hasErrorText(int lstLine = -1);
-    void addRunParametersHistory(QString option);
+    void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption);
     void setLocation(const QString &newLocation) override;
@@ -163,7 +163,7 @@ signals:
     void switchToTab(FileMeta *fileMeta);
 
 public slots:
-    void setErrorText(int lstLine, QString text);
+    void setErrorText(int lstLine, const QString &text);
     void hasHRef(const QString &href, QString &fileName);
     void jumpToHRef(const QString &href);
     void createMarks(const LogParser::MarkData &marks);
@@ -187,13 +187,14 @@ protected:
     friend class PExLogNode;
     friend class PExFileNode;
 
-    PExProjectNode(QString filePath, QString basePath, FileMeta *runFileMeta, QString workDir, Type type);
+    PExProjectNode(const QString &filePath, const QString &basePath,
+                   FileMeta *runFileMeta, const QString &workDir, Type type);
     void setFileName(const QString &newProjectFile);
     void errorTexts(const QVector<int> &lstLines, QStringList &result);
     void setLogNode(PExLogNode* logNode);
     void appendChild(PExAbstractNode *child) override;
     void removeChild(PExAbstractNode *child) override;
-    QString resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create = false);
+    QString resolveHRef(const QString &href, PExFileNode *&node, int &line, int &col, bool create = false);
 
 private:
     enum ChangeState {csNone, csChanged, csClosing};

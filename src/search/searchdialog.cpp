@@ -208,7 +208,7 @@ void SearchDialog::updateDialogState()
     repaint();
 }
 
-QList<SearchFile> SearchDialog::getFilesByScope(SearchParameters parameters)
+QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &parameters)
 {
     QList<SearchFile> files;
     mFileWorker.setParameters(parameters);
@@ -390,8 +390,7 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
     QList<Result> list = mSearch.results();
     int size = list.size() >= MAX_SEARCH_RESULTS ? MAX_SEARCH_RESULTS : list.size();
     for (int i = 0; i < size; i++) {
-        Result match = list.at(i);
-
+        const Result& match = list.at(i);
         if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             emit selectResult(i);
             updateMatchLabel(i + 1);
@@ -412,7 +411,7 @@ void SearchDialog::checkRegex()
     updateDialogState();
 }
 
-void SearchDialog::on_combo_search_currentTextChanged(const QString)
+void SearchDialog::on_combo_search_currentTextChanged(const QString&)
 {
     searchParameterChanged();
     checkRegex();
@@ -831,12 +830,12 @@ void SearchDialog::setSearchedFiles(int files)
     mFilesInScope = files;
 }
 
-void SearchDialog::on_combo_path_currentTextChanged(const QString)
+void SearchDialog::on_combo_path_currentTextChanged(const QString&)
 {
     searchParameterChanged();
 }
 
-void SearchDialog::on_combo_fileExcludePattern_currentTextChanged(const QString)
+void SearchDialog::on_combo_fileExcludePattern_currentTextChanged(const QString&)
 {
     searchParameterChanged();
 }

@@ -42,7 +42,7 @@ public:
     FileMeta* fileMeta(const QString &location) const;
     FileMeta* fileMeta(QWidget * const &editor) const;
     const QList<FileMeta*> fileMetas() const;
-    FileMeta* findOrCreateFileMeta(QString location, FileType *knownType = nullptr);
+    FileMeta* findOrCreateFileMeta(const QString &location, FileType *knownType = nullptr);
     void init(TextMarkRepo* textMarkRepo, ProjectRepo *projectRepo);
     TextMarkRepo *textMarkRepo() const;
     ProjectRepo *projectRepo() const;
@@ -53,13 +53,13 @@ public:
     void unwatch(const QString &filePath);
     bool watch(const FileMeta* fm);
     void setAutoReload(const QString &location);
-    void getIcon(QIcon &icon, FileMeta *file, NodeId projectId);
+    void getIcon(QIcon &icon, FileMeta *file, const NodeId &projectId);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
     static bool equals(const QFileInfo &fi1, const QFileInfo &fi2);
-    void updateRenamed(FileMeta *file, QString oldLocation);
-    void setUserGamsTypes(QStringList suffix);
+    void updateRenamed(FileMeta *file, const QString &oldLocation);
+    void setUserGamsTypes(const QStringList &suffix);
     CodeCompleter *completer() { return &mCompleter; }
 
     bool askBigFileEdit() const;
@@ -73,16 +73,16 @@ signals:
     void projectTabRenamed(QWidget *wid, const QString &newName);
 
 public slots:
-    void openFile(gams::studio::FileMeta* fm, gams::studio::NodeId groupId, bool focus = true, int codecMib = -1);
+    void openFile(gams::studio::FileMeta* fm, const gams::studio::NodeId &groupId, bool focus = true, int codecMib = -1);
     void removeFile(gams::studio::FileMeta* fileMeta);
-    void toggleBookmark(gams::studio::FileId fileId, int lineNr, int posInLine);
-    void jumpToNextBookmark(bool back, gams::studio::FileId refFileId, int refLineNr);
+    void toggleBookmark(const gams::studio::FileId &fileId, int lineNr, int posInLine);
+    void jumpToNextBookmark(bool back, const gams::studio::FileId &refFileId, int refLineNr);
 
 private slots:
     void fileChanged(const QString& path);
     void reviewRemoved();
     void checkMissing();
-    void fontChangeRequest(gams::studio::FileMeta *fileMeta, QFont f);
+    void fontChangeRequest(gams::studio::FileMeta *fileMeta, const QFont &f);
 
 private:
     void addFileMeta(FileMeta* fileMeta);

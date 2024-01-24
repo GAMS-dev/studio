@@ -99,7 +99,7 @@ public:
     void getQuota();
     void listJobs();
     void listNamespaces();
-    void submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile, QList<QString> params, const QString &instance, const QString &tag);
+    void submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile, const QList<QString>& params, const QString &instance, const QString &tag);
     void getJobStatus();
     void getLog();
     void getOutputFile();
@@ -142,10 +142,10 @@ signals:
 
 private slots:
     void killJob(bool hard);
-    void debugReceived(QString name, QVariant data);
+    void debugReceived(const QString& name, const QVariant& data);
 
 private:
-    bool parseVersions(QByteArray json, QString &vEngine, QString &vGams) const;
+    bool parseVersions(const QByteArray& json, QString &vEngine, QString &vGams) const;
     QString getJsonMessageIfFound(const QString &text);
 
 private:

@@ -34,11 +34,11 @@ namespace option {
 
 struct OptionError {
     OptionError() { }
-    OptionError(QTextLayout::FormatRange fr, QString m):
+    OptionError(const QTextLayout::FormatRange &fr, const QString &m):
         formatRange(fr), message(m) { }
-    OptionError(QTextLayout::FormatRange fr, QString m, bool w):
+    OptionError(const QTextLayout::FormatRange &fr, const QString &m, bool w):
          formatRange(fr), message(m), warning(w) { }
-    OptionError(QTextLayout::FormatRange fr, QString m, bool w, int id):
+    OptionError(const QTextLayout::FormatRange &fr, const QString &m, bool w, int id):
          formatRange(fr), message(m), warning(w), optionId(id) { }
 
     QTextLayout::FormatRange formatRange;
@@ -76,8 +76,8 @@ public:
     bool getOptionItemFromStr(SolverOptionItem *item, bool firstTime, const QString &str);
     bool updateOptionItem(const QString &key, const QString &value, const QString &text, SolverOptionItem* item);
 
-    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, QString encodingName);
-    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, QString encodingName);
+    QList<SolverOptionItem *> readOptionFile(const QString &absoluteFilePath, const QString &encodingName);
+    bool writeOptionFile(const QList<SolverOptionItem *> &items, const QString &absoluteFilepath, const QString &encodingName);
 
     void validateOption(QList<OptionItem> &items);
     void validateOption(QList<SolverOptionItem *> &items);

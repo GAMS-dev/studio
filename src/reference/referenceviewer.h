@@ -50,7 +50,7 @@ class ReferenceViewer : public AbstractView
     Q_OBJECT
 
 public:
-    explicit ReferenceViewer(QString referenceFile, QString encodingName, QWidget *parent = nullptr);
+    explicit ReferenceViewer(const QString &referenceFile, const QString &encodingName, QWidget *parent = nullptr);
     ~ReferenceViewer() override;
     void selectSearchField() const;
     void updateStyle();
@@ -59,7 +59,7 @@ signals:
     void jumpTo(gams::studio::reference::ReferenceItem item);
 
 public slots:
-    void reloadFile(QString encodingName);
+    void reloadFile(const QString &encodingName);
     void on_tabBarClicked(int index);
     void updateView(bool status);
 

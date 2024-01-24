@@ -81,7 +81,7 @@ bool PinControl::hasPinView()
     return mPinView;
 }
 
-void PinControl::debugData(QString text)
+void PinControl::debugData(const QString &text)
 {
 #ifdef _DEBUG
     DEB() << "---- Project " << text << ":  " << mData.count() << "  " << mLastProject;

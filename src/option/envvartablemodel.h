@@ -32,7 +32,7 @@ class EnvVarTableModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    EnvVarTableModel(QList<EnvVarConfigItem *> itemList, QObject *parent = nullptr);
+    EnvVarTableModel(const QList<EnvVarConfigItem *> &itemList, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

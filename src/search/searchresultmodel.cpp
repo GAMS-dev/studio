@@ -26,7 +26,7 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchResultModel::SearchResultModel(QRegularExpression regex, QList<Result> results)
+SearchResultModel::SearchResultModel(const QRegularExpression &regex, const QList<Result> &results)
     : mSearchRegex(regex), mResults(results)
 {
     while (mResults.size() > MAX_SEARCH_RESULTS) {

@@ -62,23 +62,23 @@ public:
     void init(ProjectTreeView *treeView, FileMetaRepo* fileRepo, TextMarkRepo* textMarkRepo);
 
     PExProjectNode *findProject(const QString &projectFile) const;
-    PExProjectNode *findProject(NodeId nodeId) const;
+    PExProjectNode *findProject(const NodeId& nodeId) const;
     PExProjectNode *findProject(const AbstractProcess* process, PExGroupNode *group = nullptr) const;
     PExProjectNode *findProject(QWidget *edit) const;
     PExProjectNode *findProjectForPEdit(QWidget *projectEdit) const;
-    PExFileNode *findFile(QString filePath, PExGroupNode *fileGroup = nullptr) const;
+    PExFileNode *findFile(const QString& filePath, PExGroupNode *fileGroup = nullptr) const;
     PExFileNode *findFile(FileMeta *fileMeta, PExGroupNode *fileGroup = nullptr) const;
 
     /// Get the <c>PExAbstractNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExAbstractNode</c>.
     /// \return The associated <c>PExAbstractNode</c> or a <c>nullptr</c>.
-    PExAbstractNode* node(NodeId id) const;
+    PExAbstractNode* node(const NodeId &id) const;
     PExAbstractNode* node(const QModelIndex& index) const;
 
     /// Get the <c>PExGroupNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExGroupNode</c>.
     /// \return The associated <c>PExGroupNode</c> or a <c>nullptr</c>.
-    PExGroupNode* asGroup(NodeId id) const;
+    PExGroupNode* asGroup(const NodeId &id) const;
 
     /// \brief Get the <c>PExGroupNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>PExGroupNode</c>.
@@ -88,7 +88,7 @@ public:
     /// Get the <c>PExProjectNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExGroupNode</c>.
     /// \return The associated <c>PExProjectNode</c> or a <c>nullptr</c>.
-    PExProjectNode* asProject(NodeId id) const;
+    PExProjectNode* asProject(const NodeId &id) const;
 
     /// \brief Get the <c>PExProjectNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>PExGroupNode</c>.
@@ -98,7 +98,7 @@ public:
     /// Get the <c>PExFileNode</c> related to a <c>NodeId</c>.
     /// \param id The NodeId pointing to the <c>PExFileNode</c>.
     /// \return The associated <c>PExFileNode</c> or a <c>nullptr</c>.
-    PExFileNode* asFileNode(NodeId id) const;
+    PExFileNode* asFileNode(const NodeId &id) const;
 
     /// \brief Get the <c>PExFileNode</c> related to a <c>QModelIndex</c>.
     /// \param index The QModelIndex pointing to the <c>PExFileNode</c>.
@@ -122,14 +122,14 @@ public:
     void save(PExProjectNode *project, const QVariantMap &data) const;
     QVariantMap getProjectMap(PExProjectNode *project, bool relativePaths = false) const;
 
-    PExProjectNode *createProject(QString name, QString path, QString runFileName, ProjectExistFlag mode,
-                                  QString workDir = QString(), PExProjectNode::Type type = PExProjectNode::tCommon);
+    PExProjectNode *createProject(QString name, const QString &path, const QString &runFileName, ProjectExistFlag mode,
+                                  const QString &workDir = QString(), PExProjectNode::Type type = PExProjectNode::tCommon);
     MultiCopyCheck getCopyPaths(PExProjectNode *project, const QString &filePath, QStringList &srcFiles, QStringList &dstFiles, QStringList &missFiles, QStringList &existFiles);
     void moveProject(PExProjectNode *project, const QString &filePath, bool fullCopy);
-    PExGroupNode *findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs);
+    PExGroupNode *findOrCreateFolder(const QString &folderName, PExGroupNode *parentNode, bool isAbs);
     PExFileNode *findOrCreateFileNode(QString location, PExProjectNode *project = nullptr, FileType *knownType = nullptr
-            , QString explicitName = QString());
-    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, QString explicitName = QString());
+            , const QString &explicitName = QString());
+    PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, const QString &explicitName = QString());
     QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
     const QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
     const QVector<AbstractProcess*> listProcesses();
@@ -169,12 +169,12 @@ signals:
 
 public slots:
     void gamsProcessStateChange(gams::studio::PExGroupNode* group);
-    void fileChanged(gams::studio::FileId fileId);
-    void nodeChanged(gams::studio::NodeId nodeId);
-    void closeNodeById(gams::studio::NodeId nodeId);
+    void fileChanged(const FileId &fileId);
+    void nodeChanged(const NodeId &nodeId);
+    void closeNodeById(const NodeId &nodeId);
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
 //    void markTexts(NodeId groupId, const QList<TextMark*> &marks, QStringList &result);
-    void errorTexts(gams::studio::NodeId groupId, const QVector<int> &lstLines, QStringList &result);
+    void errorTexts(const NodeId &groupId, const QVector<int> &lstLines, QStringList &result);
     void stepRunAnimation();
     void dropFiles(QModelIndex idx, QStringList files, QList<gams::studio::NodeId> knownIds, Qt::DropAction act,
                    QList<QModelIndex> &newSelection);
@@ -196,7 +196,7 @@ private:
     inline void removeFromIndex(PExAbstractNode* node) {
         mNodes.remove(node->id());
     }
-    bool parseGdxHeader(QString location);
+    bool parseGdxHeader(const QString &location);
 
 private:
     FileId mNextId;

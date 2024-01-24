@@ -483,7 +483,7 @@ void NavigatorDialog::itemClicked(const QModelIndex &index)
         selectItem(index);
 }
 
-void NavigatorDialog::regexChanged(QRegularExpression regex)
+void NavigatorDialog::regexChanged(const QRegularExpression &regex)
 {
     Q_UNUSED(regex)
 
@@ -492,7 +492,7 @@ void NavigatorDialog::regexChanged(QRegularExpression regex)
     mInput->setFocus(Qt::FocusReason::PopupFocusReason);
 }
 
-void NavigatorDialog::setFilter(QString filter)
+void NavigatorDialog::setFilter(const QString &filter)
 {
     QString regex = filter.trimmed();
     if (!regex.isEmpty()) {

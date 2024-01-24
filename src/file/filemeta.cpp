@@ -44,7 +44,7 @@
 namespace gams {
 namespace studio {
 
-FileMeta::FileMeta(FileMetaRepo *fileRepo, FileId id, QString location, FileType *knownType)
+FileMeta::FileMeta(FileMetaRepo *fileRepo, const FileId &id, const QString &location, FileType *knownType)
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
@@ -77,7 +77,7 @@ void FileMeta::setLocation(QString location)
     }
 }
 
-bool FileMeta::hasExistingFile(QList<QUrl> urls)
+bool FileMeta::hasExistingFile(const QList<QUrl> &urls)
 {
     for (const QUrl &url : urls) {
         if (url.isEmpty()) continue;
@@ -87,7 +87,7 @@ bool FileMeta::hasExistingFile(QList<QUrl> urls)
     return false;
 }
 
-bool FileMeta::hasExistingFolder(QList<QUrl> urls) {
+bool FileMeta::hasExistingFolder(const QList<QUrl> &urls) {
     for (const QUrl &url : urls) {
         if (url.isEmpty()) continue;
         QDir d(url.toLocalFile());
@@ -96,7 +96,7 @@ bool FileMeta::hasExistingFolder(QList<QUrl> urls) {
     return false;
 }
 
-QStringList FileMeta::pathList(QList<QUrl> urls)
+QStringList FileMeta::pathList(const QList<QUrl> &urls)
 {
     QStringList res;
     for (const QUrl &url : urls) {
@@ -145,7 +145,7 @@ QVector<QPoint> FileMeta::getEditPositions()
     return res;
 }
 
-void FileMeta::setEditPositions(QVector<QPoint> edPositions)
+void FileMeta::setEditPositions(const QVector<QPoint> &edPositions)
 {
     int i = 0;
     for (QWidget* widget: std::as_const(mEditors)) {
@@ -928,7 +928,7 @@ void FileMeta::renameToBackup()
 
 }
 
-FileMeta::FileDifferences FileMeta::compare(QString fileName)
+FileMeta::FileDifferences FileMeta::compare(const QString &fileName)
 {
     FileDifferences res;
     Data other(fileName.isEmpty() ? location() : fileName);
@@ -946,7 +946,7 @@ bool FileMeta::refreshMetaData()
     return res;
 }
 
-void FileMeta::jumpTo(NodeId groupId, bool focus, int line, int column, int length)
+void FileMeta::jumpTo(const NodeId &groupId, bool focus, int line, int column, int length)
 {
     mFileRepo->openFile(this, groupId, focus, codecMib());
     if (!mEditors.size()) return;
@@ -986,7 +986,7 @@ syntax::SyntaxHighlighter *FileMeta::highlighter() const
     return mHighlighter;
 }
 
-void FileMeta::marksChanged(QSet<int> lines)
+void FileMeta::marksChanged(const QSet<int> &lines)
 {
     QMutexLocker mx(&mDirtyLinesMutex);
     mDirtyLines.unite(lines);
@@ -1357,7 +1357,7 @@ FileMeta::Data::Data(QString location, FileType *knownType)
     }
 }
 
-FileMeta::FileDifferences FileMeta::Data::compare(FileMeta::Data other)
+FileMeta::FileDifferences FileMeta::Data::compare(const FileMeta::Data &other)
 {
     FileDifferences res;
     if (!other.exist) res.setFlag(FdMissing);

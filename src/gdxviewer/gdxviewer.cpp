@@ -42,7 +42,7 @@ namespace gams {
 namespace studio {
 namespace gdxviewer {
 
-GdxViewer::GdxViewer(QString gdxFile, QString systemDirectory, QTextCodec* codec, QWidget *parent)
+GdxViewer::GdxViewer(const QString &gdxFile, const QString &systemDirectory, QTextCodec* codec, QWidget *parent)
     : AbstractView(parent),
     ui(new Ui::GdxViewer),
     mGdxFile(gdxFile),
@@ -87,7 +87,7 @@ GdxViewer::~GdxViewer()
     delete ui;
 }
 
-void GdxViewer::updateSelectedSymbol(QItemSelection selected, QItemSelection deselected)
+void GdxViewer::updateSelectedSymbol(const QItemSelection &selected, const QItemSelection& deselected)
 {
     Q_UNUSED(selected)
     QModelIndexList rows = ui->tvSymbols->selectionModel()->selectedRows();
@@ -546,7 +546,7 @@ GdxViewerState *GdxViewer::state() const
     return mState;
 }
 
-void GdxViewer::readState(QVariantMap map)
+void GdxViewer::readState(const QVariantMap& map)
 {
     if (!map.isEmpty()) {
         if (!mState)

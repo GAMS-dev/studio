@@ -73,7 +73,7 @@ protected:
     bool insertChild(int row, PExGroupNode* parent, PExAbstractNode* child);
     bool removeChild(PExAbstractNode* child);
     NodeId nodeId(const QModelIndex &ind) const;
-    QModelIndex index(const NodeId id) const;
+    QModelIndex index(const NodeId &id) const;
 
     /// Tells if a model index is the current node
     /// \param ind

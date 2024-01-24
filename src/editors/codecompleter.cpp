@@ -447,7 +447,7 @@ QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
     return QVariant();
 }
 
-void CodeCompleterModel::setActiveNameSuffix(QString suffix)
+void CodeCompleterModel::setActiveNameSuffix(const QString &suffix)
 {
     if (mLastNameSuffix == suffix) return;
     removeTempData(ccSufName);
@@ -745,7 +745,7 @@ const QSet<int> CodeCompleter::cBlockSyntax {
     int(syntax::SyntaxKind::EmbeddedBody)
 };
 
-QPair<int, int> CodeCompleter::getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos)
+QPair<int, int> CodeCompleter::getSyntax(const QTextBlock &block, int pos, int &dcoFlavor, int &dotPos)
 {
     QString suffixName;
     emit syntaxFlagData(block, syntax::flagSuffixName, suffixName);
@@ -936,7 +936,7 @@ int CodeCompleter::findFilterRow(const QString &text, int top, int bot)
 }
 
 
-void CodeCompleter::updateDynamicData(QStringList symbols)
+void CodeCompleter::updateDynamicData(const QStringList &symbols)
 {
     Q_UNUSED(symbols)
     DEB() << "CodeCompleter doesn't support dynamic data yet";

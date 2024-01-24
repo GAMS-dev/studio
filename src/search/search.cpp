@@ -53,7 +53,7 @@ Search::~Search()
     mSearchThread.deleteLater();
 }
 
-void Search::start(SearchParameters parameters)
+void Search::start(const SearchParameters &parameters)
 {
     if (mSearching) return;
 
@@ -214,7 +214,8 @@ void Search::findInSelection(bool showResults)
     finished();
 }
 
-void Search::checkFileChanged(FileId fileId) {
+void Search::checkFileChanged(const FileId &fileId)
+{
     if (mSearchSelectionFile != fileId) {
         emit invalidateResults();
         mSearchSelectionFile = fileId;
@@ -362,7 +363,7 @@ void Search::selectNextMatch(Direction direction, bool firstLevel)
         emit selectResult(matchNr);
 }
 
-QFlags<QTextDocument::FindFlag> Search::createFindFlags(SearchParameters parameters, Direction direction) {
+QFlags<QTextDocument::FindFlag> Search::createFindFlags(const SearchParameters &parameters, Direction direction) {
     QFlags<QTextDocument::FindFlag> searchOptions;
     searchOptions.setFlag(QTextDocument::FindBackward, direction == Direction::Backward);
     searchOptions.setFlag(QTextDocument::FindCaseSensitively, parameters.caseSensitive);
@@ -441,7 +442,8 @@ int Search::NavigateInsideCache(Direction direction)
     return matchNr;
 }
 
-bool Search::hasResultsForFile(QString filePath) {
+bool Search::hasResultsForFile(const QString &filePath)
+{
     QHash<QString,QList<Result>>::iterator results = mResultHash.find(filePath);
     if (results == mResultHash.end())
         return false;
@@ -455,7 +457,7 @@ bool Search::hasResultsForFile(QString filePath) {
 /// \param regex find
 /// \param replaceTerm replace with
 ///
-int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
+int Search::replaceUnopened(FileMeta* fm, const SearchParameters &parameters)
 {
     QFile file(fm->location());
     QTextCodec *codec = fm->codec();
@@ -523,7 +525,7 @@ int Search::replaceUnopened(FileMeta* fm, SearchParameters parameters)
 /// \param replaceTerm replace with
 /// \param flags options
 ///
-int Search::replaceOpened(FileMeta* fm, SearchParameters parameters)
+int Search::replaceOpened(FileMeta* fm, const SearchParameters &parameters)
 {
     AbstractEdit* ae = ViewHelper::toAbstractEdit(fm->editors().constFirst());
 
@@ -591,12 +593,12 @@ QList<Result> Search::results() const
     return mResults;
 }
 
-QList<Result> Search::filteredResultList(QString fileLocation)
+QList<Result> Search::filteredResultList(const QString &fileLocation)
 {
     return mResultHash[fileLocation];
 }
 
-void Search::replaceNext(QString replacementText)
+void Search::replaceNext(const QString& replacementText)
 {
     AbstractEdit* edit = ViewHelper::toAbstractEdit(mSearchDialog->currentEditor());
     if (!edit) return;

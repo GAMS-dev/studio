@@ -33,7 +33,7 @@ class FileEvent;
 struct FileEventData
 {
     FileEventData();
-    FileEventData(FileId _fileId, FileEventKind _kind);
+    FileEventData(const FileId &_fileId, FileEventKind _kind);
     FileEventData(const FileEventData &other);
     FileEventData &operator= (const FileEventData &other);
     bool operator==(const FileEventData &other) const;
@@ -49,7 +49,7 @@ class FileEvent : public QEvent
 {
 public:
 
-    FileEvent(FileId fileId, FileEventKind kind);
+    FileEvent(const FileId &fileId, FileEventKind kind);
     ~FileEvent();
     FileId fileId() const;
     FileEventKind kind() const;

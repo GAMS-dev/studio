@@ -57,7 +57,7 @@ public:
 
     ProjectData(PExProjectNode *project);
     virtual ~ProjectData() override {}
-    void setFieldData(Field field, QString value);
+    void setFieldData(Field field, const QString& value);
     QString fieldData(Field field);
     PExProjectNode *project() { return mProject; }
     void save();
@@ -68,7 +68,7 @@ signals:
     void projectFilesChanged();
 
 private slots:
-    void projectChanged(gams::studio::NodeId id);
+    void projectChanged(const gams::studio::NodeId &id);
 
 private:
     void updateFile(FileKind kind, const QString &path);
@@ -110,7 +110,7 @@ private:
     void setSharedData(ProjectData *sharedData);
     void updateEditColor(QLineEdit *edit, const QString &text);
     void updateState();
-    void showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir);
+    void showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir);
     QStringList files(FileKind kind);
     void updateChanged(QComboBox *comboBox, const QStringList &data);
 

@@ -25,7 +25,7 @@
 namespace gams {
 namespace studio {
 
-DynamicFile::DynamicFile(QString fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
+DynamicFile::DynamicFile(const QString &fileName, int backups, QObject *parent): QObject(parent), mBackups(backups)
 {
     mFile.setFileName(fileName);
     if (mFile.exists()) runBackupCircle();
@@ -36,7 +36,7 @@ DynamicFile::~DynamicFile()
     closeFile();
 }
 
-void DynamicFile::appendLine(QString line)
+void DynamicFile::appendLine(const QString &line)
 {
     if (!mFile.isOpen())
         openFile();

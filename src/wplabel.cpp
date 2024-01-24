@@ -90,7 +90,7 @@ void WpLabel::setInactive(bool inactive)
     mInactive = inactive;
 }
 
-void WpLabel::setIcon(QIcon icon)
+void WpLabel::setIcon(const QIcon &icon)
 {
     mIcon = icon;
     update();

@@ -46,15 +46,15 @@ public:
 
 signals:
     void openFilePath(const QString &filePath);
-    void relayActionWp(QString action);
-    void relayModLibLoad(QString lib, bool forceOverwrite = false);
-    void relayDocOpen(QString doc, QString anchor);
+    void relayActionWp(const QString &action);
+    void relayModLibLoad(const QString &lib, bool forceOverwrite = false);
+    void relayDocOpen(const QString &doc, const QString &anchor);
 
 public slots:
     void historyChanged();
-    void on_relayAction(QString action);
-    void on_relayModLibLoad(QString lib);
-    void on_relayOpenDoc(QString doc, QString anchor);
+    void on_relayAction(const QString &action);
+    void on_relayModLibLoad(const QString &lib);
+    void on_relayOpenDoc(const QString &doc, const QString &anchor);
 
 private slots:
     void handleZoom(int delta);

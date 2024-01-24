@@ -34,10 +34,10 @@ public:
     int rowCount(const QModelIndex &parent) const;
     int columnCount(const QModelIndex &parent) const;
     QVariant data(const QModelIndex &index, int role) const;
-    void setContent(QVector<NavigatorContent> content);
+    void setContent(const QVector<NavigatorContent> &content);
     QVector<NavigatorContent> content() const;
     QDir currentDir() const;
-    void setCurrentDir(QDir dir);
+    void setCurrentDir(const QDir &dir);
     int findIndex(const QString &file);
 
 private:

@@ -189,7 +189,7 @@ public:
         if (mSyntaxFlags.isNull()) return QString();
         return mSyntaxFlags->value(flag);
     }
-    void setSyntaxFlag(SyntaxFlag flag, QString value) {
+    void setSyntaxFlag(SyntaxFlag flag, const QString &value) {
         clone();
         mSyntaxFlags->insert(flag, value);
     }
@@ -210,14 +210,14 @@ class SyntaxCommentEndline;
 
 struct SyntaxBlock
 {
-    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, SyntaxState _state = SyntaxState(), int _start = 0, int _end = 0
+    SyntaxBlock(SyntaxAbstract* _syntax = nullptr, const SyntaxState &_state = SyntaxState(), int _start = 0, int _end = 0
             , bool _error = false , SyntaxShift _shift = SyntaxShift::shift, SyntaxKind _next = SyntaxKind::Standard)
         : syntax(_syntax), state(_state), start(_start), end(_end), error(_error), shift(_shift), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, SyntaxState _state, int _start, int _end, SyntaxKind _next, bool _error = false)
+    SyntaxBlock(SyntaxAbstract* _syntax, const SyntaxState &_state, int _start, int _end, SyntaxKind _next, bool _error = false)
         : syntax(_syntax), state(_state), start(_start), end(_end), error(_error), shift(SyntaxShift::in), next(_next)
     { }
-    SyntaxBlock(SyntaxAbstract* _syntax, SyntaxState _state, int _start, int _end, SyntaxShift _shift, bool _error = false)
+    SyntaxBlock(SyntaxAbstract* _syntax, const SyntaxState &_state, int _start, int _end, SyntaxShift _shift, bool _error = false)
         : syntax(_syntax), state(_state), start(_start), end(_end), error(_error), shift(_shift),
           next(SyntaxKind::Standard)
     { }
@@ -270,7 +270,7 @@ public:
     virtual QTextCharFormat& charFormat() { return mCharFormat; }
     virtual QTextCharFormat charFormatError();
     virtual int maxNesting() { return 0; }
-    virtual void copyCharFormat(QTextCharFormat charFormat) { mCharFormat = charFormat; }
+    virtual void copyCharFormat(const QTextCharFormat &charFormat) { mCharFormat = charFormat; }
     virtual QStringList docForLastRequest() const { return QStringList(); }
     int intSyntaxType() { return static_cast<int>(kind()); }
 
@@ -280,7 +280,7 @@ protected:
     static const QVector<QChar> cSpecialCharacters;  // other breaking kind
 
     enum CharClass {ccOther, ccSpecial, ccAlpha};
-    inline int charClass(QChar ch, int &prev, QVector<QChar> moreSpecialChars = QVector<QChar>()) {
+    inline int charClass(QChar ch, int &prev, const QVector<QChar> &moreSpecialChars = QVector<QChar>()) {
         // ASCII:   "   $   '   .   0  9   ;   =   A  Z   _   a   z
         // Code:   34, 36, 39, 46, 48-57, 59, 61, 65-90, 95, 97-122
         if (ch < '"' || ch > 'z')
@@ -367,7 +367,7 @@ class SyntaxDcoBody: public SyntaxAbstract
     QVector<QChar> mEolComChars;
 public:
     SyntaxDcoBody(SyntaxKind kind, SharedSyntaxData* sharedData);
-    void setCommentChars(QVector<QChar> chars);
+    void setCommentChars(const QVector<QChar> &chars);
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
 };
@@ -388,8 +388,8 @@ class SyntaxCommentEndline: public SyntaxAbstract
 {
     QString mCommentChars;
 public:
-    SyntaxCommentEndline(SharedSyntaxData* sharedData, QString commentChars = "!!");
-    void setCommentChars(QString commentChars);
+    SyntaxCommentEndline(SharedSyntaxData* sharedData, const QString &commentChars = "!!");
+    void setCommentChars(const QString &commentChars);
     QString commentChars() const { return mCommentChars; }
     bool check(const QString &line, int index) const;
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
@@ -432,7 +432,7 @@ public:
     SyntaxFormula(SyntaxKind kind, SharedSyntaxData* sharedData);
     SyntaxBlock find(const SyntaxKind entryKind, SyntaxState state, const QString &line, int index) override;
     SyntaxBlock validTail(const QString &line, int index, SyntaxState state, bool &hasContent) override;
-    void setSpecialDynamicChars(QVector<QChar> chars);
+    void setSpecialDynamicChars(const QVector<QChar> &chars);
 };
 
 class SyntaxQuoted : public SyntaxAbstract

@@ -38,9 +38,9 @@ namespace studio {
 struct LineFormat {
     LineFormat() {}
     LineFormat(const LineFormat &other) { *this = other; }
-    LineFormat(int _start, int _end, QTextCharFormat _format)
+    LineFormat(int _start, int _end, const QTextCharFormat &_format)
         : start(_start), end(_end), format(_format) {}
-    LineFormat(int _start, int _end, QTextCharFormat _format, QString ref)
+    LineFormat(int _start, int _end, const QTextCharFormat &_format, const QString &ref)
         : start(_start), end(_end), format(_format) {
         format.setAnchorHref(ref);
     }
@@ -124,7 +124,7 @@ public:
     bool hasSearchSelection();
     virtual QPoint searchSelectionStart() = 0;
     virtual QPoint searchSelectionEnd() = 0;
-    void setLineMarkers(const QList<int> lines);
+    void setLineMarkers(const QList<int> &lines);
     QList<int> lineMarkers() const;
 
     virtual void dumpPos() const = 0;

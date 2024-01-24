@@ -37,7 +37,7 @@ class LineMarks: public QMultiMap<int, TextMark*>
 public:
     LineMarks();
     bool hasVisibleMarks() const;
-    TextMark* firstError(NodeId groupId) const {
+    TextMark* firstError(const NodeId &groupId) const {
         if (isEmpty()) return nullptr;
         QList<TextMark*> marks = values(firstKey());
         TextMark* res = nullptr;
@@ -59,23 +59,23 @@ public:
     ~TextMarkRepo() override;
     void init(FileMetaRepo *fileRepo, ProjectRepo *projectRepo);
 
-    void removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
-    void removeMarks(FileId fileId, QSet<TextMark::Type> types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
-    TextMark* createMark(const FileId fileId, TextMark::Type type, int line, int column, int size = 0);
-    TextMark* createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value, int line, int column, int size = 0);
-    bool hasBookmarks(FileId fileId);
-    TextMark* findBookmark(FileId fileId, int currentLine, bool back);
+    void removeMarks(const FileId &fileId, const NodeId &groupId, const QSet<TextMark::Type> &types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
+    void removeMarks(const FileId &fileId, const QSet<TextMark::Type> &types = QSet<TextMark::Type>(), int lineNr = -1, int lastLine = -1);
+    TextMark* createMark(const FileId &fileId, TextMark::Type type, int line, int column, int size = 0);
+    TextMark* createMark(const FileId &fileId, const NodeId &groupId, TextMark::Type type, int value, int line, int column, int size = 0);
+    bool hasBookmarks(const FileId &fileId);
+    TextMark* findBookmark(const FileId &fileId, int currentLine, bool back);
     void removeBookmarks();
-    QTextDocument* document(FileId fileId) const;
+    QTextDocument* document(const FileId &fileId) const;
 
     FileMetaRepo *fileRepo() const { return mFileRepo; }
     void clear();
     void jumpTo(TextMark *mark, bool focus = false, bool ignoreColumn = false);
-    void rehighlight(FileId fileId, int line);
-    FileKind fileKind(FileId fileId);
-    QList<TextMark *> marks(FileId fileId, int lineNr, NodeId groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
-    const LineMarks *marks(FileId fileId);
-    void shiftMarks(FileId fileId, int firstLine, int lineShift);
+    void rehighlight(const FileId &fileId, int line);
+    FileKind fileKind(const FileId &fileId);
+    QList<TextMark *> marks(const FileId &fileId, int lineNr, const NodeId &groupId = -1, TextMark::Type refType = TextMark::all, int max = -1) const;
+    const LineMarks *marks(const FileId &fileId);
+    void shiftMarks(const FileId &fileId, int firstLine, int lineShift);
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -88,9 +88,8 @@ private:
     bool mDebug = false;
 
 private:
-    FileId ensureFileId(QString location);
-    void removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr, int lastLine);
-
+    FileId ensureFileId(const QString &location);
+    void removeMarks(const FileId &fileId, const NodeId &groupId, bool allGroups, const QSet<TextMark::Type> &types, int lineNr, int lastLine);
 };
 
 } // namespace studio

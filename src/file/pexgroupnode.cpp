@@ -44,7 +44,7 @@
 namespace gams {
 namespace studio {
 
-PExGroupNode::PExGroupNode(QString name, QString location, NodeType type)
+PExGroupNode::PExGroupNode(const QString &name, const QString &location, NodeType type)
     : PExAbstractNode(name, type)
 {
     PExGroupNode::setLocation(location);
@@ -175,7 +175,7 @@ PExProjectNode *PExGroupNode::findProject(const AbstractProcess *process) const
     return nullptr;
 }
 
-PExProjectNode *PExGroupNode::findProject(FileId runId) const
+PExProjectNode *PExGroupNode::findProject(const FileId &runId) const
 {
     for (PExAbstractNode* node: childNodes()) {
         PExProjectNode* project = node->toProject();
@@ -210,12 +210,13 @@ void PExGroupNode::moveChildNode(int from, int to)
     mChildNodes.move(from, to);
 }
 
-void PExGroupNode::hasFile(QString fName, bool &exists)
+void PExGroupNode::hasFile(const QString &fName, bool &exists)
 {
     exists = findFile(fName);
 }
 
-PExProjectNode::PExProjectNode(QString filePath, QString basePath, FileMeta* runFileMeta, QString workDir, Type type)
+PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
+                               FileMeta* runFileMeta, const QString &workDir, Type type)
     : PExGroupNode(QFileInfo(filePath).completeBaseName(), basePath, NodeType::project)
     , mProjectFile(filePath)
     , mWorkDir(workDir)
@@ -346,7 +347,7 @@ void PExProjectNode::removeChild(PExAbstractNode *child)
     setNeedSave();
 }
 
-QString PExProjectNode::resolveHRef(QString href, PExFileNode *&node, int &line, int &col, bool create)
+QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int &line, int &col, bool create)
 {
     const QStringList tags {"LST","LS2","INC","LIB","SYS","DIR"};
     QString res;
@@ -670,7 +671,7 @@ QString PExProjectNode::errorText(int lstLine)
     return mErrorTexts.value(lstLine);
 }
 
-void PExProjectNode::setErrorText(int lstLine, QString text)
+void PExProjectNode::setErrorText(int lstLine, const QString &text)
 {
     if (text.isEmpty()) {
         DEB() << "Empty LST-text ignored for line " << lstLine;
@@ -797,7 +798,7 @@ bool PExProjectNode::hasErrorText(int lstLine)
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
-void PExProjectNode::addRunParametersHistory(QString runParameters)
+void PExProjectNode::addRunParametersHistory(const QString &runParameters)
 {
     if (!runParameters.simplified().isEmpty()) {
        QStringList list = mRunParametersHistory.filter(runParameters.simplified());
@@ -1074,7 +1075,7 @@ void PExProjectNode::addNodesForSpecialFiles()
 {
     FileMeta* runFile = runnableGms();
     for (auto it = mParameterHash.constBegin(); it != mParameterHash.constEnd(); ++it) {
-        QString loc = it.value();
+        const QString &loc = it.value();
         if (loc.isEmpty())
             continue;
         if (QFileInfo::exists(loc)) {

@@ -64,8 +64,8 @@ public:
     void clearSelection();
     AbstractEdit *edit();
     void setLineWrapMode(QPlainTextEdit::LineWrapMode mode);
-    bool findText(QRegularExpression searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
-    void findInSelection(QRegularExpression searchRegex, FileMeta *file, QList<search::Result> *results, bool showResults);
+    bool findText(const QRegularExpression &searchRegex, QTextDocument::FindFlags flags, bool &continueFind);
+    void findInSelection(const QRegularExpression &searchRegex, FileMeta *file, QList<search::Result> *results, bool showResults);
     void clearSearchSelection();
     void setSearchSelectionActive(bool active);
     TextKind textKind() const;
@@ -110,7 +110,7 @@ private slots:
     void updateVScrollZone();
 
 protected slots:
-    void marksChanged(const QSet<int> dirtyLines = QSet<int>());
+    void marksChanged(const QSet<int> &dirtyLines = QSet<int>());
     void recalcVisibleLines();
     void topLineMoved();
 

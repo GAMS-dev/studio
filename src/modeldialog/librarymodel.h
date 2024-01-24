@@ -32,7 +32,7 @@ class LibraryModel : public QAbstractTableModel
     Q_OBJECT
 
 public:
-    explicit LibraryModel(QList<LibraryItem> data, QObject *parent = nullptr);
+    explicit LibraryModel(const QList<LibraryItem> &data, QObject *parent = nullptr);
 
     QVariant headerData(int section, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;

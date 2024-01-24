@@ -43,17 +43,17 @@ void TextMarkRepo::init(FileMetaRepo *fileRepo, ProjectRepo *projectRepo)
     mProjectRepo = projectRepo;
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, QSet<TextMark::Type> types, int lineNr, int lastLine)
+void TextMarkRepo::removeMarks(const FileId &fileId, const NodeId &groupId, const QSet<TextMark::Type> &types, int lineNr, int lastLine)
 {
     removeMarks(fileId, groupId, false, types, lineNr, (lastLine < 0 ? lineNr : lastLine));
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, QSet<TextMark::Type> types, int lineNr, int lastLine)
+void TextMarkRepo::removeMarks(const FileId &fileId, const QSet<TextMark::Type> &types, int lineNr, int lastLine)
 {
     removeMarks(fileId, NodeId(), true, types, lineNr, (lastLine < 0 ? lineNr : lastLine));
 }
 
-void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QSet<TextMark::Type> types, int lineNr, int lastLine)
+void TextMarkRepo::removeMarks(const FileId &fileId, const NodeId &groupId, bool allGroups, const QSet<TextMark::Type> &types, int lineNr, int lastLine)
 {
     LineMarks* marks = mMarks.value(fileId);
     if (!marks) return;
@@ -94,12 +94,12 @@ void TextMarkRepo::removeMarks(FileId fileId, NodeId groupId, bool allGroups, QS
     if (fm) fm->marksChanged(changedLines);
 }
 
-TextMark *TextMarkRepo::createMark(const FileId fileId, TextMark::Type type, int line, int column, int size)
+TextMark *TextMarkRepo::createMark(const FileId &fileId, TextMark::Type type, int line, int column, int size)
 {
     return createMark(fileId, NodeId(), type, 0, line, column, size);
 }
 
-TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, TextMark::Type type, int value
+TextMark *TextMarkRepo::createMark(const FileId &fileId, const NodeId &groupId, TextMark::Type type, int value
                                    , int line, int column, int size)
 {
     Q_UNUSED(value)
@@ -127,12 +127,12 @@ TextMark *TextMarkRepo::createMark(const FileId fileId, const NodeId groupId, Te
     return mark;
 }
 
-bool TextMarkRepo::hasBookmarks(FileId fileId)
+bool TextMarkRepo::hasBookmarks(const FileId &fileId)
 {
     return mBookmarkedFiles.contains(fileId);
 }
 
-TextMark *TextMarkRepo::findBookmark(FileId fileId, int currentLine, bool back)
+TextMark *TextMarkRepo::findBookmark(const FileId &fileId, int currentLine, bool back)
 {
     const LineMarks *lm = marks(fileId);
     if (lm->cbegin() == lm->cend()) return nullptr;
@@ -173,7 +173,7 @@ void TextMarkRepo::removeBookmarks()
     }
 }
 
-QTextDocument *TextMarkRepo::document(FileId fileId) const
+QTextDocument *TextMarkRepo::document(const FileId &fileId) const
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
     return fm ? fm->document() : nullptr;
@@ -184,7 +184,7 @@ void TextMarkRepo::clear()
     while (!mMarks.isEmpty()) {
         QHash<FileId, LineMarks*>::iterator it = mMarks.begin();
         LineMarks *marks = *it;
-        FileId fileId = it.key();
+        const FileId &fileId = it.key();
         removeMarks(fileId);
         mMarks.remove(fileId);
         delete marks;
@@ -203,20 +203,20 @@ void TextMarkRepo::jumpTo(TextMark *mark, bool focus, bool ignoreColumn)
     }
 }
 
-void TextMarkRepo::rehighlight(FileId fileId, int line)
+void TextMarkRepo::rehighlight(const FileId &fileId, int line)
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
     if (fm) fm->rehighlight(line);
 }
 
-FileKind TextMarkRepo::fileKind(FileId fileId)
+FileKind TextMarkRepo::fileKind(const FileId &fileId)
 {
     FileMeta* fm = mFileRepo->fileMeta(fileId);
     if (fm) return fm->kind();
     return FileKind::None;
 }
 
-QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, TextMark::Type refType, int max) const
+QList<TextMark*> TextMarkRepo::marks(const FileId &fileId, int lineNr, const NodeId &groupId, TextMark::Type refType, int max) const
 {
     QList<TextMark*> res;
     if (!mMarks.contains(fileId)) return res;
@@ -250,7 +250,7 @@ QList<TextMark*> TextMarkRepo::marks(FileId fileId, int lineNr, NodeId groupId, 
     return res;
 }
 
-const LineMarks *TextMarkRepo::marks(FileId fileId)
+const LineMarks *TextMarkRepo::marks(const FileId &fileId)
 {
     if (!mMarks.contains(fileId)) {
         mMarks.insert(fileId, new LineMarks());
@@ -258,7 +258,7 @@ const LineMarks *TextMarkRepo::marks(FileId fileId)
     return mMarks.value(fileId, nullptr);
 }
 
-void TextMarkRepo::shiftMarks(FileId fileId, int firstLine, int lineShift)
+void TextMarkRepo::shiftMarks(const FileId &fileId, int firstLine, int lineShift)
 {
     LineMarks *marks = mMarks.value(fileId);
     if (!marks || !marks->size() || !lineShift) return;
@@ -312,7 +312,7 @@ bool TextMarkRepo::debugMode() const
     return mDebug;
 }
 
-FileId TextMarkRepo::ensureFileId(QString location)
+FileId TextMarkRepo::ensureFileId(const QString &location)
 {
     if (location.isEmpty()) return -1;
     FileMeta* fm = mFileRepo->findOrCreateFileMeta(location);

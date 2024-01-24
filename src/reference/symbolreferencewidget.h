@@ -53,7 +53,7 @@ public:
     bool isModelLoaded() const;
 
 public slots:
-    void updateSelectedSymbol(QItemSelection selected, QItemSelection deselected);
+    void updateSelectedSymbol(const QItemSelection &selected, const QItemSelection &deselected);
     void expandResetModel();
     void resetModel();
     void initModel();

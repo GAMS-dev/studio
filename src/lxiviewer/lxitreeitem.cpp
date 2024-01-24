@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeItem::LxiTreeItem(QString index, int lineNr, QString text, LxiTreeItem *parentItem)
+LxiTreeItem::LxiTreeItem(const QString &index, int lineNr, const QString &text, LxiTreeItem *parentItem)
     : mIndex(index), mLineNr(lineNr), mText(text), mParentItem(parentItem)
 {
 

@@ -246,12 +246,12 @@ void gams::studio::gdxdiffdialog::GdxDiffDialog::setRecentPath(const QString &re
     prepopulateDiff();
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(QString filePath)
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput1(const QString &filePath)
 {
     ui->leInput1->setText(QDir::toNativeSeparators(filePath));
 }
 
-void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(QString filePath)
+void gams::studio::gdxdiffdialog::GdxDiffDialog::setInput2(const QString &filePath)
 {
     ui->leInput2->setText(QDir::toNativeSeparators(filePath));
 }

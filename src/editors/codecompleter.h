@@ -107,7 +107,7 @@ public:
     QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
     int dollarGroupRow() { return mDollarGroupRow; }
     int percentGroupRow() { return mPercentGroupRow; }
-    void setActiveNameSuffix(QString suffix);
+    void setActiveNameSuffix(const QString &suffix);
     bool hasActiveNameSuffix();
 
 private:
@@ -150,7 +150,7 @@ public:
     void setCodeEdit(QPlainTextEdit *edit);
     QPlainTextEdit* codeEdit() { return mEdit; }
     void updateFilter(int posInBlock = -1, QString line = QString());
-    void updateDynamicData(QStringList symbols);
+    void updateDynamicData(const QStringList &symbols);
     int rowCount();
     void ShowIfData();
     void setCasing(CodeCompleterCasing casing);
@@ -184,7 +184,7 @@ private:
     int findBound(int pos, const QString &nextTwo, int good, int look);
     int findFilterRow(const QString &text, int top, int bot);
     void updateFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos);
-    QPair<int, int> getSyntax(QTextBlock block, int pos, int &dcoFlavor, int &dotPos);
+    QPair<int, int> getSyntax(const QTextBlock &block, int pos, int &dcoFlavor, int &dotPos);
 
 private:
     QPlainTextEdit *mEdit;

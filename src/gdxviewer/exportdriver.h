@@ -37,9 +37,9 @@ class ExportDriver : public QObject
 public:
     explicit ExportDriver(GdxViewer *gdxViewer, ExportModel *exportModel, QObject *parent = nullptr);
     ~ExportDriver();
-    bool save(QString connectFile, QString output, bool applyFilters);
-    void execute(QString connectFile, QString workingDirectory);
-    void saveAndExecute(QString connectFile, QString output, QString workingDirectory, bool applyFilters);
+    bool save(const QString& connectFile, const QString &output, bool applyFilters);
+    void execute(const QString &connectFile, const QString &workingDirectory);
+    void saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters);
     void cancelProcess(int waitMSec=0);
 
 signals:
@@ -52,9 +52,9 @@ private:
     QScopedPointer<ConnectProcess> mProc;
     GdxViewer *mGdxViewer = nullptr;
     ExportModel *mExportModel = nullptr;
-    QString generateInstructions(QString gdxFile, QString output, bool applyFilters);
-    QString generateGdxReader(QString gdxFile);
-    QString generatePDExcelWriter(QString excelFile, bool applyFilters);
+    QString generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters);
+    QString generateGdxReader(const QString &gdxFile);
+    QString generatePDExcelWriter(const QString &excelFile, bool applyFilters);
     QString generateProjections(bool applyFilters);
     QString generateFilters();
 

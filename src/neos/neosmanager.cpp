@@ -85,7 +85,7 @@ void NeosManager::version()
     emit submitCall("version");
 }
 
-bool NeosManager::submitJob(QString fileName, QString eMail, QString params, bool prioShort, bool wantGdx)
+bool NeosManager::submitJob(const QString &fileName, const QString &eMail, const QString &params, bool prioShort, bool wantGdx)
 {
     QFile f(fileName);
     if (!f.exists() || !f.open(QFile::ReadOnly)) {
@@ -102,7 +102,7 @@ bool NeosManager::submitJob(QString fileName, QString eMail, QString params, boo
     return true;
 }
 
-void NeosManager::watchJob(int jobNumber, QString password)
+void NeosManager::watchJob(int jobNumber, const QString &password)
 {
     mJobNumber = jobNumber;
     mPassword = password;
@@ -144,7 +144,7 @@ void NeosManager::getFinalResultsNonBlocking()
     emit submitCall("getFinalResultsNonBlocking", QVariantList() << mJobNumber << mPassword);
 }
 
-void NeosManager::getOutputFile(QString fileName)
+void NeosManager::getOutputFile(const QString &fileName)
 {
     emit submitCall("getOutputFile", QVariantList() << mJobNumber << mPassword << fileName);
 }
@@ -157,7 +157,7 @@ void NeosManager::setDebug(bool debug)
         disconnect(&mHttp, &HttpManager::received, this, &NeosManager::debugReceived);
 }
 
-void NeosManager::received(QString name, QVariant data)
+void NeosManager::received(const QString &name, const QVariant &data)
 {
     NeosCall c = neosCalls.value(name);
     QVariantList list = data.toList();
@@ -221,7 +221,7 @@ void NeosManager::received(QString name, QVariant data)
     }
 }
 
-void NeosManager::debugReceived(QString name, QVariant data)
+void NeosManager::debugReceived(const QString &name, const QVariant &data)
 {
     qDebug() << "\nResult from " << name << ":\n" << data;
 }

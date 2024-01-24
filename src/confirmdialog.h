@@ -34,7 +34,10 @@ class ConfirmDialog : public QDialog
     Q_OBJECT
 
 public:
-    explicit ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent = nullptr);
+    explicit ConfirmDialog(const QString &title,
+                           const QString &text,
+                           const QString &checkText,
+                           QWidget *parent = nullptr);
     ~ConfirmDialog();
     void setBoxAccepted(bool accept);
 

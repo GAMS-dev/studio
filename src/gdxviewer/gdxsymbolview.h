@@ -56,7 +56,7 @@ public:
     QVector<QStringList> pendingUncheckedLabels() const;
     GdxSymbol *sym() const;
     void setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, GdxSymbolViewState* symViewState=nullptr);
-    void copySelectionToClipboard(QString separator, bool copyLabels = true);
+    void copySelectionToClipboard(const QString &separator, bool copyLabels = true);
     void toggleColumnHidden();
     void moveTvFilterColumns(int from, int to);
     void applyState(GdxSymbolViewState* symViewState);
@@ -110,8 +110,8 @@ private:
     QMenu *mColumnFilterMenu = nullptr;
 
     void showListView();
-    void showTableView(int colDim = -1, QVector<int> tvDimOrder = QVector<int>());
-    void initTableViewModel(int colDim, QVector<int> tvDimOrder);
+    void showTableView(int colDim = -1, const QVector<int> &tvDimOrder = QVector<int>());
+    void initTableViewModel(int colDim, const QVector<int> &tvDimOrder);
     void showDefaultView(GdxSymbolViewState* symViewState = nullptr);
     void toggleView();
 
@@ -119,7 +119,7 @@ private:
     void resetValFormat();
     void saveTableViewHeaderState(GdxSymbolViewState* symViewState);
     void restoreTableViewHeaderState(GdxSymbolViewState* symViewState);
-    QString copySelectionToString(QString separator, bool copyLabels = true);
+    QString copySelectionToString(const QString &separator, bool copyLabels = true);
     bool matchAndSelect(int row, int col, QTableView *tv);
     void markSearchResults();
 

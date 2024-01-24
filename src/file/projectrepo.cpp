@@ -76,7 +76,7 @@ PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const
     return root->findProject(projectFile);
 }
 
-PExProjectNode *ProjectRepo::findProject(NodeId nodeId) const
+PExProjectNode *ProjectRepo::findProject(const NodeId& nodeId) const
 {
     PExAbstractNode *node = mNodes.value(nodeId);
     if (!node) return nullptr;
@@ -89,7 +89,7 @@ PExProjectNode *ProjectRepo::findProject(const AbstractProcess *process, PExGrou
     return group->findProject(process);
 }
 
-PExFileNode *ProjectRepo::findFile(QString filePath, PExGroupNode *fileGroup) const
+PExFileNode *ProjectRepo::findFile(const QString& filePath, PExGroupNode *fileGroup) const
 {
     FileMeta* fm = mFileRepo->fileMeta(filePath);
     return findFile(fm, fileGroup);
@@ -101,7 +101,7 @@ PExFileNode *ProjectRepo::findFile(FileMeta *fileMeta, PExGroupNode *fileGroup) 
     return group->findFile(fileMeta);
 }
 
-PExAbstractNode *ProjectRepo::node(NodeId id) const
+PExAbstractNode *ProjectRepo::node(const NodeId &id) const
 {
     return mNodes.value(id, nullptr);
 }
@@ -111,7 +111,7 @@ PExAbstractNode*ProjectRepo::node(const QModelIndex& index) const
     return node(NodeId(int(index.internalId())));
 }
 
-PExGroupNode *ProjectRepo::asGroup(NodeId id) const
+PExGroupNode *ProjectRepo::asGroup(const NodeId &id) const
 {
     PExAbstractNode* res = mNodes.value(id, nullptr);
     return (!res ? nullptr : res->toGroup());
@@ -122,7 +122,7 @@ PExGroupNode*ProjectRepo::asGroup(const QModelIndex& index) const
     return asGroup(NodeId(int(index.internalId())));
 }
 
-PExProjectNode *ProjectRepo::asProject(NodeId id) const
+PExProjectNode *ProjectRepo::asProject(const NodeId &id) const
 {
     PExAbstractNode* res = mNodes.value(id, nullptr);
     return (!res ? nullptr : res->toProject());
@@ -133,7 +133,7 @@ PExProjectNode *ProjectRepo::asProject(const QModelIndex &index) const
     return asProject(NodeId(int(index.internalId())));
 }
 
-PExFileNode *ProjectRepo::asFileNode(NodeId id) const
+PExFileNode *ProjectRepo::asFileNode(const NodeId &id) const
 {
     PExAbstractNode* res = mNodes.value(id, nullptr);
     return (!res ? nullptr : res->toFile());
@@ -548,8 +548,8 @@ void ProjectRepo::uniqueProjectFile(PExGroupNode *parentNode, QString &filePath)
     filePath = res;
 }
 
-PExProjectNode* ProjectRepo::createProject(QString name, QString path, QString runFileName, ProjectExistFlag mode,
-                                           QString workDir, PExProjectNode::Type type)
+PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, const QString &runFileName, ProjectExistFlag mode,
+                                           const QString &workDir, PExProjectNode::Type type)
 {
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
@@ -650,7 +650,7 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
     }
 }
 
-PExGroupNode *ProjectRepo::findOrCreateFolder(QString folderName, PExGroupNode *parentNode, bool isAbs)
+PExGroupNode *ProjectRepo::findOrCreateFolder(const QString &folderName, PExGroupNode *parentNode, bool isAbs)
 {
     if (!parentNode) FATAL() << "Parent-node missing";
     if (parentNode == mTreeModel->rootNode()) FATAL() << "Folder-node must not exist on top level";
@@ -740,7 +740,7 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
 }
 
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,
-                                                   QString explicitName)
+                                               const QString &explicitName)
 {
     if (location.isEmpty())
         return nullptr;
@@ -754,7 +754,7 @@ PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode 
     return findOrCreateFileNode(fileMeta, project, explicitName);
 }
 
-PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode* project, QString explicitName)
+PExFileNode* ProjectRepo::findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode* project, const QString &explicitName)
 {
     if (!fileMeta) {
         DEB() << "The file meta must not be null";
@@ -894,7 +894,7 @@ void ProjectRepo::selectionChanged(const QItemSelection &selected, const QItemSe
     }
 }
 
-void ProjectRepo::errorTexts(NodeId groupId, const QVector<int> &lstLines, QStringList &result)
+void ProjectRepo::errorTexts(const NodeId &groupId, const QVector<int> &lstLines, QStringList &result)
 {
     PExProjectNode *project = asProject(groupId);
     if (project)
@@ -1047,7 +1047,7 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
     if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
 }
 
-void ProjectRepo::nodeChanged(NodeId nodeId)
+void ProjectRepo::nodeChanged(const NodeId &nodeId)
 {
     PExAbstractNode* nd = node(nodeId);
     if (!nd) return;
@@ -1055,7 +1055,7 @@ void ProjectRepo::nodeChanged(NodeId nodeId)
     emit mTreeModel->dataChanged(ndIndex, ndIndex);
 }
 
-void ProjectRepo::closeNodeById(NodeId nodeId)
+void ProjectRepo::closeNodeById(const NodeId &nodeId)
 {
     PExAbstractNode *aNode = node(nodeId);
     if (!aNode) return;
@@ -1065,7 +1065,7 @@ void ProjectRepo::closeNodeById(NodeId nodeId)
     if (group) purgeGroup(group);
 }
 
-bool ProjectRepo::parseGdxHeader(QString location)
+bool ProjectRepo::parseGdxHeader(const QString &location)
 {
     QFile file(location);
     if (file.open(QFile::ReadOnly)) {
@@ -1119,7 +1119,7 @@ bool ProjectRepo::debugMode() const
     return mDebugMode;
 }
 
-void ProjectRepo::fileChanged(FileId fileId)
+void ProjectRepo::fileChanged(const FileId &fileId)
 {
     QVector<PExGroupNode*> groups;
     const auto nodes = fileNodes(fileId);

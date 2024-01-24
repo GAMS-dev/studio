@@ -50,7 +50,7 @@ private slots:
 private:
     PinData *pinChild(PExProjectNode *project) const;
     bool hasPinView();
-    void debugData(QString text);
+    void debugData(const QString &text);
 
 private:
     pin::PinViewWidget *mPinView = nullptr;

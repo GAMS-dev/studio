@@ -48,7 +48,7 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(QString connectFile, QString output, bool applyFilters)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
@@ -58,7 +58,7 @@ bool ExportDriver::save(QString connectFile, QString output, bool applyFilters)
     return true;
 }
 
-void ExportDriver::execute(QString connectFile, QString workingDirectory)
+void ExportDriver::execute(const QString &connectFile, const QString &workingDirectory)
 {
     QStringList l;
     l << connectFile;
@@ -67,7 +67,7 @@ void ExportDriver::execute(QString connectFile, QString workingDirectory)
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(QString connectFile, QString output, QString workingDirectory, bool applyFilters)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters)
 {
     if (save(connectFile, output, applyFilters))
         execute(connectFile, workingDirectory);
@@ -79,7 +79,7 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(QString gdxFile, QString output, bool applyFilters)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters)
 {
     QString inst;
     inst += generateGdxReader(gdxFile);
@@ -90,7 +90,7 @@ QString ExportDriver::generateInstructions(QString gdxFile, QString output, bool
     return inst;
 }
 
-QString ExportDriver::generateGdxReader(QString gdxFile)
+QString ExportDriver::generateGdxReader(const QString &gdxFile)
 {
     QString inst;
     inst += "- GDXReader:\n";
@@ -112,7 +112,7 @@ QString ExportDriver::generateGdxReader(QString gdxFile)
 }
 
 
-QString ExportDriver::generatePDExcelWriter(QString excelFile, bool applyFilters)
+QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool applyFilters)
 {
     QString inst = "- PandasExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";

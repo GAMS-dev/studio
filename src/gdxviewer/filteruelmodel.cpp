@@ -98,7 +98,7 @@ bool *FilterUelModel::checked() const
     return mChecked;
 }
 
-void FilterUelModel::filterLabels(QRegularExpression regExp)
+void FilterUelModel::filterLabels(const QRegularExpression &regExp)
 {
     bool checkedOld, checkedNew;
     for(size_t idx=0; idx<mUels->size(); idx++) {

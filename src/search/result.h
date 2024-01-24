@@ -32,9 +32,9 @@ class Result
 {
     friend class SearchResultList;
 public:
-    explicit Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context = "");
+    explicit Result(int lineNr, int colNr, int length, const QString &fileLoc, const NodeId& parent, const QString& context = "");
 
-    bool operator==(const Result r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
+    bool operator==(const Result& r1) { return (filepath()==r1.filepath() && lineNr()==r1.lineNr() && colNr()==r1.colNr()); }
 
     int lineNr() const;
     int colNr() const;
@@ -42,7 +42,7 @@ public:
     QString context() const;
     int length() const;
     NodeId parentGroup() const;
-    void setParentGroup(NodeId parent);
+    void setParentGroup(const NodeId &parent);
 
 private:
     static const int MAX_CONTEXT_LENGTH = 60;

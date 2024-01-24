@@ -114,7 +114,7 @@ void ReferenceDataType::clear()
     mUnknown = nullptr;
 }
 
-ReferenceDataType::ReferenceDataType(ReferenceDataType::ReferenceType type, QString name, QString typeDescription) :
+ReferenceDataType::ReferenceDataType(ReferenceDataType::ReferenceType type, const QString& name, const QString &typeDescription) :
     mType(type), mName(name.split(",", Qt::SkipEmptyParts)), mDescription(typeDescription)
 {
 

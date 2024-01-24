@@ -50,7 +50,7 @@ signals:
     void requestSave();
 
 private:
-    void updateInfoText(QString extraText, bool valid);
+    void updateInfoText(const QString &extraText, bool valid);
 
 private:
     Ui::EfiEditor *ui;

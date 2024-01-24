@@ -52,7 +52,7 @@ public:
     /// \param referenceFile the absolute file path of the reference file.
     /// \param parent the parent object.
     ///
-    Reference(QString referenceFile, QString encodingName, QObject* parent = Q_NULLPTR);
+    Reference(const QString &referenceFile, const QString &encodingName, QObject* parent = Q_NULLPTR);
 
     ///
     /// \brief Destructs the Reference object, i.e., cleaning up internal memory.
@@ -184,10 +184,10 @@ public slots:
     /// \brief Load the reference object from the reference file.
     /// \param pointer to codec to be loaded
     ///
-    void loadReferenceFile(QString encodingName);
+    void loadReferenceFile(const QString &encodingName);
 
 private:
-    bool parseFile(QString referenceFile, QString encodingName);
+    bool parseFile(const QString &referenceFile, const QString &encodingName);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
     void clear();
 

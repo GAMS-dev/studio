@@ -30,7 +30,7 @@ namespace studio {
 
 TextMarkId TextMark::mNextId = 0;
 
-TextMark::TextMark(TextMarkRepo *marks, FileId fileId, Type tmType, NodeId groupId)
+TextMark::TextMark(TextMarkRepo *marks, const FileId &fileId, Type tmType, const NodeId &groupId)
     : mId(mNextId++), mFileId(fileId), mGroupId(groupId), mMarkRepo(marks), mType(tmType)
 {
     Q_ASSERT_X(mMarkRepo, "TextMark constructor", "The TextMarkRepo must be a valid instance.");
@@ -46,7 +46,7 @@ TextMark *TextMark::refMark() const
     return mReference;
 }
 
-QVector<TextMark *> TextMark::backRefs(FileId fileId) const
+QVector<TextMark *> TextMark::backRefs(const FileId &fileId) const
 {
     if (!fileId.isValid()) return mBackRefs;
     QVector<TextMark *> res;

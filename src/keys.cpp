@@ -29,13 +29,13 @@ Keys::Keys()
 
 }
 
-KeySeqList::KeySeqList(const QKeySequence& seq, QString title)
+KeySeqList::KeySeqList(const QKeySequence& seq, const QString &title)
     : mTitle(title)
 {
     mSequence << seq;
 }
 
-KeySeqList::KeySeqList(const char* seq, QString title)
+KeySeqList::KeySeqList(const char* seq, const QString &title)
     : mTitle(title)
 {
     mSequence << QKeySequence(seq);
@@ -67,7 +67,7 @@ KeySeqList&KeySeqList::operator <<(const QKeySequence& other)
     return *this;
 }
 
-bool KeySeqList::operator ==(KeySeqList other) const
+bool KeySeqList::operator==(const KeySeqList &other) const
 {
     bool res = mSequence.size() == other.mSequence.size();
     for (const QKeySequence &seq: mSequence) {

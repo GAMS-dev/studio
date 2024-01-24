@@ -45,7 +45,7 @@ public:
     explicit FileChangeDialog(QWidget *parent = nullptr);
     ~FileChangeDialog() override;
 
-    void show(QString filePath, bool deleted, bool modified, int count);
+    void show(const QString &filePath, bool deleted, bool modified, int count);
     bool isForAll();
     static Result enumResult(int result) { return Result(result % int(Result::rCount)); }
     static bool isForAll(int result) { return result >= int(Result::rCount); }

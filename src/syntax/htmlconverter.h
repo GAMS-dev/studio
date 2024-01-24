@@ -29,7 +29,7 @@ namespace studio {
 class HtmlConverter
 {
 public:
-    static QByteArray toHtml(QTextCursor cursor, QColor background = Qt::white);
+    static QByteArray toHtml(const QTextCursor& cursor, QColor background = Qt::white);
     static QByteArray toHtml(QTextDocument *doc, QColor background = Qt::white);
 
 private:

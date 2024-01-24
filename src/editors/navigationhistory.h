@@ -54,7 +54,7 @@ public:
     bool canGoForward();
     bool canGoBackward();
 
-    bool itemValid(CursorHistoryItem item);
+    bool itemValid(const CursorHistoryItem &item);
     void setCurrentEdit(QWidget* edit, PinKind pinKind);
     QWidget *currentEdit() const;
 

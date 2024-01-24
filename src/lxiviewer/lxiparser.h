@@ -31,7 +31,7 @@ class LxiParser
 {
 
 public:
-    static LxiTreeModel* parseFile(QString lxiFile);
+    static LxiTreeModel* parseFile(const QString& lxiFile);
 
 private:
     LxiParser();

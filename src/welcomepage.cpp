@@ -31,7 +31,9 @@ namespace gams {
 namespace studio {
 
 WelcomePage::WelcomePage(MainWindow *parent)
-    : AbstractView(parent), ui(new Ui::WelcomePage), mMain(parent)
+    : AbstractView(parent)
+    , ui(new Ui::WelcomePage)
+    , mMain(parent)
 {
     ui->setupUi(this);
     historyChanged();
@@ -114,17 +116,17 @@ bool WelcomePage::event(QEvent *event)
     return AbstractView::event(event);
 }
 
-void WelcomePage::on_relayAction(QString action)
+void WelcomePage::on_relayAction(const QString &action)
 {
     emit relayActionWp(action);
 }
 
-void WelcomePage::on_relayModLibLoad(QString lib)
+void WelcomePage::on_relayModLibLoad(const QString &lib)
 {
     emit relayModLibLoad(lib, false);
 }
 
-void WelcomePage::on_relayOpenDoc(QString doc, QString anchor)
+void WelcomePage::on_relayOpenDoc(const QString &doc, const QString &anchor)
 {
     emit relayDocOpen(doc, anchor);
 }

@@ -200,7 +200,7 @@ void Application::parseCmdArgs()
     }
 }
 
-void Application::triggerOpenFile(QString path)
+void Application::triggerOpenFile(const QString &path)
 {
     mMainWindow->openFiles({path});
     for (auto window : allWindows()) {

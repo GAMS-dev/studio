@@ -53,14 +53,14 @@ EngineManager::EngineManager(QObject* parent)
     mAuthApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignal, this,
-            [this](OAIModel_auth_token summary) {
+            [this](const OAIModel_auth_token &summary) {
         emit reAuthorize(summary.getToken());
     });
     connect(mAuthApi, &OAIAuthApi::createJWTTokenJSONSignalEFull, this, [this]
-            (OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            (OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reAuthorizeError(getJsonMessageIfFound(text));
     });
-    connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignal, this, [this](QList<OAIIdentity_provider> summary) {
+    connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignal, this, [this](const QList<OAIIdentity_provider> &summary) {
         QList<QHash<QString, QVariant>> allProvider;
         for (const OAIIdentity_provider &ip : summary) {
             if (ip.is_oidc_Set()) {
@@ -81,21 +81,21 @@ EngineManager::EngineManager(QObject* parent)
         emit reListProvider(allProvider);
     });
     connect(mAuthApi, &OAIAuthApi::listIdentityProvidersSignalEFull, this,
-            [this](OAIHttpRequestWorker *w, QNetworkReply::NetworkError , QString ) {
+            [this](OAIHttpRequestWorker *w, QNetworkReply::NetworkError , const QString& ) {
         emit reListProviderError(w->error_str);
     });
-    connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignal, this, [this](OAIForwarded_token_response summary) {
+    connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignal, this, [this](const OAIForwarded_token_response &summary) {
         emit reFetchOAuth2Token(summary.getIdToken());
     });
     connect(mAuthApi, &OAIAuthApi::fetchOAuth2TokenOnBehalfSignalEFull, this,
-            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *worker, QNetworkReply::NetworkError , const QString &text) {
         emit reFetchOAuth2TokenError(worker->getHttpResponseCode(), getJsonMessageIfFound(text));
     });
-    connect(mAuthApi, &OAIAuthApi::loginWithOIDCSignal, this, [this](OAIModel_auth_token summary) {
+    connect(mAuthApi, &OAIAuthApi::loginWithOIDCSignal, this, [this](const OAIModel_auth_token &summary) {
         emit reLoginWithOIDC(summary.getToken());
     });
     connect(mAuthApi, &OAIAuthApi::loginWithOIDCSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reLoginWithOIDCError(getJsonMessageIfFound(text));
     });
 
@@ -103,7 +103,7 @@ EngineManager::EngineManager(QObject* parent)
 
     mNamespacesApi->setNetworkAccessManager(mNetworkManager);
 
-    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignal, this, [this](QList<OAINamespace> summary) {
+    connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignal, this, [this](const QList<OAINamespace> &summary) {
         QStringList nSpaces;
         for (const OAINamespace &nspace : summary) {
             bool go = false;
@@ -122,7 +122,7 @@ EngineManager::EngineManager(QObject* parent)
         emit reListNamspaces(nSpaces);
     });
     connect(mNamespacesApi, &OAINamespacesApi::listNamespacesSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reListNamespacesError(getJsonMessageIfFound(text));
     });
 
@@ -131,7 +131,7 @@ EngineManager::EngineManager(QObject* parent)
 
     mUsageApi->setNetworkAccessManager(mNetworkManager);
 
-    connect(mUsageApi, &OAIUsageApi::getUserInstancesSignal, this, [this](OAIModel_userinstance_info summary) {
+    connect(mUsageApi, &OAIUsageApi::getUserInstancesSignal, this, [this](const OAIModel_userinstance_info &summary) {
         OAIModel_instance_info iiDef = summary.getDefaultInstance();
         const QList<OAIModel_instance_info> infoList = summary.getInstancesAvailable();
         QList<QPair<QString, QList<double>>> instList;
@@ -144,11 +144,11 @@ EngineManager::EngineManager(QObject* parent)
         emit reUserInstances(instList, iiDef.getLabel());
     });
     connect(mUsageApi, &OAIUsageApi::getUserInstancesSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reUserInstancesError(getJsonMessageIfFound(text));
     });
 
-    connect(mUsageApi, &OAIUsageApi::getQuotaSignal, this, [this](QList<OAIQuota> summary) {
+    connect(mUsageApi, &OAIUsageApi::getQuotaSignal, this, [this](const QList<OAIQuota> &summary) {
         QList<QuotaData*> dataList;
         for (const OAIQuota &quota : summary) {
             QuotaData *data = new QuotaData();
@@ -164,7 +164,7 @@ EngineManager::EngineManager(QObject* parent)
         emit reQuota(dataList);
     });
     connect(mUsageApi, &OAIUsageApi::getQuotaSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reQuotaError(getJsonMessageIfFound(text));
     });
 
@@ -181,7 +181,7 @@ EngineManager::EngineManager(QObject* parent)
     });
 
     connect(mUsersApi, &OAIUsersApi::listUsersSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError , const QString &text) {
         emit reGetUsernameError("ERR: "+getJsonMessageIfFound(text));
     });
 
@@ -191,7 +191,7 @@ EngineManager::EngineManager(QObject* parent)
     mDefaultApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalFull, this,
-            [this](OAIHttpRequestWorker *worker, OAIModel_version summary) {
+            [this](OAIHttpRequestWorker *worker, const OAIModel_version &summary) {
         QString vEngine;
         QString vGams;
         if (parseVersions(worker->response, vEngine, vGams)) {
@@ -201,7 +201,7 @@ EngineManager::EngineManager(QObject* parent)
         }
     });
     connect(mDefaultApi, &OAIDefaultApi::getVersionSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError e, const QString &text) {
         if (!QSslSocket::sslLibraryVersionString().startsWith("OpenSSL", Qt::CaseInsensitive)
                 && e == QNetworkReply::SslHandshakeFailedError)
             emit sslErrors(nullptr, QList<QSslError>() << QSslError(QSslError::CertificateStatusUnknown));
@@ -217,53 +217,53 @@ EngineManager::EngineManager(QObject* parent)
     mJobsApi->setNetworkAccessManager(mNetworkManager);
 
     connect(mJobsApi, &OAIJobsApi::createJobSignal, this,
-            [this](OAIMessage_and_token summary) {
+            [this](const OAIMessage_and_token &summary) {
         emit reCreateJob(summary.getMessage(), summary.getToken());
     });
     connect(mJobsApi, &OAIJobsApi::createJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         emit reError("Network error " + QString::number(error_type).toLatin1() +
                      " from createJob:\n " + getJsonMessageIfFound(text));
     });
 
-    connect(mJobsApi, &OAIJobsApi::getJobSignal, this, [this](OAIJob summary) {
+    connect(mJobsApi, &OAIJobsApi::getJobSignal, this, [this](const OAIJob &summary) {
         emit reGetJobStatus(summary.getStatus(), summary.getProcessStatus());
     });
     connect(mJobsApi, &OAIJobsApi::getJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         emit reError("Network error " + QString::number(error_type).toLatin1() +
                      " from getJob:\n  " + getJsonMessageIfFound(text));
     });
 
-    connect(mJobsApi, &OAIJobsApi::listJobsSignal, this, [this](OAIJob_no_text_entry_page summary) {
+    connect(mJobsApi, &OAIJobsApi::listJobsSignal, this, [this](const OAIJob_no_text_entry_page &summary) {
         emit reListJobs(summary.getCount());
     });
     connect(mJobsApi, &OAIJobsApi::listJobsSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         emit reListJobsError("Network error " + QString::number(error_type) +
                              " from listJobs:\n  " + getJsonMessageIfFound(text));
     });
 
 
-    connect(mJobsApi, &OAIJobsApi::getJobZipSignal, this, [this](OAIHttpFileElement summary) {
+    connect(mJobsApi, &OAIJobsApi::getJobZipSignal, this, [this](const OAIHttpFileElement &summary) {
         emit reGetOutputFile(summary.asByteArray());
     });
     connect(mJobsApi, &OAIJobsApi::getJobZipSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         emit reError("Network error " + QString::number(error_type).toLatin1() +
                      " from getJobZip:\n  " + getJsonMessageIfFound(text));
     });
 
-    connect(mJobsApi, &OAIJobsApi::killJobSignal, this, [this](OAIMessage summary) {
+    connect(mJobsApi, &OAIJobsApi::killJobSignal, this, [this](const OAIMessage &summary) {
         emit reKillJob(summary.getMessage());
     });
     connect(mJobsApi, &OAIJobsApi::killJobSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         emit reError("Network error " + QString::number(error_type).toLatin1() +
                      " from killJob:\n  " + getJsonMessageIfFound(text));
     });
 
-    connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](OAILog_piece summary) {
+    connect(mJobsApi, &OAIJobsApi::popJobLogsSignal, this, [this](const OAILog_piece &summary) {
         if (!mQueueFinished) {
             mQueueFinished = summary.isQueueFinished();
             emit reGetLog(summary.getMessage().toUtf8());
@@ -272,7 +272,7 @@ EngineManager::EngineManager(QObject* parent)
             getJobStatus();
     });
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
-            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, QString text) {
+            [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         if (!mQueueFinished && error_type != QNetworkReply::ContentAccessDenied) {
             emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
                           " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
@@ -437,7 +437,7 @@ void EngineManager::listNamespaces()
 }
 
 void EngineManager::submitJob(const QString &modelName, const QString &nSpace, const QString &zipFile,
-                              QList<QString> params, const QString &instance, const QString &tag)
+                              const QList<QString>& params, const QString &instance, const QString &tag)
 {
     OAIHttpFileElement model;
     model.setMimeType("application/zip");
@@ -488,12 +488,12 @@ void EngineManager::setDebug(bool debug)
 }
 
 
-void EngineManager::debugReceived(QString name, QVariant data)
+void EngineManager::debugReceived(const QString& name, const QVariant& data)
 {
     qDebug() << "\nResult from " << name << ":\n" << data;
 }
 
-bool EngineManager::parseVersions(QByteArray json, QString &vEngine, QString &vGams) const
+bool EngineManager::parseVersions(const QByteArray& json, QString &vEngine, QString &vGams) const
 {
     QJsonDocument jDoc = QJsonDocument::fromJson(json);
     QJsonObject jObj = jDoc.object();

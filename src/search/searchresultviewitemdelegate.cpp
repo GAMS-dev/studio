@@ -54,7 +54,7 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
     painter->restore();
 }
 
-QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int maxWidth, QFontMetrics metrics) const
+QString SearchResultViewItemDelegate::elideRichText(const QString &richText, int maxWidth, const QFontMetrics &metrics) const
 {
     QTextDocument doc;
     doc.setHtml(richText);

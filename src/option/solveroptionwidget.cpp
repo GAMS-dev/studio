@@ -40,8 +40,8 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(QString solverName, QString optionFilePath, QString optDefFileName,
-                                       FileId id, QString encodingName, QWidget *parent) :
+SolverOptionWidget::SolverOptionWidget(const QString &solverName, const QString &optionFilePath, const QString &optDefFileName,
+                                       const FileId &id, const QString &encodingName, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::SolverOptionWidget),
     mFileId(id),
@@ -603,7 +603,7 @@ bool SolverOptionWidget::saveOptionFile(const QString &location)
     return saveAs(location);
 }
 
-void SolverOptionWidget::on_reloadSolverOptionFile(QString encodingName)
+void SolverOptionWidget::on_reloadSolverOptionFile(const QString &encodingName)
 {
     if (mEncoding != encodingName) {
         mEncoding = encodingName.isEmpty() ? "UTF-8" : encodingName;

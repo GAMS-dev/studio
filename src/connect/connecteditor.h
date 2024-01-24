@@ -42,7 +42,7 @@ class ConnectEditor : public AbstractView
     Q_OBJECT
 
 public:
-    explicit ConnectEditor(const QString& connectDataFileName, FileId id,  QWidget *parent = nullptr);
+    explicit ConnectEditor(const QString& connectDataFileName, const FileId &id,  QWidget *parent = nullptr);
     ~ConnectEditor() override;
 
     FileId fileId() const;

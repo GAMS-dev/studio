@@ -172,7 +172,7 @@ public:
         return res;
     }
 
-    static const QString dialogOptFileFilter(QString solverName) {
+    static const QString dialogOptFileFilter(const QString &solverName) {
         QString res("%1 option file (%1.opt %1.*);;All files (" + allFilesFilter + ")");
         res = res.arg(solverName);
         return res;

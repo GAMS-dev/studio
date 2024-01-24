@@ -31,7 +31,8 @@ namespace modeldialog {
 class Library
 {
 public:
-    Library(QString name, int version, int nrColumns, QStringList columns, int initSortCol, QStringList toolTips, QList<int> colOrder, QString glbFile);
+    Library(const QString& name, int version, int nrColumns, const QStringList &columns, int initSortCol,
+            const QStringList &toolTips, const QList<int> &colOrder, const QString &glbFile);
 
     int version() const;
     QString name() const;

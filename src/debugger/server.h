@@ -140,7 +140,7 @@ private:
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
     bool handleReply(const QString &replyData);
-    QString toBpString(QList<int> lines);
+    QString toBpString(const QList<int> &lines);
     void parseLinesMap(const QString &breakData);
     void setState(DebugState state);
 

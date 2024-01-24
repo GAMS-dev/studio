@@ -323,7 +323,7 @@ void SyntaxHighlighter::syntaxKind(int position, int &intKind, int &flavor)
     mLastSyntaxKind = 0;
 }
 
-void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> > &blockSyntax, int pos)
+void SyntaxHighlighter::scanSyntax(const QTextBlock &block, QMap<int, QPair<int, int> > &blockSyntax, int pos)
 {
     mScanBlockNr = block.blockNumber();
     mScanPosInBlock = pos;
@@ -335,7 +335,7 @@ void SyntaxHighlighter::scanSyntax(QTextBlock block, QMap<int, QPair<int, int> >
     mScanPosInBlock = -1;
 }
 
-void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc)
+void SyntaxHighlighter::syntaxDocAt(const QTextBlock &block, int pos, QStringList &syntaxDoc)
 {
     QMap<int, QPair<int, int>> blockSyntax;
     mScannedPosDoc = QStringList();
@@ -348,7 +348,7 @@ void SyntaxHighlighter::syntaxDocAt(QTextBlock block, int pos, QStringList &synt
     }
 }
 
-void SyntaxHighlighter::syntaxFlagData(QTextBlock block, SyntaxFlag flag, QString &value)
+void SyntaxHighlighter::syntaxFlagData(const QTextBlock &block, SyntaxFlag flag, QString &value)
 {
     if (block.userState() < 0) return;
     SyntaxFlagData *data = mCodes.at(block.userState()).syntaxFlags.get();
@@ -468,7 +468,7 @@ void SyntaxHighlighter::reloadColors()
     }
 }
 
-int SyntaxHighlighter::addCode(BlockCode code, SyntaxFlags synFlags, CodeRelationIndex parentIndex)
+int SyntaxHighlighter::addCode(BlockCode code, const SyntaxFlags &synFlags, CodeRelationIndex parentIndex)
 {
     CodeRelation sc(code, synFlags, parentIndex);
     if (code.code() < 0)
@@ -480,7 +480,7 @@ int SyntaxHighlighter::addCode(BlockCode code, SyntaxFlags synFlags, CodeRelatio
     return mCodes.length()-1;
 }
 
-CodeRelationIndex SyntaxHighlighter::getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, SyntaxFlags synFlags, int nest)
+CodeRelationIndex SyntaxHighlighter::getCode(CodeRelationIndex cri, SyntaxShift shift, const SyntaxBlock &block, const SyntaxFlags &synFlags, int nest)
 {
     Q_UNUSED(nest)
     cri = qBound(0, cri, mCodes.size());
@@ -523,7 +523,7 @@ QString SyntaxHighlighter::codeDeb(CodeRelationIndex cri)
     return res;
 }
 
-void SyntaxHighlighter::syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor)
+void SyntaxHighlighter::syntaxDebug(const SyntaxBlock &syntaxBlock, const QString &syntaxName, int prevFlavor)
 {
 #ifdef SYNTAXDEBUG
     if (syntaxBlock.syntax)
@@ -536,7 +536,7 @@ void SyntaxHighlighter::syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName,
 #endif
 }
 
-void SyntaxHighlighter::syntaxDebug(QString text)
+void SyntaxHighlighter::syntaxDebug(const QString &text)
 {
 #ifdef SYNTAXDEBUG
     DEB() << text;

@@ -59,11 +59,11 @@ inline const QString optionMimeType(OptionDefinitionType type) {
 
 struct OptionItem {
     OptionItem() { }
-    OptionItem(int id, QString k, QString v) :
+    OptionItem(int id, const QString &k, const QString &v) :
           optionId(id), key(k), value(v) { }
-    OptionItem(QString k, QString v, int kpos, int vpos) :
+    OptionItem(const QString &k, const QString &v, int kpos, int vpos) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos) { }
-    OptionItem(QString k, QString v, int kpos, int vpos, bool disabledFlag) :
+    OptionItem(const QString &k, const QString &v, int kpos, int vpos, bool disabledFlag) :
           key(k), value(v), keyPosition(kpos),valuePosition(vpos), disabled(disabledFlag) { }
 
     int optionId = -1;
@@ -79,8 +79,8 @@ struct OptionItem {
 
 struct ParamConfigItem {
     ParamConfigItem() { }
-    ParamConfigItem(int id, QString k, QString v) : optionId(id), key(k), value(v) {}
-    ParamConfigItem(int id, QString k, QString v, QString min, QString max) :
+    ParamConfigItem(int id, const QString &k, const QString &v) : optionId(id), key(k), value(v) {}
+    ParamConfigItem(int id, const QString &k, const QString &v, const QString &min, const QString &max) :
         optionId(id), key(k), value(v), minVersion(min), maxVersion(max) {}
 
     int optionId = -1;
@@ -95,9 +95,9 @@ struct ParamConfigItem {
 
 struct SolverOptionItem {
     SolverOptionItem() { }
-    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag) :
+    SolverOptionItem(int id, const QString &k, const QString &v, const QString &t, bool disabledFlag) :
         optionId(id), key(k), value(v), text(t), disabled(disabledFlag) {}
-    SolverOptionItem(int id, QString k, QString v, QString t, bool disabledFlag, OptionErrorType e) :
+    SolverOptionItem(int id, const QString &k, const QString &v, const QString &t, bool disabledFlag, OptionErrorType e) :
           optionId(id), key(k), value(v), text(t), disabled(disabledFlag), error(e) { }
 
     int optionId = -1;
@@ -111,7 +111,7 @@ struct SolverOptionItem {
 
 struct OptionGroup {
     OptionGroup() { }
-    OptionGroup(QString n, int num, bool h, QString desc, int helpCtxt) :
+    OptionGroup(const QString &n, int num, bool h, const QString &desc, int helpCtxt) :
          name(n), number(num), hidden(h), description(desc), helpContext(helpCtxt) { }
 
     QString name;
@@ -123,7 +123,7 @@ struct OptionGroup {
 
 struct OptionValue {
     OptionValue() { }
-    OptionValue(QVariant val, QString desc, bool h, bool enumFlg) :
+    OptionValue(const QVariant &val, const QString &desc, bool h, bool enumFlg) :
          value(val), description(desc), hidden(h), enumFlag(enumFlg) { }
 
     QVariant value;
@@ -134,7 +134,7 @@ struct OptionValue {
 
 struct OptionDefinition {
     OptionDefinition() { }
-    OptionDefinition(int num, QString n, optDataType dt, optOptionType ot, optOptionSubType st, QString desc):
+    OptionDefinition(int num, const QString &n, optDataType dt, optOptionType ot, optOptionSubType st, const QString &desc):
          number(num), name(n), dataType(dt), type(ot), subType(st), description(desc) { }
 
     int number;

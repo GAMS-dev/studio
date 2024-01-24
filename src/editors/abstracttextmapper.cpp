@@ -92,7 +92,7 @@ int AbstractTextMapper::reducedVisibleLineCount()
     return qCeil(visibleLineCount() * 0.95);
 }
 
-void AbstractTextMapper::setLineMarkers(const QList<int> lines)
+void AbstractTextMapper::setLineMarkers(const QList<int> &lines)
 {
     mLineMarkers = lines;
 }

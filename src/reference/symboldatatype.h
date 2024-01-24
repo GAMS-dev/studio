@@ -61,13 +61,13 @@ public:
     bool operator !=(const SymbolDataType::SymbolType& type) const;
 
     static const QList<SymbolDataType*> list();
-    static SymbolType typeFrom(QString typeDescription);
-    static SymbolDataType& from(QString typeDescription);
+    static SymbolType typeFrom(const QString& typeDescription);
+    static SymbolDataType& from(const QString& typeDescription);
     static SymbolDataType& from(SymbolType type);
 
 private:
     static void clear();
-    SymbolDataType(SymbolType type, QString typeDescription);
+    SymbolDataType(SymbolType type, const QString& typeDescription);
 
     const SymbolType mType;
     const QStringList mDescription;

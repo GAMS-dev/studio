@@ -230,7 +230,7 @@ QStringList Theme::themes()
     return mThemeNames;
 }
 
-int Theme::setActiveTheme(QString themeName)
+int Theme::setActiveTheme(const QString &themeName)
 {
     int theme = mThemeNames.indexOf(themeName);
     return setActiveTheme(theme);
@@ -304,7 +304,7 @@ bool Theme::hasFontProps(Theme::ColorSlot slot)
     return slot >= Syntax_undefined;
 }
 
-Theme::ColorSlot Theme::slot(QString name)
+Theme::ColorSlot Theme::slot(const QString &name)
 {
     bool ok;
     int value = QMetaEnum::fromType<ColorSlot>().keyToValue(name.toLatin1().data(), &ok);
@@ -350,7 +350,7 @@ QHash<QString, QStringList> Theme::iconCodes() const
     return set;
 }
 
-QByteArray Theme::colorizedContent(QString name, QIcon::Mode mode, int alpha)
+QByteArray Theme::colorizedContent(const QString &name, QIcon::Mode mode, int alpha)
 {
     QFile file(name);
     if (!file.open(QFile::ReadOnly)) return QByteArray();
@@ -495,12 +495,12 @@ QIcon Theme::icon(const QString &name, QIcon::Mode mode, int alpha)
     return icon(name, nameKey, true, QString(), alpha);
 }
 
-QIcon Theme::icon(QString name, bool forceSquare, QString disabledName, int alpha)
+QIcon Theme::icon(const QString &name, bool forceSquare, const QString &disabledName, int alpha)
 {
     return icon(name, name, forceSquare, disabledName, alpha);
 }
 
-QIcon Theme::icon(QString name, QString nameKey, bool forceSquare, QString disabledName, int alpha)
+QIcon Theme::icon(QString name, QString nameKey, bool forceSquare, const QString &disabledName, int alpha)
 {
     if (name.contains("%")) name = name.arg(instance()->mIconSet);
     if (nameKey.contains("%")) nameKey = nameKey.arg(instance()->mIconSet);
@@ -515,7 +515,7 @@ QIcon Theme::icon(QString name, QString nameKey, bool forceSquare, QString disab
     return instance()->mIconCache.value(nameKey);
 }
 
-QByteArray &Theme::data(QString name, QIcon::Mode mode, int alpha)
+QByteArray &Theme::data(const QString &name, QIcon::Mode mode, int alpha)
 {
     QStringList ext {"_N","_D","_A","_S"};
     QString nameKey = name + ext.at(int(mode)) + (alpha<100 && alpha>=0 ? QString::number(alpha) : "");

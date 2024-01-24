@@ -402,7 +402,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
        int docsidx = gams::studio::help::HelpData::getURLIndexFrom(urlLocalFile);
        if(docsidx > -1) {
            QStringList pathStrList = gams::studio::help::HelpData::HelpData::getPathList();
-           QString pathStr = pathStrList.at(docsidx);
+           const QString &pathStr = pathStrList.at(docsidx);
 
            int newSize = urlLocalFile.size() - urlLocalFile.lastIndexOf(pathStr);
            QString newPath = urlLocalFile.right(newSize);
@@ -430,7 +430,7 @@ void HelpWidget::on_actionOnlineHelp_triggered(bool checked)
                int docsidx = HelpData::getURLIndexFrom(urlStr);
                if (docsidx > -1) {
                    QStringList pathStrList = HelpData::getPathList();
-                   QString pathStr = pathStrList.at(docsidx);
+                   const QString &pathStr = pathStrList.at(docsidx);
                    int pathIndex = url.path().indexOf( pathStr );
                    QString newPath = url.path().mid( pathIndex, url.path().size());
                    QStringList newPathList = newPath.split("/", Qt::SkipEmptyParts);
@@ -595,7 +595,7 @@ void HelpWidget::on_webActionTriggered(QWebEnginePage::WebAction webAction, bool
     ui->webEngineView->page()->triggerAction(webAction, checked);
 }
 
-void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction, QIcon icon)
+void HelpWidget::createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction webAction, const QIcon &icon)
 {
     QAction *action = page->action(webAction);
     action->setEnabled(false);

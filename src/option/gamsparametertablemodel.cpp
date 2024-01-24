@@ -29,7 +29,7 @@ namespace gams {
 namespace studio {
 namespace option {
 
-GamsParameterTableModel::GamsParameterTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
+GamsParameterTableModel::GamsParameterTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject* parent):
     QAbstractTableModel(parent), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(true)
 {
     mHeader << "Key"  << "Value" << "Debug Entry";
@@ -38,7 +38,7 @@ GamsParameterTableModel::GamsParameterTableModel(const QString normalizedCommand
         on_ParameterTableModelChanged(normalizedCommandLineStr);
 }
 
-GamsParameterTableModel::GamsParameterTableModel(const QList<OptionItem> itemList, OptionTokenizer *tokenizer, QObject *parent):
+GamsParameterTableModel::GamsParameterTableModel(const QList<OptionItem> &itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption()), mTokenizerUsed(false)
 {
     mHeader << "Key"  << "Value" << "Debug Entry";
@@ -591,7 +591,7 @@ void GamsParameterTableModel::setRowCount(int rows)
       removeRows(qMax(rows, 0), rc - rows);
 }
 
-void GamsParameterTableModel::itemizeOptionFromCommandLineStr(const QString text)
+void GamsParameterTableModel::itemizeOptionFromCommandLineStr(const QString &text)
 {
 //    QMap<int, QVariant> previousCheckState = mCheckState;
     mOptionItem.clear();

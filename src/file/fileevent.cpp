@@ -25,7 +25,7 @@ namespace studio {
 
 QEvent::Type FileEvent::mType = QEvent::None;
 
-FileEvent::FileEvent(FileId _fileId, FileEventKind _kind)
+FileEvent::FileEvent(const FileId &_fileId, FileEventKind _kind)
     : QEvent(type()), mData(FileEventData(_fileId, _kind))
 {}
 
@@ -58,7 +58,7 @@ FileEventData::FileEventData()
     : fileId(FileId()), kind(FileEventKind::invalid), time(QTime().currentTime())
 {}
 
-FileEventData::FileEventData(FileId _fileId, FileEventKind _kind)
+FileEventData::FileEventData(const FileId &_fileId, FileEventKind _kind)
     : fileId(_fileId), kind(_kind), time(QTime().currentTime())
 {}
 

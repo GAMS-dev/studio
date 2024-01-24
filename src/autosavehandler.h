@@ -32,7 +32,7 @@ class AutosaveHandler
 public:
     AutosaveHandler(MainWindow *mainWindow);
 
-    QStringList checkForAutosaveFiles(QStringList list);
+    QStringList checkForAutosaveFiles(const QStringList &list);
 
     void recoverAutosaveFiles(const QStringList &autosaveFiles);
 

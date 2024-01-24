@@ -27,7 +27,7 @@ namespace gams {
 namespace studio {
 namespace lxiviewer {
 
-LxiTreeModel *LxiParser::parseFile(QString lxiFile)
+LxiTreeModel *LxiParser::parseFile(const QString& lxiFile)
 {
     QVector<int> lineNrs;
     QVector<LxiTreeItem*> treeItems;

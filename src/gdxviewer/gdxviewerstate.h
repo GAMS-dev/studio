@@ -35,9 +35,9 @@ public:
     GdxViewerState();
     ~GdxViewerState();
 
-    GdxSymbolViewState* symbolViewState(QString name) const;
-    GdxSymbolViewState* addSymbolViewState(QString name);
-    void deleteSymbolViewState(QString name);
+    GdxSymbolViewState* symbolViewState(const QString& name) const;
+    GdxSymbolViewState* addSymbolViewState(const QString& name);
+    void deleteSymbolViewState(const QString& name);
 
     QByteArray symbolTableHeaderState() const;
     void setSymbolTableHeaderState(const QByteArray &symbolTableHeaderState);

@@ -298,7 +298,7 @@ NodeId ProjectTreeModel::nodeId(const QModelIndex &ind) const
     return ind.isValid() ? static_cast<NodeId>(int(ind.internalId())) : NodeId();
 }
 
-QModelIndex ProjectTreeModel::index(const NodeId id) const
+QModelIndex ProjectTreeModel::index(const NodeId &id) const
 {
     if (!id.isValid())
         return QModelIndex();

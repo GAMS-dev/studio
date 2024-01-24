@@ -33,8 +33,8 @@ class GamsParameterTableModel : public QAbstractTableModel
 {
      Q_OBJECT
 public:
-    GamsParameterTableModel(const QString normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
-    GamsParameterTableModel(const QList<OptionItem> itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsParameterTableModel(const QString &normalizedCommandLineStr, OptionTokenizer* tokenizer, QObject *parent = nullptr);
+    GamsParameterTableModel(const QList<OptionItem> &itemList, OptionTokenizer* tokenizer, QObject *parent = nullptr);
 
     QVariant headerData(int index, Qt::Orientation orientation, int role = Qt::DisplayRole) const override;
     int rowCount(const QModelIndex &parent = QModelIndex()) const override;
@@ -82,7 +82,7 @@ private:
     bool mTokenizerUsed;
 
     void setRowCount(int rows);
-    void itemizeOptionFromCommandLineStr(const QString text);
+    void itemizeOptionFromCommandLineStr(const QString &text);
 
     QList<OptionItem> getCurrentListOfOptionItems();
     QString getParameterTableEntry(int row);

@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 namespace search {
 
-Result::Result(int lineNr, int colNr, int length, QString fileLoc, NodeId parent, QString context) :
+Result::Result(int lineNr, int colNr, int length, const QString &fileLoc, const NodeId& parent, const QString& context) :
     mLineNr(lineNr), mColNr(colNr), mLength(length), mFilepath(fileLoc), mParent(parent)
 {
     int left = qMax(0, colNr - MAX_CONTEXT_LENGTH/2 + length/2);
@@ -73,7 +73,8 @@ NodeId Result::parentGroup() const
     return mParent;
 }
 
-void Result::setParentGroup(NodeId parent) {
+void Result::setParentGroup(const NodeId &parent)
+{
     mParent = parent;
 }
 

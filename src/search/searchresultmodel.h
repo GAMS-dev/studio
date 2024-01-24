@@ -32,7 +32,7 @@ class SearchResultModel : public QAbstractTableModel
 {
     Q_OBJECT
 public:
-    SearchResultModel(QRegularExpression regex, QList<Result> results);
+    SearchResultModel(const QRegularExpression &regex, const QList<Result> &results);
 
     QList<Result> results() const;
     QRegularExpression searchRegex();

@@ -26,10 +26,10 @@ class NavigatorContent
 {
 public:
     NavigatorContent();
-    NavigatorContent(FileMeta* file, QString additionalText);
-    NavigatorContent(QFileInfo file, QString additionalText);
-    NavigatorContent(QString txt, QString additionalText, QString prefix, FileMeta* currentFile = nullptr);
-    NavigatorContent(QString txt, std::function<void()> function);
+    NavigatorContent(FileMeta* file, const QString &additionalText);
+    NavigatorContent(const QFileInfo &file, const QString &additionalText);
+    NavigatorContent(const QString &txt, const QString &additionalText, const QString &prefix, FileMeta* currentFile = nullptr);
+    NavigatorContent(const QString &txt, std::function<void ()> function);
     bool isValid();
 
     FileMeta *getFileMeta();

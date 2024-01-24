@@ -112,7 +112,7 @@ void EfiEditor::save(const QString &fileName)
     }
 }
 
-void EfiEditor::updateInfoText(QString extraText, bool valid)
+void EfiEditor::updateInfoText(const QString &extraText, bool valid)
 {
     if (ui->fsWidget->workingDirectory().isEmpty())
         ui->fsWidget->setInfo("No working directory", false);

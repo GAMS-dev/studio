@@ -72,7 +72,7 @@ private:
     void reformatCurrentBlock();
     void applyFormatChanges();
     QTextBlock nextDirty();
-    void setDirty(QTextBlock fromBlock, QTextBlock toBlock);
+    void setDirty(const QTextBlock& fromBlock, const QTextBlock& toBlock);
     void setClean(QTextBlock block);
     inline int dirtyIndex(int blockNr) {
         for (int i = 0; i < mDirtyBlocks.size(); ++i) {
@@ -96,8 +96,8 @@ private:
     public:
         Interval(QTextBlock firstBlock = QTextBlock(), QTextBlock secondBlock = QTextBlock());
         virtual ~Interval() {}
-        void setFirst(QTextBlock block = QTextBlock()) { set(block, bFirst, first); }
-        void setSecond(QTextBlock block = QTextBlock()) { set(block, bSecond, second); }
+        void setFirst(const QTextBlock& block = QTextBlock()) { set(block, bFirst, first); }
+        void setSecond(const QTextBlock& block = QTextBlock()) { set(block, bSecond, second); }
         bool isValid() const { return !bFirst.isValid() || !bSecond.isValid() || second < first; }
         bool updateFromBlocks();
         bool extendOverlap(const Interval &other);

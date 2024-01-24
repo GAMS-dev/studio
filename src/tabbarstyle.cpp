@@ -36,7 +36,7 @@ namespace studio {
 // For that reason this class is designed to support both tabBars, the mainTabs and the logTabs. The widget pointers
 // to mainTabs and logTabs assures the correct behavior.
 
-TabBarStyle::TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QString style)
+TabBarStyle::TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, const QString &style)
     : QProxyStyle(style), mMainTabs(mainTabs), mLogTabs(logTabs)
 {
     if (!mMainTabs || !mLogTabs)

@@ -23,7 +23,7 @@ namespace gams {
 namespace studio {
 namespace modeldialog {
 
-LibraryModel::LibraryModel(QList<LibraryItem> data, QObject *parent)
+LibraryModel::LibraryModel(const QList<LibraryItem> &data, QObject *parent)
     : QAbstractTableModel(parent), mData(data)
 {
 }

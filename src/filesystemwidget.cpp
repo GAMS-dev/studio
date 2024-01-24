@@ -47,11 +47,11 @@ FileSystemWidget::FileSystemWidget(QWidget *parent)
     ui->directoryView->viewport()->installEventFilter(this);
     delete oldModel;
     connect(mFileSystemModel, &FileSystemModel::selectionCountChanged, this, &FileSystemWidget::selectionCountChanged);
-    connect(mFileSystemModel, &FileSystemModel::missingFiles, this, [this](QStringList files) {
+    connect(mFileSystemModel, &FileSystemModel::missingFiles, this, [this](const QStringList &files) {
         mMissingFiles = files;
         selectionCountChanged(mFileSystemModel->selectionCount());
     });
-    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](QRegularExpression regExp) {
+    connect(ui->edFilter, &FilterLineEdit::regExpChanged, this, [this](const QRegularExpression &regExp) {
         mFilterModel->setFilterRegularExpression(regExp);
         QModelIndex rootIndex = mFileSystemModel->index(mWorkingDirectory);
         ui->directoryView->setRootIndex(mFilterModel->mapFromSource(rootIndex));

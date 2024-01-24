@@ -152,7 +152,7 @@ ProjectContextMenu::ProjectContextMenu()
 
 }
 
-void ProjectContextMenu::setNodes(QVector<PExAbstractNode *> selected)
+void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
 {
     // synchronize current and selected
     mNodes.clear();

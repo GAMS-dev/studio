@@ -67,7 +67,7 @@ void NestingData::addCloser(QChar _character, int _relPos)
     if (mImpact<mMaxDepth) mMaxDepth = mImpact;
 }
 
-BlockData *BlockData::fromTextBlock(QTextBlock block)
+BlockData *BlockData::fromTextBlock(const QTextBlock& block)
 {
     return (block.isValid() && block.userData()) ? static_cast<BlockData*>(block.userData())
                                                  : nullptr;

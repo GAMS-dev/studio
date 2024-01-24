@@ -34,8 +34,8 @@ class ConfigItem {
 
 public:
     ConfigItem() {}
-    ConfigItem(QString k, QString v) : key(k), value(v) {}
-    ConfigItem(QString k, QString v, QString min, QString max) :
+    ConfigItem(const QString &k, const QString &v) : key(k), value(v) {}
+    ConfigItem(const QString &k, const QString &v, const QString &min, const QString &max) :
         key(k), value(v), minVersion(min), maxVersion(max) {}
 
     QString key = "";
@@ -54,8 +54,8 @@ public:
     pathDefinition pathVariable = NONE;
 
     EnvVarConfigItem() { }
-    EnvVarConfigItem(QString k, QString v): ConfigItem(k, v)  { }
-    EnvVarConfigItem(QString k, QString v, pathDefinition path): ConfigItem(k, v), pathVariable(path) { }
+    EnvVarConfigItem(const QString &k, const QString &v): ConfigItem(k, v)  { }
+    EnvVarConfigItem(const QString &k, const QString &v, pathDefinition path): ConfigItem(k, v), pathVariable(path) { }
     bool hasPathVariable() { return (pathVariable != NONE); }
 };
 

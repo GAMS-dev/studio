@@ -38,7 +38,7 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNodes(QVector<PExAbstractNode*> selected);
+    void setNodes(const QVector<PExAbstractNode*> &selected);
     void setParent(QWidget *parent);
 
 signals:

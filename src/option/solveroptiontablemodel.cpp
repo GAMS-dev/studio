@@ -29,7 +29,7 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> itemList, OptionTokenizer *tokenizer, QObject *parent):
+SolverOptionTableModel::SolverOptionTableModel(const QList<SolverOptionItem *> &itemList, OptionTokenizer *tokenizer, QObject *parent):
     QAbstractTableModel(parent), mOptionItem(itemList), mOptionTokenizer(tokenizer), mOption(mOptionTokenizer->getOption())
 {
     if (mOption->isEOLCharDefined()) {

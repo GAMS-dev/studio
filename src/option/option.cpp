@@ -59,7 +59,7 @@ void Option::dumpAll()
         qDebug()  << QString("  [%1] = %2").arg(ssit.key(), ssit.value());
 
     for( QMap<int, OptionGroup>::const_iterator it=mOptionGroup.cbegin(); it!=mOptionGroup.cend(); ++it) {
-        OptionGroup group = it.value();
+        const OptionGroup &group = it.value();
         qDebug() << QString("%1: %2 %3 help_%4 %5").arg(group.number).arg(group.name).arg(group.helpContext).arg(group.description);
     }
 

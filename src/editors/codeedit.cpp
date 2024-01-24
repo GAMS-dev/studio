@@ -806,7 +806,7 @@ bool CodeEdit::ensureUnfolded(int line)
     return  lastUnfoldedNr >= 0;
 }
 
-QString CodeEdit::resolveHRef(QString href)
+QString CodeEdit::resolveHRef(const QString &href)
 {
     QString fileName;
     emit hasHRef(href, fileName);
@@ -962,7 +962,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
 }
 
 
-void CodeEdit::truncate(QTextBlock block)
+void CodeEdit::truncate(const QTextBlock &block)
 {
     QRegularExpressionMatch match = mRexTruncate.match(block.text());
     if (match.hasMatch()) {
@@ -1239,7 +1239,7 @@ void CodeEdit::updateLinkAppearance(QPoint pos, bool active)
 }
 
 
-void CodeEdit::marksChanged(const QSet<int> dirtyLines)
+void CodeEdit::marksChanged(const QSet<int> &dirtyLines)
 {
     AbstractEdit::marksChanged(dirtyLines);
     bool doPaint = dirtyLines.isEmpty() || dirtyLines.size() > 5;
@@ -1359,7 +1359,7 @@ void CodeEdit::commentLine()
     recalcExtraSelections();
 }
 
-bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
+bool CodeEdit::hasLineComment(const QTextBlock &startBlock, int lastBlockNr) {
     bool hasComment = true;
     for (QTextBlock block = startBlock; block.blockNumber() <= lastBlockNr; block = block.next()) {
         if (!block.isValid())
@@ -1370,7 +1370,7 @@ bool CodeEdit::hasLineComment(QTextBlock startBlock, int lastBlockNr) {
     return hasComment;
 }
 
-void CodeEdit::applyLineComment(QTextCursor cursor, QTextBlock startBlock, int lastBlockNr)
+void CodeEdit::applyLineComment(QTextCursor cursor, const QTextBlock &startBlock, int lastBlockNr)
 {
     bool hasComment = hasLineComment(startBlock, lastBlockNr);
     cursor.beginEditBlock();
@@ -1709,7 +1709,7 @@ AbstractEdit::EditorType CodeEdit::type() const
     return EditorType::CodeEditor;
 }
 
-void CodeEdit::wordInfo(QTextCursor cursor, QString &word, int &intKind)
+void CodeEdit::wordInfo(const QTextCursor &cursor, QString &word, int &intKind)
 {
     QString text = cursor.block().text();
     int start = cursor.positionInBlock();
@@ -1792,14 +1792,17 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
-void CodeEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
+void CodeEdit::replaceNext(const QRegularExpression &regex,
+                           const QString &replacementText, bool selectionScope)
 {
     if (mCompleter) mCompleter->suppressOpenBegin();
     AbstractEdit::replaceNext(regex, replacementText, selectionScope);
     if (mCompleter) mCompleter->suppressOpenStop();
 }
 
-int CodeEdit::replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
+int CodeEdit::replaceAll(FileMeta *fm,
+                         const QRegularExpression &regex,
+                         const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
     if (mCompleter) mCompleter->suppressOpenBegin();
     int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
@@ -1807,7 +1810,7 @@ int CodeEdit::replaceAll(FileMeta *fm, QRegularExpression regex, QString replace
     return res;
 }
 
-PositionPair CodeEdit::matchParentheses(QTextCursor cursor, bool all, int *foldCount) const
+PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
     static int pSplit = parentheses.length()/2;
@@ -1985,7 +1988,7 @@ void CodeEdit::updateExtraSelections()
     setExtraSelections(selections);
 }
 
-void CodeEdit::unfold(QTextBlock block)
+void CodeEdit::unfold(const QTextBlock &block)
 {
     if (block.userData() && syntax::BlockData::fromTextBlock(block)->foldCount())
         toggleFolding(block);
@@ -2699,7 +2702,7 @@ void CodeEdit::BlockEdit::adjustCursor()
     mEdit->setTextCursor(cursor);
 }
 
-void CodeEdit::BlockEdit::replaceBlockText(QString text)
+void CodeEdit::BlockEdit::replaceBlockText(const QString &text)
 {
     replaceBlockText(QStringList() << text);
 }

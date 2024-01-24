@@ -120,7 +120,7 @@ struct ValueWrapper {
     ValueWrapper(int intval_)         : type(SchemaValueType::Integer), value(intval_)    { }
     ValueWrapper(double doubleval_)   : type(SchemaValueType::Float),   value(doubleval_) { }
     ValueWrapper(bool boolval_)       : type(SchemaValueType::Boolean), value(boolval_) { }
-    ValueWrapper(std::string strval_) : type(SchemaValueType::String),  value(strval_) { }
+    ValueWrapper(const std::string &strval_) : type(SchemaValueType::String),  value(strval_) { }
     ValueWrapper(const ValueWrapper& vw) : type(vw.type), value(vw.value) {
         if (vw.type==SchemaValueType::String) {
             value = vw.value.stringval;
@@ -165,10 +165,10 @@ public:
 
     Schema(
         int                  level_,
-        YAML::Node           schemaNode_,
-        QList<SchemaType>    type_,
+        const YAML::Node           &schemaNode_,
+        const QList<SchemaType>    &type_,
         bool                 required_,
-        QList<ValueWrapper>  allowedValues_
+        const QList<ValueWrapper>  &allowedValues_
     ) : level(level_),
         schemaNode(schemaNode_),
         types(type_),
@@ -178,13 +178,13 @@ public:
 
     Schema(
         int                  level_,
-        YAML::Node           schemaNode_,
-        QList<SchemaType>    type_,
+        const YAML::Node           &schemaNode_,
+        const QList<SchemaType>    &type_,
         bool                 required_,
-        QList<ValueWrapper>  allowedValues_,
-        ValueWrapper         defaultValue_,
-        ValueWrapper         min_,
-        ValueWrapper         max_,
+        const QList<ValueWrapper>  &allowedValues_,
+        const ValueWrapper         &defaultValue_,
+        const ValueWrapper         &min_,
+        const ValueWrapper         &max_,
         bool                 schemaDefined_=false
     );
 

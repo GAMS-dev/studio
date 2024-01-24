@@ -78,7 +78,7 @@ public:
     static QString gamsUserConfigDir();
     static QString defaultGamsUserConfigFile();
 
-    static void setGamsStandardPaths(QStringList gamsPaths, StandardPathType pathType);
+    static void setGamsStandardPaths(const QStringList &gamsPaths, StandardPathType pathType);
     static QStringList gamsStandardPaths(StandardPathType pathType = StandardPathAll);
 
     static QString gamsConnectSchemaDir();

@@ -36,7 +36,7 @@ namespace gams {
 namespace studio {
 namespace connect {
 
-ConnectEditor::ConnectEditor(const QString& connectDataFileName, FileId id,  QWidget *parent) :
+ConnectEditor::ConnectEditor(const QString& connectDataFileName, const FileId &id,  QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::ConnectEditor),
     mFileId(id),

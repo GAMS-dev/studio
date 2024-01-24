@@ -30,7 +30,7 @@ class TabBarStyle : public QProxyStyle
     enum TabState { tsNormal=0, tsColorAll=1, tsColorMark=2, };
     Q_OBJECT
 public:
-    TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, QString style = nullptr);
+    TabBarStyle(QTabWidget *mainTabs, QTabWidget *logTabs, const QString &style = nullptr);
     ~TabBarStyle() override {}
 
     QSize sizeFromContents(ContentsType type, const QStyleOption *option, const QSize &size, const QWidget *widget) const override;

@@ -28,7 +28,7 @@
 namespace gams {
 namespace studio {
 
-SelectEncodings::SelectEncodings(QList<int> selectedMibs, int defaultMib, QWidget *parent) :
+SelectEncodings::SelectEncodings(const QList<int> &selectedMibs, int defaultMib, QWidget *parent) :
     QDialog(parent),
     ui(new Ui::SelectEncodings)
 {

@@ -384,7 +384,8 @@ bool ConnectSchema::isSchemaDefined(const QString &key) const
     return false;
 }
 
-Schema::Schema(int level_, YAML::Node schemaNode_, QList<SchemaType> type_, bool required_, QList<ValueWrapper> allowedValues_, ValueWrapper defaultValue_, ValueWrapper min_, ValueWrapper max_, bool schemaDefined_)
+Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, const QList<ValueWrapper> &allowedValues_,
+               const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_)
     : level(level_),
       schemaNode(schemaNode_),
       types(type_),

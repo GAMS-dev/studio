@@ -135,7 +135,7 @@ void AbstractEdit::updateExtraSelections()
     mSelUpdater.start();
 }
 
-void AbstractEdit::unfold(QTextBlock block)
+void AbstractEdit::unfold(const QTextBlock &block)
 {
     Q_UNUSED(block)
 }
@@ -403,7 +403,8 @@ FileId AbstractEdit::fileId() const {
     return fileId;
 }
 
-void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope)
+void AbstractEdit::replaceNext(const QRegularExpression &regex,
+                               const QString &replacementText, bool selectionScope)
 {
     if (isReadOnly()) return;
 
@@ -431,7 +432,8 @@ void AbstractEdit::replaceNext(QRegularExpression regex, QString replacementText
     }
 }
 
-int AbstractEdit::replaceAll(FileMeta* fm, QRegularExpression regex, QString replaceTerm,
+int AbstractEdit::replaceAll(FileMeta* fm, const QRegularExpression &regex,
+                             const QString &replaceTerm,
                              QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
     QTextCursor tc = textCursor();
@@ -529,7 +531,7 @@ void AbstractEdit::updateToolTip(const QPoint &pos, bool direct)
     }
 }
 
-bool AbstractEdit::isToolTipValid(QString text, const QPoint &pos)
+bool AbstractEdit::isToolTipValid(const QString &text, const QPoint &pos)
 {
     if (!text.isEmpty() && !pos.isNull()) {
         return (mTipPos-pos).manhattanLength() < 5 && text == QToolTip::text();
@@ -651,7 +653,7 @@ void AbstractEdit::wheelEvent(QWheelEvent *e)
     QPlainTextEdit::wheelEvent(e);
 }
 
-void AbstractEdit::marksChanged(const QSet<int> dirtyLines)
+void AbstractEdit::marksChanged(const QSet<int> &dirtyLines)
 {
     Q_UNUSED(dirtyLines)
 }

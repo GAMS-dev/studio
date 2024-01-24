@@ -75,7 +75,7 @@ signals:
 private slots:
     void reDeviceAuthRequest(QNetworkReply *reply);
     void reDeviceAccessTokenRequest(QNetworkReply *reply);
-    void processProviderList(QList<QHash<QString, QVariant> > allProvider);
+    void processProviderList(const QList<QHash<QString, QVariant> > &allProvider);
     void reFetchOAuth2Token(const QString &idToken);
     void reFetchOAuth2TokenError(int responseCode, const QString &errorMsg);
 

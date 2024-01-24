@@ -77,7 +77,7 @@ public:
     QString ssoName() const;
     bool forceGdx() const;
     void focusEmptyField();
-    void setEngineVersion(QString version);
+    void setEngineVersion(const QString &version);
     int authMethod();
     QString jobTag();
     void setJobTag(const QString &jobTag);
@@ -88,7 +88,7 @@ signals:
     void jobTagChanged(const QString &jobTag);
 
 public slots:
-    void authorizeChanged(QString authToken);
+    void authorizeChanged(const QString &authToken);
 
 protected:
     bool eventFilter(QObject *watched, QEvent *event) override;
@@ -103,10 +103,10 @@ protected:
     void getVersionAndIP();
     void setCanLogin(bool value);
     void setConnectionState(ServerConnectionState state);
-    void initUrlAndChecks(QString url);
+    void initUrlAndChecks(const QString &url);
     bool fetchNextUrl();
-    UrlCheck protocol(QString url);
-    QString cleanUrl(const QString url);
+    UrlCheck protocol(const QString &url);
+    QString cleanUrl(const QString &url);
     void updateUrlEdit();
     bool openInBrowser(const QString &text);
 
@@ -126,7 +126,7 @@ private slots:
     void reVersion(const QString &engineVersion, const QString &gamsVersion, bool inKubernetes);
     void reVersionError(const QString &errorText);
     void reListProvider(const QList<QHash<QString, QVariant> > &allProvider);
-    void reUserInstances(const QList<QPair<QString, QList<double> > > instances, const QString &defaultLabel);
+    void reUserInstances(const QList<QPair<QString, QList<double> > > &instances, const QString &defaultLabel);
     void reUserInstancesError(const QString &errorText);
     void quotaHint(const QStringList &diskHint, const QStringList &volumeHint);
     void forceGdxStateChanged(int state);

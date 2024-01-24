@@ -374,7 +374,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     connect(mSqZeroes, &QCheckBox::stateChanged, this, &GdxSymbolView::updateNumericalPrecision);
 }
 
-void GdxSymbolView::copySelectionToClipboard(QString separator, bool copyLabels)
+void GdxSymbolView::copySelectionToClipboard(const QString &separator, bool copyLabels)
 {
     QString data = copySelectionToString(separator, copyLabels);
     QClipboard* clip = QApplication::clipboard();
@@ -571,7 +571,7 @@ void GdxSymbolView::showListView()
     }
 }
 
-void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
+void GdxSymbolView::showTableView(int colDim, const QVector<int> &tvDimOrder)
 {
     if (!mTvModel)
         initTableViewModel(colDim, tvDimOrder);
@@ -592,7 +592,7 @@ void GdxSymbolView::showTableView(int colDim, QVector<int> tvDimOrder)
     }
 }
 
-void GdxSymbolView::initTableViewModel(int colDim, QVector<int> tvDimOrder)
+void GdxSymbolView::initTableViewModel(int colDim, const QVector<int> &tvDimOrder)
 {
     mTvModel = new TableViewModel(mSym, mGdxSymbolTable);
     mTvModel->setTableView(colDim, tvDimOrder);
@@ -688,7 +688,7 @@ void GdxSymbolView::setDragInProgress(bool dragInProgress)
     mDragInProgress = dragInProgress;
 }
 
-QString GdxSymbolView::copySelectionToString(QString separator, bool copyLabels)
+QString GdxSymbolView::copySelectionToString(const QString &separator, bool copyLabels)
 {
     mSym->updateDecSepCopy();
     if (!ui->tvListView->model())

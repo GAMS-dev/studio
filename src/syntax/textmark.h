@@ -46,7 +46,7 @@ public:
     void setRefMark(TextMark* refMark);
     void unsetRefMark(TextMark* refMark);
     TextMark *refMark() const;
-    QVector<TextMark *> backRefs(FileId fileId) const;
+    QVector<TextMark *> backRefs(const FileId &fileId) const;
 
     inline bool isErrorRef() { return (mReference && mReference->type() == error); }
     QColor color() const;
@@ -86,7 +86,7 @@ public:
 
 protected:
     friend class TextMarkRepo;
-    TextMark(TextMarkRepo* marks, FileId fileId, TextMark::Type tmType, NodeId groupId = NodeId());
+    TextMark(TextMarkRepo* marks, const FileId &fileId, TextMark::Type tmType, const NodeId &groupId = NodeId());
     virtual ~TextMark();
     void setPosition(int line, int column, int size = 0);
     void setLine(int lineNr);
@@ -114,7 +114,7 @@ struct TextMarkData
         : location(_location), runLocation(QString()), type(_type), line(_line), column(_column), size(_size) {}
     TextMarkData(const QString& _location, const QString &_runLocation, TextMark::Type _type, int _line, int _column, int _size = 0)
         : location(_location), runLocation(_runLocation), type(_type), line(_line), column(_column), size(_size) {}
-    TextMarkData(const FileId _fileId, const NodeId _groupId, TextMark::Type _type, int _line, int _column, int _size = 0)
+    TextMarkData(const FileId &_fileId, const NodeId &_groupId, TextMark::Type _type, int _line, int _column, int _size = 0)
         : fileId(_fileId), groupId(_groupId), type(_type), line(_line), column(_column), size(_size) {}
     QString location;
     FileId fileId;

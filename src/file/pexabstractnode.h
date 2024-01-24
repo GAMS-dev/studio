@@ -91,7 +91,7 @@ signals:
     void changed(gams::studio::NodeId nodeId);
 
 protected:
-    PExAbstractNode(QString name, NodeType type);
+    PExAbstractNode(const QString &name, NodeType type);
 
 private:
     static NodeId mNextNodeId;

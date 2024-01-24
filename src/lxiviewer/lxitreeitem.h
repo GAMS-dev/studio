@@ -31,7 +31,7 @@ namespace lxiviewer {
 class LxiTreeItem
 {
 public:
-    explicit LxiTreeItem(QString index = "", int lineNr = -1, QString text = "", LxiTreeItem *parentItem = nullptr);
+    explicit LxiTreeItem(const QString &index = QString(), int lineNr = -1, const QString &text = QString(), LxiTreeItem *parentItem = nullptr);
     ~LxiTreeItem();
 
     void appendChild(LxiTreeItem *child);

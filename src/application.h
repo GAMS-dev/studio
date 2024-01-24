@@ -96,7 +96,7 @@ private slots:
 
 private:
     void parseCmdArgs();
-    void triggerOpenFile(QString path);
+    void triggerOpenFile(const QString &path);
 
     ///
     /// \brief Start listening

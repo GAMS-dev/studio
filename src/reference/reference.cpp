@@ -27,7 +27,7 @@ namespace reference {
 
 QRegularExpression Reference::mRexSplit("\\s+");
 
-Reference::Reference(QString referenceFile, QString encodingName, QObject *parent) :
+Reference::Reference(const QString &referenceFile, const QString &encodingName, QObject *parent) :
     QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
     loadReferenceFile(encodingName);
@@ -154,7 +154,7 @@ int Reference::errorLine() const
     return  mLastErrorLine;
 }
 
-void Reference::loadReferenceFile(QString encodingName)
+void Reference::loadReferenceFile(const QString &encodingName)
 {
     mLastErrorLine = -1;
     emit loadStarted();
@@ -167,7 +167,7 @@ void Reference::loadReferenceFile(QString encodingName)
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
 }
 
-bool Reference::parseFile(QString referenceFile, QString encodingName)
+bool Reference::parseFile(const QString &referenceFile, const QString &encodingName)
 {
     QFile file(referenceFile);
     int lineread = 0;
@@ -267,7 +267,7 @@ bool Reference::parseFile(QString referenceFile, QString encodingName)
         QList<SymbolId> domain;
         if (dimension.toInt() > 0) {
             for(int dim=0; dim < dimension.toInt(); dim++) {
-                QString d = recordList.at(6+dim);
+                const QString &d = recordList.at(6+dim);
                 if (d.toInt() > 0) // if dimension > 0 and domain is specified
                     domain << d.toInt();
            }

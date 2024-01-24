@@ -53,15 +53,15 @@ public:
 
     void ping();
     void version();
-    bool submitJob(QString fileName, QString eMail, QString params = QString(), bool prioShort = true, bool wantGdx = true);
-    void watchJob(int jobNumber, QString password);
+    bool submitJob(const QString &fileName, const QString &eMail, const QString &params = QString(), bool prioShort = true, bool wantGdx = true);
+    void watchJob(int jobNumber, const QString &password);
     void getJobStatus();
     void getCompletionCode();
     void getJobInfo();
     void killJob(bool &ok);
     void getIntermediateResultsNonBlocking();
     void getFinalResultsNonBlocking();
-    void getOutputFile(QString fileName);
+    void getOutputFile(const QString &fileName);
 
     void setDebug(bool debug = true);
 
@@ -81,8 +81,8 @@ signals:
     void sslErrors(const QStringList &errors);
 
 private slots:
-    void received(QString name, QVariant data);
-    void debugReceived(QString name, QVariant data);
+    void received(const QString &name, const QVariant &data);
+    void debugReceived(const QString &name, const QVariant &data);
 private:
     static QString mRawJob;
     HttpManager mHttp;

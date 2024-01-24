@@ -30,11 +30,11 @@ namespace modeldialog {
 class LibraryItem
 {
 public:
-    LibraryItem(QSharedPointer<Library> library,
-                QStringList values,
-                QString description,
-                QString longDescription,
-                QStringList files,
+    LibraryItem(const QSharedPointer<Library> &library,
+                const QStringList &values,
+                const QString &description,
+                const QString &longDescription,
+                const QStringList &files,
                 int suffixNumber);
 
     QSharedPointer<Library> library() const;

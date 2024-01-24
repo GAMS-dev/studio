@@ -143,7 +143,7 @@ void GdxSymbolTableModel::createSortIndex()
     QList<QPair<QString, int>> l;
     for(int uel=0; uel<=mUelCount; uel++)
         l.append(QPair<QString, int>(uel2Label(uel), uel));
-    std::sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first.compare(b.first, Qt::CaseInsensitive)<0; });
+    std::sort(l.begin(), l.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) { return a.first.compare(b.first, Qt::CaseInsensitive)<0; });
 
     mLabelCompIdx.resize(mUelCount+1);
     int idx = 0;
@@ -158,7 +158,7 @@ int GdxSymbolTableModel::getUelCount() const
     return mUelCount;
 }
 
-int GdxSymbolTableModel::label2Uel(QString label)
+int GdxSymbolTableModel::label2Uel(const QString &label)
 {
     int uelNr = -1;
     int uelMap = -1;
@@ -210,7 +210,7 @@ void GdxSymbolTableModel::loadStringPool()
     }
 }
 
-void GdxSymbolTableModel::reportIoError(int errNr, QString message)
+void GdxSymbolTableModel::reportIoError(int errNr, const QString &message)
 {
     EXCEPT() << "Fatal I/O Error = " << errNr << " when calling " << message;
 }
@@ -245,7 +245,7 @@ QList<GdxSymbol *> GdxSymbolTableModel::gdxSymbols() const
     return mGdxSymbols;
 }
 
-GdxSymbol *GdxSymbolTableModel::getSymbolByName(QString name) const
+GdxSymbol *GdxSymbolTableModel::getSymbolByName(const QString &name) const
 {
     if (mGdxSymbolByName.contains(name))
         return mGdxSymbolByName[name];

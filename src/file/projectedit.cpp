@@ -55,7 +55,7 @@ ProjectData::ProjectData(PExProjectNode *project)
     connect(project, &PExProjectNode::changed, this, &ProjectData::projectChanged);
 }
 
-void ProjectData::setFieldData(Field field, QString value)
+void ProjectData::setFieldData(Field field, const QString& value)
 {
     bool change = !mData.contains(field) || mData.value(field) != value;
     mData.insert(field, value);
@@ -95,7 +95,7 @@ void ProjectData::updateFile(FileKind kind, const QString &path)
     }
 }
 
-void ProjectData::projectChanged(NodeId id)
+void ProjectData::projectChanged(const NodeId &id)
 {
     if (mProject->id() != id) return;
     if (fieldData(ProjectData::file) != QDir::toNativeSeparators(mProject->fileName()))
@@ -310,7 +310,7 @@ void ProjectEdit::updateChanged(QComboBox *comboBox, const QStringList &data)
     }
 }
 
-void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, QString defaultDir)
+void ProjectEdit::showDirDialog(const QString &title, QLineEdit *lineEdit, const QString &defaultDir)
 {
     QString path = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     QDir dir(path);

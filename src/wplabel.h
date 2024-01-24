@@ -36,7 +36,7 @@ public:
 
     void setInactive(bool inactive);
 
-    void setIcon(QIcon icon);
+    void setIcon(const QIcon &icon);
     QIcon icon() const { return mIcon; }
     void setIconSize(const QSize &size);
     QSize iconSize() { return mIconSize; }

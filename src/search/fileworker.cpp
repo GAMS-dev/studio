@@ -26,11 +26,11 @@ namespace search {
 FileWorker::FileWorker(AbstractSearchFileHandler* fh) : mFileHandler(fh)
 { }
 
-FileWorker::FileWorker(SearchParameters params, AbstractSearchFileHandler* fh)
+FileWorker::FileWorker(const SearchParameters &params, AbstractSearchFileHandler* fh)
     : mParameters(params), mFileHandler(fh)
 { }
 
-void FileWorker::setParameters(SearchParameters parameters)
+void FileWorker::setParameters(const SearchParameters &parameters)
 {
     mParameters = parameters;
 }

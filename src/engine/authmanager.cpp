@@ -93,7 +93,7 @@ void AuthManager::listProvider(const QString &ssoName)
 /// The provider list is passed to the signal \ref reListProvider if no explicit ssoName has been set with the request.
 /// Otherwise an hidden explicit provider has been selected. In this case a \ref deviceAuthRequest will be send.
 ///
-void AuthManager::processProviderList(QList<QHash<QString, QVariant> > allProvider)
+void AuthManager::processProviderList(const QList<QHash<QString, QVariant> > &allProvider)
 {
     mProviderList = allProvider;
     if (mExplicitProvider.isEmpty()) {

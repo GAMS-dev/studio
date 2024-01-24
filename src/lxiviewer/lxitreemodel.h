@@ -34,7 +34,7 @@ class LxiTreeModel : public QAbstractItemModel
     Q_OBJECT
 
 public:
-    explicit LxiTreeModel(LxiTreeItem *root, QVector<int> lineNrs, QVector<LxiTreeItem*> treeItems, QObject *parent = nullptr);
+    explicit LxiTreeModel(LxiTreeItem *root, const QVector<int> &lineNrs, const QVector<LxiTreeItem*> &treeItems, QObject *parent = nullptr);
     ~LxiTreeModel() override;
 
     // Basic functionality:

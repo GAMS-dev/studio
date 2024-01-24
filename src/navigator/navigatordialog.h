@@ -74,7 +74,7 @@ private:
     void autocomplete();
     void fillFileSystemPath(NavigatorContent nc);
     void highlightCurrentFile();
-    void setFilter(QString filter);
+    void setFilter(const QString &filter);
 
     ///
     /// \brief findClosestPath removes characters from the current string
@@ -87,7 +87,7 @@ private:
 private slots:
     void returnPressed();
     void itemClicked(const QModelIndex& index);
-    void regexChanged(QRegularExpression regex);
+    void regexChanged(const QRegularExpression &regex);
 
 private:
     Ui::NavigatorDialog* ui = nullptr;

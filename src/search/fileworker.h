@@ -42,8 +42,8 @@ class FileWorker : public QObject
 
 public:
     FileWorker(AbstractSearchFileHandler *fh);
-    FileWorker(SearchParameters params, AbstractSearchFileHandler *fh);
-    void setParameters(SearchParameters parameters);
+    FileWorker(const SearchParameters &params, AbstractSearchFileHandler *fh);
+    void setParameters(const SearchParameters &parameters);
     QList<SearchFile> collectFilesInFolder();
     QList<SearchFile> filterFiles(QList<SearchFile> files, SearchParameters params);
 

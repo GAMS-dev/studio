@@ -98,14 +98,14 @@ private slots:
     void on_combo_scope_currentIndexChanged(int scope);
     void on_btn_back_clicked();
     void on_btn_forward_clicked();
-    void on_combo_search_currentTextChanged(const QString);
+    void on_combo_search_currentTextChanged(const QString&);
     void on_cb_caseSens_stateChanged(int);
     void on_cb_wholeWords_stateChanged(int);
     void on_cb_regex_stateChanged(int);
     void on_btn_browse_clicked();
     void on_cb_subdirs_stateChanged(int);
-    void on_combo_path_currentTextChanged(const QString);
-    void on_combo_fileExcludePattern_currentTextChanged(const QString);
+    void on_combo_path_currentTextChanged(const QString&);
+    void on_combo_fileExcludePattern_currentTextChanged(const QString&);
 
 signals:
     void closeResults();
@@ -124,7 +124,7 @@ protected:
 
 private:
     void restoreSettings();
-    QList<SearchFile> getFilesByScope(SearchParameters parameters);
+    QList<SearchFile> getFilesByScope(const SearchParameters &parameters);
     int updateLabelByCursorPos(int lineNr = -1, int colNr = -1);
     void insertHistory();
     void searchParameterChanged();

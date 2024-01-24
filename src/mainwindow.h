@@ -111,7 +111,7 @@ public:
     explicit MainWindow(QWidget *parent = nullptr);
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
-    void openFiles(QStringList files, OpenGroupOption opt = ogNone);
+    void openFiles(const QStringList &files, OpenGroupOption opt = ogNone);
     void jumpToTab(FileMeta* fm);
     void jumpToLine(int line);
     void watchProjectTree();
@@ -123,8 +123,8 @@ public:
     QStringList encodingNames();
     QString encodingMIBsString();
     QList<int> encodingMIBs();
-    void setEncodingMIBs(QString mibList, int active = -1);
-    void setEncodingMIBs(QList<int> mibs, int active = -1);
+    void setEncodingMIBs(const QString &mibList, int active = -1);
+    void setEncodingMIBs(const QList<int> &mibs, int active = -1);
     void setActiveMIB(int active = -1);
     const HistoryData &history();
     void setOutputViewVisibility(bool visibility);
@@ -157,7 +157,7 @@ public:
     void toggleDistractionFreeMode();
     void toggleSearchDialog();
     void toggleFullscreen();
-    void execute(QString commandLineStr, AbstractProcess* process = nullptr,
+    void execute(const QString &commandLineStr, AbstractProcess* process = nullptr,
                  gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
     void resetHistory();
@@ -175,16 +175,16 @@ public:
     void invalidateResultsView();
 
 public slots:
-    gams::studio::PExFileNode* openFilePath(QString filePath, gams::studio::PExProjectNode* knownProject = nullptr,
+    gams::studio::PExFileNode* openFilePath(const QString &filePath, gams::studio::PExProjectNode* knownProject = nullptr,
                                             gams::studio::OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
                                             gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
-    void openFolder(QString path, gams::studio::PExProjectNode* project = nullptr);
+    void openFolder(const QString &path, gams::studio::PExProjectNode* project = nullptr);
     void openFile(gams::studio::FileMeta *fileMeta, bool focus = true,
                   gams::studio::PExProjectNode *project = nullptr, int codecMib = -1,
                   bool forcedTextEditor = false, gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void receiveAction(const QString &action);
-    void receiveModLibLoad(QString gmsFile, bool forceOverwrite = false);
-    void receiveOpenDoc(QString doc, QString anchor);
+    void receiveModLibLoad(const QString &gmsFile, bool forceOverwrite = false);
+    void receiveOpenDoc(const QString &doc, const QString &anchor);
     void updateRunState();
     void updateStatusFile();
     void updateStatusPos();
@@ -199,17 +199,17 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialog(QVector<gams::studio::PExProjectNode*> projects = QVector<gams::studio::PExProjectNode *>(),
+    void newFileDialog(const QVector<gams::studio::PExProjectNode*> &projects = QVector<gams::studio::PExProjectNode *>(),
                        const QString& solverName=QString(), gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
-    void closeFileEditors(const gams::studio::FileId fileId, bool willReopen = false);
+    void closeFileEditors(const FileId &fileId, bool willReopen = false);
     void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
     void switchToMainTab(FileMeta *fileMeta);
-    void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
+    void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, const QString &fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
     void extraSelectionsUpdated();
 
@@ -224,13 +224,13 @@ private slots:
     void codecReload(QAction *action);
     void activeTabChanged(int index);
     void tabBarClicked(int index);
-    void fileChanged(const gams::studio::FileId fileId);
-    void fileModifiedChanged(const gams::studio::FileId fileId, bool modified);
-    void fileClosed(const gams::studio::FileId fileId);
+    void fileChanged(const FileId &fileId);
+    void fileModifiedChanged(const FileId &fileId, bool modified);
+    void fileClosed(const FileId &fileId);
     void fileEvent(const gams::studio::FileEvent &e);
     void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
-    void postGamsRun(gams::studio::NodeId origin, int exitCode);
+    void postGamsRun(const NodeId &origin, int exitCode);
     void postGamsLibRun();
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
@@ -309,7 +309,7 @@ private slots:
 
     // Tools
     void on_actionGDX_Diff_triggered();
-    void actionGDX_Diff_triggered(QString workingDirectory, QString input1="", QString input2="");
+    void actionGDX_Diff_triggered(const QString &workingDirectory, const QString &input1="", const QString &input2="");
     void actionResetGdxStates(const QStringList &files);
     void on_actionTerminal_triggered();
     void actionTerminalTriggered(const QString &workingDir);
@@ -367,7 +367,7 @@ private slots:
 
     void on_actionNextTab_triggered();
     void on_actionPreviousTab_triggered();
-    void on_referenceJumpTo(reference::ReferenceItem item);
+    void on_referenceJumpTo(const reference::ReferenceItem &item);
 
     void focusCmdLine();
     void focusProjectExplorer();
@@ -398,7 +398,7 @@ private slots:
     void engineSubmit(bool start);
     engine::EngineProcess *createEngineProcess();
     void prepareEngineProcess();
-    void sslValidation(QString errorMessage);
+    void sslValidation(const QString &errorMessage);
     void sslUserDecision(QAbstractButton *button);
 
 protected:
@@ -423,10 +423,10 @@ protected:
 
 private slots:
     void updateAndSaveSettings();
-    void updateFonts(qreal fontSize = 0, QString fontFamily = QString());
+    void updateFonts(qreal fontSize = 0, const QString &fontFamily = QString());
     void updateEditorLineWrapping();
     void updateTabSize(int size);
-    void openProject(const QString gspFile);
+    void openProject(const QString &gspFile);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool fullCopy);
     void moveProjectCollideDialog(gams::studio::MultiCopyCheck mcs,
                                   const QStringList &srcFiles, const QStringList &dstFiles,
@@ -453,15 +453,15 @@ private:
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
     bool handleFileChanges(FileMeta *fc, bool willReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
-    FileProcessKind fileChangedExtern(FileId fileId);
-    FileProcessKind fileDeletedExtern(FileId fileId);
+    FileProcessKind fileChangedExtern(const FileId &fileId);
+    FileProcessKind fileDeletedExtern(const FileId &fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
-    void addToOpenedFiles(QString filePath);
-    bool terminateProcessesConditionally(QVector<PExProjectNode *> projects);
+    void addToOpenedFiles(const QString &filePath);
+    bool terminateProcessesConditionally(const QVector<PExProjectNode *> &projects);
     void restoreFromSettings();
     QString currentPath();
     neos::NeosProcess *createNeosProcess();
-    bool executePrepare(PExProjectNode *project, QString commandLineStr, AbstractProcess* process = nullptr);
+    bool executePrepare(PExProjectNode *project, const QString &commandLineStr, AbstractProcess* process = nullptr);
     void execution(PExProjectNode *project);
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);
@@ -488,7 +488,7 @@ private:
     bool enabledPrintAction();
     void checkGamsLicense();
     void checkSslLibrary();
-    QString readGucValue(QString key);
+    QString readGucValue(const QString &key);
     void initCompleterActions();
 
     void checkForUpdates(const QString &text);

@@ -127,7 +127,7 @@ private:
         Backward = 1
     };
     void findText(const QString &text, SearchDirection direction, bool caseSensitivity);
-    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, QIcon icon);
+    void createWebActionTrigger(QWebEnginePage *page, QWebEnginePage::WebAction, const QIcon &icon);
 
     QScopedPointer<support::CheckForUpdate> mC4U;
 };

@@ -23,8 +23,8 @@ namespace gams {
 namespace studio {
 namespace modeldialog {
 
-Library::Library(QString name, int version, int nrColumns, QStringList columns,int initSortCol,
-                 QStringList toolTips, QList<int> colOrder, QString glbFile)
+Library::Library(const QString& name, int version, int nrColumns, const QStringList &columns,int initSortCol,
+                 const QStringList &toolTips, const QList<int> &colOrder, const QString &glbFile)
     : mName(name),
       mLongName(name),
       mVersion(version),

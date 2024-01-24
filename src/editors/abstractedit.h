@@ -71,8 +71,10 @@ public:
     void updateSearchSelection();
     void findInSelection(QList<search::Result> &results);
     FileId fileId() const;
-    virtual void replaceNext(QRegularExpression regex, QString replacementText, bool selectionScope);
-    virtual int replaceAll(FileMeta *fm, QRegularExpression regex, QString replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
+    virtual void replaceNext(const QRegularExpression &regex,
+                             const QString &replacementText, bool selectionScope);
+    virtual int replaceAll(FileMeta *fm, const QRegularExpression &regex,
+                           const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
     virtual void scrollSynchronize(int dx, int dy);
 
 signals:
@@ -87,12 +89,12 @@ signals:
 
 public slots:
     virtual void updateExtraSelections();
-    virtual void unfold(QTextBlock block);
+    virtual void unfold(const QTextBlock &block);
     void updateTabSize(int size = 0);
 
 
 protected slots:
-    virtual void marksChanged(const QSet<int> dirtyLines = QSet<int>());
+    virtual void marksChanged(const QSet<int> &dirtyLines = QSet<int>());
 
 protected:
     friend class FileMeta;
@@ -100,7 +102,7 @@ protected:
     AbstractEdit(QWidget *parent);
     virtual QString getToolTipText(const QPoint &pos);
     void updateToolTip(const QPoint &pos, bool direct = false);
-    bool isToolTipValid(QString text, const QPoint &pos);
+    bool isToolTipValid(const QString &text, const QPoint &pos);
     QMimeData* createMimeDataFromSelection() const override;
     bool event(QEvent *event) override;
     void keyPressEvent(QKeyEvent *e) override;

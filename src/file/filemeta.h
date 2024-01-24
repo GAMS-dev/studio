@@ -91,19 +91,19 @@ public:
     void load(int codecMib, bool init = true);
     void save(const QString& newLocation = "");
     void renameToBackup();
-    FileDifferences compare(QString fileName = QString());
+    FileDifferences compare(const QString &fileName = QString());
     bool refreshMetaData();
 
-    void jumpTo(NodeId groupId, bool focus, int line = 0, int column = 0, int length = 0);
+    void jumpTo(const NodeId &groupId, bool focus, int line = 0, int column = 0, int length = 0);
     void rehighlight(int line);
     syntax::SyntaxHighlighter *highlighter() const;
-    void marksChanged(QSet<int> lines = QSet<int>());
+    void marksChanged(const QSet<int> &lines = QSet<int>());
     void reloadDelayed();
     void setLocation(QString location);
 
-    static bool hasExistingFile(QList<QUrl> urls);
-    static bool hasExistingFolder(QList<QUrl> urls);
-    static QStringList pathList(QList<QUrl> urls);
+    static bool hasExistingFile(const QList<QUrl> &urls);
+    static bool hasExistingFolder(const QList<QUrl> &urls);
+    static QStringList pathList(const QList<QUrl> &urls);
     void invalidate();
     const NodeId &projectId() const;
     void setProjectId(const NodeId &newProjectId);
@@ -136,7 +136,7 @@ private slots:
 private:
     struct Data {
         Data(QString location, FileType *knownType = nullptr);
-        FileDifferences compare(Data other);
+        FileDifferences compare(const Data &other);
         bool exist = false;
         qint64 size = 0;
         QDateTime created;
@@ -145,9 +145,9 @@ private:
     };
 
     friend class FileMetaRepo;
-    FileMeta(FileMetaRepo* fileRepo, FileId id, QString location, FileType *knownType = nullptr);
+    FileMeta(FileMetaRepo* fileRepo, const FileId &id, const QString &location, FileType *knownType = nullptr);
     QVector<QPoint> getEditPositions();
-    void setEditPositions(QVector<QPoint> edPositions);
+    void setEditPositions(const QVector<QPoint> &edPositions);
     bool checkActivelySavedAndReset();
     void updateEditsCompleter();
     void linkDocument(QTextDocument *doc = nullptr);

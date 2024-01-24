@@ -40,7 +40,7 @@ class ModelDialog : public QDialog
 
 public:
     explicit ModelDialog(QWidget *parent = nullptr);
-    explicit ModelDialog(QString userLibPath, QWidget* parent = nullptr);
+    explicit ModelDialog(const QString &userLibPath, QWidget* parent = nullptr);
     ~ModelDialog() override;
     LibraryItem *selectedLibraryItem() const;
     QTableView* tableAt(int i);
@@ -58,7 +58,7 @@ private slots:
 
 private:
     void loadUserLibs();
-    void addLibrary(QList<LibraryItem> items, bool isUserLibrary=false);
+    void addLibrary(const QList<LibraryItem>& items, bool isUserLibrary=false);
 
 private:
     Ui::ModelDialog *ui;

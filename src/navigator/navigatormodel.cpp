@@ -27,7 +27,7 @@ NavigatorModel::NavigatorModel(QObject *parent) :
     QAbstractTableModel(parent)
 { }
 
-void NavigatorModel::setContent(QVector<NavigatorContent> content)
+void NavigatorModel::setContent(const QVector<NavigatorContent> &content)
 {
     beginResetModel();
     mContent = content;
@@ -44,7 +44,7 @@ QDir NavigatorModel::currentDir() const
     return mCurrentDir;
 }
 
-void NavigatorModel::setCurrentDir(QDir dir)
+void NavigatorModel::setCurrentDir(const QDir &dir)
 {
     mCurrentDir.setPath(dir.canonicalPath());
 }

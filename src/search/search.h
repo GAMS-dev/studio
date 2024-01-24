@@ -60,18 +60,18 @@ public:
     Search& operator=(const Search &) = delete;
     Search& operator=(Search &&) = delete;
 
-    void start(SearchParameters parameters);
+    void start(const SearchParameters &parameters);
     void runSearch(QList<SearchFile> files);
     void requestStop();
 
     void findNext(Direction direction);
-    void replaceNext(QString replacementText);
+    void replaceNext(const QString& replacementText);
     void replaceAll(SearchParameters parameters);
     void selectNextMatch(Direction direction = Direction::Forward, bool firstLevel = true);
 
     bool isSearching() const;
     QList<Result> results() const;
-    QList<Result> filteredResultList(QString fileLocation);
+    QList<Result> filteredResultList(const QString &fileLocation);
     bool caseSensitive() const;
     const QRegularExpression regex() const;
     Scope scope() const;
@@ -93,8 +93,8 @@ private:
     void findInSelection(bool showResults);
     void findOnDisk(QRegularExpression searchRegex, FileMeta *fm, SearchResultModel* collection);
 
-    int replaceOpened(FileMeta* fm, SearchParameters parameters);
-    int replaceUnopened(FileMeta* fm, SearchParameters parameters);
+    int replaceOpened(FileMeta* fm, const SearchParameters &parameters);
+    int replaceUnopened(FileMeta* fm, const SearchParameters &parameters);
 
     QPair<int, int> cursorPosition();
     int findNextEntryInCache(Search::Direction direction);
@@ -102,10 +102,10 @@ private:
     int NavigateOutsideCache(Direction direction, bool firstLevel);
     int NavigateInsideCache(Direction direction);
 
-    void checkFileChanged(FileId fileId);
-    bool hasResultsForFile(QString filePath);
+    void checkFileChanged(const FileId &fileId);
+    bool hasResultsForFile(const QString &filePath);
 
-    QFlags<QTextDocument::FindFlag> createFindFlags(SearchParameters parameters, Direction direction = Direction::Forward);
+    QFlags<QTextDocument::FindFlag> createFindFlags(const SearchParameters &parameters, Direction direction = Direction::Forward);
 
 private slots:
     void finished();

@@ -29,7 +29,7 @@ namespace studio {
 HtmlConverter::HtmlConverter()
 {}
 
-QByteArray HtmlConverter::toHtml(QTextCursor cursor, QColor background)
+QByteArray HtmlConverter::toHtml(const QTextCursor& cursor, QColor background)
 {
     QByteArray res;
     if (!cursor.hasSelection()) return res;

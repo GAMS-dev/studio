@@ -79,7 +79,7 @@ const QList<SymbolDataType*> SymbolDataType::list()
     return mList;
 }
 
-SymbolDataType::SymbolType SymbolDataType::typeFrom(QString typeDescription)
+SymbolDataType::SymbolType SymbolDataType::typeFrom(const QString& typeDescription)
 {
     for (SymbolDataType* t : list()) {
         if (t->mDescription.contains(typeDescription, Qt::CaseInsensitive))
@@ -88,7 +88,7 @@ SymbolDataType::SymbolType SymbolDataType::typeFrom(QString typeDescription)
     return Unknown;
 }
 
-SymbolDataType &SymbolDataType::from(QString typeDescription)
+SymbolDataType &SymbolDataType::from(const QString& typeDescription)
 {
     for (SymbolDataType* t : list()) {
         if (t->mDescription.contains(typeDescription, Qt::CaseInsensitive))
@@ -116,7 +116,7 @@ void SymbolDataType::clear()
     mUnknown = nullptr;
 }
 
-SymbolDataType::SymbolDataType(SymbolType type, QString typeDescription) :
+SymbolDataType::SymbolDataType(SymbolType type, const QString& typeDescription) :
     mType(type), mDescription(typeDescription.split(",", Qt::SkipEmptyParts))
 {
 }

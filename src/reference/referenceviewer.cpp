@@ -62,7 +62,7 @@ inline static FileReferenceWidget* toFileUsedReferenceWidget(QWidget* w) {
     return (t == ReferenceViewerType::FileUsed) ? static_cast<FileReferenceWidget*>(w) : nullptr;
 }
 
-ReferenceViewer::ReferenceViewer(QString referenceFile, QString encodingName, QWidget *parent) :
+ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &encodingName, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::ReferenceViewer),
     mReference(new Reference(referenceFile, encodingName))
@@ -164,7 +164,7 @@ void ReferenceViewer::selectSearchField() const
         tabWidget->selectSearchField();
 }
 
-void ReferenceViewer::reloadFile(QString encodingName)
+void ReferenceViewer::reloadFile(const QString &encodingName)
 {
     mReference->loadReferenceFile(encodingName);
     if (mReference->state() == Reference::UnsuccessfullyLoaded) {

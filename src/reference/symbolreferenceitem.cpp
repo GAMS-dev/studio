@@ -24,7 +24,7 @@ namespace gams {
 namespace studio {
 namespace reference {
 
-SymbolReferenceItem::SymbolReferenceItem(SymbolId id, QString name, SymbolDataType::SymbolType type) :
+SymbolReferenceItem::SymbolReferenceItem(SymbolId id, const QString &name, SymbolDataType::SymbolType type) :
     mID(id), mName(name), mType(type)
 {
 

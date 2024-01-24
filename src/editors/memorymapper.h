@@ -58,7 +58,7 @@ private: // types
     };
 
     struct Unit {
-        Unit(Chunk *chunk = nullptr, QString text = QString())
+        Unit(Chunk *chunk = nullptr, const QString &text = QString())
             : firstChunk(chunk), foldText(text) {}
         Chunk *firstChunk;
         QString foldText;

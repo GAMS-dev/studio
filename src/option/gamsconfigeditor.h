@@ -61,8 +61,8 @@ class GamsConfigEditor : public AbstractView
     Q_OBJECT
 
 public:
-    explicit GamsConfigEditor(QString fileName, QString optionFilePath,
-                               FileId id, QWidget *parent = nullptr);
+    explicit GamsConfigEditor(const QString &fileName, const QString &optionFilePath,
+                              const FileId &id, QWidget *parent = nullptr);
     ~GamsConfigEditor() override;
 
     FileId fileId() const;

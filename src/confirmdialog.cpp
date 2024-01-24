@@ -26,7 +26,10 @@
 namespace gams {
 namespace studio {
 
-ConfirmDialog::ConfirmDialog(QString title, QString text, QString checkText, QWidget *parent) :
+ConfirmDialog::ConfirmDialog(const QString &title,
+                             const QString &text,
+                             const QString &checkText,
+                             QWidget *parent) :
     QDialog(parent, Qt::WindowCloseButtonHint | Qt::WindowTitleHint),
     ui(new Ui::ConfirmDialog)
 {

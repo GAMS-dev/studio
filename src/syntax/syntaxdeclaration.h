@@ -79,7 +79,7 @@ public:
 
 protected:
     int findEnd(SyntaxKind kind, const QString& line, int index, int &entryIndex, bool openEnd = false, bool relaxDot = false);
-    void setExtraKeywordChars(QString keywordChars) { mExtraKeywordChars = keywordChars; }
+    void setExtraKeywordChars(const QString &keywordChars) { mExtraKeywordChars = keywordChars; }
 
     QHash<int, DictList*> mKeywords;
     QHash<int, int> mFlavors;

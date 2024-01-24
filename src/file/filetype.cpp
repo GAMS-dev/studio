@@ -55,7 +55,7 @@ int FileType::mGmsFixedTypes = 0;
 QStringList FileType::mUserGamsTypes;
 QStringList FileType::mSolverNames;
 
-FileType::FileType(FileKind kind, QStringList suffix, QString description, bool autoReload)
+FileType::FileType(FileKind kind, const QStringList &suffix, const QString &description, bool autoReload)
     : mKind(kind), mSuffix(suffix), mDescription(description)
     , mAutoReload(autoReload)
 {

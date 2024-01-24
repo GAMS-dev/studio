@@ -695,9 +695,9 @@ void GdxSymbol::sort(int column, Qt::SortOrder order)
             l.append(QPair<QString, int>(mGdxSymbolTable->getElementText(mValues[mRecSortIdx[rec]]), mRecSortIdx[rec]));
 
         if (order == Qt::SortOrder::AscendingOrder)
-            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first < b.first; });
+            std::stable_sort(l.begin(), l.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) { return a.first < b.first; });
         else
-            std::stable_sort(l.begin(), l.end(), [](QPair<QString, int> a, QPair<QString, int> b) { return a.first > b.first; });
+            std::stable_sort(l.begin(), l.end(), [](const QPair<QString, int> &a, const QPair<QString, int> &b) { return a.first > b.first; });
 
         for(int rec=0; rec< mRecordCount; rec++)
             mRecSortIdx[rec] = l.at(rec).second;

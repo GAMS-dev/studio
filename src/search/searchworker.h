@@ -39,8 +39,8 @@ class SearchWorker : public QObject
 {
     Q_OBJECT
 public:
-    SearchWorker(SearchFile file, QRegularExpression regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
-    SearchWorker(QList<SearchFile> fml, QRegularExpression regex, QList<Result> *list, bool showResults);
+    SearchWorker(const SearchFile &file, const QRegularExpression &regex, QPoint from, QPoint to, QList<Result> *list, bool showResults);
+    SearchWorker(const QList<SearchFile> &fml, const QRegularExpression &regex, QList<Result> *list, bool showResults);
     void findInFiles();
 
 signals:

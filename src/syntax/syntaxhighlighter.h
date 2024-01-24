@@ -48,16 +48,16 @@ public:
 
 public slots:
     void syntaxKind(int position, int &intKind, int &flavor);
-    void scanSyntax(QTextBlock block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
-    void syntaxDocAt(QTextBlock block, int pos, QStringList &syntaxDoc);
-    void syntaxFlagData(QTextBlock block, gams::studio::syntax::SyntaxFlag flag, QString &value);
+    void scanSyntax(const QTextBlock &block, QMap<int, QPair<int,int>> &blockSyntax, int pos = -1);
+    void syntaxDocAt(const QTextBlock &block, int pos, QStringList &syntaxDoc);
+    void syntaxFlagData(const QTextBlock &block, gams::studio::syntax::SyntaxFlag flag, QString &value);
 
 private:
     void scanParentheses(const QString &text, SyntaxBlock block, SyntaxKind preKind, NestingData &nestingData);
 
 private:
     struct CodeRelation {
-        CodeRelation(BlockCode code, SyntaxFlags sFlags, CodeRelationIndex prevCri)
+        CodeRelation(BlockCode code, const SyntaxFlags &sFlags, CodeRelationIndex prevCri)
             : blockCode(code), syntaxFlags(sFlags), prevCodeRelIndex(prevCri) {}
         bool operator ==(const CodeRelation &other) const {
             return blockCode == other.blockCode && prevCodeRelIndex == other.prevCodeRelIndex
@@ -82,12 +82,12 @@ private:
     void initKind(int debug, SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
     void initKind(SyntaxAbstract* syntax, Theme::ColorSlot slot = Theme::Syntax_neutral);
 
-    int addCode(BlockCode code, SyntaxFlags synFlags, CodeRelationIndex parentIndex);
-    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, SyntaxBlock block, SyntaxFlags synFlags, int nest = 0);
+    int addCode(BlockCode code, const SyntaxFlags &synFlags, CodeRelationIndex parentIndex);
+    CodeRelationIndex getCode(CodeRelationIndex cri, SyntaxShift shift, const SyntaxBlock &block, const SyntaxFlags &synFlags, int nest = 0);
     int purgeCode(CodeRelationIndex cri);
     QString codeDeb(CodeRelationIndex cri);
-    void syntaxDebug(SyntaxBlock syntaxBlock, QString syntaxName, int prevFlavor);
-    void syntaxDebug(QString text);
+    void syntaxDebug(const SyntaxBlock &syntaxBlock, const QString &syntaxName, int prevFlavor);
+    void syntaxDebug(const QString &text);
 
 private:
     int mScanBlockNr = -1;
