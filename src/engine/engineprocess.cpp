@@ -110,7 +110,7 @@ void EngineProcess::startupInit()
 void EngineProcess::execute()
 {
     QDir dir(mOutPath);
-    if (dir.exists() && !modelName().isEmpty()) {
+    if (dir.exists() && !dir.isEmpty() && !modelName().isEmpty()) {
         emit newStdChannelData("\nCan't create directory " + mOutPath.toUtf8() + '\n');
         setProcState(ProcIdle);
         return;
@@ -140,7 +140,7 @@ QStringList EngineProcess::compileParameters() const
     }
     QFileInfo fi(mOutPath);
     QDir dir(fi.path());
-    dir.mkdir(fi.fileName());
+    dir.mkpath(mOutPath);
 
     QStringList params = parameters();
     QMutableListIterator<QString> i(params);
@@ -375,6 +375,7 @@ void EngineProcess::terminate()
 void EngineProcess::terminateLocal()
 {
     AbstractGamsProcess::terminate();
+    handleResultFiles();
     setProcState(ProcIdle);
     completed(-1);
 }
@@ -395,7 +396,7 @@ void EngineProcess::setParameters(const QStringList &parameters)
         QString tempName = workingDirectory() + "/" + modelName() + "-temp";
         int n = 0;
         QDir outDir(tempName);
-        while (outDir.exists()) {
+        while (outDir.exists() && !outDir.isEmpty()) {
             outDir = QDir(tempName + QString::number(++n));
         }
         mOutPath = QDir::toNativeSeparators(outDir.path());
@@ -690,8 +691,10 @@ void EngineProcess::updateQuota(qreal parallel)
 
 void EngineProcess::resume(const QString &engineJobToken)
 {
+    QDir dir(mOutPath);
+    dir.mkpath(mOutPath);
     mManager->setToken(engineJobToken);
-    setProcState(Proc4Monitor);
+    setProcState(Proc3Queued);
     pollStatus();
 }
 
