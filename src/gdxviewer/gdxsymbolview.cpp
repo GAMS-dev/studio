@@ -338,6 +338,7 @@ void GdxSymbolView::setSym(GdxSymbol *sym, GdxSymbolTableModel* symbolTable, Gdx
     connect(mSym, &GdxSymbol::truncatedData, this, &GdxSymbolView::setTruncatedDataVisible);
     connect(mSym, &GdxSymbol::loadFinished, this, &GdxSymbolView::enableControls);
     connect(mSym, &GdxSymbol::triggerListViewAutoResize, this, &GdxSymbolView::autoResizeColumns);
+    connect(mSym, &GdxSymbol::filterChanged, this, &GdxSymbolView::toggleColumnHidden);
     showDefaultView(symViewState);
     ui->tvListView->setModel(mSym);
 

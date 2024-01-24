@@ -14,6 +14,7 @@ Version 1.17.0 *
 - fixed help view crash due to an dependency issue
 - fixed `Error loading V8 startup snapshot file` due to a missing dependency
 - fixed when using "Replace All" in unopened files extra characters were appended
+- fixed a bug where a changed filter was leading to attributes being shown that were marked to be hidden
 - improved file handling during unexpected events while writing a file, i.e. write to temporary file and rename after success
 - improved LST viewer performance
 - upgraded Studio to Qt 6.6.1 on all platforms

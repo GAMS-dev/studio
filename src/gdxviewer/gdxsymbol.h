@@ -122,6 +122,7 @@ signals:
     void loadPaused();
     void triggerListViewAutoResize();
     void truncatedData(bool isTruncated) const;
+    void filterChanged();
 
 private:
     void calcDefaultColumns();

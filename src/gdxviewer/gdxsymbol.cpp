@@ -788,6 +788,7 @@ void GdxSymbol::filterRows()
         }
     }
     endResetModel();
+    filterChanged();
 }
 
 bool GdxSymbol::isLoaded() const
