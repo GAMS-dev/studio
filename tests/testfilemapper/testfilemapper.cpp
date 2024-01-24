@@ -77,6 +77,7 @@ void TestFileMapper::init()
              "TextMapper: Error on opening test file.");
     mMapper->setVisibleLineCount(20);
     QCOMPARE(mMapper->visibleLineCount(), 20);
+    mMapper->waitForCountThread();
 }
 
 void TestFileMapper::cleanup()

@@ -56,6 +56,7 @@ public:
 
     int lineCount() const override;
     int knownLineNrs() const override;
+    void waitForCountThread();
 
     QString lines(int localLineNrFrom, int lineCount) const override;
     QString lines(int localLineNrFrom, int lineCount, QVector<LineFormat> &formats) const override;

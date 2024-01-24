@@ -119,6 +119,11 @@ int FastFileMapper::knownLineNrs() const
     return mLineByte.count() - 1;
 }
 
+void FastFileMapper::waitForCountThread()
+{
+    mLoading.waitForFinished();
+}
+
 QString FastFileMapper::lines(int localLineNrFrom, int lineCount) const
 {
     int lineNr = visibleTopLine() + localLineNrFrom;
