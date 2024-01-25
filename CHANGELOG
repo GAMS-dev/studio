@@ -8,6 +8,12 @@ Version 1.17.0 *
 - fixed unresponsive Abort button in Search Dialog
 - fixed performance when searching very large folders
 - fixed Navigator being very slow after large searches
+- fixed duplicate Navigator entries for files that are also opened in a tab
+- fixed Navigator file navigation when starting path with ".."
+- fixed Navigator not working properly when using long paths
+- fixed directories being listed as files in Navigator 
+- fixed Navigator not changing current path after switching file
+- fixed Navigator filesystem navigation for absolute path on windows
 - fixed wording in Search Dialog label when search is running
 - fixed Search not properly interrupted when pressing Abort
 - fixed stop and interrupt buttons for macOS and Linux
@@ -18,7 +24,6 @@ Version 1.17.0 *
 - improved file handling during unexpected events while writing a file, i.e. write to temporary file and rename after success
 - improved LST viewer performance
 - upgraded Studio to Qt 6.6.1 on all platforms
-- fixed Navigator filesystem navigation for absolute path on windows
 
 Version 1.16.4
 ==================
