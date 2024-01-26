@@ -535,6 +535,13 @@ bool NavigatorDialog::conditionallyClose()
     else return QDialog::close();
 }
 
+void NavigatorDialog::activeFileChanged()
+{
+    mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
+    mDirSelectionOngoing = false;
+    updateContent();
+}
+
 QDir NavigatorDialog::findClosestPath(const QString& path)
 {
     QString tryPath = path;

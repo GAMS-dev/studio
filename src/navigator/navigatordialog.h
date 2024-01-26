@@ -47,6 +47,7 @@ public:
 public slots:
     void receiveKeyEvent(QKeyEvent *event);
     bool conditionallyClose();
+    void activeFileChanged();
 
 private:
     void keyPressEvent(QKeyEvent* e) override;

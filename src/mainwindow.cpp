@@ -640,6 +640,7 @@ void MainWindow::initNavigator()
     connect(mNavigatorInput, &NavigatorLineEdit::receivedFocus, this, &MainWindow::on_actionNavigator_triggered);
     connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::conditionallyClose);
     connect(mNavigatorInput, &NavigatorLineEdit::sendKeyEvent, mNavigatorDialog, &NavigatorDialog::receiveKeyEvent);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, mNavigatorDialog, &NavigatorDialog::activeFileChanged);
 }
 
 void MainWindow::updateToolbar(QWidget* current)
