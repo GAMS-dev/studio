@@ -1,8 +1,8 @@
-Version 1.17.0 *
+Version 1.17.0
 ==================
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
 - added install license button for the "GAMS Licensing" dialog
-- added highlighting of the system log tab when new messages are available. In case of warnings and errors the tab will be focused
+- added highlighting of the system log tab when new messages are available. For warnings and errors the tab will be focused
 - added the ability to resume to an ongoing GAMS Engine job after Studio is restarted
 - fixed LST viewer sometimes jumping to wrong position in file
 - fixed help view showing empty page when document linked to a page in new tab or new window
@@ -12,8 +12,7 @@ Version 1.17.0 *
 - fixed duplicate Navigator entries for files that are also opened in a tab
 - fixed Navigator file navigation when starting path with ".."
 - fixed Navigator not working properly when using long paths
-- fixed directories being listed as files in Navigator 
-- fixed Navigator not changing current path after switching file
+- fixed directories being listed as files in Navigator
 - fixed Navigator filesystem navigation for absolute path on windows
 - fixed wording in Search Dialog label when search is running
 - fixed Search not properly interrupted when pressing Abort
@@ -22,7 +21,7 @@ Version 1.17.0 *
 - fixed `Error loading V8 startup snapshot file` due to a missing dependency
 - fixed when using "Replace All" in unopened files extra characters were appended
 - fixed a bug where a changed filter was leading to attributes being shown that were marked to be hidden
-- improved file handling during unexpected events while writing a file, i.e. write to temporary file and rename after success
+- improved file handling for unexpected events while writing a file, i.e. write to temporary file and rename after success
 - improved LST viewer performance
 - upgraded Studio to Qt 6.6.1 on all platforms
 
