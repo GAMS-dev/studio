@@ -3,6 +3,7 @@ Version 1.17.0 *
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
 - added install license button for the "GAMS Licensing" dialog
 - added highlighting of the system log tab when new messages are available. In case of warnings and errors the tab will be focused
+- added the ability to resume to an ongoing GAMS Engine job after Studio is restarted
 - fixed LST viewer sometimes jumping to wrong position in file
 - fixed help view showing empty page when document linked to a page in new tab or new window
 - fixed unresponsive Abort button in Search Dialog
