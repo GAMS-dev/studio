@@ -71,7 +71,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
     // create list of include filter regexes
     QList<QRegularExpression> includeFilterList;
     for (const QString &s : std::as_const(params.includeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        QString pattern = QString("\\b*" + s.trimmed() + "\\b").replace('.', "\\.").replace('?', '.').replace("*", ".*");
         includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
 
@@ -81,7 +81,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
     QList<QRegularExpression> excludeFilterList;
     for (const QString &s : std::as_const(excludeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        QString pattern = QString("\\b*" + s.trimmed() + "\\b").replace('.', "\\.").replace('?', '.').replace("*", ".*");
         excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
 
