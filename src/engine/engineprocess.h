@@ -58,7 +58,7 @@ public:
     void interrupt() override;
     void terminate() override;
     void terminateLocal() override;
-    TerminateOption terminateOption() override { return termRemote; }
+    TerminateOption terminateOption() override;
 
     void setParameters(const QStringList &parameters) override;
     void forcePreviousWork();

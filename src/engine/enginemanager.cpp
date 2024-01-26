@@ -504,7 +504,7 @@ bool EngineManager::parseVersions(const QByteArray& json, QString &vEngine, QStr
     return true;
 }
 
-QString EngineManager::getJobToken() const
+QString EngineManager::jobToken() const
 {
     return mJobToken;
 }

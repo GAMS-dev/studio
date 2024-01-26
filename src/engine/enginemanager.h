@@ -82,7 +82,7 @@ public:
     QUrl url() { return mUrl; }
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
-    QString getJobToken() const;
+    QString jobToken() const;
     void setToken(const QString &token);
     void abortRequests();
     void cleanup();

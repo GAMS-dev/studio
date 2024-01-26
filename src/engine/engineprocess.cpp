@@ -356,7 +356,7 @@ AuthManager *EngineProcess::authManager()
 
 void EngineProcess::interrupt()
 {
-    bool ok = !mManager->getJobToken().isEmpty();
+    bool ok = !mManager->jobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(false);
     else
@@ -365,7 +365,7 @@ void EngineProcess::interrupt()
 
 void EngineProcess::terminate()
 {
-    bool ok = !mManager->getJobToken().isEmpty();
+    bool ok = !mManager->jobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(true);
     else
@@ -382,6 +382,12 @@ void EngineProcess::terminateLocal()
     setProcState(ProcIdle);
     completed(-1);
 }
+
+AbstractProcess::TerminateOption EngineProcess::terminateOption()
+{
+    return mManager->jobToken().isEmpty() || state() == QProcess::Running ? termLocal : termRemote;
+}
+
 
 void EngineProcess::setParameters(const QStringList &parameters)
 {
