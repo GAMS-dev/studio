@@ -220,11 +220,11 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
             break;
         }
         case Scope::ThisProject: {
-            PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
+            PExProjectNode* p = mFileHandler->findProject(mCurrentEditor);
             if (!p) return QList<SearchFile>();
 
-            for (PExFileNode *c :p->assignedProject()->listFiles())
-                files << SearchFile(c->file());
+            for (PExFileNode *f : p->listFiles())
+                files << SearchFile(f->file());
             files = mFileWorker.filterFiles(files, parameters);
             break;
         }
