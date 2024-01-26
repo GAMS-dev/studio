@@ -472,7 +472,7 @@ void MainWindow::initWelcomePage()
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
-            if (project->type() != PExProjectNode::tCommon)
+            if (project && project->type() != PExProjectNode::tCommon)
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);
