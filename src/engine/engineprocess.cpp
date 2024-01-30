@@ -290,12 +290,14 @@ void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &erro
         data.append(QString(" [%1] %2\n").arg(err.error()).arg(err.errorString()));
         if (err.error() == QSslError::SelfSignedCertificate ||
             err.error() == QSslError::SelfSignedCertificateInChain ||
-            err.error() == QSslError::UnableToGetLocalIssuerCertificate ||
             err.error() == QSslError::CertificateStatusUnknown) {
             sslError = err.error();
             if (err.error() != QSslError::CertificateStatusUnknown)
                 acceptableErrors << err;
         }
+        //TODO(JM) This is a workaround. Find an avoid the reason!
+        if (err.error() == QSslError::UnableToGetLocalIssuerCertificate)
+            acceptableErrors << err;
     }
     if (!acceptableErrors.isEmpty())
         reply->ignoreSslErrors(acceptableErrors);
