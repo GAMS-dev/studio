@@ -221,7 +221,6 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     , mProjectFile(filePath)
     , mWorkDir(workDir)
     , mType(type)
-    , mGamsProcess(new GamsProcess())
 {
     mBreakpointData = new debugger::BreakpointData();
     if (mWorkDir.isEmpty()) mWorkDir = basePath;

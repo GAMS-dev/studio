@@ -3669,6 +3669,8 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
         DEB() << "Nothing to be executed.";
         return;
     }
+    if (!process)
+        process = new GamsProcess();
     bool ready = executePrepare(project, commandLineStr, process);
     if (ready) {
         if (debug == debugger::NoDebug || project->startDebugServer(debug)) {
