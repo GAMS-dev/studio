@@ -4,6 +4,7 @@ Version 1.17.1 *
 - fixes changing the url to another GAMS Engine server the server can't be found
 - fixed file system navigation improperly handling file switching
 - fixed unnecessary spaces breaking Navigator modes
+- fixed deactivated search elements when project settings are open
 
 Version 1.17.0
 ==================
