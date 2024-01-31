@@ -1,3 +1,8 @@
+Version 1.17.1 *
+==================
+- fixes after once started a remote job (GAMS Engine / NEOS) a local job can't be executed
+- fixes changing the url to another GAMS Engine server the server can't be found
+
 Version 1.17.0
 ==================
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog
