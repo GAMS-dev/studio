@@ -224,7 +224,6 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
 {
     mBreakpointData = new debugger::BreakpointData();
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
     }
