@@ -231,6 +231,7 @@ private slots:
     void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
     void postGamsRun(const NodeId &origin, int exitCode);
+    void stopDebugServer(PExProjectNode *project, bool stateChecked = false);
     void postGamsLibRun();
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);

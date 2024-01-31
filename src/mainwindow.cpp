@@ -2175,6 +2175,30 @@ void MainWindow::appendSystemLogWarning(const QString &text) const
     mSyslog->append(text, LogMsgType::Warning);
 }
 
+void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
+{
+    if (!project) return;
+
+    if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
+        QString tempGdx = project->tempGdx();
+        FileMeta *meta = mFileMetaRepo.fileMeta(tempGdx);
+        if (meta) {
+            if (meta->isOpen())
+                closeFileEditors(meta->id());
+            PExFileNode *node = project->findFile(meta);
+            if (node && !stateChecked)
+                closeNodeConditionally(node);
+        }
+        QTimer::singleShot(200, this, [tempGdx]() {
+            bool done = QFile::remove(tempGdx);
+            if (!done)
+                DEB() << "Couldn't remove temp GDX file " << tempGdx;
+        });
+    }
+    project->gotoPaused(-1);
+    project->stopDebugServer();
+}
+
 void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
 {
     if (origin == -1) {
@@ -2186,24 +2210,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
         appendSystemLogError("No project attached to process");
         return;
     }
-    if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
-        QString tempGdx = project->tempGdx();
-        FileMeta *meta = mFileMetaRepo.fileMeta(tempGdx);
-        if (meta) {
-            if (meta->isOpen())
-                closeFileEditors(meta->id());
-            PExFileNode *node = project->findFile(meta);
-            if (node)
-                closeNodeConditionally(node);
-        }
-        QTimer::singleShot(200, this, [tempGdx]() {
-            bool done = QFile::remove(tempGdx);
-            if (!done)
-                DEB() << "Couldn't remove temp GDX file " << tempGdx;
-        });
-    }
-    project->gotoPaused(-1);
-    project->stopDebugServer();
+    stopDebugServer(project);
 
     if (exitCode == ecTooManyScratchDirs) {
         FileMeta *fm = mRecent.fileMeta();
@@ -2707,7 +2714,7 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
         if (project->process()->terminateOption() && choice == 1)
             project->process()->terminateLocal();
         else {
-            project->stopDebugServer();
+            stopDebugServer(project, true);
             project->process()->terminate();
         }
     }
@@ -4574,10 +4581,8 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
 
 void MainWindow::closeProject(PExProjectNode* project)
 {
-
     if (!project) return;
-    if (project->name() == "abel")
-        SysLogLocator::systemLog()->append("Closing project");
+    bool delay = project->debugServer();
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
     project->setIsClosing();
@@ -4608,7 +4613,10 @@ void MainWindow::closeProject(PExProjectNode* project)
         if (FileMeta *prOp = project->projectEditFileMeta()) {
             closeFileEditors(prOp->id());
         }
-        mProjectRepo.closeGroup(project);
+        if (delay)
+            QTimer::singleShot(0, this, [this, project](){ mProjectRepo.closeGroup(project); });
+        else
+            mProjectRepo.closeGroup(project);
     }
 }
 

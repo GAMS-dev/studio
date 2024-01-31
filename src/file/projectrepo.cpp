@@ -685,6 +685,7 @@ void ProjectRepo::closeGroup(PExGroupNode* group)
     if (mNodes.contains(group->id())) {
         mTreeModel->removeChild(group);
         removeFromIndex(group);
+        group->deleteLater();
     }
 }
 

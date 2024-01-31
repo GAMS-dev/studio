@@ -749,7 +749,8 @@ void PExProjectNode::switchLst(const QString &lstFile)
 
 void PExProjectNode::registerGeneratedFile(const QString &fileName)
 {
-    fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
+    if (fileRepo())
+        fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
 void insertSorted(QList<int> &list, int value)
@@ -1191,6 +1192,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 void PExProjectNode::stopDebugServer()
 {
     if (mDebugServer) {
+        disconnect(mDebugServer);
         debugger::Server *server = mDebugServer;
         mDebugServer = nullptr;
         server->stopAndDelete();
