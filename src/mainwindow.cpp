@@ -4585,7 +4585,6 @@ void MainWindow::closeProject(PExProjectNode* project)
     bool delay = project->debugServer();
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
-    project->setIsClosing();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (PExFileNode *node: project->listFiles()) {
@@ -4594,6 +4593,7 @@ void MainWindow::closeProject(PExProjectNode* project)
     }
 
     if (requestCloseChanged(changedFiles)) {
+        project->setIsClosing();
         PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
