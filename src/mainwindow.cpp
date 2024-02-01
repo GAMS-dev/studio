@@ -468,7 +468,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
