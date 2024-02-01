@@ -94,7 +94,7 @@ void AbstractProcess::interruptIntern(bool hardKill)
         }
 
         // Prepare to reset the console when the process is finished
-        connect(&mProcess, &QProcess::finished, this, [this](int , QProcess::ExitStatus) {
+        connect(&mProcess, &QProcess::finished, this, [](int , QProcess::ExitStatus) {
             FreeConsole();
             SetConsoleCtrlHandler(nullptr, false);
         });

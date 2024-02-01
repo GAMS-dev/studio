@@ -1195,7 +1195,7 @@ void PExProjectNode::stopDebugServer()
         disconnect(mDebugServer);
         debugger::Server *server = mDebugServer;
         mDebugServer = nullptr;
-        server->stopAndDelete();
+        delete server;
     }
     mBreakpointData->resetAimedBreakpoints();
     for (const PExFileNode *node : listFiles())

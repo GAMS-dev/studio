@@ -2195,6 +2195,8 @@ void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
                 DEB() << "Couldn't remove temp GDX file " << tempGdx;
         });
     }
+
+    ui->debugWidget->setDebugServer(nullptr);
     project->gotoPaused(-1);
     project->stopDebugServer();
 }
@@ -2713,10 +2715,8 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
     for (PExProjectNode* project: std::as_const(runningGroups)) {
         if (project->process()->terminateOption() && choice == 1)
             project->process()->terminateLocal();
-        else {
-            stopDebugServer(project, true);
+        else
             project->process()->terminate();
-        }
     }
     return true;
 }
@@ -4594,13 +4594,6 @@ void MainWindow::closeProject(PExProjectNode* project)
     }
 
     if (requestCloseChanged(changedFiles)) {
-        for (FileMeta *file: std::as_const(openFiles)) {
-            closeFileEditors(file->id());
-        }
-        for (PExFileNode *node: project->listFiles()) {
-            mProjectRepo.closeNode(node);
-        }
-
         PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
@@ -4610,14 +4603,28 @@ void MainWindow::closeProject(PExProjectNode* project)
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
-        if (FileMeta *prOp = project->projectEditFileMeta()) {
-            closeFileEditors(prOp->id());
-        }
         if (delay)
-            QTimer::singleShot(0, this, [this, project](){ mProjectRepo.closeGroup(project); });
+            QTimer::singleShot(0, this, [this, project, openFiles]() {
+                internalCloseProject(project, openFiles);
+            });
         else
-            mProjectRepo.closeGroup(project);
+            internalCloseProject(project, openFiles);
     }
+}
+
+void MainWindow::internalCloseProject(PExProjectNode *project, const QVector<FileMeta*> &openFiles)
+{
+    for (FileMeta *file: std::as_const(openFiles))
+        closeFileEditors(file->id());
+    if (FileMeta *prOp = project->projectEditFileMeta())
+        closeFileEditors(prOp->id());
+    for (PExFileNode *node: project->listFiles()) {
+        mProjectRepo.closeNode(node);
+    }
+    if (FileMeta *prOp = project->projectEditFileMeta()) {
+        closeFileEditors(prOp->id());
+    }
+    mProjectRepo.closeGroup(project);
 }
 
 void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)

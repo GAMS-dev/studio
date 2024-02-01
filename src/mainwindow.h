@@ -233,6 +233,7 @@ private slots:
     void postGamsRun(const NodeId &origin, int exitCode);
     void stopDebugServer(PExProjectNode *project, bool stateChecked = false);
     void postGamsLibRun();
+    void internalCloseProject(gams::studio::PExProjectNode *project, const QVector<FileMeta *> &openFiles);
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);

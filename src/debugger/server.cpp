@@ -46,7 +46,6 @@ Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(pa
 Server::~Server()
 {
     stopAndDelete();
-    mServer->deleteLater();
     mServer = nullptr;
 }
 
@@ -97,11 +96,9 @@ void Server::stopAndDelete()
     deleteSocket();
     if (mPortsInUse.contains(mServer->serverPort()))
         mPortsInUse.remove(mServer->serverPort());
-    if (isListening()) {
+    if (isListening())
         mServer->close();
-        logMessage("Debug-Server stopped.");
-    }
-    deleteLater();
+    mServer->deleteLater();
 }
 
 void Server::newConnection()
