@@ -1837,7 +1837,13 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
-            if (mRecent.project())
+            PExProjectNode *project = mRecent.lastProject();
+            if (!project) {
+                PExFileNode *node = mProjectRepo.findFileNode(focusWidget());
+                if (node)
+                    project = node->assignedProject();
+            }
+            if (project)
                 mRecent.project()->setNeedSave();
             updateMenuToCodec(fm->codecMib());
             updateStatusFile();
