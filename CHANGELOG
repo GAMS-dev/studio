@@ -5,6 +5,7 @@ Version 1.17.1 *
 - fixed file system navigation improperly handling file switching
 - fixed unnecessary spaces breaking Navigator modes
 - fixed deactivated search elements when project settings are open
+- fixed crash when closing a project during a GAMS debug
 
 Version 1.17.0
 ==================
