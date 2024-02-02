@@ -818,6 +818,7 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
 
     // set location to new file
     sourceFM->save(target);
+    addToProject(node->assignedProject(), node);
 
     // re-add old file
     findOrCreateFileNode(oldFile, node->assignedProject());
