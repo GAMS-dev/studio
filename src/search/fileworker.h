@@ -53,7 +53,6 @@ signals:
 private:
     SearchParameters mParameters;
     AbstractSearchFileHandler* mFileHandler;
-
 };
 
 }
