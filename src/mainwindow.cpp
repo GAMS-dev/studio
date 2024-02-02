@@ -4604,7 +4604,7 @@ void MainWindow::closeProject(PExProjectNode* project)
             }
         }
         if (delay)
-            QTimer::singleShot(0, this, [this, project, openFiles]() {
+            QTimer::singleShot(500, this, [this, project, openFiles]() {
                 internalCloseProject(project, openFiles);
             });
         else
