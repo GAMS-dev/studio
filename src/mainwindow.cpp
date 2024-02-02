@@ -1837,6 +1837,8 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
+            if (mRecent.project())
+                mRecent.project()->setNeedSave();
             updateMenuToCodec(fm->codecMib());
             updateStatusFile();
         }

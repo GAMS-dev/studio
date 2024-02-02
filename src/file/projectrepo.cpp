@@ -391,11 +391,8 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
             FileType *ft = &FileType::from(suf);
             if (QFileInfo::exists(file)) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
-                if (child.contains("codecMib")) {
-                    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-                    node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
-                                                                         : codecMib);
-                }
+                node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
+                                                                     : Settings::settings()->toInt(skDefaultCodecMib));
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
