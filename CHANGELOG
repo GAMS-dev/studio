@@ -7,6 +7,7 @@ Version 1.17.1 *
 - fixed deactivated search elements when project settings are open
 - fixed crash when closing a project during a GAMS debug
 - fixed crash when opening file from welcome page
+- fixed unwanted partial matches in the Search Dialog file filter section
 
 Version 1.17.0
 ==================
