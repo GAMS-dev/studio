@@ -274,6 +274,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
+        mSearch.requestStop();
         hide();
         if (mFileHandler->fileNode(mCurrentEditor)) {
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))

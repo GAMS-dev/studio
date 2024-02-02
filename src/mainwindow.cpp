@@ -3360,8 +3360,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         }
 
         // search widget
-        if (mSearchDialog->isHidden()) mSearchDialog->on_btn_clear_clicked();
-        else mSearchDialog->hide();
+        if (mSearchDialog->isHidden()) {
+            mSearchDialog->on_btn_clear_clicked();
+        } else {
+            mSearchDialog->search()->requestStop();
+            mSearchDialog->hide();
+        }
 
         e->accept(); return;
     } // end escape block
