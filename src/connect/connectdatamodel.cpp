@@ -1040,7 +1040,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
     bool valid = false;
     while (!valid && i<=n ) {
         QString slist = schemakeys.join(":");
-        if (schema && n>0 && schemakeys.size()>1) { // if (schema defined) and (anyof defined) and (not first level attribute)
+        if (schema && n>0) { // if (schema defined) and (anyof defined)
             slist = QString("%1[%2]").arg(schemakeys.join(":"), QString::number(i));
             types = schema->getTypeAsStringList( slist );
             allowedValues = schema->getAllowedValueAsStringList( slist );

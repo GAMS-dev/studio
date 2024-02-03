@@ -157,16 +157,7 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
     for (YAML::const_iterator it = mRootNode.begin(); it != mRootNode.end(); ++it) {
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
         YAML::Node node = it->second;
-        if (node["anyof"]) {
-            if (node["anyof"].Type()==YAML::NodeType::Sequence) {
-                for(size_t i=0; i<node["anyof"].size(); i++) {
-                   QString str = QString("%1[%2]").arg(key).arg(i);
-                   createSchemaHelper(str, node["anyof"][i], 1);
-                }
-            }
-        } else {
-           createSchemaHelper(key, it->second, 1);
-        }
+        createSchemaHelper(key, it->second, 1);
     }
 }
 
@@ -205,8 +196,12 @@ QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
     QStringList keyList;
     int size = key.split(":").size();
     for(const QString& k : mOrderedKeyList) {
-        if (k.startsWith(key+":") && k.split(":").size()== size+1)
-            keyList << k;
+        if (k.startsWith(key+":") && k.split(":").size()== size+1) {
+            int pos = k.lastIndexOf(QChar('['));
+            QString kk = (pos > 0 ? k.left(pos) : k);
+            if (!keyList.contains(kk) && !kk.endsWith(":"))
+                keyList << k;
+        }
     }
     return keyList;
 }
