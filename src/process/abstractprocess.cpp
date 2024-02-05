@@ -83,32 +83,21 @@ void AbstractProcess::interruptIntern(bool hardKill)
     if (hardKill) {
         mProcess.kill();
     } else {
-        if (!AttachConsole(mProcess.processId())) {
-            qDebug() << "Couldn't attach to console";
-            return;
-        }
-        // Add ignoring Ctrl-C handler for Studio itself
-        if (!SetConsoleCtrlHandler(CtrlHandler, true)) {
-            qDebug() << "Coudn't attach CtrlHandler";
+
+        QString procName("___GAMSMSGWINDOW___" + QString::number(mProcess.processId()));
+        HWND receiver = FindWindow(nullptr, reinterpret_cast<LPCWSTR>(procName.data()));
+        if (!receiver) {
+            qDebug() << "GAMS process window " << procName << " not found";
             return;
         }
 
-        // Prepare to reset the console when the process is finished
-        connect(&mProcess, &QProcess::finished, this, [](int , QProcess::ExitStatus) {
-            FreeConsole();
-            SetConsoleCtrlHandler(nullptr, false);
-        });
+        char lpData[] = "GAMS Message Interrupt";
+        COPYDATASTRUCT cds;
+        cds.dwData = 1;
+        cds.lpData = lpData;
+        cds.cbData = sizeof(lpData);
 
-        // send CTRL-C  (on error print message)
-        if (!GenerateConsoleCtrlEvent(CTRL_C_EVENT, 0)) {
-            LPVOID lpMsgBuf;
-            auto err = GetLastError();
-            FormatMessage(FORMAT_MESSAGE_ALLOCATE_BUFFER | FORMAT_MESSAGE_FROM_SYSTEM | FORMAT_MESSAGE_IGNORE_INSERTS,
-                nullptr, err, MAKELANGID(LANG_NEUTRAL, SUBLANG_DEFAULT), reinterpret_cast<LPTSTR>(&lpMsgBuf), 0, nullptr);
-            auto error_string = QString::fromWCharArray((reinterpret_cast<LPTSTR>(lpMsgBuf)));
-            qDebug() << error_string << "  id:" << mProcess.processId();
-            LocalFree(lpMsgBuf);
-        }
+        SendMessage(receiver, WM_COPYDATA, 0, (LPARAM)(LPVOID)&cds);
         emit interruptGenerated();
     }
 #elif __APPLE__
