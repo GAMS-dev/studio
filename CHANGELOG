@@ -12,6 +12,7 @@ Version 1.17.1 *
 - fixed encoding resets to utf-8 on restart Studio
 - fixed only ask to keep a GAMS Engine job on Studio exit if a remote job is active
 - fixed crash on lxiViewer with invalid model index
+- fixed crash on project explorer on macOS with invalid model index
 
 Version 1.17.0
 ==================

@@ -1049,9 +1049,11 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
     if (!node) return;
 
     QModelIndex mi = mTreeModel->index(node);
-    mTreeModel->setCurrent(mi);
-    mTreeView->setCurrentIndex(mi);
-    if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
+    if (mi.isValid()) {
+        mTreeModel->setCurrent(mi);
+        mTreeView->setCurrentIndex(mi);
+        if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
+    }
 }
 
 void ProjectRepo::nodeChanged(const NodeId &nodeId)
