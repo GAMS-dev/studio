@@ -127,10 +127,14 @@ void LxiViewer::loadLxi()
         LxiTreeModel* oldModel = static_cast<LxiTreeModel*>(ui->lxiTreeView->model());
         ui->lxiTreeView->setModel(model);
         QModelIndex idx = model->index(0,0);
-        ui->lxiTreeView->setCurrentIndex(idx);
-        markLine(idx);
-        if (oldModel)
-            delete oldModel;
+        if (idx.isValid()) {
+            ui->lxiTreeView->setCurrentIndex(idx);
+            markLine(idx);
+            if (oldModel)
+                delete oldModel;
+        } else {
+            ui->splitter->widget(0)->hide();
+        }
     }
     else
         ui->splitter->widget(0)->hide();

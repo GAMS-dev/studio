@@ -11,6 +11,7 @@ Version 1.17.1 *
 - fixed project explorer not updated when using "save as"
 - fixed encoding resets to utf-8 on restart Studio
 - fixed only ask to keep a GAMS Engine job on Studio exit if a remote job is active
+- fixed crash on lxiViewer with invalid model index
 
 Version 1.17.0
 ==================
