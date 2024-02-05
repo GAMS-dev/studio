@@ -8,6 +8,7 @@ Version 1.17.1 *
 - fixed crash when closing a project during a GAMS debug
 - fixed crash when opening file from welcome page
 - fixed unwanted partial matches in the Search Dialog file filter section
+- fixed project explorer not updated when using "save as"
 
 Version 1.17.0
 ==================
