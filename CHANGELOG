@@ -9,6 +9,7 @@ Version 1.17.1 *
 - fixed crash when opening file from welcome page
 - fixed unwanted partial matches in the Search Dialog file filter section
 - fixed project explorer not updated when using "save as"
+- fixed encoding resets to utf-8 on restart Studio
 
 Version 1.17.0
 ==================
