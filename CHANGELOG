@@ -13,7 +13,7 @@ Version 1.17.1 *
 - fixed only ask to keep a GAMS Engine job on Studio exit if a remote job is active
 - fixed crash on lxiViewer with invalid model index
 - fixed crash on project explorer on macOS with invalid model index
-- fixed Windows interrupt not working like ctrl-c on console"
+- fixed Windows interrupt not working like ctrl-c on console
 
 Version 1.17.0
 ==================
