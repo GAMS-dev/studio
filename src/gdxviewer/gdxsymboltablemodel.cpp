@@ -98,7 +98,7 @@ QVariant GdxSymbolTableModel::data(const QModelIndex &index, int role) const
                     return symbol->nr();
             }
             case 1: return symbol->name();
-            case 2: return typeAsString(symbol->type());
+            case 2: return typeAsString(symbol->type(), symbol->subType());
             case 3: return symbol->dim();
             case 4: {
                 if (role == Qt::DisplayRole)
@@ -253,16 +253,56 @@ GdxSymbol *GdxSymbolTableModel::getSymbolByName(const QString &name) const
         return nullptr;
 }
 
-QString GdxSymbolTableModel::typeAsString(int type) const
+QString GdxSymbolTableModel::typeAsString(int type, int subtype) const
 {
+    QString s;
     switch(type) {
-        case GMS_DT_SET: return "Set";
-        case GMS_DT_PAR: return "Parameter";
-        case GMS_DT_VAR: return "Variable";
-        case GMS_DT_EQU: return "Equation";
-        case GMS_DT_ALIAS: return "Alias";
-        default: return "";
+    case GMS_DT_SET:
+        s = "Set";
+        switch(subtype) {
+        case GMS_SETTYPE_SINGLETON  : s += " (Singleton)"; break;
+        default: break;
+        }
+        break;
+    case GMS_DT_PAR:
+        s = "Parameter";
+        break;
+    case GMS_DT_VAR:
+        s = "Variable";
+        switch(subtype) {
+        case GMS_VARTYPE_UNKNOWN: s += " (Unknown)"; break;
+        case GMS_VARTYPE_BINARY: s += " (Binary)"; break;
+        case GMS_VARTYPE_INTEGER: s += " (Integer)"; break;
+        case GMS_VARTYPE_POSITIVE: s += " (Positive)"; break;
+        case GMS_VARTYPE_NEGATIVE: s += " (Negative)"; break;
+        case GMS_VARTYPE_FREE: s += " (Free)"; break;
+        case GMS_VARTYPE_SOS1: s += " (SOS1)"; break;
+        case GMS_VARTYPE_SOS2: s += " (SOS2)"; break;
+        case GMS_VARTYPE_SEMICONT: s += " (SemiCont)"; break;
+        case GMS_VARTYPE_SEMIINT: s += " (SemiInt)"; break;
+        default: break;
+        }
+        break;
+    case GMS_DT_EQU:
+        s = "Equation";
+        switch(subtype) {
+        case GMS_EQUTYPE_E: s += " (Equality)"; break;
+        case GMS_EQUTYPE_G: s += " (Greater than)"; break;
+        case GMS_EQUTYPE_L: s += " (Less than)"; break;
+        case GMS_EQUTYPE_N: s += " (No relationship)"; break;
+        case GMS_EQUTYPE_X: s += " (External)"; break;
+        case GMS_EQUTYPE_C: s += " (Conic)"; break;
+        case GMS_EQUTYPE_B: s += " (Boolean)"; break;
+        default: break;
+        }
+        break;
+    case GMS_DT_ALIAS:
+        s = "Alias";
+        break;
+    default:
+        s = "Unknown";
     }
+    return s;
 }
 
 } // namespace gdxviewer

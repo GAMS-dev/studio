@@ -57,7 +57,7 @@ public:
 
 private:
     QStringList mHeaderText;
-    QString typeAsString(int type) const;
+    QString typeAsString(int type, int subType) const;
     void createSortIndex();
     gdxHandle_t mGdx = nullptr;
     int mUelCount;
