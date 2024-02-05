@@ -1819,6 +1819,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    int n = whichAnyOfSchema(mmit->second, schema, datakeyslist, keystr);
                                    keystr += QString("[%1]").arg(n);
                                }
+                               int before = datakeyslist.size();
                                datakeyslist   << keystr;
                                schemakeyslist << keystr;
                                if (mmit->second.Type()==YAML::NodeType::Sequence) {
@@ -1871,7 +1872,11 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
-                                       indexSeqData << QVariant(schemakeyslist);
+                                       QStringList keystrlist(Keys);
+                                       keystrlist.prepend(schemaName);
+                                       if (!schemakeyslist.startsWith(schemaName) )
+                                           schemakeyslist.prepend(schemaName);
+                                       indexSeqData << schemakeyslist.join(":");
                                        indexSeqData << (schema ? (schema->contains(Keys.join(":")) ? QVariant(false) : QVariant(true))
                                                                : QVariant(true));
                                        indexSeqData << QVariant(0);
@@ -2030,6 +2035,10 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                }
                                datakeyslist.removeLast();
                                schemakeyslist.removeLast();
+                               for (int i=datakeyslist.size(); i>before; i--) {
+                                     datakeyslist.removeLast();
+                                     schemakeyslist.removeLast();
+                               }
                            }
                            parents.pop_back();
                            if (isOneofSchemaDefined) {
