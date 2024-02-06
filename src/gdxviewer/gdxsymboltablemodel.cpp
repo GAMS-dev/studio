@@ -286,13 +286,13 @@ QString GdxSymbolTableModel::typeAsString(int type, int subtype) const
     case GMS_DT_EQU:
         s = "Equation";
         switch(subtype) {
-        case GMS_EQUTYPE_E: s += " (Equality)"; break;
-        case GMS_EQUTYPE_G: s += " (Greater than)"; break;
-        case GMS_EQUTYPE_L: s += " (Less than)"; break;
-        case GMS_EQUTYPE_N: s += " (No relationship)"; break;
-        case GMS_EQUTYPE_X: s += " (External)"; break;
-        case GMS_EQUTYPE_C: s += " (Conic)"; break;
-        case GMS_EQUTYPE_B: s += " (Boolean)"; break;
+        case GMS_EQUTYPE_E: s += " (=e=)"; break;
+        case GMS_EQUTYPE_G: s += " (=g=)"; break;
+        case GMS_EQUTYPE_L: s += " (=l=)"; break;
+        case GMS_EQUTYPE_N: s += " (=n=)"; break;
+        case GMS_EQUTYPE_X: s += " (=x=)"; break;
+        case GMS_EQUTYPE_C: s += " (=c=)"; break;
+        case GMS_EQUTYPE_B: s += " (=b=)"; break;
         default: break;
         }
         break;
