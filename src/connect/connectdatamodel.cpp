@@ -621,8 +621,8 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             } else if (data->getRootNode().Type()==YAML::NodeType::Sequence) {
                      insertLastListElement(schemaname, tobeinsertSchemaKey, data, schemaIndex);
             }
-            emit modificationChanged(true);
         }
+        emit modificationChanged(true);
         return true;
     }
 
