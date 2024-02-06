@@ -300,7 +300,7 @@ void ConnectEditor::openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, QStringConverter::Utf8, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
 }
 
 void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
