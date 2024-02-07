@@ -649,6 +649,7 @@ int FastFileMapper::LinesCache::cachedLineCount() const
 
 QPoint FastFileMapper::LinesCache::posForOffset(int offset)
 {
+    if (!mLineChar.size()) return QPoint();
     int a = 0;
     int b = cachedLineCount();
     while (a + 1 < b) {
@@ -661,7 +662,7 @@ QPoint FastFileMapper::LinesCache::posForOffset(int offset)
 
 int FastFileMapper::LinesCache::lineLength(int lineNr) const
 {
-    if (lineNr < 0 || lineNr >= mMapper->lineCount())
+    if (lineNr < 0 || lineNr >= mMapper->lineCount() || !mLineChar.size())
         return 0;
     bool isLast =(lineNr == mMapper->lineCount() - 1);
     if (isLast && mLastLineLength >= 0)
