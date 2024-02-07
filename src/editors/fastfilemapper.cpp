@@ -513,7 +513,6 @@ bool FastFileMapper::scanLF()
         dataOffsets << 0;
     }
     qint64 start = 0;
-    qint64 lastStart = 0;
 
     QList< QFuture< QList<qint64> > > fut;
     int threadCount = 0;
@@ -536,7 +535,6 @@ bool FastFileMapper::scanLF()
                 QMutexLocker locker(&mMutex);
                 mLineByte << fut.at(i).result();
             }
-            lastStart = start;
             fut.clear();
             threadCount = 0;
             QMutexLocker locker(&mMutex);

@@ -759,7 +759,7 @@ void ChunkTextMapper::removeChunk(int chunkNr)
     if (mPosition.isValid()) cps << &mPosition;
     if (mAnchor.isValid()) cps << &mAnchor;
     if (topLine.isValid()) cps << &topLine;
-    for (CursorPosition *cp: qAsConst(cps)) {
+    for (CursorPosition *cp: std::as_const(cps)) {
         if (cp->chunkNr > chunkNr) {
             --cp->chunkNr;
         } else if (cp->chunkNr == 0) {

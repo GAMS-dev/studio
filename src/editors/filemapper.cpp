@@ -227,7 +227,7 @@ void FileMapper::peekChunksForLineNrs()
     if (lastChunkWithLineNr() < this->chunkCount()-1) mPeekTimer.start(50);
 
     QVariant val = mPeekTimer.property("val");
-    val = (val.isValid() && val.canConvert(QMetaType::Int)) ? ((val.toInt()+1) % 5) : 0;
+    val = (val.isValid() && val.canConvert(QMetaType(QMetaType::Int))) ? ((val.toInt()+1) % 5) : 0;
     mPeekTimer.setProperty("val", val);
     emit loadAmountChanged(knownLineNrs());
     if (val.toInt() == 0 || knownLineNrs() == lineCount()) {
