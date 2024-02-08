@@ -14,6 +14,7 @@ Version 1.17.1 *
 - fixed crash on lxiViewer with invalid model index
 - fixed crash on project explorer on macOS with invalid model index
 - fixed Windows interrupt not working like ctrl-c on console
+- fixed crash when loading an empty lxi/lst file
 - added symbol sub types to the "Type" column of the symbol table
 
 Version 1.17.0
