@@ -19,6 +19,8 @@ Version 1.17.1 *
 - fixed crash in Connect Editor when adding `ExcelWriter` schema data
 - fixed `Open As Text` button in Connect Editor not showing file contents in text editor
 - fixed `Save` newly added data by drag and drop schema in Connect Editor
+- added Esc as a shortcut to abort the search
+- added automatic abort of ongoing search when search dialog is closed (but not hidden)
 
 Version 1.17.0
 ==================
