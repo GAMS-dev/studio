@@ -216,7 +216,6 @@ public slots:
 private slots:
     void initDelayedElements();
     void openDelayedFiles();
-    void updateRecentEdit(QWidget *old, QWidget *now);
     void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
                       int codecMib = -1, bool forcedAsTextEditor = false,
                       gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
@@ -417,6 +416,7 @@ protected:
     bool event(QEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void updateRecentEdit(QWidget *old, QWidget *now);
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

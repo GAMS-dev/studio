@@ -299,7 +299,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->installEventFilter(this);
     installEventFilter(this);
 
-    connect(qApp, &QApplication::focusChanged, this, &MainWindow::updateRecentEdit);
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
+        if (old != now)
+            updateRecentEdit(old, now);
+    } );
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
@@ -433,7 +436,7 @@ void MainWindow::watchProjectTree()
         mSearchDialog->filesChanged();
         mSaveSettingsTimer.start(50);
         // to update the project if changed
-        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
+//        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
@@ -1875,7 +1878,8 @@ void MainWindow::activeTabChanged(int index)
     mCurrentMainTab = index;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
 
-    updateRecentEdit(mRecent.editor(), editWidget);
+    if (editWidget != mRecent.editor())
+        updateRecentEdit(mRecent.editor(), editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
@@ -3938,10 +3942,10 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
-    if (old == now) return;
-    Q_UNUSED(old)
+    FileMeta *oldFile = mFileMetaRepo.fileMeta(old);
+    if (!oldFile) old = nullptr;
     QWidget *wid = now;
-    PExProjectNode *projOld = mRecent.project();
+    PExProjectNode *projOld = (!old || old == now) ? mRecent.lastProject() : mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
@@ -4486,7 +4490,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     // open edit if existing or create one
     if (edit) {
-        if (project) fileMeta->setProjectId(project->id());
+        if (project) {
+            fileMeta->setProjectId(project->id());
+            updateRecentEdit(mRecent.editor(), edit);
+        }
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());

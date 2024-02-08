@@ -691,7 +691,8 @@ void ProjectRepo::closeNode(PExFileNode *node)
     PExGroupNode *group = node->parentNode();
     PExProjectNode *project = node->assignedProject();
     FileMeta *fm = node->file();
-    int nodeCountToFile = fileNodes(fm->id()).count();
+    QList<PExFileNode*> otherNodes = fileNodes(fm->id());
+    otherNodes.removeAll(node);
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
@@ -721,9 +722,10 @@ void ProjectRepo::closeNode(PExFileNode *node)
         }
     }
     node->deleteLater();
-    if (nodeCountToFile == 1) {
+    if (otherNodes.isEmpty())
         fm->deleteLater();
-    }
+    else
+        fm->setProjectId(otherNodes.first()->projectId());
     purgeGroup(group);
 }
 
