@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -621,8 +621,8 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
             } else if (data->getRootNode().Type()==YAML::NodeType::Sequence) {
                      insertLastListElement(schemaname, tobeinsertSchemaKey, data, schemaIndex);
             }
-            emit modificationChanged(true);
         }
+        emit modificationChanged(true);
         return true;
     }
 
@@ -1040,7 +1040,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
     bool valid = false;
     while (!valid && i<=n ) {
         QString slist = schemakeys.join(":");
-        if (schema && n>0 && schemakeys.size()>1) { // if (schema defined) and (anyof defined) and (not first level attribute)
+        if (schema && n>0) { // if (schema defined) and (anyof defined)
             slist = QString("%1[%2]").arg(schemakeys.join(":"), QString::number(i));
             types = schema->getTypeAsStringList( slist );
             allowedValues = schema->getAllowedValueAsStringList( slist );
@@ -1819,6 +1819,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    int n = whichAnyOfSchema(mmit->second, schema, datakeyslist, keystr);
                                    keystr += QString("[%1]").arg(n);
                                }
+                               int before = datakeyslist.size();
                                datakeyslist   << keystr;
                                schemakeyslist << keystr;
                                if (mmit->second.Type()==YAML::NodeType::Sequence) {
@@ -1871,7 +1872,11 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
-                                       indexSeqData << QVariant(schemakeyslist);
+                                       QStringList keystrlist(Keys);
+                                       keystrlist.prepend(schemaName);
+                                       if (!schemakeyslist.startsWith(schemaName) )
+                                           schemakeyslist.prepend(schemaName);
+                                       indexSeqData << schemakeyslist.join(":");
                                        indexSeqData << (schema ? (schema->contains(Keys.join(":")) ? QVariant(false) : QVariant(true))
                                                                : QVariant(true));
                                        indexSeqData << QVariant(0);
@@ -2030,6 +2035,10 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                }
                                datakeyslist.removeLast();
                                schemakeyslist.removeLast();
+                               for (int i=datakeyslist.size(); i>before; i--) {
+                                     datakeyslist.removeLast();
+                                     schemakeyslist.removeLast();
+                               }
                            }
                            parents.pop_back();
                            if (isOneofSchemaDefined) {

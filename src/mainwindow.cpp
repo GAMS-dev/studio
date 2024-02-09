@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -299,7 +299,10 @@ MainWindow::MainWindow(QWidget *parent)
     ui->dockHelpView->installEventFilter(this);
     installEventFilter(this);
 
-    connect(qApp, &QApplication::focusChanged, this, &MainWindow::updateRecentEdit);
+    connect(qApp, &QApplication::focusChanged, this, [this](QWidget *old, QWidget *now) {
+        if (old != now)
+            updateRecentEdit(old, now);
+    } );
 
     connect(mGdxDiffDialog.get(), &QDialog::accepted, this, &MainWindow::openGdxDiffFile);
     connect(mMiroDeployDialog.get(), &miro::MiroDeployDialog::accepted,
@@ -433,7 +436,7 @@ void MainWindow::watchProjectTree()
         mSearchDialog->filesChanged();
         mSaveSettingsTimer.start(50);
         // to update the project if changed
-        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
+//        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
@@ -468,11 +471,11 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
-            if (project->type() != PExProjectNode::tCommon)
+            if (project && project->type() != PExProjectNode::tCommon)
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);
@@ -640,6 +643,7 @@ void MainWindow::initNavigator()
     connect(mNavigatorInput, &NavigatorLineEdit::receivedFocus, this, &MainWindow::on_actionNavigator_triggered);
     connect(mNavigatorInput, &NavigatorLineEdit::lostFocus, mNavigatorDialog, &NavigatorDialog::conditionallyClose);
     connect(mNavigatorInput, &NavigatorLineEdit::sendKeyEvent, mNavigatorDialog, &NavigatorDialog::receiveKeyEvent);
+    connect(ui->mainTabs, &QTabWidget::currentChanged, mNavigatorDialog, &NavigatorDialog::activeFileChanged);
 }
 
 void MainWindow::updateToolbar(QWidget* current)
@@ -1836,6 +1840,14 @@ void MainWindow::codecReload(QAction *action)
         }
         if (reload) {
             fm->load(action->data().toInt());
+            PExProjectNode *project = mRecent.lastProject();
+            if (!project) {
+                PExFileNode *node = mProjectRepo.findFileNode(focusWidget());
+                if (node)
+                    project = node->assignedProject();
+            }
+            if (project)
+                mRecent.project()->setNeedSave();
             updateMenuToCodec(fm->codecMib());
             updateStatusFile();
         }
@@ -1866,7 +1878,8 @@ void MainWindow::activeTabChanged(int index)
     mCurrentMainTab = index;
     QWidget *editWidget = (index < 0 ? nullptr : ui->mainTabs->widget(index));
 
-    updateRecentEdit(mRecent.editor(), editWidget);
+    if (editWidget != mRecent.editor())
+        updateRecentEdit(mRecent.editor(), editWidget);
     if (CodeEdit* ce = ViewHelper::toCodeEdit(editWidget))
         ce->updateExtraSelections();
     else if (TextView* tv = ViewHelper::toTextView(editWidget))
@@ -2174,6 +2187,32 @@ void MainWindow::appendSystemLogWarning(const QString &text) const
     mSyslog->append(text, LogMsgType::Warning);
 }
 
+void MainWindow::stopDebugServer(PExProjectNode* project, bool stateChecked)
+{
+    if (!project) return;
+
+    if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
+        QString tempGdx = project->tempGdx();
+        FileMeta *meta = mFileMetaRepo.fileMeta(tempGdx);
+        if (meta) {
+            if (meta->isOpen())
+                closeFileEditors(meta->id());
+            PExFileNode *node = project->findFile(meta);
+            if (node && !stateChecked)
+                closeNodeConditionally(node);
+        }
+        QTimer::singleShot(200, this, [tempGdx]() {
+            bool done = QFile::remove(tempGdx);
+            if (!done)
+                DEB() << "Couldn't remove temp GDX file " << tempGdx;
+        });
+    }
+
+    ui->debugWidget->setDebugServer(nullptr);
+    project->gotoPaused(-1);
+    project->stopDebugServer();
+}
+
 void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
 {
     if (origin == -1) {
@@ -2185,24 +2224,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
         appendSystemLogError("No project attached to process");
         return;
     }
-    if (!project->tempGdx().isEmpty() && QFile::exists(project->tempGdx())) {
-        QString tempGdx = project->tempGdx();
-        FileMeta *meta = mFileMetaRepo.fileMeta(tempGdx);
-        if (meta) {
-            if (meta->isOpen())
-                closeFileEditors(meta->id());
-            PExFileNode *node = project->findFile(meta);
-            if (node)
-                closeNodeConditionally(node);
-        }
-        QTimer::singleShot(200, this, [tempGdx]() {
-            bool done = QFile::remove(tempGdx);
-            if (!done)
-                DEB() << "Couldn't remove temp GDX file " << tempGdx;
-        });
-    }
-    project->gotoPaused(-1);
-    project->stopDebugServer();
+    stopDebugServer(project);
 
     if (exitCode == ecTooManyScratchDirs) {
         FileMeta *fm = mRecent.fileMeta();
@@ -2705,10 +2727,8 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
     for (PExProjectNode* project: std::as_const(runningGroups)) {
         if (project->process()->terminateOption() && choice == 1)
             project->process()->terminateLocal();
-        else {
-            project->stopDebugServer();
+        else
             project->process()->terminate();
-        }
     }
     return true;
 }
@@ -3344,8 +3364,12 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
         }
 
         // search widget
-        if (mSearchDialog->isHidden()) mSearchDialog->on_btn_clear_clicked();
-        else mSearchDialog->hide();
+        if (mSearchDialog->isHidden()) {
+            mSearchDialog->on_btn_clear_clicked();
+        } else {
+            mSearchDialog->search()->requestStop();
+            mSearchDialog->hide();
+        }
 
         e->accept(); return;
     } // end escape block
@@ -3669,6 +3693,8 @@ void MainWindow::execute(const QString &commandLineStr, AbstractProcess* process
         DEB() << "Nothing to be executed.";
         return;
     }
+    if (!process)
+        process = new GamsProcess();
     bool ready = executePrepare(project, commandLineStr, process);
     if (ready) {
         if (debug == debugger::NoDebug || project->startDebugServer(debug)) {
@@ -3916,10 +3942,10 @@ void MainWindow::openDelayedFiles()
 
 void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
 {
-    if (old == now) return;
-    Q_UNUSED(old)
+    FileMeta *oldFile = mFileMetaRepo.fileMeta(old);
+    if (!oldFile) old = nullptr;
     QWidget *wid = now;
-    PExProjectNode *projOld = mRecent.project();
+    PExProjectNode *projOld = (!old || old == now) ? mRecent.lastProject() : mRecent.project();
     while (wid && wid->parentWidget()) {
         if (wid->parentWidget() == ui->splitter) {
             PinKind pinKind = wid == ui->mainTabs ? pkNone : PinKind(mPinView->orientation());
@@ -4464,7 +4490,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     // open edit if existing or create one
     if (edit) {
-        if (project) fileMeta->setProjectId(project->id());
+        if (project) {
+            fileMeta->setProjectId(project->id());
+            updateRecentEdit(mRecent.editor(), edit);
+        }
     } else {
         if (!project) {
             QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(fileMeta->id());
@@ -4571,13 +4600,10 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
 
 void MainWindow::closeProject(PExProjectNode* project)
 {
-
     if (!project) return;
-    if (project->name() == "abel")
-        SysLogLocator::systemLog()->append("Closing project");
+    bool delay = project->debugServer();
     if (!terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
-    project->setIsClosing();
     QVector<FileMeta*> changedFiles;
     QVector<FileMeta*> openFiles;
     for (PExFileNode *node: project->listFiles()) {
@@ -4586,13 +4612,7 @@ void MainWindow::closeProject(PExProjectNode* project)
     }
 
     if (requestCloseChanged(changedFiles)) {
-        for (FileMeta *file: std::as_const(openFiles)) {
-            closeFileEditors(file->id());
-        }
-        for (PExFileNode *node: project->listFiles()) {
-            mProjectRepo.closeNode(node);
-        }
-
+        project->setIsClosing();
         PExLogNode* log = (project && project->hasLogNode()) ? project->logNode() : nullptr;
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
@@ -4602,11 +4622,28 @@ void MainWindow::closeProject(PExProjectNode* project)
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
         }
-        if (FileMeta *prOp = project->projectEditFileMeta()) {
-            closeFileEditors(prOp->id());
-        }
-        mProjectRepo.closeGroup(project);
+        if (delay)
+            QTimer::singleShot(500, this, [this, project, openFiles]() {
+                internalCloseProject(project, openFiles);
+            });
+        else
+            internalCloseProject(project, openFiles);
     }
+}
+
+void MainWindow::internalCloseProject(PExProjectNode *project, const QVector<FileMeta*> &openFiles)
+{
+    for (FileMeta *file: std::as_const(openFiles))
+        closeFileEditors(file->id());
+    if (FileMeta *prOp = project->projectEditFileMeta())
+        closeFileEditors(prOp->id());
+    for (PExFileNode *node: project->listFiles()) {
+        mProjectRepo.closeNode(node);
+    }
+    if (FileMeta *prOp = project->projectEditFileMeta()) {
+        closeFileEditors(prOp->id());
+    }
+    mProjectRepo.closeGroup(project);
 }
 
 void MainWindow::neosProgress(AbstractProcess *proc, ProcState progress)

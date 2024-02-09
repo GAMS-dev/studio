@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -221,11 +221,9 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     , mProjectFile(filePath)
     , mWorkDir(workDir)
     , mType(type)
-    , mGamsProcess(new GamsProcess())
 {
     mBreakpointData = new debugger::BreakpointData();
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
-    connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
     }
@@ -242,6 +240,9 @@ void PExProjectNode::setProcess(AbstractProcess* process)
         mGamsProcess->disconnect();
     mGamsProcess.reset(process);
     connect(mGamsProcess.get(), &GamsProcess::stateChanged, this, &PExProjectNode::onGamsProcessStateChanged);
+    if (mDebugServer)
+        connect(mGamsProcess.get(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
+
 }
 
 AbstractProcess *PExProjectNode::process() const
@@ -748,7 +749,8 @@ void PExProjectNode::switchLst(const QString &lstFile)
 
 void PExProjectNode::registerGeneratedFile(const QString &fileName)
 {
-    fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
+    if (fileRepo())
+        fileRepo()->setAutoReload(QDir::fromNativeSeparators(fileName));
 }
 
 void insertSorted(QList<int> &list, int value)
@@ -1173,7 +1175,8 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
         connect(mDebugServer, &debugger::Server::signalPaused, this, &PExProjectNode::gotoPaused);
         connect(mDebugServer, &debugger::Server::signalStop, this, &PExProjectNode::terminate);
         connect(mDebugServer, &debugger::Server::signalLinesMap, this, &PExProjectNode::addLinesMap);
-        connect(process(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
+        if (process())
+            connect(process(), &AbstractProcess::interruptGenerated, mDebugServer, &debugger::Server::sendStepLine);
     }
     bool res = mDebugServer->start();
     if (process()) {
@@ -1189,9 +1192,10 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 void PExProjectNode::stopDebugServer()
 {
     if (mDebugServer) {
+        disconnect(mDebugServer);
         debugger::Server *server = mDebugServer;
         mDebugServer = nullptr;
-        server->stopAndDelete();
+        delete server;
     }
     mBreakpointData->resetAimedBreakpoints();
     for (const PExFileNode *node : listFiles())

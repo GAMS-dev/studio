@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -216,7 +216,6 @@ public slots:
 private slots:
     void initDelayedElements();
     void openDelayedFiles();
-    void updateRecentEdit(QWidget *old, QWidget *now);
     void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
                       int codecMib = -1, bool forcedAsTextEditor = false,
                       gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
@@ -231,7 +230,9 @@ private slots:
     void logTabRenamed(QWidget *wid, const QString &newName);
     void processFileEvents();
     void postGamsRun(const NodeId &origin, int exitCode);
+    void stopDebugServer(PExProjectNode *project, bool stateChecked = false);
     void postGamsLibRun();
+    void internalCloseProject(gams::studio::PExProjectNode *project, const QVector<FileMeta *> &openFiles);
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);
@@ -415,6 +416,7 @@ protected:
     bool event(QEvent *event) override;
     void moveEvent(QMoveEvent *event) override;
     void resizeEvent(QResizeEvent *event) override;
+    void updateRecentEdit(QWidget *old, QWidget *now);
     int logTabCount();
     int currentLogTab();
     QTabWidget* mainTabs();

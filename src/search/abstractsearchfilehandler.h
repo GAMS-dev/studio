@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,13 +36,12 @@ public:
     virtual FileMeta* fileMeta(FileId fileId) = 0;
     virtual QSet<FileMeta*> fileMetas() = 0;
     virtual QSet<FileMeta*> openFiles() = 0;
-    virtual PExFileNode* fileNode(NodeId nodeId) = 0;
     virtual PExFileNode* fileNode(QWidget* widget) = 0;
     virtual PExFileNode* findFileNode(QString filepath) = 0;
     virtual PExProjectNode* createProject(QString name, QString path) = 0;
+    virtual PExProjectNode* findProject(QWidget* widget) = 0;
 
     virtual FileMeta* findFile(QString filepath) = 0;
-    virtual FileMeta* findOrCreateFile(QString filepath) = 0;
     virtual PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) = 0;
     virtual QVector<PExProjectNode*> projects() = 0;
 };

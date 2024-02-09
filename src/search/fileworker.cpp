@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -71,7 +71,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
     // create list of include filter regexes
     QList<QRegularExpression> includeFilterList;
     for (const QString &s : std::as_const(params.includeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        QString pattern = QString(QDir::separator() + s.trimmed() + "$").replace('.', "\\.").replace('?', '.').replace("*", ".*");
         includeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
 
@@ -81,7 +81,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
     QList<QRegularExpression> excludeFilterList;
     for (const QString &s : std::as_const(excludeFilter)) {
-        QString pattern = QString("*" + s.trimmed()).replace('.', "\\.").replace('?', '.').replace("*", ".*");
+        QString pattern = QString(QDir::separator() + s.trimmed() + "$").replace('.', "\\.").replace('?', '.').replace("*", ".*");
         excludeFilterList.append(QRegularExpression(pattern, QRegularExpression::CaseInsensitiveOption));
     }
 

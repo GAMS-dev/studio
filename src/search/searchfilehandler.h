@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -36,13 +36,13 @@ public:
     FileMeta* fileMeta(FileId fileId) override;
     QSet<FileMeta*> fileMetas() override;
     QSet<FileMeta *> openFiles() override;
-    PExFileNode* fileNode(NodeId nodeId) override;
     PExFileNode* fileNode(QWidget* widget) override;
     PExFileNode* findFileNode(QString filepath) override;
     PExProjectNode* createProject(QString name, QString path) override;
+    PExProjectNode* findProject(QWidget* widget) override;
+
 
     FileMeta* findFile(QString filepath) override;
-    FileMeta* findOrCreateFile(QString filepath) override;
     PExFileNode *openFile(QString fileName, PExProjectNode *knownProject) override;
     QVector<PExProjectNode*> projects() override;
 

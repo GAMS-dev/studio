@@ -1,3 +1,28 @@
+Version 1.17.1
+==================
+- fixed local job unable to be executed after running a remote job (Engine / NEOS)
+- fixed server not found after changing the url to another GAMS Engine server
+- fixed Navigator file system navigation improperly handling file switching
+- fixed unnecessary spaces breaking Navigator modes
+- fixed deactivated search elements when project settings are focussed
+- fixed crash when closing a project during a GAMS debug
+- fixed crash when opening file from welcome page
+- fixed unwanted partial matches in the Search Dialog file filter section
+- fixed project explorer not updated when using "save as"
+- fixed encoding resets to UTF-8 after restarting Studio
+- removed unnecessary dialog to keep GAMS Engine job when exiting Studio if no remote job is active
+- fixed crash in lxiViewer with invalid model index
+- fixed crash in project explorer on macOS with invalid model index
+- fixed Windows interrupt not working like ctrl-c on console
+- fixed crash when loading an empty lxi/lst file
+- added symbol sub types to the "Type" column of the symbol table
+- fixed crash in Connect Editor when adding `ExcelWriter` schema data
+- fixed `Open As Text` button in Connect Editor not showing file contents in text editor
+- fixed `Save` for newly added data by drag and drop schema in Connect Editor
+- fixed overwritten clp when moving/copying a file from one project to another
+- added Esc as a shortcut to abort the search
+- added abort of ongoing search when search dialog is closed (but not hidden)
+
 Version 1.17.0
 ==================
 - added new options "Compare Defaults", "Compare Domains", and "Ignore Order" to the GDX Diff dialog

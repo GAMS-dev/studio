@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -295,6 +295,9 @@ void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &erro
             if (err.error() != QSslError::CertificateStatusUnknown)
                 acceptableErrors << err;
         }
+        //TODO(JM) This is a workaround. Find an avoid the reason!
+        if (err.error() == QSslError::UnableToGetLocalIssuerCertificate)
+            acceptableErrors << err;
     }
     if (!acceptableErrors.isEmpty())
         reply->ignoreSslErrors(acceptableErrors);
@@ -353,7 +356,7 @@ AuthManager *EngineProcess::authManager()
 
 void EngineProcess::interrupt()
 {
-    bool ok = !mManager->getJobToken().isEmpty();
+    bool ok = !mManager->jobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(false);
     else
@@ -362,7 +365,7 @@ void EngineProcess::interrupt()
 
 void EngineProcess::terminate()
 {
-    bool ok = !mManager->getJobToken().isEmpty();
+    bool ok = !mManager->jobToken().isEmpty();
     if (ok)
         emit mManager->syncKillJob(true);
     else
@@ -379,6 +382,12 @@ void EngineProcess::terminateLocal()
     setProcState(ProcIdle);
     completed(-1);
 }
+
+AbstractProcess::TerminateOption EngineProcess::terminateOption()
+{
+    return mManager->jobToken().isEmpty() || state() == QProcess::Running ? termLocal : termRemote;
+}
+
 
 void EngineProcess::setParameters(const QStringList &parameters)
 {

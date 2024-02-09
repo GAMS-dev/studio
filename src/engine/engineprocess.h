@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -58,7 +58,7 @@ public:
     void interrupt() override;
     void terminate() override;
     void terminateLocal() override;
-    TerminateOption terminateOption() override { return termRemote; }
+    TerminateOption terminateOption() override;
 
     void setParameters(const QStringList &parameters) override;
     void forcePreviousWork();

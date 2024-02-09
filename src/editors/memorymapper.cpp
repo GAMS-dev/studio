@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -784,7 +784,6 @@ void MemoryMapper::dump()
 //    int iCh = 0;
     DEB() << "\n";
     DEB() << "---- size: " << mSize << "  lineCount: " << lineCount();
-    int sum = 0;
     for (Chunk *chunk : std::as_const(mChunks)) {
 //        for (int lineNr = 0; lineNr < chunk->lineBytes.size()-1; ++lineNr) {
 //            QString line;
@@ -801,7 +800,6 @@ void MemoryMapper::dump()
         int len = chunk->lineCount() ? chunk->lineBytes.at(1) - chunk->lineBytes.at(0) : 0;
         if (len)
             DEB() << "   starts with: " << chunk->bArray.mid(chunk->lineBytes.at(0), len);
-        sum += chunk->size();
     }
 //    for (const Unit &u : mUnits) {
 //        DEB() << "  UNIT: from " << u.firstChunk->nr << "+" << u.chunkCount-1 << "  size1: " << u.firstChunk->size();

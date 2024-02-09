@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -300,7 +300,7 @@ void ConnectEditor::openAsTextButton_clicked(bool checked)
     PExFileNode* fileNode = main->projectRepo()->findFileNode(this);
     PExProjectNode* project = (fileNode ? fileNode->assignedProject() : nullptr);
 
-    emit main->projectRepo()->openFile(fileMeta, true, project, QStringConverter::Utf8, true);
+    emit main->projectRepo()->openFile(fileMeta, true, project, -1, true);
 }
 
 void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)

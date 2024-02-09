@@ -1,8 +1,8 @@
 ﻿/*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -69,6 +69,7 @@ void SearchDialog::showEvent(QShowEvent *event)
 
 void SearchDialog::closeEvent(QCloseEvent *event)
 {
+    mSearch.requestStop();
     event->ignore();
     QDialog::closeEvent(event);
 }
@@ -220,11 +221,11 @@ QList<SearchFile> SearchDialog::getFilesByScope(const SearchParameters &paramete
             break;
         }
         case Scope::ThisProject: {
-            PExFileNode* p = mFileHandler->fileNode(mCurrentEditor);
+            PExProjectNode* p = mFileHandler->findProject(mCurrentEditor);
             if (!p) return QList<SearchFile>();
 
-            for (PExFileNode *c :p->assignedProject()->listFiles())
-                files << SearchFile(c->file());
+            for (PExFileNode *f : p->listFiles())
+                files << SearchFile(f->file());
             files = mFileWorker.filterFiles(files, parameters);
             break;
         }
@@ -274,6 +275,7 @@ void SearchDialog::keyPressEvent(QKeyEvent* e)
 {
     if ( isVisible() && ((e->key() == Qt::Key_Escape) || (e == Hotkey::SearchOpen)) ) {
         e->accept();
+        mSearch.requestStop();
         hide();
         if (mFileHandler->fileNode(mCurrentEditor)) {
             if (lxiviewer::LxiViewer* lv = ViewHelper::toLxiViewer(mCurrentEditor))

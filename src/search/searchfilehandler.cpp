@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -48,11 +48,6 @@ QSet<FileMeta*> SearchFileHandler::openFiles()
     return QSet<FileMeta*>(openFiles.begin(), openFiles.end());
 }
 
-PExFileNode* SearchFileHandler::fileNode(NodeId nodeId)
-{
-    return mMain->projectRepo()->asFileNode(nodeId);
-}
-
 PExFileNode* SearchFileHandler::fileNode(QWidget *widget)
 {
     return mMain->projectRepo()->findFileNode(widget);
@@ -65,18 +60,17 @@ PExFileNode* SearchFileHandler::findFileNode(QString filepath)
 
 PExProjectNode* SearchFileHandler::createProject(QString name, QString path)
 {
-    PExProjectNode* project = mMain->projectRepo()->createProject(name, path, "", onExist_AddNr, "", PExProjectNode::tSearch);
-    return project;
+    return mMain->projectRepo()->createProject(name, path, "", onExist_AddNr, "", PExProjectNode::tSearch);
+}
+
+PExProjectNode *SearchFileHandler::findProject(QWidget *widget)
+{
+    return mMain->projectRepo()->findProject(widget);
 }
 
 FileMeta* SearchFileHandler::findFile(QString filepath)
 {
     return mMain->fileRepo()->fileMeta(filepath);
-}
-
-FileMeta* SearchFileHandler::findOrCreateFile(QString filepath)
-{
-    return mMain->fileRepo()->findOrCreateFileMeta(filepath);
 }
 
 PExFileNode* SearchFileHandler::openFile(QString fileName,  PExProjectNode* knownProject) {

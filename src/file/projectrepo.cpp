@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -391,11 +391,8 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
             FileType *ft = &FileType::from(suf);
             if (QFileInfo::exists(file)) {
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
-                if (child.contains("codecMib")) {
-                    int codecMib = Settings::settings()->toInt(skDefaultCodecMib);
-                    node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
-                                                                         : codecMib);
-                }
+                node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
+                                                                     : Settings::settings()->toInt(skDefaultCodecMib));
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
@@ -685,6 +682,7 @@ void ProjectRepo::closeGroup(PExGroupNode* group)
     if (mNodes.contains(group->id())) {
         mTreeModel->removeChild(group);
         removeFromIndex(group);
+        group->deleteLater();
     }
 }
 
@@ -693,7 +691,8 @@ void ProjectRepo::closeNode(PExFileNode *node)
     PExGroupNode *group = node->parentNode();
     PExProjectNode *project = node->assignedProject();
     FileMeta *fm = node->file();
-    int nodeCountToFile = fileNodes(fm->id()).count();
+    QList<PExFileNode*> otherNodes = fileNodes(fm->id());
+    otherNodes.removeAll(node);
 
     if (node->file()->isOpen() && fileNodes(node->file()->id()).size() == 1) {
         DEB() << "Close error: Node has open editors";
@@ -723,9 +722,10 @@ void ProjectRepo::closeNode(PExFileNode *node)
         }
     }
     node->deleteLater();
-    if (nodeCountToFile == 1) {
+    if (otherNodes.isEmpty())
         fm->deleteLater();
-    }
+    else
+        fm->setProjectId(otherNodes.first()->projectId());
     purgeGroup(group);
 }
 
@@ -815,11 +815,15 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     FileMeta* sourceFM = node->file();
     QString oldFile = node->location();
 
-    // set location to new file
+    // set location to new file and add it to the tree
     sourceFM->save(target);
+    addToProject(node->assignedProject(), node);
 
     // re-add old file
     findOrCreateFileNode(oldFile, node->assignedProject());
+
+    // macOS didn't focus on the new node
+    mTreeModel->setCurrent(mTreeModel->index(node));
 }
 
 QVector<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const
@@ -1047,9 +1051,11 @@ void ProjectRepo::editorActivated(QWidget* edit, bool select)
     if (!node) return;
 
     QModelIndex mi = mTreeModel->index(node);
-    mTreeModel->setCurrent(mi);
-    mTreeView->setCurrentIndex(mi);
-    if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
+    if (mi.isValid()) {
+        mTreeModel->setCurrent(mi);
+        mTreeView->setCurrentIndex(mi);
+        if (select) mTreeView->selectionModel()->select(mi, QItemSelectionModel::ClearAndSelect);
+    }
 }
 
 void ProjectRepo::nodeChanged(const NodeId &nodeId)

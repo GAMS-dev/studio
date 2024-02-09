@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -46,7 +46,6 @@ Server::Server(const QString &path, QObject *parent) : QObject(parent), mPath(pa
 Server::~Server()
 {
     stopAndDelete();
-    mServer->deleteLater();
     mServer = nullptr;
 }
 
@@ -97,11 +96,9 @@ void Server::stopAndDelete()
     deleteSocket();
     if (mPortsInUse.contains(mServer->serverPort()))
         mPortsInUse.remove(mServer->serverPort());
-    if (isListening()) {
+    if (isListening())
         mServer->close();
-        logMessage("Debug-Server stopped.");
-    }
-    deleteLater();
+    mServer->deleteLater();
 }
 
 void Server::newConnection()

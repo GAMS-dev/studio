@@ -1,3 +1,19 @@
+/*
+ *
+ * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ *
+ * This program is free software: you can redistribute it and/or modify
+ * it under the terms of the GNU General Public License as published by
+ * the Free Software Foundation, either version 3 of the License, or
+ * (at your option) any later version.
+ *
+ * This program is distributed in the hope that it will be useful,
+ * but WITHOUT ANY WARRANTY; without even the implied warranty of
+ * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+ * GNU General Public License for more details.
+ *
+ */
 #include "fastfilemapper.h"
 #include "logger.h"
 #include "exception.h"
@@ -497,7 +513,6 @@ bool FastFileMapper::scanLF()
         dataOffsets << 0;
     }
     qint64 start = 0;
-    qint64 lastStart = 0;
 
     QList< QFuture< QList<qint64> > > fut;
     int threadCount = 0;
@@ -520,7 +535,6 @@ bool FastFileMapper::scanLF()
                 QMutexLocker locker(&mMutex);
                 mLineByte << fut.at(i).result();
             }
-            lastStart = start;
             fut.clear();
             threadCount = 0;
             QMutexLocker locker(&mMutex);
@@ -618,6 +632,8 @@ QString FastFileMapper::LinesCache::getLines(int lineNr, int count) const
             count = cachedLineCount() - (lineNr - mCacheOffsetLine);
     }
     int localLine = lineNr - mCacheOffsetLine;
+    if (!mLineChar.size())
+        return QString();
     qint64 from = mLineChar.at(localLine);
     qint64 to = mLineChar.at(localLine + count);
     return mData.sliced(from, to - from - mMapper->delimiter().size());
@@ -631,6 +647,7 @@ int FastFileMapper::LinesCache::cachedLineCount() const
 
 QPoint FastFileMapper::LinesCache::posForOffset(int offset)
 {
+    if (!mLineChar.size()) return QPoint();
     int a = 0;
     int b = cachedLineCount();
     while (a + 1 < b) {
@@ -651,6 +668,8 @@ int FastFileMapper::LinesCache::lineLength(int lineNr) const
 
     if (lineNr < mCacheOffsetLine || lineNr >= mCacheOffsetLine + cachedLineCount())
         getLines(lineNr, 1);
+    if (!mLineChar.size())
+        return 0;
     int localLine = lineNr - mCacheOffsetLine;
     return mLineChar.at(localLine + 1) - mLineChar.at(localLine) - mMapper->delimiter().size();
 }

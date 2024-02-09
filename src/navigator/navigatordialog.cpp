@@ -1,8 +1,8 @@
 /*
  * This file is part of the GAMS Studio project.
  *
- * Copyright (c) 2017-2023 GAMS Software GmbH <support@gams.com>
- * Copyright (c) 2017-2023 GAMS Development Corp. <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
+ * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
  *
  * This program is free software: you can redistribute it and/or modify
  * it under the terms of the GNU General Public License as published by
@@ -224,6 +224,8 @@ void NavigatorDialog::collectFileSystem(QSet<NavigatorContent> &content)
 {
     QString textInput = mInput->text();
     textInput.remove(mPrefixRegex);
+
+    textInput = textInput.trimmed();
 
     // make relative path absolute to avoid misinterpretation
     if (mDirSelectionOngoing && !(textInput.startsWith("/") || textInput.contains(mWindowsPath)))
@@ -531,6 +533,13 @@ bool NavigatorDialog::conditionallyClose()
     if (QApplication::activeWindow() == this)
         return false;
     else return QDialog::close();
+}
+
+void NavigatorDialog::activeFileChanged()
+{
+    mNavModel->setCurrentDir(QDir(mMain->recent()->path()));
+    mDirSelectionOngoing = false;
+    updateContent();
 }
 
 QDir NavigatorDialog::findClosestPath(const QString& path)
