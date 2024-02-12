@@ -114,14 +114,13 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 
 QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool applyFilters)
 {
-    QString inst = "- PandasExcelWriter:\n";
+    QString inst = "- ExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
-    inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name = hasActiveFilter(sym) && applyFilters ? sym->name() + FILTER_SUFFIX : sym->name();
-        int rowDimension = sym->dim();
+        int columnDimension = 0;
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
@@ -130,16 +129,18 @@ QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool apply
         if (state)
             symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
         if (symView && symView->isTableViewActive())
-            rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
+            columnDimension = symView->getTvModel()->tvColDim();
         else if (symViewState && symViewState->tableViewActive())
-            rowDimension = sym->dim() - symViewState->tvColDim();
+            columnDimension = symViewState->tvColDim();
         else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
-            rowDimension = sym->dim() - 1;
+            columnDimension = 1;
+        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+            columnDimension += 1;
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
         inst += "        range: " + sym->name() + "!A1\n";
-        inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
+        inst += "        columnDimension: " + QString::number(columnDimension) + "\n";
     }
     return inst;
 }
