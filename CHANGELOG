@@ -1,3 +1,7 @@
+Version 1.17.2
+==================
+- improved GDXViewer export dialog now uses the ExcelReader instead of the PandasExcelReader (deprecated)
+
 Version 1.17.1
 ==================
 - fixed local job unable to be executed after running a remote job (Engine / NEOS)
