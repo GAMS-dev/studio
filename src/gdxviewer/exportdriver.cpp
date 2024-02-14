@@ -114,24 +114,37 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 
 QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
 {
-    if (eps.trimmed().isEmpty())
-        eps = "'" + eps + "'";
-    if (posInf.trimmed().isEmpty())
-        posInf = "'" + posInf + "'";
-    if (negInf.trimmed().isEmpty())
-        negInf = "'" + negInf + "'";
-    if (undef.trimmed().isEmpty())
-        undef = "'" + undef + "'";
-    if (na.trimmed().isEmpty())
-        na = "'" + na + "'";
+    bool isNumber = false;
+    QString sq = "'";
+    QString dq = "\"";
+
+    QStringList sv_list;
+    sv_list << eps << posInf << negInf << undef << na;
+
+    QStringList sv_defaults;
+    sv_defaults << "EPS" << "INF" << "-INF" << "UNDEF" << "NA";
+
+    for (int i=0; i<sv_list.count(); i++) {
+        if (sv_list[i] == sv_defaults[i]) {  // no special handling for defaults
+            continue;
+        }
+        sv_list[i].toFloat(&isNumber);
+        if (!isNumber ) {  // we better quote values that are not numerical
+            if (sv_list[i].indexOf(sq) != -1)  // use double quotes if value contains single quotes
+                sv_list[i] = dq + sv_list[i] + dq;
+            else  // use single quotes if value contains double quotes
+                sv_list[i] = sq + sv_list[i] + sq;
+        }
+    }
+
     QString inst = "- ExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
     inst += "    valueSubstitutions: {\n";
-    inst += "      EPS: " + eps + ",\n";
-    inst += "      INF: " + posInf + ",\n";
-    inst += "      -INF: " + negInf + ",\n";
-    inst += "      UNDEF: " + undef + ",\n";
-    inst += "      NA: " + na + "\n";
+    inst += "      EPS: " + sv_list[0] + ",\n";
+    inst += "      INF: " + sv_list[1] + ",\n";
+    inst += "      -INF: " + sv_list[2] + ",\n";
+    inst += "      UNDEF: " + sv_list[3] + ",\n";
+    inst += "      NA: " + sv_list[4] + "\n";
     inst += "    }\n";
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
