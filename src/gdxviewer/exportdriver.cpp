@@ -48,11 +48,11 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, bool epsAsZero)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, epsAsZero).toUtf8());
+        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, eps, posInf, negInf, undef, na).toUtf8());
         f.close();
     }
     return true;
@@ -67,9 +67,9 @@ void ExportDriver::execute(const QString &connectFile, const QString &workingDir
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, bool epsAsZero)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
 {
-    if (save(connectFile, output, applyFilters, epsAsZero))
+    if (save(connectFile, output, applyFilters, eps, posInf, negInf, undef, na))
         execute(connectFile, workingDirectory);
 }
 
@@ -79,14 +79,14 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, bool epsAsZero)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
 {
     QString inst;
     inst += generateGdxReader(gdxFile);
     if (applyFilters)
         inst += generateFilters();
     inst += generateProjections(applyFilters);
-    inst += generateExcelWriter(output, applyFilters, epsAsZero);
+    inst += generateExcelWriter(output, applyFilters, eps, posInf, negInf, undef, na);
     return inst;
 }
 
@@ -112,12 +112,27 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 }
 
 
-QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, bool epsAsZero)
+QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
 {
+    if (eps.trimmed().isEmpty())
+        eps = "'" + eps + "'";
+    if (posInf.trimmed().isEmpty())
+        posInf = "'" + posInf + "'";
+    if (negInf.trimmed().isEmpty())
+        negInf = "'" + negInf + "'";
+    if (undef.trimmed().isEmpty())
+        undef = "'" + undef + "'";
+    if (na.trimmed().isEmpty())
+        na = "'" + na + "'";
     QString inst = "- ExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
-    if (epsAsZero)
-        inst += "    valueSubstitutions: {EPS: 0}\n";
+    inst += "    valueSubstitutions: {\n";
+    inst += "      EPS: " + eps + ",\n";
+    inst += "      INF: " + posInf + ",\n";
+    inst += "      -INF: " + negInf + ",\n";
+    inst += "      UNDEF: " + undef + ",\n";
+    inst += "      NA: " + na + "\n";
+    inst += "    }\n";
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
