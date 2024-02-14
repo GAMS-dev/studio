@@ -19,10 +19,16 @@
   <layout class="QVBoxLayout" name="verticalLayout">
    <item>
     <layout class="QGridLayout" name="gridLayout">
-     <item row="0" column="0">
-      <widget class="QLabel" name="lTargetFormat">
+     <item row="2" column="1">
+      <widget class="QLineEdit" name="leConnect"/>
+     </item>
+     <item row="3" column="1">
+      <widget class="QCheckBox" name="cbFilter">
        <property name="text">
-        <string>Target Format:</string>
+        <string/>
+       </property>
+       <property name="checked">
+        <bool>true</bool>
        </property>
       </widget>
      </item>
@@ -52,20 +58,41 @@
        </item>
       </layout>
      </item>
-     <item row="1" column="0">
-      <widget class="QLabel" name="lExcel">
+     <item row="0" column="0">
+      <widget class="QLabel" name="lTargetFormat">
        <property name="text">
-        <string>Excel File:</string>
+        <string>Target Format:</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="2">
+      <widget class="QPushButton" name="pbBrowseExcel">
+       <property name="text">
+        <string>Browse...</string>
+       </property>
+      </widget>
+     </item>
+     <item row="2" column="2">
+      <widget class="QPushButton" name="pbBrowseConnect">
+       <property name="text">
+        <string>Browse...</string>
        </property>
       </widget>
      </item>
      <item row="1" column="1">
       <widget class="QLineEdit" name="leExcel"/>
      </item>
-     <item row="1" column="2">
-      <widget class="QPushButton" name="pbBrowseExcel">
+     <item row="3" column="0">
+      <widget class="QLabel" name="label">
        <property name="text">
-        <string>Browse...</string>
+        <string>Apply Filters</string>
+       </property>
+      </widget>
+     </item>
+     <item row="1" column="0">
+      <widget class="QLabel" name="lExcel">
+       <property name="text">
+        <string>Excel File:</string>
        </property>
       </widget>
      </item>
@@ -76,30 +103,17 @@
        </property>
       </widget>
      </item>
-     <item row="2" column="1">
-      <widget class="QLineEdit" name="leConnect"/>
-     </item>
-     <item row="2" column="2">
-      <widget class="QPushButton" name="pbBrowseConnect">
+     <item row="4" column="0">
+      <widget class="QLabel" name="label_3">
        <property name="text">
-        <string>Browse...</string>
+        <string>Eps as Zero:</string>
        </property>
       </widget>
      </item>
-     <item row="3" column="0">
-      <widget class="QLabel" name="label">
-       <property name="text">
-        <string>Apply Filters</string>
-       </property>
-      </widget>
-     </item>
-     <item row="3" column="1">
-      <widget class="QCheckBox" name="cbFilter">
+     <item row="4" column="1">
+      <widget class="QCheckBox" name="cbEpsAsZero">
        <property name="text">
         <string/>
-       </property>
-       <property name="checked">
-        <bool>true</bool>
        </property>
       </widget>
      </item>

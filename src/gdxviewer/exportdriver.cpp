@@ -48,11 +48,11 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, bool epsAsZero)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters).toUtf8());
+        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, epsAsZero).toUtf8());
         f.close();
     }
     return true;
@@ -67,9 +67,9 @@ void ExportDriver::execute(const QString &connectFile, const QString &workingDir
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, bool epsAsZero)
 {
-    if (save(connectFile, output, applyFilters))
+    if (save(connectFile, output, applyFilters, epsAsZero))
         execute(connectFile, workingDirectory);
 }
 
@@ -79,14 +79,14 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, bool epsAsZero)
 {
     QString inst;
     inst += generateGdxReader(gdxFile);
     if (applyFilters)
         inst += generateFilters();
     inst += generateProjections(applyFilters);
-    inst += generatePDExcelWriter(output, applyFilters);
+    inst += generateExcelWriter(output, applyFilters, epsAsZero);
     return inst;
 }
 
@@ -112,10 +112,12 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 }
 
 
-QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool applyFilters)
+QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, bool epsAsZero)
 {
     QString inst = "- ExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
+    if (epsAsZero)
+        inst += "    valueSubstitutions: {EPS: 0}\n";
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
