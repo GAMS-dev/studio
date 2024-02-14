@@ -5,6 +5,7 @@ Version 1.17.2
     - visual appearance of the generated Excel files has changes
     - exported data does not contain the "value" header anymore
     - no extra blank row between column header and data anymore
+    - labels are not written into merged cells anymore
 - added support for specifying custom values for GAMS special values in the GDXViewer export dialog
 
 Version 1.17.1
