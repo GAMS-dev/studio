@@ -91,7 +91,12 @@ void TestGdxViewer::test_export()
     exportDriver->saveAndExecute(QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.yaml")),
                                  QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.xlsx")),
                                  QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()),
-                                 true);
+                                 true,
+                                 "EPS",
+                                 "INF",
+                                 "-INF",
+                                 "UNDEF",
+                                 "NA");
 
     // wait 10s for the ExportDriver to finish
     QTimer timer;

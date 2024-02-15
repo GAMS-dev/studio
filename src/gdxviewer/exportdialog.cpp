@@ -169,15 +169,17 @@ bool ExportDialog::save(bool fileExistsWarning)
     if (fileExistsWarning && QFileInfo::exists(output)) {
         QMessageBox msgBox;
         msgBox.setWindowTitle("Overwrite Existing File");
-        msgBox.setText(QFileInfo(output).fileName() + " already exists.\nDo you want to overwrite it?");
+        msgBox.setText(QFileInfo(output).filePath() + " already exists.\nDo you want to overwrite it?");
         msgBox.setStandardButtons(QMessageBox::Yes|QMessageBox::No);
         msgBox.setIcon(QMessageBox::Warning);
         if (msgBox.exec() == QMessageBox::No)
             return false;
+        else
+            QFile(output).remove();
     }
     mRecentPath = QFileInfo(output).path();
     ui->leExcel->setText(output);
-    bool rc =  mExportDriver->save(connectFile, ui->leExcel->text().trimmed(), ui->cbFilter->isChecked());
+    bool rc =  mExportDriver->save(connectFile, ui->leExcel->text().trimmed(), ui->cbFilter->isChecked(), ui->leEps->text(), ui->lePosInf->text(), ui->leNegInf->text(), ui->leUndef->text(), ui->leNA->text());
     return rc;
 }
 

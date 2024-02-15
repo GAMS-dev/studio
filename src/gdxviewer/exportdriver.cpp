@@ -48,11 +48,11 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
-        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters).toUtf8());
+        f.write(generateInstructions(mGdxViewer->gdxFile(), output, applyFilters, eps, posInf, negInf, undef, na).toUtf8());
         f.close();
     }
     return true;
@@ -67,9 +67,9 @@ void ExportDriver::execute(const QString &connectFile, const QString &workingDir
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
-    if (save(connectFile, output, applyFilters))
+    if (save(connectFile, output, applyFilters, eps, posInf, negInf, undef, na))
         execute(connectFile, workingDirectory);
 }
 
@@ -79,14 +79,14 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QString inst;
     inst += generateGdxReader(gdxFile);
     if (applyFilters)
         inst += generateFilters();
     inst += generateProjections(applyFilters);
-    inst += generatePDExcelWriter(output, applyFilters);
+    inst += generateExcelWriter(output, applyFilters, eps, posInf, negInf, undef, na);
     return inst;
 }
 
@@ -112,16 +112,45 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 }
 
 
-QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool applyFilters)
+QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
-    QString inst = "- PandasExcelWriter:\n";
+    bool isNumber = false;
+    QString sq = "'";
+    QString dq = "\"";
+
+    QStringList sv_list;
+    sv_list << eps << posInf << negInf << undef << na;
+
+    QStringList sv_defaults;
+    sv_defaults << "EPS" << "INF" << "-INF" << "UNDEF" << "NA";
+
+    for (int i=0; i<sv_list.count(); i++) {
+        if (sv_list[i] == sv_defaults[i]) {  // no special handling for defaults
+            continue;
+        }
+        sv_list[i].toFloat(&isNumber);
+        if (!isNumber ) {  // we better quote values that are not numerical
+            if (sv_list[i].indexOf(sq) != -1)  // use double quotes if value contains single quotes
+                sv_list[i] = dq + sv_list[i] + dq;
+            else  // use single quotes if value contains double quotes
+                sv_list[i] = sq + sv_list[i] + sq;
+        }
+    }
+
+    QString inst = "- ExcelWriter:\n";
     inst += "    file: " + excelFile + "\n";
-    inst += "    excelWriterArguments: { engine: null, mode: w, if_sheet_exists: null}\n";
+    inst += "    valueSubstitutions: {\n";
+    inst += "      EPS: " + sv_list[0] + ",\n";
+    inst += "      INF: " + sv_list[1] + ",\n";
+    inst += "      -INF: " + sv_list[2] + ",\n";
+    inst += "      UNDEF: " + sv_list[3] + ",\n";
+    inst += "      NA: " + sv_list[4] + "\n";
+    inst += "    }\n";
     inst += "    symbols:\n";
     for (int i=0; i<mExportModel->selectedSymbols().size(); i++) {
         GdxSymbol* sym = mExportModel->selectedSymbols().at(i);
         QString name = hasActiveFilter(sym) && applyFilters ? sym->name() + FILTER_SUFFIX : sym->name();
-        int rowDimension = sym->dim();
+        int columnDimension = 0;
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
             name = sym->name() + PROJ_SUFFIX;
         GdxSymbolView *symView = mGdxViewer->symbolViewByName(sym->name());
@@ -130,16 +159,18 @@ QString ExportDriver::generatePDExcelWriter(const QString &excelFile, bool apply
         if (state)
             symViewState = mGdxViewer->state()->symbolViewState(sym->aliasedSymbol()->name());
         if (symView && symView->isTableViewActive())
-            rowDimension = sym->dim() - symView->getTvModel()->tvColDim();
+            columnDimension = symView->getTvModel()->tvColDim();
         else if (symViewState && symViewState->tableViewActive())
-            rowDimension = sym->dim() - symViewState->tvColDim();
+            columnDimension = symViewState->tvColDim();
         else if (!symView && !symViewState && sym->dim() > 1 && GdxSymbolView::DefaultSymbolView::tableView == Settings::settings()->toInt(SettingsKey::skGdxDefaultSymbolView))
-            rowDimension = sym->dim() - 1;
+            columnDimension = 1;
+        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
+            columnDimension += 1;
         if (generateDomains(sym) != generateDomainsNew(sym))
             name = sym->name() + PROJ_SUFFIX;
         inst += "      - name: " + name + "\n";
         inst += "        range: " + sym->name() + "!A1\n";
-        inst += "        rowDimension: " + QString::number(rowDimension) + "\n";
+        inst += "        columnDimension: " + QString::number(columnDimension) + "\n";
     }
     return inst;
 }

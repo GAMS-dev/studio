@@ -37,9 +37,9 @@ class ExportDriver : public QObject
 public:
     explicit ExportDriver(GdxViewer *gdxViewer, ExportModel *exportModel, QObject *parent = nullptr);
     ~ExportDriver();
-    bool save(const QString& connectFile, const QString &output, bool applyFilters);
+    bool save(const QString& connectFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     void execute(const QString &connectFile, const QString &workingDirectory);
-    void saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters);
+    void saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     void cancelProcess(int waitMSec=0);
 
 signals:
@@ -52,9 +52,9 @@ private:
     QScopedPointer<ConnectProcess> mProc;
     GdxViewer *mGdxViewer = nullptr;
     ExportModel *mExportModel = nullptr;
-    QString generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters);
+    QString generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     QString generateGdxReader(const QString &gdxFile);
-    QString generatePDExcelWriter(const QString &excelFile, bool applyFilters);
+    QString generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na);
     QString generateProjections(bool applyFilters);
     QString generateFilters();
 
