@@ -48,7 +48,7 @@ ExportDriver::~ExportDriver()
 
 }
 
-bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
+bool ExportDriver::save(const QString& connectFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QFile f(connectFile);
     if (f.open(QFile::WriteOnly | QFile::Text)) {
@@ -67,7 +67,7 @@ void ExportDriver::execute(const QString &connectFile, const QString &workingDir
     mProc->execute();
 }
 
-void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
+void ExportDriver::saveAndExecute(const QString &connectFile, const QString &output, const QString &workingDirectory, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     if (save(connectFile, output, applyFilters, eps, posInf, negInf, undef, na))
         execute(connectFile, workingDirectory);
@@ -79,7 +79,7 @@ void ExportDriver::cancelProcess(int waitMSec)
         mProc->stop(waitMSec);
 }
 
-QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
+QString ExportDriver::generateInstructions(const QString &gdxFile, const QString &output, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     QString inst;
     inst += generateGdxReader(gdxFile);
@@ -112,7 +112,7 @@ QString ExportDriver::generateGdxReader(const QString &gdxFile)
 }
 
 
-QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, QString eps, QString posInf, QString negInf, QString undef, QString na)
+QString ExportDriver::generateExcelWriter(const QString &excelFile, bool applyFilters, const QString &eps, const QString &posInf, const QString &negInf, const QString &undef, const QString &na)
 {
     bool isNumber = false;
     QString sq = "'";
