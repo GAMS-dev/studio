@@ -3,7 +3,7 @@ Version 1.17.2
 - improved GDXViewer export dialog now uses the ExcelReader instead of the PandasExcelReader (deprecated). This changes the following aspects:
     - all GAMS special values are exported as string representation per default
     - visual appearance of the generated Excel files has changed
-    - exported data does not contain the "value" header anymore
+    - exported data does not contain the "value" and "element_text" headers anymore
     - no extra blank row between column header and data anymore
     - labels are not written into merged cells anymore
 - added support for specifying custom values for GAMS special values in the GDXViewer export dialog
