@@ -143,7 +143,7 @@ pack-leg:
   # create appimage without libnss3.so and libnssutil3.so (currently these libs cause a crash)
   - linuxdeploy-x86_64.AppImage --appdir=appdir --plugin=qt --desktop-file=appdir/usr/share/studio.desktop
   - rm appdir/usr/lib/libnss3.so appdir/usr/lib/libnssutil3.so
-  - cp /opt/Qt/6.6.1/resources/v8_context_snapshot.bin appdir/usr/resources
+  - cp /opt/Qt/6.6.2/resources/v8_context_snapshot.bin appdir/usr/resources
   - linuxdeploy-plugin-appimage-x86_64.AppImage --appdir=appdir
   # rename the AppImage... for MR artifact exposure
   - mv GAMS_Studio-${VERSION}-x86_64.AppImage GAMS_Studio-leg-x86_64.AppImage
