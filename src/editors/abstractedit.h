@@ -66,13 +66,12 @@ public:
     virtual void disconnectTimers();
 
     bool hasSearchSelection();
-    void clearSearchSelection();
-    void setSearchSelectionActive(bool active);
-    void updateSearchSelection();
-    void findInSelection(QList<search::Result> &results);
+    virtual void clearSearchSelection();
+    virtual void setSearchSelectionActive(bool active);
+    virtual void updateSearchSelection();
+    virtual void findInSelection(QList<search::Result> &results);
     FileId fileId() const;
-    virtual void replaceNext(const QRegularExpression &regex,
-                             const QString &replacementText, bool selectionScope);
+    virtual void replaceNext(const QRegularExpression &regex, const QString &replacementText, bool selectionScope);
     virtual int replaceAll(FileMeta *fm, const QRegularExpression &regex,
                            const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope);
     virtual void scrollSynchronize(int dx, int dy);
@@ -134,7 +133,8 @@ protected:
     void setLinkClickPos(const QPoint &linkClickPos);
     QTextCursor cursorForPositionCut(const QPoint &pos) const;
 
-    QTextCursor searchSelection;
+    QTextCursor mSearchSelection;
+    bool mIsSearchSelectionActive = false;
 
 private:
     const LineMarks* mMarks = nullptr;
@@ -143,7 +143,6 @@ private:
     QPoint mScrollPos; // to workaround buggy QPlainTextEdit::scrollContentsBy()
     QTimer mSelUpdater;
     QTimer mToolTipUpdater;
-    bool mIsSearchSelectionActive = false;
 
 private slots:
     void internalExtraSelUpdate();

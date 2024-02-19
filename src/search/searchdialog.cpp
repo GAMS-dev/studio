@@ -488,9 +488,7 @@ void SearchDialog::clearSelection()
         ae->setTextCursor(tc);
         ae->clearSearchSelection();
     } else if (TextView* tv = ViewHelper::toTextView(mCurrentEditor)) {
-        QTextCursor tc = tv->edit()->textCursor();
-        tc.clearSelection();
-        tv->edit()->setTextCursor(tc);
+        tv->clearSelection();
         tv->clearSearchSelection();
     }
     updateClearButton();
