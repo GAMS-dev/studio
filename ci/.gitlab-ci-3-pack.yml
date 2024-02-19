@@ -2,7 +2,7 @@ pack-deg:
   stage: pack
   tags: [macos]
   variables:
-    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.2/macos/bin
   needs: [build-deg]
   script:
     - WORKSPACE=$(pwd)
@@ -62,7 +62,7 @@ pack-dac:
   stage: pack
   tags: [macos-arm64]
   variables:
-    qtpath: /Users/gitlab/Qt/6.6.1/macos/bin
+    qtpath: /Users/gitlab/Qt/6.6.2/macos/bin
   needs: [build-dac]
   script:
     - WORKSPACE=$(pwd)

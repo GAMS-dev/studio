@@ -7,6 +7,7 @@ Version 1.17.2
     - no extra blank row between column header and data anymore
     - labels are not written into merged cells anymore
 - added support for specifying custom values for GAMS special values in the GDXViewer export dialog
+- updated Qt version to Qt 6.6.2
 
 Version 1.17.1
 ==================
