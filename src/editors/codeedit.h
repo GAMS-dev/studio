@@ -116,8 +116,8 @@ public:
     void setSearchSelectionActive(bool active) override;
     void updateSearchSelection() override;
     void findInSelection(QList<search::Result> &results) override;
-    void replaceNext(const QRegularExpression &regex, const QString &replacementText, bool selectionScope) override;
-    int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceTerm,
+    void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
+    int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
                    QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
 
 protected:

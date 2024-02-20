@@ -203,6 +203,7 @@ void CodeEdit::extendedRedo()
     if (mBlockEdit) endBlockEdit();
     redo();
     updateBlockEditPos();
+    if (mBlockEditSelection) mBlockEditSelection->updateExtraSelections();
 }
 
 void CodeEdit::extendedUndo()
@@ -210,6 +211,7 @@ void CodeEdit::extendedUndo()
     if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
+    if (mBlockEditSelection) mBlockEditSelection->updateExtraSelections();
 }
 
 void CodeEdit::convertToLower()
@@ -1861,26 +1863,97 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
                 if (mBlockEdit) endBlockEdit();
             } else from = last;
         }
-        block = block.next();
-        if (block.blockNumber() > mBlockEditSelection->currentLine())
+        if (block.blockNumber() >= mBlockEditSelection->currentLine())
             break;
+        block = block.next();
     }
 }
 
-void CodeEdit::replaceNext(const QRegularExpression &regex,
-                           const QString &replacementText, bool selectionScope)
+void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope)
 {
+    if (isReadOnly()) return;
+
     if (mCompleter) mCompleter->suppressOpenBegin();
-    AbstractEdit::replaceNext(regex, replacementText, selectionScope);
+    if (selectionScope && mBlockEditSelection) {
+        QString selection = mBlockEditSelection->blockText();
+        QTextBlock block = textCursor().block();
+        QTextCursor cursor = textCursor();
+        if (cursor.anchor() < cursor.position())
+            cursor.setPosition(cursor.anchor());
+        int from = cursor.positionInBlock();
+        int last = mBlockEditSelection->column() + mBlockEditSelection->size();
+        while (block.isValid()) {
+            while (from < last) {
+                QRegularExpressionMatch match = regex.match(block.text(), from);
+                if (match.hasMatch() && match.capturedEnd() <= last) {
+                    cursor.setPosition(block.position() + match.capturedStart());
+                    cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                    cursor.insertText(replaceText);
+                    if (mBlockEdit) endBlockEdit();
+                    block = QTextBlock();
+                    mBlockEditSelection->updateExtraSelections();
+                    break;
+                } else from = last;
+            }
+            from = mBlockEditSelection->column();
+            if (!block.isValid() || block.blockNumber() >= mBlockEditSelection->currentLine())
+                break;
+            block = block.next();
+        }
+    } else {
+        AbstractEdit::replaceNext(regex, replaceText, selectionScope);
+    }
     if (mCompleter) mCompleter->suppressOpenStop();
 }
 
-int CodeEdit::replaceAll(FileMeta *fm,
-                         const QRegularExpression &regex,
-                         const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
+int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
+                         QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
+    int res = 0;
     if (mCompleter) mCompleter->suppressOpenBegin();
-    int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
+    if (mBlockEditSelection) {
+        bool replaced = false;
+        QString selection = mBlockEditSelection->blockText();
+        QTextBlock block = document()->findBlockByNumber(mBlockEditSelection->startLine());
+        int from = mBlockEditSelection->column();
+        int last = mBlockEditSelection->column() + mBlockEditSelection->size();
+        while (block.isValid()) {
+            QList<QRegularExpressionMatch> matches;
+            // gather all matches of the current (partial) line to avoid interference while replacing
+            while (from < last) {
+                QRegularExpressionMatch match = regex.match(block.text(), from);
+                if (match.hasMatch() && match.capturedEnd() <= last) {
+                    matches << match;
+
+                    QTextCursor cursor = textCursor();
+                    cursor.setPosition(block.position() + match.capturedStart());
+                    cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                    cursor.insertText(replaceText);
+                    if (mBlockEdit) endBlockEdit();
+                    block = QTextBlock();
+                    replaced = true;
+                    break;
+                } else from = last;
+            }
+            // replace starting from tail to avoid interference
+            for (int i = matches.size() - 1; i >= 0; --i) {
+                QRegularExpressionMatch match = matches.at(i);
+                QTextCursor cursor = textCursor();
+                cursor.setPosition(block.position() + match.capturedStart());
+                cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                cursor.insertText(replaceText);
+                if (mBlockEdit) endBlockEdit();
+            }
+            from = mBlockEditSelection->column();
+            if (!block.isValid() || block.blockNumber() >= mBlockEditSelection->currentLine())
+                break;
+            block = block.next();
+        }
+        if (replaced)
+            mBlockEditSelection->updateExtraSelections();
+    } else {
+        res = AbstractEdit::replaceAll(fm, regex, replaceText, options, selectionScope);
+    }
     if (mCompleter) mCompleter->suppressOpenStop();
     return res;
 }
