@@ -3489,7 +3489,12 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
     // create the destination group if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
-        project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
+        if (fi.exists()) {
+            QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+            mProjectRepo.read(QVariantMap(), proFile);
+            project = mProjectRepo.findProject(proFile);
+        } else
+            project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
     }
 
     // create node if missing
@@ -3577,6 +3582,18 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
+PExProjectNode *MainWindow::openProjectIfExists(const QString &projectFileName)
+{
+    PExProjectNode * project = mProjectRepo.findProject(projectFileName);
+    if (!project) {
+        if (QFile::exists(projectFileName)) {
+            emit mProjectRepo.openProject(projectFileName);
+            project = mProjectRepo.findProject(projectFileName);
+        }
+    }
+    return project;
+}
+
 void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
 {
     if (files.size() == 0) return;
@@ -3609,7 +3626,13 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                 } else if (files.size() == 1)
                     openFileNode(pro); // open project
             } else {
-                PExFileNode *node = addNode("", item, project);
+                PExProjectNode *itemProject = project;
+                if (!itemProject) {
+                    QString proPath = f.path() + "/" + f.completeBaseName() + ".gsp";
+                    openProjectIfExists(proPath);
+                    itemProject = mProjectRepo.findProject(proPath);
+                }
+                PExFileNode *node = addNode("", item, itemProject);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
