@@ -470,6 +470,7 @@ private:
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);
     PExProjectNode *currentProject();
+    PExProjectNode *openProjectIfExists(const QString &projectFileName);
     int pinViewTabIndex();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);
