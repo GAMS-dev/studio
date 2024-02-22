@@ -262,6 +262,7 @@ void TextView::selectAllText()
 void TextView::clearSelection()
 {
     mEdit->clearSelection();
+    mMapper->clearSelection();
 }
 
 AbstractEdit *TextView::edit()

@@ -1,3 +1,8 @@
+Version 1.17.3
+==================
+- added search and replace for block-edit
+- updated Qt version to Qt 6.6.2
+
 Version 1.17.2
 ==================
 - improved GDXViewer export dialog now uses the ExcelReader instead of the PandasExcelReader (deprecated). This changes the following aspects:
@@ -7,7 +12,6 @@ Version 1.17.2
     - no extra blank row between column header and data anymore
     - labels are not written into merged cells anymore
 - added support for specifying custom values for GAMS special values in the GDXViewer export dialog
-- updated Qt version to Qt 6.6.2
 
 Version 1.17.1
 ==================

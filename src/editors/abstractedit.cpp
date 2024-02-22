@@ -229,13 +229,14 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
     }
 }
 
-void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections) {
+void AbstractEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections)
+{
     if (!hasSearchSelection()) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Theme::Edit_currentWordBg)); // TODO(RG): placeholder!
     selection.format.setProperty(QTextFormat::FullWidthSelection, false);
-    selection.cursor = QTextCursor(searchSelection);
+    selection.cursor = QTextCursor(mSearchSelection);
     selections.append(selection);
 }
 
@@ -345,21 +346,30 @@ bool AbstractEdit::hasSearchSelection()
 
 void AbstractEdit::clearSearchSelection()
 {
-    searchSelection = textCursor();
-    mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
+    mSearchSelection = textCursor();
+    mIsSearchSelectionActive = false;
 }
 
 void AbstractEdit::setSearchSelectionActive(bool active)
 {
     // only set truely active if a selection exists
-    mIsSearchSelectionActive = active && !searchSelection.selection().isEmpty();
+    mIsSearchSelectionActive = active && mSearchSelection.hasSelection();
 }
 
 void AbstractEdit::updateSearchSelection()
 {
     if (!hasSearchSelection()) {
-        searchSelection = textCursor();
-        mIsSearchSelectionActive = !searchSelection.selection().isEmpty();
+        if (textCursor().hasSelection()) {
+            QTextCursor cursor = textCursor();
+            if (cursor.anchor() > cursor.position()) { // swap to forward direction
+                cursor.setPosition(textCursor().position());
+                cursor.setPosition(textCursor().anchor(), QTextCursor::KeepAnchor);
+            }
+            mSearchSelection = cursor;
+        } else
+            mSearchSelection = textCursor();
+
+        mIsSearchSelectionActive = mSearchSelection.hasSelection();
     }
 }
 
@@ -371,10 +381,8 @@ void AbstractEdit::findInSelection(QList<Result> &results)
     QTextCursor lastItem;
 
     updateSearchSelection();
-
-    startPos = searchSelection.selectionStart();
-    endPos = searchSelection.selectionEnd();
-
+    startPos = mSearchSelection.selectionStart();
+    endPos = mSearchSelection.selectionEnd();
     mIsSearchSelectionActive = startPos != endPos;
     if (!hasSearchSelection()) return;
 
@@ -411,8 +419,8 @@ void AbstractEdit::replaceNext(const QRegularExpression &regex,
     int offset = 0;
     QString selection = textCursor().selectedText();
     if (selectionScope && hasSearchSelection()) {
-        selection = searchSelection.selectedText();
-        offset = qMax(0, textCursor().anchor() - searchSelection.anchor() -1);
+        selection = mSearchSelection.selectedText();
+        offset = qMax(0, textCursor().anchor() - mSearchSelection.anchor() -1);
     }
     QRegularExpressionMatch match = regex.match(selection, offset);
     if (textCursor().hasSelection() && match.captured() == textCursor().selectedText()) {
@@ -447,8 +455,8 @@ int AbstractEdit::replaceAll(FileMeta* fm, const QRegularExpression &regex,
     if (selectionScope) updateSearchSelection();
 
     if (hasSearchSelection()) {
-        from = qMin(searchSelection.position(), searchSelection.anchor());
-        to = qMax(searchSelection.position(), searchSelection.anchor());
+        from = mSearchSelection.anchor();
+        to = mSearchSelection.position();
     }
 
     tc.beginEditBlock();
@@ -477,7 +485,7 @@ int AbstractEdit::replaceAll(FileMeta* fm, const QRegularExpression &regex,
                 from = item.position();
                 hits++;
                 // update anchor because it can move if match.length != replaceterm.length
-                to = qMax(searchSelection.position(), searchSelection.anchor());
+                to = mSearchSelection.position();
             }
         }
     } while(!item.isNull());
