@@ -65,30 +65,44 @@ void WelcomePage::historyChanged()
         delete item->widget();
         delete item;
     }
+    while ((item = ui->layout_lastProjects->takeAt(0)) != nullptr) {
+        delete item->widget();
+        delete item;
+    }
 
     WpLabel *tmpLabel;
-    const QStringList &history = mMain->history().files();
-    int j = 0;
-    for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
-        if (i >= history.size()) break;
-        if (history.at(i) == "") continue;
+    for (int isFile = 0; isFile < 2; ++isFile) {
+        const QStringList &history = isFile ? mMain->history().files() : mMain->history().projects();
+        int j = 0;
+        for (int i = 0; i < Settings::settings()->toInt(skHistorySize); i++) {
+            if (i >= history.size()) break;
+            if (history.at(i) == "") continue;
 
-        QFileInfo file(history.at(i));
-        if (file.exists()) {
-            tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
-                                  + "<small>" + file.filePath() + "</small>", file.filePath(), this);
-            tmpLabel->setToolTip(file.filePath());
-            tmpLabel->setIconSize(QSize(16,16));
-            tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.fileName()).kind()));
-            connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::openFilePath);
-            ui->layout_lastFiles->addWidget(tmpLabel);
-            j++;
+            QFileInfo file(history.at(i));
+            if (file.exists()) {
+                tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
+                                           + "<small>" + file.filePath() + "</small>", file.filePath(), this);
+                tmpLabel->setToolTip(file.filePath());
+                tmpLabel->setIconSize(QSize(16,16));
+                tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.fileName()).kind()));
+                if (isFile) {
+                    connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::openFilePath);
+                    ui->layout_lastFiles->addWidget(tmpLabel);
+                } else {
+                    connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::openProject);
+                    ui->layout_lastProjects->addWidget(tmpLabel);
+                }
+                j++;
+            }
         }
-    }
-    if (j == 0) {
-        tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
-                                       "<small>Start using GAMS Studio to populate this list.</small>"), "", this);
-        ui->layout_lastFiles->addWidget(tmpLabel);
+        if (j == 0) {
+            tmpLabel = new WpLabel(QString("<b>No recent files.</b><br/>"
+                                           "<small>Start using GAMS Studio to populate this list.</small>"), "", this);
+            if (isFile)
+                ui->layout_lastFiles->addWidget(tmpLabel);
+            else
+                ui->layout_lastProjects->addWidget(tmpLabel);
+        }
     }
 }
 
