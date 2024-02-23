@@ -164,7 +164,7 @@ public:
                  gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
     void resetHistory();
-    void clearHistory(FileMeta *file);
+    void removeFromHistory(const QString &file);
     void historyChanged();
     int linesInEditor(QWidget *editor = nullptr);
 

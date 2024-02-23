@@ -476,7 +476,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
+    connect(mWp, &WelcomePage::openProject, this, [this](const QString &projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
         if (!project && QFile::exists(projectPath)) {
             mProjectRepo.read(QVariantMap(), projectPath);
@@ -486,7 +486,7 @@ void MainWindow::initWelcomePage()
             openFile(project->runnableGms(), true, project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
@@ -494,6 +494,9 @@ void MainWindow::initWelcomePage()
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);
+    });
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString &path) {
+        removeFromHistory(path);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
         mWp->hide();
@@ -2054,9 +2057,7 @@ FileProcessKind MainWindow::fileDeletedExtern(const FileId &fileId)
         const QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (PExFileNode* node: nodes)
             mProjectRepo.closeNode(node);
-        mHistory.projects().removeAll(file->location());
-        mHistory.files().removeAll(file->location());
-        historyChanged();
+        removeFromHistory(file->location());
         return FileProcessKind::ignore;
     }
     return FileProcessKind::removedExtern;
@@ -2683,10 +2684,11 @@ void MainWindow::addToHistory(const QString &filePath)
     historyChanged();
 }
 
-void MainWindow::clearHistory(FileMeta *file)
+void MainWindow::removeFromHistory(const QString &file)
 {
-    mHistory.projects().removeAll(file->location());
-    mHistory.files().removeAll(file->location());
+    mHistory.projects().removeAll(file);
+    mHistory.files().removeAll(file);
+    historyChanged();
 }
 
 void MainWindow::historyChanged()

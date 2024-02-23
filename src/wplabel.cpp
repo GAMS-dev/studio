@@ -62,12 +62,21 @@ void WpLabel::leaveEvent(QEvent *event)
     updateMouseOverColor(false);
 }
 
-void WpLabel::updateMouseOverColor(bool hovered) {
-    mActive = hovered;
+void WpLabel::updateMouseOverColor(bool hovered)
+{
+    QPoint pos = mapFromGlobal(QCursor::pos());
+    mActive = hovered && !inCloseButton(pos);
 
     auto p = palette();
-    p.setColor(QPalette::Window, hovered ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
+    p.setColor(QPalette::Window, mActive ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
     setPalette(p);
+}
+
+bool WpLabel::inCloseButton(const QPoint &pos)
+{
+    if (!mCloseable) return false;
+    int xSize = fontMetrics().height() / 2 + 2;
+    return (pos.x() >= width() - xSize && pos.y() <= xSize);
 }
 
 void WpLabel::paintEvent(QPaintEvent *event)
@@ -83,11 +92,26 @@ void WpLabel::paintEvent(QPaintEvent *event)
     if (!mAlignment.testFlag(Qt::AlignTop))
             rect.moveTop(mAlignment.testFlag(Qt::AlignBottom) ? cHei-rect.height() : (cHei-rect.height())/2);
     mIcon.paint(&painter, rect, mAlignment, mActive ? QIcon::Active : QIcon::Mode::Normal);
+    if (mCloseable) {
+        QPen pen = painter.pen();
+        pen.setColor(Qt::gray);
+        pen.setWidth(2);
+        painter.setPen(pen);
+        int xSize = fontMetrics().height() /2;
+        QRect xRect(contentsRect().right() - 1 - xSize, contentsRect().top() + 2, xSize, xSize);
+        painter.drawLine(xRect.topLeft(), xRect.bottomRight());
+        painter.drawLine(xRect.topRight(), xRect.bottomLeft());
+    }
 }
 
 void WpLabel::setInactive(bool inactive)
 {
     mInactive = inactive;
+}
+
+void WpLabel::setCloseable(bool closeable)
+{
+    mCloseable = closeable;
 }
 
 void WpLabel::setIcon(const QIcon &icon)
@@ -115,7 +139,10 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
     if (mInactive || event->button() == Qt::RightButton) return;
 
     if (!mLink.isNull()) { // file history
-        emit QLabel::linkActivated(mLink);
+        if (inCloseButton(event->pos()))
+            emit removeFromHistory(mLink);
+        else
+            emit QLabel::linkActivated(mLink);
 
     // added via designer from here on
     } else if (!this->property("link").isNull()) { // web- or file links, open directly
@@ -134,6 +161,12 @@ void WpLabel::mousePressEvent(QMouseEvent *event)
         QString anchor = this->property("anchor").toString();
         emit relayOpenDoc(doc, anchor);
     }
+}
+
+void WpLabel::mouseMoveEvent(QMouseEvent *event)
+{
+    QLabel::mouseMoveEvent(event);
+    updateMouseOverColor(true);
 }
 
 }

@@ -35,6 +35,7 @@ public:
     WpLabel(const QString &content, const QString &link, QWidget *parent = nullptr);
 
     void setInactive(bool inactive);
+    void setCloseable(bool closeable = true);
 
     void setIcon(const QIcon &icon);
     QIcon icon() const { return mIcon; }
@@ -45,6 +46,7 @@ public:
 
 protected:
     void mousePressEvent(QMouseEvent *event) override;
+    void mouseMoveEvent(QMouseEvent *event) override;
     void enterEvent(QEnterEvent* event) override;
     void leaveEvent(QEvent* event) override;
     void paintEvent(QPaintEvent *event) override;
@@ -53,12 +55,14 @@ signals:
     void relayActionLab(QString action);
     void relayModLibLoad(QString lib);
     void relayOpenDoc(QString doc, QString anchor);
+    void removeFromHistory(const QString &path);
 
 private:
     QString mContent;
     QString mLink;
     bool mInactive = false;
     bool mActive = false;
+    bool mCloseable = false;
     QIcon mIcon;
     QSize mIconSize;
     Qt::Alignment mAlignment = Qt::AlignCenter;
@@ -66,6 +70,7 @@ private:
 
 private:
     void updateMouseOverColor(bool hovered);
+    bool inCloseButton(const QPoint &pos);
 };
 
 }

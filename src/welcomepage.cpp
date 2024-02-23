@@ -82,9 +82,11 @@ void WelcomePage::historyChanged()
             if (file.exists()) {
                 tmpLabel = new WpLabel("<b>" + file.fileName() + "</b><br/>"
                                            + "<small>" + file.filePath() + "</small>", file.filePath(), this);
+                tmpLabel->setCloseable();
                 tmpLabel->setToolTip(file.filePath());
                 tmpLabel->setIconSize(QSize(16,16));
                 tmpLabel->setIcon(FileIcon::iconForFileKind(FileType::from(file.fileName()).kind()));
+                connect(tmpLabel, &WpLabel::removeFromHistory, this, &WelcomePage::removeFromHistory);
                 if (isFile) {
                     connect(tmpLabel, &QLabel::linkActivated, this, &WelcomePage::openFilePath);
                     ui->layout_lastFiles->addWidget(tmpLabel);
