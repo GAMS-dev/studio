@@ -476,7 +476,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openProject, this, [this](const QString &projectPath) {
+    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
         if (!project && QFile::exists(projectPath)) {
             mProjectRepo.read(QVariantMap(), projectPath);
@@ -486,7 +486,7 @@ void MainWindow::initWelcomePage()
             openFile(project->runnableGms(), true, project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString &filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
@@ -495,7 +495,7 @@ void MainWindow::initWelcomePage()
         }
         openFilePath(filePath, project, ogNone, true);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString &path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
         removeFromHistory(path);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
