@@ -571,8 +571,8 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
 
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fm->save();
-        closeFileEditors(fm->id(), willReopen);
+        if (fm->save())
+            closeFileEditors(fm->id(), willReopen);
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fm->setModified(false);
@@ -3290,11 +3290,13 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
     ret = showSaveChangesMsgBox(filesText);
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        bool allSaved = true;
         for (FileMeta* fm : changedFiles) {
             if (fm->isModified()) {
-                fm->save();
+                allSaved = fm->save() && allSaved;
             }
         }
+        return allSaved;
     } else if (ret == QMessageBox::Cancel) {
         return false;
     } else { // Discard
@@ -3818,7 +3820,15 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
         }
     }
     if (doSave) {
-        for (FileMeta *file: std::as_const(modifiedFiles)) file->save();
+        bool allSaved = true;
+        for (FileMeta *file: std::as_const(modifiedFiles)) {
+            if (!file->save()) {
+                allSaved = false;
+                appendSystemLogWarning("Couldn't save file " + file->location());
+            }
+        }
+        if (!allSaved)
+            return false;
     }
 
     // clear the TextMarks for this group

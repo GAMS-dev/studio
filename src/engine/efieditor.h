@@ -39,7 +39,7 @@ public:
     void setWorkingDir(const QString &workDir);
     void setModelName(const QString &name);
     void load(const QString &fileName);
-    void save(const QString &fileName);
+    bool save(const QString &fileName);
     bool isModified();
     void setWarnText(const QString &text);
     void selectFilter();

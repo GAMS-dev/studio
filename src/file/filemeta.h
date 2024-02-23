@@ -89,7 +89,7 @@ public:
     void deleteEditor(QWidget* edit);
     bool hasEditor(QWidget * const &edit) const;
     void load(int codecMib, bool init = true);
-    void save(const QString& newLocation = "");
+    bool save(const QString& newLocation = "");
     void renameToBackup();
     FileDifferences compare(const QString &fileName = QString());
     bool refreshMetaData();

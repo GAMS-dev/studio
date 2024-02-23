@@ -67,7 +67,7 @@ QString ProjectData::fieldData(Field field)
     return mData.value(field);
 }
 
-void ProjectData::save()
+bool ProjectData::save()
 {
     QString path = QDir::fromNativeSeparators(mData.value(baseDir)).trimmed();
     if (path.compare(mProject->location(), FileType::fsCaseSense()))
@@ -78,6 +78,7 @@ void ProjectData::save()
     updateFile(FileKind::Gms, QDir::fromNativeSeparators(mData.value(mainFile)).trimmed());
     updateFile(FileKind::Pf, QDir::fromNativeSeparators(mData.value(pfFile)).trimmed());
     mProject->setNeedSave();
+    return mProject->needSave();
 }
 
 void ProjectData::updateFile(FileKind kind, const QString &path)
@@ -171,10 +172,11 @@ bool ProjectEdit::isModified() const
     return mModified;
 }
 
-void ProjectEdit::save()
+bool ProjectEdit::save()
 {
-    mSharedData->save();
+    bool res = mSharedData->save();
     updateState();
+    return res;
 }
 
 void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
