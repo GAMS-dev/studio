@@ -382,13 +382,18 @@ MainWindow::MainWindow(QWidget *parent)
     SysLogLocator::provide(mSyslog);
     QTimer::singleShot(0, this, &MainWindow::initDelayedElements);
 
+    mHistory.projects().clear();
     mHistory.files().clear();
     const QVariantList joHistory = Settings::settings()->toList(skHistory);
     for (const QVariant &jRef: joHistory) {
         if (!jRef.canConvert(QMetaType(QMetaType::QVariantMap))) continue;
         QVariantMap map = jRef.toMap();
         if (map.contains("file")) {
-            mHistory.files() << map.value("file").toString();
+            QString file = map.value("file").toString();
+            if (file.endsWith(".gsp", Qt::CaseInsensitive))
+                mHistory.projects() << map.value("file").toString();
+            else
+                mHistory.files() << map.value("file").toString();
         }
     }
 
@@ -471,6 +476,16 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
+    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
+        PExProjectNode *project = mProjectRepo.findProject(projectPath);
+        if (!project && QFile::exists(projectPath)) {
+            mProjectRepo.read(QVariantMap(), projectPath);
+            project = mProjectRepo.findProject(projectPath);
+        }
+        if (project && project->runnableGms())
+            openFile(project->runnableGms(), true, project);
+    });
+
     connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
@@ -479,6 +494,9 @@ void MainWindow::initWelcomePage()
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);
+    });
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
+        removeFromHistory(path);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
         mWp->hide();
@@ -2039,8 +2057,7 @@ FileProcessKind MainWindow::fileDeletedExtern(const FileId &fileId)
         const QVector<PExFileNode*> nodes = mProjectRepo.fileNodes(file->id());
         for (PExFileNode* node: nodes)
             mProjectRepo.closeNode(node);
-        mHistory.files().removeAll(file->location());
-        historyChanged();
+        removeFromHistory(file->location());
         return FileProcessKind::ignore;
     }
     return FileProcessKind::removedExtern;
@@ -2634,12 +2651,14 @@ void MainWindow::resetHistory()
     historyChanged();
 }
 
-void MainWindow::addToOpenedFiles(const QString &filePath)
+void MainWindow::addToHistory(const QString &filePath)
 {
     if (!QFileInfo::exists(filePath)) return;
 
     if (filePath.startsWith("[")) return; // invalid
 
+    while (mHistory.projects().size() > Settings::settings()->toInt(skHistorySize) && !mHistory.projects().isEmpty())
+        mHistory.projects().removeLast();
     while (mHistory.files().size() > Settings::settings()->toInt(skHistorySize) && !mHistory.files().isEmpty())
         mHistory.files().removeLast();
 
@@ -2648,25 +2667,41 @@ void MainWindow::addToOpenedFiles(const QString &filePath)
         return;
     }
 
-    if (!mHistory.files().contains(filePath)) {
-        mHistory.files().insert(0, filePath);
+    if (filePath.endsWith(".gsp", Qt::CaseInsensitive)) {
+        if (!mHistory.projects().contains(filePath)) {
+            mHistory.projects().insert(0, filePath);
+        } else {
+            mHistory.projects().move(mHistory.projects().indexOf(filePath), 0);
+        }
     } else {
-        mHistory.files().move(mHistory.files().indexOf(filePath), 0);
+        if (!mHistory.files().contains(filePath)) {
+            mHistory.files().insert(0, filePath);
+        } else {
+            mHistory.files().move(mHistory.files().indexOf(filePath), 0);
+        }
     }
+
     historyChanged();
 }
 
-void MainWindow::clearHistory(FileMeta *file)
+void MainWindow::removeFromHistory(const QString &file)
 {
-    mHistory.files().removeAll(file->location());
+    mHistory.projects().removeAll(file);
+    mHistory.files().removeAll(file);
+    historyChanged();
 }
 
 void MainWindow::historyChanged()
 {
     if (mWp) mWp->historyChanged();
     QVariantList joHistory;
-    const auto files = mHistory.files();
-    for (const QString &file : files) {
+    for (const QString &file : mHistory.projects()) {
+        if (file.isEmpty()) break;
+        QVariantMap joOpenFile;
+        joOpenFile["file"] = file;
+        joHistory << joOpenFile;
+    }
+    for (const QString &file : mHistory.files()) {
         if (file.isEmpty()) break;
         QVariantMap joOpenFile;
         joOpenFile["file"] = file;
@@ -3489,7 +3524,12 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
     // create the destination group if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
-        project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
+        if (fi.exists()) {
+            QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+            mProjectRepo.read(QVariantMap(), proFile);
+            project = mProjectRepo.findProject(proFile);
+        } else
+            project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
     }
 
     // create node if missing
@@ -3577,6 +3617,18 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
         openFileNode(firstNode, true);
 }
 
+PExProjectNode *MainWindow::openProjectIfExists(const QString &projectFileName)
+{
+    PExProjectNode * project = mProjectRepo.findProject(projectFileName);
+    if (!project) {
+        if (QFile::exists(projectFileName)) {
+            emit mProjectRepo.openProject(projectFileName);
+            project = mProjectRepo.findProject(projectFileName);
+        }
+    }
+    return project;
+}
+
 void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
 {
     if (files.size() == 0) return;
@@ -3609,7 +3661,13 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                 } else if (files.size() == 1)
                     openFileNode(pro); // open project
             } else {
-                PExFileNode *node = addNode("", item, project);
+                PExProjectNode *itemProject = project;
+                if (!itemProject) {
+                    QString proPath = f.path() + "/" + f.completeBaseName() + ".gsp";
+                    openProjectIfExists(proPath);
+                    itemProject = mProjectRepo.findProject(proPath);
+                }
+                PExFileNode *node = addNode("", item, itemProject);
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
@@ -4546,7 +4604,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         changeToLog(fileNode, false, false);
         updateRecentEdit(mRecent.editor(), edit);
     }
-    addToOpenedFiles(fileMeta->location());
+    addToHistory(fileMeta->location());
+    if (project) addToHistory(project->fileName());
 }
 
 void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)

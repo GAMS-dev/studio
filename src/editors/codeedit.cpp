@@ -84,6 +84,12 @@ CodeEdit::CodeEdit(QWidget *parent)
 
 CodeEdit::~CodeEdit()
 {
+    if (mBlockEdit) endBlockEdit();
+    if (mBlockEditSelection) {
+        BlockEdit *ed = mBlockEditSelection;
+        mBlockEditSelection = nullptr;
+        delete ed;
+    }
     while (mBlockEditPos.size())
         delete mBlockEditPos.takeLast();
 }
@@ -197,6 +203,7 @@ void CodeEdit::extendedRedo()
     if (mBlockEdit) endBlockEdit();
     redo();
     updateBlockEditPos();
+    if (mBlockEditSelection) mBlockEditSelection->updateExtraSelections();
 }
 
 void CodeEdit::extendedUndo()
@@ -204,6 +211,7 @@ void CodeEdit::extendedUndo()
     if (mBlockEdit) endBlockEdit();
     undo();
     updateBlockEditPos();
+    if (mBlockEditSelection) mBlockEditSelection->updateExtraSelections();
 }
 
 void CodeEdit::convertToLower()
@@ -1061,6 +1069,9 @@ void CodeEdit::mouseMoveEvent(QMouseEvent* e)
 void CodeEdit::paintEvent(QPaintEvent* e)
 {
     AbstractEdit::paintEvent(e);
+    if (mBlockEditSelection) {
+        mBlockEditSelection->paintEvent(e);
+    }
     if (mBlockEdit) {
         mBlockEdit->paintEvent(e);
     }
@@ -1792,20 +1803,153 @@ void CodeEdit::setCompleter(CodeCompleter *completer)
     mCompleter = completer;
 }
 
-void CodeEdit::replaceNext(const QRegularExpression &regex,
-                           const QString &replacementText, bool selectionScope)
+void CodeEdit::clearSearchSelection()
 {
+    if (mBlockEditSelection) {
+        BlockEdit *ed = mBlockEditSelection;
+        mBlockEditSelection = nullptr;
+        delete ed;
+    }
+    AbstractEdit::clearSearchSelection();
+    viewport()->update();
+}
+
+void CodeEdit::setSearchSelectionActive(bool active)
+{
+    mIsSearchSelectionActive = active && (mSearchSelection.hasSelection() || mBlockEditSelection);
+}
+
+void CodeEdit::updateSearchSelection()
+{
+    if (!hasSearchSelection()) {
+        if (mBlockEdit) {
+            mIsSearchSelectionActive = mBlockEdit->size();
+            if (mBlockEdit->size()) {
+                mBlockEditSelection = new CodeEdit::BlockEdit(*mBlockEdit);
+                mBlockEditSelection->normalizeSelDirection();
+            }
+        } else {
+            AbstractEdit::updateSearchSelection();
+        }
+    }
+}
+
+void CodeEdit::findInSelection(QList<search::Result> &results)
+{
+    updateSearchSelection();
+    if (!mBlockEditSelection) {
+        AbstractEdit::findInSelection(results);
+        return;
+    }
+
+    QFlags<QTextDocument::FindFlag> searchOptions;
+    searchOptions.setFlag(QTextDocument::FindCaseSensitively, SearchLocator::search()->caseSensitive());
+
+    mBlockEditSelection->blockText();
+    QTextBlock block = document()->findBlockByNumber(mBlockEditSelection->startLine());
+    int first = mBlockEditSelection->column();
+    int last = mBlockEditSelection->column() + mBlockEditSelection->size();
+
+    QRegularExpression rex = SearchLocator::search()->regex();
+    if (SearchLocator::search()->caseSensitive())
+        rex.setPatternOptions(QRegularExpression::CaseInsensitiveOption);
+    while (block.isValid()) {
+        int from = first;
+        while (from < last) {
+            QRegularExpressionMatch match = rex.match(block.text(), from);
+            if (match.hasMatch() && match.capturedEnd() <= last) {
+                results.append(Result(block.blockNumber()+1, match.capturedStart(), match.capturedLength(),
+                                      property("location").toString(), projectId(), match.captured()));
+                from = match.capturedEnd();
+                if (mBlockEdit) endBlockEdit();
+            } else from = last;
+        }
+        if (block.blockNumber() >= mBlockEditSelection->currentLine())
+            break;
+        block = block.next();
+    }
+}
+
+void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope)
+{
+    if (isReadOnly()) return;
+
     if (mCompleter) mCompleter->suppressOpenBegin();
-    AbstractEdit::replaceNext(regex, replacementText, selectionScope);
+    if (selectionScope && mBlockEditSelection) {
+        QString selection = mBlockEditSelection->blockText();
+        QTextBlock block = textCursor().block();
+        QTextCursor cursor = textCursor();
+        if (cursor.anchor() < cursor.position())
+            cursor.setPosition(cursor.anchor());
+        int from = cursor.positionInBlock();
+        int last = mBlockEditSelection->column() + mBlockEditSelection->size();
+        while (block.isValid()) {
+            while (from < last) {
+                QRegularExpressionMatch match = regex.match(block.text(), from);
+                if (match.hasMatch() && match.capturedEnd() <= last) {
+                    cursor.setPosition(block.position() + match.capturedStart());
+                    cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                    cursor.insertText(replaceText);
+                    if (mBlockEdit) endBlockEdit();
+                    block = QTextBlock();
+                    mBlockEditSelection->updateExtraSelections();
+                    break;
+                } else from = last;
+            }
+            from = mBlockEditSelection->column();
+            if (!block.isValid() || block.blockNumber() >= mBlockEditSelection->currentLine())
+                break;
+            block = block.next();
+        }
+    } else {
+        AbstractEdit::replaceNext(regex, replaceText, selectionScope);
+    }
     if (mCompleter) mCompleter->suppressOpenStop();
 }
 
-int CodeEdit::replaceAll(FileMeta *fm,
-                         const QRegularExpression &regex,
-                         const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options, bool selectionScope)
+int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
+                         QFlags<QTextDocument::FindFlag> options, bool selectionScope)
 {
+    int res = 0;
     if (mCompleter) mCompleter->suppressOpenBegin();
-    int res = AbstractEdit::replaceAll(fm, regex, replaceTerm, options, selectionScope);
+    if (selectionScope) updateSearchSelection();
+    if (selectionScope && mBlockEditSelection) {
+        QString selection = mBlockEditSelection->blockText();
+        QTextBlock block = document()->findBlockByNumber(mBlockEditSelection->startLine());
+        int from = mBlockEditSelection->column();
+        int last = mBlockEditSelection->column() + mBlockEditSelection->size();
+        QTextCursor cursor = textCursor();
+        cursor.beginEditBlock();
+        while (block.isValid()) {
+            QList<QRegularExpressionMatch> matches;
+            // gather all matches of the current (partial) line to avoid interference while replacing
+            while (from < last) {
+                QRegularExpressionMatch match = regex.match(block.text(), from);
+                if (match.hasMatch() && match.capturedEnd() <= last) {
+                    matches << match;
+                    from = match.capturedEnd();
+                } else from = last;
+            }
+            // replace starting from tail to avoid interference
+            for (int i = matches.size() - 1; i >= 0; --i) {
+                QRegularExpressionMatch match = matches.at(i);
+                cursor.setPosition(block.position() + match.capturedStart());
+                cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                cursor.insertText(replaceText);
+                if (mBlockEdit) endBlockEdit();
+            }
+            res += matches.count();
+            from = mBlockEditSelection->column();
+            if (block.blockNumber() >= mBlockEditSelection->currentLine())
+                break;
+            block = block.next();
+        }
+        cursor.endEditBlock();
+        if (res)
+            mBlockEditSelection->updateExtraSelections();
+    } else {
+        res = AbstractEdit::replaceAll(fm, regex, replaceText, options, selectionScope);
+    }
     if (mCompleter) mCompleter->suppressOpenStop();
     return res;
 }
@@ -2103,8 +2247,18 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             tc.setPosition(block.position() + m.capturedStart(0));
             tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
             if (limitHighlighting) {
-                if (tc.selectionStart() < searchSelection.selectionStart()) continue;
-                else if (tc.selectionEnd() > searchSelection.selectionEnd()) continue;
+                if (!mSearchSelection.hasSelection() && !mBlockEditSelection) continue;
+                if (mBlockEditSelection) {
+                    if (tc.blockNumber() < mBlockEditSelection->startLine()) continue;
+                    if (tc.blockNumber() > mBlockEditSelection->currentLine()) continue;
+                    QTextCursor anc(tc);
+                    anc.setPosition(anc.anchor());
+                    if (anc.positionInBlock() < mBlockEditSelection->column()) continue;
+                    if (tc.positionInBlock() > mBlockEditSelection->column() + mBlockEditSelection->size()) continue;
+                } else {
+                    if (tc.selectionStart() < mSearchSelection.selectionStart()) continue;
+                    if (tc.selectionEnd() > mSearchSelection.selectionEnd()) continue;
+                }
             }
 
             selection.cursor = tc;
@@ -2135,6 +2289,16 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     selection.format.setUnderlineColor(Theme::color(Theme::Syntax_dcoBody));
     selection.format.setUnderlineStyle(QTextCharFormat::SingleUnderline);
     selections << selection;
+}
+
+void CodeEdit::extraSelSearchSelection(QList<QTextEdit::ExtraSelection> &selections)
+{
+    if (!hasSearchSelection()) return;
+    if (mBlockEditSelection) {
+        selections.append(mBlockEditSelection->extraSelections());
+    } else {
+        AbstractEdit::extraSelSearchSelection(selections);
+    }
 }
 
 QPoint CodeEdit::toolTipPos(const QPoint &mousePos)
@@ -2320,6 +2484,19 @@ CodeEdit::BlockEdit::BlockEdit(CodeEdit* edit, int blockNr, int colNr)
     setSize(0);
 }
 
+CodeEdit::BlockEdit::BlockEdit(const BlockEdit &other)
+{
+    mEdit = other.mEdit;
+    mStartLine = other.mStartLine;
+    mCurrentLine = other.mCurrentLine;
+    mColumn = other.mColumn;
+    setSize(other.mSize);
+    mBlinkStateHidden = true;
+    mOverwrite = other.mOverwrite;
+    mIsSearchSelection = true;
+    updateExtraSelections();
+}
+
 CodeEdit::BlockEdit::~BlockEdit()
 {
     mSelections.clear();
@@ -2349,7 +2526,7 @@ void CodeEdit::BlockEdit::toEnd(bool select)
     }
 }
 
-QString CodeEdit::BlockEdit::blockText()
+QString CodeEdit::BlockEdit::blockText() const
 {
     QString res = "";
     if (!mSize) return res;
@@ -2592,6 +2769,20 @@ CodeEdit::BlockSelectState CodeEdit::BlockEdit::blockSelectState()
     return mEdit->mBlockSelectState;
 }
 
+void CodeEdit::BlockEdit::normalizeSelDirection()
+{
+    if (mStartLine > mCurrentLine) qSwap(mStartLine, mCurrentLine);
+    if (mSize < 0) {
+        mColumn += mSize;
+        setSize(-mSize);
+    }
+}
+
+int CodeEdit::BlockEdit::size() const
+{
+    return mSize;
+}
+
 void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
 {
     QPainter painter(mEdit->viewport());
@@ -2628,36 +2819,33 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
                 selRect.moveLeft(left + metric.horizontalAdvance(str.left(beyondStart)) - mEdit->horizontalScrollBar()->value());
             }
             selRect.setRight(left + metric.horizontalAdvance(str.left(beyondEnd)) - mEdit->horizontalScrollBar()->value());
-            painter.fillRect(selRect, mEdit->palette().highlight());
+            QBrush backBrush(mIsSearchSelection ? toColor(Theme::Edit_currentWordBg) : mEdit->palette().highlight());
+            painter.fillRect(selRect, backBrush);
         }
 
-        if (mBlinkStateHidden) {
-            offset.ry() += blockRect.height();
-            block = block.next();
-            continue;
-        }
+        if (!mBlinkStateHidden) {
+            cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
+            QRectF cursorRect = mEdit->cursorRect(cursor);
+            if (block.length() <= cursorColumn) {
+                cursorRect.setX(left + metric.horizontalAdvance(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
+            }
+            cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
 
-        cursor.setPosition(block.position()+qMin(block.length()-1, cursorColumn));
-        QRectF cursorRect = mEdit->cursorRect(cursor);
-        if (block.length() <= cursorColumn) {
-            cursorRect.setX(left + metric.horizontalAdvance(str.left(cursorColumn)) - mEdit->horizontalScrollBar()->value());
-        }
-        cursorRect.setWidth(mOverwrite ? spaceWidth : 2);
-
-        if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
-            bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
-            if (drawCursor) {
-                bool toggleAntialiasing = !(painter.renderHints() & QPainter::Antialiasing)
-                                          && (painter.transform().type() > QTransform::TxTranslate);
-                if (toggleAntialiasing)
-                    painter.setRenderHint(QPainter::Antialiasing);
-                QPainter::CompositionMode origCompositionMode = painter.compositionMode();
-                if (painter.paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
-                    painter.setCompositionMode(QPainter::RasterOp_NotDestination);
-                painter.fillRect(cursorRect, painter.pen().brush());
-                painter.setCompositionMode(origCompositionMode);
-                if (toggleAntialiasing)
-                    painter.setRenderHint(QPainter::Antialiasing, false);
+            if (cursorRect.bottom() >= evRect.top() && cursorRect.top() <= evRect.bottom()) {
+                bool drawCursor = ((editable || (mEdit->textInteractionFlags() & Qt::TextSelectableByKeyboard)));
+                if (drawCursor) {
+                    bool toggleAntialiasing = !(painter.renderHints() & QPainter::Antialiasing)
+                                              && (painter.transform().type() > QTransform::TxTranslate);
+                    if (toggleAntialiasing)
+                        painter.setRenderHint(QPainter::Antialiasing);
+                    QPainter::CompositionMode origCompositionMode = painter.compositionMode();
+                    if (painter.paintEngine()->hasFeature(QPaintEngine::RasterOpModes))
+                        painter.setCompositionMode(QPainter::RasterOp_NotDestination);
+                    painter.fillRect(cursorRect, painter.pen().brush());
+                    painter.setCompositionMode(origCompositionMode);
+                    if (toggleAntialiasing)
+                        painter.setRenderHint(QPainter::Antialiasing, false);
+                }
             }
         }
 
@@ -2669,31 +2857,45 @@ void CodeEdit::BlockEdit::paintEvent(QPaintEvent *e)
 
 }
 
+QRect CodeEdit::BlockEdit::block() const
+{
+    QRect res(QPoint(qMin(mColumn, mColumn + mSize), qMin(mStartLine, mCurrentLine)),
+              QPoint(qMax(mColumn, mColumn + mSize), qMax(mStartLine, mCurrentLine)));
+    return res;
+}
+
 void CodeEdit::BlockEdit::updateExtraSelections()
 {
-    mSelections.clear();
-    QTextCursor cursor(mEdit->document());
-    for (int lineNr = qMin(mStartLine, mCurrentLine); lineNr <= qMax(mStartLine, mCurrentLine); ++lineNr) {
-        QTextBlock block = mEdit->document()->findBlockByNumber(lineNr);
-        QTextEdit::ExtraSelection select;
-        select.format.setBackground(mEdit->palette().highlight());
-        select.format.setForeground(mEdit->palette().highlightedText());
-
-        int start = qMin(block.length()-1, qMin(mColumn, mColumn+mSize));
-        int end = qMin(block.length()-1, qMax(mColumn, mColumn+mSize));
-        cursor.setPosition(block.position()+start);
-        if (end>start) cursor.setPosition(block.position()+end, QTextCursor::KeepAnchor);
-        select.cursor = cursor;
-        mSelections << select;
-        if (cursor.blockNumber() == mCurrentLine) {
-            QTextCursor c = mEdit->textCursor();
-            c.setPosition(cursor.position());
-            mEdit->setTextCursor(c);
-        }
-    }
+    mSelections = generateExtraSelections(mEdit, block(), mIsSearchSelection);
     mEdit->updateExtraSelections();
 }
 
+QList<QTextEdit::ExtraSelection> CodeEdit::BlockEdit::generateExtraSelections(CodeEdit *edit, const QRect &rect, bool isSearchSel)
+{
+    QList<QTextEdit::ExtraSelection> res;
+    QTextCursor cursor(edit->document());
+    for (int lineNr = rect.top(); lineNr <= rect.bottom(); ++lineNr) {
+        QTextBlock block = edit->document()->findBlockByNumber(lineNr);
+        QTextEdit::ExtraSelection select;
+        QBrush backBrush(isSearchSel ? toColor(Theme::Edit_currentWordBg) : edit->palette().highlight());
+        select.format.setBackground(backBrush);
+        if (!isSearchSel)
+            select.format.setForeground(edit->palette().highlightedText());
+
+        int start = qMin(block.length()-1, rect.left());
+        int end = qMin(block.length()-1, rect.right());
+        cursor.setPosition(block.position()+start);
+        if (end>start) cursor.setPosition(block.position()+end, QTextCursor::KeepAnchor);
+        select.cursor = cursor;
+        res << select;
+        if (cursor.blockNumber() == rect.bottom()) {
+            QTextCursor c = edit->textCursor();
+            c.setPosition(cursor.position());
+            edit->setTextCursor(c);
+        }
+    }
+    return res;
+}
 void CodeEdit::BlockEdit::adjustCursor()
 {
     QTextBlock block = mEdit->document()->findBlockByNumber(mCurrentLine);

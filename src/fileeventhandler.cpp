@@ -274,16 +274,14 @@ void FileEventHandler::removeFile(FileMeta *file)
         QVector<PExFileNode*> nodes = mMainWindow->projectRepo()->fileNodes(file->id());
         for (PExFileNode* node: std::as_const(nodes))
             mMainWindow->projectRepo()->closeNode(node);
-        mMainWindow->clearHistory(file);
-        mMainWindow->historyChanged();
+        mMainWindow->removeFromHistory(file->location());
         return;
     }
 
     if (file->exists(true)) return;
 
     mMainWindow->closeFileEditors(file->id());
-    mMainWindow->clearHistory(file);
-    mMainWindow->historyChanged();
+    mMainWindow->removeFromHistory(file->location());
 }
 
 }

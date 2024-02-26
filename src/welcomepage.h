@@ -46,6 +46,8 @@ public:
 
 signals:
     void openFilePath(const QString &filePath);
+    void openProject(const QString &projectPath);
+    void removeFromHistory(const QString &path);
     void relayActionWp(const QString &action);
     void relayModLibLoad(const QString &lib, bool forceOverwrite = false);
     void relayDocOpen(const QString &doc, const QString &anchor);

@@ -112,11 +112,13 @@ public:
     void unfoldAll();
     void jumpTo(int line, int column = 0) override;
     void setCompleter(CodeCompleter *completer);
-    void replaceNext(const QRegularExpression &regex,
-                     const QString &replacementText, bool selectionScope) override;
-    int replaceAll(FileMeta *fm, const QRegularExpression &regex,
-                   const QString &replaceTerm, QFlags<QTextDocument::FindFlag> options,
-                   bool selectionScope) override;
+    void clearSearchSelection() override;
+    void setSearchSelectionActive(bool active) override;
+    void updateSearchSelection() override;
+    void findInSelection(QList<search::Result> &results) override;
+    void replaceNext(const QRegularExpression &regex, const QString &replaceText, bool selectionScope) override;
+    int replaceAll(FileMeta *fm, const QRegularExpression &regex, const QString &replaceText,
+                   QFlags<QTextDocument::FindFlag> options, bool selectionScope) override;
 
 protected:
     void resizeEvent(QResizeEvent *event) override;
@@ -127,8 +129,8 @@ protected:
     void dragEnterEvent(QDragEnterEvent *e) override;
     void paintEvent(QPaintEvent *e) override;
     void contextMenuEvent(QContextMenuEvent *e) override;
-    void showBpContext(const QPoint &pos);
 
+    void showBpContext(const QPoint &pos);
     virtual QString lineNrText(int blockNr);
     virtual bool showLineNr() const;
     virtual bool showFolding() const;
@@ -139,6 +141,7 @@ protected:
     bool extraSelMatchParentheses(QList<QTextEdit::ExtraSelection>& selections, bool first);
     virtual void extraSelMatches(QList<QTextEdit::ExtraSelection> &selections);
     void extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections);
+    void extraSelSearchSelection(QList<QTextEdit::ExtraSelection>& selections) override;
     QTimer &wordDelayTimer() { return mWordDelay; }
     QPoint toolTipPos(const QPoint &mousePos) override;
     QString getToolTipText(const QPoint &pos) override;
@@ -226,6 +229,7 @@ protected:
     {
     public:
         BlockEdit(CodeEdit* edit, int blockNr, int colNr);
+        BlockEdit(const BlockEdit &other);
         virtual ~BlockEdit();
         void keyPressEvent(QKeyEvent *e);
         inline int hasBlock(int blockNr) {
@@ -239,10 +243,12 @@ protected:
         void replaceBlockText(const QString &text);
         void replaceBlockText(const QStringList &inTexts);
         void updateExtraSelections();
+        static QList<QTextEdit::ExtraSelection> generateExtraSelections(CodeEdit *edit, const QRect &rect, bool isSearchSel);
         void adjustCursor();
         void selectTo(int blockNr, int colNr);
         void toEnd(bool select);
-        QString blockText();
+        QString blockText() const;
+        QRect block() const;
         inline QList<QTextEdit::ExtraSelection> extraSelections() const { return mSelections; }
         void selectionToClipboard();
         int startLine() const;
@@ -251,11 +257,13 @@ protected:
         void setColumn(int column);
         void setOverwriteMode(bool overwrite);
         bool overwriteMode() const;
+        int size() const;
         void setSize(int size);
         void shiftVertical(int offset);
         void checkHorizontalScroll();
         void setBlockSelectState(BlockSelectState state);
         BlockSelectState blockSelectState();
+        void normalizeSelDirection();
 
     private:
         CodeEdit* mEdit;
@@ -267,6 +275,7 @@ protected:
         CharType mLastCharType = CharType::None;
         QList<QTextEdit::ExtraSelection> mSelections;
         bool mOverwrite = false;
+        bool mIsSearchSelection = false;
     };
     class BlockEditCursorWatch
     {
@@ -295,6 +304,7 @@ private:
     QTimer mCursorTimer;
     QPoint mDragStart;
     BlockEdit* mBlockEdit = nullptr;
+    BlockEdit* mBlockEditSelection = nullptr;
     QTimer mBlinkBlockEdit;
     QString mWordUnderCursor;
     bool mOverwriteActivated = false;

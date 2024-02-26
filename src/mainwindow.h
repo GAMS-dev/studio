@@ -93,8 +93,11 @@ class CheckForUpdate;
 struct HistoryData {
     QStringList &files() { return mLastOpenedFiles; }
     const QStringList &files() const { return mLastOpenedFiles; }
+    QStringList &projects() { return mLastOpenedProjects; }
+    const QStringList &projects() const { return mLastOpenedProjects; }
 private:
     QStringList mLastOpenedFiles;
+    QStringList mLastOpenedProjects;
 };
 
 class MainWindow : public QMainWindow
@@ -161,7 +164,7 @@ public:
                  gams::studio::debugger::DebugStartMode debug = gams::studio::debugger::NoDebug);
 
     void resetHistory();
-    void clearHistory(FileMeta *file);
+    void removeFromHistory(const QString &file);
     void historyChanged();
     int linesInEditor(QWidget *editor = nullptr);
 
@@ -460,7 +463,7 @@ private:
     FileProcessKind fileChangedExtern(const FileId &fileId);
     FileProcessKind fileDeletedExtern(const FileId &fileId);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
-    void addToOpenedFiles(const QString &filePath);
+    void addToHistory(const QString &filePath);
     bool terminateProcessesConditionally(const QVector<PExProjectNode *> &projects);
     void restoreFromSettings();
     QString currentPath();
@@ -470,6 +473,7 @@ private:
     void openFilesDialog(OpenGroupOption opt);
     void openFilesProcess(const QStringList &files, OpenGroupOption opt);
     PExProjectNode *currentProject();
+    PExProjectNode *openProjectIfExists(const QString &projectFileName);
     int pinViewTabIndex();
 
     void triggerGamsLibFileCreation(modeldialog::LibraryItem *item);

@@ -62,47 +62,119 @@
       <number>0</number>
      </property>
      <item>
-      <spacer name="verticalSpacer">
-       <property name="orientation">
-        <enum>Qt::Vertical</enum>
-       </property>
-       <property name="sizeType">
-        <enum>QSizePolicy::Fixed</enum>
-       </property>
-       <property name="sizeHint" stdset="0">
-        <size>
-         <width>659</width>
-         <height>5</height>
-        </size>
-       </property>
-      </spacer>
-     </item>
-     <item>
       <layout class="QHBoxLayout" name="hl_children">
+       <property name="spacing">
+        <number>10</number>
+       </property>
        <property name="sizeConstraint">
         <enum>QLayout::SetNoConstraint</enum>
        </property>
-       <property name="rightMargin">
-        <number>0</number>
+       <property name="leftMargin">
+        <number>8</number>
        </property>
-       <property name="bottomMargin">
-        <number>0</number>
+       <property name="topMargin">
+        <number>12</number>
+       </property>
+       <property name="rightMargin">
+        <number>8</number>
        </property>
        <item>
-        <spacer name="horizontalSpacer_4">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
+        <layout class="QVBoxLayout" name="vl_historyP">
+         <property name="leftMargin">
+          <number>0</number>
          </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Preferred</enum>
+         <property name="topMargin">
+          <number>0</number>
          </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>5</width>
-           <height>0</height>
-          </size>
+         <property name="rightMargin">
+          <number>0</number>
          </property>
-        </spacer>
+         <property name="bottomMargin">
+          <number>0</number>
+         </property>
+         <item>
+          <widget class="QLabel" name="label_lastProjects">
+           <property name="contextMenuPolicy">
+            <enum>Qt::NoContextMenu</enum>
+           </property>
+           <property name="text">
+            <string>&lt;h2&gt;Last Projects&lt;/h2&gt;</string>
+           </property>
+           <property name="alignment">
+            <set>Qt::AlignCenter</set>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="Line" name="line_5">
+           <property name="orientation">
+            <enum>Qt::Horizontal</enum>
+           </property>
+          </widget>
+         </item>
+         <item>
+          <widget class="QScrollArea" name="sa_lastProjects">
+           <property name="minimumSize">
+            <size>
+             <width>100</width>
+             <height>0</height>
+            </size>
+           </property>
+           <property name="frameShape">
+            <enum>QFrame::NoFrame</enum>
+           </property>
+           <property name="sizeAdjustPolicy">
+            <enum>QAbstractScrollArea::AdjustToContents</enum>
+           </property>
+           <property name="widgetResizable">
+            <bool>true</bool>
+           </property>
+           <widget class="QWidget" name="scrollAreaWidgetContents_3">
+            <property name="geometry">
+             <rect>
+              <x>0</x>
+              <y>0</y>
+              <width>324</width>
+              <height>475</height>
+             </rect>
+            </property>
+            <layout class="QVBoxLayout" name="verticalLayout_2a">
+             <property name="sizeConstraint">
+              <enum>QLayout::SetNoConstraint</enum>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <layout class="QVBoxLayout" name="layout_lastProjects"/>
+             </item>
+             <item>
+              <spacer name="spacer_history_bot1">
+               <property name="orientation">
+                <enum>Qt::Vertical</enum>
+               </property>
+               <property name="sizeHint" stdset="0">
+                <size>
+                 <width>0</width>
+                 <height>10</height>
+                </size>
+               </property>
+              </spacer>
+             </item>
+            </layout>
+           </widget>
+          </widget>
+         </item>
+        </layout>
        </item>
        <item>
         <layout class="QVBoxLayout" name="vl_history">
@@ -114,12 +186,6 @@
          </property>
          <item>
           <widget class="QLabel" name="label_lastFiles">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
            <property name="contextMenuPolicy">
             <enum>Qt::NoContextMenu</enum>
            </property>
@@ -149,9 +215,6 @@
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>
-           <property name="horizontalScrollBarPolicy">
-            <enum>Qt::ScrollBarAsNeeded</enum>
-           </property>
            <property name="sizeAdjustPolicy">
             <enum>QAbstractScrollArea::AdjustToContents</enum>
            </property>
@@ -163,8 +226,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>479</width>
-              <height>478</height>
+              <width>324</width>
+              <height>475</height>
              </rect>
             </property>
             <layout class="QVBoxLayout" name="verticalLayout_2">
@@ -204,22 +267,6 @@
           </widget>
          </item>
         </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>5</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
        </item>
        <item>
         <layout class="QVBoxLayout" name="vl_gettingstarted">
@@ -280,8 +327,8 @@
              <rect>
               <x>0</x>
               <y>0</y>
-              <width>478</width>
-              <height>478</height>
+              <width>324</width>
+              <height>475</height>
              </rect>
             </property>
             <property name="sizePolicy">
@@ -413,7 +460,6 @@
                 <widget class="gams::studio::WpLabel" name="label_doc_studio">
                  <property name="font">
                   <font>
-                   <weight>50</weight>
                    <bold>false</bold>
                   </font>
                  </property>
@@ -444,7 +490,6 @@
                 <widget class="gams::studio::WpLabel" name="label_doc_tut">
                  <property name="font">
                   <font>
-                   <weight>50</weight>
                    <bold>false</bold>
                   </font>
                  </property>
@@ -502,22 +547,6 @@
         </layout>
        </item>
        <item>
-        <spacer name="horizontalSpacer_2">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Minimum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>5</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
-       </item>
-       <item>
         <layout class="QVBoxLayout" name="vl_links">
          <property name="sizeConstraint">
           <enum>QLayout::SetDefaultConstraint</enum>
@@ -570,7 +599,6 @@
             <widget class="gams::studio::WpLabel" name="label_doc_release">
              <property name="font">
               <font>
-               <weight>50</weight>
                <bold>false</bold>
               </font>
              </property>
@@ -667,22 +695,6 @@
           </spacer>
          </item>
         </layout>
-       </item>
-       <item>
-        <spacer name="horizontalSpacer_3">
-         <property name="orientation">
-          <enum>Qt::Horizontal</enum>
-         </property>
-         <property name="sizeType">
-          <enum>QSizePolicy::Maximum</enum>
-         </property>
-         <property name="sizeHint" stdset="0">
-          <size>
-           <width>5</width>
-           <height>0</height>
-          </size>
-         </property>
-        </spacer>
        </item>
       </layout>
      </item>
