@@ -574,6 +574,8 @@ void FileMeta::addEditor(QWidget *edit)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
         connect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
+        connect(prOp, &project::ProjectEdit::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
+        connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
@@ -857,6 +859,12 @@ bool FileMeta::save(const QString &newLocation)
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
         if (PEd) res = PEd->save();
+        if (res) {
+            saveProjects();
+            PExProjectNode *project = mFileRepo->projectRepo()->asProject(projectId());
+            if (project && project->needSave())
+                res = false;
+        }
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
         if (solverOptionWidget) res = solverOptionWidget->saveOptionFile(location);
@@ -895,7 +903,8 @@ bool FileMeta::save(const QString &newLocation)
     }
     setLocation(location);
     refreshType();
-    if (res) setModified(false);
+    if (res)
+        setModified(false);
     if (kind() != FileKind::Gsp)
         mFileRepo->watch(this);
     return res;

@@ -175,6 +175,7 @@ bool ProjectEdit::isModified() const
 bool ProjectEdit::save()
 {
     bool res = mSharedData->save();
+    emit saveProjects();
     updateState();
     return res;
 }
@@ -211,8 +212,8 @@ void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 
 void ProjectEdit::updateState()
 {
-    bool isModified = false;
     PExProjectNode *pro = mSharedData->project();
+    bool isModified = pro->needSave();
     QString edPath = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
     if (edPath.compare(pro->location(), FileType::fsCaseSense()))
@@ -231,8 +232,8 @@ void ProjectEdit::updateState()
         isModified = true;
     if (isModified != mModified) {
         mModified = isModified;
-        emit modificationChanged(mModified);
     }
+    emit modificationChanged(mModified);
 }
 
 void ProjectEdit::on_bWorkDir_clicked()

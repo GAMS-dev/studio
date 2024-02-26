@@ -94,6 +94,7 @@ public:
 
 signals:
     void modificationChanged(bool modification);
+    void saveProjects();
 
 private slots:
     void updateData(ProjectData::Field field);

@@ -105,11 +105,12 @@ bool EfiEditor::save(const QString &fileName)
             file.write(line.toUtf8());
             file.write("\n");
         }
-        file.close();
-        mFileName = fileName;
-        ui->fsWidget->clearMissingFiles();
-        setModified(false);
-        return true;
+        if (file.close()) {
+            mFileName = fileName;
+            ui->fsWidget->clearMissingFiles();
+            setModified(false);
+            return true;
+        }
     }
     return false;
 }

@@ -225,6 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
+    connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, &MainWindow::updateAndSaveSettings);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);

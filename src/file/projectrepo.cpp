@@ -426,8 +426,8 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
     TextFileSaver file;
     if (file.open(fileName)) {
         file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
-        file.close();
-        project->setNeedSave(false);
+        if (file.close())
+            project->setNeedSave(false);
     } else {
         SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
     }
