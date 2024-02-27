@@ -3527,8 +3527,8 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
     // create the destination group if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
-        if (fi.exists()) {
-            QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+        QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+        if (QFile::exists(proFile)) {
             mProjectRepo.read(QVariantMap(), proFile);
             project = mProjectRepo.findProject(proFile);
         } else
