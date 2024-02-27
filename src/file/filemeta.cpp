@@ -1305,8 +1305,8 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     }
     setProjectId(project->id());
     ViewHelper::setLocation(res, location());
-    res->setFont(font);
     addEditor(res);
+    res->setFont(font);
     return res;
 }
 
