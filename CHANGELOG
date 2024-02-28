@@ -2,6 +2,8 @@ Version 1.17.4 *
 ==================
 - fixed font initialization error
 - fixed crash on close a tab with active block edit selection
+- fixed project not created when using "Open File"
+- keep file modified when save fails
 
 Version 1.17.3
 ==================
