@@ -30,7 +30,7 @@ QRegularExpression Reference::mRexSplit("\\s+");
 Reference::Reference(const QString &referenceFile, const QString &encodingName, QObject *parent) :
     QObject(parent), mReferenceFile(QDir::toNativeSeparators(referenceFile))
 {
-    loadReferenceFile(encodingName);
+    loadReferenceFile(encodingName, false);
 }
 
 Reference::~Reference()
@@ -154,30 +154,46 @@ int Reference::errorLine() const
     return  mLastErrorLine;
 }
 
-void Reference::loadReferenceFile(const QString &encodingName)
+void Reference::loadReferenceFile(const QString &encodingName, bool triggerReload)
 {
-    mLastErrorLine = -1;
+    if (triggerReload) {
+        mLastErrorLine = -1;
+        mLastReadFileSize = 0;
+        clear();
+    }
     emit loadStarted();
 
     mState = ReferenceState::Loading;
-    clear();
-    mState = (parseFile(mReferenceFile, encodingName) ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
-    if (mState == ReferenceState::UnsuccessfullyLoaded)
-        clear();
+    qint64 lastReadFileSize = parseFile(mReferenceFile, encodingName);
+    if (mLastReadFileSize == 0)
+        mLastReadFileSize = lastReadFileSize;
+    mState = (mLastErrorLine==-1 ?  ReferenceState::SuccessfullyLoaded : ReferenceState::UnsuccessfullyLoaded);
     emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
+    if (mState == ReferenceState::UnsuccessfullyLoaded) {
+        if (triggerReload || lastReadFileSize==mLastReadFileSize) {
+           // call loadReferenceFile() again every 500 ms
+           QTimer::singleShot(500, this, [this, encodingName, triggerReload](){ loadReferenceFile(encodingName, triggerReload); });
+        }
+    }
+    mLastReadFileSize = lastReadFileSize;
+    return;
 }
 
-bool Reference::parseFile(const QString &referenceFile, const QString &encodingName)
+qint64 Reference::parseFile(const QString &referenceFile, const QString &encodingName)
 {
     QFile file(referenceFile);
     int lineread = 0;
     if(!file.open(QFile::ReadOnly)) {
         mLastErrorLine=lineread;
-        return false;
+        return file.size();
     }
     QTextCodec *codec = QTextCodec::codecForName(encodingName.toLatin1());
     if (!codec) codec = QTextCodec::codecForName("UTF-8");
 
+    if (file.size() == mLastReadFileSize) {
+        mLastErrorLine=lineread;
+        return file.size();
+    }
     QStringList recordList;
     QString idx;
     while (!file.atEnd()) {
@@ -194,15 +210,17 @@ bool Reference::parseFile(const QString &referenceFile, const QString &encodingN
         lineread++;
         recordList = line.split(mRexSplit, Qt::SkipEmptyParts);
         if (recordList.size() <= 0) {
-            mLastErrorLine=lineread;
-            return false;
+           addSymbolReferenceItem();
+           mLastErrorLine=lineread;
+           return file.size();
         }
         idx = recordList.first();
         if (idx.toInt()== 0)         // start of symboltable
             break;
         if (recordList.size() < 11)  { // unexpected size of elements
+            addSymbolReferenceItem();
             mLastErrorLine=lineread;
-            return false;
+            return file.size();
         }
         recordList.removeFirst();
         QString id = recordList.at(0);
@@ -220,13 +238,15 @@ bool Reference::parseFile(const QString &referenceFile, const QString &encodingN
         addReferenceInfo(ref, referenceType, lineNumber.toInt(), columnNumber.toInt(), location);
     }
     if (file.atEnd()) {
+        addSymbolReferenceItem();
         mLastErrorLine=lineread;
-        return false;
+        return file.size();
     }
     // start of symboltable
     if (recordList.size() < 2)  { // only the first two elements are used
+        addSymbolReferenceItem();
         mLastErrorLine=lineread;
-        return false;
+        return file.size();
     }
     recordList.removeFirst();
     int size = recordList.first().toInt();
@@ -247,8 +267,9 @@ bool Reference::parseFile(const QString &referenceFile, const QString &encodingN
         QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
 
         if (recordList.size() <= 0 || recordList.size() < 6) { // unexpected size of elements
+            addSymbolReferenceItem();
             mLastErrorLine=lineread;
-            return false;
+            return file.size();
         }
         idx = recordList.first();
         QString id = recordList.at(0);
@@ -291,10 +312,17 @@ bool Reference::parseFile(const QString &referenceFile, const QString &encodingN
         }
 
         QStringList recordList = (codec ? codec->toUnicode(arry) : QString(arry)).split(mRexSplit, Qt::SkipEmptyParts);
+        if (recordList.isEmpty()) {
+            addSymbolReferenceItem();
+            mLastErrorLine=lineread;
+            return file.size();
+        }
+
         int id = recordList.first().toInt();
         if (id != 0) {
+            addSymbolReferenceItem();
             mLastErrorLine=lineread;
-            return false;
+            return file.size();
         }
         QList<QVariant> rootdata;
         rootdata << QVariant(id) << QVariant() << QVariant()
@@ -360,50 +388,15 @@ bool Reference::parseFile(const QString &referenceFile, const QString &encodingN
              mFileUsedReference[id]  = item;
          }
      }
-//     if (idx.toInt()!=size) {
-//        mLastErrorLine=lineread;
-//        return false;
-//     }
-     QMap<SymbolId, SymbolReferenceItem*>::const_iterator it = mReference.constBegin();
-     while (it != mReference.constEnd()) {
-         SymbolReferenceItem* ref = it.value();
-         switch(ref->type()) {
-         case SymbolDataType::Set :
-             mSetReference.append( ref );
-             break;
-         case SymbolDataType::Acronym :
-             mAcronymReference.append( ref );
-             break;
-         case SymbolDataType::Parameter :
-             mParReference.append( ref );
-             break;
-         case SymbolDataType::Variable :
-             mVarReference.append( ref );
-             break;
-         case SymbolDataType::Equation :
-             mEquReference.append( ref );
-             break;
-         case SymbolDataType::Model :
-             mModelReference.append( ref );
-             break;
-         case SymbolDataType::Funct :
-             mFunctionReference.append( ref );
-             break;
-         case SymbolDataType::Macro :
-             mMacroReference.append( ref );
-             break;
-         case SymbolDataType::File :
-             mFileReference.append( ref );
-             break;
-         default:
-             break;
-         }
-         if (ref->isUnused())
-             mUnusedReference.append( ref );
-         ++it;
-    }
-
-    return true;
+     if (lineread <= expectedLineread) {
+         addSymbolReferenceItem();
+         mLastErrorLine=lineread;
+         return file.size();
+     }
+     addSymbolReferenceItem();
+     mLastErrorLine=-1;
+     return file.size();
+;
 }
 
 void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location)
@@ -436,6 +429,47 @@ void Reference::addReferenceInfo(SymbolReferenceItem* ref, const QString &refere
         break;
     default:
         break;
+    }
+}
+
+void Reference::addSymbolReferenceItem() {
+    QMap<SymbolId, SymbolReferenceItem*>::const_iterator it = mReference.constBegin();
+    while (it != mReference.constEnd()) {
+        SymbolReferenceItem* ref = it.value();
+        switch(ref->type()) {
+        case SymbolDataType::Set :
+             mSetReference.append( ref );
+             break;
+        case SymbolDataType::Acronym :
+             mAcronymReference.append( ref );
+             break;
+        case SymbolDataType::Parameter :
+             mParReference.append( ref );
+             break;
+        case SymbolDataType::Variable :
+             mVarReference.append( ref );
+             break;
+        case SymbolDataType::Equation :
+             mEquReference.append( ref );
+             break;
+        case SymbolDataType::Model :
+             mModelReference.append( ref );
+             break;
+        case SymbolDataType::Funct :
+             mFunctionReference.append( ref );
+             break;
+        case SymbolDataType::Macro :
+             mMacroReference.append( ref );
+             break;
+        case SymbolDataType::File :
+             mFileReference.append( ref );
+             break;
+        default:
+             break;
+        }
+        if (ref->isUnused())
+             mUnusedReference.append( ref );
+        ++it;
     }
 }
 

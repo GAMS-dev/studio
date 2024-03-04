@@ -130,12 +130,8 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     headers << fileusedRefWidget->headers();
 
     ui->tabWidget->setCurrentIndex(0);
-    if (!problemLoaded) {
-        ui->tabWidget->setEnabled(true);
-        allSymbolsRefWidget->initModel();
-    } else {
-        ui->tabWidget->setEnabled(false);
-    }
+    ui->tabWidget->setEnabled(!problemLoaded);
+    allSymbolsRefWidget->initModel();
     setFocusProxy(ui->tabWidget);
 
     for (QHeaderView *header : std::as_const(headers)) {
@@ -204,7 +200,9 @@ void ReferenceViewer::updateView(bool status)
             }
         }
     }
+
     if (status) {
+        ui->tabWidget->setToolTip(QString(""));
         ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
         ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
         ui->tabWidget->setTabText(2, QString("Acronym (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Acronym).size()));
@@ -218,6 +216,9 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(10, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
         ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed()));
     } else {
+        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
+        ui->tabWidget->setToolTip(QString("<p style='white-space:pre'>Error while loading: %1%2<br>The file content might be corrupted or incorrectly overwritten</p>")
+                                      .arg(mReference->getFileLocation()).arg(errorLine));
         ui->tabWidget->setTabText(0, QString("All Symbols (?)"));
         ui->tabWidget->setTabText(1, QString("Set (?)"));
         ui->tabWidget->setTabText(2, QString("Acronym (?)"));
