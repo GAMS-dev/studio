@@ -2760,12 +2760,25 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
     if (choice == 2) return false;
+    bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
-        if (project->process()->terminateOption() && choice == 1)
+        if (project->process()->terminateOption() != AbstractProcess::termLocal && choice == 1)
             project->process()->terminateLocal();
-        else
+        else {
             project->process()->terminate();
+            if (remoteCount) {
+                project->setEngineJobToken("");
+                project->setNeedSave();
+                save = true;
+                QTime due = QTime::currentTime().addSecs(1);
+                while (QTime::currentTime() < due)
+                    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+            }
+
+        }
     }
+    if (save)
+        updateAndSaveSettings();
     return true;
 }
 
@@ -3327,20 +3340,21 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (project) project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     updateAndSaveSettings();
-    QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.projects())) {
         event->setAccepted(false);
-    } else if (requestCloseChanged(oFiles)) {
-        mShutDown = true;
-        on_actionClose_All_triggered();
-        closeHelpView();
-        mTextMarkRepo.clear();
-        delete mSettingsDialog;
-        mSettingsDialog = nullptr;
-        mTabStyle = nullptr;
-    } else {
-        event->setAccepted(false);
+        return;
     }
+    if (!requestCloseChanged(mFileMetaRepo.modifiedFiles())) {
+        event->setAccepted(false);
+        return;
+    }
+    mShutDown = true;
+    on_actionClose_All_triggered();
+    closeHelpView();
+    mTextMarkRepo.clear();
+    delete mSettingsDialog;
+    mSettingsDialog = nullptr;
+    mTabStyle = nullptr;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)

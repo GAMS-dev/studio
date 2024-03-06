@@ -462,6 +462,7 @@ void EngineManager::killJob(bool hard)
     bool ok = !mJobToken.isEmpty();
     if (ok) {
         mJobsApi->killJob(mJobToken, hard);
+        mJobToken = "";
     }
 }
 
@@ -509,7 +510,7 @@ QString EngineManager::jobToken() const
     return mJobToken;
 }
 
-void EngineManager::setToken(const QString &token)
+void EngineManager::setJobToken(const QString &token)
 {
     mJobToken = token;
 }

@@ -83,7 +83,7 @@ public:
     void setIgnoreSslErrorsCurrentUrl(bool ignore);
     bool isIgnoreSslErrors() const;
     QString jobToken() const;
-    void setToken(const QString &token);
+    void setJobToken(const QString &token);
     void abortRequests();
     void cleanup();
 
