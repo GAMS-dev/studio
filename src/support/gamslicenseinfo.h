@@ -22,6 +22,7 @@
 
 #include <QMap>
 #include <QString>
+#include <QRegularExpression>
 
 #include "solverconfiginfo.h"
 
@@ -103,11 +104,14 @@ private:
 
     static int errorCallback(int count, const char *message);
 
+    QStringList processLicenseData(const QString &data);
+
 private:
     QString mLicenseFilePath;
     SolverConfigInfo mSolverInfo;
     palHandle_t mPAL;
     bool mLicenseAvailable = false;
+    QRegularExpression mRegEx;
 };
 
 }

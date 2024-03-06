@@ -66,7 +66,20 @@ private slots:
     void testLocalDistribVersion();
     void testLocalDistribVersionString();
 
-    void testLicenseFromFile();
+    void testLicenseFromFile_simpleErrorCases();
+
+    void testLicenseFromFile_licenseWithLines();
+
+    void testLicenseFromFile_licenseContinuesLine();
+
+    void testLicenseFromFile_randomSpaces();
+
+    void testLicenseFromFile_BOM();
+
+private:
+    QStringList testLicense();
+
+    QString testLicenseWithSpaces();
 };
 
 #endif // TESTGAMSLICENSEINFO_H

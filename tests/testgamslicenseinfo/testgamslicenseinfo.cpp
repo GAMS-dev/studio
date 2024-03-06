@@ -22,6 +22,8 @@
 #include "commonpaths.h"
 #include "cfgmcc.h"
 
+#include <QTextStream>
+
 using namespace gams::studio;
 using namespace gams::studio::support;
 
@@ -235,9 +237,8 @@ void TestGamsLicenseInfo::testIsLicenseValidText()
     }
     license = QString(file.readAll()).split('\n');
     file.close();
-    // TODO(AF): enable when we know what the CI issue is
-    //auto dbgstr = QString("%1 : %2").arg(licensePath, license.join("\n"));
-    //QVERIFY2(gamsLicenseInfo.isLicenseValid(license), dbgstr.toStdString().c_str());
+    auto dbgstr = QString("%1 : %2").arg(licensePath, license.join("\n"));
+    QVERIFY2(gamsLicenseInfo.isLicenseValid(license), dbgstr.toStdString().c_str());
 }
 
 void TestGamsLicenseInfo::testGamsDataLocations()
@@ -249,15 +250,16 @@ void TestGamsLicenseInfo::testGamsDataLocations()
 void TestGamsLicenseInfo::testGamsConfigLocations()
 {
     auto actual = GamsLicenseInfo().gamsConfigLocations();
-    qDebug() << actual;
     QVERIFY(!actual.isEmpty());
 }
 
 void TestGamsLicenseInfo::testLocalDistribVersion()
 {
+    static QRegularExpression regex(R"(^\d{4,4}$)");
     GamsLicenseInfo gamsLicenseInfo;
     auto version = gamsLicenseInfo.localDistribVersion();
-    QVERIFY(version >= QString(GAMS_VERSION_STRING).replace('.', "").toInt());
+    QString verstr = QString::number(version);
+    QVERIFY(regex.match(verstr).hasMatch());
 }
 
 void TestGamsLicenseInfo::testLocalDistribVersionString()
@@ -269,7 +271,7 @@ void TestGamsLicenseInfo::testLocalDistribVersionString()
     QVERIFY(match.hasMatch());
 }
 
-void TestGamsLicenseInfo::testLicenseFromFile()
+void TestGamsLicenseInfo::testLicenseFromFile_simpleErrorCases()
 {
     GamsLicenseInfo licenseInfo;
     auto val1 = licenseInfo.licenseFromFile("notthere.txt");
@@ -277,17 +279,89 @@ void TestGamsLicenseInfo::testLicenseFromFile()
     auto val2 = licenseInfo.licenseFromFile("notatxt.dat");
     QCOMPARE(val2, QStringList());
 
-    QFile testFile("lic.txt");
+    QFile testFile("lic0.txt");
     if (testFile.open(QFile::WriteOnly | QFile::Text)) {
         testFile.write("123\n");
         testFile.write("abc \n");
         testFile.write(" -+_ \n");
         testFile.close();
     }
-    QStringList lic;
-    lic << "123" << "abc" << "-+_";
-    auto val3 = licenseInfo.licenseFromFile("lic.txt");
-    QCOMPARE(val3, lic);
+    QCOMPARE(licenseInfo.licenseFromFile("lic0.txt"), QStringList());
+
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        testFile.write("GAMS_Demo,_for_EULA_and_demo_limitations_see___G240131/0001CB-GEN\n");
+        testFile.write(" -+_ \n");
+        testFile.close();
+    }
+    QCOMPARE(licenseInfo.licenseFromFile("lic0.txt"), QStringList());
+}
+
+void TestGamsLicenseInfo::testLicenseFromFile_licenseWithLines()
+{
+    GamsLicenseInfo licenseInfo;
+    QFile testFile("lic1.txt");
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        testFile.write(testLicense().join('\n').toUtf8());
+        testFile.close();
+    }
+    QCOMPARE(licenseInfo.licenseFromFile("lic1.txt"), testLicense());
+}
+
+void TestGamsLicenseInfo::testLicenseFromFile_licenseContinuesLine()
+{
+    GamsLicenseInfo licenseInfo;
+    QFile testFile("lic2.txt");
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        testFile.write(testLicense().join("").toUtf8());
+        testFile.close();
+    }
+    QCOMPARE(licenseInfo.licenseFromFile("lic2.txt"), testLicense());
+}
+
+void TestGamsLicenseInfo::testLicenseFromFile_randomSpaces()
+{
+    GamsLicenseInfo licenseInfo;
+    QFile testFile("lic3.txt");
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        testFile.write(testLicenseWithSpaces().toUtf8());
+        testFile.close();
+    }
+    QCOMPARE(licenseInfo.licenseFromFile("lic3.txt"), testLicense());
+}
+
+void TestGamsLicenseInfo::testLicenseFromFile_BOM()
+{
+    GamsLicenseInfo licenseInfo;
+    QFile testFile("lic4.txt");
+    if (testFile.open(QFile::WriteOnly | QFile::Text)) {
+        QTextStream ostream(&testFile);
+        ostream.setGenerateByteOrderMark(true);
+        ostream << testLicense().join('\n');
+        ostream.flush();
+    }
+    QCOMPARE(licenseInfo.licenseFromFile("lic4.txt"), testLicense());
+}
+
+QStringList TestGamsLicenseInfo::testLicense()
+{// uses the GAMS 46.0 default license
+    QStringList license;
+    license << "GAMS_Demo,_for_EULA_and_demo_limitations_see___G240131/0001CB-GEN";
+    license << "https://www.gams.com/latest/docs/UG%5FLicense.html_______________";
+    license << "1496554900_______________________________________________________";
+    license << "0801346905_______________________________________________________";
+    license << "DC0000_______g_1_______________________________C_Eval____________";
+    return license;
+}
+
+QString TestGamsLicenseInfo::testLicenseWithSpaces()
+{// uses the GAMS 46.0 default license
+    QString license;
+    license += "GAMS_Demo,_for_EULA_and_demo_limitations_see___G240131/0001CB-GEN\n\t";
+    license += "https://www.gams.com/latest/docs/UG%5FLicense.html_______________";
+    license += "1496554900___________________________\v_________________\f___________   ";
+    license += "0801346905________________________________________________\r_______";
+    license += "DC0000_______g_1______________\r\r\r_________________C_Eval_______ _____    ";
+    return license;
 }
 
 QTEST_MAIN(TestGamsLicenseInfo)

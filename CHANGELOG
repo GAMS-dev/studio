@@ -3,6 +3,7 @@ Version 1.17.3
 - added "Last Projects" to the welcome page
 - added close button to remove an entry from the welcome page
 - added search and replace for block-edit
+- improved GAMS license handling, i.e. the license data can be a continues text. Furthermore, the license data can be interrupted by any space character
 - fixed project file gets cleared when opening a file of the same base name
 - updated Qt version to Qt 6.6.2
 

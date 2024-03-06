@@ -29,12 +29,14 @@
 #include <QDir>
 #include <QClipboard>
 #include <QGuiApplication>
+#include <QRegularExpression>
 
 namespace gams {
 namespace studio {
 namespace support {
 
 GamsLicenseInfo::GamsLicenseInfo()
+    : mRegEx(R"(\s|\\.)")
 {
     auto logger = SysLogLocator::systemLog();
     char msg[GMS_SSSIZE];
@@ -128,25 +130,24 @@ QString GamsLicenseInfo::solverLicense(const QString &name, int id) const
 
 QStringList GamsLicenseInfo::licenseFromClipboard()
 {
-    QClipboard* clipboard = QGuiApplication::clipboard();
-    QStringList licenseLines = clipboard->text().split('\n', Qt::SkipEmptyParts);
-    if (licenseLines.isEmpty())
-        QStringList();
-    for (int i=0; i<licenseLines.size(); ++i)
-        licenseLines[i] = licenseLines[i].trimmed();
-    return licenseLines;
+    QString data = QGuiApplication::clipboard()->text();
+    return processLicenseData(data);
 }
 
 QStringList GamsLicenseInfo::licenseFromFile(const QString &fileName)
 {
+    QString data;
+    //bool hasBOM = false;
     QFile file(fileName);
-    QStringList licenseLines;
     if (file.exists() && file.open(QFile::ReadOnly | QFile::Text)) {
-        licenseLines = QString(file.readAll()).split("\n", Qt::SkipEmptyParts);
+        // the BOM seems to be removed by QFile... just ignore it for now
+        //hasBOM = QTextCodec::codecForUtfText(file.peek(4), nullptr) != nullptr;
+        data = file.readAll();
     }
-    for (int i=0; i<licenseLines.size(); ++i)
-        licenseLines[i] = licenseLines[i].trimmed();
-    return licenseLines;
+    //if (hasBOM) {
+    //    qDebug() << "BOM" << hasBOM;
+    //}
+    return processLicenseData(data);
 }
 
 bool GamsLicenseInfo::isLicenseValid() const
@@ -311,6 +312,18 @@ int GamsLicenseInfo::errorCallback(int count, const char *message)
     logger->append(InvalidGAMS, LogMsgType::Error);
     logger->append(message, LogMsgType::Error);
     return 0;
+}
+
+QStringList GamsLicenseInfo::processLicenseData(const QString &data)
+{
+    QStringList licenseLines;
+    auto str = QString(data).replace(mRegEx, "");
+    // each license line has 65 characters
+    for (int i=0, n=65; i+n<=str.size(); i+=n) {
+        licenseLines << str.sliced(i, n);
+    }
+    // a GAMS license has 5 to 6 lines
+    return (licenseLines.size() == 5 || licenseLines.size() == 6) ? licenseLines : QStringList();
 }
 
 }
