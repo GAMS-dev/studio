@@ -309,18 +309,18 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
             }
         }
         if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0 && !item->data( (int)DataItemColumn::Undefined ).toBool()) {
-            QVariant key  = index.siblingAtColumn((int)DataItemColumn::Key).data(Qt::DisplayRole);
-            QVariant type = index.siblingAtColumn((int)DataItemColumn::SchemaType).data(Qt::DisplayRole);
-            QVariant allowedValue = index.siblingAtColumn((int)DataItemColumn::AllowedValue).data(Qt::DisplayRole);
+            const QVariant key  = index.siblingAtColumn((int)DataItemColumn::Key).data(Qt::DisplayRole);
+            const QVariant type = index.siblingAtColumn((int)DataItemColumn::SchemaType).data(Qt::DisplayRole);
+            const QVariant allowedValue = index.siblingAtColumn((int)DataItemColumn::AllowedValue).data(Qt::DisplayRole);
 
             QStringList schema = item->data((int)DataItemColumn::SchemaKey).toStringList();
             if (!schema.isEmpty()) {
                  if ( (index.column()==(int)DataItemColumn::Key && item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey) ||
                     (index.column()==(int)DataItemColumn::Value && item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue)  ) {
-                     QString schemaname = schema.first();
+                     const QString schemaname = schema.first();
                      schema.removeFirst();
-                     ValueWrapper minvalue = mConnect->getSchema(schemaname)->getMin(schema.join(":"));
-                     ValueWrapper maxvalue = mConnect->getSchema(schemaname)->getMax(schema.join(":"));
+                     const ValueWrapper minvalue = mConnect->getSchema(schemaname)->getMin(schema.join(":"));
+                     const ValueWrapper maxvalue = mConnect->getSchema(schemaname)->getMax(schema.join(":"));
                      return QVariant( QString("%1 Invalid value.<br/>%2%3%4 must be of type %2%5%4.%6 %7 %8 %9")
                                       .arg( TooltipStrHeader, TooltipOpenedBoldStr, key.toString(), TooltipClosedBoldStr, type.toString(),
                                             (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
@@ -334,10 +334,10 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
     }
     case Qt::DecorationRole: {
         ConnectDataItem* item = static_cast<ConnectDataItem*>(index.internalPointer());
-       if (index.column()==(int)DataItemColumn::Key) {
-            QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
-            QModelIndex unknown_index = index.sibling(index.row(),(int)DataItemColumn::Undefined );
-            int checkstate = checkstate_index.data(Qt::DisplayRole).toInt();
+        if (index.column()==(int)DataItemColumn::Key) {
+            const QModelIndex checkstate_index = index.sibling(index.row(),(int)DataItemColumn::CheckState );
+            const QModelIndex unknown_index = index.sibling(index.row(),(int)DataItemColumn::Undefined );
+            const int checkstate = checkstate_index.data(Qt::DisplayRole).toInt();
             if (checkstate==(int)DataCheckState::SchemaName) {
                if (unknown_index.data(Qt::DisplayRole).toBool())
                   return QVariant::fromValue(Theme::icon(":/solid/kill"));
@@ -509,8 +509,8 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
     if (treeItem) {
         if (!treeItem->isLastChild()) {
             if ((int)DataCheckState::KeyItem==treeItem->data((int)DataItemColumn::CheckState).toInt()) {
-                QModelIndex sibling = index.sibling(index.row()+1, 0);
-                int state = sibling.data((int)DataItemColumn::CheckState).toInt();
+                const QModelIndex sibling = index.sibling(index.row()+1, 0);
+                const int state = sibling.data((int)DataItemColumn::CheckState).toInt();
                 if ((int)DataCheckState::ListAppend==state || (int)DataCheckState::MapAppend==state) {
                     removeRows(index.row()+1, 1, parent(sibling));
                 }
@@ -725,12 +725,12 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
         return false;
 
     QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
-    QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
+    const QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
                                                      : (row==rowCount(parent)) ? index(rowCount(parent)-1, (int)DataItemColumn::SchemaKey, parent)
                                                                                : index(row, (int)DataItemColumn::SchemaKey, parent)
                                );
     QStringList schemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
-    int state = schemaIndex.siblingAtColumn((int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
+    const int state = schemaIndex.siblingAtColumn((int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
     if (mOnlyRequriedAttributesAdded && !isRequired(tobeinsertSchemaKey, schemaKey))
         return false;
     if (row < 0 || column < 0) { // drop on to a row or end of the list
@@ -806,12 +806,12 @@ bool ConnectDataModel::dropMimeData(const QMimeData *mimedata, Qt::DropAction ac
         return false;
     } else {
         QStringList tobeinsertSchemaKey = schemastrlist[1].split(":");
-        QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
+        const QModelIndex schemaIndex = (row < 0 || column < 0 ? parent.siblingAtColumn((int)DataItemColumn::SchemaKey)
                                                          : (row==rowCount(parent)) ? index(rowCount(parent)-1, (int)DataItemColumn::SchemaKey, parent)
                                                                                    : index(row, (int)DataItemColumn::SchemaKey, parent)
                                    );
 
-        QString schemaname = tobeinsertSchemaKey.first();
+        const QString schemaname = tobeinsertSchemaKey.first();
         if (tobeinsertSchemaKey.size() == 1) {
             addFromSchema(tobeinsertSchemaKey.first(), row < 0 ? (parent==index(0,0, QModelIndex()) ? rowCount(parent) : parent.row()+1)
                                                                : row);
@@ -889,7 +889,7 @@ void ConnectDataModel::addFromSchema(const QString& schemaname, int position)
         data = NULL;
     }
     informDataChanged( index(0,0).parent() );
-    QModelIndex parent = indexForTreeItem( mRootItem->child(0) );
+    const QModelIndex parent = indexForTreeItem( mRootItem->child(0) );
     if (position <= 0)
         emit indexExpandedAndResized(index(getItem(parent)->childCount()-1, (int)DataItemColumn::Key, parent));
     else
@@ -933,7 +933,7 @@ void ConnectDataModel::appendMapElement(const QString& schemaname, QStringList& 
     QStringList schemaKeys;
     schemaKeys << schemaname << keys;
 
-    YAML::Node node = data->getRootNode();
+//    YAML::Node node = data->getRootNode();
     beginInsertRows(parentIndex, position, position);
     insertSchemaData(schemaname, keys, data, position, parents);
     endInsertRows();
@@ -1008,8 +1008,8 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
         keys       << "-";
         if (node[i].Type()==YAML::NodeType::Map) {
             if (schema && schema->getNumberOfOneOfDefined(keys.join(":"))) {
-                int n = whichOneOfSchema(data->getRootNode(), schema, keys, keys.first());
-                QString oneofstrindex = "[" + QString::number(n) + "]";
+                const int n = whichOneOfSchema(data->getRootNode(), schema, keys, keys.first());
+                const QString oneofstrindex = "[" + QString::number(n) + "]";
                 keys   << oneofstrindex;
                 schemaKeys << oneofstrindex;
             }
@@ -1064,7 +1064,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
                 item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
                 ConnectDataItem* parentitem = getSchemaParentItem(item);
                 if (parentitem!=item) {
-                    int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                    const int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
                     parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
                 }
             }*/
@@ -1093,8 +1093,8 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
 
     QStringList schemaKeys;
     schemaKeys << schemaname << keys;
-    QModelIndex parentKeyIndex = parentIndex.siblingAtColumn((int)DataItemColumn::Key);
-    QModelIndex idx = index(rowCount(parentKeyIndex)-1, (int)DataItemColumn::Key, parentKeyIndex);
+    const QModelIndex parentKeyIndex = parentIndex.siblingAtColumn((int)DataItemColumn::Key);
+    const QModelIndex idx = index(rowCount(parentKeyIndex)-1, (int)DataItemColumn::Key, parentKeyIndex);
 
     beginInsertRows(parentKeyIndex, idx.row(), idx.row());
 
@@ -1170,7 +1170,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
                 item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
                 ConnectDataItem* parentitem = getSchemaParentItem(item);
                 if (parentitem!=item) {
-                    int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                    const int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
                     parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
                 }
             }
@@ -1224,8 +1224,9 @@ void ConnectDataModel::reloadConnectDataModel()
     endResetModel();
 }
 
-void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
-    QModelIndex idx = topLeft;
+void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+{
+    const QModelIndex idx = topLeft;
     Q_UNUSED(bottomRight)
     Q_UNUSED(roles)
 
@@ -1272,7 +1273,7 @@ void ConnectDataModel::editDataChanged(const QModelIndex &index, bool preValidVa
 bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
 {
     QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
-    QString values = item->data((int)DataItemColumn::AllowedValue).toString();
+    const QString values = item->data((int)DataItemColumn::AllowedValue).toString();
     QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
     if (column==(int)DataItemColumn::Key) {
         if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ListItem)
@@ -1295,7 +1296,7 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
         QString pattern = "^[A-Za-z]+.\\[\\d\\d?\\]";
         QRegularExpression rx(QRegularExpression::anchoredPattern(pattern));
         if (rx.match(schemakeys.last()).hasMatch()) {
-            QString key = schemakeys.last();
+            const QString key = schemakeys.last();
             schemakeys.removeFirst();
             n = schema->getNumberOfOneOfDefined(schemakeys.join(":"));
             if (n <= 0)
@@ -1356,13 +1357,13 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                           if (flag) {
                                if (!schema)
                                    schema = mConnect->getSchema(schemaname);
-                              ValueWrapper minvalue = schema->getMin(slist);
+                              const ValueWrapper minvalue = schema->getMin(slist);
                               if (minvalue.type==SchemaValueType::NoValue) {
                                   valid = true;
                                   break;
                               } else if (minvalue.type==SchemaValueType::Integer) {
                                          if (i >= minvalue.value.intval) {
-                                             ValueWrapper maxvalue = schema->getMax(slist);
+                                             const ValueWrapper maxvalue = schema->getMax(slist);
                                              if (maxvalue.type==SchemaValueType::NoValue) {
                                                  valid = true;
                                              } else if (maxvalue.type==SchemaValueType::Integer) {
@@ -1400,7 +1401,7 @@ ConnectData *ConnectDataModel::getConnectData()
          for(int j=0; j<rootitem->childCount(); ++j) {
             ConnectDataItem* item = rootitem->child(j);
             YAML::Node node = YAML::Node(YAML::NodeType::Map);
-            std::string key = item->data((int)DataItemColumn::Key).toString().toStdString();
+            const std::string key = item->data((int)DataItemColumn::Key).toString().toStdString();
             YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
             getData( item, mapnode );
             node[key] = mapnode;
@@ -1435,19 +1436,19 @@ bool ConnectDataModel::hasSameParent(const QStringList& tobeinsertSchema, const 
 bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex &parent, bool samelevel) const
 {
     QStringList insertlist = tobeinsertSchema.split(":");
-    int level = insertlist.size();
+    const int level = insertlist.size();
     for (int i =0; i<rowCount(parent); ++i) {
-        QString schemaKey = (index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString());
-        QStringList schemakeylist = schemaKey.split(":");
+        const QString schemaKey = (index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString());
+        const QStringList schemakeylist = schemaKey.split(":");
         const QString& tobeinsertedname = insertlist.join(":");
-        QString keyname = (schemaKey.endsWith(":-") ? schemaKey.left(schemaKey.lastIndexOf(":-"))
+        const QString keyname = (schemaKey.endsWith(":-") ? schemaKey.left(schemaKey.lastIndexOf(":-"))
                                                     :schemaKey);
         if (tobeinsertedname.compare(keyname)==0)
             return true;
         if (schemaKey.endsWith("]"))
             if (tobeinsertedname.startsWith( schemaKey.left(schemaKey.indexOf("[")) ))
                return true;
-        int keylevel = schemakeylist.size();
+        const int keylevel = schemakeylist.size();
         if (!samelevel && qAbs(level-keylevel) != 1 )
             return false;
     }
@@ -1547,10 +1548,10 @@ int ConnectDataModel::whichAnyOfSchema(const YAML::Node &data, ConnectSchema *sc
     QStringList keystrlist(keylist);
     keystrlist << key;
     for(int i =0; i<schema->getNumberOfAnyOfDefined( keystrlist.join(":")); ++i) {
-        QString schemastr = QString("%1[%2]").arg( keystrlist.join(":"), QString::number(i));
+        const QString schemastr = QString("%1[%2]").arg( keystrlist.join(":"), QString::number(i));
         bool validType = false;
         const QList<SchemaType> typeList = schema->getType(schemastr);
-        for (SchemaType type : typeList) {
+        for (const SchemaType type : typeList) {
            try {
                if (type==SchemaType::Integer) {
                    if (data.Type()==YAML::NodeType::Scalar) {
@@ -1705,12 +1706,12 @@ void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
     for(int i=0; i<item->childCount(); ++i) {
         ConnectDataItem* childitem = item->child(i);
         if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::SchemaName) {
-            std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
+            const std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
             YAML::Node mapnode = YAML::Node(YAML::NodeType::Map);
             getData( childitem, mapnode );
             node[key] = mapnode;
         } else if (childitem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::KeyItem) {
-            std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
+            const std::string key = childitem->data((int)DataItemColumn::Key).toString().toStdString();
             YAML::Node mapnode;
             getData( childitem, mapnode );
             node[key] = mapnode;
@@ -1718,7 +1719,7 @@ void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
                    YAML::Node mapnode;
                    for(int j=0; j<childitem->childCount(); ++j) {  // skip row with DataCheckState::ListItem
                        ConnectDataItem* seqchilditem = childitem->child(j);
-                       std::string seqmapkey = seqchilditem->data((int)DataItemColumn::Key).toString().toStdString();
+                       const std::string seqmapkey = seqchilditem->data((int)DataItemColumn::Key).toString().toStdString();
                        if (seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue ||
                            seqchilditem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap      ) {
                            YAML::Node mapseqnode;
@@ -1752,9 +1753,9 @@ void ConnectDataModel::getData(ConnectDataItem *item, YAML::Node& node)
 
 void ConnectDataModel::informDataChanged(const QModelIndex& parent)
 {
-    QModelIndex checkstate_index = parent.sibling(parent.row(), (int)DataItemColumn::CheckState);
-    int state = checkstate_index.data(Qt::DisplayRole).toInt();
-    int childcount = getItem(parent)->childCount();
+    const QModelIndex checkstate_index = parent.sibling(parent.row(), (int)DataItemColumn::CheckState);
+    const int state = checkstate_index.data(Qt::DisplayRole).toInt();
+    const int childcount = getItem(parent)->childCount();
     if ((int)DataCheckState::KeyItem==state) {
         if (childcount <= 2) {
             for (int i=0; i<childcount; ++i) {
@@ -1853,7 +1854,7 @@ void ConnectDataModel::setupTreeItemModelData()
         int position = 0;
         for(size_t i = 0; i<node.size(); i++) {
             for (YAML::const_iterator it = node[i].begin(); it != node[i].end(); ++it) {
-                QString schemaName = QString::fromStdString(it->first.as<std::string>());
+                const QString schemaName = QString::fromStdString(it->first.as<std::string>());
                 ConnectSchema* schema = mConnect->getSchema(schemaName);
                 QStringList dataKeys;
                 QList<QVariant> listData;
@@ -2042,7 +2043,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    updateInvalidExcludedItem(item);
                    int k = 0;
                    for (YAML::const_iterator dmit = mit->second.begin(); dmit != mit->second.end(); ++dmit) {
-                       QString mapkey = QString::fromStdString(dmit->first.as<std::string>());
+                       const QString mapkey = QString::fromStdString(dmit->first.as<std::string>());
 //                       dataKeys << mapkey;
                        QStringList sKeys(schemaKeys);
                        sKeys << mapkey;
@@ -2101,7 +2102,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                   parents.last()->appendChild(item);
                                   k++;
                        } else if (dmit->second.Type()==YAML::NodeType::Sequence) {
-                                 QString key = QString::fromStdString(dmit->first.as<std::string>());
+                                 const QString key = QString::fromStdString(dmit->first.as<std::string>());
                                  dataKeys   << key;
                                  schemaKeys << key;
                                  QList<QVariant> seqSeqData;
@@ -2194,7 +2195,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              bool isOneofDefined = schema ? schema->isOneOfDefined(key) : false;
              if (isOneofDefined) {
                  isOneofDefined=(schema ? schema->getNumberOfOneOfDefined(key) > 0 : false);
-                 int n = whichOneOfSchema(mit->second, schema, dataKeys, key);
+                 const int n = whichOneOfSchema(mit->second, schema, dataKeys, key);
                  key += QString("[%1]").arg(n);
              } else if (isAnyofDefined) {
                     int n = whichAnyOfSchema(mit->second, schema, dataKeys, key);

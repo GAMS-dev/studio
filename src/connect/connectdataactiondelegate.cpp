@@ -47,7 +47,7 @@ void ConnectDataActionDelegate::initStyleOption(QStyleOptionViewItem *option, co
     QStyledItemDelegate::initStyleOption(option, index);
     option->text = "";
 
-    QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
+    const QIcon icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
     if (!icon.isNull()) {
         option->icon = icon;
         if ( index.data( Qt::DisplayRole ).toBool() ) {

@@ -118,9 +118,9 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
 //    if (!mOrderedKeyList.contains(key))
 //        mOrderedKeyList << key;
 
-    bool schemaDefined = (node["schema"] ? true : false);
-    bool oneofDefined = (node["oneof"] ? true : false);
-    bool anyofDefined = (node["anyof"] ? true : false);
+    const bool schemaDefined = (node["schema"] ? true : false);
+    const bool oneofDefined = (node["oneof"] ? true : false);
+    const bool anyofDefined = (node["anyof"] ? true : false);
     mSchemaHelper.insert(key, new Schema(level, node, types, required, nullable, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes, oneofDefined, anyofDefined, empty));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
@@ -183,7 +183,7 @@ void ConnectSchema::loadFromFile(const QString &inputFileName)
         EXCEPT() << "Error Loading from file : " << inputFileName;
     for (YAML::const_iterator it = mRootNode.begin(); it != mRootNode.end(); ++it) {
         QString key( QString::fromStdString( it->first.as<std::string>() ) );
-        YAML::Node node = it->second;
+//        YAML::Node node = it->second;
         createSchemaHelper(key, it->second, 1);
     }
 }
@@ -221,11 +221,11 @@ const QStringList ConnectSchema::getFirstLevelKeyList() const
 QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
 {
     QStringList keyList;
-    int size = key.split(":").size();
+    const int size = key.split(":").size();
     for(const QString& k : mOrderedKeyList) {
         if (k.startsWith(key+":") && k.split(":").size()== size+1) {
-            int pos = k.lastIndexOf(QChar('['));
-            QString kk = (pos > 0 ? k.left(pos) : k);
+            const int pos = k.lastIndexOf(QChar('['));
+            const QString kk = (pos > 0 ? k.left(pos) : k);
             if (!keyList.contains(kk))
                 keyList << k;
         }
@@ -324,7 +324,7 @@ QStringList ConnectSchema::getAllOneOfSchemaKeys(const QString &key) const
 {
     QStringList keyslist;
     QString pattern = "^"+key+":-:\\[\\d\\d?\\]$";
-    QRegularExpression rex(pattern);
+    const QRegularExpression rex(pattern);
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
         if (rex.match(it.key()).hasMatch() && !keyslist.contains(it.key()))
             keyslist << it.key();
@@ -370,8 +370,8 @@ QStringList ConnectSchema::getTypeAsStringList(const QString &key) const
 {
     QStringList strlist;
     if (contains(key)) {
-        for (SchemaType t : std::as_const(mSchemaHelper[key]->types)) {
-            int tt = (int)t;
+        for (const SchemaType t : std::as_const(mSchemaHelper[key]->types)) {
+            const int tt = (int)t;
             if ( tt==(int)SchemaType::Integer)
                 strlist << "integer";
             else if ( tt==(int)SchemaType::Float)
@@ -394,7 +394,7 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
     QStringList strlist;
     if (contains(key)) {
         for(int i=0; i<mSchemaHelper[key]->allowedValues.size(); ++i) {
-            int t = (int)mSchemaHelper[key]->allowedValues.at(i).type;
+            const int t = (int)mSchemaHelper[key]->allowedValues.at(i).type;
             if ( t==(int)SchemaValueType::Integer)
                 strlist << QString::number(mSchemaHelper[key]->allowedValues.at(i).value.intval);
             else if ( t==(int)SchemaValueType::Float)

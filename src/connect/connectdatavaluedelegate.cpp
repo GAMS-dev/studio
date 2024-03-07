@@ -42,17 +42,17 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     QLineEdit* lineEdit = new QLineEdit(parent);
     QCompleter* completer = new QCompleter(lineEdit);
 
-    QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
-    QStringList allowedval_list = allowedval_index.data().toString().split(",");
+    const QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
+    const QStringList allowedval_list = allowedval_index.data().toString().split(",");
     mIsCompleter= false;
     if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );
         mIsCompleter = true;
     } else {
-        QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
-        QStringList type_list = type_index.data().toString().split(",");
+        const QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
+        const QStringList type_list = type_index.data().toString().split(",");
         if (type_list.contains("boolean", Qt::CaseInsensitive)) {
-            QStringList boolean_list({ "true", "false"});
+            const QStringList boolean_list({ "true", "false"});
             completer->setModel( new QStringListModel(boolean_list) );
             mIsCompleter = true;
         }
@@ -88,7 +88,7 @@ void ConnectDataValueDelegate::setEditorData(QWidget *editor, const QModelIndex 
 {
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        QVariant data = index.model()->data( index );
+        const QVariant data = index.model()->data( index );
         lineEdit->setText(  data.toString() ) ;
         return;
     }

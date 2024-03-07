@@ -316,7 +316,7 @@ void ConnectEditor::fromSchemaInserted(const QString &schemaname, int position)
 
 void ConnectEditor::schemaDoubleClicked(const QModelIndex &modelIndex)
 {
-    QString schemaname = ui->schemaControlListView->model()->data( modelIndex ).toString();
+    const QString schemaname = ui->schemaControlListView->model()->data( modelIndex ).toString();
 
     emit mDataModel->fromSchemaInserted(schemaname, mDataModel->rowCount(mDataModel->index(0,0)) );
 }
@@ -342,7 +342,7 @@ void ConnectEditor::schemaHelpRequested(const QString &schemaName)
    for(int row=0; row<mConnect->getSchemaNames().size(); row++) {
        QString str = mConnect->getSchemaNames().at(row);
        if (str.compare(schemaName, Qt::CaseInsensitive)==0) {
-           QModelIndex index = ui->schemaControlListView->model()->index(row, 0);
+           const QModelIndex index = ui->schemaControlListView->model()->index(row, 0);
            ui->schemaControlListView->setCurrentIndex( index );
            emit ui->schemaControlListView->clicked( index );
            break;
@@ -354,15 +354,15 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
 {
     setModified(true);
 
-    QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+    const QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
     if ((int)DataCheckState::ListAppend==checkstate_idx.data(Qt::DisplayRole).toInt()) {
         if (index.parent().isValid() &&
             index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
             return;
-        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::SchemaKey);
+        const QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::SchemaKey);
         QStringList schema = values_idx.data(Qt::DisplayRole).toString().split(":");
         if ( !schema.isEmpty() ) {
-            QString schemaname = schema.at(0);
+            const QString schemaname = schema.at(0);
             schema.removeFirst();
             if (schema.last().compare("-")==0)
                 schema.removeLast();
@@ -376,7 +376,7 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
 
 void ConnectEditor::appendSchemaItemRequested(const int schemaNumber, const QModelIndex &index)
 {
-    QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+    const QModelIndex checkstate_idx = index.sibling(index.row(), (int)DataItemColumn::CheckState);
     if ((int)DataCheckState::SchemaAppend!=checkstate_idx.data(Qt::DisplayRole).toInt())
         return;
 
@@ -384,7 +384,7 @@ void ConnectEditor::appendSchemaItemRequested(const int schemaNumber, const QMod
         index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
         return;
 
-    QModelIndex values_idx = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
+    const QModelIndex values_idx = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
     QStringList schema = values_idx.data().toString().split(":");
     QString schemaname = "";
     schema << "["+QString::number(schemaNumber)+"]";

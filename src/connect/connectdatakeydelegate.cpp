@@ -72,18 +72,18 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
 QWidget *ConnectDataKeyDelegate::createEditor(QWidget *parent, const QStyleOptionViewItem &option, const QModelIndex &index) const
 {
     Q_UNUSED(option)
-    QModelIndex checkstate_index = index.sibling( index.row(), (int)DataItemColumn::CheckState );
+    const QModelIndex checkstate_index = index.sibling( index.row(), (int)DataItemColumn::CheckState );
 
     if (checkstate_index.data().toInt()==(int)DataCheckState::SchemaAppend) {
         QComboBox* editor = new QComboBox(parent);
-        QModelIndex schemastr_index = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
+        const QModelIndex schemastr_index = index.parent().siblingAtColumn( (int)DataItemColumn::SchemaKey );
         QStringList schemastr_list  = schemastr_index.data().toString().split(":");
         if (schemastr_list.last().compare("-")==0)
             schemastr_list.removeLast();
         ConnectSchema* schema = mConnect->getSchema(schemastr_list.first());
         if (schema) {
-            QString keystr = index.parent().siblingAtColumn( (int)DataItemColumn::Key ).data().toString();
-            int number = schema->getNumberOfOneOfSchemaDefined(schemastr_list.last());
+            const QString keystr = index.parent().siblingAtColumn( (int)DataItemColumn::Key ).data().toString();
+            const int number = schema->getNumberOfOneOfSchemaDefined(schemastr_list.last());
             connect(editor,  QOverload<int>::of(&QComboBox::activated),
                     this, &ConnectDataKeyDelegate::commitAndCloseEditor);
             for(int i=0; i<number; ++i)
@@ -149,8 +149,8 @@ void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &i
 {
     QComboBox* cb = qobject_cast<QComboBox*>(editor);
     if (cb) {
-        QString value = index.data(Qt::EditRole).toString();
-        int idx = cb->findText(value);
+        const QString value = index.data(Qt::EditRole).toString();
+        const int idx = cb->findText(value);
         if (idx >= 0)
             cb->setCurrentIndex(idx);
         cb->showPopup();
@@ -158,7 +158,7 @@ void ConnectDataKeyDelegate::setEditorData(QWidget *editor, const QModelIndex &i
     }
     QLineEdit* lineEdit = qobject_cast<QLineEdit*>( editor ) ;
     if (lineEdit) {
-        QVariant data = index.model()->data( index );
+        const QVariant data = index.model()->data( index );
         lineEdit->setText( data.toString() ) ;
         return;
     }
@@ -201,7 +201,7 @@ void ConnectDataKeyDelegate::commitAndCloseEditor()
 bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *model, const QStyleOptionViewItem &option, const QModelIndex &index)
 {
     if (event->type()==QEvent::MouseButtonRelease) {
-        QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
+        const QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
         if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
             checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap     ) {
              return true;
@@ -222,9 +222,9 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
             for (it= mSchemaAppendPosition.cbegin();  it != mSchemaAppendPosition.cend(); ++it) {
                 if (it.key()== index && it.value().contains(p)) {
                     if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::SchemaAppend) {
-                        QString data = model->data(index).toString();
+                        const QString data = model->data(index).toString();
                         bool *ok = nullptr;
-                        int i = data.left(data.indexOf("]")).mid(data.indexOf("[")+1).toInt(ok);
+                        const int i = data.left(data.indexOf("]")).mid(data.indexOf("[")+1).toInt(ok);
                         emit requestInsertSchemaItem( ok ? 0 : i, index);
                     } else {
                         emit requestAppendItem(index);

@@ -94,8 +94,8 @@ private:
     MainWindow*       getMainWindow();
 };
 
-}
-}
-}
+} // namespace connect
+} // namespace studio
+} // namespace gams
 
 #endif // CONNECTEDITOR_H
