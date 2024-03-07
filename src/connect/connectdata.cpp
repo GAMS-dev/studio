@@ -39,16 +39,6 @@ ConnectData::~ConnectData()
 
 }
 
-void ConnectData::loadFromFile(const QString &inputFileName)
-{
-    ConnectAgent::loadFromFile(inputFileName);
-}
-
-void ConnectData::loadFromString(const QString &input)
-{
-    ConnectAgent::loadFromString(input);
-}
-
 void ConnectData::unload(const QString &outputFileName)
 {
     YAML::Emitter emitter;
