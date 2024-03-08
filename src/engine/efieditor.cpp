@@ -96,7 +96,7 @@ void EfiEditor::selectFilter()
     ui->fsWidget->selectFilter();
 }
 
-void EfiEditor::save(const QString &fileName)
+bool EfiEditor::save(const QString &fileName)
 {
     TextFileSaver file;
     if (file.open(fileName)) {
@@ -105,11 +105,14 @@ void EfiEditor::save(const QString &fileName)
             file.write(line.toUtf8());
             file.write("\n");
         }
-        file.close();
-        mFileName = fileName;
-        ui->fsWidget->clearMissingFiles();
-        setModified(false);
+        if (file.close()) {
+            mFileName = fileName;
+            ui->fsWidget->clearMissingFiles();
+            setModified(false);
+            return true;
+        }
     }
+    return false;
 }
 
 void EfiEditor::updateInfoText(const QString &extraText, bool valid)

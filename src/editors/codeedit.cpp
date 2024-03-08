@@ -84,6 +84,9 @@ CodeEdit::CodeEdit(QWidget *parent)
 
 CodeEdit::~CodeEdit()
 {
+    mCompleter = nullptr;
+    delete mLineNumberArea;
+    mLineNumberArea = nullptr;
     if (mBlockEdit) endBlockEdit();
     if (mBlockEditSelection) {
         BlockEdit *ed = mBlockEditSelection;
@@ -144,6 +147,7 @@ void CodeEdit::updateLineNumberAreaWidth()
 
 void CodeEdit::updateLineNumberArea(const QRect &rect, int dy)
 {
+    if (!mLineNumberArea) return;
     if (dy) {
         mLineNumberArea->scroll(0, dy);
     } else {
@@ -2094,6 +2098,7 @@ void CodeEdit::updateCompleter()
 
 void CodeEdit::updateExtraSelections()
 {
+    if (!mLineNumberArea) return;
     QList<QTextEdit::ExtraSelection> selections;
     extraSelSearchSelection(selections);
     extraSelLineMarks(selections);
@@ -2723,7 +2728,8 @@ void CodeEdit::BlockEdit::stopCursorTimer()
 {
     mEdit->mBlinkBlockEdit.stop();
     mBlinkStateHidden = true;
-    mEdit->lineNumberArea()->update(mEdit->lineNumberArea()->visibleRegion());
+    if (mEdit->lineNumberArea())
+        mEdit->lineNumberArea()->update(mEdit->lineNumberArea()->visibleRegion());
     refreshCursors();
 }
 

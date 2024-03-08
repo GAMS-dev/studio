@@ -426,8 +426,8 @@ void ProjectRepo::save(PExProjectNode *project, const QVariantMap &data) const
     TextFileSaver file;
     if (file.open(fileName)) {
         file.write(QJsonDocument(QJsonObject::fromVariantMap(data)).toJson());
-        file.close();
-        project->setNeedSave(false);
+        if (file.close())
+            project->setNeedSave(false);
     } else {
         SysLogLocator::systemLog()->append("Couldn't write project to " + fileName, LogMsgType::Error);
     }
@@ -816,14 +816,15 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     QString oldFile = node->location();
 
     // set location to new file and add it to the tree
-    sourceFM->save(target);
-    addToProject(node->assignedProject(), node);
+    if (sourceFM->save(target)) {
+        addToProject(node->assignedProject(), node);
 
-    // re-add old file
-    findOrCreateFileNode(oldFile, node->assignedProject());
+        // re-add old file
+        findOrCreateFileNode(oldFile, node->assignedProject());
 
-    // macOS didn't focus on the new node
-    mTreeModel->setCurrent(mTreeModel->index(node));
+        // macOS didn't focus on the new node
+        mTreeModel->setCurrent(mTreeModel->index(node));
+    }
 }
 
 QVector<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId &groupId) const

@@ -225,6 +225,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mFileMetaRepo, &FileMetaRepo::editableFileSizeCheck, this, &MainWindow::editableFileSizeCheck);
     connect(&mFileMetaRepo, &FileMetaRepo::setGroupFontSize, this, &MainWindow::setGroupFontSize);
     connect(&mFileMetaRepo, &FileMetaRepo::scrollSynchronize, this, &MainWindow::scrollSynchronize);
+    connect(&mFileMetaRepo, &FileMetaRepo::saveProjects, this, &MainWindow::updateAndSaveSettings);
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
@@ -571,8 +572,8 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
 
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
-        fm->save();
-        closeFileEditors(fm->id(), willReopen);
+        if (fm->save())
+            closeFileEditors(fm->id(), willReopen);
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
         fm->setModified(false);
@@ -2759,12 +2760,25 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
     if (choice == 2) return false;
+    bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
-        if (project->process()->terminateOption() && choice == 1)
+        if (project->process()->terminateOption() != AbstractProcess::termLocal && choice == 1)
             project->process()->terminateLocal();
-        else
+        else {
             project->process()->terminate();
+            if (remoteCount) {
+                project->setEngineJobToken("");
+                project->setNeedSave();
+                save = true;
+                QTime due = QTime::currentTime().addSecs(1);
+                while (QTime::currentTime() < due)
+                    QCoreApplication::processEvents(QEventLoop::AllEvents, 100);
+            }
+
+        }
     }
+    if (save)
+        updateAndSaveSettings();
     return true;
 }
 
@@ -3290,11 +3304,13 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
     ret = showSaveChangesMsgBox(filesText);
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        bool allSaved = true;
         for (FileMeta* fm : changedFiles) {
             if (fm->isModified()) {
-                fm->save();
+                allSaved = fm->save() && allSaved;
             }
         }
+        return allSaved;
     } else if (ret == QMessageBox::Cancel) {
         return false;
     } else { // Discard
@@ -3324,20 +3340,21 @@ void MainWindow::closeEvent(QCloseEvent* event)
     if (project) project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
 
     updateAndSaveSettings();
-    QVector<FileMeta*> oFiles = mFileMetaRepo.modifiedFiles();
     if (!terminateProcessesConditionally(mProjectRepo.projects())) {
         event->setAccepted(false);
-    } else if (requestCloseChanged(oFiles)) {
-        mShutDown = true;
-        on_actionClose_All_triggered();
-        closeHelpView();
-        mTextMarkRepo.clear();
-        delete mSettingsDialog;
-        mSettingsDialog = nullptr;
-        mTabStyle = nullptr;
-    } else {
-        event->setAccepted(false);
+        return;
     }
+    if (!requestCloseChanged(mFileMetaRepo.modifiedFiles())) {
+        event->setAccepted(false);
+        return;
+    }
+    mShutDown = true;
+    on_actionClose_All_triggered();
+    closeHelpView();
+    mTextMarkRepo.clear();
+    delete mSettingsDialog;
+    mSettingsDialog = nullptr;
+    mTabStyle = nullptr;
 }
 
 void MainWindow::keyPressEvent(QKeyEvent* e)
@@ -3524,8 +3541,8 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
     // create the destination group if necessary
     if (!project && !fileNode) {
         QFileInfo fi(filePath);
-        if (fi.exists()) {
-            QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+        QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
+        if (QFile::exists(proFile)) {
             mProjectRepo.read(QVariantMap(), proFile);
             project = mProjectRepo.findProject(proFile);
         } else
@@ -3818,7 +3835,15 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
         }
     }
     if (doSave) {
-        for (FileMeta *file: std::as_const(modifiedFiles)) file->save();
+        bool allSaved = true;
+        for (FileMeta *file: std::as_const(modifiedFiles)) {
+            if (!file->save()) {
+                allSaved = false;
+                appendSystemLogWarning("Couldn't save file " + file->location());
+            }
+        }
+        if (!allSaved)
+            return false;
     }
 
     // clear the TextMarks for this group

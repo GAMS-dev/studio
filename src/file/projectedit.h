@@ -60,7 +60,7 @@ public:
     void setFieldData(Field field, const QString& value);
     QString fieldData(Field field);
     PExProjectNode *project() { return mProject; }
-    void save();
+    bool save();
 
 signals:
     void changed(gams::studio::project::ProjectData::Field field);
@@ -90,10 +90,11 @@ public:
     ProjectData *sharedData() const;
     QString tabName(NameModifier mod = NameModifier::raw);
     bool isModified() const;
-    void save();
+    bool save();
 
 signals:
     void modificationChanged(bool modification);
+    void saveProjects();
 
 private slots:
     void updateData(ProjectData::Field field);

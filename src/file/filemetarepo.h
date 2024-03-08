@@ -70,7 +70,7 @@ signals:
     void editableFileSizeCheck(const QFile &file, bool &canOpen);
     void setGroupFontSize(gams::studio::FontGroup fontGroup, qreal fontSize, QString fontFamily = QString());
     void scrollSynchronize(QWidget *sendingEdit, int dx, int dy);
-    void projectTabRenamed(QWidget *wid, const QString &newName);
+    void saveProjects();
 
 public slots:
     void openFile(gams::studio::FileMeta* fm, const gams::studio::NodeId &groupId, bool focus = true, int codecMib = -1);

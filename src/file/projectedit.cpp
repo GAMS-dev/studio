@@ -67,7 +67,7 @@ QString ProjectData::fieldData(Field field)
     return mData.value(field);
 }
 
-void ProjectData::save()
+bool ProjectData::save()
 {
     QString path = QDir::fromNativeSeparators(mData.value(baseDir)).trimmed();
     if (path.compare(mProject->location(), FileType::fsCaseSense()))
@@ -78,6 +78,7 @@ void ProjectData::save()
     updateFile(FileKind::Gms, QDir::fromNativeSeparators(mData.value(mainFile)).trimmed());
     updateFile(FileKind::Pf, QDir::fromNativeSeparators(mData.value(pfFile)).trimmed());
     mProject->setNeedSave();
+    return mProject->needSave();
 }
 
 void ProjectData::updateFile(FileKind kind, const QString &path)
@@ -171,10 +172,12 @@ bool ProjectEdit::isModified() const
     return mModified;
 }
 
-void ProjectEdit::save()
+bool ProjectEdit::save()
 {
-    mSharedData->save();
+    bool res = mSharedData->save();
+    emit saveProjects();
     updateState();
+    return res;
 }
 
 void ProjectEdit::on_edWorkDir_textChanged(const QString &text)
@@ -209,8 +212,8 @@ void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 
 void ProjectEdit::updateState()
 {
-    bool isModified = false;
     PExProjectNode *pro = mSharedData->project();
+    bool isModified = pro->needSave();
     QString edPath = QDir::fromNativeSeparators(ui->edBaseDir->text()).trimmed();
     if (edPath.endsWith("/")) edPath = edPath.left(edPath.length()-1);
     if (edPath.compare(pro->location(), FileType::fsCaseSense()))
@@ -229,8 +232,8 @@ void ProjectEdit::updateState()
         isModified = true;
     if (isModified != mModified) {
         mModified = isModified;
-        emit modificationChanged(mModified);
     }
+    emit modificationChanged(mModified);
 }
 
 void ProjectEdit::on_bWorkDir_clicked()

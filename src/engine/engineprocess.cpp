@@ -385,7 +385,7 @@ void EngineProcess::terminateLocal()
 
 AbstractProcess::TerminateOption EngineProcess::terminateOption()
 {
-    return mManager->jobToken().isEmpty() || state() == QProcess::Running ? termLocal : termRemote;
+    return mManager->jobToken().isEmpty() || state() != QProcess::Running ? termLocal : termRemote;
 }
 
 
@@ -581,13 +581,12 @@ void EngineProcess::reCreateJob(const QString &message, const QString &token)
 {
     Q_UNUSED(message)
     mQueuedTimer.start();
-    mManager->setToken(token);
+    mManager->setJobToken(token);
     emit jobCreated(token);
     emit newStdChannelData(QString("\n--- GAMS Engine at %1\n").arg(mManager->url().toString()).toUtf8());
     QString newLstEntry("--- switch LOG to %1-server.lst[LS2:\"%2\"]\nTOKEN: %3\n\n");
     QString lstPath = mWorkPath+"/"+modelName()+"-server.lst";
     emit newStdChannelData(newLstEntry.arg(modelName(), lstPath, token).toUtf8());
-    // TODO(JM) store token for later resuming
     // monitoring starts automatically after successfull submission
     pollStatus();
 }
@@ -620,6 +619,7 @@ void EngineProcess::reGetJobStatus(qint32 status, qint32 gamsExitCode)
 void EngineProcess::reKillJob(const QString &text)
 {
     emit newStdChannelData('\n'+text.toUtf8()+'\n');
+    mManager->setJobToken("");
     // TODO(JM) set completed HERE
 }
 
@@ -702,7 +702,7 @@ void EngineProcess::resume(const QString &engineJobToken)
 {
     QDir dir(mOutPath);
     dir.mkpath(mOutPath);
-    mManager->setToken(engineJobToken);
+    mManager->setJobToken(engineJobToken);
     setProcState(Proc3Queued);
     pollStatus();
 }

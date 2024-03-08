@@ -86,13 +86,16 @@ bool TextFileSaver::close()
     bool res = true;
     if (QFile::exists(mFileName))
         res = QFile::remove(mFileName);
-    if (!res)
+    if (!res) {
+        mTempFile.remove();
         SysLogLocator::systemLog()->append("Could not overwrite file " + mFileName, LogMsgType::Error);
+    }
     else {
         res = QFile::rename(mTempFile.fileName(), mFileName);
-        if (!res)
+        if (!res) {
+            mTempFile.remove();
             SysLogLocator::systemLog()->append("Could not rename temporary file '" + mTempFile.fileName() + "' to '" + mFileName + "'", LogMsgType::Error);
-        else {
+        } else {
             mTempFile.setFileName("");
             mFileName = "";
         }

@@ -574,6 +574,8 @@ void FileMeta::addEditor(QWidget *edit)
             tv->setMarks(mFileRepo->textMarkRepo()->marks(mId));
     } else if (project::ProjectEdit* prOp = ViewHelper::toProjectEdit(edit)) {
         connect(prOp, &project::ProjectEdit::modificationChanged, this, &FileMeta::modificationChanged);
+        connect(prOp, &project::ProjectEdit::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
+        connect(this, &FileMeta::saveProjects, mFileRepo, &FileMetaRepo::saveProjects);
     } else if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {
         connect(soEdit, &option::SolverOptionWidget::modificationChanged, this, &FileMeta::modificationChanged);
     } else if (connect::ConnectEditor* gcEdit = ViewHelper::toGamsConnectEditor(edit)) {
@@ -831,15 +833,16 @@ void FileMeta::load(int codecMib, bool init)
     return;
 }
 
-void FileMeta::save(const QString &newLocation)
+bool FileMeta::save(const QString &newLocation)
 {
     QString location = newLocation.isEmpty() ? mLocation : newLocation;
     QFile file(location);
-    if (location == mLocation && !isModified()) return;
+    if (location == mLocation && !isModified()) return true;
 
     if (location.isEmpty() || location.startsWith('['))
         EXCEPT() << "Can't save file '" << location << "'";
 
+    bool res = true;
     mFileRepo->unwatch(this);
     if (document()) {
         TextFileSaver saver;
@@ -852,17 +855,23 @@ void FileMeta::save(const QString &newLocation)
         } else {
             saver.write((mCodec ? mCodec->fromUnicode(document()->toPlainText()) : document()->toPlainText().toUtf8()).data());
         }
-        saver.close();
+        res = saver.close();
     } else if (kind() == FileKind::Gsp) {
         project::ProjectEdit* PEd = ViewHelper::toProjectEdit(mEditors.first());
-        if (PEd) PEd->save();
+        if (PEd) res = PEd->save();
+        if (res) {
+            saveProjects();
+            PExProjectNode *project = mFileRepo->projectRepo()->asProject(projectId());
+            if (project && project->needSave())
+                res = false;
+        }
     } else if (kind() == FileKind::Opt || kind() == FileKind::Pf) {
         option::SolverOptionWidget* solverOptionWidget = ViewHelper::toSolverOptionEdit( mEditors.first() );
-        if (solverOptionWidget) solverOptionWidget->saveOptionFile(location);
+        if (solverOptionWidget) res = solverOptionWidget->saveOptionFile(location);
 
     } else if (kind() == FileKind::Guc) {
         option::GamsConfigEditor* gucEditor = ViewHelper::toGamsConfigEditor( mEditors.first() );
-        if (gucEditor) gucEditor->saveConfigFile(location);
+        if (gucEditor) res = gucEditor->saveConfigFile(location);
     } else if (kind() == FileKind::Efi) {
         efi::EfiEditor* efi = ViewHelper::toEfiEditor( mEditors.first() );
         if (efi) {
@@ -880,11 +889,11 @@ void FileMeta::save(const QString &newLocation)
                     }
                 }
             }
-            efi->save(location);
+            res = efi->save(location);
         }
     } else if (kind() == FileKind::GCon) {
         connect::ConnectEditor* gconEditor = ViewHelper::toGamsConnectEditor( mEditors.first() );
-        if (gconEditor) gconEditor->saveConnectFile(location);
+        if (gconEditor) res = gconEditor->saveConnectFile(location);
 
     } else { // no document, e.g. lst
         QFile old(mLocation);
@@ -894,9 +903,11 @@ void FileMeta::save(const QString &newLocation)
     }
     setLocation(location);
     refreshType();
-    setModified(false);
+    if (res)
+        setModified(false);
     if (kind() != FileKind::Gsp)
         mFileRepo->watch(this);
+    return res;
 }
 
 void FileMeta::renameToBackup()
@@ -1305,8 +1316,8 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     }
     setProjectId(project->id());
     ViewHelper::setLocation(res, location());
-    res->setFont(font);
     addEditor(res);
+    res->setFont(font);
     return res;
 }
 
