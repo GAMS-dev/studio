@@ -462,10 +462,14 @@ void SchemaDefinitionModel::setupAnyofSchemaTree(const QString &schemaName, cons
 
 void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QString& key,
                                             QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema) {
-    QString prefix = key+":-";
+
+    QString prefix = key;
+    if ((schema->getSchema(key))->hasType(SchemaType::List))
+        prefix += ":-";
     Schema* schemaHelper = schema->getSchema(prefix);
     if (schemaHelper) {
-        schemaKeys << "-";
+        if ((schema->getSchema(key))->hasType(SchemaType::List))
+                schemaKeys << "-";
         parents << parents.last()->child(parents.last()->childCount()-1);
         QList<QVariant> listData;
         listData << "schema";
@@ -585,7 +589,8 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
             }
             parents.pop_back();
         }
-        schemaKeys.removeLast();
+        if ((schema->getSchema(key))->hasType(SchemaType::List))
+            schemaKeys.removeLast();
         parents.pop_back();
     }
 //    parents.pop_back();
