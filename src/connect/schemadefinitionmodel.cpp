@@ -563,7 +563,8 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
 
                         for (int i =0; i<schema->getNumberOfAnyOfDefined(schemaKeyStr); ++i) {
                             QString keystr = QString("%1[%2]").arg(schemaKeyStr).arg(i);
-                            schemaKeys.removeLast();
+                            if (i>0)
+                               schemaKeys.removeLast();
                             schemaKeys << keystr;
                             setupAnyofSchemaTree(schemaName, keystr, schemaKeys, parents, schema);
                         }
