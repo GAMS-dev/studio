@@ -1363,12 +1363,21 @@ void ConnectDataModel::informDataChanged(const QModelIndex& parent)
             int i = 0;
             while (i<childcount-1) {
                 ConnectDataItem* item = getItem(index(i, 0, parent));
-                if (item->data((int)DataItemColumn::CheckState).toUInt()==(int)DataCheckState::ListItem ||
-                    item->data((int)DataItemColumn::CheckState).toUInt()==(int)DataCheckState::ElementMap    ) {
+                if (item->data((int)DataItemColumn::CheckState).toUInt()==(int)DataCheckState::ListItem) {
                     bool firstChild = (i==0 && i!=(childcount-2));
                     bool lastChild  = (i!=0 && i==(childcount-2));
                     item->setData((int)DataItemColumn::MoveDown, QVariant( !lastChild ));
                     item->setData((int)DataItemColumn::MoveUp, QVariant( !firstChild ));
+                } else if (item->data((int)DataItemColumn::CheckState).toUInt()==(int)DataCheckState::ElementMap) {
+                           if (item->data((int)DataItemColumn::SchemaKey).toStringList().isEmpty()) {
+                                bool firstChild = (i==0 && i!=(childcount-2));
+                                bool lastChild  = (i!=0 && i==(childcount-2));
+                                item->setData((int)DataItemColumn::MoveDown, QVariant( !lastChild ));
+                                item->setData((int)DataItemColumn::MoveUp, QVariant( !firstChild ));
+                           } else {
+                                item->setData((int)DataItemColumn::MoveDown, QVariant( false ));
+                                item->setData((int)DataItemColumn::MoveUp, QVariant( false ));
+                           }
                 } else {
                     item->setData((int)DataItemColumn::MoveDown, QVariant( false ));
                     item->setData((int)DataItemColumn::MoveUp, QVariant( false ));
