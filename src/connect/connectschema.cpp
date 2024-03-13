@@ -199,7 +199,7 @@ QStringList ConnectSchema::getNextLevelKeyList(const QString& key) const
         if (k.startsWith(key+":") && k.split(":").size()== size+1) {
             int pos = k.lastIndexOf(QChar('['));
             QString kk = (pos > 0 ? k.left(pos) : k);
-            if (!keyList.contains(kk) && !kk.endsWith(":"))
+            if (!keyList.contains(kk))
                 keyList << k;
         }
     }
