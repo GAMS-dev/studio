@@ -34,6 +34,16 @@ bool TabEnabledMenu::focusNextPrevChild(bool next)
     return QWidget::focusNextPrevChild(next);
 }
 
+void TabEnabledMenu::keyPressEvent(QKeyEvent *e)
+{
+    // ignore Alt keys to prevent menu from being closed
+    if (e->key() == Qt::Key_Alt || e->key() == Qt::Key_AltGr) {
+        e->ignore();
+        return;
+    }
+    QMenu::keyPressEvent(e);
+}
+
 } // namespace gdxviewer
 } // namespace studio
 } // namespace gams

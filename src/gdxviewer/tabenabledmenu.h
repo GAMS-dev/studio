@@ -20,6 +20,7 @@
 #ifndef GAMS_STUDIO_GDXVIEWER_TABENABLEDMENU_H
 #define GAMS_STUDIO_GDXVIEWER_TABENABLEDMENU_H
 
+#include <QKeyEvent>
 #include <QMenu>
 #include <QObject>
 #include <QWidget>
@@ -33,6 +34,9 @@ class TabEnabledMenu : public QMenu
 public:
     TabEnabledMenu(QWidget *parent = nullptr);
     bool focusNextPrevChild(bool next) override;
+
+protected:
+    void keyPressEvent(QKeyEvent *e) override;
 };
 
 } // namespace gdxviewer
