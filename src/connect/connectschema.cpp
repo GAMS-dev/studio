@@ -33,6 +33,15 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     if (!mOrderedKeyList.contains(key))
         mOrderedKeyList << key;
 
+    QStringList excludes;
+    if (node["excludes"]) {
+        mExcludesDefined = true;
+        if (node["excludes"].Type()==YAML::NodeType::Sequence) {
+            for(size_t i=0; i<node["excludes"].size(); i++) {
+                excludes << QString::fromStdString(node["excludes"][i].as<std::string>());
+            }
+        }
+    }
     QList<SchemaType> types;
     if (node["type"]) {
         if (node["type"].Type()==YAML::NodeType::Sequence) {
@@ -92,7 +101,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
 //        mOrderedKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
-    mSchemaHelper.insert(key, new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined));
+    mSchemaHelper.insert(key, new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
@@ -228,6 +237,17 @@ bool ConnectSchema::contains(const QString &key) const
     }
 }
 
+QStringList ConnectSchema::getAllLeveledKeys(const QString &key, int level) const
+{
+    QStringList keyList;
+    for(const QString& k : mOrderedKeyList) {
+        qDebug() << "  getAllLeveledKeys:k="<< k;
+        if ( level!=mSchemaHelper[key]->level)
+            continue;
+    }
+    return keyList;
+}
+
 QStringList ConnectSchema::getAllAnyOfKeys(const QString &key) const
 {
     QStringList keyslist;
@@ -347,10 +367,11 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
 bool ConnectSchema::isRequired(const QString &key) const
 {
     if (contains(key)) {
-        return mSchemaHelper[key]->required; // [key]->required;
-    } else {
-        return false;
+        if (mSchemaHelper[key]->excludes.isEmpty()) {
+            return mSchemaHelper[key]->required;
+        }
     }
+    return false;
 }
 
 ValueWrapper ConnectSchema::getMin(const QString &key) const
@@ -379,8 +400,22 @@ bool ConnectSchema::isSchemaDefined(const QString &key) const
     return false;
 }
 
+bool ConnectSchema::isExcludesDefined(const QString &key) const
+{
+    return mExcludesDefined;
+}
+
+QStringList ConnectSchema::getExcludedKeys(const QString &key) const
+{
+    qDebug() << mSchemaHelper.keys();
+    if (contains(key))
+        return mSchemaHelper[key]->excludes;
+
+    return QStringList();
+}
+
 Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, const QList<ValueWrapper> &allowedValues_,
-               const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_)
+               const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_, const QStringList &excludes_)
     : level(level_),
       schemaNode(schemaNode_),
       types(type_),
@@ -389,7 +424,8 @@ Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType
       defaultValue(defaultValue_),
       min(min_),
       max(max_),
-      schemaDefined(schemaDefined_)
+      schemaDefined(schemaDefined_),
+    excludes(excludes_)
 { }
 
 

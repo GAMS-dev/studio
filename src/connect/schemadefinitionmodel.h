@@ -36,7 +36,8 @@ enum class SchemaItemColumn {
     AllowedValue = 4,
     min          = 5,
     SchemaKey    = 6,
-    DragEnabled  = 7
+    DragEnabled  = 7,
+    Excludes     = 8
 };
 
 class SchemaDefinitionModel : public QAbstractItemModel
