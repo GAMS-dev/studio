@@ -407,7 +407,6 @@ bool ConnectSchema::isExcludesDefined(const QString &key) const
 
 QStringList ConnectSchema::getExcludedKeys(const QString &key) const
 {
-    qDebug() << mSchemaHelper.keys();
     if (contains(key))
         return mSchemaHelper[key]->excludes;
 

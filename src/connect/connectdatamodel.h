@@ -120,6 +120,7 @@ protected:
     bool isIndexValueValid(int column, ConnectDataItem* item);
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
     bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent, bool samelevel=true) const;
+    int numberOfExcludedSibling(ConnectDataItem* item);
 
     QModelIndex getSchemaParentIndex(const QModelIndex& idx);
     ConnectDataItem* getSchemaParentItem(ConnectDataItem* item);

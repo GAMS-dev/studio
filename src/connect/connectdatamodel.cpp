@@ -111,7 +111,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         if (state==(int)DataCheckState::Root) {
             return  QVariant::fromValue(Theme::color(Theme::Syntax_declaration));
         } else if (state==(int)DataCheckState::SchemaName) {
-                  if (invalid  && index.column()==(int)DataItemColumn::Key)
+                  if (invalid  && (index.column()==(int)DataItemColumn::Key || (state==(int)DataCheckState::KeyItem)) )
                       return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
                    else
                   return  QVariant::fromValue(Theme::color(Theme::Normal_Green));
@@ -132,6 +132,11 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                       return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
                   else
                       return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
+        } else if (state==(int)DataCheckState::KeyItem) {
+                  if (invalid)
+                      return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
+                  else
+                      return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         } else if (index.column()==(int)DataItemColumn::Value) {
                    return  QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
         } else {
@@ -176,7 +181,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                            if (item->data( (int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::SchemaName) {
                                if (!item->data( (int)DataItemColumn::Undefined ).toBool() ) {
                                    if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0)
-                                       return QVariant( QString("%1%2%3%4 may contain an invalid or unknown attribute.<br/>Check schema definition for valid attribute name.<br/>Note that name is case-sensitive.%5")
+                                       return QVariant( QString("%1%2%3%4 may contain an invalid or unknown attribute or miss a required attribute.<br/>Check schema definition for valid attributes.<br/>Note that name is case-sensitive.%5")
                                                              .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                                    else
                                          return QVariant( QString("%1 Show help for %2%3%4 schema %5")
@@ -201,6 +206,10 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                            } else if (item->data( (int)DataItemColumn::Undefined).toBool()) {
                                      return QVariant( QString("%1 %2%3%4 attribute is unknown.<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive.%5")
                                                            .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ));
+                           } else if (item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::KeyItem) {
+                                     if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0)
+                                          return QVariant( QString("%1%2%3%4 may be invalid or excluded from (an)other attribute.<br/>Check schema definition for valid and excluded attribute.%5")
+                                                              .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                            }
                 }
             }
@@ -417,6 +426,68 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
                if (parentvalue >0) {
                    setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue-1), Qt::EditRole);
                }
+           }
+        } else {
+           QStringList schemaKeyList = item->data((int)DataItemColumn::SchemaKey).toStringList();
+           ConnectSchema* s = mConnect->getSchema(schemaKeyList.first());
+           if (s) {
+                if (s->getExcludedKeys( item->data((int)DataItemColumn::Key).toString()).isEmpty() ) { // no excluded
+                    if (s->isRequired(item->data((int)DataItemColumn::Key).toString())) { // delete what is required
+                        QModelIndex parentidx = getSchemaParentIndex(index);
+                        if (parentidx.isValid()) {
+                             ConnectDataItem* parentItem = getItem(parentidx.siblingAtColumn((int)DataItemColumn::Key));
+                             int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
+                             setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue+1), Qt::EditRole);
+                        }
+                    }
+                } else { // there is excluded
+                    int sibling = numberOfExcludedSibling(item);
+                    if (sibling > 0) {
+                        bool found = false;
+                        ConnectDataItem* parent = item->parentItem();
+                        for(int i=0; i<parent->childCount(); i++) {
+                             ConnectDataItem* c = parent->child(i);
+                             if (QString::compare(item->data((int)DataItemColumn::Key).toString(), c->data((int)DataItemColumn::Key).toString())==0) {
+                                 continue;
+                             }
+                             if (found) {
+                                 break;
+                             }
+                             for(const QString& k : s->getExcludedKeys( item->data((int)DataItemColumn::Key).toString())) {
+                                if (found)
+                                     break;
+                                if (QString::compare(k, c->data((int)DataItemColumn::Key).toString())==0) {
+                                    found = true;
+                                    if (sibling == 1) {
+                                        int value = c->data((int)DataItemColumn::InvalidValue).toInt();
+                                        c->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+                                    }
+                                }
+                            }
+
+                        }
+                        if (found) {
+                            ConnectDataItem* schemaitem = getSchemaParentItem(item);
+                            if (schemaitem!=item) {
+                                int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                if (value > 0) {
+                                    if (sibling == 1 && value > 1)
+                                        schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-2));
+                                    else
+                                       schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+                                }
+                            }
+                        }
+                    }
+                }
+                if (s->isRequired(item->data((int)DataItemColumn::Key).toString())) { // delete what is required
+                    QModelIndex parentidx = getSchemaParentIndex(index);
+                    if (parentidx.isValid()) {
+                        ConnectDataItem* parentItem = getItem(parentidx.siblingAtColumn((int)DataItemColumn::Key));
+                        int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
+                        setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue+1), Qt::EditRole);
+                    }
+                }
            }
         }
         removed = removeRows(treeItem->row(), 1, parent(index));
@@ -1169,6 +1240,27 @@ bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, co
     return false;
 }
 
+int ConnectDataModel::numberOfExcludedSibling(ConnectDataItem *item)
+{
+    int sibling = 0;
+    if (item->data((int)DataItemColumn::SchemaKey).toStringList().isEmpty())
+        return sibling;
+    ConnectSchema* s = mConnect->getSchema(item->data((int)DataItemColumn::SchemaKey).toStringList().first());
+    if (!s)
+        return sibling;
+    ConnectDataItem* parent = item->parentItem();
+    for(int i=0; i<parent->childCount(); i++) {
+        ConnectDataItem* c = parent->child(i);
+        if (QString::compare(c->data((int)DataItemColumn::Key).toString(), item->data((int)DataItemColumn::Key).toString())==0)
+            continue;
+        QStringList excludes = s->getExcludedKeys(item->data((int)DataItemColumn::Key).toString());
+        if (excludes.contains( c->data((int)DataItemColumn::Key).toString() )) {
+            ++sibling;
+        }
+    }
+    return sibling;
+}
+
 QModelIndex ConnectDataModel::getSchemaParentIndex(const QModelIndex &idx)
 {
     QModelIndex parentidx = idx;
@@ -1571,6 +1663,56 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    } else {
                        parents.last()->insertChild(position, item);
                        parents << parents.last()->child(position);
+                   }
+                   if (numberOfExcludedSibling(item) > 0) {
+                        ConnectDataItem* schemaitem = getSchemaParentItem(item);
+                        ConnectDataItem* parent = item->parentItem();
+                        bool found = false;
+                        for(int i=0; i<parent->childCount(); i++) {
+                            if (found)
+                                break;
+                            ConnectDataItem* c = parent->child(i);
+                            QStringList excludes = schema->getExcludedKeys( c->data((int)DataItemColumn::Key).toString() );
+                        }
+
+                        for(const QString& k : schema->getExcludedKeys( item->data((int)DataItemColumn::Key).toString())) {
+                            if (found)
+                               break;
+                            QStringList excludes = schema->getExcludedKeys(k);
+                            parent = item->parentItem();
+                            for(int i=0; i<parent->childCount(); i++) {
+                                if (found)
+                                   break;
+                                ConnectDataItem* c = parent->child(i);
+                                 if (excludes.contains( c->data((int)DataItemColumn::Key).toString() )) {
+                                    found = true;
+                                    if (item->data((int)DataItemColumn::InvalidValue).toInt() == 0) {
+                                        item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
+                                        if (schemaitem!=item) {
+                                            int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                            schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+                                        }
+                                    }
+                                }
+                                if (QString::compare(k, c->data((int)DataItemColumn::Key).toString())==0 &&
+                                    c->data((int)DataItemColumn::InvalidValue).toInt() == 0                  ) {
+                                    c->setData((int)DataItemColumn::InvalidValue, QVariant(1));
+                                    if (schemaitem!=item) {
+                                        int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                        schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+                                    }
+                                }
+                            }
+                        }
+                        if (found) {
+                            item->setData((int)DataItemColumn::Delete, QVariant(true)); // allowed to be deleted
+                            parent = parent->parentItem();
+                            while(parent && parent!=mRootItem) {
+                                int value = parent->data((int)DataItemColumn::InvalidValue).toInt();
+                                parent->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+                                parent = parent->parentItem();
+                            }
+                        }
                    }
                    int k = 0;
                    for (YAML::const_iterator dmit = mit->second.begin(); dmit != mit->second.end(); ++dmit) {
