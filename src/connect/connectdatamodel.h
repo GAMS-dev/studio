@@ -55,7 +55,8 @@ enum class DataItemColumn {
     ElementID    = 8,
     SchemaKey    = 9,
     Undefined    = 10,
-    InvalidValue = 11
+    InvalidValue = 11,
+    ExcludedKeys = 12
 };
 
 class ConnectDataModel : public QAbstractItemModel
