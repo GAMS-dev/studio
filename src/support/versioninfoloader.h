@@ -85,6 +85,8 @@ private:
     QNetworkAccessManager* mWebCtrlDistrib;
     QNetworkAccessManager* mWebCtrlStudio;
 
+    QSslConfiguration mSslConf;
+
     QRegularExpression mStudioRegEx;
 
     int mRemoteDistribVersion = 0;

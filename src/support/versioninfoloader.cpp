@@ -37,6 +37,9 @@ VersionInfoLoader::VersionInfoLoader(QObject *parent)
     , mWebCtrlStudio(new QNetworkAccessManager(this))
     , mStudioRegEx("^\\[(\\d+)\\.(\\d+\\.\\d+\\.\\d+),\\d+]$")
 {
+    mSslConf = QSslConfiguration::defaultConfiguration();
+    mSslConf.setBackendConfigurationOption("MinProtocol", "TLSv1.2");
+
     mWebCtrlDistrib->setStrictTransportSecurityEnabled(true);
     mWebCtrlDistrib->setRedirectPolicy(QNetworkRequest::NoLessSafeRedirectPolicy);
     connect(mWebCtrlDistrib, &QNetworkAccessManager::finished,
@@ -65,6 +68,7 @@ void VersionInfoLoader::requestRemoteData()
 {
     mErrorStrings.clear();
     QNetworkRequest request(DistribVersionFile);
+    request.setSslConfiguration(mSslConf);
     mWebCtrlDistrib->get(request);
 }
 
@@ -121,6 +125,7 @@ QString VersionInfoLoader::errorString()
 void VersionInfoLoader::requestStudioInfo()
 {
     QNetworkRequest request(StudioVersionFile);
+    request.setSslConfiguration(mSslConf);
     mWebCtrlStudio->get(request);
 }
 

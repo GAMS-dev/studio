@@ -18,7 +18,6 @@
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "enginemanager.h"
-#include "logger.h"
 #include <engineapi/OAIAuthApi.h>
 #include <engineapi/OAIDefaultApi.h>
 #include <engineapi/OAIJobsApi.h>
@@ -27,7 +26,6 @@
 #include <engineapi/OAIUsageApi.h>
 #include <engineapi/OAIUsersApi.h>
 #include <QString>
-#include <iostream>
 #include <QFile>
 #include <QSslConfiguration>
 
@@ -302,8 +300,9 @@ EngineManager::~EngineManager()
 void EngineManager::startupInit()
 {
     if (!mStartupDone) {
-        mSslConfigurationIgnoreErrOff = new QSslConfiguration();
-        mSslConfigurationIgnoreErrOn = new QSslConfiguration();
+        mSslConfigurationIgnoreErrOff = new QSslConfiguration(QSslConfiguration::defaultConfiguration());
+        mSslConfigurationIgnoreErrOff->setBackendConfigurationOption("MinProtocol", "TLSv1.2");
+        mSslConfigurationIgnoreErrOn = new QSslConfiguration(QSslConfiguration::defaultConfiguration());
         mSslConfigurationIgnoreErrOn->setPeerVerifyMode(QSslSocket::VerifyNone);
         OAIHttpRequestWorker::sslDefaultConfiguration = mSslConfigurationIgnoreErrOff;
         mStartupDone = true;
@@ -313,8 +312,8 @@ void EngineManager::startupInit()
 QString EngineManager::getJsonMessageIfFound(const QString &text)
 {
     if (text.endsWith('}') || text.endsWith("}\n")) {
-        int i = text.lastIndexOf("{\"message\": ");
-        int j = text.lastIndexOf("\"}");
+        qsizetype i = text.lastIndexOf("{\"message\": ");
+        qsizetype j = text.lastIndexOf("\"}");
         if (i > 0)
             return text.mid(i+13, j-i-13) + "\n";
     }

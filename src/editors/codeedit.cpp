@@ -24,9 +24,9 @@
 #include <QRegularExpression>
 
 #include "editors/codeedit.h"
+#include "search/search.h"
 #include "codecompleter.h"
 #include "settings.h"
-#include "search/searchdialog.h"
 #include "logger.h"
 #include "syntax.h"
 #include "keys.h"
@@ -410,7 +410,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         QRegularExpressionMatch lsMatch = mRex0LeadingSpaces.match(block.text());
 
         if (cur.positionInBlock()==0 || lsMatch.capturedLength(1) < cur.positionInBlock() || vertScroll != verticalScrollBar()->sliderPosition())
-            cur.setPosition(block.position() + lsMatch.capturedLength(1), mm);
+            cur.setPosition(block.position() + int(lsMatch.capturedLength(1)), mm);
         else cur.setPosition(block.position(), mm);
         e->accept();
     } else if (e == Hotkey::MoveCharGroupRight) {
@@ -516,8 +516,8 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
         // deactivate when manual cursor movement was detected
         if (moveKeys.contains(e->key())) mSmartType = false;
 
-        int indexOpening = mOpening.indexOf(e->text());
-        int indexClosing = mClosing.indexOf(e->text());
+        qsizetype indexOpening = mOpening.indexOf(e->text());
+        qsizetype indexClosing = mClosing.indexOf(e->text());
 
         // exclude modifier combinations
         if (e->text().isEmpty()) {
@@ -584,7 +584,7 @@ void CodeEdit::keyPressEvent(QKeyEvent* e)
     }
 }
 
-bool CodeEdit::allowClosing(int chIndex)
+bool CodeEdit::allowClosing(qsizetype chIndex)
 {
     const QString allowingChars(",;)}] \x9");
 
@@ -825,7 +825,7 @@ QString CodeEdit::resolveHRef(const QString &href)
     return fileName;
 }
 
-QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
+QString CodeEdit::getIncludeFile(int line, qsizetype &fileStart, QString &code)
 {
     QString res;
     code = "INC";
@@ -838,11 +838,11 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
             QString command = match.captured(2).toUpper();
             if (command == "INCLUDE") {
                 fileStart = match.capturedEnd();
-                int fileEnd = block.text().length();
+                qsizetype fileEnd = block.text().length();
                 while (fileEnd >= fileStart) {
                     int kind;
                     int flavor;
-                    emit requestSyntaxKind(block.position() + fileEnd, kind, flavor);
+                    emit requestSyntaxKind(block.position() + int(fileEnd), kind, flavor);
                     if (kind == int(syntax::SyntaxKind::DcoBody)) break;
                     --fileEnd;
                 }
@@ -858,7 +858,7 @@ QString CodeEdit::getIncludeFile(int line, int &fileStart, QString &code)
                 if (block.text().at(fileStart) == '\'') endChar = '\'';
                 if (endChar != QChar()) {
                     int w = (endChar==' ') ? 0 : 1;
-                    int end = res.indexOf(endChar, 1) + w;
+                    qsizetype end = res.indexOf(endChar, 1) + w;
                     if (end) {
                         res = res.mid(w, end - 2*w);
                         fileStart += w;
@@ -880,11 +880,11 @@ TextLinkType CodeEdit::checkLinks(const QPoint &mousePos, bool greedy, QString *
     if (greedy && linkType == linkNone) {
         QTextCursor cur = cursorForPosition(mousePos); //cursorForPositionCut(mousePos);
         if (cur.isNull()) return linkType;
-        int fileStart;
+        qsizetype fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
         if (!file.isEmpty()) {
-            int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+            qsizetype boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
             if (cur.positionInBlock() == boundPos) {
                 QString fileName = resolveHRef(command+" "+file);
                 linkType = fileName.isEmpty() ? linkMiss : linkDirect;
@@ -916,11 +916,11 @@ void CodeEdit::jumpToCurrentLink(const QPoint &mousePos)
     }
     if (linkType == linkDirect) {
         QTextCursor cur = cursorForPosition(mousePos);
-        int fileStart;
+        qsizetype fileStart;
         QString command;
         QString file = getIncludeFile(cur.blockNumber(), fileStart, command);
         if (!file.isEmpty()) {
-            int boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
+            qsizetype boundPos = qBound(fileStart, cur.positionInBlock(), fileStart+file.length()-1);
             if (cur.positionInBlock() == boundPos) {
                 mIncludeLinkLine = cursorForPosition(mousePos).blockNumber();
                 cur.clearSelection();
@@ -959,7 +959,7 @@ void CodeEdit::adjustIndent(QTextCursor cursor)
                 if (pMatch.capturedLength(2) < 1)
                     break;
                 QString spaces = pMatch.captured(2);
-                cursor.setPosition(cursor.position() + match.capturedLength(1), QTextCursor::KeepAnchor);
+                cursor.setPosition(cursor.position() + int(match.capturedLength(1)), QTextCursor::KeepAnchor);
                 cursor.removeSelectedText();
                 cursor.insertText(spaces);
                 setTextCursor(cursor);
@@ -980,7 +980,7 @@ void CodeEdit::truncate(const QTextBlock &block)
     if (match.hasMatch()) {
         QTextCursor cursor(block);
         cursor.movePosition(QTextCursor::EndOfBlock);
-        cursor.setPosition(cursor.position() - match.capturedLength(2), QTextCursor::KeepAnchor);
+        cursor.setPosition(cursor.position() - int(match.capturedLength(2)), QTextCursor::KeepAnchor);
         cursor.removeSelectedText();
     }
 }
@@ -1135,7 +1135,7 @@ void CodeEdit::contextMenuEvent(QContextMenuEvent* e)
     QMenu *menu = createStandardContextMenu();
     bool hasBlockSelection = mBlockEdit && !mBlockEdit->blockText().isEmpty();
     QAction *lastAct = nullptr;
-    for (int i = menu->actions().count()-1; i >= 0; --i) {
+    for (auto i = menu->actions().count()-1; i >= 0; --i) {
         QAction *act = menu->actions().at(i);
         if (act->objectName() == "edit-undo") {
             menu->removeAction(act);
@@ -1479,14 +1479,14 @@ int CodeEdit::minIndentCount(int fromLine, int toLine)
     QTextBlock block = (fromLine < 0) ? document()->findBlock(cursor.anchor()) : document()->findBlockByNumber(fromLine);
     QTextBlock last = (toLine < 0) ? document()->findBlock(cursor.position()) : document()->findBlockByNumber(toLine);
     if (block.blockNumber() > last.blockNumber()) qSwap(block, last);
-    int res = block.text().length();
+    auto res = block.text().length();
     while (true) {
         QRegularExpressionMatch match = mRex0LeadingSpaces.match(block.text());
         if (res > match.capturedLength(1)) res = match.capturedLength(1);
         if (block == last) break;
         block = block.next();
     }
-    return res;
+    return int(res);
 }
 
 int CodeEdit::indent(int size, int fromLine, int toLine)
@@ -1765,7 +1765,7 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol, const QS
     static QVector<QString> closingSymbols {
         "}", "]", ")", "/", "embeddedCode", "embeddedCode", "text", "echo", "put", "externalInput", "externalOutput", "endIf", "fold"
     };
-    static int pSplit = parentheses.length()/2;
+    static int pSplit = int(parentheses.length())/2;
     QTextBlock block = document()->findBlockByNumber(line);
     syntax::BlockData* dat = syntax::BlockData::fromTextBlock(block);
     if (!dat) return -1;
@@ -1786,7 +1786,7 @@ int CodeEdit::foldStart(int line, bool &folded, QString *closingSymbol, const QS
             if (depth == 1) {
                 res = parList.at(i).relPos;
                 if (closingSymbol) {
-                    int cs = parentheses.indexOf(parList.at(i).character);
+                    int cs = int(parentheses.indexOf(parList.at(i).character));
                     if (cs < closingSymbols.size())
                         *closingSymbol = closingSymbols.at(cs);
                 }
@@ -1862,9 +1862,9 @@ void CodeEdit::findInSelection(QList<search::Result> &results)
         while (from < last) {
             QRegularExpressionMatch match = rex.match(block.text(), from);
             if (match.hasMatch() && match.capturedEnd() <= last) {
-                results.append(Result(block.blockNumber()+1, match.capturedStart(), match.capturedLength(),
+                results.append(Result(block.blockNumber()+1, int(match.capturedStart()), int(match.capturedLength()),
                                       property("location").toString(), projectId(), match.captured()));
-                from = match.capturedEnd();
+                from = int(match.capturedEnd());
                 if (mBlockEdit) endBlockEdit();
             } else from = last;
         }
@@ -1891,8 +1891,8 @@ void CodeEdit::replaceNext(const QRegularExpression &regex, const QString &repla
             while (from < last) {
                 QRegularExpressionMatch match = regex.match(block.text(), from);
                 if (match.hasMatch() && match.capturedEnd() <= last) {
-                    cursor.setPosition(block.position() + match.capturedStart());
-                    cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                    cursor.setPosition(block.position() + int(match.capturedStart()));
+                    cursor.setPosition(block.position() + int(match.capturedEnd()), QTextCursor::KeepAnchor);
                     cursor.insertText(replaceText);
                     if (mBlockEdit) endBlockEdit();
                     block = QTextBlock();
@@ -1931,14 +1931,14 @@ int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QS
                 QRegularExpressionMatch match = regex.match(block.text(), from);
                 if (match.hasMatch() && match.capturedEnd() <= last) {
                     matches << match;
-                    from = match.capturedEnd();
+                    from = int(match.capturedEnd());
                 } else from = last;
             }
             // replace starting from tail to avoid interference
-            for (int i = matches.size() - 1; i >= 0; --i) {
+            for (int i = int(matches.size()) - 1; i >= 0; --i) {
                 QRegularExpressionMatch match = matches.at(i);
-                cursor.setPosition(block.position() + match.capturedStart());
-                cursor.setPosition(block.position() + match.capturedEnd(), QTextCursor::KeepAnchor);
+                cursor.setPosition(block.position() + int(match.capturedStart()));
+                cursor.setPosition(block.position() + int(match.capturedEnd()), QTextCursor::KeepAnchor);
                 cursor.insertText(replaceText);
                 if (mBlockEdit) endBlockEdit();
             }
@@ -1961,8 +1961,8 @@ int CodeEdit::replaceAll(FileMeta *fm, const QRegularExpression &regex, const QS
 PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int *foldCount) const
 {
     static QString parentheses("{[(/EMTCPIOFU}])\\emtcpiofu");
-    static int pSplit = parentheses.length()/2;
-    static int pAll = parentheses.indexOf("/");
+    static int pSplit = int(parentheses.length()) / 2;
+    static int pAll = int(parentheses.indexOf("/"));
     QTextBlock block = cursor.block();
     if (!block.userData()) return PositionPair();
     syntax::BlockData *startDat = syntax::BlockData::fromTextBlock(block);
@@ -1970,14 +1970,14 @@ PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int
     QVector<syntax::ParenthesesPos> parList = startDat->parentheses();
     int pos = cursor.positionInBlock();
     int start = -1;
-    for (int i = parList.count()-1; i >= 0; --i) {
+    for (int i = int(parList.count())-1; i >= 0; --i) {
         if (parList.at(i).relPos == pos || parList.at(i).relPos == pos-1) {
             start = i;
         }
     }
     if (start < 0) return PositionPair();
     // prepare matching search
-    int ci = parentheses.indexOf(parList.at(start).character);
+    int ci = int(parentheses.indexOf(parList.at(start).character));
     bool back = ci >= pSplit;
     ci = ci % pSplit;
     PositionPair result(block.position() + parList.at(start).relPos);
@@ -2004,10 +2004,10 @@ PositionPair CodeEdit::matchParentheses(const QTextCursor &cursor, bool all, int
             }
             if (isEmpty) continue;
             parList = syntax::BlockData::fromTextBlock(block)->parentheses();
-            pi = back ? parList.count()-1 : 0;
+            pi = back ? int(parList.count())-1 : 0;
         }
 
-        int i = parEnter.indexOf(parList.at(pi).character);
+        int i = int(parEnter.indexOf(parList.at(pi).character));
         if (i < 0) {
             // Only last stacked character is valid
             if (parList.at(pi).character == parStack.last()) {
@@ -2182,12 +2182,12 @@ void CodeEdit::extraSelCurrentWord(QList<QTextEdit::ExtraSelection> &selections)
         while (block.isValid() && top < viewport()->height()) {
             int i = 0;
             while (true) {
-                i = block.text().indexOf(rex, i, &match);
+                i = int(block.text().indexOf(rex, i, &match));
                 if (i < 0) break;
                 QTextEdit::ExtraSelection selection;
                 selection.cursor = textCursor();
-                selection.cursor.setPosition(block.position()+match.capturedStart(2));
-                selection.cursor.setPosition(block.position()+match.capturedEnd(2), QTextCursor::KeepAnchor);
+                selection.cursor.setPosition(block.position() + int(match.capturedStart(2)));
+                selection.cursor.setPosition(block.position() + int(match.capturedEnd(2)), QTextCursor::KeepAnchor);
                 selection.format.setBackground(toColor(Theme::Edit_currentWordBg));
                 selections << selection;
                 i += match.capturedLength(1) + match.capturedLength(2);
@@ -2249,8 +2249,8 @@ void CodeEdit::extraSelMatches(QList<QTextEdit::ExtraSelection> &selections)
             QRegularExpressionMatch m = i.next();
             QTextEdit::ExtraSelection selection;
             QTextCursor tc(document());
-            tc.setPosition(block.position() + m.capturedStart(0));
-            tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, m.capturedLength(0));
+            tc.setPosition(block.position() + int(m.capturedStart(0)));
+            tc.movePosition(QTextCursor::Right, QTextCursor::KeepAnchor, int(m.capturedLength(0)));
             if (limitHighlighting) {
                 if (!mSearchSelection.hasSelection() && !mBlockEditSelection) continue;
                 if (mBlockEditSelection) {
@@ -2284,10 +2284,10 @@ void CodeEdit::extraSelIncludeLink(QList<QTextEdit::ExtraSelection> &selections)
     QTextEdit::ExtraSelection selection;
     QTextCursor cur(document());
     QString command;
-    int fileStart;
+    qsizetype fileStart;
     QString file = getIncludeFile(mIncludeLinkLine, fileStart, command);
-    cur.setPosition(block.position() + fileStart);
-    cur.setPosition(cur.position() + file.length(), QTextCursor::KeepAnchor);
+    cur.setPosition(block.position() + int(fileStart));
+    cur.setPosition(cur.position() + int(file.length()), QTextCursor::KeepAnchor);
     selection.cursor = cur;
     selection.format.setAnchorHref('"'+file+'"');
     selection.format.setForeground(Theme::color(Theme::Syntax_dcoBody));
@@ -2922,7 +2922,7 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     CharType charType = texts.at(0).length()>0 ? mEdit->charType(texts.at(0).at(0)) : CharType::None;
     bool newUndoBlock = texts.count() > 1 || mLastCharType != charType || texts.at(0).length() != 1;
     // append empty lines if needed
-    int missingLines = qMin(mStartLine, mCurrentLine) + texts.count() - mEdit->document()->lineCount();
+    int missingLines = qMin(mStartLine, mCurrentLine) + int(texts.count() - mEdit->document()->lineCount());
     if (missingLines > 0) {
         QTextBlock block = mEdit->document()->lastBlock();
         QTextCursor cursor(block);
@@ -2933,8 +2933,8 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
         newUndoBlock = false;
     }
     if (qAbs(mStartLine-mCurrentLine) < texts.count() - 1) {
-        if (mStartLine > mCurrentLine) mStartLine = mCurrentLine + texts.count() - 1;
-        else mCurrentLine = mStartLine + texts.count() - 1;
+        if (mStartLine > mCurrentLine) mStartLine = mCurrentLine + int(texts.count()) - 1;
+        else mCurrentLine = mStartLine + int(texts.count()) - 1;
     }
 
     int i = (qAbs(mStartLine-mCurrentLine)) % texts.count();
@@ -2945,7 +2945,7 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     QTextCursor cursor = mEdit->textCursor();
     int maxLen = 0;
     for (const QString &s: texts) {
-        if (maxLen < s.length()) maxLen = s.length();
+        if (maxLen < s.length()) maxLen = int(s.length());
     }
 
     if (newUndoBlock) cursor.beginEditBlock();
@@ -2977,7 +2977,7 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
         }
         if (!addText.isEmpty()) cursor.insertText(addText);
         block = block.previous();
-        i = (i>0) ? i-1 : texts.count()-1;
+        i = (i > 0) ? i - 1 : int(texts.count()) - 1;
     }
     // unjoin the Block-Edit insertion from the may-follow normal insertion
     cursor.insertText(" ");
@@ -2989,7 +2989,7 @@ void CodeEdit::BlockEdit::replaceBlockText(const QStringList &inTexts)
     for (const QString &s: texts) {
         const QStringList refs = s.split('\n');
         for (const QString &ref: refs) {
-            if (insertWidth < ref.length()) insertWidth = ref.length();
+            if (insertWidth < ref.length()) insertWidth = int(ref.length());
         }
     }
     mColumn += insertWidth;
@@ -3119,7 +3119,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
             } else
                 ncur.setPosition(lastBlock.next().position());
             ncur.insertText(temp);
-            shift = -temp.length();
+            shift = -int(temp.length());
             shiftEstablished = true;
         }
     } else {
@@ -3142,7 +3142,7 @@ void CodeEdit::moveLines(bool moveLinesUp)
             }
             ncur.setPosition(firstBlock.position());
             ncur.insertText(temp);
-            shift = temp.length();
+            shift = int(temp.length());
             shiftEstablished = true;
         }
     }

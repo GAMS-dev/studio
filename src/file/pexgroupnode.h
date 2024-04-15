@@ -132,7 +132,7 @@ public:
     bool startDebugServer(gams::studio::debugger::DebugStartMode mode);
     void stopDebugServer();
     QString engineJobToken() const;
-    void setEngineJobToken(const QString &engineJobToken);
+    void setEngineJobToken(const QString &engineJobToken, bool touch = true);
 
     bool isProcess(const AbstractProcess *process) const;
     QProcess::ProcessState gamsProcessState() const;

@@ -147,7 +147,7 @@ protected:
     QString getToolTipText(const QPoint &pos) override;
     bool ensureUnfolded(int line) override;
     QString resolveHRef(const QString &href);
-    QString getIncludeFile(int line, int &fileStart, QString &code);
+    QString getIncludeFile(int line, qsizetype &fileStart, QString &code);
     TextLinkType checkLinks(const QPoint &mousePos, bool greedy, QString *fName = nullptr) override;
     void jumpToCurrentLink(const QPoint &mousePos) override;
 
@@ -216,7 +216,7 @@ private:
     void rawKeyPressEvent(QKeyEvent *e);
     void updateBlockEditPos();
     void updateLinkAppearance(QPoint pos, bool active = true);
-    bool allowClosing(int chIndex);
+    bool allowClosing(qsizetype chIndex);
     bool toggleFolding(QTextBlock block);
     LinePair findFoldBlock(int line, bool onlyThisLine = false) const override;
     QTextBlock findFoldStart(QTextBlock block) const;

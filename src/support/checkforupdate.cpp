@@ -65,7 +65,7 @@ int CheckForUpdate::localDistribVersion() const
 QString CheckForUpdate::localDistribVersionShort() const
 {
     auto version = mLocalDistribVersionString;
-    int index = version.lastIndexOf('.');
+    auto index = version.lastIndexOf('.');
     return version.remove(index, version.size());
 }
 
@@ -239,7 +239,7 @@ void CheckForUpdate::getDistribLicenseInfo()
                             mDistribVersionInfo += addLiTag(QString("For ordering an update to use the most recent version (%1) please contact GAMS or your distributor")
                                                                 .arg(lastReleaseLicenseString));
                         } else {
-                            int reldate = mVersionInfoLoader->distribVersions().value(mVersionInfoLoader->remoteDistribVersion());
+                            auto reldate = mVersionInfoLoader->distribVersions().value(mVersionInfoLoader->remoteDistribVersion());
                             if ((reldate - mainDate) == 1) {
                                 mDistribVersionInfo += addLiTag("Your license is 1 day too old to run with the most recent system");
                             } else {

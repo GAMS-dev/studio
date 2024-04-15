@@ -397,9 +397,9 @@ void AbstractEdit::findInSelection(QList<Result> &results)
         else break; // mitigate endless loop
 
         if (!item.isNull() && item.position() <= endPos) {
-            results.append(Result(item.blockNumber()+1, item.positionInBlock() - item.selectedText().length(),
-                                          item.selectedText().length(), property("location").toString(),
-                                          projectId(), item.block().text()));
+            results.append(Result(item.blockNumber()+1, item.positionInBlock() - int(item.selectedText().length()),
+                                  int(item.selectedText().length()), property("location").toString(),
+                                  projectId(), item.block().text()));
         } else break;
         if (results.size() > MAX_SEARCH_RESULTS) break;
     } while (!item.isNull());

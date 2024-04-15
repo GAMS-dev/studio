@@ -23,9 +23,6 @@
 #include <QMutexLocker>
 
 #include "abstracttextmapper.h"
-#include "exception.h"
-#include "logger.h"
-#include "theme.h"
 
 namespace gams {
 namespace studio {

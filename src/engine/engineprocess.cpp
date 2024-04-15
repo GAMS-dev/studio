@@ -22,7 +22,6 @@
 #include "enginemanager.h"
 #include "authmanager.h"
 #include "logger.h"
-#include "commonpaths.h"
 #include "process/gmsunzipprocess.h"
 #include "process/gmszipprocess.h"
 #include "file/filetype.h"
@@ -30,11 +29,6 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
-//#include <QNetworkConfiguration>
-
-#ifdef _WIN32
-#include "Windows.h"
-#endif
 
 namespace gams {
 namespace studio {
@@ -295,9 +289,6 @@ void EngineProcess::sslErrors(QNetworkReply *reply, const QList<QSslError> &erro
             if (err.error() != QSslError::CertificateStatusUnknown)
                 acceptableErrors << err;
         }
-        //TODO(JM) This is a workaround. Find an avoid the reason!
-        if (err.error() == QSslError::UnableToGetLocalIssuerCertificate)
-            acceptableErrors << err;
     }
     if (!acceptableErrors.isEmpty())
         reply->ignoreSslErrors(acceptableErrors);
@@ -385,7 +376,9 @@ void EngineProcess::terminateLocal()
 
 AbstractProcess::TerminateOption EngineProcess::terminateOption()
 {
-    return mManager->jobToken().isEmpty() || state() != QProcess::Running ? termLocal : termRemote;
+    if (mProcState == ProcIdle) return termIgnored;
+    return mManager->jobToken().isEmpty() || mProcState < Proc3Queued || mProcState > Proc5GetResult ? termLocal
+                                                                                                     : termRemote;
 }
 
 
@@ -435,16 +428,16 @@ QProcess::ProcessState EngineProcess::state() const
 bool EngineProcess::setUrl(const QString &url)
 {
     QString scheme = "https";
-    int sp1 = url.indexOf("://")+1;
+    auto sp1 = url.indexOf("://")+1;
     if (sp1 > 0) {
         scheme = url.left(sp1-1);
         sp1 += 2;
     }
 
-    int sp2 = url.indexOf('/', sp1);
+    auto sp2 = url.indexOf('/', sp1);
     if (sp2 < 0) sp2 = url.length();
     QString host = url.mid(sp1, sp2-sp1);
-    int sp3 = host.indexOf(':');
+    auto sp3 = host.indexOf(':');
 
     QString port = scheme.compare("https", Qt::CaseInsensitive)==0 ? "443" : "80";
     if (sp3 > 0) {
@@ -795,10 +788,10 @@ void EngineProcess::setProcState(ProcState newState)
     emit procStateChanged(this, mProcState);
 }
 
-int indexOfEnd(const QByteArray &data, const QByteArray &pattern, const int start)
+qsizetype indexOfEnd(const QByteArray &data, const QByteArray &pattern, const qsizetype start)
 {
-    int match = 0;
-    for (int i = start; i < data.length(); ++i) {
+    qsizetype match = 0;
+    for (qsizetype i = start; i < data.length(); ++i) {
         if (match == pattern.length()) return i;
         if (data.at(i) == pattern.at(match)) ++match;
         else match = 0;
@@ -808,8 +801,8 @@ int indexOfEnd(const QByteArray &data, const QByteArray &pattern, const int star
 
 QByteArray EngineProcess::convertReferences(const QByteArray &data)
 {
-    int scanDirIndex = -1;
-    int endOfParameters = (!mRemoteWorkDir.isEmpty() && !mInParameterBlock) ? 0 : data.length();
+    qsizetype scanDirIndex = -1;
+    qsizetype endOfParameters = (!mRemoteWorkDir.isEmpty() && !mInParameterBlock) ? 0 : data.length();
     if (mRemoteWorkDir.isEmpty()) {
         scanDirIndex = data.indexOf("--- GAMS Parameters defined");
         if (scanDirIndex >= 0) mInParameterBlock = true;
@@ -818,7 +811,7 @@ QByteArray EngineProcess::convertReferences(const QByteArray &data)
         if (data.size())
             scanDirIndex = qMax(indexOfEnd(data, "    Input ", scanDirIndex),
                                 indexOfEnd(data, "    Restart ", scanDirIndex));
-        int end = 0;
+        qsizetype end = 0;
         if (scanDirIndex >= 0) {
             end = scanDirIndex;
             for ( ; end < data.length(); ++end) {
@@ -1090,7 +1083,7 @@ QString EngineProcess::modelName() const
 
 bool EngineProcess::addFilenames(const QString &efiFile, QStringList &list)
 {
-    int listSize = list.size();
+    qsizetype listSize = list.size();
     QFile file(efiFile);
     if (!file.exists()) return false;
     if (!file.open(QFile::ReadOnly | QFile::Text)) {

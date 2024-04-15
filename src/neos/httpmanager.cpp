@@ -19,7 +19,6 @@
  */
 #include "httpmanager.h"
 #include "xmlrpc.h"
-#include "networkmanager.h"
 
 namespace gams {
 namespace studio {
@@ -31,6 +30,9 @@ HttpManager::HttpManager(QObject *parent): QObject(parent)
     connect(&mManager, &QNetworkAccessManager::sslErrors, this, &HttpManager::convertSslErrors);
     mRawRequest.setRawHeader("User-Agent", "neos/1.0");
     mRawRequest.setHeader(QNetworkRequest::ContentTypeHeader, "text/xml");
+    QSslConfiguration conf = QSslConfiguration::defaultConfiguration();
+    conf.setBackendConfigurationOption("MinProtocol", "TLSv1.2");
+    mRawRequest.setSslConfiguration(conf);
 }
 
 void HttpManager::setUrl(const QString &url)
