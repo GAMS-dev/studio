@@ -121,10 +121,17 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         } else if (state==(int)DataCheckState::SchemaAppend) {
                   return  QVariant::fromValue(Theme::color(Theme::Active_Gray));
         } else if (state==(int)DataCheckState::ElementValue) {
-                  if (index.column()==(int)DataItemColumn::Value) {
-                      bool undefined = item->data((int)DataItemColumn::Undefined).toBool();
-                      return (invalid && !undefined ? QVariant::fromValue(Theme::color(Theme::Normal_Red))
-                                                    : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
+                  if (invalid) {
+                     if (index.column()==(int)DataItemColumn::Key) {
+                        return QVariant::fromValue(Theme::color(Theme::Normal_Red));
+                     }
+                     if (index.column()==(int)DataItemColumn::Value) {
+                        bool undefined = item->data((int)DataItemColumn::Undefined).toBool();
+                        return (invalid && !undefined ? QVariant::fromValue(Theme::color(Theme::Normal_Red))
+                                                      : QVariant::fromValue(Theme::color(Theme::Syntax_keyword)) );
+                     }
+                  } else {
+                      return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
                   }
                   return  QVariant::fromValue(QApplication::palette().color(QPalette::Text));
         } else if (state==(int)DataCheckState::ElementMap || state==(int)DataCheckState::ElementKey) {
@@ -309,9 +316,12 @@ bool ConnectDataModel::setData(const QModelIndex &idx, const QVariant &value, in
     case Qt::EditRole: {
         roles = { Qt::EditRole };
         ConnectDataItem *item = getItem(idx);
+        QVariant preValue =  item->data((int)DataItemColumn::Value);
+        bool preValidValue = isIndexValueValid((int)DataItemColumn::Value, item);
         bool result = item->setData(idx.column(), value);
-        if (result)
-            emit dataChanged(idx, idx, roles);
+        if (result) {
+             onEditDataChanged(idx, preValidValue);
+        }
         return result;
     }
     default:
@@ -417,78 +427,114 @@ bool ConnectDataModel::removeItem(const QModelIndex &index)
                     removeRows(index.row()+1, 1, parent(sibling));
             }
         }
-        ConnectDataItem *item = getItem(index);
-        if (!isIndexValueValid(index.column(), item)) {
-            QModelIndex parentidx = getSchemaParentIndex(index);
-           if (parentidx.isValid()) {
-               ConnectDataItem* parentItem = getItem(parentidx.siblingAtColumn((int)DataItemColumn::Key));
-               int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
-               if (parentvalue >0) {
-                   setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue-1), Qt::EditRole);
-               }
-           }
-        } else {
-           QStringList schemaKeyList = item->data((int)DataItemColumn::SchemaKey).toStringList();
-           ConnectSchema* s = mConnect->getSchema(schemaKeyList.first());
-           if (s) {
-               if ( item->data((int)DataItemColumn::ExcludedKeys).toStringList().isEmpty()) { // no excluded
-                   if (item->data((int)DataItemColumn::Delete).toBool()) { // delete what is required
-                        QModelIndex parentidx = getSchemaParentIndex(index);
-                        if (parentidx.isValid()) {
-                             ConnectDataItem* parentItem = getItem(parentidx.siblingAtColumn((int)DataItemColumn::Key));
-                             int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
-                             setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue+1), Qt::EditRole);
-                        }
+        QStringList schemaKeyList = treeItem->data((int)DataItemColumn::SchemaKey).toStringList();
+        ConnectSchema* s = mConnect->getSchema(schemaKeyList.first());
+        if (s) {
+            if (treeItem->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ListItem) {
+                ConnectDataItem* parentitem = treeItem->parentItem();
+                while(parentitem && parentitem!=mRootItem) {
+                    int itemvalue = treeItem->data((int)DataItemColumn::InvalidValue).toInt();
+                    int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                    if (parentvalue >= itemvalue) {
+                        parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue-itemvalue));
                     }
-                } else { // there is excluded
-                    ConnectDataItem* schemaitem = getSchemaParentItem(item);
-                    int sibling = numberOfExcludedSibling(item);
+                    parentitem = parentitem->parentItem();
+                }
+            } else {
+                bool removeValidItem = isIndexValueValid(index.column(), treeItem);
+                if (! s->getExcludedKeys(treeItem->data((int)DataItemColumn::Key).toString()).isEmpty()) {  // there is excluded
+                    int sibling = numberOfExcludedSibling(treeItem);
                     if (sibling > 0) { // there is an excluded sibling
                         bool found = false;
-                        ConnectDataItem* parent = item->parentItem();
+                        ConnectDataItem* parent = treeItem->parentItem();
                         for(int i=0; i<parent->childCount(); i++) {
-                             ConnectDataItem* c = parent->child(i);
-                             if (QString::compare(item->data((int)DataItemColumn::Key).toString(), c->data((int)DataItemColumn::Key).toString())==0) {
+                            ConnectDataItem* c = parent->child(i);
+                            if (QString::compare(treeItem->data((int)DataItemColumn::Key).toString(), c->data((int)DataItemColumn::Key).toString())==0) {
                                  continue;
-                             }
-                             if (found) {
+                            }
+                            if (found) {
                                  break;
-                             }
-                             for(const QString& k : s->getExcludedKeys( item->data((int)DataItemColumn::Key).toString())) {
+                            }
+                            for(const QString& k : s->getExcludedKeys(treeItem->data((int)DataItemColumn::Key).toString())) {
                                 if (found)
-                                     break;
+                                    break;
                                 if (QString::compare(k, c->data((int)DataItemColumn::Key).toString())==0) {
                                     found = true;
                                     if (sibling == 1) {
                                         int value = c->data((int)DataItemColumn::InvalidValue).toInt();
-                                        c->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+                                        if (value > 0)
+                                            c->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
                                     }
                                 }
                             }
-
                         }
                         if (found) {
-                            if (schemaitem!=item) {
-                                int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
-                                if (value > 0) {
+                            ConnectDataItem* schemaitem = getSchemaParentItem(treeItem);
+                            ConnectDataItem* parentitem = treeItem->parentItem();
+                            int itemvalue = treeItem->data((int)DataItemColumn::InvalidValue).toInt();
+                            while(parentitem && parentitem!=schemaitem) {
+                                int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                if (sibling == 1) {
+                                    if (parentvalue > 0)
+                                        parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue-2));
+                                } else { // sibling > 1
+                                    parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue-itemvalue));
+                                }
+                                parentitem = parentitem->parentItem();
+                            }
+                            if (schemaitem!=treeItem &&
+                                treeItem->data((int)DataItemColumn::Delete).toBool() &&
+                                !treeItem->data((int)DataItemColumn::ExcludedKeys).toStringList().isEmpty()) {
+                                    int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
                                     if (sibling == 1) {
-                                        if (value > 1) {
-                                            schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-2));
+                                        if (value > itemvalue) {
+                                            schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-itemvalue-1));
                                         }
                                     } else {
-                                       schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+                                        if (value >= itemvalue) {
+                                            schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-itemvalue));
+                                        }
                                     }
-                                }
                             }
                         }
                     } else { // there is no excluded sibling
-                        if (item->data((int)DataItemColumn::Delete).toBool()) { // delete what is required
+                        if (removeValidItem) {
+                            ConnectDataItem* parentitem = treeItem->parentItem();
+                            while(parentitem && parentitem!=mRootItem) {
+                                int itemvalue = treeItem->data((int)DataItemColumn::InvalidValue).toInt();
+                                int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                if (parentvalue > 0)
+                                    parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(itemvalue > 0 ? parentvalue-itemvalue : parentvalue-1));
+                                parentitem = parentitem->parentItem();
+                            }
+                            ConnectDataItem* schemaitem = getSchemaParentItem(treeItem);
+                            if (treeItem->data((int)DataItemColumn::Delete).toBool()) { // delete what is required
+                                int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+                            }
+                        }
+                    }
+                } else {
+                    if (!removeValidItem) {
+                        ConnectDataItem* parentitem = treeItem->parentItem();
+                        while(parentitem && parentitem!=mRootItem) {
+                            int itemvalue = treeItem->data((int)DataItemColumn::InvalidValue).toInt();
+                            int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                            if (parentvalue > 0)
+                                parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(itemvalue > 0 ? parentvalue-itemvalue : parentvalue-1));
+                            parentitem = parentitem->parentItem();
+                        }
+                        ConnectDataItem* schemaitem = getSchemaParentItem(treeItem);
+
+                        if (schemaitem!=treeItem &&
+                            treeItem->data((int)DataItemColumn::Delete).toBool() &&
+                            !treeItem->data((int)DataItemColumn::ExcludedKeys).toStringList().isEmpty()) { // delete what is required
                             int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
                             schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
                         }
                     }
                 }
-           }
+            }
         }
         removed = removeRows(treeItem->row(), 1, parent(index));
     }
@@ -881,7 +927,9 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
             itemData << (schema ? (schema->contains(dataKeysforTypes.join(":")) ? QVariant(false) : QVariant(true))
                                                                                 : QVariant(true));
             itemData << QVariant(0);
-            itemData << (schema ? QVariant(schema->getExcludedKeys(dataKeysforTypes.join(":")).join(",")) : QVariant());
+            QStringList excluded = schema->getExcludedKeys(dataKeysforTypes.join(":"));
+            itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                : QVariant());
             ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
             if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                 item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -945,7 +993,9 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
             mapSeqData << QVariant(schemaKeys);
             mapSeqData << (schema ?  QVariant(false) : QVariant(true));
             mapSeqData << QVariant(0);
-            mapSeqData << (schema ? QVariant(schema->getExcludedKeys(keys.join(":")).join(",")) : QVariant());
+            QStringList excluded = schema->getExcludedKeys(keys.join(":"));
+            mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                  : QVariant());
             ConnectDataItem* listitem = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
             parents.last()->insertChild(idx.row(), listitem );
             parents << listitem;
@@ -955,7 +1005,9 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
             mapSeqData << QVariant(schemaKeys);
             mapSeqData << (schema ?  QVariant(false) : QVariant(true));
             mapSeqData << QVariant(0);
-            mapSeqData << (schema ? QVariant(schema->getExcludedKeys(keys.join(":")).join(",")) : QVariant());
+            QStringList excluded = schema->getExcludedKeys(keys.join(":"));
+            mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                  : QVariant());
             ConnectDataItem* listitem = new ConnectDataItem( mapSeqData, mItemIDCount++, getItem(idx.parent()));
             parents.last()->insertChild(idx.row(), listitem );
             parents << listitem;
@@ -1025,75 +1077,40 @@ void ConnectDataModel::reloadConnectDataModel()
     endResetModel();
 }
 
-void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles)
+void ConnectDataModel::onEditDataChanged(const QModelIndex &index, bool preValidValue)
 {
-    QModelIndex idx = topLeft;
-    Q_UNUSED(bottomRight)
-    if (idx.column() != (int)DataItemColumn::Key && idx.column() != (int)DataItemColumn::Value)
-        return;
+    if (index.column() != (int)DataItemColumn::Key && index.column() != (int)DataItemColumn::Value)
+         return;
 
-    if (roles.first()==Qt::EditRole) {
-        ConnectDataItem *item = getItem(idx);
-        int value = item->data((int)DataItemColumn::InvalidValue).toInt();
-        if (isIndexValueValid(idx.column(), item)) {
-             if (value > 0) {
-                 setData(idx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(0), Qt::EditRole);
-                 QModelIndex parentidx = getSchemaParentIndex(idx);
-                 if (parentidx.isValid()) {
-                     ConnectDataItem* parentItem = getItem(parentidx.siblingAtColumn((int)DataItemColumn::Key));
-                     int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
-                     if (parentvalue >0) {
-                         setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue-1), Qt::EditRole);
-                     }
-                 }
-             }
-         } else {
-             if (value <= 0) {
-                item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
-                setData(idx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(1), Qt::EditRole);
-                QModelIndex parentidx = getSchemaParentIndex(idx);
-                if (parentidx.isValid()) {
-                    ConnectDataItem* parentItem = getItem(parentidx);
-                    int parentvalue = parentItem->data((int)DataItemColumn::InvalidValue).toInt();
-                    setData(parentidx.siblingAtColumn((int)DataItemColumn::InvalidValue), QVariant(parentvalue+1), Qt::EditRole);
+    ConnectDataItem *item = getItem(index);
+    int value = item->data((int)DataItemColumn::InvalidValue).toInt();
+    if (isIndexValueValid(index.column(), item)) {
+         if (!preValidValue) {
+            item->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+            ConnectDataItem* parentitem = item->parentItem();
+            while(parentitem && parentitem != mRootItem) {
+                int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                if (parentvalue >0) {
+                    parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue-1));
                 }
+                parentitem = parentitem->parentItem();
              }
+         }
+    } else {
+         if (preValidValue) {
+            item->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+            ConnectDataItem* parentitem = item->parentItem();
+            while(parentitem && parentitem!=mRootItem) {
+                int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
+                parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue+1));
+                parentitem = parentitem->parentItem();
+            }
          }
     }
 }
 
 bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
 {
-    ConnectDataItem* parentitem = item;
-    if (parentitem) {
-        if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::SchemaAppend)
-            return true;
-        // if immediate child of agent is undefined
-        if (item->data((int)DataItemColumn::SchemaKey).toStringList().size()-1 == 1)
-            if (item->data((int)DataItemColumn::Undefined).toBool())
-                return false;
-        parentitem = parentitem->parentItem();
-        if (parentitem) {
-            while(parentitem) {
-                if (parentitem->data((int)DataItemColumn::SchemaKey).toStringList().size() != 1) {
-                    // skip check item if parent who is not schemaagent name is already invalid
-                    if (parentitem
-                            && parentitem != item
-                            && parentitem && parentitem->data((int)DataItemColumn::InvalidValue).toInt()>0) {
-                           return true;
-                    }
-                } else {
-                    break;
-                }
-                parentitem = parentitem->parentItem();
-            }
-        }
-    }
-
-    QString newdata = (column==(int)DataItemColumn::Value
-                           ? item->data((int)DataItemColumn::Value).toString()
-                           : item->data((int)DataItemColumn::Key).toString());
-
     QStringList types = item->data((int)DataItemColumn::SchemaType).toString().split(",");
     QString values = item->data((int)DataItemColumn::AllowedValue).toString();
     QStringList allowedValues = (values.isEmpty() ? QStringList() : values.split(","));
@@ -1140,12 +1157,15 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                       }
                }
             } else if (t.compare("boolean")==0) {
-                       QStringList booleanlist({"true", "false"});
+                      QStringList booleanlist({"true", "false"});
                       if (booleanlist.contains(item->data((int)DataItemColumn::Value).toString())) {
                           valid = true;
                           break;
                       }
             } else if (t.compare("integer")==0) {
+                      QString newdata = (column==(int)DataItemColumn::Key
+                                             ? item->data((int)DataItemColumn::Key).toString()
+                                             : item->data((int)DataItemColumn::Value).toString());
                       if (allowedValues.isEmpty()) {
                           bool flag = false;
                           if (newdata.contains(mRexWhitechar)) {
@@ -1618,7 +1638,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                  : QVariant(true));
              itemData << QVariant(0);
-             itemData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")) : QVariant());
+             QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+             itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                 : QVariant());
              ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
              if (!isIndexValueValid((int)DataItemColumn::Value, item)) {
                  item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1627,6 +1649,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                      int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
                      parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
                  }
+             } else {
+                 updateInvalidItem(schema, item);
              }
              if (position>=parents.last()->childCount() || position < 0) {
                  parents.last()->appendChild(item);
@@ -1653,7 +1677,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                        : QVariant(true));
                    itemData << QVariant(0);
-                   itemData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")) : QVariant());
+                   QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+                   itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                       : QVariant());
                    ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
                    if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                        item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1677,50 +1703,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                        parents.last()->insertChild(position, item);
                        parents << parents.last()->child(position);
                    }
-                   if (numberOfExcludedSibling(item) > 0) {
-                        ConnectDataItem* schemaitem = getSchemaParentItem(item);
-                        ConnectDataItem* parent = item->parentItem();
-                        bool found = false;
-                        for(const QString& k : schema->getExcludedKeys( item->data((int)DataItemColumn::Key).toString())) {
-                            if (found)
-                                break;
-                            QStringList excludes = schema->getExcludedKeys(k);
-                            parent = item->parentItem();
-                            for(int i=0; i<parent->childCount(); i++) {
-                                if (found)
-                                    break;
-                                ConnectDataItem* c = parent->child(i);
-                                 if (excludes.contains( c->data((int)DataItemColumn::Key).toString() )) {
-                                    found = true;
-                                    if (item->data((int)DataItemColumn::InvalidValue).toInt() == 0) {
-                                        item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
-                                        if (schemaitem!=item) {
-                                            int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
-                                            schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
-                                        }
-                                    }
-                                }
-                                if (QString::compare(k, c->data((int)DataItemColumn::Key).toString())==0 &&
-                                    c->data((int)DataItemColumn::InvalidValue).toInt() == 0                  ) {
-                                    c->setData((int)DataItemColumn::InvalidValue, QVariant(1));
-                                    if (schemaitem!=item) {
-                                        int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
-                                        schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
-                                    }
-                                }
-                            }
-                        }
-                        if (found) {
-                            item->setData((int)DataItemColumn::Delete, QVariant(true)); // allowed to be deleted
-                            item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
-                            parent = parent->parentItem();
-                            while(parent && parent!=mRootItem) {
-                                int value = parent->data((int)DataItemColumn::InvalidValue).toInt();
-                                parent->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
-                                parent = parent->parentItem();
-                            }
-                        }
-                   }
+                   updateInvalidItem(schema, item);
                    int k = 0;
                    for (YAML::const_iterator dmit = mit->second.begin(); dmit != mit->second.end(); ++dmit) {
                        QString mapkey = QString::fromStdString(dmit->first.as<std::string>());
@@ -1744,7 +1727,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                   : QVariant(QStringList()));
                            mapitemData << QVariant(false);
                            mapitemData << QVariant(0);
-                           mapitemData << (schema ? QVariant(schema->getExcludedKeys(checkKeys.join(":")).join(",")) : QVariant());
+                           QStringList excluded = schema->getExcludedKeys(checkKeys.join(":"));
+                           mapitemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                  : QVariant());
                            ConnectDataItem* item = new ConnectDataItem(mapitemData, mItemIDCount++, parents.last());
                            if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1778,7 +1763,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                   mapitemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                                          : QVariant(true));
                                   mapitemData << QVariant(0);
-                                  mapitemData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")) : QVariant());
+                                  QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+                                  mapitemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                         : QVariant());
                                   ConnectDataItem* item = new ConnectDataItem(mapitemData, mItemIDCount++, parents.last());
                                   if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                       item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1815,7 +1802,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                  seqSeqData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                                        : QVariant(true));
                                  seqSeqData << QVariant(0);
-                                 seqSeqData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")) : QVariant());
+                                 QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+                                 seqSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                       : QVariant());
                                  ConnectDataItem* item = new ConnectDataItem(seqSeqData, mItemIDCount++, parents.last());
                                  if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                      item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1919,7 +1908,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                  : QVariant(true));
              itemData << QVariant(0);
-             itemData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")) : QVariant());
+             QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+             itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                 : QVariant());
              ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
              if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                  item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -1928,17 +1919,12 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                      int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
                      parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
                  }
-             } else if (!isIndexValueValid((int)DataItemColumn::Value, item)) {
-                      item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
-                      ConnectDataItem* parentitem = getSchemaParentItem(item);
-                      if (parentitem!=item) {
-                          int value = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
-                          parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
-                      }
+             } else {
+                 updateInvalidItem(schema, item);
              }
-
              if (position>=parents.last()->childCount() || position < 0) {
-                 parents.last()->appendChild(item);
+                      parents.last()->appendChild(item);
+
                  parents << parents.last()->child(parents.last()->childCount()-1);
              } else {
                  parents.last()->insertChild(position, item);
@@ -1979,7 +1965,6 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  indexData << QVariant(0);
                  indexData << QVariant();
                  parents.last()->appendChild(new ConnectDataItem(indexData, mItemIDCount++, parents.last()));
-
                  if (mit->second[k].Type()==YAML::NodeType::Map) {
                            parents << parents.last()->child(parents.last()->childCount()-1);
                            const YAML::Node mapnode = mit->second[k];
@@ -2007,7 +1992,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    seqSeqData << (schema ? (schema->contains(datakeyslist.join(":")) ? QVariant(false) : QVariant(true))
                                                          : QVariant(true));
                                    seqSeqData << QVariant(0);
-                                   seqSeqData << (schema ? QVariant(schema->getExcludedKeys(datakeyslist.join(":")).join(",")) : QVariant());
+                                   QStringList excluded = schema->getExcludedKeys(datakeyslist.join(":"));
+                                   seqSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                         : QVariant());
                                    ConnectDataItem* item = new ConnectDataItem(seqSeqData, mItemIDCount++, parents.last());
                                    if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                        item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -2145,7 +2132,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                mapSeqData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                                                      : QVariant(true));
                                                mapSeqData << QVariant(0);
-                                               mapSeqData << (schema ? QVariant(schema->getExcludedKeys(dataKeys.join(":")).join(",")): QVariant());
+                                               QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
+                                               mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                                     : QVariant());
                                                ConnectDataItem* item = new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last());
                                                if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                                    item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -2199,7 +2188,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                      mapSeqData << (schema ? (schema->contains(datakeyslist.join(":")) ? QVariant(false) : QVariant(true))
                                                            : QVariant(true));
                                      mapSeqData << QVariant(0);
-                                     mapSeqData << (schema ? QVariant(schema->getExcludedKeys(datakeyslist.join(":")).join(",")): QVariant());
+                                     QStringList excluded = schema->getExcludedKeys(datakeyslist.join(":"));
+                                     mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                           : QVariant());
                                      ConnectDataItem* item = new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last());
                                      if (!isIndexValueValid((int)DataItemColumn::Value, item)) {
                                          item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -2244,7 +2235,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    mapSeqData << (schema ? (schema->contains(dataKeysforTypes.join(":")) ? QVariant(false) : QVariant(true))
                                                                                                        : QVariant(true));
                                    mapSeqData << QVariant(0);
-                                   mapSeqData << (schema ? QVariant(schema->getExcludedKeys(dataKeysforTypes.join(":")).join(",")) : QVariant());
+                                   QStringList excluded = schema->getExcludedKeys(dataKeysforTypes.join(":"));
+                                   mapSeqData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
+                                                         : QVariant());
                                    ConnectDataItem* item = new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last());
                                    if (!isIndexValueValid((int)DataItemColumn::Key, item)) {
                                        item->setData((int)DataItemColumn::InvalidValue, QVariant(1));
@@ -2295,6 +2288,56 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
     if (data) {
         delete data;
         data = NULL;
+    }
+}
+
+void ConnectDataModel::updateInvalidItem(ConnectSchema* schema, ConnectDataItem *item)
+{
+    ConnectDataItem* schemaitem = getSchemaParentItem(item);
+    if (numberOfExcludedSibling(item) <= 0) {
+        if (schemaitem!=item &&
+            item->data((int)DataItemColumn::Delete).toBool() &&
+            !item->data((int)DataItemColumn::ExcludedKeys).toStringList().isEmpty()) {
+              int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+              if (value > 0 ) {
+                  schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value-1));
+              }
+        }
+    } else {
+        ConnectDataItem* parent = item->parentItem();
+        bool found = false;
+        if (schema) {
+            for(const QString& k : schema->getExcludedKeys( item->data((int)DataItemColumn::Key).toString())) {
+                if (found)
+                    break;
+                QStringList excludes = schema->getExcludedKeys(k);
+                parent = item->parentItem();
+                for(int i=0; i<parent->childCount(); i++) {
+                    if (found)
+                        break;
+                    ConnectDataItem* c = parent->child(i);
+                    if (QString::compare(k, c->data((int)DataItemColumn::Key).toString())==0)  {
+                        found = true;
+                        if (c->data((int)DataItemColumn::InvalidValue).toInt() == 0) {
+                            if (schemaitem!=item) {
+                                int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                                schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+                            }
+                        }
+                        c->setData((int)DataItemColumn::InvalidValue, QVariant(1));
+                    }
+                }
+            }
+        }
+        if (found) {
+              item->setData((int)DataItemColumn::Delete, QVariant(true)); // allowed to be deleted
+              int itemvalue = item->data((int)DataItemColumn::InvalidValue).toInt();
+              item->setData((int)DataItemColumn::InvalidValue, QVariant(itemvalue+1));
+              if (schemaitem!=item) {
+                  int value = schemaitem->data((int)DataItemColumn::InvalidValue).toInt();
+                  schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(value+1));
+              }
+        }
     }
 }
 

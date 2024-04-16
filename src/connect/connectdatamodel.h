@@ -115,7 +115,7 @@ public slots:
     void onlyRequriedAttributedChanged(int state);
     void reloadConnectDataModel();
 
-    void onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void onEditDataChanged(const QModelIndex &index, bool preValidValue);
 
 protected:
     bool isIndexValueValid(int column, ConnectDataItem* item);
@@ -134,6 +134,7 @@ protected:
 
     void setupTreeItemModelData();
     void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents);
+    void updateInvalidItem(ConnectSchema* schema, ConnectDataItem* item);
 
     bool             mOnlyRequriedAttributesAdded;
     int              mItemIDCount;
