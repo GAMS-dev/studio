@@ -320,7 +320,7 @@ bool ConnectDataModel::setData(const QModelIndex &idx, const QVariant &value, in
         bool preValidValue = isIndexValueValid((int)DataItemColumn::Value, item);
         bool result = item->setData(idx.column(), value);
         if (result) {
-             onEditDataChanged(idx, preValidValue);
+            editDataChanged(idx, preValidValue);
         }
         return result;
     }
@@ -1077,7 +1077,15 @@ void ConnectDataModel::reloadConnectDataModel()
     endResetModel();
 }
 
-void ConnectDataModel::onEditDataChanged(const QModelIndex &index, bool preValidValue)
+void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
+    QModelIndex idx = topLeft;
+    Q_UNUSED(bottomRight)
+
+    ConnectDataItem* item = getItem(idx);
+    editDataChanged(topLeft, isIndexValueValid((int)DataItemColumn::Value, item));
+}
+
+void ConnectDataModel::editDataChanged(const QModelIndex &index, bool preValidValue)
 {
     if (index.column() != (int)DataItemColumn::Key && index.column() != (int)DataItemColumn::Value)
          return;

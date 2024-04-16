@@ -115,7 +115,8 @@ public slots:
     void onlyRequriedAttributedChanged(int state);
     void reloadConnectDataModel();
 
-    void onEditDataChanged(const QModelIndex &index, bool preValidValue);
+    void onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles);
+    void editDataChanged(const QModelIndex &index, bool preValidValue);
 
 protected:
     bool isIndexValueValid(int column, ConnectDataItem* item);
