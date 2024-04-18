@@ -8,9 +8,9 @@ INCLUDEPATH += $$SRCPATH            \
                $$PWD/../extern
 include(../../extern/yaml-cpp/yaml-cpp.pri)
 
-HEADERS +=                          \
-    $$SRCPATH/editors/defaultsystemlogger.h   \
-    $$SRCPATH/editors/sysloglocator.h         \
+HEADERS +=                                      \
+    $$SRCPATH/editors/defaultsystemlogger.h     \
+    $$SRCPATH/editors/sysloglocator.h           \
     $$SRCPATH/support/versioninfoloader.h
 
 SOURCES +=                                      \

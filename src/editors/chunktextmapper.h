@@ -172,7 +172,7 @@ protected:
     void updateLineOffsets(Chunk *chunk) const;
     int chunkSize() const;
     int maxLineWidth() const;
-    void initChunkCount(int count) const;
+    void initChunkCount(qsizetype count) const;
     virtual int lastChunkWithLineNr() const;
     void initTopLine();
     void setPosAbsolute(Chunk *chunk, int lineInChunk, int charNr, QTextCursor::MoveMode mode = QTextCursor::MoveAnchor); // CC

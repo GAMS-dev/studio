@@ -4253,6 +4253,9 @@ void MainWindow::checkForEngingJob()
             QMessageBox::StandardButton button = QMessageBox::question(this, "Resume GAMS Engine Job?", "Studio was left with a running GAMS Engine job.\nTry to resume?");
             if (button == QMessageBox::Yes) {
                 initEngineStartDialog(true);
+            } else {
+                project->setEngineJobToken("");
+                updateAndSaveSettings();
             }
         }
     }

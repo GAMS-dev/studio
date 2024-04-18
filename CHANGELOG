@@ -1,3 +1,8 @@
+Version 1.17.6 *
+==================
+- upgraded to Qt 6.6.3
+- improved set TLS 1.2 as minimum requirement for a HTTPS connection
+
 Version 1.17.5
 ==================
 - fixed prevent Alt keys from closing GDX Viewer filter dialogs

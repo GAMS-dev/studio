@@ -61,10 +61,10 @@ void CodeCompleterModel::initData()
     QList<QList<QPair<QString, QString>>::ConstIterator> delayedIterators;
 
     // DCOs
-    mDollarGroupRow = mData.size();
+    mDollarGroupRow = int(mData.size());
     mData << "$...";
     mDescription << "";
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     QList<QPair<QString, QString>> src = syntax::SyntaxData::directives();
     QList<QPair<QString, QString>>::ConstIterator it = src.constBegin();
@@ -78,13 +78,13 @@ void CodeCompleterModel::initData()
         }
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoEnd);
+    mType.insert(int(mData.size())-1, ccDcoEnd);
 
     for (const QList<QPair<QString, QString>>::ConstIterator &it : std::as_const(delayedIterators)) {
         mData << '$' + it->first;
         mDescription << it->second;
     }
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     // declarations
     src = syntax::SyntaxData::declaration();
@@ -97,30 +97,30 @@ void CodeCompleterModel::initData()
                 mData << "Equation Table";
                 mDescription << it->second;
             }
-            mType.insert(mData.size()-1, ccDecl);
+            mType.insert(int(mData.size())-1, ccDecl);
         } else if (it->first.startsWith("Parameter")) {
             if (it->first.endsWith("s")) {
                 mData << "Parameter Table";
                 mDescription << it->second;
             }
-            mType.insert(mData.size()-1, ccDecl);
+            mType.insert(int(mData.size())-1, ccDecl);
         } else if (it->first.startsWith("Set")) {
-            mType.insert(mData.size()-1, ccDeclS);
+            mType.insert(int(mData.size())-1, ccDeclS);
             if (it->first.endsWith("s")) {
                 mData << "Set Table";
                 mDescription << it->second;
             }
-            mType.insert(mData.size()-1, ccDecl);
+            mType.insert(int(mData.size())-1, ccDecl);
         } else if (it->first.startsWith("Variable")) {
             if (it->first.endsWith("s")) {
                 mData << "Variable Table";
                 mDescription << it->second;
             }
-            mType.insert(mData.size()-1, ccDeclV);
+            mType.insert(int(mData.size())-1, ccDeclV);
         } else if (it->first == "Table") {
-            mType.insert(mData.size()-1, ccDeclT);
+            mType.insert(int(mData.size())-1, ccDeclT);
         } else {
-            mType.insert(mData.size()-1, ccDecl);
+            mType.insert(int(mData.size())-1, ccDecl);
         }
         ++it;
     }
@@ -133,14 +133,14 @@ void CodeCompleterModel::initData()
         mDescription << it->second << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDeclAddV);
+    mType.insert(int(mData.size())-1, ccDeclAddV);
     it = src.constBegin();
     while (it != src.constEnd()) {
         mData << it->first + " Variable Table" << it->first + " Variables Table";
         mDescription << it->second << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDeclAddV);
+    mType.insert(int(mData.size())-1, ccDeclAddV);
     src = syntax::SyntaxData::declaration4Set();
     it = src.constBegin();
     while (it != src.constEnd()) {
@@ -148,7 +148,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDeclAddS);
+    mType.insert(int(mData.size())-1, ccDeclAddS);
 
     // reserved
     src = syntax::SyntaxData::reserved();
@@ -189,7 +189,7 @@ void CodeCompleterModel::initData()
     }
     mData << "executeTool";
     mDescription << "Execute a GAMS tool";
-    mType.insert(mData.size()-1, ccRes);
+    mType.insert(int(mData.size())-1, ccRes);
 
     // embedded end
     src = syntax::SyntaxData::embeddedEnd();
@@ -199,7 +199,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccResEnd);
+    mType.insert(int(mData.size())-1, ccResEnd);
 
     // options
     src = syntax::SyntaxData::options();
@@ -209,7 +209,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccOpt);
+    mType.insert(int(mData.size())-1, ccOpt);
 
     // models
     src = syntax::SyntaxData::modelTypes();
@@ -219,7 +219,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccMod);
+    mType.insert(int(mData.size())-1, ccMod);
 
     // models
     src = syntax::SyntaxData::extendableKey();
@@ -229,7 +229,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second << "";
         ++it;
     }
-    mType.insert(mData.size()-1, ccSolve);
+    mType.insert(int(mData.size())-1, ccSolve);
 
     // sub DCOs
     src = syntax::SyntaxData::execute();
@@ -241,7 +241,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     mData << "$eval.set";
     mDescription << "compile-time variable based on a GAMS set";
@@ -249,15 +249,15 @@ void CodeCompleterModel::initData()
     mDescription << "compile-time variable based on a GAMS set";
     mData << "$evalLocal.set";
     mDescription << "compile-time variable based on a GAMS set";
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     mData << "$abort.noError";
     mDescription << "Abort without error";
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     mData << "$save.keepCode";
     mDescription << "Create save also with unexecuted execution code";
-    mType.insert(mData.size()-1, ccDcoStrt);
+    mType.insert(int(mData.size())-1, ccDcoStrt);
 
     // system data
     src = syntax::SyntaxData::systemData();
@@ -267,7 +267,7 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccSysDat);
+    mType.insert(int(mData.size())-1, ccSysDat);
 
     // system data
     src = syntax::SyntaxData::systemAttributes();
@@ -277,9 +277,9 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccSysSufR);
+    mType.insert(int(mData.size())-1, ccSysSufR);
 
-    mPercentGroupRow = mData.size();
+    mPercentGroupRow = int(mData.size());
     mData << "%...";
     mDescription << "";
     it = src.constBegin();
@@ -290,7 +290,7 @@ void CodeCompleterModel::initData()
     }
     mData << "%" + syntax::SyntaxAbstract::systemEmpData.first + "%";
     mDescription << syntax::SyntaxAbstract::systemEmpData.second;
-    mType.insert(mData.size()-1, ccSysSufC);
+    mType.insert(int(mData.size())-1, ccSysSufC);
 
     QHash<QString, QString> descript;
     for (const QPair<QString, QString> &entry : syntax::SyntaxData::systemCTConstText())
@@ -304,7 +304,7 @@ void CodeCompleterModel::initData()
             mDescription << descript.value(key) + ": " + QString::number(it->second);
             ++it;
         }
-        mType.insert(mData.size()-1, ccCtConst);
+        mType.insert(int(mData.size())-1, ccCtConst);
     }
 
     // execute additions
@@ -317,19 +317,19 @@ void CodeCompleterModel::initData()
         mDescription << it->second;
         ++it;
     }
-    mType.insert(mData.size()-1, ccExec);
+    mType.insert(int(mData.size())-1, ccExec);
 
     mData << "checkErrorLevel";
     mDescription << "Check errorLevel automatically after executing a GAMS tool";
     mData << ".checkErrorLevel";
     mDescription << "Check errorLevel automatically after executing a GAMS tool";
-    mType.insert(mData.size()-1, ccExecT);
+    mType.insert(int(mData.size())-1, ccExecT);
 
     mData << "noError";
     mDescription << "Abort without error";
     mData << ".noError";
     mDescription << "Abort without error";
-    mType.insert(mData.size()-1, ccAbort);
+    mType.insert(int(mData.size())-1, ccAbort);
 
     it = src.constBegin();
     while (it != src.constEnd()) {
@@ -339,14 +339,14 @@ void CodeCompleterModel::initData()
     }
     mData << "executeTool.checkErrorLevel";
     mDescription << "Check errorLevel automatically after executing a GAMS tool";
-    mType.insert(mData.size()-1, ccRes);
+    mType.insert(int(mData.size())-1, ccRes);
 
 
     // add description index
     for (int i = 0; i < mData.size(); ++i) {
         mDescriptIndex << i;
     }
-    mTempDataStart = mData.size();
+    mTempDataStart = int(mData.size());
 }
 
 void CodeCompleterModel::addDynamicData()
@@ -369,17 +369,17 @@ void CodeCompleterModel::addDynamicData()
             descriptIndex << i;
         }
         if (mType.contains(i)) {
-            iType.insert(data.size()-1, mType.value(i));
+            iType.insert(int(data.size())-1, mType.value(i));
         }
         if (i == mDollarGroupRow)
-            mDollarGroupRow = data.size()-1;
+            mDollarGroupRow = int(data.size())-1;
         if (i == mPercentGroupRow)
-            mPercentGroupRow = data.size()-1;
+            mPercentGroupRow = int(data.size())-1;
     }
     mData = data;
     mDescriptIndex = descriptIndex;
     mType = iType;
-    mTempDataStart = mData.size();
+    mTempDataStart = int(mData.size());
 }
 
 void CodeCompleterModel::removeTempData(CodeCompleterType type)
@@ -429,7 +429,7 @@ void CodeCompleterModel::setCasing(CodeCompleterCasing casing)
 int CodeCompleterModel::rowCount(const QModelIndex &parent) const
 {
     Q_UNUSED(parent)
-    return mData.size();
+    return int(mData.size());
 }
 
 QVariant CodeCompleterModel::data(const QModelIndex &index, int role) const
@@ -468,17 +468,17 @@ void CodeCompleterModel::setActiveNameSuffix(const QString &suffix)
                     mDescription << mDescription.at(mDescriptIndex.at(i)) + " (name: " +suffName+ ")";
                     lastAddedDescIndex = i;
                 }
-                mDescriptIndex << mDescription.size() - 1;
+                mDescriptIndex << int(mDescription.size()) - 1;
                 break;
             }
         }
     }
-    mTempDataIndicees.insert(ccSufName, QPoint(mData.size(), mData.size() + addData.size() - 1));
-    beginInsertRows(QModelIndex(), mData.size(), mData.size() + addData.size() - 1);
+    mTempDataIndicees.insert(ccSufName, QPoint(int(mData.size()), int(mData.size() + addData.size()) - 1));
+    beginInsertRows(QModelIndex(), int(mData.size()), int(mData.size() + addData.size()) - 1);
     for (int i = 0; i < addData.size(); ++i) {
         mData << addData.at(i);
     }
-    mType.insert(mData.length(), ccSufName);
+    mType.insert(int(mData.length()), ccSufName);
     endInsertRows();
 }
 
@@ -905,7 +905,7 @@ void CodeCompleter::updateFilter(int posInBlock, QString line)
     // adapt size
     if (!mEdit) return;
     QTextCursor cur = mEdit->textCursor();
-    cur.setPosition(cur.position() - mFilterText.length());
+    cur.setPosition(cur.position() - int(mFilterText.length()));
     QPoint pos = mEdit->cursorRect(cur).bottomLeft()
             + QPoint(mEdit->viewport()->contentsMargins().left(), mEdit->viewport()->contentsMargins().top());
 
@@ -1054,7 +1054,7 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
         QString line = cur.block().text();
         cur.beginEditBlock();
         if (mFilterText.length())
-            cur.setPosition(cur.position()-mFilterText.length());
+            cur.setPosition(cur.position() - int(mFilterText.length()));
         int start = cur.positionInBlock();
         QString res = model()->data(currentIndex()).toString();
         if (mFilterModel->isGroupRow(currentIndex().row()) && !res.isEmpty())
@@ -1062,7 +1062,7 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
         mPreferredText = res;
 
         if (equalPartOnly && res.length() > mFilterText.length()+1) {
-            int pos = mFilterText.length();
+            int pos = int(mFilterText.length());
             QString resTwo = res.mid(pos, 2);
             int indBefore = findBound(pos, resTwo, currentIndex().row(), 0);
             int indAfter = findBound(pos, resTwo, currentIndex().row(), rowCount()-1);
@@ -1070,14 +1070,14 @@ void CodeCompleter::insertCurrent(bool equalPartOnly)
             QModelIndex toInd = model()->index(indAfter, 0);
             QString first = fromInd.isValid() ? model()->data(fromInd).toString() : res;
             QString last  = toInd.isValid() ? model()->data(toInd).toString() : res;
-            int j = mFilterText.length();
+            int j = int(mFilterText.length());
             while (first.length() > j && last.length() > j && first.at(j).toLower() == last.at(j).toLower())
                 ++j;
             if (j > mFilterText.length()) {
                 res = res.left(j);
             }
         }
-        int i = mFilterText.length();
+        int i = int(mFilterText.length());
         for ( ; i < res.length() && start+i < line.length(); ++i) {
             if (line.at(start+i).toLower() != res.at(i).toLower()) break;
         }
@@ -1116,7 +1116,7 @@ int CodeCompleter::findBound(int pos, const QString &nextTwo, int good, int look
 void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dcoFlavor, const QString &line, int pos)
 {
     int filter = cc_All;
-    int start = pos - mFilterText.length();
+    qsizetype start = pos - mFilterText.length();
     bool needDot = false;
     syntax::SyntaxKind synKind = syntax::SyntaxKind(syntax.first);
 
@@ -1218,7 +1218,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
 
     start = qMin(start, qMax(0, line.length()-1));
     bool isWhitespace = true;
-    for (int i = 0; i < start; ++i) {
+    for (qsizetype i = 0; i < start; ++i) {
         if (line.at(i) != ' ' && line.at(i) != '\t') {
             isWhitespace = false;
             break;
@@ -1244,7 +1244,7 @@ void CodeCompleter::updateFilterFromSyntax(const QPair<int, int> &syntax, int dc
             filter = filter & ccDcoStrt;
     } else if (dcoFlavor >= syntax::flavorAbort) {
         needDot = true;
-        for (int i = start; i > 0; --i) {
+        for (qsizetype i = start; i > 0; --i) {
             if (needDot && line.at(i) == '.') {
                 needDot = false;
             } else {

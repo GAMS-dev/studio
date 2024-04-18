@@ -64,7 +64,6 @@ void TestVersionInfoLoader::test_requestRemoteData()
     QSignalSpy spy(&loader, &VersionInfoLoader::finished);
     loader.requestRemoteData();
     spy.wait(6000);
-
     QCOMPARE(spy.count(), 1);
     QVERIFY(loader.remoteDistribVersion() > 0);
     QVERIFY(loader.remoteDistribVersionString() != QString());

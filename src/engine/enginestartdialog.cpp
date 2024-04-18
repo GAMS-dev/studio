@@ -21,7 +21,6 @@
 #include "ui_enginestartdialog.h"
 #include "logger.h"
 #include "engineprocess.h"
-#include "authmanager.h"
 #include "theme.h"
 #include <QPushButton>
 #include <QEvent>
@@ -544,7 +543,7 @@ void EngineStartDialog::reListNamespaces(const QStringList &list)
     }
     ui->cbNamespace->addItems(list);
     if (!text.isEmpty() && list.contains(text))
-        ui->cbNamespace->setCurrentIndex(list.indexOf(text));
+        ui->cbNamespace->setCurrentIndex(int(list.indexOf(text)));
     else
         ui->cbNamespace->setCurrentIndex(0);
     if (list.size() == 1)

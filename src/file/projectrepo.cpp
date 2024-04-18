@@ -108,7 +108,7 @@ PExAbstractNode *ProjectRepo::node(const NodeId &id) const
 
 PExAbstractNode*ProjectRepo::node(const QModelIndex& index) const
 {
-    return node(NodeId(int(index.internalId())));
+    return index.isValid() ? node(NodeId(int(index.internalId()))) : nullptr;
 }
 
 PExGroupNode *ProjectRepo::asGroup(const NodeId &id) const
@@ -361,7 +361,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             if (projectChangedMarker)
                 project->setNeedSave();
             if (projectData.contains("engineJobToken")) {
-                project->setEngineJobToken(projectData.value("engineJobToken").toString());
+                project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
             }
             QVariantList optList = projectData.value("options").toList();
             if (!optList.isEmpty()) {

@@ -474,9 +474,11 @@ QString PExProjectNode::engineJobToken() const
     return mEngineJobToken;
 }
 
-void PExProjectNode::setEngineJobToken(const QString &engineJobToken)
+void PExProjectNode::setEngineJobToken(const QString &engineJobToken, bool touch)
 {
     mEngineJobToken = engineJobToken;
+    if (touch)
+        setNeedSave();
 }
 
 QString PExProjectNode::tempGdx() const
