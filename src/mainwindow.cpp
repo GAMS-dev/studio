@@ -71,6 +71,9 @@
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
 #endif
+#ifdef _WIN32
+#include <Windows.h>
+#endif
 
 namespace gams {
 namespace studio {
