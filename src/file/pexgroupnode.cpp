@@ -226,6 +226,7 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     if (mWorkDir.isEmpty()) mWorkDir = basePath;
     if (runFileMeta && runFileMeta->kind() == FileKind::Gms) {
         setRunnableGms(runFileMeta);
+        setNeedSave(false);
     }
 }
 
