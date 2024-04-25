@@ -4568,14 +4568,14 @@ void MainWindow::cloneBookmarkMenu(QMenu *menu)
 
 void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
 {
+    int maxSyntaxLines = Settings::settings()->toInt(skEdHighlightMaxLines);
     qint64 maxSize = Settings::settings()->toInt(skEdEditableMaxSizeMB) *1024*1024;
-    int factor = (sizeof (void*) == 2) ? 16 : 23;
-    if (mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
-        QString text = ("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                        + " MB exceeded by " + file.fileName() + "\n"
+    if ((maxSyntaxLines<0 || maxSyntaxLines > 50000) && mFileMetaRepo.askBigFileEdit() && file.exists() && file.size() > maxSize) {
+        int factor = 10;
+        QString text = ("File " +file.fileName()+ " exceeds " +QString::number(qreal(maxSize)/1024/1024, 'f', 1)+ " MB\n"
                         + "About " + QString::number(qreal(file.size())/1024/1024*factor, 'f', 1)
-                        + " MB of memory need to be allocated.\n"
-                        + "Opening this file can take a long time during which Studio will be unresponsive.");
+                        + " MB of memory need to be allocated."
+                        + "\nOpening this file can take a long time during which Studio will be unresponsive.");
         int choice = QMessageBox::question(nullptr, "File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
                                            + " MB exceeded", text, "Open anyway", "Always open", "Cancel", 2, 2);
         if (choice == 2) {

@@ -357,12 +357,14 @@ void BaseHighlighter::setClean(QTextBlock block)
 
 int BaseHighlighter::maxLines() const
 {
+    if (mMaxBlockCount == std::numeric_limits<int>().max())
+        return -1;
     return mMaxBlockCount;
 }
 
 void BaseHighlighter::setMaxLines(int newMaxLines)
 {
-    mMaxBlockCount = newMaxLines;
+    mMaxBlockCount = (newMaxLines == -1) ? std::numeric_limits<int>().max() : newMaxLines;
 }
 
 BaseHighlighter::Interval::Interval(QTextBlock firstBlock, QTextBlock secondBlock)

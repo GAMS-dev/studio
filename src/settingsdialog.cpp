@@ -122,8 +122,6 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         setModified();
     });
     connect(ui->sb_highlightMaxLines, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int val) {
-        if (val < 0) ui->sb_highlightMaxLines->setValue(std::numeric_limits<int>().max() - 1);
-        if (val == std::numeric_limits<int>().max()) ui->sb_highlightMaxLines->setValue(0);
         mNeedRehighlight = true;
         setModified();
     });

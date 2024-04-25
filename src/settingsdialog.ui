@@ -488,13 +488,13 @@
           <item row="12" column="1">
            <widget class="QSpinBox" name="sb_highlightMaxLines">
             <property name="toolTip">
-             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The line count up to which the syntax highlighter is active.&lt;/p&gt;&lt;p&gt;0 : highlight nothing&lt;/p&gt;&lt;p&gt;&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Changes causes rehighlighting in all open tabs&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;The line count up to which the syntax highlighter is active.&lt;/p&gt;&lt;p&gt;0 : highlight nothing&lt;/p&gt;&lt;p&gt;-1 : highlight all&lt;br/&gt;&lt;/p&gt;&lt;p&gt;&lt;span style=&quot; font-style:italic;&quot;&gt;Changes causes rehighlighting in all open tabs&lt;/span&gt;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
             </property>
             <property name="minimum">
              <number>-1</number>
             </property>
             <property name="maximum">
-             <number>999999999</number>
+             <number>50000</number>
             </property>
            </widget>
           </item>
@@ -1098,8 +1098,8 @@
            <rect>
             <x>0</x>
             <y>0</y>
-            <width>100</width>
-            <height>30</height>
+            <width>98</width>
+            <height>28</height>
            </rect>
           </property>
           <attribute name="label">
