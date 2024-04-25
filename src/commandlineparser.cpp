@@ -43,6 +43,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"reset-settings", "Reset all settings including views to default."});
     addOption({"reset-view", "Reset views and window positions only."});
     addOption({"gams-dir", "Set the GAMS system directory", "path"});
+    addOption({"log", "Set '$HOME/Documents/studio.log' for Studio system log"});
+    addOption({"log-file", "Set a log file for Studio system log", "file"});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -58,6 +60,10 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mResetView = true;
     if (isSet("gams-dir"))
         mGamsDir = this->value("gams-dir");
+    if (isSet("log"))
+        mLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
+    if (isSet("log-file"))
+        mLogFile = this->value("log-file");
     mFiles = getFileArgs();
 
     return CommandLineOk;
@@ -86,6 +92,11 @@ bool CommandLineParser::resetView() const
 QString CommandLineParser::gamsDir() const
 {
     return mGamsDir;
+}
+
+QString CommandLineParser::logFile() const
+{
+    return mLogFile;
 }
 
 inline QStringList CommandLineParser::getFileArgs()

@@ -30,7 +30,7 @@ enum CommandLineParseResult
     CommandLineOk,
     CommandLineError,
     CommandLineVersionRequested,
-    CommandLineHelpRequested
+    CommandLineHelpRequested,
 };
 
 class CommandLineParser  : public QCommandLineParser
@@ -44,6 +44,8 @@ public:
     bool resetView() const;
     QString gamsDir() const;
 
+    QString logFile() const;
+
 private:
     inline QStringList getFileArgs();
 
@@ -53,6 +55,7 @@ private:
     bool mResetSettings = false;
     bool mResetView = false;
     QString mGamsDir = QString();
+    QString mLogFile = QString();
 };
 
 } // namespace studio

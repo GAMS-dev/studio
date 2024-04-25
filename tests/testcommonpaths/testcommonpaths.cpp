@@ -89,7 +89,7 @@ void TestCommonPaths::testGamsDocumentsDir()
 
 void TestCommonPaths::testUserDocumentDir()
 {
-    auto result = CommonPaths::userDocumentsDir();
+    auto result = CommonPaths::studioDocumentsDir();
     QVERIFY(result.endsWith("/GAMS/Studio"));
 }
 

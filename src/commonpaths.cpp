@@ -42,6 +42,7 @@ namespace studio {
 #endif
 
 QString CommonPaths::SystemDir = QString();
+QString CommonPaths::DefaultWorkDir = QString();
 QStringList CommonPaths::GamsStandardConfigPaths;
 QStringList CommonPaths::GamsStandardDataPaths;
 
@@ -117,21 +118,21 @@ bool CommonPaths::isSystemDirValid()
 
 QString CommonPaths::gamsDocumentsDir()
 {
-    QString dir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
-    if (dir.isEmpty())
+    QString docDir = QStandardPaths::writableLocation(QStandardPaths::DocumentsLocation);
+    if (docDir.isEmpty())
         FATAL() << "Unable to access user documents location";
-    QDir gamsDocumentsDir = QDir::cleanPath(dir + "/GAMS");
-    if(!gamsDocumentsDir.exists())
-        gamsDocumentsDir.mkpath(".");
-    return gamsDocumentsDir.path();
+    QDir gamsDocDir = QDir::cleanPath(docDir + "/GAMS");
+    if(!gamsDocDir.exists())
+        gamsDocDir.mkpath(".");
+    return gamsDocDir.path();
 }
 
-QString CommonPaths::userDocumentsDir()
+QString CommonPaths::studioDocumentsDir()
 {
-    QDir userDocumentsDir(gamsDocumentsDir() + "/Studio");
-    if (!userDocumentsDir.exists())
-        userDocumentsDir.mkpath(".");
-    return userDocumentsDir.path();
+    QDir studioDocDir(gamsDocumentsDir() + "/Studio");
+    if (!studioDocDir.exists())
+        studioDocDir.mkpath(".");
+    return studioDocDir.path();
 }
 
 QString CommonPaths::userModelLibraryDir()
@@ -203,11 +204,27 @@ QString CommonPaths::gamsConnectSchemaDir()
     return dirpath;
 }
 
-QString CommonPaths::defaultWorkingDir()
+void CommonPaths::setDefaultWorkingDir(QString dir)
 {
-    QDir defWorkingDir(userDocumentsDir() + "/workspace");
-    if(!defWorkingDir.exists())
-        defWorkingDir.mkpath(".");
+    DefaultWorkDir = dir;
+}
+
+QString CommonPaths::defaultWorkingDir(bool createMissing)
+{
+    QString defDir = DefaultWorkDir;
+    if (defDir.isEmpty()) defDir = studioDocumentsDir() + "/workspace";
+    QDir defWorkingDir(defDir);
+
+    if (createMissing && !defWorkingDir.exists()) {
+        if (!defWorkingDir.mkpath(".")) {
+            defWorkingDir.setPath(documentationDir());
+            qDebug() << "Error: Failed to create the workspace directory";
+            if (!defWorkingDir.exists())
+                FATAL() << "Error: No write access to user documents location";
+        }
+    }
+
+
     return defWorkingDir.path();
 }
 

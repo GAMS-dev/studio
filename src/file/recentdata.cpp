@@ -34,7 +34,7 @@ void RecentData::init(MainWindow *mainWindow)
 {
     mMainWindow = mainWindow;
     mEditFileId = -1;
-    mPath = Settings::settings()->toString(skDefaultWorkspace);
+    mPath = CommonPaths::defaultWorkingDir();
 }
 
 void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
@@ -76,7 +76,7 @@ void RecentData::setEditor(FileMeta *fileMeta, QWidget *edit)
         mEditFileId = fileMeta ? fileMeta->id() : FileId();
         if (!mEditFileId.isValid())
             edit = nullptr;
-        mPath = Settings::settings()->toString(skDefaultWorkspace);
+        mPath = CommonPaths::defaultWorkingDir();
     }
 
     if (option::SolverOptionWidget* soEdit = ViewHelper::toSolverOptionEdit(edit)) {

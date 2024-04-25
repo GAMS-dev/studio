@@ -334,6 +334,7 @@ void SettingsDialog::saveSettings()
 {
     // general page
     mSettings->setString(skDefaultWorkspace, ui->txt_workspace->text());
+    CommonPaths::setDefaultWorkingDir(ui->txt_workspace->text());
     QDir workspace(ui->txt_workspace->text());
     if (!workspace.exists())
         workspace.mkpath(".");
@@ -671,7 +672,7 @@ SettingsDialog::~SettingsDialog()
 void SettingsDialog::on_btn_export_clicked()
 {
     QString filePath = QFileDialog::getSaveFileName(this, "Export Settings",
-                                                    mSettings->toString(skDefaultWorkspace)
+                                                    CommonPaths::defaultWorkingDir()
                                                     + "/studiosettings.gus",
                                                     ViewHelper::dialogSettingsFileFilter());
     QFileInfo fi(filePath);
@@ -683,7 +684,7 @@ void SettingsDialog::on_btn_export_clicked()
 void SettingsDialog::on_btn_import_clicked()
 {
     QString filePath = QFileDialog::getOpenFileName(this, "Import Settings",
-                                                    mSettings->toString(skDefaultWorkspace),
+                                                    CommonPaths::defaultWorkingDir(),
                                                     ViewHelper::dialogSettingsFileFilter());
     if (filePath == "") return;
 
@@ -726,7 +727,7 @@ void SettingsDialog::on_miroBrowseButton_clicked()
 {
     QString dir;
     if (mSettings->toString(skMiroInstallPath).isEmpty())
-        dir = mSettings->toString(skDefaultWorkspace);
+        dir = CommonPaths::defaultWorkingDir();
     else
         dir = mSettings->toString(skMiroInstallPath);
     auto miro = QFileDialog::getOpenFileName(this, tr("MIRO location"), dir);
@@ -950,7 +951,7 @@ void SettingsDialog::on_btRemoveTheme_clicked()
 
 void SettingsDialog::on_btImportTheme_clicked()
 {
-    QFileDialog *fd = new QFileDialog(this, "Import theme(s)", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
+    QFileDialog *fd = new QFileDialog(this, "Import theme(s)", CommonPaths::defaultWorkingDir(), "usertheme*.json");
     fd->setAcceptMode(QFileDialog::AcceptOpen);
     fd->setFileMode(QFileDialog::ExistingFiles);
     connect(fd, &QFileDialog::finished, this, [this, fd](int res) {
@@ -975,7 +976,7 @@ void SettingsDialog::on_btImportTheme_clicked()
 
 void SettingsDialog::on_btExportTheme_clicked()
 {
-    QFileDialog *fd = new QFileDialog(this, "Export theme", mSettings->toString(skDefaultWorkspace), "usertheme*.json");
+    QFileDialog *fd = new QFileDialog(this, "Export theme", CommonPaths::defaultWorkingDir(), "usertheme*.json");
     fd->selectFile(Settings::themeFileName(Theme::instance()->activeThemeName()));
     fd->setAcceptMode(QFileDialog::AcceptSave);
     connect(fd, &QFileDialog::finished, [fd](int res) {

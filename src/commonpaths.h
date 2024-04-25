@@ -65,11 +65,12 @@ public:
     ///
     static bool isSystemDirValid();
 
-    static QString defaultWorkingDir();
+    static void setDefaultWorkingDir(QString dir);
+    static QString defaultWorkingDir(bool createMissing = false);
 
     static QString gamsDocumentsDir();
 
-    static QString userDocumentsDir();
+    static QString studioDocumentsDir();
 
     static QString userModelLibraryDir();
 
@@ -129,6 +130,7 @@ private:
 
 private:
     static QString SystemDir;
+    static QString DefaultWorkDir;
     static QStringList GamsStandardConfigPaths;
     static QStringList GamsStandardDataPaths;
     static const QString ConfigFile;

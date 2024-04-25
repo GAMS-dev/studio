@@ -322,7 +322,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skSearchWholeWords, scSys, {"search", "wholeWords"}, false);
 
     // general settings page
-    safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, CommonPaths::defaultWorkingDir());
+    safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, "");
     safelyAdd(res, skSkipWelcomePage, scUser, {"skipWelcome"}, false);
     safelyAdd(res, skRestoreTabs, scUser, {"restoreTabs"}, true);
     safelyAdd(res, skAutosaveOnRun, scUser, {"autosaveOnRun"}, true);
