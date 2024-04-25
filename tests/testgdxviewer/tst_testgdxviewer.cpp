@@ -52,7 +52,7 @@ void TestGdxViewer::createGdxFile(QString model)
 {
     QProcess *proc = new QProcess(this);
     proc->setProgram(QDir::toNativeSeparators(QDir(CommonPaths::systemDir()).absoluteFilePath("gamslib")));
-    QStringList args { model, QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()) };
+    QStringList args { model, QDir::toNativeSeparators(CommonPaths::defaultWorkingDir(true)) };
     proc->setArguments(args);
     proc->start();
     proc->waitForFinished();
@@ -60,7 +60,7 @@ void TestGdxViewer::createGdxFile(QString model)
     proc->setProgram(QDir::toNativeSeparators(QDir(CommonPaths::systemDir()).absoluteFilePath("gams")));
     args = QStringList { model + ".gms", "gdx", model + ".gdx" };
     proc->setArguments(args);
-    proc->setWorkingDirectory(QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()));
+    proc->setWorkingDirectory(QDir::toNativeSeparators(CommonPaths::defaultWorkingDir(true)));
     proc->start();
     proc->waitForFinished();
 }
@@ -70,7 +70,7 @@ void TestGdxViewer::test_createGdxViewer()
     createGdxFile("trnsport");
 
     // create GdxViewer instance
-    QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
+    QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport.gdx"));
     GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QTextCodec::codecForName("utf-8"));
     delete gdxViewer;
     gdxViewer = nullptr;
@@ -81,16 +81,16 @@ void TestGdxViewer::test_export()
     createGdxFile("trnsport");
 
     // create GdxViewer instance
-    QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport.gdx"));
+    QString tmp = QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport.gdx"));
     GdxViewer *gdxViewer = new GdxViewer(tmp, CommonPaths::systemDir(), QTextCodec::codecForName("utf-8"));
 
     ExportModel *exportModel = new ExportModel(gdxViewer->gdxSymbolTable(), this);
     exportModel->selectAll();
 
     ExportDriver *exportDriver = new ExportDriver(gdxViewer, exportModel, this);
-    exportDriver->saveAndExecute(QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.yaml")),
-                                 QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir()).absoluteFilePath("trnsport_export.xlsx")),
-                                 QDir::toNativeSeparators(CommonPaths::defaultWorkingDir()),
+    exportDriver->saveAndExecute(QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport_export.yaml")),
+                                 QDir::toNativeSeparators(QDir(CommonPaths::defaultWorkingDir(true)).absoluteFilePath("trnsport_export.xlsx")),
+                                 QDir::toNativeSeparators(CommonPaths::defaultWorkingDir(true)),
                                  true,
                                  "EPS",
                                  "INF",

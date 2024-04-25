@@ -36,6 +36,25 @@
 namespace gams {
 namespace studio {
 
+QtMessageHandler vOriginalLogHandler = nullptr;
+QString vCustomLogFile;
+
+void logToFile(QtMsgType type, const QMessageLogContext &context, const QString &msg)
+{
+    QString message = qFormatLogMessage(type, context, msg);
+    static std::FILE *f = std::fopen(vCustomLogFile.toLatin1().data(), "a");
+    if (f) {
+        std::fprintf(f, "%s\n", qPrintable(message));
+        std::fflush(f);
+    } else {
+        qInstallMessageHandler(vOriginalLogHandler);
+        qDebug() << "failed to open log file" << vCustomLogFile;
+    }
+    if (vOriginalLogHandler)
+        vOriginalLogHandler(type, context, msg);
+}
+
+
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
@@ -68,6 +87,15 @@ Application::~Application()
 
 void Application::init()
 {
+    if (!mCmdParser.logFile().isEmpty()) {
+        QFileInfo log(mCmdParser.logFile());
+        if (QFile::exists(log.absolutePath())) {
+            vCustomLogFile = mCmdParser.logFile();
+            qDebug() << "log additionally to file" << vCustomLogFile;
+            vOriginalLogHandler = qInstallMessageHandler(*logToFile);
+        } else
+            qDebug() << "Error: Couldn't register log file in missing path " << log.absolutePath();
+    }
     CommonPaths::setSystemDir(mCmdParser.gamsDir());
     setOrganizationName(GAMS_ORGANIZATION_STR);
     setOrganizationDomain(GAMS_COMPANYDOMAIN_STR);
@@ -186,17 +214,19 @@ bool Application::event(QEvent *event)
 
 void Application::parseCmdArgs()
 {
-    switch(mCmdParser.parseCommandLine())
-    {
-        case gams::studio::CommandLineOk:
-            break;
-        case gams::studio::CommandLineError:
-            std::cerr << mCmdParser.errorText().toStdString() << std::endl;
-            mCmdParser.showHelp();
-        case gams::studio::CommandLineVersionRequested:
-            mCmdParser.showVersion();
-        case gams::studio::CommandLineHelpRequested:
-            mCmdParser.showHelp();
+    switch(mCmdParser.parseCommandLine()) {
+    case gams::studio::CommandLineOk:
+        break;
+    case gams::studio::CommandLineError:
+        std::cerr << mCmdParser.errorText().toStdString() << std::endl;
+        mCmdParser.showHelp();
+        break;
+    case gams::studio::CommandLineVersionRequested:
+        mCmdParser.showVersion();
+        break;
+    case gams::studio::CommandLineHelpRequested:
+        mCmdParser.showHelp();
+        break;
     }
 }
 

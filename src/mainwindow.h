@@ -202,8 +202,10 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
+    void newFileDialogPrepare(const QVector<gams::studio::PExProjectNode*> &projects = QVector<gams::studio::PExProjectNode *>(),
+                              const QString& solverName=QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
     void newFileDialog(const QVector<gams::studio::PExProjectNode*> &projects = QVector<gams::studio::PExProjectNode *>(),
-                       const QString& solverName=QString(), gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
+                       const QString& solverName=QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
@@ -427,6 +429,8 @@ protected:
     QWidget *otherEdit();
     void initEdit(FileMeta *fileMeta, QWidget *edit);
     void checkForEngingJob();
+    void ensureWorkspace();
+    void continueAsyncCall();
 
 private slots:
     void updateAndSaveSettings();
@@ -462,6 +466,7 @@ private:
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(const FileId &fileId);
     FileProcessKind fileDeletedExtern(const FileId &fileId);
+    void openModelFromLibPrepare(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite = false);
     void addToHistory(const QString &filePath);
     bool terminateProcessesConditionally(const QVector<PExProjectNode *> &projects);
@@ -548,6 +553,7 @@ private:
     QSharedPointer<FileEventHandler> mFileEventHandler;
     TabBarStyle *mTabStyle = nullptr;
     QString mExportProjectFilePath;
+    QVariantMap mAsyncCallOptions;
 
     bool mDebugMode = false;
     bool mStartedUp = false;
@@ -575,6 +581,7 @@ private:
     bool mEngineNoDialog = false;
 
     QScopedPointer<support::CheckForUpdate> mC4U;
+
 };
 
 }

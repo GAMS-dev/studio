@@ -136,6 +136,7 @@ SOURCES += \
     file/filemetarepo.cpp \
     file/filetype.cpp \
     file/pathrequest.cpp \
+    file/pathselect.cpp \
     file/pexabstractnode.cpp \
     file/pexfilenode.cpp \
     file/pexgroupnode.cpp \
@@ -358,6 +359,7 @@ HEADERS += \
     file/filemetarepo.h \
     file/filetype.h \
     file/pathrequest.h \
+    file/pathselect.h \
     file/pexabstractnode.h \
     file/pexfilenode.h \
     file/pexgroupnode.h \
@@ -531,6 +533,7 @@ FORMS += \
     engine/efieditor.ui \
     engine/enginestartdialog.ui \
     file/pathrequest.ui \
+    file/pathselect.ui \
     file/projectedit.ui \
     filesystemwidget.ui \
     gdxdiffdialog/gdxdiffdialog.ui \

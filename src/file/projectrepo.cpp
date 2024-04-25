@@ -399,6 +399,7 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
             }
         }
     }
+    project->setNeedSave(false);
     return res;
 }
 

@@ -67,6 +67,7 @@
 #include "support/checkforupdate.h"
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
+#include "file/pathselect.h"
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
@@ -260,7 +261,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
-    connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialogPrepare);
     connect(&mProjectContextMenu, &ProjectContextMenu::setMainFile, this, &MainWindow::setMainFile);
     connect(&mProjectContextMenu, &ProjectContextMenu::openLogFor, this, &MainWindow::changeToLog);
     connect(&mProjectContextMenu, &ProjectContextMenu::openFilePath, this,
@@ -319,6 +320,7 @@ MainWindow::MainWindow(QWidget *parent)
     setEncodingMIBs(encodingMIBs());
     ui->menuEncoding->setEnabled(false);
 
+    CommonPaths::setDefaultWorkingDir(Settings::settings()->toString(SettingsKey::skDefaultWorkspace));
     engine::EngineProcess::startupInit();
     mEngineAuthToken = Settings::settings()->toString(SettingsKey::skEngineUserToken);
     mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());
@@ -989,13 +991,74 @@ void MainWindow::openModelFromLib(const QString &glbFile, modeldialog::LibraryIt
     QFileInfo file(model->files().constFirst());
     QString inputFile = file.completeBaseName() + ".gms";
 
-    openModelFromLib(glbFile, model->nameWithSuffix(), inputFile);
+    openModelFromLibPrepare(glbFile, model->nameWithSuffix(), inputFile);
+}
+
+void gams::studio::MainWindow::ensureWorkspace()
+{
+    QString path = Settings::settings()->toString(skDefaultWorkspace);
+    if (path.isEmpty() || !QFile::exists(path)) {
+        pathselect::PathSelect *dialog = new pathselect::PathSelect(this);
+        connect(dialog, &pathselect::PathSelect::workDirSelected, this, [this](const QString &path) {
+            Settings::settings()->setString(skDefaultWorkspace, path);
+            CommonPaths::setDefaultWorkingDir(path);
+            continueAsyncCall();
+        });
+
+        connect(dialog, &pathselect::PathSelect::finished, this, [dialog](int) {
+            dialog->deleteLater();
+        });
+        dialog->setModal(true);
+        dialog->open();
+    } else {
+        continueAsyncCall();
+    }
+}
+
+void MainWindow::continueAsyncCall()
+{
+    if (mAsyncCallOptions.value("call").toString().compare("openModelFromLib") == 0) {
+        openModelFromLib(mAsyncCallOptions.value("glbFile").toString(),
+                         mAsyncCallOptions.value("modelName").toString(),
+                         mAsyncCallOptions.value("inputFile").toString(),
+                         mAsyncCallOptions.value("forceOverwrite").toBool());
+
+    } else if (mAsyncCallOptions.value("call").toString().compare("newFileDialog") == 0) {
+        QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
+        QVector<PExProjectNode*> projects;
+        for (QVariant val : pointerValues) {
+            projects << val.value<PExProjectNode*>();
+        }
+        newFileDialog(projects,
+                      mAsyncCallOptions.value("solverName").toString(),
+                      FileKind(mAsyncCallOptions.value("fileKind").toInt()));
+
+    } else if (mAsyncCallOptions.contains("call")) {
+        DEB() << "Undefined asynchronous call option: " << mAsyncCallOptions.value("call").toString();
+    }
+    mAsyncCallOptions.clear();
+}
+
+void MainWindow::openModelFromLibPrepare(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
+{
+    mAsyncCallOptions.clear();
+    mAsyncCallOptions.insert("call", "openModelFromLib");
+    mAsyncCallOptions.insert("glbFile", glbFile);
+    mAsyncCallOptions.insert("modelName", modelName);
+    mAsyncCallOptions.insert("inputFile", inputFile);
+    mAsyncCallOptions.insert("forceOverwrite", forceOverwrite);
+    ensureWorkspace();
 }
 
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
-    QString destDir = openInCurrent ? mRecent.project()->workDir() : Settings::settings()->toString(skDefaultWorkspace);
+    QString destDir = openInCurrent ? mRecent.project()->workDir() : CommonPaths::defaultWorkingDir();
+    if (!QFile::exists(destDir)) {
+        DEB() << "No existing workspace defined";
+        return;
+    }
+
     QString gmsFilePath = destDir + "/" + inputFile;
     QFile gmsFile(gmsFilePath);
 
@@ -1055,7 +1118,7 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
 
 void MainWindow::receiveModLibLoad(const QString &gmsFile, bool forceOverwrite)
 {
-    openModelFromLib("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms", forceOverwrite);
+    openModelFromLibPrepare("gamslib_ml/gamslib.glb", gmsFile, gmsFile + ".gms", forceOverwrite);
 }
 
 void MainWindow::receiveOpenDoc(const QString &doc, const QString &anchor)
@@ -1456,13 +1519,28 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
+void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, const QString& solverName, FileKind fileKind)
+{
+    mAsyncCallOptions.clear();
+    mAsyncCallOptions.insert("call", "newFileDialog");
+    QVariantList pointerValues;
+    for (PExProjectNode *p : projects) {
+        QVariant v;
+        v.setValue(p);
+        pointerValues << v;
+    }
+    mAsyncCallOptions.insert("projects", pointerValues);
+    mAsyncCallOptions.insert("solverName", solverName);
+    mAsyncCallOptions.insert("fileKind", int(fileKind));
+    ensureWorkspace();
+}
+
 void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const QString& solverName, FileKind fileKind)
 {
     QString path;
     bool projectOnly = fileKind == FileKind::Gsp;
     bool pfFileOnly = fileKind == FileKind::Pf;
     if (projectOnly) {
-
         path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     } else {
         if (!projects.isEmpty()) {
@@ -1472,7 +1550,11 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
             if (fm) path = QFileInfo(fm->location()).path();
         }
         if (path.isEmpty()) path = currentPath();
-        if (path.isEmpty()) path = ".";
+        if (path.isEmpty()) path = CommonPaths::defaultWorkingDir();
+    }
+    if (!QFile::exists(path)) {
+        DEB() << "No existing workspace defined";
+        return;
     }
 
     QString suffix = !solverName.isEmpty() ? "opt" : projectOnly ? "gsp" : pfFileOnly ? "pf" : "gms";
@@ -1600,7 +1682,7 @@ void MainWindow::on_actionNew_triggered()
     QVector<PExProjectNode*> project;
     if (Settings::settings()->toBool(skOpenInCurrent) && mRecent.project())
         project << mRecent.project();
-    newFileDialog(project);
+    newFileDialogPrepare(project);
 }
 
 void MainWindow::on_actionOpen_triggered()
@@ -3086,7 +3168,7 @@ QString MainWindow::currentPath()
 {
     if (currentEdit() != nullptr)
         return mRecent.path();
-    return Settings::settings()->toString(skDefaultWorkspace);
+    return CommonPaths::defaultWorkingDir();
 
 }
 
@@ -3633,8 +3715,9 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
     }
 
     // at last: activate the first node
-    if (firstNode)
+    if (firstNode) {
         openFileNode(firstNode, true);
+    }
 }
 
 PExProjectNode *MainWindow::openProjectIfExists(const QString &projectFileName)
@@ -6200,7 +6283,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionNew_Project_triggered()
 {
-    newFileDialog(QVector<PExProjectNode*>(), "", FileKind::Gsp);
+    newFileDialogPrepare(QVector<PExProjectNode*>(), "", FileKind::Gsp);
 }
 
 void MainWindow::on_actionOpen_Project_triggered()
