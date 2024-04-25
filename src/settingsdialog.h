@@ -112,11 +112,8 @@ private slots:
     void anchorClicked(const QUrl &link);
 
     void on_rb_decSepCustom_toggled(bool checked);
-
     void on_rb_decSepLocale_toggled(bool checked);
-
     void on_rb_decSepStudio_toggled(bool checked);
-
     void updateNumericalPrecision();
 
     void checkForUpdates();

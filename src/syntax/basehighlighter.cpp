@@ -103,6 +103,7 @@ void BaseHighlighter::resume()
 
 void BaseHighlighter::rehighlight()
 {
+    mMaxBlockCount = Settings::settings()->toInt(skEdHighlightMaxLines);
     mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
     setDirty(mDoc->firstBlock(), mDoc->lastBlock());
@@ -111,7 +112,7 @@ void BaseHighlighter::rehighlight()
 
 void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 {
-    if (!mDoc || !block.isValid()) return;
+    if (!mDoc || !block.isValid() || block.blockNumber() > mMaxBlockCount) return;
     mCurrentBlock = block;
     bool forceHighlightOfNextBlock = true;
     if (mTime.isNull()) mTime = QTime::currentTime();
@@ -124,7 +125,7 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
         forceHighlightOfNextBlock = (prevState != mCurrentBlock.userState());
         setClean(mCurrentBlock);
         if (!mTime.isNull() && QTime::currentTime().msecsSinceStartOfDay() - mTime.msecsSinceStartOfDay() > 50) {
-            mCurrentBlock = mCurrentBlock.next();
+            mCurrentBlock = nextDirty();
             if (forceHighlightOfNextBlock && mCurrentBlock.isValid())
                 setDirty(mCurrentBlock, mCurrentBlock);
             mTime = QTime();
@@ -302,13 +303,20 @@ QTextBlock BaseHighlighter::nextDirty()
         if (!res.isValid()) res = mDoc->findBlockByNumber(mDirtyBlocks.first().first);
         if (res.isValid()) return res;
     }
+    if (mCurrentBlock.blockNumber() >= mMaxBlockCount)
+        return res;
     return mCurrentBlock.next();
 }
 
-void BaseHighlighter::setDirty(const QTextBlock& fromBlock, const QTextBlock& toBlock)
+void BaseHighlighter::setDirty(const QTextBlock& fromBlock, QTextBlock toBlock)
 {
     Q_ASSERT_X(fromBlock.isValid() && toBlock.isValid(), "BaseHighlighter::setDirty()", "invalid block");
     if (toBlock < fromBlock) return;
+    if (fromBlock.blockNumber() >= mMaxBlockCount) return;
+    if (toBlock.blockNumber() > mMaxBlockCount) {
+        toBlock = mDoc->findBlockByNumber(mMaxBlockCount);
+        if (!toBlock.isValid()) return;
+    }
     mDirtyBlocks << Interval(fromBlock, toBlock);
     std::sort(mDirtyBlocks.begin(), mDirtyBlocks.end());
 
@@ -345,6 +353,16 @@ void BaseHighlighter::setClean(QTextBlock block)
         else if (mDirtyBlocks[i].isValid())
             mDirtyBlocks.removeAt(i);
     }
+}
+
+int BaseHighlighter::maxLines() const
+{
+    return mMaxBlockCount;
+}
+
+void BaseHighlighter::setMaxLines(int newMaxLines)
+{
+    mMaxBlockCount = newMaxLines;
 }
 
 BaseHighlighter::Interval::Interval(QTextBlock firstBlock, QTextBlock secondBlock)

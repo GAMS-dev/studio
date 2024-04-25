@@ -44,6 +44,8 @@ public:
     QTextDocument *document() const;
     void pause();
     void resume();
+    int maxLines() const;
+    void setMaxLines(int newMaxLines);
 
 signals:
     void needUnfold(QTextBlock block);
@@ -72,7 +74,7 @@ private:
     void reformatCurrentBlock();
     void applyFormatChanges();
     QTextBlock nextDirty();
-    void setDirty(const QTextBlock& fromBlock, const QTextBlock& toBlock);
+    void setDirty(const QTextBlock& fromBlock, QTextBlock toBlock);
     void setClean(QTextBlock block);
     inline int dirtyIndex(int blockNr) {
         for (int i = 0; i < mDirtyBlocks.size(); ++i) {
@@ -123,6 +125,7 @@ private:
     bool mCompleted = false;
     QTextDocument *mDoc = nullptr;
     int mBlockCount = 1;
+    int mMaxBlockCount = -1;
     int mMaxLineLength = -1;
     QTextBlock mCurrentBlock;
     QVector<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks

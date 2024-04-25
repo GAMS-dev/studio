@@ -54,6 +54,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     ui->tb_userLibSelect->setIcon(Theme::icon(":/%1/folder-open-bw"));
     ui->tb_userLibRemove->setIcon(Theme::icon(":/%1/delete-all"));
     ui->tb_userLibOpen->setIcon(Theme::icon(":/%1/forward"));
+    ui->sb_highlightMaxLines->setMaximum(std::numeric_limits<int>().max());
 
     // Load decimal seperator from system language settings
     ui->le_decSepSystem->setText(QLocale::system().decimalPoint());
@@ -117,6 +118,12 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->sb_fontsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_tabsize, QOverload<int>::of(&QSpinBox::valueChanged), this, &SettingsDialog::setModified);
     connect(ui->sb_highlightBound, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
+        mNeedRehighlight = true;
+        setModified();
+    });
+    connect(ui->sb_highlightMaxLines, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int val) {
+        if (val < 0) ui->sb_highlightMaxLines->setValue(std::numeric_limits<int>().max() - 1);
+        if (val == std::numeric_limits<int>().max()) ui->sb_highlightMaxLines->setValue(0);
         mNeedRehighlight = true;
         setModified();
     });
@@ -197,6 +204,7 @@ void SettingsDialog::loadSettings()
     ui->cb_showlinenr->setChecked(mSettings->toBool(skEdShowLineNr));
     ui->sb_tabsize->setValue(mSettings->toInt(skEdTabSize));
     ui->sb_highlightBound->setValue(mSettings->toInt(skEdHighlightBound));
+    ui->sb_highlightMaxLines->setValue(mSettings->toInt(skEdHighlightMaxLines));
     ui->cb_linewrap_editor->setChecked(mSettings->toBool(skEdLineWrapEditor));
     ui->cb_linewrap_process->setChecked(mSettings->toBool(skEdLineWrapProcess));
     ui->cb_clearlog->setChecked(mSettings->toBool(skEdClearLog));
@@ -353,6 +361,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skEdShowLineNr, ui->cb_showlinenr->isChecked());
     mSettings->setInt(skEdTabSize, ui->sb_tabsize->value());
     mSettings->setInt(skEdHighlightBound, ui->sb_highlightBound->value());
+    mSettings->setInt(skEdHighlightMaxLines, ui->sb_highlightMaxLines->value());
     mSettings->setBool(skEdLineWrapEditor, ui->cb_linewrap_editor->isChecked());
     mSettings->setBool(skEdLineWrapProcess, ui->cb_linewrap_process->isChecked());
     mSettings->setBool(skEdClearLog, ui->cb_clearlog->isChecked());
