@@ -112,7 +112,7 @@ void BaseHighlighter::rehighlight()
 
 void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 {
-    if (!mDoc || !block.isValid() || block.blockNumber() > mMaxBlockCount) return;
+    if (!mDoc || !block.isValid() || block.blockNumber() >= mMaxBlockCount) return;
     mCurrentBlock = block;
     bool forceHighlightOfNextBlock = true;
     if (mTime.isNull()) mTime = QTime::currentTime();
@@ -303,7 +303,7 @@ QTextBlock BaseHighlighter::nextDirty()
         if (!res.isValid()) res = mDoc->findBlockByNumber(mDirtyBlocks.first().first);
         if (res.isValid()) return res;
     }
-    if (mCurrentBlock.blockNumber() >= mMaxBlockCount)
+    if (mCurrentBlock.blockNumber() >= mMaxBlockCount - 1)
         return res;
     return mCurrentBlock.next();
 }
@@ -313,8 +313,8 @@ void BaseHighlighter::setDirty(const QTextBlock& fromBlock, QTextBlock toBlock)
     Q_ASSERT_X(fromBlock.isValid() && toBlock.isValid(), "BaseHighlighter::setDirty()", "invalid block");
     if (toBlock < fromBlock) return;
     if (fromBlock.blockNumber() >= mMaxBlockCount) return;
-    if (toBlock.blockNumber() > mMaxBlockCount) {
-        toBlock = mDoc->findBlockByNumber(mMaxBlockCount);
+    if (toBlock.blockNumber() >= mMaxBlockCount) {
+        toBlock = mDoc->findBlockByNumber(mMaxBlockCount-1);
         if (!toBlock.isValid()) return;
     }
     mDirtyBlocks << Interval(fromBlock, toBlock);
