@@ -213,7 +213,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                            } else if (item->data( (int)DataItemColumn::Undefined).toBool()) {
                                      return QVariant( QString("%1 %2%3%4 attribute is unknown.<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive.%5")
                                                            .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ));
-                           } else if (item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::KeyItem) {
+                           } else if (item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::KeyItem || item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue) {
                                      if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0)
                                           return QVariant( QString("%1%2%3%4 may be invalid or excluded from (an)other attribute.<br/>Check schema definition for valid and excluded attribute.%5")
                                                               .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
