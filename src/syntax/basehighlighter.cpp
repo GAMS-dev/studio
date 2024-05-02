@@ -33,6 +33,7 @@ BaseHighlighter::BaseHighlighter(QObject *parent) : QObject(parent)
     if (parent->inherits("QTextEdit")) {
         QTextDocument *doc = parent->property("document").value<QTextDocument *>();
         if (doc) setDocument(doc);
+        mPrevMaxBlockCount = Settings::settings()->toInt(skEdHighlightMaxLines);
     }
 }
 
@@ -73,6 +74,7 @@ void BaseHighlighter::setDocument(QTextDocument *doc, bool wipe)
         connect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
         connect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
         setDirty(mDoc->firstBlock(), mDoc->lastBlock());
+        QTimer::singleShot(0, this, [this](){ mBlockCount = mDoc->blockCount(); });
         QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
     } else {
         mDirtyBlocks.clear();
@@ -104,15 +106,19 @@ void BaseHighlighter::resume()
 void BaseHighlighter::rehighlight()
 {
     mMaxBlockCount = Settings::settings()->toInt(skEdHighlightMaxLines);
+    if (mMaxBlockCount > mPrevMaxBlockCount)
+        mPrevMaxBlockCount = mMaxBlockCount;
     mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
-    setDirty(mDoc->firstBlock(), mDoc->lastBlock());
+    QTextBlock lastBlock = (mDoc->blockCount() > mPrevMaxBlockCount && mPrevMaxBlockCount >= 0) ?
+                               mDoc->findBlockByNumber(mPrevMaxBlockCount) : mDoc->lastBlock();
+    setDirty(mDoc->firstBlock(), lastBlock);
     processDirtyParts();
 }
 
 void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
 {
-    if (!mDoc || !block.isValid() || block.blockNumber() >= mMaxBlockCount) return;
+    if (!mDoc || !block.isValid()) return;
     mCurrentBlock = block;
     bool forceHighlightOfNextBlock = true;
     if (mTime.isNull()) mTime = QTime::currentTime();
@@ -133,6 +139,8 @@ void BaseHighlighter::rehighlightBlock(const QTextBlock &block)
         }
         mCurrentBlock = nextDirty();
     }
+    if (mCurrentBlock.blockNumber() == mPrevMaxBlockCount-1 && mPrevMaxBlockCount > mMaxBlockCount)
+        mPrevMaxBlockCount = mMaxBlockCount;
     mFormatChanges.clear();
     if (mAborted) mDirtyBlocks.clear();
     if (!mDirtyBlocks.isEmpty()) QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
@@ -152,9 +160,9 @@ void BaseHighlighter::reformatBlocks(int from, int charsRemoved, int charsAdded)
     if (!lastBlock.isValid())
         lastBlock = mDoc->lastBlock();
     setDirty(fromBlock, lastBlock);
-//    DEB() << "dirty: " << QString::number(fromBlock.blockNumber()).rightJustified(2,'0')
-//          << "-" << QString::number(lastBlock.blockNumber()).rightJustified(2,'0');
-    rehighlightBlock(fromBlock);
+    QTextBlock endBlock = mDoc->findBlock(from + charsAdded);
+    mAddedBlocks = (fromBlock.blockNumber() < mPrevMaxBlockCount) ? endBlock.blockNumber() - fromBlock.blockNumber() : -1;
+    QTimer::singleShot(10, this, &BaseHighlighter::processDirtyParts);
 }
 
 QTextBlock cutEnd(const QTextBlock& block, int altLine, QTextDocument *doc)
@@ -168,6 +176,18 @@ QTextBlock cutEnd(const QTextBlock& block, int altLine, QTextDocument *doc)
 void BaseHighlighter::blockCountChanged(int newBlockCount)
 {
     if (!mDoc) return;
+    QTextBlock fromBlock;
+    if (mAddedBlocks >= 0) {
+        // a recent contentChanged effected the block count: adapt unformatted part
+        int removed = mBlockCount - newBlockCount + mAddedBlocks;
+        fromBlock = mDoc->findBlockByNumber(mPrevMaxBlockCount - removed);
+        if (fromBlock.isValid()) {
+            QTextBlock lastBlock = mDoc->findBlockByNumber(mPrevMaxBlockCount + mAddedBlocks - 1);
+            if (!lastBlock.isValid())
+                lastBlock = mDoc->lastBlock();
+            setDirty(fromBlock, lastBlock, true);
+        }
+    }
     for (int i = 0; i < mDirtyBlocks.size(); ++i) {
         mDirtyBlocks[i].setFirst(cutEnd(mDirtyBlocks.at(i).bFirst, mDirtyBlocks.at(i).first, mDoc));
         mDirtyBlocks[i].setSecond(cutEnd(mDirtyBlocks.at(i).bSecond, mDirtyBlocks.at(i).second, mDoc));
@@ -176,6 +196,10 @@ void BaseHighlighter::blockCountChanged(int newBlockCount)
         }
     }
     mBlockCount = newBlockCount;
+    if (mAddedBlocks >= 0) {
+        mAddedBlocks = -1;
+        QTimer::singleShot(10, this, &BaseHighlighter::processDirtyParts);
+    }
 }
 
 void BaseHighlighter::processDirtyParts()
@@ -198,7 +222,7 @@ void BaseHighlighter::setFormat(int start, int count, const QTextCharFormat &for
 
 QTextCharFormat BaseHighlighter::format(int pos) const
 {
-    if (pos < 0 || pos >= mFormatChanges.count())
+    if (pos < 0 || pos >= mFormatChanges.count() || mCurrentBlock.blockNumber() > mMaxBlockCount)
         return QTextCharFormat();
     return mFormatChanges.at(pos);
 }
@@ -220,6 +244,11 @@ void BaseHighlighter::setCurrentBlockCRIndex(int newState)
 QTextBlock BaseHighlighter::currentBlock() const
 {
     return mCurrentBlock;
+}
+
+bool BaseHighlighter::isUnformatted() const
+{
+    return mCurrentBlock.blockNumber() >= mMaxBlockCount;
 }
 
 void BaseHighlighter::reformatCurrentBlock()
@@ -298,24 +327,29 @@ QTextBlock BaseHighlighter::nextDirty()
 {
     QTextBlock res;
     if (!mDoc) return res;
+    if (mCurrentBlock.blockNumber() == mPrevMaxBlockCount - 1 && mPrevMaxBlockCount != mMaxBlockCount)
+        mPrevMaxBlockCount = mMaxBlockCount;
     if (!mDirtyBlocks.isEmpty()) {
         res = mDirtyBlocks.first().bFirst;
         if (!res.isValid()) res = mDoc->findBlockByNumber(mDirtyBlocks.first().first);
         if (res.isValid()) return res;
     }
-    if (mCurrentBlock.blockNumber() >= mMaxBlockCount - 1)
+    if (mCurrentBlock.blockNumber() >= mPrevMaxBlockCount - 1) {
         return res;
+    }
     return mCurrentBlock.next();
 }
 
-void BaseHighlighter::setDirty(const QTextBlock& fromBlock, QTextBlock toBlock)
+void BaseHighlighter::setDirty(const QTextBlock& fromBlock, QTextBlock toBlock, bool force)
 {
     Q_ASSERT_X(fromBlock.isValid() && toBlock.isValid(), "BaseHighlighter::setDirty()", "invalid block");
     if (toBlock < fromBlock) return;
-    if (fromBlock.blockNumber() >= mMaxBlockCount) return;
-    if (toBlock.blockNumber() >= mMaxBlockCount) {
-        toBlock = mDoc->findBlockByNumber(mMaxBlockCount-1);
-        if (!toBlock.isValid()) return;
+    if (!force) {
+        if (fromBlock.blockNumber() >= mPrevMaxBlockCount) return;
+        if (toBlock.blockNumber() >= mPrevMaxBlockCount) {
+            toBlock = mDoc->findBlockByNumber(mPrevMaxBlockCount-1);
+            if (!toBlock.isValid()) return;
+        }
     }
     mDirtyBlocks << Interval(fromBlock, toBlock);
     std::sort(mDirtyBlocks.begin(), mDirtyBlocks.end());
@@ -365,6 +399,8 @@ int BaseHighlighter::maxLines() const
 void BaseHighlighter::setMaxLines(int newMaxLines)
 {
     mMaxBlockCount = (newMaxLines == -1) ? std::numeric_limits<int>().max() : newMaxLines;
+    if (mPrevMaxBlockCount < mMaxBlockCount)
+        mPrevMaxBlockCount = mMaxBlockCount;
 }
 
 BaseHighlighter::Interval::Interval(QTextBlock firstBlock, QTextBlock secondBlock)

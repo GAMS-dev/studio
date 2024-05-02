@@ -69,12 +69,13 @@ protected:
     void setCurrentBlockCRIndex(int newState);
     QTextBlock currentBlock() const;
     int maxLineLength() { return mMaxLineLength; }
+    bool isUnformatted() const;
 
 private:
     void reformatCurrentBlock();
     void applyFormatChanges();
     QTextBlock nextDirty();
-    void setDirty(const QTextBlock& fromBlock, QTextBlock toBlock);
+    void setDirty(const QTextBlock& fromBlock, QTextBlock toBlock, bool force = false);
     void setClean(QTextBlock block);
     inline int dirtyIndex(int blockNr) {
         for (int i = 0; i < mDirtyBlocks.size(); ++i) {
@@ -126,6 +127,8 @@ private:
     QTextDocument *mDoc = nullptr;
     int mBlockCount = 1;
     int mMaxBlockCount = -1;
+    int mPrevMaxBlockCount = -1;
+    int mAddedBlocks = 0;
     int mMaxLineLength = -1;
     QTextBlock mCurrentBlock;
     QVector<Interval> mDirtyBlocks;             // disjoint regions of dirty blocks

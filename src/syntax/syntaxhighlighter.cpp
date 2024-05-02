@@ -138,6 +138,12 @@ SyntaxHighlighter::~SyntaxHighlighter()
 
 void SyntaxHighlighter::highlightBlock(const QString& text)
 {
+    if (isUnformatted()) {
+        // this removes a previously assigned format at the border to max-highlight
+        setFormat(0, text.length(), QTextCharFormat());
+        setCurrentBlockCRIndex(0);
+        return;
+    }
     CodeRelationIndex cri = previousBlockCRIndex();
     if (cri < 0) cri = 0;
     int index = 0;

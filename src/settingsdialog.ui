@@ -313,7 +313,7 @@
           <item row="11" column="0">
            <widget class="QLabel" name="label_6">
             <property name="text">
-             <string>Syntax Highlight line length</string>
+             <string>Syntax Highlight max width</string>
             </property>
            </widget>
           </item>
