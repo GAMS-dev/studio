@@ -105,8 +105,7 @@ void BaseHighlighter::resume()
 
 void BaseHighlighter::rehighlight()
 {
-    if (mMaxBlockCount != Settings::settings()->toInt(skEdHighlightMaxLines))
-        setMaxLines(Settings::settings()->toInt(skEdHighlightMaxLines));
+    setMaxLines(Settings::settings()->toInt(skEdHighlightMaxLines));
     mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
     QTextBlock lastBlock = (mDoc->blockCount() > mPrevMaxBlockCount && mPrevMaxBlockCount >= 0) ?
