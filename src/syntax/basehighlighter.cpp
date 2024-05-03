@@ -397,6 +397,7 @@ int BaseHighlighter::maxLines() const
 
 void BaseHighlighter::setMaxLines(int newMaxLines)
 {
+    if (newMaxLines < 0) newMaxLines = std::numeric_limits<int>().max();
     if (newMaxLines == mMaxBlockCount) return;
     if (mDoc) {
         QTextBlock from = mDoc->findBlockByNumber(qMin(newMaxLines, mMaxBlockCount));
