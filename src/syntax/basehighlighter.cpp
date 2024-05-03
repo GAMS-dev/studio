@@ -105,9 +105,8 @@ void BaseHighlighter::resume()
 
 void BaseHighlighter::rehighlight()
 {
-    mMaxBlockCount = Settings::settings()->toInt(skEdHighlightMaxLines);
-    if (mMaxBlockCount > mPrevMaxBlockCount)
-        mPrevMaxBlockCount = mMaxBlockCount;
+    if (mMaxBlockCount != Settings::settings()->toInt(skEdHighlightMaxLines))
+        setMaxLines(Settings::settings()->toInt(skEdHighlightMaxLines));
     mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
     QTextBlock lastBlock = (mDoc->blockCount() > mPrevMaxBlockCount && mPrevMaxBlockCount >= 0) ?
@@ -398,6 +397,13 @@ int BaseHighlighter::maxLines() const
 
 void BaseHighlighter::setMaxLines(int newMaxLines)
 {
+    if (newMaxLines == mMaxBlockCount) return;
+    if (mDoc) {
+        QTextBlock from = mDoc->findBlockByNumber(qMin(newMaxLines, mMaxBlockCount));
+        QTextBlock to = mDoc->findBlockByNumber(qMax(newMaxLines, mMaxBlockCount));
+        if (from.isValid() && to.isValid())
+            setDirty(from, to, true);
+    }
     mMaxBlockCount = (newMaxLines == -1) ? std::numeric_limits<int>().max() : newMaxLines;
     if (mPrevMaxBlockCount < mMaxBlockCount)
         mPrevMaxBlockCount = mMaxBlockCount;
