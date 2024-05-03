@@ -197,6 +197,7 @@ private:
     ReferenceState mState = Initializing;
     int mLastErrorLine = -1;
     qint64 mLastReadFileSize = 0;
+    bool mPendingReload = false;
 
     QStringList mFileUsed;
 

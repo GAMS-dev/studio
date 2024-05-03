@@ -70,14 +70,8 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
     ui->setupUi(this);
     updateStyle();
 
-    bool problemLoaded = (mReference->state() == Reference::UnsuccessfullyLoaded);
-    if (problemLoaded) {
-        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
-        SysLogLocator::systemLog()->append(
-                    QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
-                              .arg(mReference->getFileLocation(), errorLine),
-                    LogMsgType::Error);
-    }
+    bool problemLoaded = (mReference->state() == Reference::Loading ||
+                          mReference->state() == Reference::UnsuccessfullyLoaded );
 
     QList<QHeaderView*> headers;
 
@@ -163,13 +157,6 @@ void ReferenceViewer::selectSearchField() const
 void ReferenceViewer::reloadFile(const QString &encodingName)
 {
     mReference->loadReferenceFile(encodingName);
-    if (mReference->state() == Reference::UnsuccessfullyLoaded) {
-        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
-        SysLogLocator::systemLog()->append(
-                    QString("Error while reloading: %1%2, the file content might be corrupted or incorrectly overwritten")
-                               .arg(mReference->getFileLocation(), errorLine),
-                    LogMsgType::Error);
-    }
 }
 
 void ReferenceViewer::on_tabBarClicked(int index)
@@ -199,6 +186,14 @@ void ReferenceViewer::updateView(bool status)
                 fileUsedWidget->resetModel();
             }
         }
+    }
+
+    if (mReference->state() == Reference::UnsuccessfullyLoaded) {
+        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
+        SysLogLocator::systemLog()->append(
+            QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
+                .arg(mReference->getFileLocation(), errorLine),
+            LogMsgType::Error);
     }
 
     if (status) {
