@@ -1,5 +1,8 @@
 Version 1.18.0 *
 ==================
+- added support for excludes schema in connect editor
+- added support for anyof schema in connect editor
+- fixed the display of the schema definition of a list of oneof_schema dict in connect editor
 - upgraded to Qt 6.7.0
 
 Version 1.17.7
