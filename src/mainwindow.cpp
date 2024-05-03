@@ -3642,14 +3642,14 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
             else
                 fileNode = mProjectRepo.findOrCreateFileNode(filePath, project);
         } else
-            DEB() << "OOPS, this shouldn't happen: Neither project nor file defined!";
+            DEB() << "Error: Neither project nor file defined!";
     }
 
     // open the detected file
     if (fileNode)
         openFileNode(fileNode, focus, -1, forcedAsTextEditor, tabStrategy);
     else
-        DEB() << "OOPS, this shouldn't happen: unable to create the fileNode!";
+        DEB() << "Error: unable to create the fileNode!";
 
     return fileNode;
 }
