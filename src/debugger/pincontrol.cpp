@@ -52,7 +52,6 @@ void PinControl::setPinView(PExProjectNode *project, QWidget *pinChild, FileMeta
     PinData *data = new PinData(pinChild, fileMeta);
     mData.insert(project, data);
     connect(pinChild, &QWidget::destroyed, this, &PinControl::removeView);
-    debugData("set");
     projectSwitched(project);
 }
 
@@ -64,7 +63,6 @@ bool PinControl::hasPinChild(PExProjectNode *project) const
 void PinControl::closedPinView()
 {
     mData.remove(mLastProject);
-    debugData("removed");
 }
 
 PinData *PinControl::pinChild(PExProjectNode *project) const
@@ -79,20 +77,6 @@ bool PinControl::hasPinView()
     if (!mPinView)
         SysLogLocator::systemLog()->append("PinView not assigned", LogMsgType::Error);
     return mPinView;
-}
-
-void PinControl::debugData(const QString &text)
-{
-#ifdef _DEBUG
-    DEB() << "---- Project " << text << ":  " << mData.count() << "  " << mLastProject;
-    PExProjectNode *curPro = mData.contains(mLastProject) ? mLastProject : nullptr;
-    for (auto ind = mData.begin() ; ind != mData.end() ; ++ind) {
-        DEB() << ind.key() << ":  " << (ind.value() && ind.value()->fileMeta ? ind.value()->fileMeta->name() : "none")
-              << (ind.key() == curPro ? "   <CURRENT>" : "");
-    }
-#else
-    Q_UNUSED(text);
-#endif
 }
 
 void PinControl::projectSwitched(PExProjectNode *project)
@@ -118,7 +102,6 @@ void PinControl::projectSwitched(PExProjectNode *project)
         mCurrentWidget = data->widget;
     }
     mLastProject = project;
-    debugData("switched");
 }
 
 void PinControl::resetToInitialView() // TODO(JM) check if useful

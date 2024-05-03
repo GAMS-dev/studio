@@ -302,7 +302,6 @@ void NeosProcess::reVersion(const QString &value)
 void NeosProcess::reSubmitJob(const int &jobNumber, const QString &jobPassword)
 {
     if (!jobNumber) {
-        DEB() << "NEOS: " << jobPassword;
         emit newStdChannelData("NEOS: " + jobPassword.toUtf8());
         terminate();
         return;
