@@ -45,7 +45,7 @@ void SearchResultViewItemDelegate::paint(QPainter *painter, const QStyleOptionVi
     doc.setHtml(elideRichText(opt.text, opt.rect.width(), opt.fontMetrics));
 
     opt.text = "";
-    opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter);
+    opt.widget->style()->drawControl(QStyle::CE_ItemViewItem, &option, painter, opt.widget);
 
     painter->translate(opt.rect.left(), opt.rect.top());
     QRect clip(0, 0, opt.rect.width(), opt.rect.height());
