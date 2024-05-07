@@ -121,7 +121,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
         mNeedRehighlight = true;
         setModified();
     });
-    connect(ui->sb_highlightMaxLines, QOverload<int>::of(&QSpinBox::valueChanged), this, [this](int val) {
+    connect(ui->sb_highlightMaxLines, QOverload<int>::of(&QSpinBox::valueChanged), this, [this]() {
         mNeedRehighlight = true;
         setModified();
     });
@@ -280,7 +280,6 @@ void SettingsDialog::loadSettings()
     ui->addCommentAboveCheckBox->setChecked(mSettings->toBool(skSoAddCommentAbove));
     ui->addEOLCommentCheckBox->setChecked(mSettings->toBool(skSoAddEOLComment));
     ui->deleteCommentAboveCheckbox->setChecked(mSettings->toBool(skSoDeleteCommentsAbove));
-    QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 
     // update page
     ui->autoUpdateBox->setCheckState(mSettings->toBool(skAutoUpdateCheck) ? Qt::Checked : Qt::Unchecked);
@@ -289,6 +288,8 @@ void SettingsDialog::loadSettings()
     mLastCheckDate = mSettings->toDate(skLastUpdateCheckDate);
     ui->lastCheckLabel->setText(mLastCheckDate.toString());
     ui->nextCheckLabel->setText(nextCheckDate().toString());
+
+    QTimer::singleShot(0, this, &SettingsDialog::afterLoad);
 }
 
 void SettingsDialog::on_tabWidget_currentChanged(int index)
@@ -456,7 +457,10 @@ void SettingsDialog::saveSettings()
     mSettings->save();
     mSettings->block();
     setModifiedStatus(false);
-    if (mNeedRehighlight) emit rehighlight();
+    if (mNeedRehighlight) {
+        emit rehighlight();
+        mNeedRehighlight = false;
+    }
 }
 
 void SettingsDialog::on_btn_browse_clicked()

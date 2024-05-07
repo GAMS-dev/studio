@@ -45,7 +45,7 @@ public:
     void pause();
     void resume();
     int maxLines() const;
-    void setMaxLines(int newMaxLines);
+    bool setMaxLines(int newMaxLines);
 
 signals:
     void needUnfold(QTextBlock block);

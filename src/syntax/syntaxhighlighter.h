@@ -44,7 +44,7 @@ public:
     ~SyntaxHighlighter() override;
 
     void highlightBlock(const QString &text) override;
-    void reloadColors();
+    bool reloadColors();
 
 public slots:
     void syntaxKind(int position, int &intKind, int &flavor);

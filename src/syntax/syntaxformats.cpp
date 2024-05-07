@@ -39,8 +39,9 @@ QString syntaxKindName(int kind)
     return syntaxKindName(SyntaxKind(kind));
 }
 
-void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
+bool SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
 {
+    bool changed = mColorSlot != slot;
     mColorSlot = slot;
     charFormat().setProperty(QTextFormat::UserProperty, intSyntaxType());
     if (toColor(slot).isValid())
@@ -49,6 +50,7 @@ void SyntaxAbstract::assignColorSlot(Theme::ColorSlot slot)
         charFormat().setForeground(Qt::black);
     charFormat().setFontWeight(Theme::hasFlag(slot, Theme::fBold) ? QFont::Bold : QFont::Normal);
     charFormat().setFontItalic(Theme::hasFlag(slot, Theme::fItalic));
+    return changed;
 }
 
 const SyntaxTransitions SyntaxAbstract::nextKinds(bool emptyLine)

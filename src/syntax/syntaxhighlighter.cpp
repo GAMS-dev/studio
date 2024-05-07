@@ -467,11 +467,14 @@ void SyntaxHighlighter::initKind(SyntaxAbstract *syntax, Theme::ColorSlot slot)
     initKind(false, syntax, slot);
 }
 
-void SyntaxHighlighter::reloadColors()
+bool SyntaxHighlighter::reloadColors()
 {
+    bool changed = false;
     for (SyntaxAbstract* syntax: std::as_const(mKinds)) {
-        syntax->assignColorSlot(syntax->colorSlot());
+        if (syntax->assignColorSlot(syntax->colorSlot()))
+            changed = true;
     }
+    return changed;
 }
 
 int SyntaxHighlighter::addCode(BlockCode code, const SyntaxFlags &synFlags, CodeRelationIndex parentIndex)

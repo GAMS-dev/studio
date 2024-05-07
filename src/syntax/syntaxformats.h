@@ -258,7 +258,7 @@ public:
     virtual ~SyntaxAbstract() {}
     SyntaxKind kind() const { return mKind; }
     QString name() const { return syntaxKindName(mKind); }
-    void assignColorSlot(Theme::ColorSlot slot);
+    bool assignColorSlot(Theme::ColorSlot slot);
     Theme::ColorSlot colorSlot() const { return mColorSlot; }
 
     /// Finds the begin of this syntax

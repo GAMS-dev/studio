@@ -422,10 +422,12 @@ void FileMeta::updateView()
 void FileMeta::updateSyntaxColors()
 {
     if (mHighlighter) {
-        mHighlighter->reloadColors();
-        for (QWidget *w: std::as_const(mEditors)) {
-            if (ViewHelper::toCodeEdit(w)) {
-                mHighlighter->rehighlight();
+        bool changed = mHighlighter->reloadColors();
+        if (changed) {
+            for (QWidget *w: std::as_const(mEditors)) {
+                if (ViewHelper::toCodeEdit(w)) {
+                    mHighlighter->rehighlight();
+                }
             }
         }
     }

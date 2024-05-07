@@ -105,7 +105,11 @@ void BaseHighlighter::resume()
 
 void BaseHighlighter::rehighlight()
 {
-    setMaxLines(Settings::settings()->toInt(skEdHighlightMaxLines));
+    bool skipFullHighlight = setMaxLines(Settings::settings()->toInt(skEdHighlightMaxLines));
+    if (skipFullHighlight && mMaxLineLength == Settings::settings()->toInt(skEdHighlightBound)) {
+        processDirtyParts();
+        return;
+    }
     mMaxLineLength = Settings::settings()->toInt(skEdHighlightBound);
     if (!mDoc) return;
     QTextBlock lastBlock = (mDoc->blockCount() > mPrevMaxBlockCount && mPrevMaxBlockCount >= 0) ?
@@ -343,10 +347,12 @@ void BaseHighlighter::setDirty(const QTextBlock& fromBlock, QTextBlock toBlock, 
     Q_ASSERT_X(fromBlock.isValid() && toBlock.isValid(), "BaseHighlighter::setDirty()", "invalid block");
     if (toBlock < fromBlock) return;
     if (!force) {
-        if (fromBlock.blockNumber() >= mPrevMaxBlockCount) return;
+        if (fromBlock.blockNumber() >= mPrevMaxBlockCount)
+            return;
         if (toBlock.blockNumber() >= mPrevMaxBlockCount) {
-            toBlock = mDoc->findBlockByNumber(mPrevMaxBlockCount-1);
-            if (!toBlock.isValid()) return;
+            toBlock = mDoc->findBlockByNumber(qMin(mDoc->blockCount(), mPrevMaxBlockCount)-1);
+            if (!toBlock.isValid())
+                return;
         }
     }
     mDirtyBlocks << Interval(fromBlock, toBlock);
@@ -394,10 +400,10 @@ int BaseHighlighter::maxLines() const
     return mMaxBlockCount;
 }
 
-void BaseHighlighter::setMaxLines(int newMaxLines)
+bool BaseHighlighter::setMaxLines(int newMaxLines)
 {
     if (newMaxLines < 0) newMaxLines = std::numeric_limits<int>().max();
-    if (newMaxLines == mMaxBlockCount) return;
+    if (newMaxLines == mMaxBlockCount) return false;
     if (mDoc) {
         QTextBlock from = mDoc->findBlockByNumber(qMin(newMaxLines, mMaxBlockCount));
         QTextBlock to = mDoc->findBlockByNumber(qMax(newMaxLines, mMaxBlockCount));
@@ -407,6 +413,7 @@ void BaseHighlighter::setMaxLines(int newMaxLines)
     mMaxBlockCount = (newMaxLines == -1) ? std::numeric_limits<int>().max() : newMaxLines;
     if (mPrevMaxBlockCount < mMaxBlockCount)
         mPrevMaxBlockCount = mMaxBlockCount;
+    return true;
 }
 
 BaseHighlighter::Interval::Interval(QTextBlock firstBlock, QTextBlock secondBlock)
