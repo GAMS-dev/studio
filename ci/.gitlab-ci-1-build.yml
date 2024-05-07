@@ -36,7 +36,7 @@ build-dac:
 
 build-leg:
   stage: build
-  tags: [linux]
+  tags: [puma]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
