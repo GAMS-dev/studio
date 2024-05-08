@@ -107,7 +107,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path);
         if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly())))
-            res << sf.path;
+            res << sf;
     }
     return res;
 }

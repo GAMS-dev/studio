@@ -127,6 +127,10 @@ void Search::runSearch(QList<SearchFile> files)
             }
         } else unmodified << sf;
     }
+    for (const SearchFile& sf : std::as_const(modified))
+        DEB() << "modified    " << (sf.fileMeta ? sf.fileMeta->location() : sf.path);
+    for (const SearchFile& sf : std::as_const(unmodified))
+        DEB() << "unchanged   " << (sf.fileMeta ? sf.fileMeta->location() : sf.path);
 
     // start background task first
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
@@ -683,10 +687,8 @@ void Search::replaceAll(SearchParameters parameters)
     if (msgBox.clickedButton() == ok) {
 
         mSearchDialog->setSearchStatus(Search::Replacing);
-
         for (FileMeta* fm : std::as_const(opened))
             hits += replaceOpened(fm, parameters);
-
         for (FileMeta* fm : std::as_const(unopened))
             hits += replaceUnopened(fm, parameters);
 
