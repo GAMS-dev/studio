@@ -127,10 +127,6 @@ void Search::runSearch(QList<SearchFile> files)
             }
         } else unmodified << sf;
     }
-    for (const SearchFile& sf : std::as_const(modified))
-        DEB() << "modified    " << (sf.fileMeta ? sf.fileMeta->location() : sf.path);
-    for (const SearchFile& sf : std::as_const(unmodified))
-        DEB() << "unchanged   " << (sf.fileMeta ? sf.fileMeta->location() : sf.path);
 
     // start background task first
     NodeId projectNode = mSearchDialog->selectedScope() == Scope::ThisProject
