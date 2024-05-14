@@ -1,6 +1,7 @@
 Version 1.17.8 *
 ==================
-- Fixed a crash of the GDX Viewer when loading a file with invalid UELs.
+- Fixed a crash of the GDX Viewer when loading a file with invalid UELs
+- Fixed wrong search result after replace in multiple files
 
 Version 1.17.7
 ==================
