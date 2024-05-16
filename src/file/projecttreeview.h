@@ -56,6 +56,7 @@ public slots:
 private:
     QItemSelection mSelectionBeforeDrag;
 
+
 };
 
 } // namespace studio

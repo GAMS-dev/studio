@@ -41,6 +41,9 @@ public:
     int nrPalettes();
     int activePalette();
 
+signals:
+    void paletteChanged();
+
 private:
     QList<QPalette> mStyles;
     static PaletteManager* mInstance;

@@ -202,11 +202,11 @@ void ProjectEdit::updateEditColor(QLineEdit *edit, const QString &text)
 {
     QDir dir(text.trimmed());
     if (!dir.exists()) {
-        QPalette pal = edit->palette();
+        QPalette pal = qApp->palette();
         pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
         edit->setPalette(pal);
     } else {
-        edit->setPalette(QPalette());
+        edit->setPalette(qApp->palette());
     }
 }
 

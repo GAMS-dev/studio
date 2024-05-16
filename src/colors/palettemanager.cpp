@@ -102,13 +102,8 @@ int PaletteManager::activePalette()
 void PaletteManager::applyPalette(int i)
 {
     QPalette p = mStyles.at(i);
-#ifdef _WIN32
-    if (i == 1)
-        QApplication::setStyle(QStyleFactory::create("Fusion")); // this needs to be set so everything turns dark
-    else
-        QApplication::setStyle(QStyleFactory::create(mDefaultStyle));
-#endif
-    QApplication::setPalette(p);
+    qApp->setPalette(p);
+    emit paletteChanged();
 }
 
 }

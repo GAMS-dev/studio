@@ -122,7 +122,7 @@ void WelcomePage::zoomReset()
 bool WelcomePage::event(QEvent *event)
 {
     if (event->type() == QEvent::PaletteChange) {
-        auto p = palette();
+        auto p = qApp->palette();
         p.setColor(QPalette::Window, p.color(QPalette::Base).lighter());
 
         const auto laList = findChildren<WpLabel*>();

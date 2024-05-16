@@ -289,6 +289,11 @@ int Theme::baseTheme(int theme) const
     return mThemeBases.at(theme);
 }
 
+bool Theme::isDark()
+{
+    return color(Edit_text).black() < color(Edit_background).black();
+}
+
 QString Theme::name(Theme::ColorSlot slot)
 {
     return QMetaEnum::fromType<ColorSlot>().valueToKey(slot);

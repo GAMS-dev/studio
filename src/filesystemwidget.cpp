@@ -75,7 +75,7 @@ void FileSystemWidget::setInfo(const QString &message, bool valid) {
         extraText = QString(" (%1 files missing)").arg(mMissingFiles.count());
         toolTip = "Missing files:\n" + mMissingFiles.join("\n");
     }
-    auto palette = ui->laInfo->palette();
+    auto palette = qApp->palette();
     if (valid) {
         palette.setColor(ui->laInfo->foregroundRole(), Theme::color(Theme::Normal_Green));
         ui->createButton->setText("Save Changes");

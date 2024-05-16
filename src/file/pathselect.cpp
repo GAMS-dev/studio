@@ -29,13 +29,13 @@ void PathSelect::on_edWorkDir_textChanged(const QString &text)
     QDir dir(text.trimmed());
     ui->pbOk->setEnabled(!text.trimmed().isEmpty());
     if (ui->pbOk->isEnabled() && !dir.exists()) {
-        QPalette pal = ui->edWorkDir->palette();
+        QPalette pal = qApp->palette();
         pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
         ui->edWorkDir->setPalette(pal);
         setWindowTitle("Create Working Directory");
         ui->pbOk->setText("Create");
     } else {
-        ui->edWorkDir->setPalette(QPalette());
+        ui->edWorkDir->setPalette(qApp->palette());
         setWindowTitle("Select Working Directory");
         ui->pbOk->setText("Ok");
     }

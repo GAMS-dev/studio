@@ -139,7 +139,7 @@ bool MiroDeployDialog::isDataContractAvailable()
         return true;
     }
 
-    auto palette = ui->errorLabel->palette();
+    auto palette = qApp->palette();
     palette.setColor(ui->errorLabel->foregroundRole(),
                      Theme::color(Theme::Normal_Red));
     ui->errorLabel->setPalette(palette);

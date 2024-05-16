@@ -104,7 +104,12 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     if (!ind.isValid()) return QVariant();
     switch (role) {
     case Qt::BackgroundRole: {
-        if (isSelected(ind)) return QColor(102,187,255,68); // "#4466BBFF"
+        if (isSelected(ind)) {
+            if (Theme::isDark())
+                return QColor(243,150,25, 120); // GAMS orange
+            else
+                return QColor(102,187,255,68); // "#4466BBFF"
+        }
     }   break;
 
     case Qt::DisplayRole:
@@ -126,8 +131,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         if (node && !node->file()->exists(true)) {
             return isCurrent(ind) ? Theme::color(Theme::Normal_Red).darker()
                                   : QColor(Qt::gray);
-        } else if (Theme::instance()->baseTheme(Theme::instance()->activeTheme())) {
-            // dark theme, not current: slightly grayed white
+        } else if (Theme::instance()->isDark()) {
             if (!isCurrent(ind) && !isCurrentProject(ind))
                 return QColor(Qt::white).darker(125);
         }

@@ -70,7 +70,7 @@ QWidget *TreeItemDelegate::createEditor(QWidget *parent, const QStyleOptionViewI
 {
     Q_UNUSED(index)
     QLineEdit *ed = new QLineEdit(option.text, parent);
-    QPalette pal = ed->palette();
+    QPalette pal = qApp->palette();
     pal.setColor(QPalette::Highlight, parent->topLevelWidget()->palette().color(QPalette::Highlight));
     ed->setPalette(pal);
     return ed;

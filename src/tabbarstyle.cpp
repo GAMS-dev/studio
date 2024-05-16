@@ -60,7 +60,7 @@ int TabBarStyle::platformGetDyLifter(QTabWidget::TabPosition tabPos, bool isCurr
 
 QColor TabBarStyle::platformGetTextColor(TabState state, bool isCurrent) const
 {
-    bool dark = Theme::instance()->baseTheme(Theme::instance()->activeTheme()) == 1;
+    bool dark = Theme::instance()->isDark();
     QColor res = dark ? Qt::white : Qt::black;
     if (state & tsColorAll) return dark ? res.darker(160) : QColor(50,50,50); // text slightly grayed out
 #ifdef __APPLE__

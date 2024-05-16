@@ -67,8 +67,8 @@ void WpLabel::updateMouseOverColor(bool hovered)
     QPoint pos = mapFromGlobal(QCursor::pos());
     mActive = hovered && !inCloseButton(pos);
 
-    auto p = palette();
-    p.setColor(QPalette::Window, mActive ? GAMS_ORANGE : palette().color(QPalette::Base).lighter());
+    auto p = qApp->palette();
+    p.setColor(QPalette::Window, mActive ? GAMS_ORANGE : p.color(QPalette::Base).lighter());
     setPalette(p);
 }
 

@@ -450,11 +450,11 @@ void FileMeta::initEditorColors()
         if (Theme::color(Theme::Edit_text) == Qt::transparent &&
                 Theme::color(Theme::Edit_background) == Qt::transparent) {
             ed->setAutoFillBackground(false);
-            ed->setPalette(QPalette());
+            ed->setPalette(qApp->palette());
         } else if (ed->palette().windowText().color() != Theme::color(Theme::Edit_text) ||
                 ed->palette().window().color() != Theme::color(Theme::Edit_background)) {
             ed->setAutoFillBackground(true);
-            QPalette pal = ed->palette();
+            QPalette pal = qApp->palette();
             pal.setColor(QPalette::Text, Theme::color(Theme::Edit_text));
             pal.setColor(QPalette::Base, Theme::color(Theme::Edit_background));
             ed->setPalette(pal);

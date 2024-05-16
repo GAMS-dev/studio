@@ -19,6 +19,7 @@
  */
 #include "application.h"
 #include "exception.h"
+#include "qstylefactory.h"
 #include "version.h"
 #include "settings.h"
 #include "commonpaths.h"
@@ -58,6 +59,9 @@ void logToFile(QtMsgType type, const QMessageLogContext &context, const QString 
 Application::Application(int& argc, char** argv)
     : QApplication(argc, argv)
 {
+#ifdef _WIN32
+    QApplication::setStyle(QStyleFactory::create("Fusion"));
+#endif
     QLocale *locale = new QLocale(QLocale::English, QLocale::UnitedStates);
     QLocale::setDefault(*locale);
     parseCmdArgs();

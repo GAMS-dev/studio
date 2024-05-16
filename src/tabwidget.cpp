@@ -52,7 +52,7 @@ void TabWidget::resetSystemLogTab(int index)
     if (tabText(0).startsWith(ViewStrings::SystemLog)) {
         mMsgCount = 0;
         setTabText(0, ViewStrings::SystemLog);
-        tabBar()->setStyleSheet("QTabBar::tab:first { font-weight: normal; }");
+        tabBar()->setStyleSheet("");
     }
 }
 
