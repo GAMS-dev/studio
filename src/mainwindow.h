@@ -254,7 +254,7 @@ private slots:
 
 
     // View
-    void invalidateTheme();
+    void invalidateTheme(bool refreshSyntax);
     void rehighlightOpenFiles();
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void projectContextMenuRequested(const QPoint &pos);

@@ -419,15 +419,14 @@ void FileMeta::updateView()
     }
 }
 
-void FileMeta::updateSyntaxColors()
+void FileMeta::updateSyntaxColors(bool refreshSyntax)
 {
     if (mHighlighter) {
-        bool changed = mHighlighter->reloadColors();
+        bool changed = mHighlighter->reloadColors() || refreshSyntax;
         if (changed) {
             for (QWidget *w: std::as_const(mEditors)) {
-                if (ViewHelper::toCodeEdit(w)) {
+                if (ViewHelper::toCodeEdit(w))
                     mHighlighter->rehighlight();
-                }
             }
         }
     }
@@ -475,10 +474,10 @@ void FileMeta::updateEditorColors()
     }
 }
 
-void FileMeta::invalidateTheme()
+void FileMeta::invalidateTheme(bool refreshSyntax)
 {
     updateEditorColors();
-    updateSyntaxColors();
+    updateSyntaxColors(refreshSyntax);
 }
 
 bool FileMeta::eventFilter(QObject *sender, QEvent *event)

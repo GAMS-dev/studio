@@ -146,7 +146,7 @@ public:
     static void setFlags(ColorSlot slot, FontFlag flag);
 
 signals:
-    void changed();
+    void changed(bool refreshSyntax);
 
 private:
     explicit Theme(QObject *parent = nullptr);

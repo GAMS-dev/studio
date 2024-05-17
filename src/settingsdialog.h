@@ -62,7 +62,7 @@ protected:
 signals:
     void editorFontChanged(int fontSize, const QString &fontFamily);
     void editorLineWrappingChanged();
-    void themeChanged();
+    void themeChanged(bool refreshSyntax);
     void userGamsTypeChanged();
     void editorTabSizeChanged(int size);
     void reactivateEngineDialog();

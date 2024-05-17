@@ -513,6 +513,7 @@ void SettingsDialog::appearanceIndexChanged(int index)
 {
     ViewHelper::changeAppearance(index);
     setThemeEditable(index >= mFixedThemeCount);
+    emit themeChanged(true);
 }
 
 void SettingsDialog::editorBaseColorChanged()
@@ -531,7 +532,7 @@ void SettingsDialog::afterLoad()
 void SettingsDialog::themeModified()
 {
     setModified();
-    emit themeChanged();
+    emit themeChanged(false);
     for (ThemeWidget *wid : std::as_const(mColorWidgets)) {
         wid->refresh();
     }

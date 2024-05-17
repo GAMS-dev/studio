@@ -428,11 +428,12 @@ MainWindow::MainWindow(QWidget *parent)
         QPalette pal = qApp->palette();
         pal.setColor(QPalette::Highlight, Qt::transparent);
         ui->projectView->setPalette(pal);
+        ui->logTabs->setPalette(pal);
     });
 #endif
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
-    invalidateTheme();
+    invalidateTheme(false);
     ViewHelper::updateBaseTheme();
 
     initGamsStandardPaths();
@@ -4597,10 +4598,10 @@ void MainWindow::newProcessCall(const QString &text, const QString &call)
     SysLogLocator::systemLog()->append(text + " " + call, LogMsgType::Info);
 }
 
-void MainWindow::invalidateTheme()
+void MainWindow::invalidateTheme(bool refreshSyntax)
 {
-    for (FileMeta *fm: mFileMetaRepo.fileMetas())
-        fm->invalidateTheme();
+    for (FileMeta *fm: mFileMetaRepo.openFiles())
+        fm->invalidateTheme(refreshSyntax);
     if (mTabStyle) {
         TabBarStyle *old = mTabStyle;
         mTabStyle = new TabBarStyle(ui->mainTabs, ui->logTabs, QApplication::style()->objectName());

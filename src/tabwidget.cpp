@@ -70,6 +70,12 @@ void TabWidget::mouseReleaseEvent(QMouseEvent *event)
 bool TabWidget::eventFilter(QObject *sender, QEvent *event)
 {
     Q_UNUSED(sender)
+    if (event->type() == QEvent::PaletteChange) {
+        if (mMsgCount) {
+            updateSystemLogTab();
+            --mMsgCount;
+        }
+    }
     if (event->type() == QEvent::Wheel) {
         QWheelEvent *we = static_cast<QWheelEvent*>(event);
         if (!we->modifiers().testFlag(Qt::ControlModifier) && bLeft && bRight) {

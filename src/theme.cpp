@@ -441,7 +441,7 @@ void Theme::invalidate()
     mIconCache.clear();
     mDataCache.clear();
 
-    emit changed();
+    emit changed(false);
 }
 
 void Theme::unbind(SvgEngine *engine)

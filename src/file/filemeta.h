@@ -111,7 +111,7 @@ public:
 public slots:
     void reload();
     void updateView();
-    void invalidateTheme();
+    void invalidateTheme(bool refreshSyntax);
 
 signals:
     void changed(gams::studio::FileId fileId);
@@ -153,7 +153,7 @@ private:
     void linkDocument(QTextDocument *doc = nullptr);
     void unlinkAndFreeDocument();
     void refreshType();
-    void updateSyntaxColors();
+    void updateSyntaxColors(bool refreshSyntax);
     void initEditorColors();
     void updateEditorColors();
     void addEditor(QWidget* edit);
