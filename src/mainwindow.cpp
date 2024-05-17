@@ -70,12 +70,12 @@
 #include "file/pathselect.h"
 
 #ifdef __APPLE__
-#include "../platform/macos/macoscocoabridge.h"
+# include "../platform/macos/macoscocoabridge.h"
+#else
+# include <colors/palettemanager.h>
 #endif
 #ifdef _WIN32
-#include <Windows.h>
-
-#include <colors/palettemanager.h>
+# include <Windows.h>
 #endif
 
 namespace gams {
@@ -423,11 +423,13 @@ MainWindow::MainWindow(QWidget *parent)
             this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 
     // Themes
+#ifndef __APPLE__
     connect(PaletteManager::instance(), &PaletteManager::paletteChanged, this, [this]() {
         QPalette pal = qApp->palette();
         pal.setColor(QPalette::Highlight, Qt::transparent);
         ui->projectView->setPalette(pal);
     });
+#endif
     ViewHelper::changeAppearance();
     connect(Theme::instance(), &Theme::changed, this, &MainWindow::invalidateTheme);
     invalidateTheme();

@@ -33,7 +33,6 @@
 #include "commonpaths.h"
 #include "version.h"
 #include "exception.h"
-#include "colors/palettemanager.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
 

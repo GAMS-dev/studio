@@ -25,8 +25,10 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
-#include "colors/palettemanager.h"
 #include "networkmanager.h"
+#ifndef __APPLE__
+# include "colors/palettemanager.h"
+#endif
 
 #include <iostream>
 #include <QMessageBox>
@@ -86,7 +88,9 @@ Application::~Application()
 {
     NetworkManager::cleanup();
     Settings::releaseSettings();
+#ifndef __APPLE__
     PaletteManager::deleteInstance();
+#endif
 }
 
 void Application::init()

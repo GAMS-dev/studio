@@ -20,8 +20,10 @@
 #include "viewhelper.h"
 #include "editors/abstractedit.h"
 #include "file/filemeta.h"
-#include "colors/palettemanager.h"
 #include "settings.h"
+#ifndef __APPLE__
+# include "colors/palettemanager.h"
+#endif
 
 #ifdef __APPLE__
 #include "../platform/macos/macoscocoabridge.h"
