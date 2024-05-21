@@ -5,6 +5,8 @@ Version 1.18.0 *
 - fixed the display of the schema definition of a list of oneof_schema dict in connect editor
 - upgraded to Qt 6.7.0
 - added maximum lines for syntax highlighting to the settings
+- fixed a crash of the GDX Viewer when loading a file with invalid UELs
+- fixed wrong search result after replace in multiple files
 
 Version 1.17.7
 ==================

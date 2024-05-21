@@ -176,6 +176,7 @@ Settings::Settings(bool ignore, bool reset, bool resetView)
     if (mCanWrite || mCanRead) {
         // create basic non versionized application settings
         QSettings *settings = newQSettings("studio");
+        DEB() << "Settings path: " << QDir::toNativeSeparators(settings->fileName());
         if (settings) {
             // only if the basic settings file has been created ...
             mSettings.insert(scSys, settings);

@@ -533,6 +533,7 @@ int Search::replaceOpened(FileMeta* fm, const SearchParameters &parameters)
     if (ae && fm->editors().size() > 0) {
         hits = ae->replaceAll(fm, parameters.regex, parameters.replaceTerm,
                               createFindFlags(parameters), mSearchDialog->selectedScope() == Scope::Selection);
+        mCacheAvailable = false;
     }
     return hits;
 }
@@ -682,10 +683,8 @@ void Search::replaceAll(SearchParameters parameters)
     if (msgBox.clickedButton() == ok) {
 
         mSearchDialog->setSearchStatus(Search::Replacing);
-
         for (FileMeta* fm : std::as_const(opened))
             hits += replaceOpened(fm, parameters);
-
         for (FileMeta* fm : std::as_const(unopened))
             hits += replaceUnopened(fm, parameters);
 

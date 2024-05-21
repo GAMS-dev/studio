@@ -235,7 +235,7 @@ QString GdxSymbolTableModel::uel2Label(int uel)
         char label[GMS_UEL_IDENT_SIZE];
         int map;
         gdxUMUelGet(mGdx, uel, label, &map);
-        mCodec->toUnicode(label);
+        return mCodec->toUnicode(label);
     }
     return this->mUel2Label.at(uel);
 }
