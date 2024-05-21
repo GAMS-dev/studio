@@ -34,7 +34,7 @@ PaletteManager::PaletteManager()
 
     // Nr1: default style
     auto p = QApplication::palette();
-    p.setColor(QPalette::Inactive, QPalette::Highlight, QColor(0,90,255));
+    p.setColor(QPalette::Inactive, QPalette::Highlight, QColor(60,110,255));
     p.setColor(QPalette::Inactive, QPalette::HighlightedText, p.color(QPalette::HighlightedText));
     mStyles.append(p);
 
