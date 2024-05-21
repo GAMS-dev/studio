@@ -64,7 +64,7 @@ void HeaderViewProxy::drawControl(ControlElement oCtrElement, const QStyleOption
         QApplication::style()->drawControl(oCtrElement, styleOption, painter, widget);
         return;
     }
-    QProxyStyle::drawControl(oCtrElement, styleOption, painter, widget);
+    QApplication::style()->drawControl(oCtrElement, styleOption, painter, widget);
     if (platformShouldDrawBorder() && oCtrElement == QStyle::CE_HeaderSection) {
         painter->save();
         QPen pen(painter->pen());
