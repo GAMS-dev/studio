@@ -7,6 +7,7 @@ Version 1.18.0 *
 - added maximum lines for syntax highlighting to the settings
 - fixed a crash of the GDX Viewer when loading a file with invalid UELs
 - fixed wrong search result after replace in multiple files
+- upgraded to Qt 6.7.1
 
 Version 1.17.7
 ==================

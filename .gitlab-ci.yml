@@ -34,6 +34,6 @@ variables:
       value: builder-qt6.7
       description: "Current Qt image version"
   QT_VERSION:
-    value: 6.7.0
+    value: 6.7.1
     description: "Current Qt version"
 
