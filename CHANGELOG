@@ -12,6 +12,7 @@ Version 1.18.0 *
 - added `--log` and `--log-file` command line option to create a Studio log file
 - fixed prevent the rewrite of all gsp files on startup
 - improved delay creation of workspace directory until necessary, to give the user the opportunity to set the prefered workspace location
+- fixed color theme issues for dark theme
 
 Version 1.17.6
 ==================
