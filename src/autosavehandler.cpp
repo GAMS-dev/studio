@@ -50,10 +50,11 @@ QStringList AutosaveHandler::checkForAutosaveFiles(const QStringList &list)
             for (auto file : std::as_const(files)) {
                 if (file.startsWith(mAutosavedFileMarker)) {
                     QString autosaveFilePath = path+"/"+file;
+                    QFileInfo autosave(autosaveFilePath);
                     file.replace(mAutosavedFileMarker, "");
                     QString originalFilePath = path+"/"+file;
                     QFileInfo origin(originalFilePath);
-                    if (origin.exists())
+                    if (origin.exists() && autosave.size() > 0)
                         autsaveFiles << autosaveFilePath;
                     else
                         QFile::remove(autosaveFilePath);
@@ -68,6 +69,7 @@ QStringList AutosaveHandler::checkForAutosaveFiles(const QStringList &list)
 void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 {
     if (autosaveFiles.isEmpty()) return;
+
     QString fileText = (autosaveFiles.size() == 1) ? "\""+autosaveFiles.first()+"\" was"
                                                    : QString::number(autosaveFiles.size())+" files were";
     fileText.replace(mAutosavedFileMarker,"");
@@ -82,21 +84,28 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
             originalversion.replace(mAutosavedFileMarker, "");
             QFile destFile(originalversion);
             QFile srcFile(autosaveFile);
-            mMainWindow->openFilePath(destFile.fileName(), nullptr, ogFindGroup);
+            QFile bkFile(originalversion+".bk");
+            bool ok = true;
+            if (QFile::exists(bkFile.fileName()))
+                ok = bkFile.remove();
+            if (ok)
+                destFile.copy(bkFile.fileName());
+
+            PExFileNode* fc = mMainWindow->openFilePath(destFile.fileName(), nullptr, ogFindGroup);
             if (srcFile.open(QFile::ReadOnly)) {
-                if (destFile.open(QFile::WriteOnly)) {
-                    QTextStream in(&srcFile);
-                    QString line = in.readAll() ;
-                    QWidget* editor = mMainWindow->recent()->editor();
-                    PExFileNode* fc = mMainWindow->projectRepo()->findFileNode(editor);
-                    QTextCursor curs(fc->document());
-                    curs.select(QTextCursor::Document);
-                    curs.insertText(line);
-                    destFile.close();
-                    AbstractEdit *abstractEdit = dynamic_cast<AbstractEdit*>(editor);
-                    if (editor)
-                        abstractEdit->moveCursor(QTextCursor::Start);
+                if (!fc->document()) {
+                    mMainWindow->appendSystemLogWarning(destFile.fileName() + " hasn't been open properly");
+                    continue;
                 }
+                QTextStream in(&srcFile);
+                QString line = in.readAll() ;
+                QWidget* editor = fc->file()->editors().first();
+                QTextCursor curs(fc->document());
+                curs.select(QTextCursor::Document);
+                curs.insertText(line);
+                AbstractEdit *abstractEdit = dynamic_cast<AbstractEdit*>(editor);
+                if (abstractEdit)
+                    abstractEdit->moveCursor(QTextCursor::Start);
                 srcFile.close();
             }
         }
