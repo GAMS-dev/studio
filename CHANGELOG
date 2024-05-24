@@ -1,18 +1,17 @@
-Version 1.18.0 *
+Version 1.18.0
 ==================
+- added maximum lines for syntax highlighting to the settings
 - added support for excludes schema in connect editor
 - added support for anyof schema in connect editor
-- fixed the display of the schema definition of a list of oneof_schema dict in connect editor
-- upgraded to Qt 6.7.0
-- added maximum lines for syntax highlighting to the settings
-- fixed a crash of the GDX Viewer when loading a file with invalid UELs
-- fixed wrong search result after replace in multiple files
-- upgraded to Qt 6.7.1
-- fixed empty recovery file and added backup file after recovery
 - added `--log` and `--log-file` command line option to create a Studio log file
+- fixed the display of the schema definition of a list of oneof_schema dict in connect editor
+- fixed a crash inside the GDX Viewer when loading a file with invalid UELs
+- fixed empty recovery file and added backup file after recovery
+- fixed wrong search result after replace in multiple files
 - fixed prevent the rewrite of all gsp files on startup
-- improved delay creation of workspace directory until necessary, to give the user the opportunity to set the prefered workspace location
 - fixed color theme issues for dark theme
+- improved delay creation of workspace directory until necessary, to give the user the opportunity to set the prefered workspace location
+- upgraded to Qt 6.7.1
 
 Version 1.17.6
 ==================
