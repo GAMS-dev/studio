@@ -1,3 +1,7 @@
+Version 1.18.1
+==================
+- fixed crash when running GAMS Engine without efi-file
+
 Version 1.18.0
 ==================
 - added maximum lines for syntax highlighting to the settings
