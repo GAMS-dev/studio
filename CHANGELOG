@@ -1,7 +1,7 @@
 Version 1.18.1
 ==================
 - fixed crash when running GAMS Engine without efi-file
-- fixed selection issues in log and lst-viewer
+- fixed double-click word selection, wrong selection when scrolling, wrong selection anchor
 
 Version 1.18.0
 ==================
