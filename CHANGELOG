@@ -1,6 +1,7 @@
 Version 1.18.1
 ==================
 - fixed crash when running GAMS Engine without efi-file
+- fixed selection issues in log and lst-viewer
 
 Version 1.18.0
 ==================

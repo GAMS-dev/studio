@@ -309,6 +309,9 @@ QPoint FastFileMapper::anchor(bool local) const
 {
     if (!local)
         return mAnchor;
+    int localLine = mAnchor.y() - visibleTopLine();
+    if (localLine < 0) return QPoint(0, cursorBeforeStart);
+    if (localLine > visibleLineCount()) return QPoint(0, cursorBeyondEnd);
     return QPoint(mAnchor.x(), mAnchor.y() - visibleTopLine());
 }
 
