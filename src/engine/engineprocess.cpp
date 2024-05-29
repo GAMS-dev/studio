@@ -232,8 +232,10 @@ void EngineProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStat
 
 void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    mSubProc->deleteLater();
-    mSubProc = nullptr;
+    if (mSubProc) {
+        mSubProc->deleteLater();
+        mSubProc = nullptr;
+    }
     if (exitCode || exitStatus == QProcess::CrashExit) {
         emit newStdChannelData("\nErrors while packing. exitCode: " + QString::number(exitCode).toUtf8());
         completed(exitCode);
@@ -245,8 +247,10 @@ void EngineProcess::packCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 
 void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus)
 {
-    mSubProc->deleteLater();
-    mSubProc = nullptr;
+    if (mSubProc) {
+        mSubProc->deleteLater();
+        mSubProc = nullptr;
+    }
     if (exitCode || exitStatus == QProcess::CrashExit) {
         emit newStdChannelData("\nErrors while packing2. exitCode: " + QString::number(exitCode).toUtf8());
         completed(exitCode);
@@ -264,13 +268,15 @@ void EngineProcess::pack2Completed(int exitCode, QProcess::ExitStatus exitStatus
 void EngineProcess::unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     Q_UNUSED(exitStatus)
-
+    if (mSubProc) {
+        mSubProc->deleteLater();
+        mSubProc = nullptr;
+    }
     QFile gms(mOutPath+'/'+modelName()+".gms");
     if (gms.exists()) gms.remove();
     QFile g00(mOutPath+'/'+modelName()+".g00");
     if (g00.exists()) g00.remove();
     handleResultFiles();
-
     setProcState(ProcIdle);
     completed(exitCode);
 }
@@ -314,15 +320,6 @@ void EngineProcess::parseUnZipStdOut(const QByteArray &data)
         if (data.endsWith("\n")) emit newStdChannelData("\n");
     } else
         emit newStdChannelData(data);
-}
-
-void EngineProcess::subProcStateChanged(QProcess::ProcessState newState)
-{
-    if (newState == QProcess::NotRunning) {
-        setProcState(ProcIdle);
-        mSubProc->deleteLater();
-        completed(mSubProc->exitCode());
-    }
 }
 
 void EngineProcess::reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes)
@@ -971,7 +968,6 @@ void EngineProcess::startPacking2()
 void EngineProcess::startUnpacking()
 {
     GmsunzipProcess *subProc = new GmsunzipProcess(this);
-    connect(subProc, &GmsunzipProcess::stateChanged, this, &EngineProcess::subProcStateChanged);
     connect(subProc, QOverload<int, QProcess::ExitStatus>::of(&GmsunzipProcess::finished), this, &EngineProcess::unpackCompleted);
     connect(subProc, &GmsunzipProcess::newStdChannelData, this, &EngineProcess::parseUnZipStdOut);
     connect(subProc, &GmsunzipProcess::newProcessCall, this, &EngineProcess::newProcessCall);

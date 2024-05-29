@@ -588,9 +588,13 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
 
 void TextView::handleSelectionChange()
 {
-    if (mDocChanging) return;
+    if (mDocChanging)
+        return;
     QTextCursor cur = mEdit->textCursor();
     if (cur.hasSelection()) {
+        QTextCursor anc = cur;
+        anc.setPosition(cur.anchor());
+        mMapper->setPosRelative(anc.blockNumber(), anc.positionInBlock());
         mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock(), QTextCursor::KeepAnchor);
     } else {
         mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock());

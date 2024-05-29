@@ -147,7 +147,6 @@ private slots:
     void unpackCompleted(int exitCode, QProcess::ExitStatus exitStatus);
     void sslErrors(QNetworkReply *reply, const QList<QSslError> &errors);
     void parseUnZipStdOut(const QByteArray &data);
-    void subProcStateChanged(QProcess::ProcessState newState);
     void reVersionIntern(const QString &engineVersion, const QString &gamsVersion, bool isInKubernetes);
 
 private:
