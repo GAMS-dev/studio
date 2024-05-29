@@ -2,6 +2,7 @@ Version 1.18.1
 ==================
 - fixed crash when running GAMS Engine without efi-file
 - fixed double-click word selection, wrong selection when scrolling, wrong selection anchor
+- fixed palette issues in process log view, e.g. while text on white background for text selections
 
 Version 1.18.0
 ==================
