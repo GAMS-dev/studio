@@ -77,7 +77,7 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
     // create list of exclude filters
     QStringList excludeFilter = params.excludeFilter;
-    excludeFilter << ".gdx" << ".zip";
+    excludeFilter << "*.gdx" << "*.zip";
 
     QList<QRegularExpression> excludeFilterList;
     for (const QString &s : std::as_const(excludeFilter)) {
@@ -106,8 +106,9 @@ QList<SearchFile> FileWorker::filterFiles(QList<SearchFile> files, SearchParamet
 
         // if we can get an fm check if that file is read only
         FileMeta* fm = mFileHandler->findFile(sf.path);
-        if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly())))
-            res << sf;
+        if ((include || ignoreWildcard) && (!params.ignoreReadOnly || (fm && !fm->isReadOnly()))) {
+            res << (fm->isOpen() ? sf : sf.path);
+        }
     }
     return res;
 }
