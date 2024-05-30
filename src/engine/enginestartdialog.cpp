@@ -365,8 +365,14 @@ void EngineStartDialog::bLogoutClicked()
 
 void EngineStartDialog::authorizeError(const QString &error)
 {
-    ui->laWarn->setText("Could not log in: " + error.trimmed());
-    ui->laWarn->setToolTip("Please check your username and password");
+    if (mProc->authToken().isEmpty()) {
+        ui->laWarn->setText("Could not log in: Please retry");
+        ui->laWarn->setToolTip(error.trimmed());
+    } else {
+        ui->laWarn->setText("Could not log in: Session expired");
+        ui->laWarn->setToolTip(error.trimmed());
+    }
+    showLogin();
 }
 
 void EngineStartDialog::reGetUsername(const QString &user)
