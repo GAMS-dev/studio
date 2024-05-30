@@ -2406,6 +2406,7 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
         if (lstNode && !alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
+    DEB() << "postGamsRun()";
     if (!project->engineJobToken().isEmpty())
         project->setEngineJobToken("");
     updateRunState();
@@ -2861,14 +2862,18 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
                                           : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel")
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
+    choice -= 2;
+    DEB() << "choice = " << choice;
     if (choice == 2) return false;
     bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
+        DEB() << "terminateOption" << project->process()->terminateOption();
         if (project->process()->terminateOption() != AbstractProcess::termLocal && choice == 1)
             project->process()->terminateLocal();
         else {
             project->process()->terminate();
             if (remoteCount) {
+                DEB() << "project->setEngineJobToken NULL";
                 project->setEngineJobToken("");
                 project->setNeedSave();
                 save = true;
@@ -4498,6 +4503,7 @@ void MainWindow::prepareEngineProcess()
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     connect(engineProcess, &engine::EngineProcess::jobCreated, this, [this, pid](const QString &token) { //    void jobCreated(const QString &token);
         if (PExProjectNode *project = mProjectRepo.findProject(pid)) {
+            DEB() << "saving job token";
             project->setEngineJobToken(token);
             updateAndSaveSettings();
         }
