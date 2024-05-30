@@ -96,6 +96,7 @@ protected:
     void showEvent(QShowEvent *event) override;
 
     void showLogin();
+    void showConnect();
     void showSubmit();
     bool inLogin();
     void ensureOpened();

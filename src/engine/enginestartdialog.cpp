@@ -120,7 +120,8 @@ void EngineStartDialog::start()
     if (ui->edUrl->text().isEmpty())
         showLogin();
     else {
-        showSubmit();
+//        showSubmit();
+        showConnect();
         urlEdited(ui->edUrl->text());
     }
 }
@@ -307,6 +308,10 @@ void EngineStartDialog::showEvent(QShowEvent *event)
     bool isHidden = !ui->cbAcceptCert->isVisible();
     if (isHidden)
         ui->cbAcceptCert->setVisible(true);
+    if (mProc->authToken().isEmpty())
+        showLogin();
+    else
+        showConnect();
     QDialog::showEvent(event);
     setFixedSize(size());
     if (isHidden)
@@ -319,6 +324,11 @@ void EngineStartDialog::showLogin()
     ui->bAlways->setVisible(false);
     ui->bOk->setText("Login");
     ensureOpened();
+}
+
+void EngineStartDialog::showConnect()
+{
+    ui->stackedWidget->setCurrentIndex(2);
 }
 
 void EngineStartDialog::showSubmit()
@@ -378,6 +388,7 @@ void EngineStartDialog::authorizeError(const QString &error)
 void EngineStartDialog::reGetUsername(const QString &user)
 {
     ui->edUser->setText(user);
+    showSubmit();
 }
 
 void EngineStartDialog::reListProviderError(const QString &error)
@@ -585,7 +596,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         if (mProc->authToken().isEmpty())
             showLogin();
         else {
-            showSubmit();
+//            showSubmit();
+            showConnect();
             mProc->getUsername();
         }
         emit engineUrlValidated(mValidUrl);
