@@ -117,7 +117,7 @@ void AutosaveHandler::recoverAutosaveFiles(const QStringList &autosaveFiles)
 
 void AutosaveHandler::saveChangedFiles()
 {
-    for (auto editor : mMainWindow->constOpenEditors()) {
+    for (auto editor : mMainWindow->constOpenedEditors()) {
         PExFileNode* node = mMainWindow->projectRepo()->findFileNode(editor);
         if (!node) continue; // skips unassigned widgets like the welcome-page
         QString filepath = QFileInfo(node->location()).path();

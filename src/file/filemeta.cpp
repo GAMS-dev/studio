@@ -1337,7 +1337,6 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
         try {
             load(codecMib);
         } catch (Exception &e) {
-            Q_UNUSED(e)
             if (mEditors.size() > 0) {
                 tabWidget->removeTab(tabWidget->currentIndex()+1);
                 removeEditor(mEditors.first());
