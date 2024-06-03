@@ -272,8 +272,8 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         if (!mQueueFinished && error_type != QNetworkReply::ContentAccessDenied) {
-            emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
-                          " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
+            emit reError("Network error " + QString::number(error_type).toLatin1() +
+                         " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
         } else {
             emit jobIsQueued();
         }

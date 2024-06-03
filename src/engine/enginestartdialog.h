@@ -60,6 +60,7 @@ public:
     explicit EngineStartDialog(QWidget *parent = nullptr);
     ~EngineStartDialog() override;
     void setHiddenMode(bool preferHidden);
+    void setResume(bool resume);
     void start();
 
     void setProcess(EngineProcess *process);
@@ -135,13 +136,11 @@ private slots:
     void selfSignedCertFound(int sslError);
     void certAcceptChanged();
     void hideCert();
+
     void on_cbLoginMethod_currentIndexChanged(int index);
     void on_bCopyCode_clicked();
-
     void on_bShowLogin_clicked();
-
     void on_cbInstance_currentIndexChanged(int index);
-
     void on_edJobTag_editingFinished();
 
 private:
@@ -162,6 +161,7 @@ private:
     bool mHiddenMode = false;
     bool mAuthorized = false;
     bool mAlways = false;
+    bool mResume = false;
     QTimer mConnectStateUpdater;
     QTimer mUrlChangedTimer;
     QString mEngineVersion;

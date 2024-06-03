@@ -2863,17 +2863,14 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
     choice -= 2;
-    DEB() << "choice = " << choice;
     if (choice == 2) return false;
     bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
-        DEB() << "terminateOption" << project->process()->terminateOption();
         if (project->process()->terminateOption() != AbstractProcess::termLocal && choice == 1)
             project->process()->terminateLocal();
         else {
             project->process()->terminate();
             if (remoteCount) {
-                DEB() << "project->setEngineJobToken NULL";
                 project->setEngineJobToken("");
                 project->setNeedSave();
                 save = true;
@@ -4411,7 +4408,8 @@ void MainWindow::initEngineStartDialog(bool resume)
 
     dialog->setModal(true);
     dialog->setProcess(proc);
-    dialog->setHiddenMode(resume || (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)));
+    dialog->setResume(resume);
+    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
     if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
@@ -4429,8 +4427,25 @@ void MainWindow::initEngineStartDialog(bool resume)
             updateAndSaveSettings();
         }
     });
-    if (resume)
-        prepareEngineProcess();
+    if (resume) {
+        auto coOk = std::make_shared<QMetaObject::Connection>();
+        *coOk = connect(proc, &engine::EngineProcess::reGetUsername, this, [this, coOk]() {
+            disconnect(*coOk);
+            prepareEngineProcess();
+        });
+        auto coNo = std::make_shared<QMetaObject::Connection>();
+        *coNo = connect(proc, &engine::EngineProcess::authorizeError, this, [dialog, coNo]() {
+            disconnect(*coNo);
+            dialog->setHiddenMode(false);
+            dialog->start();
+        });
+        auto coGo = std::make_shared<QMetaObject::Connection>();
+        *coGo = connect(proc, &engine::EngineProcess::authorized, this, [this, coGo]() {
+            disconnect(*coGo);
+            prepareEngineProcess();
+        });
+        proc->getUsername();
+    }
     else
         dialog->start();
 }
@@ -4494,6 +4509,7 @@ engine::EngineProcess *MainWindow::createEngineProcess()
 
 void MainWindow::prepareEngineProcess()
 {
+    // TODO(JM) check if this works when the current project isn't the one to be resumed
     PExProjectNode *project = currentProject();
     if (!project) return;
     AbstractProcess* process = project->process();
@@ -4503,7 +4519,6 @@ void MainWindow::prepareEngineProcess()
     mGamsParameterEditor->on_runAction(option::RunActionState::RunEngine);
     connect(engineProcess, &engine::EngineProcess::jobCreated, this, [this, pid](const QString &token) { //    void jobCreated(const QString &token);
         if (PExProjectNode *project = mProjectRepo.findProject(pid)) {
-            DEB() << "saving job token";
             project->setEngineJobToken(token);
             updateAndSaveSettings();
         }
