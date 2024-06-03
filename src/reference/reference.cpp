@@ -62,9 +62,9 @@ QList<SymbolReferenceItem *> Reference::findReferenceFromType(SymbolDataType::Sy
     case SymbolDataType::Unused :
         return mUnusedReference;
     case SymbolDataType::Unknown :
-        return mReference.values();
+        return (mReference.isEmpty() ? QList<SymbolReferenceItem*>() : mReference.values());
     default:
-        return mReference.values();
+        return (mReference.isEmpty() ? QList<SymbolReferenceItem*>() : mReference.values());
     }
 
 }

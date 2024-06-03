@@ -36,7 +36,7 @@ FileUsedTreeModel::~FileUsedTreeModel()
 
 QVariant FileUsedTreeModel::data(const QModelIndex &index, int role) const
 {
-    if (!mReference || mReference->isEmpty())
+    if (!mReference)
         return QVariant();
 
     if (!index.isValid())
@@ -141,7 +141,6 @@ void FileUsedTreeModel::resetModel()
     if (rowCount() > 0) {
         removeRows(0, rowCount(), QModelIndex());
     }
-    setupTreeItemModelData();
     endResetModel();
 }
 

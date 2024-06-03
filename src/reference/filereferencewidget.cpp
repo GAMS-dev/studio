@@ -31,7 +31,6 @@ FileReferenceWidget::FileReferenceWidget(Reference* ref, ReferenceViewer *parent
 {
     ui->setupUi(this);
     mFileUsedModel = new FileUsedTreeModel(this);
-    mFileUsedModel->initModel(ref);
     ui->fileReferenceTreeView->setModel( mFileUsedModel );
 
     ui->fileReferenceTreeView->expandAll();
@@ -69,7 +68,11 @@ void FileReferenceWidget::resetModel()
 
 void FileReferenceWidget::initModel()
 {
-    mFileUsedModel->initModel(mReference);
+    if (!mFileUsedModel->isModelLoaded()) {
+        mFileUsedModel->initModel(mReference);
+    }
+
+    mFileUsedModel->resetModel();
 }
 
 void FileReferenceWidget::initModel(Reference *ref)

@@ -174,20 +174,6 @@ void ReferenceViewer::on_tabBarClicked(int index)
 
 void ReferenceViewer::updateView(bool status)
 {
-    for(int i=0; i<ui->tabWidget->count(); i++) {
-        SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(i));
-        if (refWidget) {
-            refWidget->initModel(mReference.data());
-            refWidget->resetModel();
-        } else {
-            FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(i));
-            if (fileUsedWidget) {
-                fileUsedWidget->initModel(mReference.data());
-                fileUsedWidget->resetModel();
-            }
-        }
-    }
-
     if (mReference->state() == Reference::UnsuccessfullyLoaded) {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         SysLogLocator::systemLog()->append(
@@ -197,6 +183,20 @@ void ReferenceViewer::updateView(bool status)
     }
 
     if (status) {
+        for(int i=0; i<ui->tabWidget->count(); i++) {
+            SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(i));
+            if (refWidget) {
+                refWidget->initModel(mReference.data());
+                refWidget->resetModel();
+            } else {
+                FileReferenceWidget* fileUsedWidget = toFileUsedReferenceWidget(ui->tabWidget->widget(i));
+                if (fileUsedWidget) {
+                    fileUsedWidget->initModel(mReference.data());
+                    fileUsedWidget->resetModel();
+                }
+            }
+        }
+
         ui->tabWidget->setToolTip(QString(""));
         ui->tabWidget->setTabText(0, QString("All Symbols (%1)").arg(mReference->size()));
         ui->tabWidget->setTabText(1, QString("Set (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Set).size()));
