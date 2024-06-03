@@ -2406,7 +2406,6 @@ void MainWindow::postGamsRun(const NodeId &origin, int exitCode)
         if (lstNode && !alreadyJumped && Settings::settings()->toBool(skOpenLst))
             openFileNode(lstNode);
     }
-    DEB() << "postGamsRun()";
     if (!project->engineJobToken().isEmpty())
         project->setEngineJobToken("");
     updateRunState();
