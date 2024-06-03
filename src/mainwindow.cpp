@@ -4355,8 +4355,11 @@ void MainWindow::checkForEngingJob()
 {
     for (PExProjectNode *project : mProjectRepo.projects()) {
         if (!project->engineJobToken().isEmpty()) {
+            bool needSwitching = (currentProject() != project && project->runnableGms());
             QMessageBox::StandardButton button = QMessageBox::question(this, "Resume GAMS Engine Job?", "Studio was left with a running GAMS Engine job.\nTry to resume?");
             if (button == QMessageBox::Yes) {
+                if (needSwitching)
+                    mProjectRepo.openFile(project->runnableGms(), true, project);
                 initEngineStartDialog(true);
             } else {
                 project->setEngineJobToken("");
@@ -4509,7 +4512,6 @@ engine::EngineProcess *MainWindow::createEngineProcess()
 
 void MainWindow::prepareEngineProcess()
 {
-    // TODO(JM) check if this works when the current project isn't the one to be resumed
     PExProjectNode *project = currentProject();
     if (!project) return;
     AbstractProcess* process = project->process();
