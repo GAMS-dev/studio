@@ -582,11 +582,11 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
         return false;
 
     if (ret == QMessageBox::Save) {
-        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        mAutosaveHandler->clearAutosaveFiles(openedFiles());
         if (fm->save())
             closeFileEditors(fm->id(), willReopen);
     } else if (ret == QMessageBox::Discard) {
-        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        mAutosaveHandler->clearAutosaveFiles(openedFiles());
         fm->setModified(false);
         closeFileEditors(fm->id(), willReopen);
     }
@@ -689,7 +689,7 @@ void MainWindow::updateToolbar(QWidget* current)
 
 void MainWindow::initAutoSave()
 {
-    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(mOpenTabsList));
+    mAutosaveHandler->recoverAutosaveFiles(mAutosaveHandler->checkForAutosaveFiles(openedFiles()));
 }
 
 void MainWindow::on_actionEditDefaultConfig_triggered()
@@ -951,12 +951,12 @@ TextMarkRepo *MainWindow::textMarkRepo()
     return  &mTextMarkRepo;
 }
 
-const QWidgetList MainWindow::constOpenEditors()
+const QWidgetList MainWindow::constOpenedEditors()
 {
-    return openEditors();
+    return openedEditors();
 }
 
-QWidgetList MainWindow::openEditors()
+QWidgetList MainWindow::openedEditors()
 {
     QWidgetList res;
     for (int i = 0; i < ui->mainTabs->count(); ++i) {
@@ -965,12 +965,12 @@ QWidgetList MainWindow::openEditors()
     return res;
 }
 
-const QList<QWidget*> MainWindow::constOpenLogs()
+const QList<QWidget*> MainWindow::constOpenedLogs()
 {
-    return openLogs();
+    return openedLogs();
 }
 
-QList<QWidget*> MainWindow::openLogs()
+QList<QWidget*> MainWindow::openedLogs()
 {
     QList<QWidget*> resList;
     for (int i = 0; i < ui->logTabs->count(); i++) {
@@ -980,6 +980,17 @@ QList<QWidget*> MainWindow::openLogs()
             resList << tv;
     }
     return resList;
+}
+
+const QStringList MainWindow::openedFiles()
+{
+    QStringList res;
+    for (QWidget *wid : constOpenedEditors()) {
+        QVariant var = wid->property("location");
+        if (var.isValid())
+            res << wid->property("location").toString();
+    }
+    return res;
 }
 
 void MainWindow::receiveAction(const QString &action)
@@ -3394,7 +3405,7 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
               : QString::number(changedFiles.size())+" files have been modified";
     ret = showSaveChangesMsgBox(filesText);
     if (ret == QMessageBox::Save) {
-        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        mAutosaveHandler->clearAutosaveFiles(openedFiles());
         bool allSaved = true;
         for (FileMeta* fm : changedFiles) {
             if (fm->isModified()) {
@@ -3405,7 +3416,7 @@ bool MainWindow::requestCloseChanged(QVector<FileMeta *> changedFiles)
     } else if (ret == QMessageBox::Cancel) {
         return false;
     } else { // Discard
-        mAutosaveHandler->clearAutosaveFiles(mOpenTabsList);
+        mAutosaveHandler->clearAutosaveFiles(openedFiles());
         for (FileMeta* fm : changedFiles) {
             if (fm->isModified()) {
                 closeFileEditors(fm->id());
@@ -3807,7 +3818,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
 
 void MainWindow::jumpToTab(FileMeta *fm)
 {
-    const QList<QWidget*> logs = openLogs();
+    const QList<QWidget*> logs = openedLogs();
     for (QWidget* w : logs) {
         if (fm->location() == ViewHelper::location(w)) {
             ui->logTabs->setCurrentIndex(ui->logTabs->indexOf(w));
@@ -4612,7 +4623,7 @@ void MainWindow::invalidateTheme(bool refreshSyntax)
 
 void MainWindow::rehighlightOpenFiles()
 {
-    for (const QString &fileName : std::as_const(mOpenTabsList)) {
+    for (const QString &fileName : openedFiles()) {
         FileMeta *meta = mFileMetaRepo.fileMeta(fileName);
         if (meta->isOpen() && meta->highlighter())
             meta->highlighter()->rehighlight();
@@ -5182,12 +5193,12 @@ void MainWindow::setGroupFontSize(FontGroup fontGroup, qreal fontSize, const QSt
     }
     QFont f = getEditorFont(fontGroup, fontFamily, fontSize);
     if (fontGroup == fgLog) {
-        for (QWidget* log: constOpenLogs()) {
+        for (QWidget* log: constOpenedLogs()) {
             log->setFont(f);
         }
         mSyslog->setFont(f);
     } else {
-        for (QWidget* edit: constOpenEditors()) {
+        for (QWidget* edit: constOpenedEditors()) {
             if (fontGroup == fgText) {
                 if (AbstractEdit *ae = ViewHelper::toAbstractEdit(edit)) {
                     ae->setFont(f);
@@ -5279,13 +5290,13 @@ void MainWindow::updateEditorLineWrapping()
 
 void MainWindow::updateTabSize(int size)
 {
-    for (QWidget* edit : constOpenEditors()) {
+    for (QWidget* edit : constOpenedEditors()) {
         if (AbstractEdit *ed = ViewHelper::toAbstractEdit(edit))
             ed->updateTabSize(size);
         else if (TextView *tv = ViewHelper::toTextView(edit))
             tv->edit()->updateTabSize(size);
     }
-    for (QWidget* log : constOpenLogs()) {
+    for (QWidget* log : constOpenedLogs()) {
         if (TextView *tv = ViewHelper::toTextView(log))
             tv->edit()->updateTabSize(size);
     }
@@ -5302,7 +5313,6 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
             FileMeta *fm = mFileMetaRepo.fileMeta(location);
             if (fm) {
                 openFilePath(location, nullptr, ogFindGroup, true);
-                mOpenTabsList << location;
                 curTab = location;
             }
         } else if (location == "WELCOME_PAGE") {
@@ -5327,10 +5337,9 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     tabStrategy = tabAtEnd;
                     continue;
                 }
-                if (QFileInfo::exists(location)) {
+                if (QFileInfo::exists(location))
                     openFilePath(location, nullptr, ogFindGroup, false, false, tabStrategy);
-                    mOpenTabsList << location;
-                }
+
                 if (i % 10 == 0) QApplication::processEvents(QEventLoop::AllEvents, 1);
                 if (ui->mainTabs->count() <= i)
                     return false;
@@ -5345,7 +5354,7 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
             }
         }
     }
-    QTimer::singleShot(0, this, SLOT(initAutoSave()));
+    QTimer::singleShot(0, this, &MainWindow::initAutoSave);
     return true;
 }
 

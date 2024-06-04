@@ -140,10 +140,11 @@ public:
     TextMarkRepo* textMarkRepo();
     QWidget *currentEdit();
 
-    const QWidgetList constOpenEditors();
-    QWidgetList openEditors();
-    const QList<QWidget *> constOpenLogs();
-    QList<QWidget *> openLogs();
+    const QWidgetList constOpenedEditors();
+    QWidgetList openedEditors();
+    const QList<QWidget *> constOpenedLogs();
+    QList<QWidget *> openedLogs();
+    const QStringList openedFiles();
     search::SearchDialog* searchDialog() const;
     RecentData *recent();
     void openModelFromLib(const QString &glbFile, modeldialog::LibraryItem *model);
@@ -561,7 +562,6 @@ private:
     QStringList mClosedTabs;
     bool mOverwriteMode = false;
     int mTimerID;
-    QStringList mOpenTabsList;
     QVector<int> mClosedTabsIndexes;
     bool mMaximizedBeforeFullScreen;
     bool mIgnoreSslErrors = false;

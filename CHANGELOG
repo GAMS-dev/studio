@@ -1,3 +1,8 @@
+Version 1.18.2 *
+==================
+- fixed update issues during color changes when the Settings dialog is open
+
+
 Version 1.18.1
 ==================
 - fixed crash when running GAMS Engine without efi-file
