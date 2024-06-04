@@ -2,6 +2,9 @@ Version 1.18.2 *
 ==================
 - fixed update issues during color changes when the Settings dialog is open
 - fixed crash when searching in folder
+- fixed switch back to login when GAMS Engine session is expired
+- fixed continue resume when GAMS Engine session is expired
+- added transition page after login to GAMS Engine
 
 Version 1.18.1
 ==================
