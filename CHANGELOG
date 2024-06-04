@@ -1,7 +1,7 @@
 Version 1.18.2 *
 ==================
 - fixed update issues during color changes when the Settings dialog is open
-
+- fixed crash when searching in folder
 
 Version 1.18.1
 ==================
