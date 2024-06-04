@@ -79,7 +79,7 @@ test-leg:
 
 test-wei:
   stage: test
-  tags: [windows]
+  tags: [pond]
   allow_failure: true
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest

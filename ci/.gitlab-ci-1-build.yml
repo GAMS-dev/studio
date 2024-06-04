@@ -56,7 +56,7 @@ build-leg:
 
 build-wei:
   stage: build
-  tags: [windows]
+  tags: [pond]
   needs: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
@@ -85,7 +85,7 @@ build-wei-debug:
     - if: $PF_WEI_DEBUG == "0"
       when: never
     - when: on_success
-  tags: [windows]
+  tags: [pond]
   needs: [install-gams-wei]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
