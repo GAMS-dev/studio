@@ -335,12 +335,14 @@ void EngineStartDialog::showLogin()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
+    setWindowTitle("GAMS Engine Login");
     ui->bOk->setText("Login");
     ensureOpened();
 }
 
 void EngineStartDialog::showConnect()
 {
+    setWindowTitle("Connecting");
     ui->stackedWidget->setCurrentIndex(2);
 }
 
@@ -350,6 +352,7 @@ void EngineStartDialog::showSubmit()
         close();
         return;
     }
+    setWindowTitle("Submit Job");
     ui->stackedWidget->setCurrentIndex(1);
     ui->bAlways->setVisible(true);
     ui->bOk->setText("OK");
