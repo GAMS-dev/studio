@@ -68,11 +68,7 @@ void FileReferenceWidget::resetModel()
 
 void FileReferenceWidget::initModel()
 {
-    if (!mFileUsedModel->isModelLoaded()) {
-        mFileUsedModel->initModel(mReference);
-    }
-
-    mFileUsedModel->resetModel();
+    mFileUsedModel->initModel(mReference);
 }
 
 void FileReferenceWidget::initModel(Reference *ref)
