@@ -135,7 +135,6 @@ public:
     void setEngineJobToken(const QString &engineJobToken, bool touch = true);
 
     bool isProcess(const AbstractProcess *process) const;
-    QProcess::ProcessState gamsProcessState() const;
     void setProcess(AbstractProcess* process);
     AbstractProcess *process() const;
     bool jumpToFirstError(bool focus, PExFileNode *lstNode);
@@ -176,6 +175,7 @@ public slots:
     void breakpoints(const QString &filename, SortedIntMap &bps, SortedIntMap &aimedBps) const;
     void gotoPaused(int contLine);
     void terminate();
+    QProcess::ProcessState gamsProcessState() const;
 
 protected slots:
     void onGamsProcessStateChanged(QProcess::ProcessState newState);

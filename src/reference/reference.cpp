@@ -165,27 +165,24 @@ void Reference::loadReferenceFile(const QString &encodingName, bool triggerReloa
 
     mState = ReferenceState::Loading;
     qint64 lastReadFileSize = parseFile(mReferenceFile, encodingName);
-    if (mLastReadFileSize == 0)
-        mLastReadFileSize = lastReadFileSize;
     if (mLastErrorLine==-1) {
         mPendingReload = false;
         mState = ReferenceState::SuccessfullyLoaded;
     } else {
         if (!mPendingReload) {
-            mPendingReload = true;
-            mState = ReferenceState::Loading;
+            if (triggerReload || lastReadFileSize!=mLastReadFileSize) {
+                mPendingReload = true;
+                mState = ReferenceState::Loading;
+            } else {
+                mPendingReload = false;
+                mState = ReferenceState::UnsuccessfullyLoaded;
+            }
         } else {
             mPendingReload = false;
             mState = ReferenceState::UnsuccessfullyLoaded;
         }
     }
-    emit loadFinished( mState == ReferenceState::SuccessfullyLoaded );
-    if (mState == ReferenceState::Loading) { //ReferenceState::UnsuccessfullyLoaded) {
-        if (triggerReload || lastReadFileSize==mLastReadFileSize) {
-           // call loadReferenceFile() again every 500 ms
-           QTimer::singleShot(500, this, [this, encodingName, triggerReload](){ loadReferenceFile(encodingName, triggerReload); });
-        }
-    }
+    emit loadFinished( mState == ReferenceState::SuccessfullyLoaded, mPendingReload );
     mLastReadFileSize = lastReadFileSize;
     return;
 }

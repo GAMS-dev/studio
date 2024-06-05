@@ -65,6 +65,7 @@ inline static FileReferenceWidget* toFileUsedReferenceWidget(QWidget* w) {
 ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &encodingName, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::ReferenceViewer),
+    mEncodingName(encodingName),
     mReference(new Reference(referenceFile, encodingName))
 {
     ui->setupUi(this);
@@ -134,6 +135,10 @@ ReferenceViewer::ReferenceViewer(const QString &referenceFile, const QString &en
 
     connect(ui->tabWidget, &QTabWidget::tabBarClicked, this, &ReferenceViewer::on_tabBarClicked);
     connect(mReference.data(), &Reference::loadFinished, this, &ReferenceViewer::updateView);
+    if (problemLoaded) {
+        // call loadReferenceFile() again every 500 ms
+        QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });
+    }
 }
 
 ReferenceViewer::~ReferenceViewer()
@@ -156,7 +161,8 @@ void ReferenceViewer::selectSearchField() const
 
 void ReferenceViewer::reloadFile(const QString &encodingName)
 {
-    mReference->loadReferenceFile(encodingName);
+    mEncodingName = encodingName;
+    mReference->loadReferenceFile(mEncodingName);
 }
 
 void ReferenceViewer::on_tabBarClicked(int index)
@@ -172,17 +178,9 @@ void ReferenceViewer::on_tabBarClicked(int index)
     }
 }
 
-void ReferenceViewer::updateView(bool status)
+void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
 {
-    if (mReference->state() == Reference::UnsuccessfullyLoaded) {
-        QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
-        SysLogLocator::systemLog()->append(
-            QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
-                .arg(mReference->getFileLocation(), errorLine),
-            LogMsgType::Error);
-    }
-
-    if (status) {
+    if (loadStatus && !pendingReload) { // SuccessfullyLoaded and no pending relaad
         for(int i=0; i<ui->tabWidget->count(); i++) {
             SymbolReferenceWidget* refWidget = toSymbolReferenceWidget(ui->tabWidget->widget(i));
             if (refWidget) {
@@ -210,6 +208,7 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(9, QString("Function (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Funct).size()));
         ui->tabWidget->setTabText(10, QString("Unused (%1)").arg(mReference->findReferenceFromType(SymbolDataType::Unused).size()));
         ui->tabWidget->setTabText(11, QString("File Used (%1)").arg(mReference->getNumberOfFileUsed()));
+        ui->tabWidget->setEnabled(true);
     } else {
         QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
         ui->tabWidget->setToolTip(QString("<p style='white-space:pre'>Error while loading: %1%2<br>The file content might be corrupted or incorrectly overwritten</p>")
@@ -227,8 +226,28 @@ void ReferenceViewer::updateView(bool status)
         ui->tabWidget->setTabText(10, QString("Unused (?)"));
         ui->tabWidget->setTabText(11, QString("File Used (?)"));
         ui->tabWidget->setCurrentIndex(0);
+        ui->tabWidget->setEnabled(false);
     }
-    ui->tabWidget->setEnabled(status);
+
+    QProcess::ProcessState state = emit gamsProcessState();
+    if (pendingReload) {
+        // call loadReferenceFile() again every 500 ms
+        QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });
+    } else { // no reload pending
+        if (state != QProcess::ProcessState::NotRunning) {
+            // call updateViewe again every 500 ms
+            QTimer::singleShot(500, this, [this, loadStatus, pendingReload](){ updateView(loadStatus, pendingReload); });
+        } else {
+            if (mReference->state() == Reference::UnsuccessfullyLoaded ) { /*&&
+                state == QProcess::ProcessState::NotRunning) {*/
+                QString errorLine = (mReference->errorLine() > 0 ? QString(":%1").arg(mReference->errorLine()) : "");
+                SysLogLocator::systemLog()->append(
+                    QString("Error while loading: %1%2, the file content might be corrupted or incorrectly overwritten")
+                        .arg(mReference->getFileLocation(), errorLine),
+                        LogMsgType::Error);
+            }
+        }
+    }
 }
 
 } // namespace reference

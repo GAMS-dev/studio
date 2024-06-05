@@ -174,10 +174,11 @@ signals:
 
     ///
     /// \brief Signal emitted when loading the reference file has just been finished.
-    /// \param status Finish load status.
+    /// \param loadStatus Finish load status.
+    /// \param pendingRelaod if reload is pending.
     /// \see ::LoadStatus
     ///
-    void loadFinished(bool status);
+    void loadFinished(bool loadStatus, bool pendignReload);
 
 public slots:
     ///

@@ -25,6 +25,8 @@
 #include <QList>
 #include <QMap>
 #include <QTabWidget>
+#include <QProcess>
+
 #include "common.h"
 #include "reference.h"
 #include "abstractview.h"
@@ -57,14 +59,16 @@ public:
 
 signals:
     void jumpTo(gams::studio::reference::ReferenceItem item);
+    QProcess::ProcessState gamsProcessState();
 
 public slots:
     void reloadFile(const QString &encodingName);
     void on_tabBarClicked(int index);
-    void updateView(bool status);
+    void updateView(bool loadStatus, bool pendingReload);
 
 private:
     Ui::ReferenceViewer *ui;
+    QString mEncodingName;
     QScopedPointer<Reference> mReference;
     QScopedPointer<ReferenceTabStyle> mRefTabStyle;
 };

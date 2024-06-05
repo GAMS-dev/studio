@@ -146,6 +146,8 @@ QVariant SymbolTableModel::data(const QModelIndex &index, int role) const
     case Qt::DisplayRole: {
          QList<SymbolReferenceItem*> refList = mReference->findReferenceFromType(mType);
          int idx = static_cast<int>( mSortIdxMap[mFilterIdxMap[static_cast<size_t>(index.row())]] );
+         if (idx < 0 || idx >= refList.size())
+             break;
          switch(mType) {
          case SymbolDataType::Set :
          case SymbolDataType::Acronym :
