@@ -1287,6 +1287,11 @@ void PExProjectNode::terminate()
     std::ignore = QtConcurrent::run(&AbstractProcess::terminate, process());
 }
 
+void PExProjectNode::processState(QProcess::ProcessState &state)
+{
+    state = gamsProcessState();
+}
+
 void PExProjectNode::addLinesMap(const QString &filename, const QList<int> &fileLines, const QList<int> &continuousLines)
 {
     mBreakpointData->addLinesMap(filename, fileLines, continuousLines);

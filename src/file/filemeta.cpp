@@ -1226,7 +1226,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
         reference::ReferenceViewer *rv = new reference::ReferenceViewer(location(), mCodec->name(), parent);
         res = ViewHelper::initEditorType( rv );
-        connect(rv, &reference::ReferenceViewer::gamsProcessState, project, &PExProjectNode::gamsProcessState);
+        connect(rv, &reference::ReferenceViewer::processState, project, &PExProjectNode::processState);
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
         connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);

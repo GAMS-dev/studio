@@ -229,11 +229,12 @@ void ReferenceViewer::updateView(bool loadStatus, bool pendingReload)
         ui->tabWidget->setEnabled(false);
     }
 
-    QProcess::ProcessState state = emit gamsProcessState();
     if (pendingReload) {
         // call loadReferenceFile() again every 500 ms
         QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });
     } else { // no reload pending
+        QProcess::ProcessState state = QProcess::ProcessState::NotRunning;
+        emit processState(state);
         if (state != QProcess::ProcessState::NotRunning) {
             // call updateViewe again every 500 ms
             QTimer::singleShot(500, this, [this](){ mReference->loadReferenceFile(mEncodingName, true); });

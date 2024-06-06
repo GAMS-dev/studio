@@ -59,7 +59,7 @@ public:
 
 signals:
     void jumpTo(gams::studio::reference::ReferenceItem item);
-    QProcess::ProcessState gamsProcessState();
+    void processState(QProcess::ProcessState &state);
 
 public slots:
     void reloadFile(const QString &encodingName);
