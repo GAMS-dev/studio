@@ -5795,12 +5795,12 @@ void MainWindow::resetViews()
     const QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
-        dock->setVisible(true);
-
         if (dock == ui->dockProjectView) {
             addDockWidget(Qt::LeftDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/6}, Qt::Horizontal);
+            dock->setVisible(true);
         } else if (dock == ui->dockProcessLog) {
+            dock->setVisible(ui->mainTabs->currentWidget() != mWp);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         } else if (dock == ui->dockHelpView) {
@@ -5817,7 +5817,6 @@ void MainWindow::resetViews()
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid))
             lxi->resetView();
     }
-
     Settings::settings()->resetKeys(Settings::viewKeys());
     Settings::settings()->save();
 }
