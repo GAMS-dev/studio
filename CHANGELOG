@@ -1,14 +1,14 @@
-Version 1.18.2 *
+Version 1.18.2
 ==================
+- added transition page after the GAMS Engine login
 - fixed update issues during color changes when the Settings dialog is open
 - fixed crash when searching in folder
 - fixed switch back to login when GAMS Engine session is expired
 - fixed continue resume when GAMS Engine session is expired
-- added transition page after login to GAMS Engine
 - fixed visual issues on the welcome page
-- fixed the min-size restriction that broke the "Getting started" column
+- fixed the min-size restriction that broke the "Getting started" column of the welcome page
 - fixed crash and load behavior of reference viewer when reference file is partially or incorrectly written
-- fixed GAMS Engine crash when downloading large result
+- fixed GAMS Engine crash when downloading large result data
 
 Version 1.18.1
 ==================
