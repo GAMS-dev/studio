@@ -608,4 +608,5 @@ OTHER_FILES +=                                      \
     ../ci/.gitlab-ci-5-analyze.yml                  \
     ../.gitlab-ci.yml                               \
     ../CHANGELOG                                    \
+    ../README.md                                    \
     ../version

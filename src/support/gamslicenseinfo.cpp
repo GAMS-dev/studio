@@ -162,7 +162,10 @@ bool GamsLicenseInfo::isLicenseValid(const QStringList &license)
         palLicenseRegisterGAMS(mPAL, i++, line.trimmed().toStdString().c_str());
     }
     palLicenseRegisterGAMSDone(mPAL);
-    return !palLicenseValidation(mPAL);
+    //palNetworkLicenseOK(true); // TODO(AF): wait for PAL update
+    bool ret = !palLicenseValidation(mPAL);
+    //palNetworkLicenseOK(false);
+    return ret;
 }
 
 QStringList GamsLicenseInfo::gamsDataLocations()
@@ -322,8 +325,8 @@ QStringList GamsLicenseInfo::processLicenseData(const QString &data)
     for (int i=0, n=65; i+n<=str.size(); i+=n) {
         licenseLines << str.sliced(i, n);
     }
-    // a GAMS license has 5 to 6 lines
-    return (licenseLines.size() == 5 || licenseLines.size() == 6) ? licenseLines : QStringList();
+    // a GAMS license has 5 to 8 lines
+    return (licenseLines.size() >= 5 || licenseLines.size() <= 8) ? licenseLines : QStringList();
 }
 
 }

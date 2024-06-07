@@ -488,7 +488,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
+    connect(mWp, &WelcomePage::openProject, this, [this](const QString& projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
         if (!project && QFile::exists(projectPath)) {
             mProjectRepo.read(QVariantMap(), projectPath);
@@ -498,7 +498,7 @@ void MainWindow::initWelcomePage()
             openFile(project->runnableGms(), true, project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString& filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
@@ -507,7 +507,7 @@ void MainWindow::initWelcomePage()
         }
         openFilePath(filePath, project, ogNone, true);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString& path) {
         removeFromHistory(path);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
@@ -1043,13 +1043,12 @@ void MainWindow::continueAsyncCall()
     } else if (mAsyncCallOptions.value("call").toString().compare("newFileDialog") == 0) {
         QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
         QVector<PExProjectNode*> projects;
-        for (QVariant val : pointerValues) {
+        for (const QVariant& val : pointerValues) {
             projects << val.value<PExProjectNode*>();
         }
         newFileDialog(projects,
                       mAsyncCallOptions.value("solverName").toString(),
                       FileKind(mAsyncCallOptions.value("fileKind").toInt()));
-
     } else if (mAsyncCallOptions.contains("call")) {
         DEB() << "Undefined asynchronous call option: " << mAsyncCallOptions.value("call").toString();
     }

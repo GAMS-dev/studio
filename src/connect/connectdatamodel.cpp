@@ -1083,6 +1083,7 @@ void ConnectDataModel::reloadConnectDataModel()
 void ConnectDataModel:: onEditDataChanged(const QModelIndex &topLeft, const QModelIndex &bottomRight, const QVector<int> &roles) {
     QModelIndex idx = topLeft;
     Q_UNUSED(bottomRight)
+    Q_UNUSED(roles)
 
     ConnectDataItem* item = getItem(idx);
     editDataChanged(topLeft, isIndexValueValid((int)DataItemColumn::Value, item));
@@ -1266,7 +1267,7 @@ bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, co
     int level = tobeinsertSchema.split(":").size();
     for (int i =0; i<rowCount(parent); ++i) {
         QString schemaKey = (index(i, (int)DataItemColumn::SchemaKey,parent).data(Qt::DisplayRole).toString());
-        QString tobeinsertedname = tobeinsertSchema;
+        const QString& tobeinsertedname = tobeinsertSchema;
         QString keyname = (schemaKey.endsWith(":-") ? schemaKey.left(schemaKey.lastIndexOf(":-"))
                                                     : schemaKey);
         if (tobeinsertedname.compare(keyname)==0)

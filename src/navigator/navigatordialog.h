@@ -67,13 +67,13 @@ private:
     void collectLineNavigation(QSet<NavigatorContent> &content);
     void collectQuickActions(QSet<NavigatorContent> &content);
     void updateContent();
-    void selectFileOrFolder(NavigatorContent nc);
-    void selectHelpContent(NavigatorContent nc);
-    void selectQuickAction(NavigatorContent nc);
+    void selectFileOrFolder(const NavigatorContent& nc);
+    void selectHelpContent(const NavigatorContent& nc);
+    void selectQuickAction(const NavigatorContent& nc);
     void selectLineNavigation();
     void selectItem(QModelIndex index);
     void autocomplete();
-    void fillFileSystemPath(NavigatorContent nc);
+    void fillFileSystemPath(const NavigatorContent& nc);
     void highlightCurrentFile();
     void setFilter(const QString &filter);
 
