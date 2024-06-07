@@ -7,6 +7,7 @@ Version 1.18.2 *
 - added transition page after login to GAMS Engine
 - fixed visual issues on the welcome page
 - fixed the min-size restriction that broke the "Getting started" column
+- fixed crash and load behavior of reference viewer when reference file is partially or incorrectly written
 
 Version 1.18.1
 ==================
