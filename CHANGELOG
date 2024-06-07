@@ -8,6 +8,7 @@ Version 1.18.2 *
 - fixed visual issues on the welcome page
 - fixed the min-size restriction that broke the "Getting started" column
 - fixed crash and load behavior of reference viewer when reference file is partially or incorrectly written
+- fixed GAMS Engine crash when downloading large result
 
 Version 1.18.1
 ==================

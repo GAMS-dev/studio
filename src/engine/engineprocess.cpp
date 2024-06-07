@@ -763,7 +763,7 @@ void EngineProcess::reAuthorize(const QString &token)
 void EngineProcess::pollStatus()
 {
     if (!mPollSlow || mPollCounter == 0) {
-        if (mProcState == Proc3Queued)
+        if (mProcState == Proc3Queued || mProcState > Proc4Monitor)
             mManager->getJobStatus();
         else if (mProcState > Proc3Queued)
             mManager->getLog();
