@@ -65,7 +65,7 @@ public:
     ///
     static bool isSystemDirValid();
 
-    static void setDefaultWorkingDir(QString dir);
+    static void setDefaultWorkingDir(const QString &dir);
     static QString defaultWorkingDir(bool createMissing = false);
 
     static QString gamsDocumentsDir();

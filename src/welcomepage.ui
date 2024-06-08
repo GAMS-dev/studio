@@ -288,12 +288,6 @@
          </item>
          <item>
           <widget class="Line" name="line_2">
-           <property name="minimumSize">
-            <size>
-             <width>0</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="orientation">
             <enum>Qt::Horizontal</enum>
            </property>
@@ -301,18 +295,6 @@
          </item>
          <item>
           <widget class="QScrollArea" name="sa_gettingStarted">
-           <property name="sizePolicy">
-            <sizepolicy hsizetype="MinimumExpanding" vsizetype="MinimumExpanding">
-             <horstretch>0</horstretch>
-             <verstretch>0</verstretch>
-            </sizepolicy>
-           </property>
-           <property name="minimumSize">
-            <size>
-             <width>100</width>
-             <height>0</height>
-            </size>
-           </property>
            <property name="frameShape">
             <enum>QFrame::NoFrame</enum>
            </property>
@@ -323,26 +305,6 @@
             <bool>true</bool>
            </property>
            <widget class="QWidget" name="scrollAreaWidgetContents_2">
-            <property name="geometry">
-             <rect>
-              <x>0</x>
-              <y>0</y>
-              <width>324</width>
-              <height>475</height>
-             </rect>
-            </property>
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="MinimumExpanding" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="minimumSize">
-             <size>
-              <width>0</width>
-              <height>0</height>
-             </size>
-            </property>
             <layout class="QVBoxLayout" name="verticalLayout_3">
              <property name="sizeConstraint">
               <enum>QLayout::SetNoConstraint</enum>
@@ -376,7 +338,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;span style=&quot; font-size:small;&quot;&gt;Creates a new and empty .gms file.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Create New File&lt;/span&gt;&lt;br&gt;&lt;small&gt;Creates a new and empty .gms file.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="textFormat">
                   <enum>Qt::AutoText</enum>
@@ -401,7 +363,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse GAMS Libraries&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;The GAMS libraries contain an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Browse GAMS Libraries&lt;/span&gt;&lt;br/&gt;&lt;small&gt;The GAMS libraries contain an exhaustive list of GAMS examples ranging from simple tutorials to difficult real life problems.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -436,7 +398,7 @@
                   <enum>QFrame::Plain</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;Transport Example&lt;/span&gt;&lt;br/&gt;&lt;small&gt;A simple GAMS example to find a cost efficient solution for a shipping problem featuring demand and supply.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>
@@ -470,7 +432,7 @@
                   <enum>QFrame::StyledPanel</enum>
                  </property>
                  <property name="text">
-                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Documentation&lt;/span&gt;&lt;br/&gt;&lt;span style=&quot; font-size:small;&quot;&gt;Opens integrated help showing the documentation of GAMS Studio.&lt;/span&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
+                  <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;table style=&quot;vertical-align: top;&quot;&gt;&lt;tr&gt;&lt;td&gt;&lt;span style=&quot; font-weight:600;&quot;&gt;GAMS Studio Documentation&lt;/span&gt;&lt;br/&gt;&lt;small&gt;Opens integrated help showing the documentation of GAMS Studio.&lt;/small&gt;&lt;/td&gt;&lt;/tr&gt;&lt;/table&gt;&lt;/body&gt;&lt;/html&gt;</string>
                  </property>
                  <property name="wordWrap">
                   <bool>true</bool>

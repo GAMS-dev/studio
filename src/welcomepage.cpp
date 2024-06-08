@@ -157,6 +157,7 @@ void WelcomePage::showEvent(QShowEvent *event)
     Q_UNUSED(event)
     mOutputVisible = mMain->outputViewVisibility();
     mMain->setOutputViewVisibility(false);
+    mMain->setHelpViewVisibility(false);
     historyChanged();
 }
 

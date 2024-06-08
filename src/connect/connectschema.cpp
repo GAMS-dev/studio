@@ -402,6 +402,7 @@ bool ConnectSchema::isSchemaDefined(const QString &key) const
 
 bool ConnectSchema::isExcludesDefined(const QString &key) const
 {
+    Q_UNUSED(key)
     return mExcludesDefined;
 }
 

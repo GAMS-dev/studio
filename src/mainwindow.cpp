@@ -488,7 +488,7 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
+    connect(mWp, &WelcomePage::openProject, this, [this](const QString& projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
         if (!project && QFile::exists(projectPath)) {
             mProjectRepo.read(QVariantMap(), projectPath);
@@ -498,7 +498,7 @@ void MainWindow::initWelcomePage()
             openFile(project->runnableGms(), true, project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString& filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
@@ -507,7 +507,7 @@ void MainWindow::initWelcomePage()
         }
         openFilePath(filePath, project, ogNone, true);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString& path) {
         removeFromHistory(path);
     });
     if (Settings::settings()->toBool(skSkipWelcomePage))
@@ -1043,13 +1043,12 @@ void MainWindow::continueAsyncCall()
     } else if (mAsyncCallOptions.value("call").toString().compare("newFileDialog") == 0) {
         QVariantList pointerValues = mAsyncCallOptions.value("projects").toList();
         QVector<PExProjectNode*> projects;
-        for (QVariant val : pointerValues) {
+        for (const QVariant& val : pointerValues) {
             projects << val.value<PExProjectNode*>();
         }
         newFileDialog(projects,
                       mAsyncCallOptions.value("solverName").toString(),
                       FileKind(mAsyncCallOptions.value("fileKind").toInt()));
-
     } else if (mAsyncCallOptions.contains("call")) {
         DEB() << "Undefined asynchronous call option: " << mAsyncCallOptions.value("call").toString();
     }
@@ -2861,6 +2860,7 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
                                           : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel")
                              : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
                                           : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
+    choice -= 2;
     if (choice == 2) return false;
     bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
@@ -4353,8 +4353,11 @@ void MainWindow::checkForEngingJob()
 {
     for (PExProjectNode *project : mProjectRepo.projects()) {
         if (!project->engineJobToken().isEmpty()) {
+            bool needSwitching = (currentProject() != project && project->runnableGms());
             QMessageBox::StandardButton button = QMessageBox::question(this, "Resume GAMS Engine Job?", "Studio was left with a running GAMS Engine job.\nTry to resume?");
             if (button == QMessageBox::Yes) {
+                if (needSwitching)
+                    mProjectRepo.openFile(project->runnableGms(), true, project);
                 initEngineStartDialog(true);
             } else {
                 project->setEngineJobToken("");
@@ -4406,7 +4409,8 @@ void MainWindow::initEngineStartDialog(bool resume)
 
     dialog->setModal(true);
     dialog->setProcess(proc);
-    dialog->setHiddenMode(resume || (mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier)));
+    dialog->setResume(resume);
+    dialog->setHiddenMode(mEngineNoDialog && !qApp->keyboardModifiers().testFlag(Qt::ControlModifier));
     if (Settings::settings()->toBool(SettingsKey::skEngineIsSelfCert))
         dialog->setAcceptCert();
     connect(dialog, &engine::EngineStartDialog::submit, this, &MainWindow::engineSubmit);
@@ -4424,8 +4428,25 @@ void MainWindow::initEngineStartDialog(bool resume)
             updateAndSaveSettings();
         }
     });
-    if (resume)
-        prepareEngineProcess();
+    if (resume) {
+        auto coOk = std::make_shared<QMetaObject::Connection>();
+        *coOk = connect(proc, &engine::EngineProcess::reGetUsername, this, [this, coOk]() {
+            disconnect(*coOk);
+            prepareEngineProcess();
+        });
+        auto coNo = std::make_shared<QMetaObject::Connection>();
+        *coNo = connect(proc, &engine::EngineProcess::authorizeError, this, [dialog, coNo]() {
+            disconnect(*coNo);
+            dialog->setHiddenMode(false);
+            dialog->start();
+        });
+        auto coGo = std::make_shared<QMetaObject::Connection>();
+        *coGo = connect(proc, &engine::EngineProcess::authorized, this, [this, coGo]() {
+            disconnect(*coGo);
+            prepareEngineProcess();
+        });
+        proc->getUsername();
+    }
     else
         dialog->start();
 }
@@ -5773,12 +5794,12 @@ void MainWindow::resetViews()
     const QList<QDockWidget*> dockWidgets = findChildren<QDockWidget*>();
     for (QDockWidget* dock: dockWidgets) {
         dock->setFloating(false);
-        dock->setVisible(true);
-
         if (dock == ui->dockProjectView) {
             addDockWidget(Qt::LeftDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/6}, Qt::Horizontal);
+            dock->setVisible(true);
         } else if (dock == ui->dockProcessLog) {
+            dock->setVisible(ui->mainTabs->currentWidget() != mWp);
             addDockWidget(Qt::RightDockWidgetArea, dock);
             resizeDocks(QList<QDockWidget*>() << dock, {width()/3}, Qt::Horizontal);
         } else if (dock == ui->dockHelpView) {
@@ -5795,7 +5816,6 @@ void MainWindow::resetViews()
         if (lxiviewer::LxiViewer *lxi = ViewHelper::toLxiViewer(wid))
             lxi->resetView();
     }
-
     Settings::settings()->resetKeys(Settings::viewKeys());
     Settings::settings()->save();
 }

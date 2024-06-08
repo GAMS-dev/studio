@@ -110,17 +110,31 @@ void EngineStartDialog::authorizeChanged(const QString &authToken)
 
 void EngineStartDialog::setHiddenMode(bool preferHidden)
 {
-    mHiddenMode = preferHidden;
+    mHiddenMode = preferHidden || mResume;
+}
+
+void EngineStartDialog::setResume(bool resume)
+{
+    mResume = resume;
+    if (mProc && mProc->setUrl(mUrl)) {
+        bool visibleCheck = ui->cbAcceptCert->isVisible() || !inLogin();
+        if (protocol(mUrl) == ucHttps && visibleCheck && ui->cbAcceptCert->isChecked())
+            mProc->setIgnoreSslErrorsCurrentUrl(true);
+        mUrlChanged = false;
+        mProc->getVersion();
+        mProc->listProvider();
+        return;
+    }
+
 }
 
 void EngineStartDialog::start()
 {
-    //TODO: introduce an initial page showing "check authorization"
     if (!mProc) return;
-    if (ui->edUrl->text().isEmpty())
+    if (ui->edUrl->text().isEmpty() || mResume)
         showLogin();
     else {
-        showSubmit();
+        showConnect();
         urlEdited(ui->edUrl->text());
     }
 }
@@ -307,6 +321,10 @@ void EngineStartDialog::showEvent(QShowEvent *event)
     bool isHidden = !ui->cbAcceptCert->isVisible();
     if (isHidden)
         ui->cbAcceptCert->setVisible(true);
+    if (mProc->authToken().isEmpty() || mResume)
+        showLogin();
+    else
+        showConnect();
     QDialog::showEvent(event);
     setFixedSize(size());
     if (isHidden)
@@ -317,12 +335,24 @@ void EngineStartDialog::showLogin()
 {
     ui->stackedWidget->setCurrentIndex(0);
     ui->bAlways->setVisible(false);
+    setWindowTitle("GAMS Engine Login");
     ui->bOk->setText("Login");
     ensureOpened();
 }
 
+void EngineStartDialog::showConnect()
+{
+    setWindowTitle("Connecting");
+    ui->stackedWidget->setCurrentIndex(2);
+}
+
 void EngineStartDialog::showSubmit()
 {
+    if (mResume) {
+        close();
+        return;
+    }
+    setWindowTitle("Submit Job");
     ui->stackedWidget->setCurrentIndex(1);
     ui->bAlways->setVisible(true);
     ui->bOk->setText("OK");
@@ -365,13 +395,21 @@ void EngineStartDialog::bLogoutClicked()
 
 void EngineStartDialog::authorizeError(const QString &error)
 {
-    ui->laWarn->setText("Could not log in: " + error.trimmed());
-    ui->laWarn->setToolTip("Please check your username and password");
+    if (mResume) return;
+    if (mProc->authToken().isEmpty()) {
+        ui->laWarn->setText("Could not log in: Please retry");
+        ui->laWarn->setToolTip(error.trimmed());
+    } else {
+        ui->laWarn->setText("Could not log in: Session expired");
+        ui->laWarn->setToolTip(error.trimmed());
+    }
+    showLogin();
 }
 
 void EngineStartDialog::reGetUsername(const QString &user)
 {
     ui->edUser->setText(user);
+    showSubmit();
 }
 
 void EngineStartDialog::reListProviderError(const QString &error)
@@ -517,6 +555,11 @@ void EngineStartDialog::reListJobs(qint32 count)
 {
     ui->nJobCount->setText(QString::number(count));
     mAuthorized = true;
+    if (mResume) {
+        mResume = false;
+        close();
+        return;
+    }
     showSubmit();
     mProc->sendPostLoginRequests();
 }
@@ -579,7 +622,8 @@ void EngineStartDialog::reVersion(const QString &engineVersion, const QString &g
         if (mProc->authToken().isEmpty())
             showLogin();
         else {
-            showSubmit();
+            if (!mResume)
+                showConnect();
             mProc->getUsername();
         }
         emit engineUrlValidated(mValidUrl);
@@ -769,7 +813,7 @@ void EngineStartDialog::updateConnectStateAppearance()
                 ui->laWarn->setToolTip("");
                 mForcePreviousWork = false;
             }
-            if (!isVisible() && mHiddenMode) {
+            if (!isVisible() && mHiddenMode && !mResume) {
                 // hidden start
                 if (mForcePreviousWork && mProc) mProc->forcePreviousWork();
                 mAlways = true;

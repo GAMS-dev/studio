@@ -1224,7 +1224,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
             gdx->readState(map);
         }
     } else if (kind() == FileKind::Ref && !forcedAsTextEdit) {
-        res = ViewHelper::initEditorType(new reference::ReferenceViewer(location(), mCodec->name(), parent));
+        reference::ReferenceViewer *rv = new reference::ReferenceViewer(location(), mCodec->name(), parent);
+        res = ViewHelper::initEditorType( rv );
+        connect(rv, &reference::ReferenceViewer::processState, project, &PExProjectNode::processState);
     } else if (kind() == FileKind::Log) {
         LogParser *parser = new LogParser(mCodec);
         connect(parser, &LogParser::hasFile, project, &PExProjectNode::hasFile);

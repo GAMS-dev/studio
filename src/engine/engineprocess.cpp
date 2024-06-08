@@ -42,7 +42,7 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     mManager = new EngineManager(this);
     // mManager->reListProvider is connected in AuthManager
     connect(mManager, &EngineManager::reLoginWithOIDC, this, [this](const QString &token) {
-        DEB() << "Logged in woth OIDC - new JWToken: " << token;
+        DEB() << "Logged in with OIDC - new JWToken: " << token;
         authorize(token);
     });
     connect(mManager, &EngineManager::reLoginWithOIDCError, this, [this](const QString &message) {
@@ -73,7 +73,6 @@ EngineProcess::EngineProcess(QObject *parent) : AbstractGamsProcess("gams", pare
     connect(mManager, &EngineManager::jobIsQueued, this, &EngineProcess::jobIsQueued);
     connect(mManager, &EngineManager::allPendingRequestsCompleted, this, &EngineProcess::allPendingRequestsCompleted);
     connect(mManager, &EngineManager::reGetUsername, this, [this](const QString &name) {
-        setProcState(ProcCheck);
         listJobs();
         listNamespaces();
         emit reGetUsername(name);
@@ -764,7 +763,7 @@ void EngineProcess::reAuthorize(const QString &token)
 void EngineProcess::pollStatus()
 {
     if (!mPollSlow || mPollCounter == 0) {
-        if (mProcState == Proc3Queued)
+        if (mProcState == Proc3Queued || mProcState > Proc4Monitor)
             mManager->getJobStatus();
         else if (mProcState > Proc3Queued)
             mManager->getLog();

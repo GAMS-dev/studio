@@ -24,7 +24,7 @@
 #include <QMap>
 #include <QDir>
 
-#include "referencedatatype.h"
+//#include "referencedatatype.h"
 #include "filereferenceitem.h"
 #include "symbolreferenceitem.h"
 
@@ -174,26 +174,31 @@ signals:
 
     ///
     /// \brief Signal emitted when loading the reference file has just been finished.
-    /// \param status Finish load status.
+    /// \param loadStatus Finish load status.
+    /// \param pendingRelaod if reload is pending.
     /// \see ::LoadStatus
     ///
-    void loadFinished(bool status);
+    void loadFinished(bool loadStatus, bool pendignReload);
 
 public slots:
     ///
     /// \brief Load the reference object from the reference file.
-    /// \param pointer to codec to be loaded
+    /// \param encodingName pointer to codec to be loaded
+    /// \param triggerReload True, if reloading. False, otherwise
     ///
-    void loadReferenceFile(const QString &encodingName);
+    void loadReferenceFile(const QString &encodingName, bool triggerReload=true);
 
 private:
-    bool parseFile(const QString &referenceFile, const QString &encodingName);
+    qint64 parseFile(const QString &referenceFile, const QString &encodingName);
     void addReferenceInfo(SymbolReferenceItem* ref, const QString &referenceType, int lineNumber, int columnNumber, const QString &location);
+    void addSymbolReferenceItem();
     void clear();
 
     QString mReferenceFile;
     ReferenceState mState = Initializing;
     int mLastErrorLine = -1;
+    qint64 mLastReadFileSize = 0;
+    bool mPendingReload = false;
 
     QStringList mFileUsed;
 

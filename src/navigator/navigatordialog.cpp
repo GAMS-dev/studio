@@ -402,7 +402,7 @@ void NavigatorDialog::autocomplete()
     }
 }
 
-void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
+void NavigatorDialog::fillFileSystemPath(const NavigatorContent& nc)
 {
     mSelectedDirectory = QDir(nc.fileInfo().absoluteFilePath());
     mInput->setText("f " + QDir::toNativeSeparators(mSelectedDirectory.absolutePath())
@@ -410,7 +410,7 @@ void NavigatorDialog::fillFileSystemPath(NavigatorContent nc)
     updateContent();
 }
 
-void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
+void NavigatorDialog::selectFileOrFolder(const NavigatorContent& nc)
 {
     if (FileMeta* fm = nc.fileMeta()) {
         if (fm->location().endsWith("~log"))
@@ -428,13 +428,13 @@ void NavigatorDialog::selectFileOrFolder(NavigatorContent nc)
     }
 }
 
-void NavigatorDialog::selectHelpContent(NavigatorContent nc)
+void NavigatorDialog::selectHelpContent(const NavigatorContent& nc)
 {
     mInput->setText(nc.prefix());
     updateContent();
 }
 
-void NavigatorDialog::selectQuickAction(NavigatorContent nc)
+void NavigatorDialog::selectQuickAction(const NavigatorContent& nc)
 {
     mInput->setText("");
     nc.executeQuickAction();

@@ -53,7 +53,7 @@ void NavigatorModel::setCurrentDir(const QDir &dir)
 int NavigatorModel::findIndex(const QString& file)
 {
     int index = 0;
-    for (NavigatorContent nc : std::as_const(mContent)) {
+    for (const NavigatorContent& nc : std::as_const(mContent)) {
         if (nc.fileInfo().filePath() == file)
             return index;
         index++;

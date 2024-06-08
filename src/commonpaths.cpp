@@ -204,7 +204,7 @@ QString CommonPaths::gamsConnectSchemaDir()
     return dirpath;
 }
 
-void CommonPaths::setDefaultWorkingDir(QString dir)
+void CommonPaths::setDefaultWorkingDir(const QString& dir)
 {
     DefaultWorkDir = dir;
 }

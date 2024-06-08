@@ -30,6 +30,7 @@
 #include <QSslConfiguration>
 
 #include "networkmanager.h"
+#include "logger.h"
 
 using namespace OpenAPI;
 
@@ -214,6 +215,14 @@ EngineManager::EngineManager(QObject* parent)
 
     mJobsApi->setNetworkAccessManager(mNetworkManager);
 
+    // TODO(JM) discuss this
+    // Would be convenient at the end of  OAIHttpRequestWorker::execute ...
+//    connect(reply, &QNetworkReply::downloadProgress, this, &OAIHttpRequestWorker::downloadProgress);
+    // pass though OAIJobApi and use here
+//    connect(mJobsApi, &OAIJobsApi::downloadProgress, this, [this](qint64 bytesReceived, qint64 bytesTotal) {
+//        DEB() << "progress " << bytesReceived << " from " << bytesTotal;
+//    });
+
     connect(mJobsApi, &OAIJobsApi::createJobSignal, this,
             [this](const OAIMessage_and_token &summary) {
         emit reCreateJob(summary.getMessage(), summary.getToken());
@@ -272,8 +281,8 @@ EngineManager::EngineManager(QObject* parent)
     connect(mJobsApi, &OAIJobsApi::popJobLogsSignalEFull, this,
             [this](OAIHttpRequestWorker *, QNetworkReply::NetworkError error_type, const QString &text) {
         if (!mQueueFinished && error_type != QNetworkReply::ContentAccessDenied) {
-            emit reGetLog("Network error " + QString::number(error_type).toLatin1() +
-                          " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
+            emit reError("Network error " + QString::number(error_type).toLatin1() +
+                         " from popLog:\n  " + getJsonMessageIfFound(text).toUtf8());
         } else {
             emit jobIsQueued();
         }
