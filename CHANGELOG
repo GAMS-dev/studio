@@ -1,3 +1,7 @@
+Version 1.18.3 *
+==================
+- added support for new GAMS license file format with 8 lines
+
 Version 1.18.2
 ==================
 - added transition page after the GAMS Engine login
