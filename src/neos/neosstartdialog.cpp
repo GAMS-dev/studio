@@ -113,7 +113,7 @@ QString NeosStartDialog::validateEmail(const QString &eMail)
 {
     QString s = eMail.trimmed();
     if (s.isEmpty()) return "The email is initialized from NEOS_EMAIL in the GAMS config or an environment variable.";
-    QString invalidText("Invalid email.");
+    QString invalidText("\nInvalid email.");
     if (s.indexOf(' ') > 0) return invalidText;
     if (s.indexOf('\t') > 0) return invalidText;
     int i = s.indexOf('@');
@@ -121,7 +121,7 @@ QString NeosStartDialog::validateEmail(const QString &eMail)
     i = s.indexOf('.', i+2);
     if (i < 0) return invalidText;
     if (i == s.length()-1) return invalidText;
-    return QString();
+    return QString("\n");
 }
 
 void NeosStartDialog::updateCanStart()
