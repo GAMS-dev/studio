@@ -130,7 +130,7 @@ void NeosStartDialog::updateCanStart()
     if (message != ui->laEmailHint->text()) {
         ui->laEmailHint->setText(message);
     }
-    bool enabled = ui->cbTerms->isChecked() && message.isEmpty();
+    bool enabled = ui->cbTerms->isChecked() && message.trimmed().isEmpty();
     ui->bAlways->setEnabled(enabled && ui->cbHideTerms->isChecked());
     ui->buttonBox->button(QDialogButtonBox::Ok)->setEnabled(enabled);
 }
