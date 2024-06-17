@@ -535,7 +535,7 @@ private:
     QTimer mWinStateTimer;
     QTimer mSaveSettingsTimer;
     QPrinter mPrinter;
-    QPrintDialog *mPrintDialog;
+    QPrintDialog *mPrintDialog = nullptr;
 
     GamsLibProcess *mLibProcess = nullptr;
     QActionGroup *mCodecGroupSwitch;
