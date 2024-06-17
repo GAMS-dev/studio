@@ -22,6 +22,7 @@
 #include <QtWidgets>
 #include "file/treeitemdelegate.h"
 #include "mainwindow.h"
+#include "application.h"
 #include "option/lineeditcompleteevent.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -418,7 +419,12 @@ MainWindow::MainWindow(QWidget *parent)
         mSettingsDialog->focusUpdateTab();
     });
 
-    mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && app->skipCheckForUpdate()) {
+        mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
+    } else {
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    }
     connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
             this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 

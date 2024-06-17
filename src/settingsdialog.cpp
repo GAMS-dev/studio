@@ -23,6 +23,7 @@
 #include <QScrollArea>
 #include <QToolTip>
 #include <QLocale>
+#include "application.h"
 #include "mainwindow.h"
 #include "theme.h"
 #include "settingsdialog.h"
@@ -43,11 +44,16 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     : QDialog(parent)
     , ui(new Ui::SettingsDialog)
     , mMain(parent)
-    , mC4U(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this))
 {
     ui->setupUi(this);
     setCheckForUpdateState();
-    connect(mC4U, &support::CheckForUpdate::versionInformationAvailable,
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && app->skipCheckForUpdate()) {
+        mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
+    } else {
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    }
+    connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
             this, [this]{ ui->updateBrowser->setText(mC4U->versionInformation()); });
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
     ui->tabWidget->setCurrentIndex(0);
@@ -585,7 +591,10 @@ void SettingsDialog::focusUpdateTab()
 {
     setCheckForUpdateState();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
-    mC4U->checkForUpdate(Settings::settings()->toBool(skAutoUpdateCheck));
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && !app->skipCheckForUpdate()) {
+        mC4U->checkForUpdate(Settings::settings()->toBool(skAutoUpdateCheck));
+    }
 }
 
 void SettingsDialog::closeEvent(QCloseEvent *event) {
@@ -918,6 +927,15 @@ QDate SettingsDialog::nextCheckDate() const
 
 void SettingsDialog::setCheckForUpdateState()
 {
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && app->skipCheckForUpdate())
+        ui->updateBrowser->setPlainText("All online check for update actions have beens skipped. Please start Studio without --skip-check-for-update.");
+    else
+        setCheckForUpdateSettingsState();
+}
+
+void SettingsDialog::setCheckForUpdateSettingsState()
+{
     if (Settings::settings()->toBool(skAutoUpdateCheck))
         ui->updateBrowser->setPlainText("Checking for updates...");
     else
@@ -1049,7 +1067,7 @@ void SettingsDialog::updateNumericalPrecision()
 
 void SettingsDialog::checkForUpdates()
 {
-    setCheckForUpdateState();
+    setCheckForUpdateSettingsState();
     ui->tabWidget->setCurrentIndex(ui->tabWidget->count()-1);
     mC4U->checkForUpdate(true);
 }

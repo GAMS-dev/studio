@@ -5,6 +5,7 @@ Version 1.18.3 *
 - fixed scrolling with page up/down doesn't work in process log
 - fixed base directory line input too long in project edit
 - fixed cut off text issue in NEOS dialog
+- added `--skip-check-for-update` to skip all online check for update actions
 
 Version 1.18.2
 ==================

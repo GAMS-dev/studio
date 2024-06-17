@@ -130,6 +130,7 @@ private:
     QDate nextCheckDate() const;
 
     void setCheckForUpdateState();
+    void setCheckForUpdateSettingsState();
 
 private:
     Ui::SettingsDialog *ui;
@@ -147,7 +148,7 @@ private:
 
     bool mRestoreSqZeroes = false;
 
-    support::CheckForUpdate* mC4U;
+    QScopedPointer<support::CheckForUpdate> mC4U;
 };
 
 }

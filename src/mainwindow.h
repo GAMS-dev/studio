@@ -581,7 +581,6 @@ private:
     bool mEngineNoDialog = false;
 
     QScopedPointer<support::CheckForUpdate> mC4U;
-
 };
 
 }

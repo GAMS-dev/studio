@@ -27,6 +27,7 @@
 #include <QToolButton>
 #include <QWebEngineFindTextResult>
 
+#include "application.h"
 #include "helptoolbar.h"
 #include "helpview.h"
 #include "helpwidget.h"
@@ -44,11 +45,17 @@ namespace gams {
 namespace studio {
 namespace help {
 
-HelpWidget::HelpWidget(QWidget *parent) :
-    QWidget(parent),
-    ui(new Ui::HelpWidget),
-    mC4U(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this))
+HelpWidget::HelpWidget(QWidget *parent)
+    : QWidget(parent)
+    , ui(new Ui::HelpWidget)
 {
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && app->skipCheckForUpdate()) {
+        mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
+    } else {
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    }
+
     ui->setupUi(this);
     ui->actionHome->setIcon(Theme::icon(":/%1/home"));
 

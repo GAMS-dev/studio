@@ -42,6 +42,7 @@ public:
     bool ignoreSettings() const;
     bool resetSettings() const;
     bool resetView() const;
+    bool skipCheckForUpdate() const;
     QString gamsDir() const;
 
     QString logFile() const;
@@ -54,6 +55,7 @@ private:
     bool mIgnoreSettings = false;
     bool mResetSettings = false;
     bool mResetView = false;
+    bool mSkipCheckForUpdate = false;
     QString mGamsDir = QString();
     QString mLogFile = QString();
 };

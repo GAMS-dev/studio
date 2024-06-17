@@ -70,6 +70,12 @@ public:
     ///
     QString serverName() const;
 
+    ///
+    /// \brief Get skip check for update value.
+    /// \return Returns the skip check for update value.
+    ///
+    bool skipCheckForUpdate() const;
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.
