@@ -45,6 +45,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"gams-dir", "Set the GAMS system directory", "path"});
     addOption({"log", "Set '$HOME/Documents/studio.log' for Studio system log"});
     addOption({"log-file", "Set a log file for Studio system log", "file"});
+    addOption({"skip-check-for-update", "Skip all online check for update actions"});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -64,6 +65,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mLogFile = CommonPaths::studioDocumentsDir() + "/studio.log";
     if (isSet("log-file"))
         mLogFile = this->value("log-file");
+    if (isSet("skip-check-for-update"))
+        mSkipCheckForUpdate = true;
     mFiles = getFileArgs();
 
     return CommandLineOk;
@@ -87,6 +90,11 @@ bool CommandLineParser::resetSettings() const
 bool CommandLineParser::resetView() const
 {
     return mResetView;
+}
+
+bool CommandLineParser::skipCheckForUpdate() const
+{
+    return mSkipCheckForUpdate;
 }
 
 QString CommandLineParser::gamsDir() const

@@ -127,6 +127,11 @@ QString Application::serverName() const
     return mServerName;
 }
 
+bool Application::skipCheckForUpdate() const
+{
+    return mCmdParser.skipCheckForUpdate();
+}
+
 QSharedPointer<MainWindow> Application::mainWindow() const
 {
     return mMainWindow;

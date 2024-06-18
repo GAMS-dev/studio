@@ -46,7 +46,7 @@ enum ContextAction {
     actSep3,
     actAddExisting,
     actSep4,
-    actAddNewGms,
+    actAddNewFile,
     actAddNewOpt,
     actAddNewPf,
     actSep5,
@@ -87,10 +87,8 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actSetMain, addAction("&Set as Main File", this, &ProjectContextMenu::onSetMainFile));
 
     mActions.insert(actSep3, addSeparator());
-
     mActions.insert(actAddExisting, addAction("Add &Existing File", this, &ProjectContextMenu::onAddExisitingFile));
-
-    mActions.insert(actAddNewGms, addAction("Add &New File", this, &ProjectContextMenu::onAddNewFile));
+    mActions.insert(actAddNewFile, addAction("Add &New File", this, &ProjectContextMenu::onAddNewFile));
 
     QMenu* newSolverOptionMenu = addMenu( "Add New Solver Option File" );
     mActions.insert(actAddNewOpt, newSolverOptionMenu->menuAction());
@@ -243,7 +241,7 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     }
 
     mActions[actExplorer]->setEnabled(single);
-    mActions[actExplorer]->setVisible(!isFreeSpace && !isGamsSys);
+    mActions[actExplorer]->setVisible(!isGamsSys);
     mActions[actOpenTerminal]->setEnabled(single);
     mActions[actOpenTerminal]->setVisible(!isFreeSpace && !isGamsSys);
 
@@ -289,8 +287,8 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
 //    mActions[actSetMain]->setEnabled(single);
 
-    mActions[actAddNewGms]->setVisible(isProject && !isGamsSys);
-    mActions[actAddExisting]->setVisible(isProject && !isGamsSys);
+    mActions[actAddNewFile]->setVisible((isProject || isGroup) && !isGamsSys);
+    mActions[actAddExisting]->setVisible((isProject || isGroup) && !isGamsSys);
 
     mActions[actCloseProject]->setVisible(isProject);
     mActions[actCloseGroup]->setVisible(isGroup);
@@ -325,7 +323,12 @@ void ProjectContextMenu::onCloseFile()
 void ProjectContextMenu::onAddExisitingFile()
 {
     QVector<PExProjectNode*> projects;
+    QString sourcePath = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
+        if (sourcePath.isEmpty()) {
+            PExGroupNode *group = node->toGroup();
+            if (group) sourcePath = group->location();
+        }
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -333,10 +336,7 @@ void ProjectContextMenu::onAddExisitingFile()
             projects << project;
     }
     if (projects.isEmpty()) return;
-
-    QString sourcePath = "";
-    if (!projects.isEmpty()) sourcePath = projects.first()->location();
-    else emit getSourcePath(sourcePath);
+    if (sourcePath.isEmpty()) sourcePath = projects.first()->location();
     QStringList filePaths = QFileDialog::getOpenFileNames(mParent, "Add existing files", sourcePath,
                                                     ViewHelper::dialogFileFilterAll().join(";;"),
                                                     nullptr,
@@ -353,7 +353,12 @@ void ProjectContextMenu::onAddExisitingFile()
 void ProjectContextMenu::onAddNewFile()
 {
     QVector<PExProjectNode*> projects;
+    QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
+        if (path.isEmpty()) {
+            PExGroupNode *group = node->toGroup();
+            if (group) path = group->location();
+        }
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
@@ -361,21 +366,23 @@ void ProjectContextMenu::onAddNewFile()
             projects << project;
     }
     if (!projects.isEmpty())
-        emit newFileDialog(projects);
+        emit newFileDialog(projects, path);
 }
 
 void ProjectContextMenu::onAddNewPfFile()
 {
     QVector<PExProjectNode*> projects;
+    QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
+        if (path.isEmpty()) path = project->location();
         if (!projects.contains(project))
             projects << project;
     }
     if (!projects.isEmpty())
-        emit newFileDialog(projects, "", FileKind::Pf);
+        emit newFileDialog(projects, path, "", FileKind::Pf);
 }
 
 void ProjectContextMenu::setParent(QWidget *parent)
@@ -425,15 +432,17 @@ void ProjectContextMenu::onCopyProject()
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
 {
     QVector<PExProjectNode*> groups;
+    QString path = "";
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (!project) continue;
+        if (path.isEmpty()) path = project->location();
         if (!groups.contains(project))
             groups << project;
     }
     if (!groups.isEmpty())
-        emit newFileDialog(groups, solverName);
+        emit newFileDialog(groups, path, solverName);
 }
 
 void ProjectContextMenu::onOpenTerminal()

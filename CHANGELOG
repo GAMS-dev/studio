@@ -1,3 +1,12 @@
+Version 1.18.3 *
+==================
+- added support for new GAMS license file format with 8 lines
+- added missing context menu actions for folder entries in projects
+- fixed scrolling with page up/down doesn't work in process log
+- fixed base directory line input too long in project edit
+- fixed cut off text issue in NEOS dialog
+- added `--skip-check-for-update` to skip all online check for update actions
+
 Version 1.18.2
 ==================
 - added transition page after the GAMS Engine login

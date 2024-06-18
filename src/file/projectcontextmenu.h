@@ -23,12 +23,12 @@
 #include <QMenu>
 #include <QSignalMapper>
 #include "common.h"
-#include "file.h"
 
 namespace gams {
 namespace studio {
 
 class PExAbstractNode;
+class PExGroupNode;
 class PExProjectNode;
 class PExFileNode;
 
@@ -47,7 +47,7 @@ signals:
     void runFile(gams::studio::PExFileNode *fc);
     void setMainFile(gams::studio::PExFileNode *fc);
     void closeFile(gams::studio::PExFileNode* fc);
-    void addExistingFile(gams::studio::PExProjectNode* group, const QString& file);
+    void addExistingFile(gams::studio::PExGroupNode* group, const QString& file);
     void getSourcePath(QString& source);
     void openLogFor(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void openFilePath(QString fileName, gams::studio::PExProjectNode* knownProject, gams::studio::OpenGroupOption opt, bool focus);
@@ -60,7 +60,7 @@ signals:
     void selectAll();
     void expandAll();
     void collapseAll();
-    void newFileDialog(QVector<gams::studio::PExProjectNode *> groups, const QString& solverName="",
+    void newFileDialog(QVector<gams::studio::PExProjectNode *> projects, const QString &path = "", const QString& solverName="",
                        gams::studio::FileKind projectOnly = gams::studio::FileKind::None);
     void openTerminal(const QString& workingDir);
     void openGdxDiffDialog(QString workingDirectory, QString input1, QString input2="");

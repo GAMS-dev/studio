@@ -203,10 +203,10 @@ public slots:
     void appendSystemLogError(const QString &text) const;
     void appendSystemLogWarning(const QString &text) const;
     void parameterRunChanged();
-    void newFileDialogPrepare(const QVector<gams::studio::PExProjectNode*> &projects = QVector<gams::studio::PExProjectNode *>(),
-                              const QString& solverName=QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
-    void newFileDialog(const QVector<gams::studio::PExProjectNode*> &projects = QVector<gams::studio::PExProjectNode *>(),
-                       const QString& solverName=QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
+    void newFileDialogPrepare(const QVector<gams::studio::PExProjectNode*> &projects, const QString &inPath = QString(),
+                              const QString& solverName = QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
+    void newFileDialog(const QVector<gams::studio::PExProjectNode*> &projects, const QString &inPath,
+                       const QString& solverName = QString(), gams::studio::FileKind fileKind = gams::studio::FileKind::None);
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
@@ -242,7 +242,7 @@ private slots:
     void neosProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void remoteProgress(gams::studio::AbstractProcess *proc, gams::studio::ProcState progress);
     void closeNodeConditionally(gams::studio::PExFileNode *node);
-    void addToGroup(gams::studio::PExProjectNode *project, const QString &filepath);
+    void addToGroup(gams::studio::PExGroupNode *group, const QString &filepath);
     void sendSourcePath(QString &source);
     void changeToLog(gams::studio::PExAbstractNode* node, bool openOutput, bool createMissing);
     void storeTree();
@@ -581,7 +581,6 @@ private:
     bool mEngineNoDialog = false;
 
     QScopedPointer<support::CheckForUpdate> mC4U;
-
 };
 
 }

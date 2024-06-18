@@ -22,6 +22,7 @@
 #include <QtWidgets>
 #include "file/treeitemdelegate.h"
 #include "mainwindow.h"
+#include "application.h"
 #include "option/lineeditcompleteevent.h"
 #include "ui_mainwindow.h"
 #include "editors/codeedit.h"
@@ -418,7 +419,12 @@ MainWindow::MainWindow(QWidget *parent)
         mSettingsDialog->focusUpdateTab();
     });
 
-    mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    auto app = qobject_cast<Application*>(qApp);
+    if (app && app->skipCheckForUpdate()) {
+        mC4U.reset(new support::CheckForUpdate(!app->skipCheckForUpdate(), this));
+    } else {
+        mC4U.reset(new support::CheckForUpdate(Settings::settings()->toBool(skAutoUpdateCheck), this));
+    }
     connect(mC4U.get(), &support::CheckForUpdate::versionInformationAvailable,
             this, [this]{ checkForUpdates(mC4U->versionInformationShort()); });
 
@@ -841,8 +847,9 @@ void MainWindow::getParameterValue(QString param, QString &value)
     }
 }
 
-void MainWindow::addToGroup(PExProjectNode* project, const QString& filepath)
+void MainWindow::addToGroup(PExGroupNode* group, const QString& filepath)
 {
+    PExProjectNode *project = group->assignedProject();
     openFileNode(mProjectRepo.findOrCreateFileNode(filepath, project), true);
 }
 
@@ -1047,6 +1054,7 @@ void MainWindow::continueAsyncCall()
             projects << val.value<PExProjectNode*>();
         }
         newFileDialog(projects,
+                      mAsyncCallOptions.value("path").toString(),
                       mAsyncCallOptions.value("solverName").toString(),
                       FileKind(mAsyncCallOptions.value("fileKind").toInt()));
     } else if (mAsyncCallOptions.contains("call")) {
@@ -1535,7 +1543,7 @@ void MainWindow::getAdvancedActions(QList<QAction*>* actions)
     *actions = act;
 }
 
-void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, const QString& solverName, FileKind fileKind)
+void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
 {
     mAsyncCallOptions.clear();
     mAsyncCallOptions.insert("call", "newFileDialog");
@@ -1546,21 +1554,22 @@ void MainWindow::newFileDialogPrepare(const QVector<PExProjectNode*> &projects, 
         pointerValues << v;
     }
     mAsyncCallOptions.insert("projects", pointerValues);
+    mAsyncCallOptions.insert("path", inPath);
     mAsyncCallOptions.insert("solverName", solverName);
     mAsyncCallOptions.insert("fileKind", int(fileKind));
     ensureWorkspace();
 }
 
-void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const QString& solverName, FileKind fileKind)
+void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const QString &inPath, const QString& solverName, FileKind fileKind)
 {
-    QString path;
+    QString path = inPath;
     bool projectOnly = fileKind == FileKind::Gsp;
     bool pfFileOnly = fileKind == FileKind::Pf;
     if (projectOnly) {
         path = mRecent.project() ? mRecent.project()->location() : CommonPaths::defaultWorkingDir();
     } else {
         if (!projects.isEmpty()) {
-            path = projects.constFirst()->workDir();
+            if (path.isEmpty()) path = projects.constFirst()->workDir();
         } else if (mRecent.editFileId() >= 0) {
             FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
             if (fm) path = QFileInfo(fm->location()).path();
@@ -6318,7 +6327,7 @@ void MainWindow::on_actionMove_Line_Down_triggered()
 
 void MainWindow::on_actionNew_Project_triggered()
 {
-    newFileDialogPrepare(QVector<PExProjectNode*>(), "", FileKind::Gsp);
+    newFileDialogPrepare(QVector<PExProjectNode*>(), "", "", FileKind::Gsp);
 }
 
 void MainWindow::on_actionOpen_Project_triggered()
