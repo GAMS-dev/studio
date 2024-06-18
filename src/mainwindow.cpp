@@ -4909,15 +4909,21 @@ void MainWindow::remoteProgress(AbstractProcess *proc, ProcState progress)
 void MainWindow::closeNodeConditionally(PExFileNode* node)
 {
     // count nodes to the same file
-    int nodeCountToFile = mProjectRepo.fileNodes(node->file()->id()).count();
-    PExGroupNode *group = node->parentNode();
     PExProjectNode *project = node->assignedProject();
-    if (project && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
+    if (project && project->runnableGms() == node->file() && !terminateProcessesConditionally(QVector<PExProjectNode*>() << project))
         return;
+    QVector<PExFileNode*> fileNodes = mProjectRepo.fileNodes(node->file()->id());
+    PExGroupNode *group = node->parentNode();
     // not the last OR not modified OR permitted
-    if (nodeCountToFile > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
-        if (nodeCountToFile == 1)
+    if (fileNodes.count() > 1 || !node->isModified() || requestCloseChanged(QVector<FileMeta*>() << node->file())) {
+        if (fileNodes.count() == 1)
             closeFileEditors(node->file()->id());
+        else {
+            PExFileNode *newNode = fileNodes.first();
+            if (newNode == node) newNode = fileNodes.at(1);
+            openFileNode(newNode);
+        }
+
         mProjectRepo.closeNode(node);
     }
     mProjectRepo.purgeGroup(group);
