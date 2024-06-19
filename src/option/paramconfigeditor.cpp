@@ -557,6 +557,11 @@ bool ParamConfigEditor::isModified() const
     return mModified;
 }
 
+void ParamConfigEditor::selectSearchField() const
+{
+    ui->paramCfgDefSearch->setFocus();
+}
+
 QList<ConfigItem *> ParamConfigEditor::parameterConfigItems()
 {
     QList<ConfigItem *> itemList;

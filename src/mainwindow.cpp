@@ -5083,6 +5083,10 @@ void MainWindow::toggleSearchDialog()
                 sow->selectSearchField();
                 return;
             }
+            if (option::GamsConfigEditor *gce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                if (gce->selectSearchField())
+                   return;
+            }
             if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(mRecent.editor())) {
                 efi->selectFilter();
                 return;
