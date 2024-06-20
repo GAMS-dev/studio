@@ -1618,8 +1618,15 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
                                            : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
                                                          : pfFileOnly ? ViewHelper::dialogPfFileFilter()
                                                                       : ViewHelper::dialogFileFilterUserCreated().join(";;");
+    QString *defaultFilter = nullptr;
+#ifdef _WINDOWS_
+    // Workaround for Windows bug to always add the 1st suffix if it doesn't match
+    QString defFilter = "All files (*.*)";
+    if (!solverName.isEmpty())
+        defaultFilter = &defFilter;
+#endif
     QString filePath = QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
-                                                    filter, nullptr, QFileDialog::DontConfirmOverwrite);
+                                                    filter, defaultFilter, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty()) {
