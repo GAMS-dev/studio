@@ -91,7 +91,7 @@ class PExProjectNode : public PExGroupNode
 {
     Q_OBJECT
 public:
-    enum Type {tCommon, tSearch, tGams};
+    enum Type {tSmall, tCommon, tSearch, tGams};
 
 public:
     virtual ~PExProjectNode() override;
@@ -149,6 +149,7 @@ public:
     const QString &nameExt() const;
     void setNameExt(const QString &newNameExt);
     Type type() const;
+    void setHasGspFile(bool hasGspFile = false);
 
     QString tempGdx() const;
 
@@ -203,7 +204,7 @@ private:
     QString mProjectFile;
     QString mWorkDir;
     QString mNameExt;
-    Type mType = tCommon;
+    Type mType = tSmall;
     QScopedPointer<AbstractProcess> mGamsProcess;
     QString mEngineJobToken;
     PExLogNode* mLogNode = nullptr;

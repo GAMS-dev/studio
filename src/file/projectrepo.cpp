@@ -287,15 +287,17 @@ bool ProjectRepo::read(const QVariantList &projectsList)
 bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 {
     bool res = true;
+    bool hasGspFile = projectMap.value("hasGspFile", true).toBool();
     bool projectChangedMarker = false;
     QString projectPath;
     QVariantMap projectData = projectMap;
+    DEB() << "1  " << gspFile << "  " << hasGspFile;
 
     // if there is a valid project file, load it instead of the settings part
     if (gspFile.isEmpty() && projectMap.contains("project"))
         gspFile = projectMap.value("project").toString();
 
-    if (!gspFile.isEmpty()) {
+    if (hasGspFile && !gspFile.isEmpty()) {
         projectPath = QFileInfo(gspFile).absolutePath();
         if (QFile::exists(gspFile)) {
             QVariantMap data = parseProjectFile(gspFile);
@@ -305,11 +307,10 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             }
         } else {
             QString message;
-            int count;
-            int ignored;
+            int count = 0;
+            int ignored = 0;
             QStringList missed;
             checkRead(projectMap, count, ignored, missed, projectPath);
-            // TODO (JM) Please fix the default value of count and ignored in some cases you compare random values
             if (count == ignored + missed.count()) {
                 message = "Couldn't restore missing project " + gspFile;
                 SysLogLocator::systemLog()->append(message);
@@ -348,6 +349,8 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
+            if (hasGspFile) project->setHasGspFile(true);
+            DEB() << "2  " << gspFile << "  " << hasGspFile;
             if (projectData.contains("pf")) {
                 QString pfFile = projectData.value("pf").toString();
                 if (!pfFile.isEmpty())
@@ -407,12 +410,12 @@ void ProjectRepo::write(QVariantList &projects) const
 {
     for (int i = 0; i < mTreeModel->rootNode()->childCount(); ++i) {
         PExProjectNode *project = mTreeModel->rootNode()->childNode(i)->toProject();
-        if (!project || project->type() != PExProjectNode::tCommon) continue;
-        if (project->needSave()) {
+        if (!project) continue;
+        if (project->type() == PExProjectNode::tCommon && project->needSave()) {
             // store to file with relative paths
             QVariantMap proData = getProjectMap(project, true);
             save(project, proData);
-        }
+        } else project->setNeedSave(false);
         // store to Settings with absolute paths
         QVariantMap data;
         data = getProjectMap(project, false);
@@ -452,6 +455,7 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
         }
         projectObject.insert("pf", pfPath);
     }
+    projectObject.insert("hasGspFile", project->type() == PExProjectNode::tCommon);
     projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     projectObject.insert("name", project->name());
@@ -489,7 +493,7 @@ void ProjectRepo::addToProject(PExProjectNode *project, PExFileNode *file)
 
     // create missing group node for folders
     PExGroupNode *newParent = project;
-    if (project->type() == PExProjectNode::tCommon) {
+    if (project->type() <= PExProjectNode::tCommon) {
         QDir prjPath(project->location());
         QString relPath = prjPath.relativeFilePath(file->location());
         bool isAbs = QDir(relPath).isAbsolute();
@@ -559,7 +563,7 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
 
     if (type == PExProjectNode::tGams) {
         name = CGamsSystemProjectName;
-    } else if (type == PExProjectNode::tCommon) {
+    } else if (type <= PExProjectNode::tCommon) {
         if (!name.endsWith(".gsp", FileType::fsCaseSense())) {
             QFileInfo fi(name);
             name = path + '/' + fi.completeBaseName() + ".gsp";
@@ -575,13 +579,13 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
         if (mode == onExist_Null) return nullptr;
     }
 
-    if (type == PExProjectNode::tCommon)
+    if (type <= PExProjectNode::tCommon)
         uniqueProjectFile(mTreeModel->rootNode(), name);
 
-    FileMeta* runFile = runFileName.isEmpty() || type != PExProjectNode::tCommon ? nullptr
-                                                                                 : mFileRepo->findOrCreateFileMeta(runFileName);
+    FileMeta* runFile = runFileName.isEmpty() || type > PExProjectNode::tCommon ? nullptr
+                                                                                : mFileRepo->findOrCreateFileMeta(runFileName);
     project = new PExProjectNode(name, path, runFile, workDir, type);
-    if (type == PExProjectNode::tCommon) {
+    if (type <= PExProjectNode::tCommon) {
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChange);
         connect(project, &PExProjectNode::gamsProcessStateChanged, this, &ProjectRepo::gamsProcessStateChanged);
         connect(project, &PExProjectNode::getParameterValue, this, &ProjectRepo::getParameterValue);

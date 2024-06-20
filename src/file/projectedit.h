@@ -50,6 +50,7 @@ public:
         baseDir  = 0x0010,
         mainFile = 0x0020,
         pfFile   = 0x0040,
+        hasGsp   = 0x0080,
         all      = 0xffff,
     };
     Q_DECLARE_FLAGS(Fields, Field)
@@ -102,10 +103,12 @@ private slots:
 
     void on_edWorkDir_textChanged(const QString &text);
     void on_edBaseDir_textChanged(const QString &text);
+    void on_bGspSwitch_clicked();
     void on_bWorkDir_clicked();
     void on_bBaseDir_clicked();
     void on_cbMainFile_currentIndexChanged(int index);
     void on_cbPfFile_currentIndexChanged(int index);
+
 
 private:
     void setSharedData(ProjectData *sharedData);

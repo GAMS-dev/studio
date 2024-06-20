@@ -159,12 +159,12 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
+    bool canMoveProject = project && project->childCount() && project->type() <= PExProjectNode::tCommon;
     bool isGamsSys = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         if (PExProjectNode *project = node->toProject())
-            if (project->type() != PExProjectNode::tCommon)
+            if (project->type() > PExProjectNode::tCommon)
                 isGamsSys = true;
         if (node->assignedProject() != project)
             canMoveProject = false;

@@ -162,7 +162,7 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
     }
     case IsProjectRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
-        return bool(node && node->type() == PExProjectNode::tCommon);
+        return bool(node && node->type() <= PExProjectNode::tCommon);
     }
     case NameExtRole: {
         PExProjectNode *node = mProjectRepo->node(ind)->toProject();
@@ -417,7 +417,7 @@ QModelIndex ProjectTreeModel::findProject(QModelIndex ind, bool *locked)
         PExAbstractNode *node = mProjectRepo->node(ind);
         if (!node) return ind;
         PExProjectNode *project = node->assignedProject();
-        if (project->type() != PExProjectNode::tCommon) {
+        if (project->type() > PExProjectNode::tCommon) {
             if (locked) *locked = true;
             return QModelIndex();
         }

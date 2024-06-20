@@ -86,6 +86,11 @@ enum SettingsKey {
     skHistorySize,
     skOpenInCurrent,
 
+    // project settings page
+    skProSingleProject,
+    skProFileCount,
+    skProRunnable,
+
     // editor settings page
     skEdAppearance,
     skEdFontFamily,

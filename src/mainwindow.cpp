@@ -188,7 +188,7 @@ MainWindow::MainWindow(QWidget *parent)
                     onlyOneProject = false;
                 }
             }
-            projectCanMove = project && onlyOneProject && project->type() == PExProjectNode::tCommon;
+            projectCanMove = project && onlyOneProject && project->type() <= PExProjectNode::tCommon;
         }
 
         ui->actionMove_Project->setEnabled(projectCanMove);
@@ -462,7 +462,7 @@ void MainWindow::watchProjectTree()
     });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
         if (const PExProjectNode *project = node->assignedProject()) {
-            if (project->type() == PExProjectNode::tCommon) {
+            if (project->type() <= PExProjectNode::tCommon) {
                 PExProjectNode *pro = mProjectRepo.findProject(ui->mainTabs->currentWidget());
                 if (project == pro)
                     loadCommandLines(pro, pro);
@@ -506,7 +506,7 @@ void MainWindow::initWelcomePage()
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
-            if (project && project->type() != PExProjectNode::tCommon)
+            if (project && project->type() > PExProjectNode::tCommon)
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);

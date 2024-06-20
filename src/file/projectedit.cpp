@@ -39,7 +39,10 @@ const QString cNone("-none-");
 ProjectData::ProjectData(PExProjectNode *project)
 {
     mProject = project;
-    mData.insert(file, QDir::toNativeSeparators(project->fileName()));
+    QString projectFile = project->type() == PExProjectNode::tSmall ? "[internal]"
+                                                                    : QDir::toNativeSeparators(project->fileName());
+    mData.insert(file, projectFile);
+    mData.insert(hasGsp, project->type() == PExProjectNode::tSmall ? "0" : "1");
     mData.insert(name, project->name());
     mData.insert(nameExt, project->nameExt());
     mData.insert(workDir, QDir::toNativeSeparators(project->workDir()));
@@ -99,8 +102,12 @@ void ProjectData::updateFile(FileKind kind, const QString &path)
 void ProjectData::projectChanged(const NodeId &id)
 {
     if (mProject->id() != id) return;
-    if (fieldData(ProjectData::file) != QDir::toNativeSeparators(mProject->fileName()))
-        setFieldData(ProjectData::file, QDir::toNativeSeparators(mProject->fileName()));
+    QString projectFile = mProject->type() == PExProjectNode::tSmall ? "[internal]"
+                                                                     : QDir::toNativeSeparators(mProject->fileName());
+    if (fieldData(ProjectData::file) != projectFile)
+        setFieldData(ProjectData::file, projectFile);
+    if (fieldData(ProjectData::hasGsp) != (mProject->type() == PExProjectNode::tSmall ? "0" : "1"))
+        setFieldData(ProjectData::hasGsp, (mProject->type() == PExProjectNode::tSmall ? "0" : "1"));
     if (fieldData(ProjectData::name) != mProject->name())
         setFieldData(ProjectData::name, mProject->name());
     if (fieldData(ProjectData::nameExt) != mProject->nameExt())
@@ -235,6 +242,21 @@ void ProjectEdit::updateState()
     emit modificationChanged(mModified);
 }
 
+void ProjectEdit::on_bGspSwitch_clicked()
+{
+    if (mSharedData->project()->type() == PExProjectNode::tCommon) {
+        mSharedData->project()->setHasGspFile(false);
+        mSharedData->project()->setNeedSave(false);
+        // TODO(JM) delete the project file
+        if (QFile::exists(mSharedData->project()->fileName()))
+            QFile(mSharedData->project()->fileName()).remove();
+    } else if (mSharedData->project()->type() == PExProjectNode::tSmall) {
+        mSharedData->project()->setHasGspFile(true);
+        mSharedData->project()->setNeedSave(true);
+    }
+    emit modificationChanged(true);
+}
+
 void ProjectEdit::on_bWorkDir_clicked()
 {
     showDirDialog("Select Working Directory", ui->edWorkDir, mSharedData->project()->workDir());
@@ -267,6 +289,10 @@ void ProjectEdit::updateData(gams::studio::project::ProjectData::Field field)
 
 void ProjectEdit::updateComboboxEntries()
 {
+    bool hasGsp = mSharedData->fieldData(ProjectData::hasGsp) != "0";
+    ui->bGspSwitch->setIcon(Theme::icon(QString(":/%1/") + (hasGsp ? "delete-all" : "new")));
+    ui->bGspSwitch->setToolTip(hasGsp ? "Delete the project file (project data is stored in the Studio settings"
+                                      : "Create a project file (.gsp) for this project");
     // update combobox of main-file and pf-file
     QStringList mainFiles = files(FileKind::Gms);
     if (mainFiles.isEmpty())
@@ -348,6 +374,7 @@ void ProjectEdit::on_cbPfFile_currentIndexChanged(int index)
         mSharedData->setFieldData(ProjectData::pfFile, text);
     updateState();
 }
+
 
 } // namespace project
 } // namespace studio

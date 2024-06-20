@@ -230,6 +230,12 @@ PExProjectNode::PExProjectNode(const QString &filePath, const QString &basePath,
     }
 }
 
+void PExProjectNode::setHasGspFile(bool hasGspFile)
+{
+    if (mType > Type::tCommon) return;
+    mType = hasGspFile ? Type::tCommon : Type::tSmall;
+}
+
 ///
 /// \brief Set the process.
 /// \remark Takes ownership of the of the process pointer.
@@ -327,6 +333,8 @@ void PExProjectNode::appendChild(PExAbstractNode *child)
     if (!mParameterHash.contains("pf") && file && file->file() && file->file()->kind() == FileKind::Pf) {
         setParameterFile(file->file());
     }
+    if (runnableGms() != nullptr && childNodes().size() > 5)
+        setHasGspFile(true);
     setNeedSave();
 }
 
@@ -582,7 +590,7 @@ FileMeta* PExProjectNode::runnableGms() const
 
 void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
-    if (mType != PExProjectNode::tCommon) return;
+    if (mType > PExProjectNode::tCommon) return;
     PExFileNode *gmsFileNode;
     if (!gmsFile) {
         // find alternative runable file
@@ -629,7 +637,7 @@ FileMeta *PExProjectNode::parameterFile() const
 
 void PExProjectNode::setParameterFile(FileMeta *pfFile)
 {
-    if (mType != PExProjectNode::tCommon) return;
+    if (mType > PExProjectNode::tCommon) return;
     if (pfFile && pfFile->kind() != FileKind::Pf) {
         DEB() << "Only files of FileKind::Pf can become a parameter file";
         return;
@@ -1213,7 +1221,7 @@ QProcess::ProcessState PExProjectNode::gamsProcessState() const
 QString PExProjectNode::tooltip()
 {
     QString res(QDir::toNativeSeparators(fileName()));
-    if (mType == PExProjectNode::tCommon)
+    if (mType <= PExProjectNode::tCommon)
         res.append( "\n\nBase directory: " + QDir::toNativeSeparators(location()) +
                     "\nWorking directory: " + QDir::toNativeSeparators(workDir()));
     else if (mType == PExProjectNode::tSearch)
