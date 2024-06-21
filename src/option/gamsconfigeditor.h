@@ -77,6 +77,8 @@ public:
     void zoomOut(int range = 1);
     bool isModified() const;
 
+    bool selectSearchField() const;
+
 signals:
     void modificationChanged(bool modifiedState);
 

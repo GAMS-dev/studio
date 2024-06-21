@@ -53,6 +53,8 @@ public:
     QString getSelectedParameterName(QWidget* widget) const;
     bool isModified() const;
 
+    void selectSearchField() const;
+
 signals:
     void modificationChanged(bool modifiedState);
 

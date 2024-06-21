@@ -77,6 +77,15 @@ bool GamsConfigEditor::isModified() const
     return mModified;
 }
 
+bool GamsConfigEditor::selectSearchField() const
+{
+    if (ui->GamsCfgTabWidget->currentIndex() == int(ConfigEditorType::commandLineParameter)) {
+        mParamConfigEditor->selectSearchField();
+        return true;
+    }
+    return false;
+}
+
 void GamsConfigEditor::setModified(bool modified)
 {
     mModified = modified;

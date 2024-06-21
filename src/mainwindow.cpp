@@ -103,8 +103,6 @@ MainWindow::MainWindow(QWidget *parent)
     mTextMarkRepo.init(&mFileMetaRepo, &mProjectRepo);
     initEnvironment();
 
-    mPrintDialog = new QPrintDialog(&mPrinter, this);
-
     ui->setupUi(this);
     ui->updateWidget->hide();
 
@@ -1620,8 +1618,15 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
                                            : projectOnly ? ViewHelper::dialogProjectFilter().join(";;")
                                                          : pfFileOnly ? ViewHelper::dialogPfFileFilter()
                                                                       : ViewHelper::dialogFileFilterUserCreated().join(";;");
+    QString *defaultFilter = nullptr;
+#ifdef _WINDOWS_
+    // Workaround for Windows bug to always add the 1st suffix if it doesn't match
+    QString defFilter = "All files (*.*)";
+    if (!solverName.isEmpty())
+        defaultFilter = &defFilter;
+#endif
     QString filePath = QFileDialog::getSaveFileName(this, QString("Create new %1...").arg(kind2), path,
-                                                    filter, nullptr, QFileDialog::DontConfirmOverwrite);
+                                                    filter, defaultFilter, QFileDialog::DontConfirmOverwrite);
     if (filePath == "") return;
     QFileInfo fi(filePath);
     if (fi.suffix().isEmpty()) {
@@ -5089,6 +5094,10 @@ void MainWindow::toggleSearchDialog()
                 sow->selectSearchField();
                 return;
             }
+            if (option::GamsConfigEditor *gce = ViewHelper::toGamsConfigEditor(mRecent.editor())) {
+                if (gce->selectSearchField())
+                   return;
+            }
             if (efi::EfiEditor *efi = ViewHelper::toEfiEditor(mRecent.editor())) {
                 efi->selectFilter();
                 return;
@@ -6191,17 +6200,19 @@ void MainWindow::printDocument()
 {
     if (focusWidget() == mRecent.editor()) {
         auto* abstractEdit = ViewHelper::toAbstractEdit(mainTabs()->currentWidget());
-        if (!abstractEdit) return;
-        abstractEdit->print(&mPrinter);
+        if (abstractEdit)
+            abstractEdit->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::lxiLstChild) {
         auto* lxiViewer = ViewHelper::toLxiViewer(mainTabs()->currentWidget());
-        if (!lxiViewer) return;
-        lxiViewer->print(&mPrinter);
+        if (lxiViewer)
+            lxiViewer->print(&mPrinter);
     } else if (ViewHelper::editorType(recent()->editor()) == EditorType::txtRo) {
         auto* textViewer = ViewHelper::toTextView(mainTabs()->currentWidget());
-        if (!textViewer) return;
-        textViewer->print(&mPrinter);
+        if (textViewer)
+            textViewer->print(&mPrinter);
     }
+    mPrintDialog->deleteLater();
+    mPrintDialog = nullptr;
 }
 
 void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
@@ -6250,8 +6261,9 @@ void MainWindow::on_actionPrint_triggered()
     msgBox.setStandardButtons(QMessageBox::Yes);
     msgBox.addButton(QMessageBox::No);
     msgBox.setDefaultButton(QMessageBox::No);
-
 #ifdef __APPLE__
+    if (!mPrintDialog)
+        mPrintDialog = new QPrintDialog(&mPrinter, this);
     int ret = mPrintDialog->exec();
     if (ret == QDialog::Accepted) {
         if (numberLines>5000) {
@@ -6262,7 +6274,9 @@ void MainWindow::on_actionPrint_triggered()
         printDocument();
     }
 #else
-    if (numberLines>5000) {
+    if (!mPrintDialog)
+        mPrintDialog = new QPrintDialog(&mPrinter, this);
+    if (numberLines > 5000) {
         int answer = msgBox.exec();
         if (answer == QMessageBox::No) return;
     }

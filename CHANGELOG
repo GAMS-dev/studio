@@ -3,14 +3,16 @@ Version 1.19.0 *
 - improved allow to close non-mainfile while running
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 
-Version 1.18.3 *
+Version 1.18.3
 ==================
 - added support for new GAMS license file format with 8 lines
 - added missing context menu actions for folder entries in projects
+- added `--skip-check-for-update` to skip all online `check for update` actions
 - fixed scrolling with page up/down doesn't work in process log
 - fixed base directory line input too long in project edit
-- fixed cut off text issue in NEOS dialog
-- added `--skip-check-for-update` to skip all online check for update actions
+- fixed cut off text in NEOS dialog
+- fixed activation of parameter search filter in GAMS Configuration editor
+- fixed suffix issue for opt files on Windows
 
 Version 1.18.2
 ==================
