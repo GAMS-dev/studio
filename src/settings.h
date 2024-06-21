@@ -88,8 +88,8 @@ enum SettingsKey {
 
     // project settings page
     skProSingleProject,
-    skProFileCount,
-    skProRunnable,
+    skProGspByFileCount,
+    skProGspNeedsMain,
 
     // editor settings page
     skEdAppearance,

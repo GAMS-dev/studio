@@ -247,7 +247,6 @@ void ProjectEdit::on_bGspSwitch_clicked()
     if (mSharedData->project()->type() == PExProjectNode::tCommon) {
         mSharedData->project()->setHasGspFile(false);
         mSharedData->project()->setNeedSave(false);
-        // TODO(JM) delete the project file
         if (QFile::exists(mSharedData->project()->fileName()))
             QFile(mSharedData->project()->fileName()).remove();
     } else if (mSharedData->project()->type() == PExProjectNode::tSmall) {

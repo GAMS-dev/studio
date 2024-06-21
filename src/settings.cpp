@@ -332,6 +332,11 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skOpenInCurrent, scUser, {"openInCurrent"}, false);
     safelyAdd(res, skHistorySize, scUser, {"historySize"}, 20);
 
+    // project settings page
+    safelyAdd(res, skProSingleProject, scUser, {"project","singleProject"}, false);
+    safelyAdd(res, skProGspByFileCount, scUser, {"project","GspByFileCount"}, 6);
+    safelyAdd(res, skProGspNeedsMain, scUser, {"project","GspNeedsMain"}, true);
+
     // editor settings page
     safelyAdd(res, skEdAppearance, scUser, {"editor","appearance"}, 0);
     safelyAdd(res, skEdFontFamily, scUser, {"editor","fontFamily"}, findFixedFont());

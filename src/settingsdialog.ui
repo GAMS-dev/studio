@@ -23,55 +23,13 @@
       <enum>QTabWidget::Rounded</enum>
      </property>
      <property name="currentIndex">
-      <number>1</number>
+      <number>0</number>
      </property>
      <widget class="QWidget" name="tabGeneral">
       <attribute name="title">
        <string>General</string>
       </attribute>
       <layout class="QGridLayout" name="gridLayout">
-       <item row="2" column="0">
-        <widget class="QGroupBox" name="gp_backup">
-         <property name="title">
-          <string>Backup and Restore</string>
-         </property>
-         <layout class="QGridLayout" name="gridLayout_2">
-          <item row="0" column="0">
-           <widget class="QPushButton" name="btn_export">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Export</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="1">
-           <widget class="QPushButton" name="btn_import">
-            <property name="enabled">
-             <bool>true</bool>
-            </property>
-            <property name="text">
-             <string>Import</string>
-            </property>
-           </widget>
-          </item>
-          <item row="0" column="2">
-           <spacer name="horizontalSpacer">
-            <property name="orientation">
-             <enum>Qt::Horizontal</enum>
-            </property>
-            <property name="sizeHint" stdset="0">
-             <size>
-              <width>40</width>
-              <height>20</height>
-             </size>
-            </property>
-           </spacer>
-          </item>
-         </layout>
-        </widget>
-       </item>
        <item row="0" column="0">
         <widget class="QGroupBox" name="gb_general">
          <property name="title">
@@ -141,7 +99,49 @@
          </layout>
         </widget>
        </item>
-       <item row="3" column="0">
+       <item row="2" column="0">
+        <widget class="QGroupBox" name="gp_backup">
+         <property name="title">
+          <string>Backup and Restore</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_2">
+          <item row="0" column="0">
+           <widget class="QPushButton" name="btn_export">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Export</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="1">
+           <widget class="QPushButton" name="btn_import">
+            <property name="enabled">
+             <bool>true</bool>
+            </property>
+            <property name="text">
+             <string>Import</string>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="2">
+           <spacer name="horizontalSpacer">
+            <property name="orientation">
+             <enum>Qt::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>20</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="4" column="0">
         <spacer name="verticalSpacer_3">
          <property name="orientation">
           <enum>Qt::Vertical</enum>
@@ -204,6 +204,66 @@
            <widget class="QRadioButton" name="rb_openInAnyProject">
             <property name="text">
              <string>Open file finds or creates new project</string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
+       <item row="3" column="0">
+        <widget class="QGroupBox" name="groupBox_9">
+         <property name="title">
+          <string>Projects</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_18" columnstretch="1,1">
+          <item row="0" column="1">
+           <widget class="QWidget" name="widget" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_6" stretch="2,1">
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="laGspByFileCount">
+               <property name="toolTip">
+                <string>A GSP file is only generated when the project contains this ammount of files</string>
+               </property>
+               <property name="text">
+                <string>File count to generate GSP file</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QSpinBox" name="sbGspByFileCount">
+               <property name="toolTip">
+                <string>A GSP file is only generated when the project contains this ammount of files</string>
+               </property>
+               <property name="minimum">
+                <number>-1</number>
+               </property>
+               <property name="maximum">
+                <number>20</number>
+               </property>
+              </widget>
+             </item>
+            </layout>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="cbGspNeedsMainFile">
+            <property name="toolTip">
+             <string>A GSP file is only generated when the project contains a main file</string>
+            </property>
+            <property name="text">
+             <string>GSP file needs main file</string>
             </property>
            </widget>
           </item>

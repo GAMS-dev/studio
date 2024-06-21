@@ -118,6 +118,9 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->rb_openInCurrentProject, &QRadioButton::toggled, this, &SettingsDialog::setModified);
+    connect(ui->cbGspNeedsMainFile, &QCheckBox::toggled, this, &SettingsDialog::setModified);
+    connect(ui->sbGspByFileCount, &QSpinBox::valueChanged, this, &SettingsDialog::setModified);
+
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::setModified);
     connect(ui->cbThemes, QOverload<int>::of(&QComboBox::currentIndexChanged), this, &SettingsDialog::appearanceIndexChanged);
     connect(ui->fontComboBox, &QFontComboBox::currentFontChanged, this, &SettingsDialog::setModified);
@@ -201,6 +204,8 @@ void SettingsDialog::loadSettings()
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
     (mSettings->toBool(skOpenInCurrent) ? ui->rb_openInCurrentProject : ui->rb_openInAnyProject)->setChecked(true);
+    ui->cbGspNeedsMainFile->setChecked(mSettings->toBool(skProGspNeedsMain));
+    ui->sbGspByFileCount->setValue(mSettings->toInt(skProGspByFileCount));
 
     // editor tab page
     ui->fontComboBox->setCurrentFont(QFont(mSettings->toString(skEdFontFamily)));
@@ -359,6 +364,8 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
     mSettings->setBool(skOpenInCurrent, ui->rb_openInCurrentProject->isChecked());
+    mSettings->setBool(skProGspNeedsMain, ui->cbGspNeedsMainFile->isChecked());
+    mSettings->setInt(skProGspByFileCount, ui->sbGspByFileCount->value());
 
     // editor page
     mSettings->setString(skEdFontFamily, ui->fontComboBox->currentFont().family());

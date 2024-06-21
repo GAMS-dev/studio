@@ -25,7 +25,6 @@
 #include "process/abstractprocess.h"
 #include "editors/logparser.h"
 #include "pexabstractnode.h"
-#include "pexgroupnode.h"
 #include "debugger/server.h"
 
 namespace gams {
@@ -150,6 +149,7 @@ public:
     void setNameExt(const QString &newNameExt);
     Type type() const;
     void setHasGspFile(bool hasGspFile = false);
+    bool wantsGspFile();
 
     QString tempGdx() const;
 

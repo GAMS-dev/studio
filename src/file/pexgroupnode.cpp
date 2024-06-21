@@ -236,6 +236,16 @@ void PExProjectNode::setHasGspFile(bool hasGspFile)
     mType = hasGspFile ? Type::tCommon : Type::tSmall;
 }
 
+bool PExProjectNode::wantsGspFile()
+{
+    if (Settings::settings()->toBool(skProGspNeedsMain) && !runnableGms())
+        return false;
+    int fileCountLimit = Settings::settings()->toInt(skProGspByFileCount);
+    if (fileCountLimit < 0 || childCount() <= fileCountLimit)
+        return false;
+    return true;
+}
+
 ///
 /// \brief Set the process.
 /// \remark Takes ownership of the of the process pointer.
@@ -333,7 +343,7 @@ void PExProjectNode::appendChild(PExAbstractNode *child)
     if (!mParameterHash.contains("pf") && file && file->file() && file->file()->kind() == FileKind::Pf) {
         setParameterFile(file->file());
     }
-    if (runnableGms() != nullptr && childNodes().size() > 5)
+    if (wantsGspFile())
         setHasGspFile(true);
     setNeedSave();
 }
