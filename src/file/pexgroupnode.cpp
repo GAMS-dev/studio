@@ -241,7 +241,7 @@ bool PExProjectNode::wantsGspFile()
     if (Settings::settings()->toBool(skProGspNeedsMain) && !runnableGms())
         return false;
     int fileCountLimit = Settings::settings()->toInt(skProGspByFileCount);
-    if (fileCountLimit < 0 || childCount() <= fileCountLimit)
+    if (fileCountLimit == 0 || childCount() < fileCountLimit)
         return false;
     return true;
 }

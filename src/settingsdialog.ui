@@ -234,20 +234,17 @@
              <item>
               <widget class="QLabel" name="laGspByFileCount">
                <property name="toolTip">
-                <string>A GSP file is only generated when the project contains this ammount of files</string>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A GSP file is only generated when the project contains this ammount of files&lt;/p&gt;&lt;p&gt;0: ignore the file count &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="text">
-                <string>File count to generate GSP file</string>
+                <string>File count to generate a GSP file</string>
                </property>
               </widget>
              </item>
              <item>
               <widget class="QSpinBox" name="sbGspByFileCount">
                <property name="toolTip">
-                <string>A GSP file is only generated when the project contains this ammount of files</string>
-               </property>
-               <property name="minimum">
-                <number>-1</number>
+                <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;A GSP file is only generated when the project contains this ammount of files&lt;/p&gt;&lt;p&gt;0: ignore the file count &lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
                </property>
                <property name="maximum">
                 <number>20</number>

@@ -291,7 +291,6 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     bool projectChangedMarker = false;
     QString projectPath;
     QVariantMap projectData = projectMap;
-    DEB() << "1  " << gspFile << "  " << hasGspFile;
 
     // if there is a valid project file, load it instead of the settings part
     if (gspFile.isEmpty() && projectMap.contains("project"))
@@ -350,7 +349,6 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     if (!name.isEmpty() || !projectPath.isEmpty()) {
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
             if (hasGspFile) project->setHasGspFile(true);
-            DEB() << "2  " << gspFile << "  " << hasGspFile;
             if (projectData.contains("pf")) {
                 QString pfFile = projectData.value("pf").toString();
                 if (!pfFile.isEmpty())
