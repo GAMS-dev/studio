@@ -105,6 +105,7 @@ private:
     // Strings
     QString mTxtCloseGroup = "Close Files in This &Folder";
     QString mTxtCloseProject = "Close &Project";
+    QString mTxtCloseDelProject = "Close and &Delete Project";
     QString mTxtCloseFile = "Close &File";
 };
 

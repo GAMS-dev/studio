@@ -148,7 +148,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
-    mActions.insert(actCloseDelProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseDelProject));
+    mActions.insert(actCloseDelProject, addAction(mTxtCloseDelProject, this, &ProjectContextMenu::onCloseDelProject));
     mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 
