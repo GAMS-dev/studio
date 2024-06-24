@@ -176,6 +176,7 @@ MainWindow::MainWindow(QWidget *parent)
             [this](const QItemSelection &selected, const QItemSelection &deselected) {
         mProjectRepo.selectionChanged(selected, deselected);
         bool projectCanMove = false;
+        bool isSmallProject = false;
         const QVector<PExAbstractNode*> nodes = selectedNodes();
         if (nodes.count() > 0) {
             bool onlyOneProject = false;
@@ -187,12 +188,15 @@ MainWindow::MainWindow(QWidget *parent)
                 } else if (node->assignedProject() && project != node->assignedProject()) {
                     onlyOneProject = false;
                 }
+                isSmallProject = project && project->type() == PExProjectNode::tSmall;
             }
             projectCanMove = project && onlyOneProject && project->type() <= PExProjectNode::tCommon;
         }
 
-        ui->actionMove_Project->setEnabled(projectCanMove);
+        ui->actionMove_Project->setEnabled(projectCanMove && !isSmallProject);
         ui->actionCopy_Project->setEnabled(projectCanMove);
+        ui->actionCopy_Project->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
+        ui->actionCopy_Project->setToolTip(isSmallProject ? "Export Project" :"Copy Project");
     });
 
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);

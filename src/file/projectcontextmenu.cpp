@@ -29,7 +29,7 @@
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
 #include "editors/systemlogedit.h"
-#include "editors/sysloglocator.h""
+#include "editors/sysloglocator.h"
 
 namespace gams {
 namespace studio {
@@ -163,7 +163,8 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
+    bool canMoveProject = project && project->childCount() && project->type() <= PExProjectNode::tCommon;
+    bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
     bool isGamsSys = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
@@ -282,10 +283,11 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     mActions[actOpenEfi]->setEnabled(isProjectEfi);
 
     mActions[actProjectMove]->setVisible(!isFreeSpace);
-    mActions[actProjectMove]->setEnabled(canMoveProject);
+    mActions[actProjectMove]->setEnabled(canMoveProject && !isSmallProject);
 
     mActions[actProjectCopy]->setVisible(!isFreeSpace);
     mActions[actProjectCopy]->setEnabled(canMoveProject);
+    mActions[actProjectCopy]->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
