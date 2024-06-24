@@ -1,5 +1,6 @@
 Version 1.18.4
 ==================
+- fixed incomplete search results when searching in `This Project`
 - upgraded to Qt 6.7.2
 
 Version 1.18.3
