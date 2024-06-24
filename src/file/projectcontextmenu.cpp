@@ -351,7 +351,10 @@ void ProjectContextMenu::onAddExisitingFile()
 
     for (PExProjectNode *project: std::as_const(projects)) {
         for (const QString &filePath: std::as_const(filePaths)) {
-            emit addExistingFile(project, filePath);
+            if (filePath.endsWith(".gsp", Qt::CaseInsensitive))
+                SysLogLocator::systemLog()->append("Can't open project in project: " + filePath + " ignored.");
+            else
+                emit addExistingFile(project, filePath);
         }
     }
 }
