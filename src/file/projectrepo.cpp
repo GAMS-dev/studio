@@ -614,9 +614,10 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
     srcAll << project->fileName();
     for (const PExFileNode *node : nodes)
         srcAll << node->location();
+    bool skipFirst = project->type() == PExProjectNode::tSmall;
 
     for (const QString &source : std::as_const(srcAll)) {
-        if (!QFile::exists(source)) {
+        if (!skipFirst && !QFile::exists(source)) {
             missFiles << source;
         } else {
             QString relPath = srcDir.relativeFilePath(source);
@@ -627,6 +628,7 @@ MultiCopyCheck ProjectRepo::getCopyPaths(PExProjectNode *project, const QString 
             srcFiles << source;
             dstFiles << dest;
         }
+        skipFirst = false;
     }
     MultiCopyCheck res = mcsOk;
     if (missFiles.count() == nodes.count()) res = mcsMissAll;
@@ -642,10 +644,13 @@ void ProjectRepo::moveProject(PExProjectNode *project, const QString &filePath, 
     if (filePath.compare(project->fileName(), FileType::fsCaseSense()) == 0) return;
     QString oldFile = project->fileName();
     project->setFileName(filePath);
+    bool isSmall = project->type() == PExProjectNode::tSmall;
+    project->setHasGspFile(true);
     project->setNeedSave();
     QVariantMap proData = getProjectMap(project, true);
     save(project, proData);
     if (fullCopy) {
+        if (isSmall) project->setHasGspFile(false);
         project->setFileName(oldFile);
     } else {
         QFile file(oldFile);

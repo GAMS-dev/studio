@@ -69,6 +69,7 @@ signals:
 private slots:
     void onCloseGroup();
     void onCloseProject();
+    void onCloseDelProject();
     void onCloseFile();
     void onAddExisitingFile();
     void onAddNewFile();

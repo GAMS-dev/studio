@@ -3111,11 +3111,11 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
             QStringList collideFiles;
             MultiCopyCheck mcs = mProjectRepo.getCopyPaths(project, fileName, srcFiles, dstFiles, missFiles, collideFiles);
             if (mcs == mcsOk) {
-                copyFiles(srcFiles, dstFiles);
+                copyFiles(srcFiles, dstFiles, project);
             } else if (mcs == mcsMissAll) {
                 SysLogLocator::systemLog()->append("No files to copy", LogMsgType::Info);
             } else {
-                moveProjectCollideDialog(mcs, srcFiles, dstFiles, missFiles, collideFiles);
+                moveProjectCollideDialog(mcs, project, srcFiles, dstFiles, missFiles, collideFiles);
             }
         } else {
             mProjectRepo.moveProject(project, fileName, fullCopy);
@@ -3128,7 +3128,7 @@ void MainWindow::moveProjectDialog(PExProjectNode *project, bool fullCopy)
     dialog->open();
 }
 
-void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs,
+void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *project,
                                           const QStringList &srcFiles, const QStringList &dstFiles,
                                           QStringList &missFiles, QStringList &collideFiles)
 {
@@ -3151,21 +3151,28 @@ void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs,
             + (collideMore ? QString(" and %1 more").arg(collideMore) : QString());
     box->setText(text);
     box->setStandardButtons(QMessageBox::Apply | QMessageBox::Abort);
-    connect(box, &QMessageBox::finished, this, [this, box, srcFiles, dstFiles](int result) {
+    connect(box, &QMessageBox::finished, this, [this, box, srcFiles, dstFiles, project](int result) {
         if (result == QMessageBox::Apply) {
-            copyFiles(srcFiles, dstFiles);
+            copyFiles(srcFiles, dstFiles, project);
         }
         box->deleteLater();
     });
     box->open();
 }
 
-void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFiles)
+void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project)
 {
     if (srcFiles.count() != dstFiles.count()) return;
-
     int count = 0;
-    for (int i = 0; i < srcFiles.count(); ++i) {
+    int i = 0;
+    if (project->type() == PExProjectNode::tSmall) {
+        // The first entry in srcFiles an dstFiles is always the project file.
+        // A tSmall project w/o gsp-file is created here
+        mProjectRepo.moveProject(project, dstFiles.at(0), true);
+        ++count;
+        ++i;
+    }
+    for ( ; i < srcFiles.count(); ++i) {
         QFile src(srcFiles.at(i));
         if (src.exists()) {
             if (!src.copy(dstFiles.at(i)))

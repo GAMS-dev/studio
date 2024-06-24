@@ -28,6 +28,8 @@
 #include "support/solverconfiginfo.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "editors/systemlogedit.h"
+#include "editors/sysloglocator.h""
 
 namespace gams {
 namespace studio {
@@ -51,6 +53,7 @@ enum ContextAction {
     actAddNewPf,
     actSep5,
     actCloseProject,
+    actCloseDelProject,
     actCloseGroup,
     actCloseFile,
     actSep6,
@@ -145,6 +148,7 @@ ProjectContextMenu::ProjectContextMenu()
 
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
+    mActions.insert(actCloseDelProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseDelProject));
     mActions.insert(actCloseGroup, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseGroup));
     mActions.insert(actCloseFile, addAction(mTxtCloseFile, this, &ProjectContextMenu::onCloseFile));
 
@@ -159,7 +163,7 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canMoveProject = project && project->childCount() && project->type() <= PExProjectNode::tCommon;
+    bool canMoveProject = project && project->childCount() && project->type() == PExProjectNode::tCommon;
     bool isGamsSys = false;
     bool isProjectEfi = false;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
@@ -408,6 +412,20 @@ void ProjectContextMenu::onCloseProject()
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (project) emit closeProject(project);
+    }
+}
+
+void ProjectContextMenu::onCloseDelProject()
+{
+    for (PExAbstractNode *node: std::as_const(mNodes)) {
+        PExProjectNode *project = node->toProject();
+        if (!project) project = node->assignedProject();
+        if (project) {
+            QString gsp = project->fileName();
+            emit closeProject(project);
+            bool ok = QFile::remove(gsp);
+            if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
+        }
     }
 }
 

@@ -440,10 +440,10 @@ private slots:
     void updateTabSize(int size);
     void openProject(const QString &gspFile);
     void moveProjectDialog(gams::studio::PExProjectNode *project, bool fullCopy);
-    void moveProjectCollideDialog(gams::studio::MultiCopyCheck mcs,
+    void moveProjectCollideDialog(gams::studio::MultiCopyCheck mcs, PExProjectNode *project,
                                   const QStringList &srcFiles, const QStringList &dstFiles,
                                   QStringList &missFiles, QStringList &collideFiles);
-    void copyFiles(const QStringList &srcFiles, const QStringList &dstFiles);
+    void copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project = nullptr);
     void closePinView();
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();
