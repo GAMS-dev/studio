@@ -371,6 +371,9 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
                     project->addRunParametersHistory(par);
                 }
             }
+            if (!project->childCount()) {
+                closeGroup(project);
+            }
         }
     }
     return res;
