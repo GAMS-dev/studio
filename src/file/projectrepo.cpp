@@ -288,6 +288,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 {
     bool res = true;
     bool hasGspFile = projectMap.value("hasGspFile", true).toBool();
+    PExProjectNode::Type type = hasGspFile ? PExProjectNode::tCommon : PExProjectNode::tSmall;
     bool projectChangedMarker = false;
     QString projectPath;
     QVariantMap projectData = projectMap;
@@ -347,7 +348,11 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
-        if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir)) {
+        if (name.compare(CGamsSystemProjectName) == 0) {
+            hasGspFile = false;
+            type = PExProjectNode::tGams;
+        }
+        if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir, type)) {
             if (hasGspFile) project->setHasGspFile(true);
             if (projectData.contains("pf")) {
                 QString pfFile = projectData.value("pf").toString();
