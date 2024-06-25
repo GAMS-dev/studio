@@ -783,7 +783,7 @@ void SearchDialog::jumpToResult(Result r)
 
     // create group for search results
     if (!r.parentGroup().isValid() && !Settings::settings()->toBool(skOpenInCurrent)) {
-        QString name = "Search: " + ui->combo_search->currentText();
+        QString name = "-Search: " + ui->combo_search->currentText();
 
         // find existing search group
         QVector<PExProjectNode*> projects = mFileHandler->projects();

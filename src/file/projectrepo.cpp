@@ -287,8 +287,15 @@ bool ProjectRepo::read(const QVariantList &projectsList)
 bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 {
     bool res = true;
-    bool hasGspFile = projectMap.value("hasGspFile", true).toBool();
-    PExProjectNode::Type type = hasGspFile ? PExProjectNode::tCommon : PExProjectNode::tSmall;
+    PExProjectNode::Type type = PExProjectNode::tCommon;
+    if (projectMap.contains("projectType"))
+        type = PExProjectNode::Type(projectMap.value("projectType").toInt());
+    else {
+        // identify projectType for older settings
+        QString name = projectMap.value("name").toString();
+        if (name.startsWith("-Search: ")) type = PExProjectNode::tSearch;
+        if (name.compare(CGamsSystemProjectName) == 0) type = PExProjectNode::tGams;
+    }
     bool projectChangedMarker = false;
     QString projectPath;
     QVariantMap projectData = projectMap;
@@ -297,7 +304,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
     if (gspFile.isEmpty() && projectMap.contains("project"))
         gspFile = projectMap.value("project").toString();
 
-    if (hasGspFile && !gspFile.isEmpty()) {
+    if (type == PExProjectNode::tCommon && !gspFile.isEmpty()) {
         projectPath = QFileInfo(gspFile).absolutePath();
         if (QFile::exists(gspFile)) {
             QVariantMap data = parseProjectFile(gspFile);
@@ -348,12 +355,7 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
 
     QVariantList subChildren = projectData.value("nodes").toList();
     if (!name.isEmpty() || !projectPath.isEmpty()) {
-        if (name.compare(CGamsSystemProjectName) == 0) {
-            hasGspFile = false;
-            type = PExProjectNode::tGams;
-        }
         if (PExProjectNode* project = createProject(gspFile, baseDir, runFile, onExist_Project, workDir, type)) {
-            if (hasGspFile) project->setHasGspFile(true);
             if (projectData.contains("pf")) {
                 QString pfFile = projectData.value("pf").toString();
                 if (!pfFile.isEmpty())
@@ -423,10 +425,12 @@ void ProjectRepo::write(QVariantList &projects) const
             save(project, proData);
         } else project->setNeedSave(false);
         // store to Settings with absolute paths
-        QVariantMap data;
-        data = getProjectMap(project, false);
-        data.insert("project", project->fileName());
-        projects.append(data);
+        if (project->type() != PExProjectNode::tSearch) {
+            QVariantMap data;
+            data = getProjectMap(project, false);
+            data.insert("project", project->fileName());
+            projects.append(data);
+        }
     }
 }
 
@@ -461,7 +465,7 @@ QVariantMap ProjectRepo::getProjectMap(PExProjectNode *project, bool relativePat
         }
         projectObject.insert("pf", pfPath);
     }
-    projectObject.insert("hasGspFile", project->type() == PExProjectNode::tCommon);
+    projectObject.insert("projectType", int(project->type()));
     projectObject.insert("path", relativePaths ? dir.relativeFilePath(project->location()) : project->location() );
     projectObject.insert("workDir", relativePaths ? dir.relativeFilePath(project->workDir()) : project->workDir() );
     projectObject.insert("name", project->name());
