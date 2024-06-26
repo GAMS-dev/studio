@@ -1,6 +1,7 @@
 Version 1.18.4
 ==================
 - fixed incomplete search results when searching in `This Project`
+- fixed incomplete selection in LST file when using the scroll action
 - upgraded to Qt 6.7.2
 
 Version 1.18.3

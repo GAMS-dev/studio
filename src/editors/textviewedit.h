@@ -47,6 +47,7 @@ signals:
     void recalcVisibleLines();
     void topLineMoved();
     void findClosestLstRef(const QTextCursor &cursor);
+    void selectWord(int localLine, int charFrom, int charTo);
 
 public slots:
     void copySelection() override;
