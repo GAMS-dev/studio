@@ -53,7 +53,8 @@ public:
 
     void ping();
     void version();
-    bool submitJob(const QString &fileName, const QString &eMail, const QString &params = QString(), bool prioShort = true, bool wantGdx = true);
+    bool submitJob(const QString &fileName, const QString &eMail, const QString &params = QString(),
+                   bool prioShort = true, bool wantGdx = true);
     void watchJob(int jobNumber, const QString &password);
     void getJobStatus();
     void getCompletionCode();

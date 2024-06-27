@@ -95,6 +95,9 @@ private:
     void setProcState(ProcState newState);
     QStringList compileParameters();
     QStringList remoteParameters();
+    void solverToCategories(QStringList &params);
+    void cleanCategories(const QStringList &params, QStringList &catParams);
+    QStringList allCat4Solver(QString solver);
     QByteArray convertReferences(const QByteArray &data);
     void startUnpacking();
 
