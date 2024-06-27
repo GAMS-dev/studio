@@ -2,6 +2,7 @@ Version 1.18.4
 ==================
 - fixed incomplete search results when searching in `This Project`
 - fixed incomplete selection in LST file when using the scroll action
+- fixed wrong behavior on overwriting a file from the welcome page or the model library
 - fixed explicit solver name not recognized by NEOS
 - upgraded to Qt 6.7.2
 

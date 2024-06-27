@@ -1099,12 +1099,12 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             int answer = msgBox.exec();
 
             switch(answer) {
-            case 0: {// open
+            case 2: {// open
                 PExProjectNode* project = openInCurrent ? mRecent.project() : nullptr;
                 openFileNode(addNode("", gmsFilePath, project));
                 return;
             }
-            case 1: // replace
+            case 3: // replace
                 fm->renameToBackup();
                 // and continue;
                 break;
