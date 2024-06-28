@@ -404,7 +404,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
-            case 0: // replace
+            case 3: // replace
                 if (settings && settings->toBool(skSoDeleteCommentsAbove) && indices.size()>0) {
                     disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                     deleteCommentsBeforeOption(indices.at(0).row());
@@ -416,7 +416,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 1: // add
+            case 4: // add
                 break;
             case QMessageBox::Abort:
                 return;
@@ -440,7 +440,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
-            case 0: // delete and replace
+            case 3: // delete and replace
                 disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 ui->solverOptionTableView->selectionModel()->clearSelection();
                 for(int i=1; i<indices.size(); i++) {
@@ -455,7 +455,7 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 1: // add
+            case 4: // add
                 break;
             case QMessageBox::Abort:
                 return;

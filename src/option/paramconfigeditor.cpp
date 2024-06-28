@@ -622,14 +622,14 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
-            case 0: // replace
+            case 3: // replace
                 replaceExistingEntry = true;
                 indices = ui->paramCfgTableView->model()->match(ui->paramCfgTableView->model()->index(0, ConfigParamTableModel::COLUMN_ENTRY_NUMBER),
                                                                     Qt::DisplayRole,
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 1: // add
+            case 4: // add
                 break;
             case QMessageBox::Abort:
                 return;
@@ -653,7 +653,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
             switch(msgBox.exec()) {
-            case 0: // delete and replace
+            case 3: // delete and replace
                 disconnect( mParameterTableModel, &ConfigParamTableModel::configParamItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeConfigParamItem);
                 ui->paramCfgTableView->selectionModel()->clearSelection();
                 for(int i=1; i<indices.size(); i++) {
@@ -668,7 +668,7 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 1: // add
+            case 4: // add
                 break;
             case QMessageBox::Abort:
                 return;
