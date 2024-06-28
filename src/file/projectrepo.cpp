@@ -1158,10 +1158,14 @@ void ProjectRepo::setDebugMode(bool debug)
     mTextMarkRepo->setDebugMode(debug);
 
     for (auto it = mNodes.constBegin() ; it != mNodes.constEnd() ; ++it) {
-        PExLogNode *log = logNode(it.value());
-        if (log && log->file()->editors().size()) {
-            TextView *tv = ViewHelper::toTextView(log->file()->editors().first());
-            if (tv) tv->setDebugMode(debug);
+        if (PExProjectNode *project = it.value()->toProject()) {
+            project->setVerbose(debug);
+            PExLogNode* log = project->logNode();
+            if (log && log->file()->editors().size()) {
+                TextView *tv = ViewHelper::toTextView(log->file()->editors().first());
+                if (tv) tv->setDebugMode(debug);
+            }
+
         }
     }
 }

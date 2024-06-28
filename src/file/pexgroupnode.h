@@ -153,6 +153,8 @@ public:
     QString tempGdx() const;
 
 
+    void setVerbose(bool verbose);
+
 signals:
     void gamsProcessStateChanged(gams::studio::PExGroupNode* group);
     void getParameterValue(QString param, QString &value);
@@ -214,6 +216,7 @@ private:
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;
     QString mTempGdx;
+    bool mVerbose = false;
     debugger::BreakpointData *mBreakpointData;
     PExFileNode *mPausedInFile = nullptr;
 

@@ -57,6 +57,7 @@ private:
     void adjustBreakpoint(const QString &filename, int &fileLine);
 
 private:
+    QStringList mFiles;
     QMap<int, QString> mLastCln4File;
     QMap<int, int> mCln2Line;
     QMap<QString, QMap<int, int> > mFileLine2Cln;

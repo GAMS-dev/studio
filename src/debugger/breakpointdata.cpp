@@ -38,6 +38,8 @@ bool BreakpointData::addLinesMap(const QString &filename, const QList<int> &file
 {
     if (fileLines.isEmpty() || fileLines.size() != contLines.size())
         return false;
+    if (!mLastCln4File.isEmpty() && mLastCln4File.last() == filename)
+        mLastCln4File.remove(mLastCln4File.lastKey());
     if (mLastCln4File.isEmpty() || mLastCln4File.last() != filename)
         mLastCln4File.insert(contLines.last(), filename);
 

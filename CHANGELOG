@@ -4,6 +4,7 @@ Version 1.18.4
 - fixed incomplete selection in LST file when using the scroll action
 - fixed wrong behavior on overwriting a file loaded via the welcome page or the model library
 - fixed incorrect handling of some message box decisions due to a Qt change
+- fixed some Studio debugger issues with large models
 - fixed explicit solver name not recognized by NEOS
 - upgraded to Qt 6.7.2
 

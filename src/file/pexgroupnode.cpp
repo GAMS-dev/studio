@@ -470,6 +470,13 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
     return res;
 }
 
+void PExProjectNode::setVerbose(bool verbose)
+{
+    mVerbose = verbose;
+    if (mDebugServer)
+        mDebugServer->setVerbose(mVerbose);
+}
+
 QString PExProjectNode::engineJobToken() const
 {
     return mEngineJobToken;
@@ -1157,6 +1164,7 @@ bool PExProjectNode::startDebugServer(debugger::DebugStartMode mode)
 {
     if (!mDebugServer) {
         mDebugServer = new debugger::Server(workDir(), this);
+        mDebugServer->setVerbose(mVerbose);
         connect(mDebugServer, &debugger::Server::connected, this, [this]() {
             mBreakpointData->clearLinesMap();
         });
