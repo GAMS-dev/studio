@@ -99,12 +99,12 @@ public slots:
     void updateExtraSelections();
     void updateTheme();
     void updateView();
+    void selectWord(int localLine, int charFrom, int charTo);
 
 private slots:
     void outerScrollAction(int action);
     void horizontalScrollAction(int action);
     void editKeyPressEvent(QKeyEvent *event);
-    void handleSelectionChange();
     void updatePosAndAnchor();
     void findClosestLstRef(const QTextCursor &cursor);
     void updateVScrollZone();

@@ -488,13 +488,13 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
              msgBox.setStandardButtons(QMessageBox::Abort);
              msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
              msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
+             qDebug() << "ConfigParamTableModel 1";
              switch(msgBox.exec()) {
-             case 0: // replace
+             case 3: // replace
                 replaceExistingEntry = true;
                 beginRow = overrideIdRowList.at(0);
                 break;
-             case 1: // add
+             case 4: // add
                 break;
              case QMessageBox::Abort:
                 itemList.clear();
@@ -520,7 +520,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
              msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
              switch(msgBox.exec()) {
-             case 0: { // delete and replace
+             case 3: { // delete and replace
                  int prev = -1;
                  for(int i=overrideIdRowList.count()-1; i>=0; i--) {
                      int current = overrideIdRowList[i];
@@ -536,7 +536,7 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
                  beginRow = overrideIdRowList.at(0);
                  break;
              }
-             case 1: { // add
+             case 4: { // add
                  break;
              }
              case QMessageBox::Abort: {

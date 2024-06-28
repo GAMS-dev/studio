@@ -137,6 +137,11 @@ QString Server::gdxTempFile() const
     return mPath + "/temp" + QString::number(mServer->serverPort()) + ".gdx";
 }
 
+void Server::setVerbose(bool verbose)
+{
+    mVerbose = verbose;
+}
+
 void Server::callProcedure(CallReply call, const QStringList &arguments)
 {
     if (!mSocket || !mSocket->isOpen()) {
@@ -145,7 +150,8 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
                    + (arguments.isEmpty() ? "'" : (":" + arguments.at(0) + "'" + additionals)));
         return;
     }
-//    logMessage("Sending to GAMS: " + mCalls.value(call) + "\n" + arguments.join("\n"));
+    if (mVerbose)
+        logMessage("Sending to GAMS: " + mCalls.value(call) + "\n" + arguments.join("\n"));
     QString keyword = mCalls.value(call);
     if (keyword.isEmpty()) {
         QString additionals = arguments.count() > 1 ? QString(" (and %1 more)").arg(arguments.count()-1) : QString();
@@ -176,17 +182,17 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
 
 bool Server::handleReply(const QString &replyData)
 {
-//    logMessage("\nFrom GAMS: " + replyData);
+    if (mVerbose)
+        logMessage("\nFrom GAMS: " + replyData);
     QStringList reList = replyData.split('\n');
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
-        if (reList.at(0).startsWith('|')) {
+        reply = mReplies.value(reList.at(0), invalid);
+        if (reply == invalid && mLastReply == linesMap) {
             reply = linesMap;
-
-        } else {
-            reply = mReplies.value(reList.at(0), invalid);
-            if (reply != invalid)
-                reList.removeFirst();
+        } else if (reply != invalid) {
+            reList.removeFirst();
+            mLastReply = reply;
         }
     }
     QStringList data;
@@ -207,10 +213,12 @@ bool Server::handleReply(const QString &replyData)
         for (const QString &line : reList) {
             parseLinesMap(line);
         }
-    }  break;
+    }   break;
     case linesMapDone: {
-       emit signalMapDone();
-    }  break;
+        if (!mRemainData.isEmpty())
+            parseLinesMap(" ");
+        emit signalMapDone();
+    }   break;
     case paused: {
         if (reList.size() < 1) {
             logMessage("Debug-Server: [paused] Missing continuous line for interrupt.");
@@ -264,29 +272,72 @@ QString Server::toBpString(const QList<int> &lines)
 
 void Server::parseLinesMap(const QString &breakData)
 {
+    if (breakData.isEmpty()) return;
     QStringList data;
-    data = breakData.split('|');
+    QChar c = breakData.at(0);
+    if (mRemainData.isEmpty()) {
+        data = breakData.split('|');
+    } else if ((c < '0' || c > '9') && c != '=' && c != '|') {
+        // This is probably a filename, then the remain data is complete and can be processed
+        QStringList linePair = mRemainData.split("=");
+        QList<int> lines;
+        QList<int> coLNs;
+        if (getPair(mRemainData, lines, coLNs))
+            emit signalLinesMap(mBreakLinesFile, lines, coLNs);
+        else logMessage("Debug-Server: breakLines parse error: " + mRemainData);
+        if (mVerbose) {
+            QString list("DATA-> " + mBreakLinesFile + " : ");
+            for (int i = 0; i < lines.size(); ++i) {
+                list += "|" + QString::number(lines.at(i)) + ":" + QString::number(coLNs.at(i));
+            }
+            logMessage(list);
+        }
+        mRemainData = QString();
+        if (breakData == " ") return;
+        data = breakData.split('|');
+    } else {
+        data = ("|" + mRemainData + breakData).split('|');
+    }
+    if (data.size() > 0)
+        mRemainData = data.takeLast();
+    else mRemainData = QString();
+    if (data.isEmpty()) return;
+
     QString file = (data.first().isEmpty() ? mBreakLinesFile : QDir::fromNativeSeparators(data.first()));
     QList<int> lines;
     QList<int> coLNs;
     for (int i = 1; i < data.size(); ++i) {
-        QStringList linePair = data.at(i).split("=");
-        bool ok = (linePair.size() == 2);
-        if (ok) {
-            int line = linePair.at(0).toInt(&ok);
-            if (ok) {
-                int coLN = linePair.at(1).toInt(&ok);
-                if (ok) {
-                    lines << line;
-                    coLNs << coLN;
-                }
-            }
-        }
+        bool ok = getPair(data.at(i), lines, coLNs);
         if (!ok) logMessage("Debug-Server: breakLines parse error: " + data.at(i));
     }
-    if (!lines.isEmpty())
+    if (!lines.isEmpty()) {
+        if (mVerbose) {
+            QString list("DATA=> " + file + " : ");
+            for (int i = 0; i < lines.size(); ++i) {
+                list += "|" + QString::number(lines.at(i)) + ":" + QString::number(coLNs.at(i));
+            }
+            logMessage(list);
+        }
         emit signalLinesMap(file, lines, coLNs);
+    }
     mBreakLinesFile = file;
+}
+
+bool Server::getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs)
+{
+    QStringList linePair = assignment.split("=");
+    bool ok = (linePair.size() == 2 && !linePair.at(1).isEmpty());
+    if (ok) {
+        int line = linePair.at(0).toInt(&ok);
+        if (ok) {
+            int coLN = linePair.at(1).toInt(&ok);
+            if (ok) {
+                lines << line;
+                coLNs << coLN;
+            }
+        }
+    }
+    return ok;
 }
 
 void Server::setState(DebugState state)

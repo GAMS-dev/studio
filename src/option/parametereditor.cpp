@@ -444,10 +444,10 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
         msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
         switch(msgBox.exec()) {
-        case 0: // replace
+        case 3: // replace
             rowToBeAdded = indices.at(0).row();
             break;
-        case 1: // add
+        case 4: // add
             break;
         case QMessageBox::Abort:
             return;
@@ -471,7 +471,7 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
         msgBox.addButton("Add new entry", QMessageBox::ActionRole);
 
         switch(msgBox.exec()) {
-        case 0: { // delete and replace
+        case 3: { // delete and replace
             QList<int> overrideIdRowList;
             for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
             std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
@@ -485,7 +485,7 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
             deleteParameter();
             break;
         }
-        case 1: { /* add */  break; }
+        case 4: { /* add */  break; }
         case QMessageBox::Abort: { return; }
         }
     } // else entry not exist*/

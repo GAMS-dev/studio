@@ -30,7 +30,7 @@ QString NeosManager::mRawJob =
 R"s1(
 <document>
 <category>milp</category>
-<solver>Cbc</solver>
+<solver>cbc</solver>
 <inputType>GAMS</inputType>
 <email>%5</email>
 <priority>%3</priority>

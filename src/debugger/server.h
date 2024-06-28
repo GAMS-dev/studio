@@ -107,6 +107,7 @@ public:
     quint16 port();
     bool start();
     QString gdxTempFile() const;
+    void setVerbose(bool verbose);
 
 signals:
     void connected();
@@ -142,6 +143,7 @@ private:
     bool handleReply(const QString &replyData);
     QString toBpString(const QList<int> &lines);
     void parseLinesMap(const QString &breakData);
+    bool getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs);
     void setState(DebugState state);
 
     QString mPath;
@@ -150,7 +152,10 @@ private:
     QHash<CallReply, QString> mCalls;
     QHash<QString, CallReply> mReplies;
     QString mBreakLinesFile;
+    CallReply mLastReply = invalid;
+    QString mRemainData;
     DebugState mState = None;
+    bool mVerbose = false;
     int mDelayCounter = 0;
 
     static QSet<int> mPortsInUse;

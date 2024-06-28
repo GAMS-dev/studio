@@ -1098,9 +1098,11 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
             msgBox.setInformativeText("What do you want to do with the existing file?");
             msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Open", QMessageBox::ActionRole);
-            msgBox.addButton("Replace", QMessageBox::ActionRole);
+            QPushButton *bOpen = msgBox.addButton("Open", QMessageBox::ActionRole);
+            QPushButton *bReplace = msgBox.addButton("Replace", QMessageBox::ActionRole);
             int answer = msgBox.exec();
+            if (msgBox.clickedButton() == bOpen) answer = 0;
+            if (msgBox.clickedButton() == bReplace) answer = 1;
 
             switch(answer) {
             case 0: {// open
@@ -1654,9 +1656,11 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
                                                           : "exists in the selected directory"));
         msgBox.setInformativeText(QString("What do you want to do with the existing %1?").arg(kind.toLower()));
         msgBox.setStandardButtons(QMessageBox::Abort);
-        if (!isOpen) msgBox.addButton("Open", QMessageBox::ActionRole);
-        msgBox.addButton("Replace", QMessageBox::ActionRole);
+        QPushButton *bOpen = (isOpen ? nullptr : msgBox.addButton("Open", QMessageBox::ActionRole));
+        QPushButton *bReplace = msgBox.addButton("Replace", QMessageBox::ActionRole);
         int answer = msgBox.exec();
+        if (msgBox.clickedButton() == bOpen) answer = 0;
+        if (msgBox.clickedButton() == bReplace) answer = 1;
 
         switch(answer) {
         case 0: // open
@@ -1971,10 +1975,11 @@ void MainWindow::codecReload(QAction *action)
             msgBox.setText(QDir::toNativeSeparators(fm->location())+" has been modified.");
             msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
                                       + action->text() + "?");
-            msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
+            QPushButton *bReload = msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
             msgBox.setStandardButtons(QMessageBox::Cancel);
             msgBox.setDefaultButton(QMessageBox::Cancel);
-            reload = msgBox.exec();
+            msgBox.exec();
+            reload = msgBox.clickedButton() == bReload;
         }
         if (reload) {
             fm->load(action->data().toInt());

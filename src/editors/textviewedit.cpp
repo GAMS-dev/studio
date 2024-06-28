@@ -312,11 +312,10 @@ void TextViewEdit::mouseDoubleClickEvent(QMouseEvent *event)
     QTextCursor cursor = cursorForPosition(event->pos());
     if (event->modifiers() & Qt::ControlModifier || mMapper.kind() != AbstractTextMapper::memoryMapper) {
         QTextCursor cur = textCursor();
-        QTextCursor::MoveMode mode = event->modifiers() & Qt::ShiftModifier ? QTextCursor::KeepAnchor
-                                                                            : QTextCursor::MoveAnchor;
-        cur.movePosition(QTextCursor::StartOfWord, mode);
-        setTextCursor(cur);
-        CodeEdit::mouseDoubleClickEvent(event);
+        cur.movePosition(QTextCursor::StartOfWord);
+        int from = cur.positionInBlock();
+        cur.movePosition(QTextCursor::EndOfWord, QTextCursor::KeepAnchor);
+        emit selectWord(cur.blockNumber(), from, cur.positionInBlock());
     } else {
         QRect rect = cursorRect(cursor);
         if (event->pos().x() - rect.right() < 3 && !resolveHRef(cursor.charFormat().anchorHref()).isEmpty()) return;

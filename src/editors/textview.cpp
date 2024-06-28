@@ -84,14 +84,14 @@ TextView::TextView(TextKind kind, QWidget *parent) : QAbstractScrollArea(parent)
     connect(verticalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::outerScrollAction);
     connect(mEdit->horizontalScrollBar(), &QScrollBar::actionTriggered, this, &TextView::horizontalScrollAction);
     connect(mEdit, &TextViewEdit::keyPressed, this, &TextView::editKeyPressEvent);
-    connect(mEdit, &TextViewEdit::selectionChanged, this, &TextView::handleSelectionChange);
-    // connect(mEdit, &TextViewEdit::cursorPositionChanged, this, &TextView::handleSelectionChange);
     connect(mEdit, &TextViewEdit::updatePosAndAnchor, this, &TextView::updatePosAndAnchor);
     connect(mEdit, &TextViewEdit::searchFindNextPressed, this, &TextView::searchFindNextPressed);
     connect(mEdit, &TextViewEdit::searchFindPrevPressed, this, &TextView::searchFindPrevPressed);
     connect(mEdit, &TextViewEdit::hasHRef, this, &TextView::hasHRef);
     connect(mEdit, &TextViewEdit::jumpToHRef, this, &TextView::jumpToHRef);
     connect(mEdit, &TextViewEdit::topLineMoved, this, &TextView::updateView);
+    connect(mEdit, &TextViewEdit::selectWord, this, &TextView::selectWord);
+
     connect(mMapper, &AbstractTextMapper::loadAmountChanged, this, &TextView::loadAmountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::blockCountChanged);
     connect(mMapper, &AbstractTextMapper::blockCountChanged, this, &TextView::updateVScrollZone);
@@ -469,6 +469,13 @@ void TextView::updateView()
     }
 }
 
+void TextView::selectWord(int localLine, int charFrom, int charTo)
+{
+    mMapper->setPosRelative(localLine, charFrom);
+    mMapper->setPosRelative(localLine, charTo, QTextCursor::KeepAnchor);
+    updatePosAndAnchor();
+}
+
 int TextView::firstErrorLine()
 {
     MemoryMapper *memMapper = qobject_cast<MemoryMapper*>(mMapper);
@@ -584,23 +591,6 @@ void TextView::editKeyPressEvent(QKeyEvent *event)
     if (mStayAtTail) *mStayAtTail = mMapper->atTail();
     emit selectionChanged();
     updateView();
-}
-
-void TextView::handleSelectionChange()
-{
-    if (mDocChanging)
-        return;
-    QTextCursor cur = mEdit->textCursor();
-    if (cur.hasSelection()) {
-        QTextCursor anc = cur;
-        anc.setPosition(cur.anchor());
-        mMapper->setPosRelative(anc.blockNumber(), anc.positionInBlock());
-        mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock(), QTextCursor::KeepAnchor);
-    } else {
-        mMapper->setPosRelative(cur.blockNumber(), cur.positionInBlock());
-    }
-    updatePosAndAnchor();
-    emit selectionChanged();
 }
 
 void TextView::init()

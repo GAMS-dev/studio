@@ -1,10 +1,10 @@
-t.b.d.
+Closes #TICKETNUMBER
 
-Please test the MR on
+**Please test the MR on**
 
 - [ ] Linux (@jparnjai @afust)
 - [ ] macOS (@afust @jmonki)
-- [ ] Windows (@cwestphal @lwestermann)
+- [ ] Windows (@cwestphal @jmonki)
 - [ ] T.b.d. add the reporter and his platform to test the issue
 
 **Review**

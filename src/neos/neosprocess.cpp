@@ -27,6 +27,7 @@
 #include <QStandardPaths>
 #include <QDir>
 #include <QMessageBox>
+#include "support/solverconfiginfo.h"
 
 #ifdef _WIN32
 #include "Windows.h"
@@ -151,6 +152,49 @@ QStringList NeosProcess::remoteParameters()
     return params;
 }
 
+void NeosProcess::solverToCategories(QStringList &params)
+{
+    // replaces all occurrencies of "solver=%s" by a list of matching "%cat=%s"
+    for (int i = 0; i < params.size(); ++i) {
+        QString par = params.at(i);
+        if (par.startsWith("solver=", Qt::CaseInsensitive)) {
+            QString solver = par.split("=").last();
+            QStringList catParams = allCat4Solver(solver);
+            cleanCategories(params, catParams);
+            if (catParams.isEmpty())
+                params.removeAt(i--);
+            for (QString &catPar : catParams)
+                params.insert(++i, catPar);
+        }
+    }
+}
+
+void NeosProcess::cleanCategories(const QStringList &params, QStringList &catParams)
+{
+    for (const QString &par : params) {
+        QString pre = par.split("=").first() + "=";
+        for (int i = 0; i < catParams.size(); ++i) {
+            if (catParams.at(i).startsWith(pre, Qt::CaseInsensitive))
+                catParams.removeAt(i--);
+        }
+    }
+}
+
+QStringList NeosProcess::allCat4Solver(QString solver)
+{
+    QStringList res;
+    support::SolverConfigInfo solveInfo;
+    int iSolver = solveInfo.solverId(solver);
+    if (iSolver == 0)
+        return res;
+    for (int i = 0; i < solveInfo.modelTypes(); ++i) {
+        if (solveInfo.solverCapability(iSolver, i)) {
+            res << solveInfo.modelTypeName(i) + "=" + solver;
+        }
+    }
+    return res;
+}
+
 void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus)
 {
     if (exitStatus == QProcess::CrashExit || exitCode) {
@@ -161,6 +205,7 @@ void NeosProcess::compileCompleted(int exitCode, QProcess::ExitStatus exitStatus
     }
     if (mProcState == Proc1Compile) {
         QStringList params = remoteParameters();
+        solverToCategories(params);
         QString g00 = mOutPath + ".g00";
         bool ok = mManager->submitJob(g00, mMail, params.join(" "), mPrio==prioShort, mHasGdx);
         if (!ok) completed(-1);
