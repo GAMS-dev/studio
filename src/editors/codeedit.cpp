@@ -1217,9 +1217,9 @@ void CodeEdit::showBpContext(const QPoint &pos)
     int line = cursorForPosition(pos).blockNumber() + 1;
     bool hasBp = mBreakpoints.contains(line) || mAimedBreakpoints.contains(line);
 #ifdef __APPLE__
-    QString entry = QString("%1 breakpoint at line %2\tCmd+click").arg(hasBp ? "Remove" : "Add").arg(line);
+    QString entry = QString("%1 breakpoint at line %2    Cmd+click").arg(hasBp ? "Remove" : "Add").arg(line);
 #else
-    QString entry = QString("%1 breakpoint at line %2\tCtrl+click").arg(hasBp ? "Remove" : "Add").arg(line);
+    QString entry = QString("%1 breakpoint at line %2    Ctrl+click").arg(hasBp ? "Remove" : "Add").arg(line);
 #endif
 
     QMenu menu(this);

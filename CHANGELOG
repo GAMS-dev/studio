@@ -1,3 +1,7 @@
+Version 1.18.5
+==================
+- fixed missing spaces in breakpoint context menu text
+
 Version 1.18.4
 ==================
 - fixed incomplete search results when searching in `This Project`
