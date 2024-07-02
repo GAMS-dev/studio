@@ -517,8 +517,10 @@ void GdxViewer::applySelectedSymbol()
 
 void GdxViewer::showExportDialog()
 {
-    if (!mExportDialog)
+    if (!mExportDialog) {
         mExportDialog = new ExportDialog(this, this);
+        mExportDialog->setWindowModality(Qt::ApplicationModal);
+    }
     mExportDialog->show();
 }
 
