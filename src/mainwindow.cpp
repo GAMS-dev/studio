@@ -118,11 +118,6 @@ MainWindow::MainWindow(QWidget *parent)
 
     setAcceptDrops(true);
 
-#ifdef _WIN32
-    // TODO(JM) Fix the hidden menu issue in full-screen on Windows
-    ui->actionFull_Screen->setEnabled(false);
-#endif
-
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
 

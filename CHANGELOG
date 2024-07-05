@@ -2,6 +2,7 @@ Version 1.18.5
 ==================
 - fixed missing spaces in breakpoint context menu text
 - fixed GDX export dialog non-modal on macOS
+- fixed fullscreen mode on Windows
 
 Version 1.18.4
 ==================
