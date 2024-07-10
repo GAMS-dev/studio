@@ -1,4 +1,5 @@
-/*
+/**
+ * GAMS Studio
  *
  * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
@@ -13,6 +14,8 @@
  * MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
  * GNU General Public License for more details.
  *
+ * You should have received a copy of the GNU General Public License
+ * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
 #include "updatewidget.h"
 #include "ui_updatewidget.h"

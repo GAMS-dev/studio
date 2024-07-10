@@ -1,5 +1,5 @@
-/*
- * This file is part of the GAMS Studio project.
+/**
+ * GAMS Studio
  *
  * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
@@ -117,11 +117,6 @@ MainWindow::MainWindow(QWidget *parent)
     mTimerID = startTimer(60000);
 
     setAcceptDrops(true);
-
-#ifdef _WIN32
-    // TODO(JM) Fix the hidden menu issue in full-screen on Windows
-    ui->actionFull_Screen->setEnabled(false);
-#endif
 
     // Shortcuts
     ui->actionRedo->setShortcuts(ui->actionRedo->shortcuts() << QKeySequence("Ctrl+Shift+Z"));
