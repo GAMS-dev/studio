@@ -20,3 +20,14 @@ codechecker-leg:
       codequality: gl-code-quality-report.json
     paths: [gl-code-quality-report.json]
     expire_in: '2 mos'
+
+license-update-leg:
+  stage: analyze
+  tags: [puma]
+  image:
+    name: $GAMS_CONTAINER_REGISTRY/qt-machines/deployer:latest
+    entrypoint: [""]   # prevent startup.sh
+  allow_failure: false
+  script:
+    - chmod +x ci/license-update.sh
+    - ./ci/license-update.sh

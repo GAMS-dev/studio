@@ -1,5 +1,5 @@
-﻿/*
- * This file is part of the GAMS Studio project.
+/**
+ * GAMS Studio
  *
  * Copyright (c) 2017-2024 GAMS Software GmbH <support@gams.com>
  * Copyright (c) 2017-2024 GAMS Development Corp. <support@gams.com>
