@@ -104,6 +104,7 @@ private:
     CodeRelations mCodes;
 
     static const QVector<SyntaxKind> cInvalidParenthesesSyntax;
+    static const QMap<Theme::ColorSlot, Theme::ColorSlot> cForeToBackground;
     static const QString cValidParentheses;
     static const QString cSpecialBlocks;
 };

@@ -22,6 +22,7 @@
 #include "logger.h"
 #include <QPushButton>
 #include <QColorDialog>
+#include <QMouseEvent>
 
 namespace gams {
 namespace studio {
@@ -35,7 +36,7 @@ ThemeWidget::ThemeWidget(QWidget *parent) :
     ui->iconEx->setVisible(false);
 }
 
-ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExample) :
+ThemeWidget::ThemeWidget(QList<Theme::ColorSlot> colors, QWidget *parent, bool iconExample) :
     QWidget(parent),
     ui(new Ui::ThemeWidget)
 {
@@ -46,16 +47,17 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExam
     ui->textFrame->setVisible(false);
     if (iconExample) {
         mIconEng = new SvgEngine(":/solid/user");
-        if (Theme::name(slotFg).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
-        if (Theme::name(slotFg).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
-        if (Theme::name(slotFg).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);
+        if (Theme::name(colors.at(0)).startsWith("Disable_")) mIconEng->replaceNormalMode(QIcon::Disabled);
+        if (Theme::name(colors.at(0)).startsWith("Active_")) mIconEng->replaceNormalMode(QIcon::Active);
+        if (Theme::name(colors.at(0)).startsWith("Select_")) mIconEng->replaceNormalMode(QIcon::Selected);
         ui->iconEx->setIcon(QIcon(mIconEng));
     }
 
-    ui->name->setText(' ' + Theme::instance()->text(slotFg) + ' ');
-    setFormatVisible(Theme::hasFontProps(slotFg));
-    initSlot(mSlotFg, slotFg, ui->colorFG);
-    ui->colorBG1->hide();
+    ui->name->setText(' ' + Theme::instance()->text(colors.at(0)) + ' ');
+    setFormatVisible(Theme::hasFontProps(colors.at(0)));
+    initSlot(mSlotFg, colors.at(0), ui->colorFG);
+    initSlot(mSlotBg, colors.at(1), ui->colorBG1);
+    mHasAutoBackground = true;
     ui->colorBG2->hide();
 }
 
@@ -139,9 +141,15 @@ void ThemeWidget::setFormatVisible(bool visible)
 bool ThemeWidget::eventFilter(QObject *watched, QEvent *event)
 {
     if (event->type() == QEvent::MouseButtonRelease) {
-        if (watched == ui->colorFG) showColorSelector(ui->colorFG);
-        else if (watched == ui->colorBG1) showColorSelector(ui->colorBG1);
-        else if (watched == ui->colorBG2) showColorSelector(ui->colorBG2);
+        if (watched == ui->colorFG)
+            showColorSelector(ui->colorFG);
+        else if (watched == ui->colorBG1) {
+            QMouseEvent *me = static_cast<QMouseEvent*>(event);
+            if (mHasAutoBackground && me->button() == Qt::RightButton)
+                colorChanged(Theme::CAutoBackground);
+            else showColorSelector(ui->colorBG1);
+        } else if (watched == ui->colorBG2)
+            showColorSelector(ui->colorBG2);
     }
     return false;
 }
@@ -234,7 +242,11 @@ void ThemeWidget::setReadonly(bool readonly)
 
 void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 {
-    frame->setStyleSheet("background:"+color.name()+";");
+    QColor transColor = color;
+    if (mHasAutoBackground && color == Theme::CAutoBackground) {
+        transColor = Theme::instance()->color(Theme::Edit_background);
+    }
+    frame->setStyleSheet("background:"+transColor.name()+";");
     if (examplePart) {
         if (ui->iconEx->isVisible()) {
             ui->iconEx->setIcon(ui->iconEx->icon());
@@ -242,8 +254,8 @@ void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
             QString sheet;
             sheet = "color:" + (mSlotFg != Theme::invalid ? toColor(mSlotFg).name()
                                                           : toColor(Theme::Edit_text).name()) + ";";
-            sheet += "background:" + (mSlotBg != Theme::invalid ? toColor(mSlotBg).name()
-                                                                : toColor(Theme::Edit_background).name()) + ";";
+            bool useEditBg = mSlotBg == Theme::invalid || (mHasAutoBackground && toColor(mSlotBg) == Theme::CAutoBackground);
+            sheet += "background:" + (useEditBg ? toColor(Theme::Edit_background).name() : toColor(mSlotBg).name()) + ";";
             ui->name->setStyleSheet(sheet);
         }
     }

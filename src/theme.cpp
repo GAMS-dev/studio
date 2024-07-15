@@ -33,6 +33,7 @@ namespace studio {
 
 Theme *Theme::mInstance = nullptr;
 const QColor CUndefined(255, 0, 200);
+const QColor Theme::CAutoBackground(0, 0, 1);
 
 Theme::Theme(QObject *parent) : QObject(parent)
 {
@@ -79,17 +80,28 @@ void Theme::initSlotTexts()
 
     mSlotText.insert(Syntax_formula,            "Formula");
     mSlotText.insert(Syntax_comment,            "Comment");
-    mSlotText.insert(Syntax_dco,          "Dollar Control Option");
-    mSlotText.insert(Syntax_dcoBody,      "Dollar Control Argument");
+    mSlotText.insert(Syntax_comment_bg,         "Comment background");
+    mSlotText.insert(Syntax_dco,                "Dollar Control Option");
+    mSlotText.insert(Syntax_dco_bg,             "Dollar Control Option background");
+    mSlotText.insert(Syntax_dcoBody,            "Dollar Control Argument");
+    mSlotText.insert(Syntax_dcoBody_bg,         "Dollar Control Argument background");
     mSlotText.insert(Syntax_title,              "Title");
     mSlotText.insert(Syntax_keyword,            "Keyword");
+    mSlotText.insert(Syntax_keyword_bg,         "Keyword background");
     mSlotText.insert(Syntax_declaration,        "Declaration Keyword");
+    mSlotText.insert(Syntax_declaration_bg,     "Declaration Keyword background");
     mSlotText.insert(Syntax_identifier,         "Identifier");
+    mSlotText.insert(Syntax_identifier_bg,      "Identifier background");
     mSlotText.insert(Syntax_description,        "Symbol Text");
+    mSlotText.insert(Syntax_description_bg,     "Symbol Text background");
     mSlotText.insert(Syntax_assignLabel,        "Element");
+    mSlotText.insert(Syntax_assignLabel_bg,     "Element background");
     mSlotText.insert(Syntax_assignValue,        "Element Text/Value");
+    mSlotText.insert(Syntax_assignValue_bg,     "Element Text/Value background");
     mSlotText.insert(Syntax_tableHeader,        "Table header");
+    mSlotText.insert(Syntax_tableHeader_bg,     "Table header background");
     mSlotText.insert(Syntax_embedded,           "Embedded code");
+    mSlotText.insert(Syntax_embedded_bg,        "Embedded code background");
 }
 
 void Theme::initDefault()
@@ -150,19 +162,30 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Normal_Yellow,                  QColor(236,140,20));
 
     mColorThemes[sNr].insert(Syntax_undefined,               CUndefined);
-    mColorThemes[sNr].insert(Syntax_dco,               Color(QColor(Qt::darkMagenta).darker(120)));
+    mColorThemes[sNr].insert(Syntax_dco,                     Color(QColor(Qt::darkMagenta).darker(120)));
+    mColorThemes[sNr].insert(Syntax_dco_bg,                  CAutoBackground);
     mColorThemes[sNr].insert(Syntax_formula,                 Color(Qt::black));
-    mColorThemes[sNr].insert(Syntax_dcoBody,           Color(QColor(Qt::darkBlue).lighter(170), fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(QColor(Qt::darkBlue).lighter(170), fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody_bg,              CAutoBackground);
     mColorThemes[sNr].insert(Syntax_comment,                 Color(QColor(120, 120, 120), fItalic)); //QColor(150, 120, 65)
+    mColorThemes[sNr].insert(Syntax_comment_bg,              CAutoBackground);
     mColorThemes[sNr].insert(Syntax_title,                   Color(QColor(Qt::darkBlue).lighter(140), fBold));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(QColor(Qt::darkBlue).lighter(140), fBold));
+    mColorThemes[sNr].insert(Syntax_keyword_bg,              CAutoBackground);
     mColorThemes[sNr].insert(Syntax_declaration,             Color(QColor(Qt::darkBlue).lighter(140), fBold));
+    mColorThemes[sNr].insert(Syntax_declaration_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_identifier,              Color(QColor(Qt::black)));
+    mColorThemes[sNr].insert(Syntax_identifier_bg,           CAutoBackground);
     mColorThemes[sNr].insert(Syntax_description,             Color(QColor(Qt::darkBlue).lighter(170)));
+    mColorThemes[sNr].insert(Syntax_description_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(QColor(Qt::darkGreen).darker(110)));
+    mColorThemes[sNr].insert(Syntax_assignLabel_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(QColor(0, 80, 120)));
+    mColorThemes[sNr].insert(Syntax_assignValue_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(QColor(Qt::darkGreen).darker(140), fBold));
+    mColorThemes[sNr].insert(Syntax_tableHeader_bg,          CAutoBackground);
     mColorThemes[sNr].insert(Syntax_embedded,                Color(QColor(200, 70, 0)));
+    mColorThemes[sNr].insert(Syntax_embedded_bg,             CAutoBackground);
 
     // Add and switch to second color theme
     mColorThemes << mColorThemes.at(sNr++);
@@ -202,7 +225,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Mark_fileFg,                    QColor(Qt::darkGreen));
 
     mColorThemes[sNr].insert(Syntax_title,                   Color(dark_highlight, fBold));
-    mColorThemes[sNr].insert(Syntax_dco,               QColor(200,60,90));
+    mColorThemes[sNr].insert(Syntax_dco,                     QColor(200,60,90));
     mColorThemes[sNr].insert(Syntax_keyword,                 Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_declaration,             Color(dark_highlight, fBold));
     mColorThemes[sNr].insert(Syntax_description,             Color(dark_unobstrusive));
@@ -212,7 +235,7 @@ void Theme::initDefault()
     mColorThemes[sNr].insert(Syntax_assignLabel,             Color(dark_assignment));
     mColorThemes[sNr].insert(Syntax_tableHeader,             Color(dark_assignment, fBold));
     mColorThemes[sNr].insert(Syntax_assignValue,             Color(dark_assignment.lighter()));
-    mColorThemes[sNr].insert(Syntax_dcoBody,           Color(dark_highlight, fItalic));
+    mColorThemes[sNr].insert(Syntax_dcoBody,                 Color(dark_highlight, fItalic));
 
     mColorThemes[sNr].insert(Icon_Gray,                      QColor(65,55,50));
     mColorThemes[sNr].insert(Icon_Back,                      QColor(220,220,220));

@@ -786,18 +786,18 @@ void SettingsDialog::initColorPage()
     box = ui->syntaxColors;
     grid = qobject_cast<QGridLayout*>(box->layout());
     slot2 = {
-        {Theme::Syntax_declaration},
-        {Theme::Syntax_assignLabel},
-        {Theme::Syntax_assignValue},
-        {Theme::Syntax_dco},
-        {Theme::Syntax_embedded},
-        {Theme::Syntax_keyword},
+        {Theme::Syntax_declaration, Theme::Syntax_declaration_bg},
+        {Theme::Syntax_assignLabel, Theme::Syntax_assignLabel_bg},
+        {Theme::Syntax_assignValue, Theme::Syntax_assignValue_bg},
+        {Theme::Syntax_dco, Theme::Syntax_dco_bg},
+        {Theme::Syntax_embedded, Theme::Syntax_embedded_bg},
+        {Theme::Syntax_keyword, Theme::Syntax_keyword_bg},
 
-        {Theme::Syntax_identifier},
-        {Theme::Syntax_description},
-        {Theme::Syntax_tableHeader},
-        {Theme::Syntax_dcoBody},
-        {Theme::Syntax_comment},
+        {Theme::Syntax_identifier, Theme::Syntax_identifier_bg},
+        {Theme::Syntax_description, Theme::Syntax_description_bg},
+        {Theme::Syntax_tableHeader, Theme::Syntax_tableHeader_bg},
+        {Theme::Syntax_dcoBody, Theme::Syntax_dcoBody_bg},
+        {Theme::Syntax_comment, Theme::Syntax_comment_bg},
     };
     cols = 2;
     rows = ((slot2.count()-1) / cols) + 1;
@@ -806,7 +806,7 @@ void SettingsDialog::initColorPage()
         if (slot2.at(i).isEmpty()) continue;
         int row = i % rows;
         int col = i / rows;
-        wid = new ThemeWidget(slot2.at(i).at(0), box);
+        wid = new ThemeWidget(slot2.at(i), box);
         wid->setAlignment(Qt::AlignRight);
         int effectiveRow = row + (row >= sep ? 2 : 1);
 

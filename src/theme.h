@@ -81,18 +81,29 @@ public:
         Syntax_undefined,
         Syntax_neutral,
         Syntax_dco,
+        Syntax_dco_bg,
         Syntax_formula,
         Syntax_dcoBody,
+        Syntax_dcoBody_bg,
         Syntax_comment,
+        Syntax_comment_bg,
         Syntax_title,
         Syntax_keyword,
+        Syntax_keyword_bg,
         Syntax_declaration,
+        Syntax_declaration_bg,
         Syntax_identifier,
+        Syntax_identifier_bg,
         Syntax_description,
+        Syntax_description_bg,
         Syntax_assignLabel,
+        Syntax_assignLabel_bg,
         Syntax_assignValue,
+        Syntax_assignValue_bg,
         Syntax_tableHeader,
+        Syntax_tableHeader_bg,
         Syntax_embedded,
+        Syntax_embedded_bg,
 
         ColorSlotCount
     };
@@ -144,6 +155,7 @@ public:
     static QByteArray &data(const QString &name, QIcon::Mode mode, int alpha = 100);
     static bool hasFlag(ColorSlot slot, FontFlag flag);
     static void setFlags(ColorSlot slot, FontFlag flag);
+    static const QColor CAutoBackground;
 
 signals:
     void changed(bool refreshSyntax);

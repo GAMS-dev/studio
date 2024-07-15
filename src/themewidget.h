@@ -38,7 +38,7 @@ class ThemeWidget : public QWidget
     Q_OBJECT
 public:
     explicit ThemeWidget(QWidget *parent);
-    explicit ThemeWidget(Theme::ColorSlot slotFg, QWidget *parent, bool iconExample = false);
+    explicit ThemeWidget(QList<Theme::ColorSlot> colors, QWidget *parent, bool iconExample = false);
     explicit ThemeWidget(Theme::ColorSlot slotFg = Theme::invalid,
                           Theme::ColorSlot slotBg = Theme::invalid, QWidget *parent = nullptr);
     explicit ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg,
@@ -55,6 +55,7 @@ public:
 signals:
     void aboutToChange();
     void changed();
+    void getTextBackground(QColor bkColor);
 
 private slots:
     void colorChanged(const QColor &color);
@@ -70,6 +71,7 @@ private:
     QColorDialog *mColorDialog = nullptr;
     QFrame *mSelectedFrame;
     bool mReadonly = false;
+    bool mHasAutoBackground = false;
 
     void baseInit();
     void initSlot(Theme::ColorSlot &slotVar, const Theme::ColorSlot &slotVal, QFrame *frame);

@@ -444,6 +444,20 @@ void SyntaxHighlighter::scanParentheses(const QString &text, SyntaxBlock block, 
     return;
 }
 
+const QMap<Theme::ColorSlot, Theme::ColorSlot> SyntaxHighlighter::cForeToBackground = {
+    {Theme::Syntax_assignLabel, Theme::Syntax_assignLabel_bg},
+    {Theme::Syntax_assignValue, Theme::Syntax_assignValue_bg},
+    {Theme::Syntax_comment, Theme::Syntax_comment_bg},
+    {Theme::Syntax_dco, Theme::Syntax_dco_bg},
+    {Theme::Syntax_dcoBody, Theme::Syntax_dcoBody_bg},
+    {Theme::Syntax_declaration, Theme::Syntax_declaration_bg},
+    {Theme::Syntax_description, Theme::Syntax_description_bg},
+    {Theme::Syntax_embedded, Theme::Syntax_embedded_bg},
+    {Theme::Syntax_identifier, Theme::Syntax_identifier_bg},
+    {Theme::Syntax_keyword, Theme::Syntax_keyword_bg},
+    {Theme::Syntax_tableHeader, Theme::Syntax_tableHeader_bg},
+};
+
 QColor backColor(int index) {
     static QList<QColor> debColor { QColor(Qt::yellow).darker(105), QColor(Qt::cyan).lighter(170),
                                     QColor(Qt::blue).lighter(180), QColor(Qt::green).lighter(170) };
@@ -454,6 +468,12 @@ QColor backColor(int index) {
 void SyntaxHighlighter::initKind(int debug, SyntaxAbstract *syntax, Theme::ColorSlot slot)
 {
     if (debug) syntax->charFormat().setBackground(backColor(debug));
+    else if (cForeToBackground.contains(slot)) {
+        QColor bkColor = Theme::color(cForeToBackground.value(slot));
+        if (bkColor != Theme::CAutoBackground) {
+            syntax->charFormat().setBackground(bkColor);
+        }
+    }
     syntax->assignColorSlot(slot);
 
     // TODO(JM) check if mSingleLineKinds can be left out of mKinds because the code won't be passed to the next line
