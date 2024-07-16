@@ -164,7 +164,11 @@ void ThemeWidget::showColorSelector(QFrame *frame)
     }
     mSelectedFrame = frame;
     mColorDialog->setCurrentColor(frame->palette().window().color());
-    connect(mColorDialog, &QColorDialog::colorSelected, this, &ThemeWidget::colorChanged);
+    connect(mColorDialog, &QColorDialog::colorSelected, this, [this](const QColor &color) {
+        // avoid selecting reserved color
+        QColor transColor = color == Theme::CAutoBackground ? QColor(0,0,0) : color;
+        colorChanged(transColor);
+    });
     connect(mColorDialog, &QColorDialog::finished, this, [this](){
         mColorDialog->deleteLater();
         mColorDialog = nullptr;
