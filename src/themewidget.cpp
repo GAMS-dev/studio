@@ -82,6 +82,7 @@ ThemeWidget::ThemeWidget(Theme::ColorSlot slotFg, Theme::ColorSlot slotBg, Theme
 {
     ui->setupUi(this);
     baseInit();
+    ui->laAutoBg->setVisible(false);
     ui->iconEx->setVisible(false);
     ui->textFrame->setVisible(false);
 
@@ -247,8 +248,16 @@ void ThemeWidget::setReadonly(bool readonly)
 void ThemeWidget::setColor(QFrame *frame, const QColor &color, int examplePart)
 {
     QColor transColor = color;
-    if (mHasAutoBackground && color == Theme::CAutoBackground) {
-        transColor = Theme::instance()->color(Theme::Edit_background);
+    if (frame == ui->colorBG1) {
+        if (mHasAutoBackground && color == Theme::CAutoBackground) {
+            transColor = Theme::instance()->color(Theme::Edit_background);
+            frame->setToolTip("Use Editor background");
+            ui->laAutoBg->setVisible(true);
+
+        } else if (Theme::hasFontProps(mSlotFg)) {
+            frame->setToolTip("Right click to reset");
+            ui->laAutoBg->setVisible(false);
+        }
     }
     frame->setStyleSheet("background:"+transColor.name()+";");
     if (examplePart) {
