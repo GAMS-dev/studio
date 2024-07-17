@@ -1,5 +1,6 @@
 Version 1.19.0 *
 ==================
+- added background color for syntax
 - added "Close and delete project" action to Project Explorer context menu
 - added virtual project, i.e. only create a gsp file on a certain number of files or if a main file is there
 - improved allow to close non-mainfile while running
