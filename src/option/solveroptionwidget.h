@@ -47,10 +47,11 @@ class SolverOptionWidget : public AbstractView
     Q_OBJECT
 
 public:
-    explicit SolverOptionWidget(const QString &solverName, const QString &optionFilePath, const QString &optDefFileName,
+    explicit SolverOptionWidget(const QString &solverName, const QString &optionFilePath, const QString &optDefFileName, const FileKind &kind,
                                 const FileId &id, const QString &encodingName, QWidget *parent = nullptr);
     ~SolverOptionWidget() override;
 
+    FileKind fileKind() const;
     FileId fileId() const;
 
     bool isModified() const;
@@ -123,6 +124,7 @@ private:
     bool isEditing();
 
     Ui::SolverOptionWidget *ui;
+    FileKind mFileKind;
     FileId mFileId;
     QString mLocation;
     QString mSolverName;

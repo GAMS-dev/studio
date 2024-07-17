@@ -40,10 +40,11 @@ namespace gams {
 namespace studio {
 namespace option {
 
-SolverOptionWidget::SolverOptionWidget(const QString &solverName, const QString &optionFilePath, const QString &optDefFileName,
+SolverOptionWidget::SolverOptionWidget(const QString &solverName, const QString &optionFilePath, const QString &optDefFileName, const FileKind &kind,
                                        const FileId &id, const QString &encodingName, QWidget *parent) :
     AbstractView(parent),
     ui(new Ui::SolverOptionWidget),
+    mFileKind(kind),
     mFileId(id),
     mLocation(optionFilePath),
     mSolverName(solverName)
@@ -228,6 +229,11 @@ bool SolverOptionWidget::init(const QString &optDefFileName)
         mOptionTokenizer->logger()->append(QString("Loading options from %1").arg(mLocation), LogMsgType::Info);
         return true;
     }
+}
+
+FileKind SolverOptionWidget::fileKind() const
+{
+    return mFileKind;
 }
 
 FileId SolverOptionWidget::fileId() const

@@ -2505,12 +2505,15 @@ void MainWindow::on_actionGamsHelp_triggered()
                             option::SolverOptionWidget* optionEdit =  ViewHelper::toSolverOptionEdit(mRecent.editor());
                             if (optionEdit) {
                                 QString optionName = optionEdit->getSelectedOptionName(widget);
-                                if (optionName.isEmpty())
+                                if (optionName.isEmpty()) {
                                     mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                                           help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
-                                else
-                                    mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName,
-                                                                          optionEdit->getSolverName());
+                                } else {
+                                    if (optionEdit->fileKind()==FileKind::Pf)
+                                        mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
+                                    else
+                                        mHelpWidget->on_helpContentRequested( help::DocumentType::Solvers, optionName, optionEdit->getSolverName());
+                                }
                             } else if (ViewHelper::toGdxViewer(mRecent.editor())) {
                                        mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
                                                                              help::HelpData::getStudioSectionName(help::StudioSection::GDXViewer));
