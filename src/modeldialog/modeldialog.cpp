@@ -25,9 +25,12 @@
 #include "librarymodel.h"
 #include "common.h"
 #include "headerviewproxy.h"
+#include "descriptiondialog.h"
+#include "tableview.h"
 
 #include <QHeaderView>
 #include <QDirIterator>
+#include <QKeyEvent>
 #include <QMessageBox>
 #include <QTableView>
 #include <QSortFilterProxyModel>
@@ -170,10 +173,10 @@ void ModelDialog::storeSelectedTab()
 
 void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary)
 {
-    QTableView* tableView;
+    TableView* tableView;
     QSortFilterProxyModel* proxyModel;
 
-    tableView = new QTableView();
+    tableView = new TableView();
     if (HeaderViewProxy::platformShouldDrawBorder())
         tableView->horizontalHeader()->setStyle(HeaderViewProxy::instance());
     tableView->horizontalHeader()->setStretchLastSection(true);
@@ -243,11 +246,11 @@ LibraryItem *ModelDialog::selectedLibraryItem() const
 
 void ModelDialog::on_pbDescription_clicked()
 {
-    QMessageBox msgBox(this);
-    msgBox.setWindowTitle("Description for '" + mSelectedLibraryItem->name() + "' from " + mSelectedLibraryItem->library()->name());
-    msgBox.setText(mSelectedLibraryItem->name());
-    msgBox.setInformativeText(mSelectedLibraryItem->longDescription());
-    msgBox.exec();
+    DescriptionDialog dialog(this);
+    dialog.setWindowTitle("Description for '" + mSelectedLibraryItem->name() +
+                          "' from " + mSelectedLibraryItem->library()->name());
+    dialog.setText(mSelectedLibraryItem->name() + "\n\n" + mSelectedLibraryItem->longDescription());
+    dialog.exec();
 }
 
 void ModelDialog::applyFilter(const QRegularExpression &filterRex, int proxyModelIndex)

@@ -173,11 +173,13 @@ SOURCES += \
     miro/mirodeploydialog.cpp \
     miro/mirodeployprocess.cpp \
     miro/miroprocess.cpp \
+    modeldialog/descriptiondialog.cpp \
     modeldialog/glbparser.cpp   \
     modeldialog/library.cpp     \
     modeldialog/libraryitem.cpp \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
+    modeldialog/tableview.cpp \
     navigator/navigatorcontent.cpp \
     navigator/navigatordialog.cpp \
     navigator/navigatorlineedit.cpp \
@@ -395,11 +397,13 @@ HEADERS += \
     miro/mirodeploydialog.h \
     miro/mirodeployprocess.h \
     miro/miroprocess.h \
+    modeldialog/descriptiondialog.h \
     modeldialog/glbparser.h \
     modeldialog/library.h \
     modeldialog/libraryitem.h \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
+    modeldialog/tableview.h \
     navigator/navigatorcontent.h \
     navigator/navigatordialog.h \
     navigator/navigatorlineedit.h \
@@ -525,6 +529,7 @@ FORMS += \
     lxiviewer/lxiviewer.ui \
     mainwindow.ui \
     miro/mirodeploydialog.ui \
+    modeldialog/descriptiondialog.ui \
     modeldialog/modeldialog.ui \
     navigator/navigatordialog.ui \
     neos/neosstartdialog.ui \
