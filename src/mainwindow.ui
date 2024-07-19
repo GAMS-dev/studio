@@ -786,7 +786,7 @@
      <normaloff>:/solid/run-gdx</normaloff>:/solid/run-gdx</iconset>
    </property>
    <property name="text">
-    <string>Run with GDX Creation</string>
+    <string>Run with GDX, RF Creation</string>
    </property>
    <property name="toolTip">
     <string>Run and Create a GDX File with gms file root name</string>
@@ -831,7 +831,7 @@
      <normaloff>:/solid/code-gdx</normaloff>:/solid/code-gdx</iconset>
    </property>
    <property name="text">
-    <string>Compile with GDX Creation</string>
+    <string>Compile with GDX, RF Creation</string>
    </property>
    <property name="toolTip">
     <string>Compile and Create a GDX File with gms file root name</string>

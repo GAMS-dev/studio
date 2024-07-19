@@ -221,17 +221,21 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     bool gdxParam = false;
     bool actParam = false;
+    bool refParam = false;
     const auto items = getOptionTokenizer()->tokenize(commandLineStr);
     for (const option::OptionItem &item : items) {
         if (QString::compare(item.key, "gdx", Qt::CaseInsensitive) == 0)
             gdxParam = true;
+        if (QString::compare(item.key, "rf", Qt::CaseInsensitive) == 0)
+            refParam = true;
         if ((QString::compare(item.key, "action", Qt::CaseInsensitive) == 0) ||
             (QString::compare(item.key, "a", Qt::CaseInsensitive) == 0))
             actParam = true;
     }
 
     if (state == RunActionState::RunWithGDXCreation) {
-       if (!gdxParam) commandLineStr.append("GDX=default");
+       if (!gdxParam) commandLineStr.append("GDX=default ");
+       if (!refParam) commandLineStr.append("RF=default");
        ui->gamsRunToolButton->setDefaultAction( actionRun_with_GDX_Creation );
 
     } else if (state == RunActionState::RunDebug) {
@@ -245,6 +249,7 @@ QString ParameterEditor::on_runAction(RunActionState state)
 
     } else if (state == RunActionState::CompileWithGDXCreation) {
         if (!gdxParam) commandLineStr.append("GDX=default ");
+        if (!refParam) commandLineStr.append("RF=default ");
         if (!actParam) commandLineStr.append("ACTION=C");
         ui->gamsRunToolButton->setDefaultAction( actionCompile_with_GDX_Creation );
 
