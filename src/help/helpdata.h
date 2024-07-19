@@ -61,6 +61,7 @@ enum struct StudioSection {
     Toolbar,
     OptionEditor,
     ProcessLog,
+    ParameterFile,
     ConnectEditor,
     EFIEditor,
 };
@@ -103,6 +104,7 @@ public:
             {StudioSection::GamsUserConfigEditor, "Gams Configuration Editor"},
             {StudioSection::OptionEditor, "Option Editor"},
             {StudioSection::ProcessLog, "Process Log"},
+            {StudioSection::ParameterFile, "Parameter File"},
             {StudioSection::ConnectEditor, "Connect Editor"},
             {StudioSection::EFIEditor, "GAMS Engine"},
         };

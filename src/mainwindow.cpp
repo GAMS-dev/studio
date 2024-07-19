@@ -2506,8 +2506,12 @@ void MainWindow::on_actionGamsHelp_triggered()
                             if (optionEdit) {
                                 QString optionName = optionEdit->getSelectedOptionName(widget);
                                 if (optionName.isEmpty()) {
-                                    mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
-                                                                          help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
+                                    if (optionEdit->fileKind()==FileKind::Pf)
+                                        mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                              help::HelpData::getStudioSectionName(help::StudioSection::ParameterFile));
+                                    else
+                                        mHelpWidget->on_helpContentRequested( help::DocumentType::StudioMain, "",
+                                                                              help::HelpData::getStudioSectionName(help::StudioSection::SolverOptionEditor));
                                 } else {
                                     if (optionEdit->fileKind()==FileKind::Pf)
                                         mHelpWidget->on_helpContentRequested( help::DocumentType::GamsCall, optionName);
