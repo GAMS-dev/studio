@@ -4,6 +4,7 @@ Version 1.18.5 *
 - fixed GDX export dialog non-modal on macOS
 - fixed fullscreen mode on Windows
 - added command line argument to log C4U information and errors (`--dump-c4u-data`)
+- fixed help to documentation triggered from Connect Editor, EFI Editor, Parameter File Editor and Solver Option Editor
 
 Version 1.18.4
 ==================
