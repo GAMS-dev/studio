@@ -1,8 +1,9 @@
-Version 1.18.5
+Version 1.18.5 *
 ==================
 - fixed missing spaces in breakpoint context menu text
 - fixed GDX export dialog non-modal on macOS
 - fixed fullscreen mode on Windows
+- added command line argument to log C4U information and errors (`--dump-c4u-data`)
 
 Version 1.18.4
 ==================

@@ -19,4 +19,5 @@ SOURCES += \
     $$SRCPATH/editors/sysloglocator.cpp \
     $$SRCPATH/file/filetype.cpp \
     $$SRCPATH/exception.cpp \
-    $$SRCPATH/support/solverconfiginfo.cpp
+    $$SRCPATH/support/solverconfiginfo.cpp  \
+    $$SRCPATH/commandlineparser.cpp

@@ -79,6 +79,9 @@ private slots:
     void sslErrors(QNetworkReply* reply, const QList<QSslError>& errors);
 
 private:
+    void writeDataToLog(const QByteArray &data);
+
+private:
     static const QString DistribVersionFile;
     static const QString StudioVersionFile;
 

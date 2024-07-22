@@ -28,8 +28,6 @@ namespace gams {
 namespace studio {
 namespace support {
 
-class CheckForUpdate;
-
 ///
 /// \brief Checks the bitness and GAMS to GAMS Studio compatibilty.
 ///

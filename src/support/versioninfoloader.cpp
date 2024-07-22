@@ -20,6 +20,7 @@
 #include "versioninfoloader.h"
 #include "editors/abstractsystemlogger.h"
 #include "editors/sysloglocator.h"
+#include "commandlineparser.h"
 
 #include <QtConcurrent>
 #include <yaml-cpp/yaml.h>
@@ -132,9 +133,12 @@ void VersionInfoLoader::requestStudioInfo()
 void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
 {
     auto process = [this, reply]{
+        QString error;
         mDistribVersions.clear();
         if (reply->error() == QNetworkReply::NoError) {
+            writeDataToLog("No error. Processing GAMS distrib YAML...");
             auto data = reply->readAll();
+            writeDataToLog(data);
             YAML::Node root;
             try {
                 root = YAML::Load(data.toStdString());
@@ -159,19 +163,27 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
                     mDistribVersions[id] = date;
                 }
             } catch (const YAML::ParserException& e) {
-                SysLogLocator::systemLog()->append(QString("Error while checking for updates : %1 : when loading : %2")
-                                                       .arg(e.what(), DistribVersionFile), LogMsgType::Error);
-                return;
+                error = QString("Error while checking for updates : %1 : when loading : %2").arg(e.what(), DistribVersionFile);
+                writeDataToLog(error.toLatin1());
+                SysLogLocator::systemLog()->append(error, LogMsgType::Error);
             } catch (const std::string& e) {
-                SysLogLocator::systemLog()->append(QString("Error while checking for updates : %1 : when loading : %2")
-                                                       .arg(QString::fromStdString(e), DistribVersionFile), LogMsgType::Error);
+                error = QString("Error while checking for updates : %1 : when loading : %2")
+                                    .arg(QString::fromStdString(e), DistribVersionFile);
+                writeDataToLog(error.toLatin1());
+                SysLogLocator::systemLog()->append(error, LogMsgType::Error);
             }
         } else {
             mErrorStrings << reply->errorString();
-            SysLogLocator::systemLog()->append("Error while checking for updates : " + reply->errorString(), LogMsgType::Error);
+            error = "Error while checking the GAMS distrib YAML: " + reply->errorString() + "\n";
+            writeDataToLog(error.toLatin1());
+            SysLogLocator::systemLog()->append("Error while checking the GAMS distrib YAML: " + reply->errorString(), LogMsgType::Error);
         }
         reply->deleteLater();
-        emit continueProcessing();
+        if (error.isEmpty()) {
+            emit continueProcessing();
+        } else {
+            writeDataToLog("Processing stopped due to previous error.");
+        }
     };
     mResult = QtConcurrent::run(process);
 }
@@ -179,7 +191,9 @@ void VersionInfoLoader::distribDownloadFinished(QNetworkReply *reply)
 void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)
 {
     if (reply->error() == QNetworkReply::NoError) {
+        writeDataToLog("No error. Processing GAMS Studio txt...\n");
         auto data = reply->readLine();
+        writeDataToLog(data);
         auto match = mStudioRegEx.match(data);
         if (match.hasMatch()) {
             mRemoteStudioVersion = match.captured(1).toInt();
@@ -187,7 +201,9 @@ void VersionInfoLoader::studioDownloadFinished(QNetworkReply *reply)
         }
     } else {
         mErrorStrings << reply->errorString();
-        SysLogLocator::systemLog()->append("Error while checking for updates : " + reply->errorString(), LogMsgType::Error);
+        QString error = "Error while checking for GAMS Studio updates: " + reply->errorString() + "\n";
+        writeDataToLog(error.toLatin1());
+        SysLogLocator::systemLog()->append("Error while checking for GAMS Studio updates: "+ reply->errorString(), LogMsgType::Error);
     }
     reply->deleteLater();
     emit finished();
@@ -200,6 +216,17 @@ void VersionInfoLoader::sslErrors(QNetworkReply *reply, const QList<QSslError> &
         mErrorStrings << reply->errorString();
         SysLogLocator::systemLog()->append("Error while checking for updates : " + error.errorString(), LogMsgType::Error);
     }
+}
+
+void VersionInfoLoader::writeDataToLog(const QByteArray& data)
+{
+    if (CommandLineParser::c4uLog().isEmpty())
+        return;
+    QFile logFile(CommandLineParser::c4uLog());
+    if (!logFile.open(QIODevice::Append | QIODevice::Text))
+        return;
+    logFile.write(data);
+    logFile.close();
 }
 
 }
