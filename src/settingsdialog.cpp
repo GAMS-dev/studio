@@ -171,6 +171,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->addEOLCommentCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->deleteCommentAboveCheckbox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::setModified);
+    connect(ui->miroEdit, &QLineEdit::textChanged, this, &SettingsDialog::miroPathTextChanged);
     connect(ui->updateBrowser, &QTextBrowser::anchorClicked, this, &SettingsDialog::anchorClicked);
     connect(ui->autoUpdateBox, &QCheckBox::clicked, this, [this](bool checked){ ui->updateIntervalBox->setEnabled(checked); });
     adjustSize();
@@ -768,6 +769,20 @@ void SettingsDialog::on_miroBrowseButton_clicked()
         path.append(miro::MIRO_MACOS_APP_BUNDLE_POSTFIX);
 #endif
     ui->miroEdit->setText(path);
+}
+
+void SettingsDialog::miroPathTextChanged(const QString &text)
+{
+    if (text.trimmed().isEmpty())
+        return;
+    QFile file(text);
+    if (file.exists()) {
+        ui->miroEdit->setPalette(qApp->palette());
+    } else {
+        QPalette pal = qApp->palette();
+        pal.setColor(QPalette::Text, Theme::color(Theme::Mark_errorFg));
+        ui->miroEdit->setPalette(pal);
+    }
 }
 
 void SettingsDialog::initColorPage()

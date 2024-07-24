@@ -7,6 +7,7 @@ Version 1.19.0 *
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 - added zoom support for model dialog
 - added Reference File (RF) creation to `Run with GDX creation`
+- added color indicator for non-existing MIRO path
 
 Version 1.18.5
 ==================
