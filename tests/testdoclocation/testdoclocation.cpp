@@ -32,6 +32,9 @@ void TestDocLocation::testSolverAnchor_data()
     QTest::addColumn<QString>("location");
     QTest::addColumn<QString>("anchor");
 
+    // given
+    CommonPaths::setSystemDir();
+
     auto docs = CommonPaths::documentationDir();
 
     QTest::newRow("BARON_AbsConFeasTol")    << "BARON" << "AbsConFeasTol" << docs + "/S_BARON.html" << "BARONAbsConFeasTol";

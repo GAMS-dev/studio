@@ -12,5 +12,8 @@ HEADERS += \
 
 SOURCES += \
     testdoclocation.cpp \
+    $$SRCPATH/editors/defaultsystemlogger.cpp \
+    $$SRCPATH/editors/sysloglocator.cpp \
+    $$SRCPATH/support/solverconfiginfo.cpp \
     $$SRCPATH/commonpaths.cpp \
     $$SRCPATH/exception.cpp

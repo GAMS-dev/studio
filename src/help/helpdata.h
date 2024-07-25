@@ -26,6 +26,7 @@
 #include <QUrl>
 
 #include "commonpaths.h"
+#include "support/solverconfiginfo.h"
 
 namespace gams {
 namespace studio {
@@ -60,6 +61,9 @@ enum struct StudioSection {
     Toolbar,
     OptionEditor,
     ProcessLog,
+    ParameterFile,
+    ConnectEditor,
+    EFIEditor,
 };
 
 class HelpData
@@ -100,59 +104,31 @@ public:
             {StudioSection::GamsUserConfigEditor, "Gams Configuration Editor"},
             {StudioSection::OptionEditor, "Option Editor"},
             {StudioSection::ProcessLog, "Process Log"},
+            {StudioSection::ParameterFile, "Parameter File"},
+            {StudioSection::ConnectEditor, "Connect Editor"},
+            {StudioSection::EFIEditor, "GAMS Engine"},
         };
         return list;
     }
     static const QList<QPair<QString, QString>> solverChaperLocation() {
         auto docs = CommonPaths::documentationDir();
-        QList<QPair<QString, QString>> list = {
-            {"alphaecp", docs + "/S_ALPHAECP.html"},
-            {"antigone", docs + "/S_ANTIGONE.html"},
-            {"baron", docs + "/S_BARON.html"},
-            {"bdmlp", docs + "/S_BDMLP.html"},
-            {"bench", docs + "/S_BENCH.html"},
-            {"bonmin", docs + "/S_BONMIN.html"},
-            {"cbc", docs + "/S_CBC.html"},
-            {"conopt", docs + "/S_CONOPT.html"},
-            {"conopt4", docs + "/S_CONOPT4.html"},
-            {"couenne", docs + "/S_COUENNE.html"},
-            {"cplex", docs + "/S_CPLEX.html"},
-            {"de", docs + "/S_DE.html"},
-            {"decis", docs + "/S_DECIS.html"},
-            {"dicopt", docs + "/S_DICOPT.html"},
-            {"examiner", docs + "/S_EXAMINER.html"},
-            {"examiner2", docs + "/S_EXAMINER.html"},
-            {"gamschk", docs + "/S_GAMSCHK.html"},
-            {"glomiqo", docs + "/S_GLOMIQO.html"},
-            {"gurobi", docs + "/S_GUROBI.html"},
-            {"guss", docs + "/S_GUSS.html"},
-            {"ipopt", docs + "/S_IPOPT.html"},
-            {"jams", docs + "/S_JAMS.html"},
-            {"knitro", docs + "/S_KNITRO.html"},
-            {"lgo", docs + "/S_LGO.html"},
-            {"lindo", docs + "/S_LINDO.html"},
-            {"lindoglobal", docs + "/S_LINDO.html"},
-            {"localsolver", docs + "/S_LOCALSOLVER.html"},
-            {"ls", docs + "/S_LS.html"},
-            {"miles", docs + "/S_MILES.html"},
-            {"minos", docs + "/S_MINOS.html"},
-            {"mosek", docs + "/S_MOSEK.html"},
-            {"msnlp", docs + "/S_OQNLP.html"},
-            {"nlpec", docs + "/S_NLPEC.html"},
-            {"odhcplex", docs + "/S_ODHCPLEX.html"},
-            {"os", docs + "/S_OSI.html"},
-            {"oqnlp", docs + "/S_OQNLP.html"},
-            {"path", docs + "/S_PATH.html"},
-            {"pathnlp", docs + "/S_PATHNLP.html"},
-            {"sbb", docs + "/S_SBB.html"},
-            {"scip", docs + "/S_SCIP.html"},
-            {"selkie", docs + "/S_SELKIE.html"},
-            {"snopt", docs + "/S_SNOPT.html"},
-            {"solveengine", docs + "/S_SOLVEENGINE.html"},
-            {"soplex", docs + "/S_SOPLEX.html"},
-            {"xa", docs + "/S_XA.html"},
-            {"xpress", docs + "/S_XPRESS.html"},
+        QList<QPair<QString, QString>> list;
+        QMap<QString, QString> exceptionlist = {
+            {"decisc", "decis"},
+            {"decism", "decis"},
+            {"ipopth", "ipopt"},
+            {"lindoglobal", "lindo"},
         };
+
+        support::SolverConfigInfo solverInfo;
+        const QMap<int, QString> solverNames = solverInfo.solverNames();
+        for (const QString& s : solverNames.values()) {
+            if (exceptionlist.keys().contains(s.toLower())) {
+                list << QPair<QString,QString>(s.toLower(), docs + "/S_" + exceptionlist.value(s.toLower()).toUpper()+".html");
+            } else {
+                list << QPair<QString,QString>(s.toLower(), docs + "/S_" + s.toUpper()+".html");
+            }
+        }
         return list;
     }
 

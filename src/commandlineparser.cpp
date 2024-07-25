@@ -23,6 +23,8 @@
 namespace gams {
 namespace studio {
 
+QString CommandLineParser::C4ULog = "";
+
 CommandLineParser::CommandLineParser()
     : QCommandLineParser()
 {
@@ -46,6 +48,7 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
     addOption({"log", "Set '$HOME/Documents/studio.log' for Studio system log"});
     addOption({"log-file", "Set a log file for Studio system log", "file"});
     addOption({"skip-check-for-update", "Skip all online check for update actions"});
+    addOption({"dump-c4u-data", "Dump the C4U respone and additional information if available", "log file path"});
 
     if (!parse(QCoreApplication::arguments()))
         return CommandLineError;
@@ -67,6 +70,8 @@ CommandLineParseResult CommandLineParser::parseCommandLine()
         mLogFile = this->value("log-file");
     if (isSet("skip-check-for-update"))
         mSkipCheckForUpdate = true;
+    if (isSet("dump-c4u-data"))
+        C4ULog = this->value("dump-c4u-data");
     mFiles = getFileArgs();
 
     return CommandLineOk;
@@ -107,6 +112,11 @@ QString CommandLineParser::logFile() const
     return mLogFile;
 }
 
+QString CommandLineParser::c4uLog()
+{
+    return C4ULog;
+}
+
 inline QStringList CommandLineParser::getFileArgs()
 {
     QStringList absoluteFilePaths;
@@ -115,7 +125,6 @@ inline QStringList CommandLineParser::getFileArgs()
         absoluteFilePaths << CommonPaths::absolutFilePath(file);
     return absoluteFilePaths;
 }
-
 
 } // namespace studio
 } // namespace gams

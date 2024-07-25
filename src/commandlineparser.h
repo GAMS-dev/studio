@@ -47,6 +47,8 @@ public:
 
     QString logFile() const;
 
+    static QString c4uLog();
+
 private:
     inline QStringList getFileArgs();
 
@@ -58,6 +60,7 @@ private:
     bool mSkipCheckForUpdate = false;
     QString mGamsDir = QString();
     QString mLogFile = QString();
+    static QString C4ULog;
 };
 
 } // namespace studio

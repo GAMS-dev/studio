@@ -17,6 +17,7 @@ HEADERS +=                          \
     $$SRCPATH/support/solverconfiginfo.h      \
     $$SRCPATH/commonpaths.h                   \
     $$SRCPATH/exception.h                     \
+    $$SRCPATH/commandlineparser.h             \
     testcheckforupdate.h
 
 SOURCES +=                                      \
@@ -28,4 +29,5 @@ SOURCES +=                                      \
     $$SRCPATH/support/solverconfiginfo.cpp      \
     $$SRCPATH/commonpaths.cpp                   \
     $$SRCPATH/exception.cpp                     \
+    $$SRCPATH/commandlineparser.cpp             \
     testcheckforupdate.cpp
