@@ -45,6 +45,9 @@ int main(int argc, char *argv[])
 #if !defined(__APPLE__) && defined(__unix__)
     qputenv("QTWEBENGINE_CHROMIUM_FLAGS", "--disable-gpu --no-sandbox");
 #endif
+#ifdef _WIN64
+    qputenv("QT_QPA_PLATFORM", "windows:darkmode=1");
+#endif
     QApplication::setApplicationVersion(STUDIO_VERSION_STRING);
     // to temporarily add additional information enable the following line
 //    qSetMessagePattern("[%{function}:%{line}]  %{message}");
