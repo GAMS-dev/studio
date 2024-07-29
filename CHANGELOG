@@ -2,6 +2,7 @@ Version 1.18.6 *
 ==================
 - added highlighting of project entries while running
 - fixed color theme issue when Windows is in dark mode and Studio is using light mode
+- update editors after changes in settings dialog
 
 Version 1.18.5
 ==================
