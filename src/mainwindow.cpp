@@ -1890,17 +1890,18 @@ void MainWindow::on_actionSave_As_triggered()
                 } else { // reopen in new editor
                     int index = ui->mainTabs->currentIndex();
                     openFileNode(node, true);
-                    on_mainTabs_tabCloseRequested(index);
+                    if (node->assignedProject()->type() == PExProjectNode::tCommon)
+                        on_mainTabs_tabCloseRequested(index);
                 }
                 updateStatusFile();
                 updateAndSaveSettings();
             }
         }
         if (choice == 1) {
-//            mRecent.path = QFileInfo(filePath).path();
-            PExFileNode* newNode =
-                    mProjectRepo.findOrCreateFileNode(filePath, node->assignedProject());
+            PExFileNode* newNode = mProjectRepo.findOrCreateFileNode(filePath, node->assignedProject());
             openFileNode(newNode, true);
+            if (ui->mainTabs->tabText(ui->mainTabs->currentIndex()) != newNode->name())
+                ui->mainTabs->setTabText(ui->mainTabs->currentIndex(), newNode->name());
         }
     }
     mProjectRepo.sortChildNodes(node->parentNode());
