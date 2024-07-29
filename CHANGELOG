@@ -10,6 +10,11 @@ Version 1.19.0 *
 - improved allow to close non-mainfile while running
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 
+Version 1.18.6 *
+==================
+- added highlighting of project entries while running
+- fixed color theme issue when Windows is in dark mode and Studio is using light mode
+
 Version 1.18.5
 ==================
 - added command line argument to log C4U information and errors (`--dump-c4u-data`)
