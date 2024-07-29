@@ -214,6 +214,11 @@ MainWindow::MainWindow(QWidget *parent)
     HeaderViewProxy *hProxy = HeaderViewProxy::instance();
     hProxy->setSepColor(palette().midlight().color());
 
+    mActFocusProject = new QActionGroup(this);
+    connect(mActFocusProject, &QActionGroup::triggered, this, [this](QAction *action){
+        PExProjectNode *project = mProjectRepo.asProject(action->data().toInt()); // project node id
+        focusProject(project);
+    });
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
     mCodecGroupSwitch = new QActionGroup(this);
@@ -287,6 +292,7 @@ MainWindow::MainWindow(QWidget *parent)
             openFileNode(node, focus, codecMib, forcedAsTextEditor);
     });
     connect(&mProjectContextMenu, &ProjectContextMenu::moveProject, this, &MainWindow::moveProjectDialog);
+    connect(&mProjectContextMenu, &ProjectContextMenu::focusProject, this, &MainWindow::focusProject);
     connect(&mProjectContextMenu, &ProjectContextMenu::newProject, this, [this]() {
         on_actionNew_Project_triggered();
     });
@@ -468,6 +474,8 @@ void MainWindow::watchProjectTree()
             }
         }
     });
+    connect(&mProjectRepo, &ProjectRepo::projectListChanged, this, &MainWindow::updateProjectList);
+    updateProjectList();
     mStartedUp = true;
     updateRecentEdit(nullptr, ui->mainTabs->currentWidget());
 }
@@ -476,7 +484,9 @@ MainWindow::~MainWindow()
 {
     if (mSettingsDialog) mSettingsDialog->deleteLater();
     killTimer(mTimerID);
-    delete mWp;
+    WelcomePage *wp = mWp;
+    mWp = nullptr;
+    delete wp;
     delete ui;
     delete mNavigationHistory;
     delete mResultsView;
@@ -513,10 +523,12 @@ void MainWindow::initWelcomePage()
     connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString& path) {
         removeFromHistory(path);
     });
+    ui->mainTabs->insertTab(0, mWp, QString("Welcome"));
     if (Settings::settings()->toBool(skSkipWelcomePage))
-        mWp->hide();
-    else
+        ui->mainTabs->setTabVisible(0, false);
+    else {
         showWelcomePage();
+    }
 }
 
 void MainWindow::initEnvironment()
@@ -1276,7 +1288,7 @@ void MainWindow::projectContextMenuRequested(const QPoint& pos)
 {
     QModelIndex index = ui->projectView->indexAt(pos);
     QVector<PExAbstractNode*> nodes = selectedNodes(index);
-    mProjectContextMenu.setNodes(nodes);
+    mProjectContextMenu.initialize(nodes, mProjectRepo.focussedProject());
     mProjectContextMenu.setParent(this);
     mProjectContextMenu.exec(ui->projectView->viewport()->mapToGlobal(pos));
 }
@@ -2011,6 +2023,7 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
 
 void MainWindow::activeTabChanged(int index)
 {
+    if (!mWp) return;
     if (mCurrentMainTab >= 0) updateTabIcon(nullptr, mCurrentMainTab);
     if  (index >= 0) updateTabIcon(nullptr, index);
     mCurrentMainTab = index;
@@ -2674,18 +2687,23 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
 {
-    QWidget* widget = ui->mainTabs->widget(index);
-    FileMeta* fc = mFileMetaRepo.fileMeta(widget);
-    if (!fc) {
+    if (index == 0) {
         // assuming we are closing a welcome page here
-        ui->mainTabs->removeTab(index);
+        ui->mainTabs->setTabVisible(index, false);
         mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
         return;
     }
+    QWidget* widget = ui->mainTabs->widget(index);
+    FileMeta* fc = mFileMetaRepo.fileMeta(widget);
+    if (!fc) return;
 
     handleFileChanges(fc, false);
     searchDialog()->updateDialogState();
+    int visTabs = 0;
+    for (int i = 0; i < ui->mainTabs->count(); ++i)
+        if (ui->mainTabs->isTabVisible(i)) ++visTabs;
+    if (!visTabs) ui->mainTabs->setCurrentIndex(0);
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -2721,9 +2739,8 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
 
 void MainWindow::showWelcomePage()
 {
-    ui->mainTabs->insertTab(0, mWp, QString("Welcome")); // always first position
+    ui->mainTabs->setTabVisible(0, true);
     ui->mainTabs->setCurrentIndex(0); // go to welcome page
-
 }
 
 bool MainWindow::isActiveProjectRunnable()
@@ -2826,7 +2843,7 @@ void MainWindow::removeFromHistory(const QString &file)
 
 void MainWindow::historyChanged()
 {
-    if (mWp) mWp->historyChanged();
+    mWp->historyChanged();
     QVariantList joHistory;
     for (const QString &file : mHistory.projects()) {
         if (file.isEmpty()) break;
@@ -2959,6 +2976,10 @@ void MainWindow::updateAndSaveSettings()
     QVariantList projects;
     projectRepo()->write(projects);
     settings->setList(skProjects, projects);
+    int focProId = -1;
+    if (PExProjectNode *project = mProjectRepo.focussedProject())
+        focProId = int(project->id());
+    settings->setInt(skCurrentFocusProject, focProId);
 
     QVariantMap tabData;
     writeTabs(tabData);
@@ -3013,6 +3034,7 @@ void MainWindow::restoreFromSettings()
     ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
+    ui->cbFocusProject->setVisible(settings->toBool(skShowFocusProjectSwitch));
     setOutputViewVisibility(settings->toBool(skViewOutput));
     setExtendedEditorVisibility(settings->toBool(skViewOption));
     setHelpViewVisibility(settings->toBool(skViewHelp));
@@ -3177,6 +3199,17 @@ void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *pr
     box->open();
 }
 
+void MainWindow::on_actionShowProjectSelector_triggered(bool checked)
+{
+    ui->cbFocusProject->setVisible(checked);
+}
+
+void MainWindow::on_cbFocusProject_currentIndexChanged(int index)
+{
+    if (index < 0) return;
+    mActFocusProject->actions().at(ui->cbFocusProject->currentIndex())->trigger();
+}
+
 void MainWindow::copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project)
 {
     if (srcFiles.count() != dstFiles.count()) return;
@@ -3217,6 +3250,43 @@ void MainWindow::closePinView()
         mPinControl.closedPinView();
     }
     Settings::settings()->setInt(skPinViewTabIndex, -1);
+}
+
+void MainWindow::updateProjectList()
+{
+    PExProjectNode *focusProject = mProjectRepo.focussedProject();
+    int proId = focusProject ? int(focusProject->id()) : -1;
+
+    QList<PExProjectNode *> projects = mProjectRepo.projects();
+    projects.prepend(nullptr);
+
+    const QList<QAction*> acts = mActFocusProject->actions();
+    // clear the list
+    for (QAction *act : acts) {
+        mActFocusProject->removeAction(act);
+        ui->menuFocus_Project->removeAction(act);
+    }
+    ui->cbFocusProject->clear();
+
+    // rebuild the list
+    for (PExProjectNode *project: projects) {
+        QString name = project ? project->name() + project->nameExt() : "-Show All-";
+        if (project) {
+            name = project->name();
+            if (!project->nameExt().isEmpty())
+                name += "[" + project->nameExt() + "]";
+        }
+
+        QAction *act;
+        act = new QAction(name, mActFocusProject);
+        act->setCheckable(true);
+        int actId = project ? int(project->id()) : -1;
+        act->setData(actId);
+        act->setChecked(proId == actId);
+        ui->cbFocusProject->addItem(name);
+        if (proId == actId) ui->cbFocusProject->setCurrentIndex(ui->cbFocusProject->count()-1);
+    }
+    ui->menuFocus_Project->addActions(mActFocusProject->actions());
 }
 
 QString MainWindow::currentPath()
@@ -4137,6 +4207,15 @@ void MainWindow::initDelayedElements()
     }
     openDelayedFiles();
     watchProjectTree();
+    int fp = Settings::settings()->toInt(skCurrentFocusProject);
+    QAction *action = mActFocusProject->actions().first();
+    for (QAction *act : mActFocusProject->actions()) {
+        int actId = act->data().toInt();
+        if (actId == fp) action = act;
+    }
+    if (action != mActFocusProject->actions().first())
+        action->trigger();
+
     PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->currentWidget());
     if (node) openFileNode(node, true);
     historyChanged();
@@ -4741,6 +4820,9 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         if (project) {
             fileMeta->setProjectId(project->id());
             updateRecentEdit(mRecent.editor(), edit);
+            int idx = tabWidget->indexOf(edit);
+            if (idx >= 0 && !tabWidget->isTabVisible(idx))
+                tabWidget->setTabVisible(idx, true);
         }
     } else {
         if (!project) {
@@ -4845,6 +4927,77 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
     } else
         return;
     openFile(fm, focus, project, codecMib, forcedAsTextEditor, tabStrategy);
+}
+
+void MainWindow::focusProject(PExProjectNode *project)
+{
+    mProjectRepo.focusProject(project);
+
+    // update menu actions
+    int proId = project ? int(project->id()) : -1;
+    int index = 0;
+    for (QAction *act : mActFocusProject->actions()) {
+        if (act->data().toInt() == proId) {
+            act->setChecked(true);
+            break;
+        }
+        ++index;
+    }
+
+    // update combobox
+    ui->cbFocusProject->setCurrentIndex(index);
+
+    if (!project) {
+        for (int i = 1; i < ui->mainTabs->count(); ++i)
+            ui->mainTabs->setTabVisible(i, true);
+        for (int i = 0; i < ui->logTabs->count(); ++i)
+            ui->logTabs->setTabVisible(i, true);
+        return;
+    }
+
+    // update mainTabs visibility
+    int visCount = 0;
+    QList<bool> visibleList;
+    visibleList.reserve(ui->mainTabs->count());
+    visibleList << ui->mainTabs->isTabVisible(0);
+    for (int i = 1; i < ui->mainTabs->count(); ++i) {
+        QWidget *w = ui->mainTabs->widget(i);
+        FileMeta *meta = mFileMetaRepo.fileMeta(w);
+        bool visible = meta;
+        if (visible) {
+            visible = false;
+            for (PExFileNode *node : mProjectRepo.fileNodes(meta->id(), project->id())) {
+                if (project->childNodes().contains(node))
+                    visible = true;
+            }
+        }
+        visibleList << visible;
+        if (visible) ++visCount;
+    }
+    if (!visCount && ui->mainTabs->count()) {
+        if (project->runnableGms()) {
+            openFile(project->runnableGms());
+            int idx = ui->mainTabs->indexOf(project->runnableGms()->editors().first());
+            visibleList.insert(idx, true);
+        } else
+            ui->mainTabs->setCurrentIndex(0);
+    }
+    for (int i = 1; i < visibleList.count(); ++i) {
+        ui->mainTabs->setTabVisible(i, visibleList.at(i));
+    }
+
+    // update logTabs visibility
+    PExLogNode* log = project->logNode();
+    QWidget *edit = mSyslog;
+    if (log && log->file()->editors().count())
+        edit = log->file()->editors().first();
+    ui->logTabs->setTabVisible(ui->logTabs->indexOf(edit), true);
+    ui->logTabs->setCurrentWidget(edit);
+    for (int i = 0; i < ui->logTabs->count(); ++i) {
+        if (ui->logTabs->widget(i) != edit && ui->logTabs->widget(i) != mSyslog)
+            ui->logTabs->setTabVisible(i, false);
+    }
+
 }
 
 void MainWindow::closeProject(PExProjectNode* project)
@@ -4974,7 +5127,7 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
     // add to recently closed tabs
     if (fm->kind() != FileKind::Gsp)
         mClosedTabs << fm->location();
-    int lastIndex = mWp->isVisible() ? 1 : 0;
+    int lastIndex = 0;
 
     NavigationHistoryLocator::navigationHistory()->stopRecord();
     // close all related editors, tabs and clean up
@@ -5056,6 +5209,9 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);
+        });
+        connect(mSettingsDialog, &SettingsDialog::guiChanged, this,[this]() {
+            ui->cbFocusProject->setVisible(Settings::settings()->toBool(skShowFocusProjectSwitch));
         });
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);
@@ -6262,8 +6418,7 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 
 void MainWindow::updateTabIcons()
 {
-    for (int i = 0; i < mainTabs()->count(); ++i) {
-        if (mainTabs()->widget(i) == mWp) continue;
+    for (int i = 1; i < mainTabs()->count(); ++i) {
         updateTabIcon(nullptr, i);
     }
 }
@@ -6430,6 +6585,7 @@ QDate MainWindow::nextUpdateCheck()
         return QDate::currentDate().addDays(7);
     return QDate::currentDate().addMonths(1);
 }
+
 
 }
 }

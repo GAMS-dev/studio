@@ -225,6 +225,7 @@ private slots:
     void openFileNode(gams::studio::PExAbstractNode *node, bool focus = true,
                       int codecMib = -1, bool forcedAsTextEditor = false,
                       gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
+    void focusProject(PExProjectNode *project);
     void codecChanged(QAction *action);
     void codecReload(QAction *action);
     void activeTabChanged(int index);
@@ -286,6 +287,7 @@ private slots:
     void on_actionNew_Project_triggered();
     void on_actionMove_Project_triggered();
     void on_actionCopy_Project_triggered();
+    void on_actionShowProjectSelector_triggered(bool checked);
     void on_actionClose_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
@@ -445,6 +447,9 @@ private slots:
                                   QStringList &missFiles, QStringList &collideFiles);
     void copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project = nullptr);
     void closePinView();
+    void updateProjectList();
+    void on_cbFocusProject_currentIndexChanged(int index);
+
     void on_actionPin_Right_triggered();
     void on_actionPin_Below_triggered();
     void on_actionNavigator_triggered();
@@ -454,6 +459,7 @@ private slots:
     void on_actionStepDebugger_triggered();
 
     void updateSystemLogTab(bool focus);
+
 
 private:
     void zoomWidget(QWidget * widget, int range);
@@ -538,8 +544,9 @@ private:
     QPrintDialog *mPrintDialog = nullptr;
 
     GamsLibProcess *mLibProcess = nullptr;
-    QActionGroup *mCodecGroupSwitch;
-    QActionGroup *mCodecGroupReload;
+    QActionGroup *mCodecGroupSwitch = nullptr;
+    QActionGroup *mCodecGroupReload = nullptr;
+    QActionGroup *mActFocusProject = nullptr;
     RecentData mRecent;
     HistoryData mHistory;
     QScopedPointer<AutosaveHandler> mAutosaveHandler;

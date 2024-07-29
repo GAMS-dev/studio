@@ -128,6 +128,11 @@
     <property name="toolTipsVisible">
      <bool>true</bool>
     </property>
+    <widget class="QMenu" name="menuFocus_Project">
+     <property name="title">
+      <string>Focus Project</string>
+     </property>
+    </widget>
     <addaction name="actionNew"/>
     <addaction name="actionOpen"/>
     <addaction name="actionOpenAlternative"/>
@@ -143,6 +148,8 @@
     <addaction name="actionOpen_Project"/>
     <addaction name="actionMove_Project"/>
     <addaction name="actionCopy_Project"/>
+    <addaction name="separator"/>
+    <addaction name="menuFocus_Project"/>
     <addaction name="separator"/>
     <addaction name="actionClose"/>
     <addaction name="actionClose_All"/>
@@ -374,6 +381,9 @@
      <bool>true</bool>
     </property>
     <layout class="QVBoxLayout" name="verticalLayout">
+     <property name="spacing">
+      <number>0</number>
+     </property>
      <property name="leftMargin">
       <number>0</number>
      </property>
@@ -386,6 +396,15 @@
      <property name="bottomMargin">
       <number>0</number>
      </property>
+     <item>
+      <widget class="QComboBox" name="cbFocusProject">
+       <item>
+        <property name="text">
+         <string>-Show All-</string>
+        </property>
+       </item>
+      </widget>
+     </item>
      <item>
       <widget class="gams::studio::ProjectTreeView" name="projectView">
        <property name="sizePolicy">
@@ -1631,6 +1650,11 @@
    </property>
    <property name="shortcut">
     <string>Ctrl+K</string>
+   </property>
+  </action>
+  <action name="actionNone_Show_All">
+   <property name="text">
+    <string>-Show All-</string>
    </property>
   </action>
  </widget>

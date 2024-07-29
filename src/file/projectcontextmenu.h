@@ -38,7 +38,7 @@ class ProjectContextMenu : public QMenu
 
 public:
     ProjectContextMenu();
-    void setNodes(const QVector<PExAbstractNode*> &selected);
+    void initialize(const QVector<PExAbstractNode*> &selected, PExProjectNode *focussedProject);
     void setParent(QWidget *parent);
 
 signals:
@@ -55,6 +55,7 @@ signals:
                   gams::studio::NewTabStrategy tabStrategy = tabAfterCurrent);
     void reOpenFile(gams::studio::PExFileNode* node, bool focus = true, int codecMib = -1, bool forcedAstextEditor = false);
     void moveProject(gams::studio::PExProjectNode* project, bool fullCopy);
+    void focusProject(gams::studio::PExProjectNode* project);
     void newProject();
     void openProject();
     void selectAll();
@@ -77,6 +78,7 @@ private slots:
     void onSetMainFile();
     void onMoveProject();
     void onCopyProject();
+    void onFocusProject();
     void onSelectAll();
     void onExpandAll();
     void onCollapseAll();

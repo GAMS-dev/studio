@@ -348,8 +348,9 @@ void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
             endMoveRows();
         }
     }
-    if (group == mRoot)
+    if (group == mRoot) {
         updateProjectExtNums();
+    }
 }
 
 void ProjectTreeModel::updateProjectExtNums()
@@ -369,6 +370,7 @@ void ProjectTreeModel::updateProjectExtNums()
         }
         project->setNameExt(ext);
     }
+    emit projectListChanged();
 }
 
 bool ProjectTreeModel::isCurrent(const QModelIndex& ind) const

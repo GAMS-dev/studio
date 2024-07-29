@@ -131,7 +131,8 @@ public:
             , const QString &explicitName = QString());
     PExFileNode *findOrCreateFileNode(FileMeta* fileMeta, PExProjectNode *project = nullptr, const QString &explicitName = QString());
     QVector<PExFileNode*> fileNodes(const FileId &fileId, const NodeId &groupId = NodeId()) const;
-    const QVector<PExProjectNode*> projects(const FileId &fileId = FileId()) const;
+    const QList<PExProjectNode *> projects(const FileId &fileId) const;
+    const QList<PExProjectNode *> projects() const;
     const QVector<AbstractProcess*> listProcesses();
     void editorActivated(QWidget *edit, bool select);
 
@@ -141,6 +142,8 @@ public:
     void closeNode(PExFileNode* node);
     void purgeGroup(PExGroupNode *group);
     void sortChildNodes(PExGroupNode *group);
+    void focusProject(PExProjectNode *project);
+    PExProjectNode *focussedProject() const;
 
     void setDebugMode(bool debug);
     bool debugMode() const;
@@ -160,6 +163,7 @@ signals:
     void logTabRenamed(QWidget *wid, const QString &newName);
     void refreshProjectTabName(QWidget *wid);
     void openRecentFile();
+    void projectListChanged();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
     void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);
@@ -206,6 +210,7 @@ private:
     FileMetaRepo* mFileRepo = nullptr;
     TextMarkRepo* mTextMarkRepo = nullptr;
     QVector<PExProjectNode*> mRunnigGroups;
+    PExProjectNode *mFocussedProject = nullptr;
     QTimer mRunAnimateTimer;
     QHash<QPair<QIcon::Mode, int>, QVector<QIcon>> mRunIcons;
     int mRunIconCount = 1;

@@ -64,6 +64,7 @@ signals:
     void editorLineWrappingChanged();
     void themeChanged(bool refreshSyntax);
     void userGamsTypeChanged();
+    void guiChanged();
     void editorTabSizeChanged(int size);
     void reactivateEngineDialog();
     void persistToken();

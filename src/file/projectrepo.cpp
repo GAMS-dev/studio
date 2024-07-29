@@ -67,6 +67,7 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
     mTextMarkRepo = textMarkRepo;
     connect(mTreeModel, &ProjectTreeModel::childrenChanged, this, &ProjectRepo::childrenChanged);
     connect(mTreeModel, &ProjectTreeModel::parentAssigned, this, &ProjectRepo::parentAssigned);
+    connect(mTreeModel, &ProjectTreeModel::projectListChanged, this, &ProjectRepo::projectListChanged);
 }
 
 PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const
@@ -764,6 +765,23 @@ void ProjectRepo::sortChildNodes(PExGroupNode *group)
     mTreeModel->sortChildNodes(group);
 }
 
+void ProjectRepo::focusProject(PExProjectNode *project)
+{
+    if (project) {
+        QModelIndex index = mTreeModel->index(project);
+        mTreeView->setRootIndex(index);
+        mFocussedProject = project;
+    } else {
+        mTreeView->setRootIndex(mTreeModel->rootModelIndex());
+        mFocussedProject = nullptr;
+    }
+}
+
+PExProjectNode *ProjectRepo::focussedProject() const
+{
+    return mFocussedProject;
+}
+
 PExFileNode *ProjectRepo::findOrCreateFileNode(QString location, PExProjectNode *project, FileType *knownType,
                                                const QString &explicitName)
 {
@@ -863,9 +881,9 @@ QVector<PExFileNode*> ProjectRepo::fileNodes(const FileId &fileId, const NodeId 
     return res;
 }
 
-const QVector<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) const
+const QList<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) const
 {
-    QVector<PExProjectNode *> res;
+    QList<PExProjectNode *> res;
     QHashIterator<NodeId, PExAbstractNode*> i(mNodes);
     while (i.hasNext()) {
         i.next();
@@ -883,6 +901,16 @@ const QVector<PExProjectNode *> ProjectRepo::projects(const FileId &fileId) cons
                 res << project;
             }
         }
+    }
+    return res;
+}
+
+const QList<PExProjectNode *> ProjectRepo::projects() const
+{
+    QList<PExProjectNode *> res;
+    for (PExAbstractNode *node : mTreeModel->rootNode()->childNodes()) {
+        if (PExProjectNode *project = node->toProject())
+            res << project;
     }
     return res;
 }

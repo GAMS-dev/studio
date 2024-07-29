@@ -114,6 +114,7 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
     connect(ui->cb_skipwelcome, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_restoretabs, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_autosave, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cb_ProjectFocusSelector, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_openlst, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_jumptoerror, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->cb_foregroundOnDemand, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -201,6 +202,7 @@ void SettingsDialog::loadSettings()
     ui->cb_skipwelcome->setChecked(mSettings->toBool(skSkipWelcomePage));
     ui->cb_restoretabs->setChecked(mSettings->toBool(skRestoreTabs));
     ui->cb_autosave->setChecked(mSettings->toBool(skAutosaveOnRun));
+    ui->cb_ProjectFocusSelector->setChecked(mSettings->toBool(skShowFocusProjectSwitch));
     ui->cb_openlst->setChecked(mSettings->toBool(skOpenLst));
     ui->cb_jumptoerror->setChecked(mSettings->toBool(skJumpToError));
     ui->cb_foregroundOnDemand->setChecked(mSettings->toBool(skForegroundOnDemand));
@@ -361,6 +363,7 @@ void SettingsDialog::saveSettings()
     mSettings->setBool(skSkipWelcomePage, ui->cb_skipwelcome->isChecked());
     mSettings->setBool(skRestoreTabs, ui->cb_restoretabs->isChecked());
     mSettings->setBool(skAutosaveOnRun, ui->cb_autosave->isChecked());
+    mSettings->setBool(skShowFocusProjectSwitch, ui->cb_ProjectFocusSelector->isChecked());
     mSettings->setBool(skOpenLst, ui->cb_openlst->isChecked());
     mSettings->setBool(skJumpToError, ui->cb_jumptoerror->isChecked());
     mSettings->setBool(skForegroundOnDemand, ui->cb_foregroundOnDemand->isChecked());
@@ -495,6 +498,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
     if (button != ui->buttonBox->button(QDialogButtonBox::Cancel)) {
         saveSettings();
         emit userGamsTypeChanged();
+        emit guiChanged();
     } else { // reject
         loadSettings(); // reset instantly applied changes (such as colors, font and -size)
         themeModified();

@@ -63,7 +63,7 @@ public:
 
 signals:
     void childrenChanged();
-    void updateProjectExts();
+    void projectListChanged();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
 
 protected:

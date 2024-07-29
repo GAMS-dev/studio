@@ -301,6 +301,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skDefaultCodecMib, scSys, {"defaultCodecMib"}, 106);
     safelyAdd(res, skEncodingMib, scSys, {"encodingMIBs"}, QString("106,0,4,17,2025"));
     safelyAdd(res, skProjects, scSys, {"projects"}, QJsonArray());
+    safelyAdd(res, skCurrentFocusProject, scSys, {"currentFocusProject"}, -1);
     safelyAdd(res, skTabs, scSys, {"tabs"}, QJsonObject());
     safelyAdd(res, skPinViewTabIndex, scSys, {"pinView", "tabIndex"}, -1);
     safelyAdd(res, skPinViewSize, scSys, {"pinView", "size"}, QString("10,10"));
@@ -324,6 +325,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // general settings page
     safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, "");
     safelyAdd(res, skSkipWelcomePage, scUser, {"skipWelcome"}, false);
+    safelyAdd(res, skShowFocusProjectSwitch, scUser, {"showFocusProjectSwitch"}, true);
     safelyAdd(res, skRestoreTabs, scUser, {"restoreTabs"}, true);
     safelyAdd(res, skAutosaveOnRun, scUser, {"autosaveOnRun"}, true);
     safelyAdd(res, skOpenLst, scUser, {"openLst"}, false);

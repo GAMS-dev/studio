@@ -68,6 +68,8 @@ enum ContextAction {
     actProjectOpen,
     actProjectMove,
     actProjectCopy,
+    actFocusProject,
+    actUnfocusProject,
 };
 
 ProjectContextMenu::ProjectContextMenu()
@@ -145,7 +147,11 @@ ProjectContextMenu::ProjectContextMenu()
     mActions.insert(actProjectOpen, addAction("&Open Project...",  this, &ProjectContextMenu::openProject));
     mActions.insert(actProjectMove, addAction("&Move Project File...",  this, &ProjectContextMenu::onMoveProject));
     mActions.insert(actProjectCopy, addAction("&Copy Project...",  this, &ProjectContextMenu::onCopyProject));
-
+    mActions.insert(actSep6, addSeparator());
+    mActions.insert(actFocusProject, addAction("&Focus Project",  this, &ProjectContextMenu::onFocusProject));
+    mActions.insert(actUnfocusProject, addAction("&Unfocus Project",  this, [this]() {
+                        emit focusProject(nullptr);
+                    }));
     mActions.insert(actSep7, addSeparator());
     mActions.insert(actCloseProject, addAction(mTxtCloseProject, this, &ProjectContextMenu::onCloseProject));
     mActions.insert(actCloseDelProject, addAction(mTxtCloseDelProject, this, &ProjectContextMenu::onCloseDelProject));
@@ -154,11 +160,13 @@ ProjectContextMenu::ProjectContextMenu()
 
 }
 
-void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
+void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, PExProjectNode *focussedProject)
 {
     // synchronize current and selected
     mNodes.clear();
     mNodes = selected;
+    if (mNodes.isEmpty() && focussedProject)
+        mNodes << focussedProject;
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
@@ -175,7 +183,6 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
             canMoveProject = false;
     }
     if (isProject && single) {
-        PExProjectNode *project = mNodes.first()->toProject();
         QString efi = getEfiName(project);
         isProjectEfi = !efi.isEmpty();
         if (isProjectEfi && QFileInfo::exists(efi))
@@ -288,6 +295,9 @@ void ProjectContextMenu::setNodes(const QVector<PExAbstractNode *> &selected)
     mActions[actProjectCopy]->setVisible(!isFreeSpace);
     mActions[actProjectCopy]->setEnabled(canMoveProject);
     mActions[actProjectCopy]->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
+
+    mActions[actFocusProject]->setVisible(!isGamsSys && !focussedProject && !isFreeSpace);
+    mActions[actUnfocusProject]->setVisible(focussedProject);
 
     mActions[actSep1]->setVisible(isProject);
     mActions[actSetMain]->setVisible(isGmsFile && !isRunnable && canMoveProject && single);
@@ -450,6 +460,12 @@ void ProjectContextMenu::onCopyProject()
 {
     PExProjectNode *project = mNodes.first()->assignedProject();
     emit moveProject(project, true);
+}
+
+void ProjectContextMenu::onFocusProject()
+{
+    PExProjectNode *project = mNodes.isEmpty() ? nullptr : mNodes.first()->assignedProject();
+    emit focusProject(project);
 }
 
 void ProjectContextMenu::onAddNewSolverOptionFile(const QString &solverName)
