@@ -109,6 +109,14 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
                 return QColor(243,150,25); // GAMS orange
             else
                 return QColor(102,187,255,68); // "#4466BBFF"
+        } else {
+            PExProjectNode *project = mProjectRepo->node(ind)->toProject();
+            bool isRunningProject = (project && project->process() && project->process()->state() != QProcess::NotRunning);
+            if (isRunningProject) {
+                QColor back = Theme::color(Theme::Normal_Green);
+                back.setAlphaF(.3F);
+                return back;
+            }
         }
     }   break;
 
@@ -119,7 +127,9 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return mProjectRepo->node(ind)->name(NameModifier::raw);
 
     case Qt::FontRole: {
-        if (isCurrent(ind) || isCurrentProject(ind)) {
+        PExProjectNode *project = mProjectRepo->node(ind)->toProject();
+        bool isRunningProject = (project && project->process() && project->process()->state() != QProcess::NotRunning);
+        if (isCurrent(ind) || isCurrentProject(ind) || isRunningProject) {
             QFont f;
             f.setBold(true);
             return f;
