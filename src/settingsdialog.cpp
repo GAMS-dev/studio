@@ -491,6 +491,7 @@ void SettingsDialog::on_buttonBox_clicked(QAbstractButton *button)
         loadSettings(); // reset instantly applied changes (such as colors, font and -size)
         themeModified();
     }
+    emit updateExtraSelections();
     emit editorLineWrappingChanged();
 }
 

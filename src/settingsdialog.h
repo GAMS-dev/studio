@@ -68,6 +68,7 @@ signals:
     void reactivateEngineDialog();
     void persistToken();
     void rehighlight();
+    void updateExtraSelections();
 
 public slots:
     void delayBaseThemeChange(bool valid);

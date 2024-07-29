@@ -5036,6 +5036,14 @@ void MainWindow::on_actionSettings_triggered()
         mSettingsDialog->setModal(true);
         connect(mSettingsDialog, &SettingsDialog::themeChanged, this, &MainWindow::invalidateTheme);
         connect(mSettingsDialog, &SettingsDialog::rehighlight, this, &MainWindow::rehighlightOpenFiles);
+        connect(mSettingsDialog, &SettingsDialog::updateExtraSelections, this, [this]() {
+            if (FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->currentWidget()))
+                meta->updateExtraSelections();
+            if (mPinView->isVisible()) {
+                if (FileMeta *meta = mFileMetaRepo.fileMeta(mPinView->widget()))
+                    meta->updateExtraSelections();
+            }
+        });
         connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);

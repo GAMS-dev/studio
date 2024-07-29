@@ -77,6 +77,14 @@ void FileMeta::setLocation(QString location)
     }
 }
 
+void FileMeta::updateExtraSelections()
+{
+    for (QWidget *wid : mEditors) {
+        if (AbstractEdit* aEdit = ViewHelper::toAbstractEdit(wid))
+            aEdit->updateExtraSelections();
+    }
+}
+
 bool FileMeta::hasExistingFile(const QList<QUrl> &urls)
 {
     for (const QUrl &url : urls) {

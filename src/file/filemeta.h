@@ -100,6 +100,7 @@ public:
     void marksChanged(const QSet<int> &lines = QSet<int>());
     void reloadDelayed();
     void setLocation(QString location);
+    void updateExtraSelections();
 
     static bool hasExistingFile(const QList<QUrl> &urls);
     static bool hasExistingFolder(const QList<QUrl> &urls);
