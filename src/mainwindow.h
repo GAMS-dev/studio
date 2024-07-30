@@ -461,6 +461,8 @@ private slots:
     void updateSystemLogTab(bool focus);
 
 
+    void on_tbProjectSettings_clicked();
+
 private:
     void zoomWidget(QWidget * widget, int range);
     void initWelcomePage();

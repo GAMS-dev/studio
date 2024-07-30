@@ -79,7 +79,6 @@ enum SettingsKey {
     // general settings page
     skDefaultWorkspace,
     skSkipWelcomePage,
-    skShowFocusProjectSwitch,
     skRestoreTabs,
     skAutosaveOnRun,
     skOpenLst,

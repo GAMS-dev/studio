@@ -360,8 +360,8 @@
    </property>
    <property name="minimumSize">
     <size>
-     <width>100</width>
-     <height>132</height>
+     <width>127</width>
+     <height>238</height>
     </size>
    </property>
    <property name="accessibleName">
@@ -397,18 +397,56 @@
       <number>0</number>
      </property>
      <item>
-      <widget class="QComboBox" name="cbFocusProject">
-       <item>
-        <property name="text">
-         <string>-Show All-</string>
+      <widget class="QWidget" name="widget" native="true">
+       <property name="sizePolicy">
+        <sizepolicy hsizetype="Preferred" vsizetype="Minimum">
+         <horstretch>0</horstretch>
+         <verstretch>0</verstretch>
+        </sizepolicy>
+       </property>
+       <layout class="QHBoxLayout" name="horizontalLayout">
+        <property name="spacing">
+         <number>0</number>
         </property>
-       </item>
+        <property name="leftMargin">
+         <number>0</number>
+        </property>
+        <property name="topMargin">
+         <number>0</number>
+        </property>
+        <property name="rightMargin">
+         <number>0</number>
+        </property>
+        <property name="bottomMargin">
+         <number>0</number>
+        </property>
+        <item>
+         <widget class="QComboBox" name="cbFocusProject">
+          <item>
+           <property name="text">
+            <string>-Show All-</string>
+           </property>
+          </item>
+         </widget>
+        </item>
+        <item>
+         <widget class="QToolButton" name="tbProjectSettings">
+          <property name="text">
+           <string>...</string>
+          </property>
+          <property name="icon">
+           <iconset resource="../icons/icons.qrc">
+            <normaloff>:/solid/cog</normaloff>:/solid/cog</iconset>
+          </property>
+         </widget>
+        </item>
+       </layout>
       </widget>
      </item>
      <item>
       <widget class="gams::studio::ProjectTreeView" name="projectView">
        <property name="sizePolicy">
-        <sizepolicy hsizetype="Preferred" vsizetype="Preferred">
+        <sizepolicy hsizetype="Preferred" vsizetype="MinimumExpanding">
          <horstretch>1</horstretch>
          <verstretch>0</verstretch>
         </sizepolicy>

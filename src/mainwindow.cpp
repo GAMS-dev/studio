@@ -205,6 +205,20 @@ MainWindow::MainWindow(QWidget *parent)
         PExProjectNode *project = mProjectRepo.asProject(action->data().toInt()); // project node id
         focusProject(project);
     });
+    ui->cbFocusProject->setContextMenuPolicy(Qt::CustomContextMenu);
+    connect(ui->cbFocusProject, &QComboBox::customContextMenuRequested, this, [this](const QPoint &pos) {
+        bool ok;
+        PExProjectNode *project = nullptr;
+        if (ui->cbFocusProject->currentIndex() < 0) return;
+        int i = mActFocusProject->actions().at(ui->cbFocusProject->currentIndex())->data().toInt(&ok);
+        if (ok && i >= 0)
+            project = mProjectRepo.findProject(NodeId(i));
+        mProjectContextMenu.initialize(QVector<PExAbstractNode*>(), project);
+        mProjectContextMenu.setParent(this);
+        mProjectContextMenu.exec(ui->cbFocusProject->mapToGlobal(pos));
+    });
+    ui->cbFocusProject->setItemDelegate(new TreeItemDelegate(this));
+
     mCodecGroupReload = new QActionGroup(this);
     connect(mCodecGroupReload, &QActionGroup::triggered, this, &MainWindow::codecReload);
     mCodecGroupSwitch = new QActionGroup(this);
@@ -3038,7 +3052,6 @@ void MainWindow::restoreFromSettings()
     ui->actionOpenAlternative->setToolTip(COpenAltText.at(Settings::settings()->toBool(skOpenInCurrent) ? 2 : 3));
     // tool-/menubar
     setProjectViewVisibility(settings->toBool(skViewProject));
-    ui->cbFocusProject->setVisible(settings->toBool(skShowFocusProjectSwitch));
     setOutputViewVisibility(settings->toBool(skViewOutput));
     setExtendedEditorVisibility(settings->toBool(skViewOption));
     setHelpViewVisibility(settings->toBool(skViewHelp));
@@ -3268,7 +3281,9 @@ void MainWindow::updateProjectList()
     ui->cbFocusProject->clear();
 
     // rebuild the list
-    for (PExProjectNode *project: projects) {
+    bool found = false;
+    for (int i = 0; i < projects.size(); ++i) {
+        PExProjectNode *project = projects.at(i);
         QString name = project ? project->name() + project->nameExt() : "-Show All-";
         if (project) {
             name = project->name();
@@ -3283,8 +3298,15 @@ void MainWindow::updateProjectList()
         act->setData(actId);
         act->setChecked(proId == actId);
         ui->cbFocusProject->addItem(name);
-        if (proId == actId) ui->cbFocusProject->setCurrentIndex(ui->cbFocusProject->count()-1);
+        ui->cbFocusProject->setItemData(i, actId);
+        if (proId == actId) {
+            ui->cbFocusProject->setCurrentIndex(ui->cbFocusProject->count()-1);
+            found = true;
+        }
     }
+    if (!found)
+        ui->cbFocusProject->setCurrentIndex(0);
+    ui->tbProjectSettings->setEnabled(ui->cbFocusProject->currentIndex() > 0);
     ui->menuFocus_Project->addActions(mActFocusProject->actions());
 }
 
@@ -4798,6 +4820,16 @@ void MainWindow::ensureInScreen()
 
 }
 
+void MainWindow::on_tbProjectSettings_clicked()
+{
+    int i = ui->cbFocusProject->currentData().toInt();
+    if (i < 0) return;
+    PExProjectNode *project = mProjectRepo.findProject(NodeId(i));
+    if (!project) return;
+    FileMeta *meta = mFileMetaRepo.findOrCreateFileMeta(project->fileName(), &FileType::from(FileKind::Gsp));
+    openFile(meta, true, project);
+}
+
 void MainWindow::raiseEdit(QWidget *widget)
 {
     while (widget && widget != this) {
@@ -4947,6 +4979,7 @@ void MainWindow::focusProject(PExProjectNode *project)
 
     // update combobox
     ui->cbFocusProject->setCurrentIndex(index);
+    ui->tbProjectSettings->setEnabled(index > 0);
 
     if (!project) {
         for (int i = 1; i < ui->mainTabs->count(); ++i)
@@ -5218,9 +5251,6 @@ void MainWindow::on_actionSettings_triggered()
         connect(mSettingsDialog, &SettingsDialog::userGamsTypeChanged, this,[this]() {
             QStringList suffixes = FileType::validateSuffixList(Settings::settings()->toString(skUserGamsTypes));
             mFileMetaRepo.setUserGamsTypes(suffixes);
-        });
-        connect(mSettingsDialog, &SettingsDialog::guiChanged, this,[this]() {
-            ui->cbFocusProject->setVisible(Settings::settings()->toBool(skShowFocusProjectSwitch));
         });
         connect(mSettingsDialog, &SettingsDialog::editorFontChanged, this, &MainWindow::updateFonts);
         connect(mSettingsDialog, &SettingsDialog::editorLineWrappingChanged, this, &MainWindow::updateEditorLineWrapping);

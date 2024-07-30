@@ -325,7 +325,6 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     // general settings page
     safelyAdd(res, skDefaultWorkspace, scUser, {"defaultWorkspace"}, "");
     safelyAdd(res, skSkipWelcomePage, scUser, {"skipWelcome"}, false);
-    safelyAdd(res, skShowFocusProjectSwitch, scUser, {"showFocusProjectSwitch"}, true);
     safelyAdd(res, skRestoreTabs, scUser, {"restoreTabs"}, true);
     safelyAdd(res, skAutosaveOnRun, scUser, {"autosaveOnRun"}, true);
     safelyAdd(res, skOpenLst, scUser, {"openLst"}, false);
