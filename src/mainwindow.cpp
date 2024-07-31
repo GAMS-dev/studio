@@ -5023,9 +5023,13 @@ void MainWindow::focusProject(PExProjectNode *project)
         bool visible = meta;
         if (visible) {
             visible = false;
-            for (PExFileNode *node : mProjectRepo.fileNodes(meta->id(), project->id())) {
-                if (project->childNodes().contains(node))
-                    visible = true;
+            if (project->projectEditFileMeta() == meta)
+                visible = true;
+            else {
+                for (PExFileNode *node : mProjectRepo.fileNodes(meta->id(), project->id())) {
+                    if (project->childNodes().contains(node))
+                        visible = true;
+                }
             }
         }
         visibleList << visible;
