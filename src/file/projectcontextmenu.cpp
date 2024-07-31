@@ -438,8 +438,10 @@ void ProjectContextMenu::onCloseDelProject()
         if (project) {
             QString gsp = project->fileName();
             emit closeProject(project);
-            bool ok = QFile::remove(gsp);
-            if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
+            if (project->type() == PExProjectNode::tCommon && QFile::exists(gsp)) {
+                bool ok = QFile::remove(gsp);
+                if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
+            }
         }
     }
 }
