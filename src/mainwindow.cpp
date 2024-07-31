@@ -238,8 +238,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(&mProjectRepo, &ProjectRepo::addWarning, this, &MainWindow::appendSystemLogWarning);
     connect(&mProjectRepo, &ProjectRepo::openFile, this, &MainWindow::openFile);
     connect(&mProjectRepo, &ProjectRepo::openFolder, this, &MainWindow::openFolder);
-    connect(&mProjectRepo, &ProjectRepo::openProject, this,
-            [this](const QString &gspFile) {
+    connect(&mProjectRepo, &ProjectRepo::openProject, this, [this](const QString &gspFile) {
         openFilesProcess(QStringList() << gspFile, ogProjects);
     });
     connect(&mProjectRepo, &ProjectRepo::openInPinView, this, &MainWindow::openInPinView);
@@ -517,17 +516,22 @@ MainWindow::~MainWindow()
 void MainWindow::initWelcomePage()
 {
     mWp = new WelcomePage(this);
-    connect(mWp, &WelcomePage::openProject, this, [this](const QString& projectPath) {
+    //JM: Changed the parameter from (const QString &var) to (QString var) to avoid crash.
+    //    When the labels have been recalculated, the string that belongs to the label becomes invalid.
+    connect(mWp, &WelcomePage::openProject, this, [this](QString projectPath) {
         PExProjectNode *project = mProjectRepo.findProject(projectPath);
         if (!project && QFile::exists(projectPath)) {
             mProjectRepo.read(QVariantMap(), projectPath);
             project = mProjectRepo.findProject(projectPath);
         }
-        if (project && project->runnableGms())
+        if (project && project->runnableGms()) {
             openFile(project->runnableGms(), true, project);
+        }
+        if (project && mProjectRepo.focussedProject())
+            focusProject(project);
     });
 
-    connect(mWp, &WelcomePage::openFilePath, this, [this](const QString& filePath) {
+    connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
@@ -535,8 +539,10 @@ void MainWindow::initWelcomePage()
                 project = nullptr;
         }
         openFilePath(filePath, project, ogNone, true);
+        if (project && mProjectRepo.focussedProject())
+            focusProject(project);
     });
-    connect(mWp, &WelcomePage::removeFromHistory, this, [this](const QString& path) {
+    connect(mWp, &WelcomePage::removeFromHistory, this, [this](QString path) {
         removeFromHistory(path);
     });
     ui->mainTabs->insertTab(0, mWp, QString("Welcome"));
@@ -2480,6 +2486,9 @@ void MainWindow::postGamsLibRun()
             node->file()->load(node->file()->codecMib());
     }
     openFileNode(node);
+    if (mProjectRepo.focussedProject()) {
+        focusProject(node->assignedProject());
+    }
     if (mLibProcess) {
         mLibProcess->deleteLater();
         mLibProcess = nullptr;
@@ -3836,15 +3845,18 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
 {
     PExFileNode *firstNode = nullptr;
     PExFileNode *fileNode = nullptr;
+    QList<PExProjectNode*> openedProjects;
     for (const QString &fileName : files) {
         if (fileName.endsWith(".gsp", Qt::CaseInsensitive)) {
-            if (mProjectRepo.findProject(fileName)) {
+            if (PExProjectNode *project = mProjectRepo.findProject(fileName)) {
+                openedProjects << project;
                 QString name = QFileInfo(fileName).completeBaseName();
                 QMessageBox::information(this, "Project already open",
                                          QString("The project '%1' is already opened in the Project Explorer.").arg(name));
             } else {
                 openProject(fileName);
                 if (PExProjectNode *project = mProjectRepo.findProject(fileName)) {
+                    openedProjects << project;
                     if (FileMeta *meta = project->runnableGms()) {
                         if (!firstNode)
                             firstNode = mProjectRepo.findFile(meta, project);
@@ -3857,7 +3869,17 @@ void MainWindow::openFilesProcess(const QStringList &files, OpenGroupOption opt)
             // detect if the file is already present at the scope
             fileNode = openFilePath(fileName, nullptr, opt, true, false);
             if (!firstNode) firstNode = fileNode;
+            if (PExProjectNode *project = fileNode->assignedProject())
+                openedProjects << project;
         }
+    }
+
+    // if in project focus mode ensure new opened projects are visible
+    if (mProjectRepo.focussedProject() && openedProjects.size()) {
+        PExProjectNode *project = (openedProjects.size() == 1) ? openedProjects.first() : nullptr;
+        focusProject(project);
+        if (project && firstNode && firstNode->assignedProject() != project)
+            firstNode = nullptr;
     }
 
     // at last: activate the first node
@@ -4964,6 +4986,7 @@ void MainWindow::openFileNode(PExAbstractNode *node, bool focus, int codecMib, b
 
 void MainWindow::focusProject(PExProjectNode *project)
 {
+    if (mProjectRepo.focussedProject() == project) return;
     mProjectRepo.focusProject(project);
 
     // update menu actions
