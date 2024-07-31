@@ -1784,6 +1784,10 @@ void MainWindow::on_actionSave_triggered()
 
 void MainWindow::on_actionSave_As_triggered()
 {
+    if (mRecent.editor() && mRecent.project() && mRecent.project()->projectEditFileMeta()->hasEditor(mRecent.editor())) {
+        mProjectContextMenu.moveProject(mRecent.project(), false);
+        return;
+    }
     PExFileNode *node = mProjectRepo.findFileNode(mRecent.editor());
     if (!node) return;
     FileMeta *fileMeta = node->file();
