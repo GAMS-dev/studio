@@ -34,7 +34,7 @@
     </sizepolicy>
    </property>
    <property name="contextMenuPolicy">
-    <enum>Qt::NoContextMenu</enum>
+    <enum>Qt::ContextMenuPolicy::NoContextMenu</enum>
    </property>
    <layout class="QVBoxLayout" name="verticalLayout_3">
     <property name="leftMargin">
@@ -58,7 +58,7 @@
        </sizepolicy>
       </property>
       <property name="orientation">
-       <enum>Qt::Horizontal</enum>
+       <enum>Qt::Orientation::Horizontal</enum>
       </property>
       <widget class="gams::studio::TabWidget" name="mainTabs">
        <property name="sizePolicy">
@@ -368,7 +368,7 @@
     <string>Project Explorer</string>
    </property>
    <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::DockWidgetArea::BottomDockWidgetArea|Qt::DockWidgetArea::LeftDockWidgetArea|Qt::DockWidgetArea::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Project Explorer</string>
@@ -423,10 +423,10 @@
         <bool>true</bool>
        </property>
        <property name="editTriggers">
-        <set>QAbstractItemView::EditKeyPressed</set>
+        <set>QAbstractItemView::EditTrigger::EditKeyPressed</set>
        </property>
        <property name="selectionMode">
-        <enum>QAbstractItemView::ExtendedSelection</enum>
+        <enum>QAbstractItemView::SelectionMode::ExtendedSelection</enum>
        </property>
        <property name="uniformRowHeights">
         <bool>true</bool>
@@ -462,7 +462,7 @@
     <bool>false</bool>
    </property>
    <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::DockWidgetArea::BottomDockWidgetArea|Qt::DockWidgetArea::LeftDockWidgetArea|Qt::DockWidgetArea::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Process Log</string>
@@ -499,10 +499,10 @@
         </size>
        </property>
        <property name="tabPosition">
-        <enum>QTabWidget::South</enum>
+        <enum>QTabWidget::TabPosition::South</enum>
        </property>
        <property name="elideMode">
-        <enum>Qt::ElideRight</enum>
+        <enum>Qt::TextElideMode::ElideRight</enum>
        </property>
        <property name="documentMode">
         <bool>true</bool>
@@ -520,7 +520,7 @@
   </widget>
   <widget class="QDockWidget" name="dockHelpView">
    <property name="allowedAreas">
-    <set>Qt::BottomDockWidgetArea|Qt::LeftDockWidgetArea|Qt::RightDockWidgetArea</set>
+    <set>Qt::DockWidgetArea::BottomDockWidgetArea|Qt::DockWidgetArea::LeftDockWidgetArea|Qt::DockWidgetArea::RightDockWidgetArea</set>
    </property>
    <property name="windowTitle">
     <string>Help</string>
@@ -547,7 +547,7 @@
     <bool>false</bool>
    </property>
    <property name="allowedAreas">
-    <set>Qt::BottomToolBarArea|Qt::TopToolBarArea</set>
+    <set>Qt::ToolBarArea::BottomToolBarArea|Qt::ToolBarArea::TopToolBarArea</set>
    </property>
    <property name="iconSize">
     <size>
@@ -612,7 +612,7 @@
     <string>About Studio</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutRole</enum>
+    <enum>QAction::MenuRole::AboutRole</enum>
    </property>
   </action>
   <action name="actionAbout_Qt">
@@ -620,7 +620,7 @@
     <string>About Qt</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::AboutQtRole</enum>
+    <enum>QAction::MenuRole::AboutQtRole</enum>
    </property>
   </action>
   <action name="actionProcess_Log">
@@ -808,7 +808,7 @@
     <string>Run with GDX, RF Creation</string>
    </property>
    <property name="toolTip">
-    <string>Run and Create a GDX File with gms file root name</string>
+    <string>Run and create both, a GDX and reference file with default names.</string>
    </property>
    <property name="shortcut">
     <string>F10</string>
@@ -853,7 +853,7 @@
     <string>Compile with GDX, RF Creation</string>
    </property>
    <property name="toolTip">
-    <string>Compile and Create a GDX File with gms file root name</string>
+    <string>Compile and create both, a GDX and reference file with default names.</string>
    </property>
    <property name="shortcut">
     <string>Shift+F10</string>
@@ -891,7 +891,7 @@
     <string>Ctrl+P</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::ShortcutContext::WindowShortcut</enum>
    </property>
   </action>
   <action name="actionSettings">
@@ -906,7 +906,7 @@
     <string>F7</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::PreferencesRole</enum>
+    <enum>QAction::MenuRole::PreferencesRole</enum>
    </property>
   </action>
   <action name="actionSearch">
@@ -943,7 +943,7 @@
     <string>Ctrl+A</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WidgetShortcut</enum>
+    <enum>Qt::ShortcutContext::WidgetShortcut</enum>
    </property>
   </action>
   <action name="actionCopy">
@@ -958,7 +958,7 @@
     <string>Ctrl+C</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::ShortcutContext::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionPaste">
@@ -1182,7 +1182,7 @@
     <bool>true</bool>
    </property>
    <property name="priority">
-    <enum>QAction::HighPriority</enum>
+    <enum>QAction::Priority::HighPriority</enum>
    </property>
   </action>
   <action name="actionInterrupt">
@@ -1242,7 +1242,7 @@
     <string>GAMS Licensing</string>
    </property>
    <property name="menuRole">
-    <enum>QAction::TextHeuristicRole</enum>
+    <enum>QAction::MenuRole::TextHeuristicRole</enum>
    </property>
   </action>
   <action name="actionToggleBookmark">
@@ -1327,7 +1327,7 @@
     <string>Ctrl+Shift+3</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::ShortcutContext::ApplicationShortcut</enum>
    </property>
    <property name="autoRepeat">
     <bool>false</bool>
@@ -1358,7 +1358,7 @@
     <string>Full Screen</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::WindowShortcut</enum>
+    <enum>Qt::ShortcutContext::WindowShortcut</enum>
    </property>
   </action>
   <action name="actionTerminal">
@@ -1510,7 +1510,7 @@
     <string>Go Back</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::ShortcutContext::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionGoForward">
@@ -1525,7 +1525,7 @@
     <string>Go Forward</string>
    </property>
    <property name="shortcutContext">
-    <enum>Qt::ApplicationShortcut</enum>
+    <enum>Qt::ShortcutContext::ApplicationShortcut</enum>
    </property>
   </action>
   <action name="actionDistraction_Free_Mode">
