@@ -205,6 +205,7 @@ MainWindow::MainWindow(QWidget *parent)
         PExProjectNode *project = mProjectRepo.asProject(action->data().toInt()); // project node id
         focusProject(project);
     });
+    focusProject(nullptr);
     ui->cbFocusProject->setContextMenuPolicy(Qt::CustomContextMenu);
     connect(ui->cbFocusProject, &QComboBox::customContextMenuRequested, this, [this](const QPoint &pos) {
         bool ok;
@@ -1132,7 +1133,10 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
             switch(answer) {
             case 0: {// open
                 PExProjectNode* project = openInCurrent ? mRecent.project() : nullptr;
-                openFileNode(addNode("", gmsFilePath, project));
+                PExFileNode *node = addNode("", gmsFilePath, project);
+                openFileNode(node);
+                if (mProjectRepo.focussedProject())
+                    focusProject(node->assignedProject());
                 return;
             }
             case 1: // replace
@@ -5003,6 +5007,8 @@ void MainWindow::focusProject(PExProjectNode *project)
     // update combobox
     ui->cbFocusProject->setCurrentIndex(index);
     ui->tbProjectSettings->setEnabled(index > 0);
+    ui->cbFocusProject->setToolTip(project ? project->tooltip() : "Selector to focus on a single project");
+    ui->tbProjectSettings->setToolTip(project ? "Opens the project options" : "No project focussed");
 
     if (!project) {
         for (int i = 1; i < ui->mainTabs->count(); ++i)
