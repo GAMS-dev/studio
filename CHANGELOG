@@ -10,6 +10,7 @@ Version 1.19.0 *
 - improved allow to close non-mainfile while running
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 - removed warning when deleting a project file that does not exist
+- added licensed GAMS solvers to license text and dropped solver matrix
 
 Version 1.18.6 *
 ==================
