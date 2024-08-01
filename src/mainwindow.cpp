@@ -3914,11 +3914,13 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     }
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
+    QSet<PExProjectNode*> usedProjects;
 
     // create project
     if (opt == ogNone)
         opt = Settings::settings()->toBool(skOpenInCurrent) ? ogCurrentGroup : ogFindGroup;
     PExProjectNode *project = (opt == ogCurrentGroup) ? mRecent.project() : nullptr;
+    if (project) usedProjects << project;
     for (const QString &item: files) {
         QDir d(item);
         QFileInfo f(item);
@@ -3933,8 +3935,10 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                             PExProjectNode *pro = mProjectRepo.findProject(item);
                             openFileNode(pro); // open project
                         });
-                } else if (files.size() == 1)
+                } else if (files.size() == 1) {
                     openFileNode(pro); // open project
+                    usedProjects << pro;
+                }
             } else {
                 PExProjectNode *itemProject = project;
                 if (!itemProject) {
@@ -3943,6 +3947,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                     itemProject = mProjectRepo.findProject(proPath);
                 }
                 PExFileNode *node = addNode("", item, itemProject);
+                if (itemProject) usedProjects << itemProject;
                 openFileNode(node);
                 if (node->file()->kind() == FileKind::Gms) gmsFiles << node;
             }
@@ -3968,6 +3973,12 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
         msgBox.setText(msgText);
         msgBox.setStandardButtons(QMessageBox::Ok);
         msgBox.exec();
+    }
+
+    if ((mProjectRepo.focussedProject() || Settings::settings()->toInt(skCurrentFocusProject) >= 0) && usedProjects.count() == 1) {
+        PExProjectNode *pro = usedProjects.values().first();
+        focusProject(pro);
+        Settings::settings()->setInt(skCurrentFocusProject, pro->id());
     }
 }
 
@@ -4255,7 +4266,7 @@ void MainWindow::initDelayedElements()
     }
     openDelayedFiles();
     watchProjectTree();
-    int fp = Settings::settings()->toInt(skCurrentFocusProject);
+    int fp = settings->toInt(skCurrentFocusProject);
     QAction *action = mActFocusProject->actions().first();
     for (QAction *act : mActFocusProject->actions()) {
         int actId = act->data().toInt();
@@ -4995,6 +5006,7 @@ void MainWindow::focusProject(PExProjectNode *project)
 
     // update menu actions
     int proId = project ? int(project->id()) : -1;
+    Settings::settings()->setInt(skCurrentFocusProject, proId);
     int index = 0;
     for (QAction *act : mActFocusProject->actions()) {
         if (act->data().toInt() == proId) {
