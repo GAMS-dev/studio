@@ -57,6 +57,8 @@ private slots:
 private:
     QString gamsLicense();
 
+    void setSolverLines(QStringList &about);
+
     static void writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
                                  QWidget *parent, bool clipboard);
 

@@ -20,7 +20,6 @@
 #include "gamslicensingdialog.h"
 #include "ui_gamslicensingdialog.h"
 #include "process.h"
-#include "solvertablemodel.h"
 #include "commonpaths.h"
 #include "gamslicenseinfo.h"
 #include "theme.h"
@@ -47,13 +46,6 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) 
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
-    ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    auto dataModel = new SolverTableModel(this);
-    auto sortModel = new QSortFilterProxyModel(this);
-    sortModel->setSourceModel(dataModel);
-    ui->solverTable->setModel(sortModel);
-    ui->solverTable->verticalHeader()->setMinimumSectionSize(1);
-    ui->solverTable->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 }
 
 GamsLicensingDialog::~GamsLicensingDialog()
@@ -102,8 +94,44 @@ QString GamsLicensingDialog::gamsLicense()
             about << line << "<br/>";
         }
     }
+    setSolverLines(about);
 
     return about.join("");
+}
+
+void GamsLicensingDialog::setSolverLines(QStringList& about)
+{
+    about << "<br/>Licensed GAMS solvers:";
+    GamsLicenseInfo liceInfo;
+    QHash<QString, QStringList> groups;
+    auto solverNames = liceInfo.solverNames().values();
+    for (const auto& name : solverNames) {
+        auto id = liceInfo.solverId(name);
+        auto group = liceInfo.solverLicense(name, id);
+        if (groups.contains(group)) {
+            groups[group].append(name);
+        } else {
+            QStringList solvers { name };
+            groups[group] = solvers;
+        }
+    }
+    about << "<ul>";
+    if (groups.contains("Full")) {
+        about << QString("<li>Full: %2</li>").arg(groups["Full"].join(", "));
+    }
+    if (groups.contains("Evaluation")) {
+        about << QString("<li>Evaluation: %2</li>").arg(groups["Evaluation"].join(", "));
+    }
+    if (groups.contains("Community")) {
+        about << QString("<li>Community: %2</li>").arg(groups["Community"].join(", "));
+    }
+    if (groups.contains("Demo")) {
+        about << QString("<li>Demo: %2</li>").arg(groups["Demo"].join(", "));
+    }
+    if (groups.contains("Expired")) {
+        about << QString("<li>Expired Evaluation: %2</li>").arg(groups["Expired"].join(", "));
+    }
+    about << "</ul><br/>";
 }
 
 void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,

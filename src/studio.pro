@@ -253,7 +253,6 @@ SOURCES += \
     support/gamslicenseinfo.cpp         \
     support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
-    support/solvertablemodel.cpp        \
     support/updatewidget.cpp \
     support/versioninfoloader.cpp \
     svgengine.cpp \
@@ -478,7 +477,6 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
-    support/solvertablemodel.h      \
     support/updatewidget.h \
     support/versioninfoloader.h \
     svgengine.h \
