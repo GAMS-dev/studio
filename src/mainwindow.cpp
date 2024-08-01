@@ -675,15 +675,11 @@ void MainWindow::initNavigator()
     connect(ui->mainTabs, &QTabWidget::currentChanged, mNavigatorDialog, &NavigatorDialog::activeFileChanged);
 }
 
-void MainWindow::updateToolbar(QWidget* current)
+void MainWindow::updateCanSave(QWidget* current)
 {
-    // deactivate save for welcome page
-    bool activateSave = (current != mWp);
-
-    const auto actions = ui->toolBar->actions();
-    for (QAction *a : actions) {
-        if (a->text() == "&Save") a->setEnabled(activateSave);
-    }
+    bool activateSave = (current && current != mWp);
+    ui->actionSave->setEnabled(activateSave);
+    ui->actionSave_As->setEnabled(activateSave);
 }
 
 void MainWindow::initAutoSave()
@@ -2060,7 +2056,7 @@ void MainWindow::activeTabChanged(int index)
         ui->menuEncoding->setEnabled(false);
     }
     searchDialog()->updateDialogState();
-    updateToolbar(mainTabs()->currentWidget());
+    updateCanSave(mainTabs()->currentWidget());
 
     CodeEdit* ce = ViewHelper::toCodeEdit(mRecent.editor());
     if (ce && !ce->isReadOnly()) ce->setOverwriteMode(mOverwriteMode);
@@ -4171,6 +4167,7 @@ void MainWindow::updateRecentEdit(QWidget *old, QWidget *now)
             QWidget *edit = wid == ui->mainTabs ? ui->mainTabs->currentWidget() : mPinView->widget();
             FileMeta *fm = mFileMetaRepo.fileMeta(edit);
             mRecent.setEditor(fm, edit);
+            updateCanSave(edit);
             if (fm) {
                 fm->editToTop(mRecent.editor());
                 ui->actionPin_Right->setEnabled(fm->isPinnable());

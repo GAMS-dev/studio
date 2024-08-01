@@ -493,7 +493,7 @@ private:
     void raiseEdit(QWidget *widget);
     void openFileEventMessageBox(QString filePath, bool deleted, bool modified, int count);
     void initToolBar();
-    void updateToolbar(QWidget* current);
+    void updateCanSave(QWidget* current);
     void deleteScratchDirs(const QString& path);
     QFont getEditorFont(FontGroup fGroup, QString fontFamily = QString(), qreal pointSize = 0);
     bool isMiroAvailable(bool printError = true);
