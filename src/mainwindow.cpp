@@ -539,7 +539,8 @@ void MainWindow::initWelcomePage()
             if (project && project->type() > PExProjectNode::tCommon)
                 project = nullptr;
         }
-        openFilePath(filePath, project, ogNone, true);
+        PExFileNode *node = openFilePath(filePath, project, ogNone, true);
+        if (!project) project = node->assignedProject();
         if (project && mProjectRepo.focussedProject())
             focusProject(project);
     });
