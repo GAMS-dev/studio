@@ -105,8 +105,12 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         pathList << FileMeta::pathList(event->mimeData()->urls());
         event->setDropAction(Qt::CopyAction);
     }
+    QModelIndex index = indexAt(event->position().toPoint());
+    model();
+    if (!index.isValid() && rootIndex().parent().isValid())
+        index = rootIndex();
     QList<QModelIndex> newSelection;
-    emit dropFiles(indexAt(event->position().toPoint()), pathList, idList, event->dropAction(), newSelection);
+    emit dropFiles(index, pathList, idList, event->dropAction(), newSelection);
     if (newSelection.isEmpty()) {
         selectionModel()->select(mSelectionBeforeDrag, QItemSelectionModel::ClearAndSelect);
     } else {

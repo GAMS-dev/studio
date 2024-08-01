@@ -3975,11 +3975,11 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
         msgBox.exec();
     }
 
-    if ((mProjectRepo.focussedProject() || Settings::settings()->toInt(skCurrentFocusProject) >= 0) && usedProjects.count() == 1) {
-        PExProjectNode *pro = usedProjects.values().first();
-        focusProject(pro);
-        Settings::settings()->setInt(skCurrentFocusProject, pro->id());
-    }
+    if ((mProjectRepo.focussedProject() || Settings::settings()->toInt(skCurrentFocusProject) >= 0)
+            && usedProjects.count() == 1)
+        focusProject(usedProjects.values().first());
+    else
+        focusProject(nullptr);
 }
 
 void MainWindow::jumpToTab(FileMeta *fm)
