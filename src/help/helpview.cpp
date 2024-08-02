@@ -51,31 +51,6 @@ void HelpView::setCurrentHoveredLink(const QString &url)
     mCurrentHovered = url;
 }
 
-bool HelpView::event(QEvent *e)
-{
-    // work around QTBUG-43602
-    if (e->type() == QEvent::ChildAdded) {
-        auto ce = static_cast<QChildEvent *>(e);
-        ce->child()->installEventFilter(this);
-    } else if (e->type() == QEvent::ChildRemoved) {
-        auto ce = static_cast<QChildEvent *>(e);
-        ce->child()->removeEventFilter(this);
-    }
-    return QWebEngineView::event(e);
-}
-
-bool HelpView::eventFilter(QObject *obj, QEvent *e)
-{
-    Q_UNUSED(obj)
-    // work around QTBUG-43602
-    if (e->type() == QEvent::Wheel) {
-        auto we = static_cast<QWheelEvent *>(e);
-        if (we->modifiers() == Qt::ControlModifier)
-            return true;
-    }
-    return false;
-}
-
 QWebEngineView *HelpView::createWindow(QWebEnginePage::WebWindowType type)
 {
     MainWindow *mainWindow = qobject_cast<MainWindow*>(window());
