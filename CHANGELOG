@@ -1,6 +1,8 @@
 Version 1.18.6 *
 ==================
 - added highlighting of project entries while running
+- added function to "Save as..." for the project options file
+- fixed crash after "Save as..." of the changelog
 - fixed color theme issue when Windows is in dark mode and Studio is using light mode
 - update editors after changes in settings dialog
 
