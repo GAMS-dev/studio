@@ -1969,8 +1969,8 @@ void MainWindow::on_actionClose_All_triggered()
     if (ui->mainTabs->count() > 1)
         ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), ui->mainTabs->count()-1);
 
-    for(int i = ui->mainTabs->count(); i > 0; i--) {
-        on_mainTabs_tabCloseRequested(0);
+    for(int i = ui->mainTabs->count() - 1; i > 0; i--) {
+        on_mainTabs_tabCloseRequested(i);
     }
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 }
