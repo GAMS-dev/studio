@@ -414,7 +414,7 @@ void NavigatorDialog::selectFileOrFolder(const NavigatorContent& nc)
 {
     if (FileMeta* fm = nc.fileMeta()) {
         if (fm->location().endsWith("~log"))
-            mMain->jumpToTab(fm);
+            mMain->switchToLogTab(fm);
         else mMain->openFile(fm, true);
 
         close();

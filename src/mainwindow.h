@@ -115,7 +115,7 @@ public:
     ~MainWindow() override;
     void updateMenuToCodec(int mib);
     void openFiles(const QStringList &files, OpenGroupOption opt = ogNone);
-    void jumpToTab(FileMeta* fm);
+    void switchToLogTab(FileMeta* fm);
     void jumpToLine(int line);
     void watchProjectTree();
 

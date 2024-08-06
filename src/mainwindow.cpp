@@ -2720,7 +2720,7 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
 {
     if (index == 0) {
-        // assuming we are closing a welcome page here
+        // welcome page is always at index 0
         ui->mainTabs->setTabVisible(index, false);
         mClosedTabs << "WELCOME_PAGE";
         mClosedTabsIndexes << index;
@@ -2729,13 +2729,24 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     QWidget* widget = ui->mainTabs->widget(index);
     FileMeta* fc = mFileMetaRepo.fileMeta(widget);
     if (!fc) return;
+    PExProjectNode *project = mRecent.project();
 
+    int newIndex = 0;
     handleFileChanges(fc, false);
     searchDialog()->updateDialogState();
     int visTabs = 0;
-    for (int i = 0; i < ui->mainTabs->count(); ++i)
-        if (ui->mainTabs->isTabVisible(i)) ++visTabs;
-    if (!visTabs) ui->mainTabs->setCurrentIndex(0);
+    for (int i = 0; i < ui->mainTabs->count(); ++i) {
+        if (ui->mainTabs->isTabVisible(i)) {
+            ++visTabs;
+            if (newIndex == 0 && project && i != index) {
+                FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->widget(i));
+                if ((meta && project->projectEditFileMeta() == meta) || mProjectRepo.findFile(meta, project))
+                    newIndex = i;
+            }
+        }
+    }
+    if (newIndex) ui->mainTabs->setCurrentIndex(newIndex);
+    else if (!visTabs) ui->mainTabs->setCurrentIndex(0);
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -3983,7 +3994,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
         focusProject(nullptr);
 }
 
-void MainWindow::jumpToTab(FileMeta *fm)
+void MainWindow::switchToLogTab(FileMeta *fm)
 {
     const QList<QWidget*> logs = openedLogs();
     for (QWidget* w : logs) {
