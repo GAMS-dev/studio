@@ -2738,9 +2738,9 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     for (int i = 0; i < ui->mainTabs->count(); ++i) {
         if (ui->mainTabs->isTabVisible(i)) {
             ++visTabs;
-            if (newIndex == 0 && project && i != index) {
+            if (newIndex == 0 && project) {
                 FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->widget(i));
-                if ((meta && project->projectEditFileMeta() == meta) || mProjectRepo.findFile(meta, project))
+                if (meta && (project->projectEditFileMeta() == meta || mProjectRepo.findFile(meta, project)))
                     newIndex = i;
             }
         }
@@ -5044,6 +5044,7 @@ void MainWindow::focusProject(PExProjectNode *project)
 
     // update mainTabs visibility
     int visCount = 0;
+    int pFileTab = -1;
     QList<bool> visibleList;
     visibleList.reserve(ui->mainTabs->count());
     visibleList << ui->mainTabs->isTabVisible(0);
@@ -5065,7 +5066,14 @@ void MainWindow::focusProject(PExProjectNode *project)
         visibleList << visible;
         if (visible) ++visCount;
     }
-    if (!visCount && ui->mainTabs->count()) {
+    if (visCount) {
+        for (int i = 1; i < visibleList.count(); ++i) {
+            if (visibleList.at(i)) {
+                ui->mainTabs->setCurrentIndex(i);
+                break;
+            }
+        }
+    } else if (ui->mainTabs->count()) {
         if (project->runnableGms()) {
             openFile(project->runnableGms());
             int idx = ui->mainTabs->indexOf(project->runnableGms()->editors().first());
