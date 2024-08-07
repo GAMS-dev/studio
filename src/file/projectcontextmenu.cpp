@@ -167,11 +167,12 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mNodes = selected;
     if (mNodes.isEmpty() && focussedProject)
         mNodes << focussedProject;
+    bool protectNodes = !allowChange(mNodes);
     bool single = mNodes.count() == 1;
     bool isProject = mNodes.size() ? bool(mNodes.first()->toProject()) : false;
     bool isGroup = mNodes.size() ? bool(mNodes.first()->toGroup()) && !isProject : false;
     PExProjectNode *project = mNodes.size() ? mNodes.first()->assignedProject() : nullptr;
-    bool canMoveProject = project && project->childCount() && project->type() <= PExProjectNode::tCommon;
+    bool canMoveProject = project && !protectNodes && project->childCount() && project->type() <= PExProjectNode::tCommon;
     bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
     bool isGamsSys = false;
     bool isProjectEfi = false;
@@ -307,18 +308,18 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actAddExisting]->setVisible((isProject || isGroup) && !isGamsSys);
 
     mActions[actCloseProject]->setVisible(isProject);
+    mActions[actCloseProject]->setEnabled(!protectNodes);
+    mActions[actCloseDelProject]->setVisible(isProject);
+    mActions[actCloseDelProject]->setEnabled(!protectNodes);
     mActions[actCloseGroup]->setVisible(isGroup);
+    mActions[actCloseGroup]->setEnabled(!protectNodes);
     mActions[actCloseFile]->setVisible(fileNode);
+    mActions[actCloseFile]->setEnabled(!protectNodes);
 
-    if (!single) {
-        mActions[actCloseProject]->setText(mTxtCloseProject + "s");
-        mActions[actCloseGroup]->setText(mTxtCloseGroup + "s");
-        mActions[actCloseFile]->setText(mTxtCloseFile + "s");
-    } else {
-        mActions[actCloseProject]->setText(mTxtCloseProject);
-        mActions[actCloseGroup]->setText(mTxtCloseGroup);
-        mActions[actCloseFile]->setText(mTxtCloseFile);
-    }
+    mActions[actCloseProject]->setText(mTxtCloseProject + (single ? "" : "s"));
+    mActions[actCloseProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));
+    mActions[actCloseGroup]->setText(mTxtCloseGroup);
+    mActions[actCloseFile]->setText(mTxtCloseFile);
 
     // create solver option files
     mActions[actSep3]->setVisible(isProject);
@@ -604,6 +605,20 @@ QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
     if (!project || !project->runnableGms()) return QString();
     QFileInfo info(project->runnableGms()->location());
     return info.path() + '/' + info.completeBaseName() + ".efi";
+}
+
+bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes) const
+{
+    for (PExAbstractNode *node : nodes) {
+        PExProjectNode *project = node->assignedProject();
+        if (!project) continue;
+        if (!project->process() || project->process()->state() == QProcess::NotRunning)
+            continue;
+        if (node->toProject()) return false;
+        if (PExFileNode *file = node->toFile())
+            if (project->runnableGms() == file->file()) return false;
+    }
+    return true;
 }
 
 void ProjectContextMenu::onSelectAll()

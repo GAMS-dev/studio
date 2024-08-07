@@ -96,6 +96,7 @@ private slots:
 
 private:
     QString getEfiName(PExProjectNode *project) const;
+    bool allowChange(const QList<PExAbstractNode *> nodes) const;
 
 private:
     QVector<PExAbstractNode*> mNodes;

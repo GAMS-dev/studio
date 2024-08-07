@@ -335,10 +335,8 @@ MainWindow::MainWindow(QWidget *parent)
 
     search::SearchFileHandler* sfh = new search::SearchFileHandler(this);
     mSearchDialog = new search::SearchDialog(sfh, this);
-    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog,
-            &search::SearchDialog::updateDialogState);
-
-    connect(ui->actionGo_To, &QAction::triggered, this, [this]{
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, mSearchDialog, &search::SearchDialog::updateDialogState);
+    connect(ui->actionGo_To, &QAction::triggered, this, [this] {
         mNavigatorInput->setText("");
         on_actionNavigator_triggered();
         auto keyEvent = new QKeyEvent(QEvent::KeyPress, Qt::Key_Colon, Qt::NoModifier, ":");
