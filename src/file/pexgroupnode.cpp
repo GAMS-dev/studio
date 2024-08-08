@@ -1284,7 +1284,7 @@ void PExProjectNode::gotoPaused(int contLine)
     QString file = mBreakpointData->filename(contLine);
     int fileLine = mBreakpointData->fileLine(contLine);
 
-    PExFileNode *node = projectRepo()->findFile(file, this);
+    PExFileNode *node = projectRepo()->findOrCreateFileNode(file, this);
     if (mPausedInFile && mPausedInFile != node) {
         for (QWidget *wid : mPausedInFile->file()->editors()) {
             if (CodeEdit * ce = ViewHelper::toCodeEdit(wid))

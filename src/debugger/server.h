@@ -153,6 +153,7 @@ private:
     QHash<QString, CallReply> mReplies;
     QString mBreakLinesFile;
     CallReply mLastReply = invalid;
+    QString mIncompletePacket;
     QString mRemainData;
     DebugState mState = None;
     bool mVerbose = false;

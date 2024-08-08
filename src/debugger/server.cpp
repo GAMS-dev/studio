@@ -121,10 +121,18 @@ void Server::newConnection()
         QList<QByteArray> packets = data.split('\0');
         for (const QByteArray &packet : packets) {
             if (packet.isEmpty()) continue;
-            if (!handleReply(packet)) {
-                if (!packet.contains("invalidCall"))
-                    callProcedure(invalidReply, QStringList() << packet);
+            if (mIncompletePacket.isEmpty())
+                mIncompletePacket = packet;
+            else
+                mIncompletePacket += packet;
+            if (mIncompletePacket.at(mIncompletePacket.size() - 1) != '\n')
+                return;
+
+            if (!handleReply(mIncompletePacket)) {
+                if (!mIncompletePacket.contains("invalidCall"))
+                    callProcedure(invalidReply, QStringList() << mIncompletePacket);
             }
+            mIncompletePacket.clear();
         }
     });
     logMessage("Debug-Server: Socket connected to GAMS");
@@ -184,7 +192,8 @@ bool Server::handleReply(const QString &replyData)
 {
     if (mVerbose)
         logMessage("\nFrom GAMS: " + replyData);
-    QStringList reList = replyData.split('\n');
+    mIncompletePacket += replyData;
+    QStringList reList = replyData.split('\n', Qt::SkipEmptyParts);
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
         reply = mReplies.value(reList.at(0), invalid);
@@ -284,7 +293,9 @@ void Server::parseLinesMap(const QString &breakData)
         QList<int> coLNs;
         if (getPair(mRemainData, lines, coLNs))
             emit signalLinesMap(mBreakLinesFile, lines, coLNs);
-        else logMessage("Debug-Server: breakLines parse error: " + mRemainData);
+        else {
+            logMessage("Debug-Server: breakLines parse error: " + mRemainData);
+        }
         if (mVerbose) {
             QString list("DATA-> " + mBreakLinesFile + " : ");
             for (int i = 0; i < lines.size(); ++i) {
