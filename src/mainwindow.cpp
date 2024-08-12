@@ -4271,9 +4271,9 @@ void MainWindow::initDelayedElements()
 
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
-        if (!readTabs(joTabs)) return;
-        if (int ind = settings->toInt(skPinViewTabIndex)) {
-            openPinView(ind, Qt::Orientation(settings->toInt(skPinOrientation)));
+        if (!readTabs(joTabs)) {
+            if (int ind = settings->toInt(skPinViewTabIndex))
+                openPinView(ind, Qt::Orientation(settings->toInt(skPinOrientation)));
         }
     }
     openDelayedFiles();
