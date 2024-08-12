@@ -617,7 +617,7 @@ void MainWindow::initIcons()
     ui->actionCompile_with_GDX_Creation->setIcon(Theme::icon(":/%1/code-gdx"));
     ui->actionCopy->setIcon(Theme::icon(":/%1/copy"));
     ui->actionCut->setIcon(Theme::icon(":/%1/cut"));
-    ui->actionClose->setIcon(Theme::icon(":/%1/remove"));
+    ui->actionClose_Tab->setIcon(Theme::icon(":/%1/remove"));
     ui->actionExit_Application->setIcon(Theme::icon(":/%1/door-open"));
     ui->actionGAMS_Library->setIcon(Theme::icon(":/%1/books"));
     ui->actionGDX_Diff->setIcon(Theme::icon(":/%1/gdxdiff"));
@@ -1933,7 +1933,7 @@ void MainWindow::on_actionSave_All_triggered()
         fm->save();
 }
 
-void MainWindow::on_actionClose_triggered()
+void MainWindow::on_actionClose_Tab_triggered()
 {
     on_mainTabs_tabCloseRequested(ui->mainTabs->currentIndex());
 }

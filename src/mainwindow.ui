@@ -151,7 +151,7 @@
     <addaction name="separator"/>
     <addaction name="menuFocus_Project"/>
     <addaction name="separator"/>
-    <addaction name="actionClose"/>
+    <addaction name="actionClose_Tab"/>
     <addaction name="actionClose_All"/>
     <addaction name="actionClose_All_Except"/>
     <addaction name="separator"/>
@@ -725,13 +725,16 @@
     <string>Ctrl+Shift+S</string>
    </property>
   </action>
-  <action name="actionClose">
+  <action name="actionClose_Tab">
    <property name="icon">
     <iconset resource="../icons/icons.qrc">
      <normaloff>:/solid/remove</normaloff>:/solid/remove</iconset>
    </property>
    <property name="text">
-    <string>&amp;Close</string>
+    <string>&amp;Close Tab</string>
+   </property>
+   <property name="toolTip">
+    <string>Close Current Tab</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+W</string>
@@ -739,7 +742,10 @@
   </action>
   <action name="actionClose_All">
    <property name="text">
-    <string>Close All</string>
+    <string>Close All Tabs</string>
+   </property>
+   <property name="toolTip">
+    <string>Close All Tabs</string>
    </property>
    <property name="shortcut">
     <string>Ctrl+Shift+W</string>
@@ -747,7 +753,10 @@
   </action>
   <action name="actionClose_All_Except">
    <property name="text">
-    <string>Close All Except Visible</string>
+    <string>Close All Tabs Except Visible</string>
+   </property>
+   <property name="toolTip">
+    <string>Close All Tabs Except Visible</string>
    </property>
   </action>
   <action name="actionReloadEncoding">
