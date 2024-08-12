@@ -53,6 +53,10 @@ void ProjectTreeView::fixFocus()
 
 void ProjectTreeView::startDrag(Qt::DropActions supportedActions)
 {
+    QList<NodeId> nodeIdList;
+    for (QModelIndex index : selectionModel()->selection().indexes())
+        nodeIdList << index.data(ProjectTreeModel::NodeIdRole).toInt();
+    emit getHasRunBlocker(nodeIdList, mHasRunBlocker);
     QTreeView::startDrag(supportedActions | Qt::MoveAction);
 }
 
@@ -91,7 +95,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
             if (idNr > 0) idList << NodeId(idNr); // skips the root node
         }
         // [workaround] sometimes the dropAction isn't set correctly
-        if (!event->modifiers().testFlag(Qt::ControlModifier))
+        if (!event->modifiers().testFlag(Qt::ControlModifier) && !mHasRunBlocker)
             event->setDropAction(Qt::MoveAction);
         else
             event->setDropAction(Qt::CopyAction);
@@ -112,6 +116,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         }
     }
     mSelectionBeforeDrag.clear();
+    mHasRunBlocker = false;
     stopAutoScroll();
 }
 
@@ -134,7 +139,7 @@ void ProjectTreeView::updateDrag(QDragMoveEvent *event)
         }
         ProjectTreeModel* treeModel = static_cast<ProjectTreeModel*>(model());
         QModelIndex ind = indexAt(event->position().toPoint());
-        if (!event->modifiers().testFlag(Qt::ControlModifier) && isIntern) {
+        if (!event->modifiers().testFlag(Qt::ControlModifier) && !mHasRunBlocker && isIntern) {
             event->setDropAction(Qt::MoveAction);
         } else if (isIntern || FileMeta::hasExistingFile(event->mimeData()->urls())
                             || FileMeta::hasExistingFolder(event->mimeData()->urls())) {

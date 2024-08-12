@@ -40,6 +40,7 @@ public:
     ProjectContextMenu();
     void initialize(const QVector<PExAbstractNode*> &selected, PExProjectNode *focussedProject);
     void setParent(QWidget *parent);
+    static bool allowChange(const QList<PExAbstractNode *> nodes);
 
 signals:
     void closeProject(gams::studio::PExProjectNode* project);
@@ -96,7 +97,6 @@ private slots:
 
 private:
     QString getEfiName(PExProjectNode *project) const;
-    bool allowChange(const QList<PExAbstractNode *> nodes) const;
 
 private:
     QVector<PExAbstractNode*> mNodes;

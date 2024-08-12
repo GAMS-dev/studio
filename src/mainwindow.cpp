@@ -170,31 +170,17 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView->selectionModel(), &QItemSelectionModel::selectionChanged, this,
             [this](const QItemSelection &selected, const QItemSelection &deselected) {
         mProjectRepo.selectionChanged(selected, deselected);
-        bool projectCanMove = false;
-        bool isSmallProject = false;
-        const QVector<PExAbstractNode*> nodes = selectedNodes();
-        if (nodes.count() > 0) {
-            bool onlyOneProject = false;
-            const PExProjectNode *project = nullptr;
-            for (const PExAbstractNode *node : nodes) {
-                if (!project) {
-                    project = node->assignedProject();
-                    onlyOneProject = project;
-                } else if (node->assignedProject() && project != node->assignedProject()) {
-                    onlyOneProject = false;
-                }
-                isSmallProject = project && project->type() == PExProjectNode::tSmall;
-            }
-            projectCanMove = project && onlyOneProject && project->type() <= PExProjectNode::tCommon;
-        }
-
-        ui->actionMove_Project->setEnabled(projectCanMove && !isSmallProject);
-        ui->actionCopy_Project->setEnabled(projectCanMove);
-        ui->actionCopy_Project->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
-        ui->actionCopy_Project->setToolTip(isSmallProject ? "Export Project" :"Copy Project");
+        updateAllowedMenus();
     });
-
     connect(ui->projectView, &ProjectTreeView::dropFiles, &mProjectRepo, &ProjectRepo::dropFiles);
+    connect(ui->projectView, &ProjectTreeView::getHasRunBlocker, this, [this](const QList<NodeId> ids, bool &runBlocked) {
+        QList<PExAbstractNode*> nodes;
+        for (const NodeId &id : ids) {
+            if (PExAbstractNode *node = mProjectRepo.node(id))
+                nodes << node;
+        }
+        runBlocked = nodes.size() ? !mProjectContextMenu.allowChange(nodes) : false;
+    });
     connect(ui->projectView, &ProjectTreeView::openProjectEdit, this, [this](QModelIndex idx) {
         PExProjectNode * project = mProjectRepo.node(idx)->toProject();
         if (project) openFileNode(project);
@@ -449,6 +435,24 @@ MainWindow::MainWindow(QWidget *parent)
     initNavigator();
 
     checkSslLibrary();
+}
+
+void MainWindow::updateAllowedMenus()
+{
+    QWidget *wid = ui->mainTabs->currentWidget();
+    FileMeta *meta = (wid ? mFileMetaRepo.fileMeta(wid) : nullptr);
+    FileId fileId = meta ? meta->id() : FileId();
+    NodeId proId = meta ? meta->projectId() : NodeId();
+    PExProjectNode *project = mProjectRepo.asProject(proId);
+    QList<PExAbstractNode*> nodes;
+    if (project) nodes << (project->findFile(meta));
+    bool isSmallProject = project && project->type() == PExProjectNode::tSmall;
+    bool projectCanMove = project && project->type() <= PExProjectNode::tCommon
+            && ProjectContextMenu::allowChange(nodes);
+    ui->actionMove_Project->setEnabled(projectCanMove && !isSmallProject);
+    ui->actionCopy_Project->setEnabled(projectCanMove);
+    ui->actionCopy_Project->setText(isSmallProject ? "&Export Project..." :"&Copy Project...");
+    ui->actionCopy_Project->setToolTip(isSmallProject ? "Export Project" :"Copy Project");
 }
 
 void MainWindow::watchProjectTree()
@@ -4167,6 +4171,7 @@ void MainWindow::updateRunState()
     }
     ui->debugWidget->setDebugServer(debugServer);
     ui->debugWidget->setVisible(debugServer);
+    updateAllowedMenus();
 }
 
 #ifdef QWEBENGINE

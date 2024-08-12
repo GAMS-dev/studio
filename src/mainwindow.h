@@ -448,6 +448,7 @@ private slots:
     void copyFiles(const QStringList &srcFiles, const QStringList &dstFiles, PExProjectNode *project = nullptr);
     void closePinView();
     void updateProjectList();
+    void updateAllowedMenus();
     void on_cbFocusProject_currentIndexChanged(int index);
 
     void on_actionPin_Right_triggered();

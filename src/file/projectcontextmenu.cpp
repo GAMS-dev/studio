@@ -317,7 +317,7 @@ void ProjectContextMenu::initialize(const QVector<PExAbstractNode *> &selected, 
     mActions[actCloseFile]->setEnabled(!protectNodes);
 
     mActions[actCloseProject]->setText(mTxtCloseProject + (single ? "" : "s"));
-    mActions[actCloseProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));
+    mActions[actCloseDelProject]->setText(mTxtCloseDelProject + (single ? "" : "s"));
     mActions[actCloseGroup]->setText(mTxtCloseGroup);
     mActions[actCloseFile]->setText(mTxtCloseFile);
 
@@ -607,7 +607,7 @@ QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
     return info.path() + '/' + info.completeBaseName() + ".efi";
 }
 
-bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes) const
+bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes)
 {
     for (PExAbstractNode *node : nodes) {
         PExProjectNode *project = node->assignedProject();
@@ -615,8 +615,11 @@ bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes) const
         if (!project->process() || project->process()->state() == QProcess::NotRunning)
             continue;
         if (node->toProject()) return false;
-        if (PExFileNode *file = node->toFile())
+        if (PExFileNode *file = node->toFile()) {
             if (project->runnableGms() == file->file()) return false;
+            if (project->hasParameter("lst") &&
+                project->parameter("lst").compare(file->location(), FileType::fsCaseSense()) == 0) return false;
+        }
     }
     return true;
 }
