@@ -4899,6 +4899,10 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
 
     // open edit if existing or create one
     if (edit) {
+        if (!project) {
+            if (fileMeta->projectId().isValid())
+                project = mProjectRepo.asProject(fileMeta->projectId().isValid());
+        }
         if (project) {
             fileMeta->setProjectId(project->id());
             updateRecentEdit(mRecent.editor(), edit);
