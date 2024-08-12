@@ -610,12 +610,14 @@ QString ProjectContextMenu::getEfiName(PExProjectNode *project) const
 bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes)
 {
     for (PExAbstractNode *node : nodes) {
+        if (!node) continue;
         PExProjectNode *project = node->assignedProject();
         if (!project) continue;
         if (!project->process() || project->process()->state() == QProcess::NotRunning)
             continue;
         if (node->toProject()) return false;
         if (PExFileNode *file = node->toFile()) {
+            if (!file) continue;
             if (project->runnableGms() == file->file()) return false;
             if (project->hasParameter("lst") &&
                 project->parameter("lst").compare(file->location(), FileType::fsCaseSense()) == 0) return false;
