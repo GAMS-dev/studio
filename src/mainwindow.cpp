@@ -4950,6 +4950,8 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         }
         raiseEdit(edit);
         updateMenuToCodec(fileMeta->codecMib());
+        if (mProjectRepo.focussedProject() && project)
+            focusProject(project);
     }
 
     if (tabWidget != ui->logTabs) {
