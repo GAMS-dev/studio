@@ -608,7 +608,7 @@ QVector<PExAbstractNode *> MainWindow::selectedNodes(QModelIndex index)
     return nodes;
 }
 
-bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
+bool MainWindow::handleFileChanges(FileMeta* fm, bool closeAndWillReopen)
 {
     if (!fm) return true;
 
@@ -622,12 +622,14 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool willReopen)
 
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
-        if (fm->save())
-            closeFileEditors(fm->id(), willReopen);
+        if (fm->save()) {
+            if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
+        } else
+            return false;
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
         fm->setModified(false);
-        closeFileEditors(fm->id(), willReopen);
+        if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
     }
     return true;
 }
@@ -2732,21 +2734,25 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     PExProjectNode *project = mRecent.project();
 
     int newIndex = 0;
-    handleFileChanges(fc, false);
+    bool closeLater = handleFileChanges(fc, false);
     searchDialog()->updateDialogState();
     int visTabs = 0;
-    for (int i = 0; i < ui->mainTabs->count(); ++i) {
+    for (int i = 1; i < ui->mainTabs->count(); ++i) {
+        if (i == index) continue;
         if (ui->mainTabs->isTabVisible(i)) {
             ++visTabs;
             if (newIndex == 0 && project) {
                 FileMeta *meta = mFileMetaRepo.fileMeta(ui->mainTabs->widget(i));
-                if (meta && (project->projectEditFileMeta() == meta || mProjectRepo.findFile(meta, project)))
+                if (meta && (project->projectEditFileMeta() == meta || project->findFile(meta)))
                     newIndex = i;
             }
         }
     }
-    if (newIndex) ui->mainTabs->setCurrentIndex(newIndex);
-    else if (!visTabs) ui->mainTabs->setCurrentIndex(0);
+    if (newIndex)
+        ui->mainTabs->setCurrentIndex(newIndex);
+    else
+        if (!visTabs) ui->mainTabs->setCurrentIndex(0);
+    if (closeLater) closeFileEditors(fc->id(), false);
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
@@ -5045,12 +5051,12 @@ void MainWindow::focusProject(PExProjectNode *project)
             ui->mainTabs->setTabVisible(i, true);
         for (int i = 0; i < ui->logTabs->count(); ++i)
             ui->logTabs->setTabVisible(i, true);
+        mainTabs()->setTabText(0, mainTabs()->tabText(0)); // Workaround to trigger readjustment
         return;
     }
 
     // update mainTabs visibility
     int visCount = 0;
-    int pFileTab = -1;
     QList<bool> visibleList;
     visibleList.reserve(ui->mainTabs->count());
     visibleList << ui->mainTabs->isTabVisible(0);
@@ -5090,6 +5096,7 @@ void MainWindow::focusProject(PExProjectNode *project)
     for (int i = 1; i < visibleList.count(); ++i) {
         ui->mainTabs->setTabVisible(i, visibleList.at(i));
     }
+    mainTabs()->setTabText(0, mainTabs()->tabText(0)); // Workaround to trigger readjustment
 
     // update logTabs visibility
     PExLogNode* log = project->logNode();

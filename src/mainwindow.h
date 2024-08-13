@@ -471,7 +471,7 @@ private:
     void initNavigator();
     void adjustFonts();
     QVector<PExAbstractNode*> selectedNodes(QModelIndex index = QModelIndex());
-    bool handleFileChanges(FileMeta *fc, bool willReopen);
+    bool handleFileChanges(FileMeta *fc, bool closeAndWillReopen);
     PExFileNode* addNode(const QString &path, const QString &fileName, PExProjectNode *project = nullptr);
     FileProcessKind fileChangedExtern(const FileId &fileId);
     FileProcessKind fileDeletedExtern(const FileId &fileId);
