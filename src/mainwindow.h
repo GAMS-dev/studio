@@ -287,7 +287,6 @@ private slots:
     void on_actionNew_Project_triggered();
     void on_actionMove_Project_triggered();
     void on_actionCopy_Project_triggered();
-    void on_actionShowProjectSelector_triggered(bool checked);
     void on_actionClose_Tab_triggered();
     void on_actionClose_All_triggered();
     void on_actionClose_All_Except_triggered();
