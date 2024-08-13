@@ -46,7 +46,7 @@ public:
     QTableView* tableAt(int i);
 
 public slots:
-    void changeHeader(int tabIndex);
+    void changeHeader(QTableView *view);
     void updateSelectedLibraryItem();
     void clearSelections();
     void storeSelectedTab();

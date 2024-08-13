@@ -120,20 +120,20 @@ ModelDialog::~ModelDialog()
     delete ui;
 }
 
-void ModelDialog::changeHeader(int tabIndex)
-{
-    QTableView *tv = tableViewList.at(tabIndex);
-    int rowCount = tv->model()->rowCount();
-    QString baseName = ui->tabWidget->tabText(tabIndex).split("(").at(0).trimmed();
-    ui->tabWidget->setTabText(tabIndex, baseName + " (" + QString::number(rowCount) + ")");
-}
-
 QTableView* ModelDialog::tableAt(int i)
 {
     if (i >= 0 && i < tableViewList.size())
         return tableViewList.at(i);
     else
         return nullptr;
+}
+
+void ModelDialog::changeHeader(QTableView *view)
+{
+    auto index = ui->tabWidget->indexOf(view);
+    int rowCount = view->model()->rowCount();
+    QString baseName = ui->tabWidget->tabText(index).split("(").at(0).trimmed();
+    ui->tabWidget->setTabText(index, baseName + " (" + QString::number(rowCount) + ")");
 }
 
 void ModelDialog::updateSelectedLibraryItem()
@@ -196,6 +196,10 @@ void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary
 
     tableViewList.append(tableView);
     proxyModelList.append(proxyModel);
+    connect(proxyModel, &QAbstractItemModel::rowsRemoved,
+            this, [this, tableView]{ changeHeader(tableView); });
+    connect(proxyModel, &QAbstractItemModel::rowsInserted,
+            this, [this, tableView]{ changeHeader(tableView); });
 
     tableView->setModel(proxyModel);
     QString label = items.at(0).library()->name() + " (" +  QString::number(items.size()) + ")";
@@ -206,7 +210,8 @@ void ModelDialog::addLibrary(const QList<LibraryItem>& items, bool isUserLibrary
         tabIdx = ui->tabWidget->addTab(tableView, label);
     ui->tabWidget->setTabToolTip(tabIdx, items.at(0).library()->longName());
 
-    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged, this, &ModelDialog::updateSelectedLibraryItem);
+    connect(tableView->selectionModel(), &QItemSelectionModel::selectionChanged,
+            this, &ModelDialog::updateSelectedLibraryItem);
 
     connect(tableView  , &QTableView::doubleClicked, this, &ModelDialog::accept);
     connect(ui->pbLoad  , &QPushButton::clicked     , this, &ModelDialog::accept);
@@ -254,7 +259,6 @@ void ModelDialog::applyFilter(const QRegularExpression &filterRex, int proxyMode
 {
     if (filterRex.isValid()) {
         proxyModelList[proxyModelIndex]->setFilterRegularExpression(filterRex);
-        this->changeHeader(proxyModelIndex);
     }
 }
 

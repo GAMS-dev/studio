@@ -1,6 +1,6 @@
 pack-deg:
   stage: pack
-  tags: [macos]
+  tags: [carla]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
   needs: [build-deg]

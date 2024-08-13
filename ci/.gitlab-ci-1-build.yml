@@ -1,6 +1,6 @@
 build-deg:
   stage: build
-  tags: [macos]
+  tags: [carla]
   needs: [install-gams-deg]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
