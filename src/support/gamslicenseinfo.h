@@ -106,6 +106,8 @@ private:
 
     QStringList processLicenseData(const QString &data);
 
+    QString gamsConfigLicenseLocation();
+
 private:
     QString mLicenseFilePath;
     SolverConfigInfo mSolverInfo;
