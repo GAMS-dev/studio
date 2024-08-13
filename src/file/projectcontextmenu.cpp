@@ -619,8 +619,6 @@ bool ProjectContextMenu::allowChange(const QList<PExAbstractNode*> nodes)
         if (PExFileNode *file = node->toFile()) {
             if (!file) continue;
             if (project->runnableGms() == file->file()) return false;
-            if (project->hasParameter("lst") &&
-                project->parameter("lst").compare(file->location(), FileType::fsCaseSense()) == 0) return false;
         }
     }
     return true;
