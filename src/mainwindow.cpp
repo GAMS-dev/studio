@@ -3203,11 +3203,6 @@ void MainWindow::moveProjectCollideDialog(MultiCopyCheck mcs, PExProjectNode *pr
     box->open();
 }
 
-void MainWindow::on_actionShowProjectSelector_triggered(bool checked)
-{
-    ui->cbFocusProject->setVisible(checked);
-}
-
 void MainWindow::on_cbFocusProject_currentIndexChanged(int index)
 {
     if (index < 0) return;
