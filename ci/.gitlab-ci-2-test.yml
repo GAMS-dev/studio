@@ -1,6 +1,6 @@
 test-deg:
   stage: test
-  tags: [macos]
+  tags: [carla]
   needs: [install-gams-deg,build-deg]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
