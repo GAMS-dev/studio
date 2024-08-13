@@ -2730,7 +2730,10 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
     }
     QWidget* widget = ui->mainTabs->widget(index);
     FileMeta* fc = mFileMetaRepo.fileMeta(widget);
-    if (!fc) return;
+    if (!fc) {
+        if (widget) DEB() << "Warning: missing meta data for editor at tab nr " << index;
+        return;
+    }
     PExProjectNode *project = mRecent.project();
 
     int newIndex = 0;
@@ -3613,6 +3616,8 @@ void MainWindow::closeEvent(QCloseEvent* event)
     mShutDown = true;
     on_actionClose_All_triggered();
     closeHelpView();
+    if (int remain = mFileMetaRepo.fileMetas().size())
+        DEB() << "remaining meta data: " << remain;
     mTextMarkRepo.clear();
     delete mSettingsDialog;
     mSettingsDialog = nullptr;
