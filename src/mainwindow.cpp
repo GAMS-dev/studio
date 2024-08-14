@@ -617,19 +617,25 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool closeAndWillReopen)
         // only ask, if this is the last editor of this file
         ret = showSaveChangesMsgBox(fm->name() + " has been modified.");
     }
-    if (ret == QMessageBox::Cancel)
+    if (ret == QMessageBox::Cancel) {
+        DEB() << "Canceled closing for " << fm->location();
         return false;
+    }
 
     if (ret == QMessageBox::Save) {
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
         if (fm->save()) {
             if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
-        } else
+            else DEB() << "Marked to close " << fm->location();
+        } else {
+            DEB() << "Save failed for " << fm->location();
             return false;
+        }
     } else if (ret == QMessageBox::Discard) {
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
         fm->setModified(false);
         if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
+        DEB() << "Discard closing for " << fm->location();
     }
     return true;
 }
@@ -2738,6 +2744,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
 
     int newIndex = 0;
     bool closeLater = handleFileChanges(fc, false);
+    DEB() << "Marked to close " << ((closeLater && fc) ? "TRUE" : "FALSE");
     searchDialog()->updateDialogState();
     int visTabs = 0;
     for (int i = 1; i < ui->mainTabs->count(); ++i) {
@@ -2755,7 +2762,7 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
         ui->mainTabs->setCurrentIndex(newIndex);
     else
         if (!visTabs) ui->mainTabs->setCurrentIndex(0);
-    if (closeLater) closeFileEditors(fc->id(), false);
+    if (closeLater && fc) closeFileEditors(fc->id(), false);
 }
 
 int MainWindow::showSaveChangesMsgBox(const QString &text)
