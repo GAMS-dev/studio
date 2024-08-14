@@ -3615,9 +3615,14 @@ void MainWindow::closeEvent(QCloseEvent* event)
     }
     mShutDown = true;
     on_actionClose_All_triggered();
+    ui->mainTabs->closeTab(0); // Welcome page only gets hidden before, now really close it
     closeHelpView();
-    if (int remain = mFileMetaRepo.fileMetas().size())
+    if (int remain = mFileMetaRepo.fileMetas().size()) {
         DEB() << "remaining meta data: " << remain;
+        for (FileMeta *meta: mFileMetaRepo.fileMetas()) {
+            if (meta->isOpen()) DEB() << "Missed to close " << meta->location();
+        }
+    }
     mTextMarkRepo.clear();
     delete mSettingsDialog;
     mSettingsDialog = nullptr;
