@@ -1,9 +1,9 @@
 pack-deg:
   stage: pack
-  tags: [carla]
+  tags: [macos]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
-  needs: [build-deg]
+  needs: [fetch-ci-scripts,build-deg]
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -63,7 +63,7 @@ pack-dac:
   tags: [macos-arm64]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
-  needs: [build-dac]
+  needs: [fetch-ci-scripts,build-dac]
   script:
     - WORKSPACE=$(pwd)
     - PATH="${qtpath}:${PATH}"
@@ -120,11 +120,11 @@ pack-dac:
 
 pack-leg:
   stage: pack
-  tags: [puma]
+  tags: [linux]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [build-leg]
+  needs: [fetch-ci-scripts,build-leg]
   script:
   # create folder structure
   - mkdir -p appdir/usr/bin
@@ -155,10 +155,10 @@ pack-leg:
 
 pack-wei:
   stage: pack
-  tags: [pond]
+  tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
-  needs: [build-wei]
+  needs: [fetch-ci-scripts,build-wei]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
@@ -204,10 +204,10 @@ pack-wei-debug:
     - if: $PF_WEI_DEBUG == "0"
       when: never
     - when: always
-  tags: [pond]
+  tags: [windows]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
-  needs: [build-wei-debug]
+  needs: [fetch-ci-scripts,build-wei-debug]
   variables:
     vcinsdir: C:\Program Files\Microsoft Visual Studio\2022\Community\VC
     cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat

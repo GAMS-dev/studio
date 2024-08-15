@@ -217,6 +217,7 @@ SOURCES += \
     pinviewwidget.cpp \
     process/abstractprocess.cpp \
     process/connectprocess.cpp \
+    process/gamsgetkeyprocess.cpp \
     process/gamslibprocess.cpp  \
     process/gamsprocess.cpp     \
     process/gmsunzipprocess.cpp \
@@ -253,7 +254,6 @@ SOURCES += \
     support/gamslicenseinfo.cpp         \
     support/gamslicensingdialog.cpp \
     support/solverconfiginfo.cpp        \
-    support/solvertablemodel.cpp        \
     support/updatewidget.cpp \
     support/versioninfoloader.cpp \
     svgengine.cpp \
@@ -440,6 +440,7 @@ HEADERS += \
     process.h \
     process/abstractprocess.h \
     process/connectprocess.h \
+    process/gamsgetkeyprocess.h \
     process/gamslibprocess.h \
     process/gamsprocess.h \
     process/gmsunzipprocess.h \
@@ -478,7 +479,6 @@ HEADERS += \
     support/gamslicenseinfo.h       \
     support/gamslicensingdialog.h \
     support/solverconfiginfo.h      \
-    support/solvertablemodel.h      \
     support/updatewidget.h \
     support/versioninfoloader.h \
     svgengine.h \

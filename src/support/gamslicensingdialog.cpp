@@ -19,10 +19,12 @@
  */
 #include "gamslicensingdialog.h"
 #include "ui_gamslicensingdialog.h"
-#include "process.h"
-#include "solvertablemodel.h"
 #include "commonpaths.h"
 #include "gamslicenseinfo.h"
+#include "editors/abstractsystemlogger.h"
+#include "editors/sysloglocator.h"
+#include "process/gamsprocess.h"
+#include "process/gamsgetkeyprocess.h"
 #include "theme.h"
 
 #include <QClipboard>
@@ -32,14 +34,15 @@
 #include <QSortFilterProxyModel>
 #include <QFontDatabase>
 #include <QFileDialog>
+#include <QTextDocument>
 
 namespace gams {
 namespace studio {
 namespace support {
 
-GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) :
-    QDialog(parent),
-    ui(new Ui::GamsLicensingDialog)
+GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent)
+    : QDialog(parent)
+    , ui(new Ui::GamsLicensingDialog)
 {
     ui->setupUi(this);
     createLicenseFileFromClipboard(parent);
@@ -47,13 +50,9 @@ GamsLicensingDialog::GamsLicensingDialog(const QString &title, QWidget *parent) 
     this->setWindowTitle(title);
     ui->label->setText(gamsLicense());
     ui->gamslogo->setPixmap(Theme::icon(":/img/gams-w24").pixmap(ui->gamslogo->size()));
-    ui->solverTable->horizontalHeader()->setSectionResizeMode(QHeaderView::ResizeToContents);
-    auto dataModel = new SolverTableModel(this);
-    auto sortModel = new QSortFilterProxyModel(this);
-    sortModel->setSourceModel(dataModel);
-    ui->solverTable->setModel(sortModel);
-    ui->solverTable->verticalHeader()->setMinimumSectionSize(1);
-    ui->solverTable->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
+    connect(ui->copyButton, &QPushButton::clicked, this, &GamsLicensingDialog::copyLicenseInfo);
+    connect(ui->fileButton, &QPushButton::clicked, this, &GamsLicensingDialog::installFile);
+    connect(ui->alpButton, &QPushButton::clicked, this, &GamsLicensingDialog::installAlp);
 }
 
 GamsLicensingDialog::~GamsLicensingDialog()
@@ -102,14 +101,53 @@ QString GamsLicensingDialog::gamsLicense()
             about << line << "<br/>";
         }
     }
+    setSolverLines(about);
 
     return about.join("");
+}
+
+void GamsLicensingDialog::setSolverLines(QStringList& about)
+{
+    about << "<br/>Licensed GAMS solvers:";
+    GamsLicenseInfo liceInfo;
+    QHash<QString, QStringList> groups;
+    auto solverNames = liceInfo.solverNames().values();
+    for (const auto& name : solverNames) {
+        auto id = liceInfo.solverId(name);
+        auto group = liceInfo.solverLicense(name, id);
+        if (groups.contains(group)) {
+            groups[group].append(name);
+        } else {
+            QStringList solvers { name };
+            groups[group] = solvers;
+        }
+    }
+    about << "<ul>";
+    if (groups.contains("Full")) {
+        about << QString("<li>Full: %2</li>").arg(groups["Full"].join(", "));
+    }
+    if (groups.contains("Evaluation")) {
+        about << QString("<li>Evaluation: %2</li>").arg(groups["Evaluation"].join(", "));
+    }
+    if (groups.contains("Community")) {
+        about << QString("<li>Community: %2</li>").arg(groups["Community"].join(", "));
+    }
+    if (groups.contains("Demo")) {
+        about << QString("<li>Demo: %2</li>").arg(groups["Demo"].join(", "));
+    }
+    if (groups.contains("Expired")) {
+        about << QString("<li>Expired Evaluation: %2</li>").arg(groups["Expired"].join(", "));
+    }
+    about << "</ul><br/>";
 }
 
 void GamsLicensingDialog::writeLicenseFile(GamsLicenseInfo &licenseInfo, QStringList &license,
                                            QWidget *parent, bool clipboard)
 {
-    QFile licenseFile(licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile());
+    auto liceFile = licenseInfo.gamsConfigLicenseLocation();
+    if (liceFile.isEmpty())
+        liceFile = licenseInfo.gamsDataLocations().constFirst() + "/" + CommonPaths::licenseFile();
+    QFile licenseFile(liceFile);
     if (licenseFile.exists()) {
         QString text;
         if (clipboard) {
@@ -166,15 +204,18 @@ void GamsLicensingDialog::createLicenseFileFromClipboard(QWidget *parent)
     writeLicenseFile(licenseInfo, license, parent, true);
 }
 
-void GamsLicensingDialog::on_copylicense_clicked()
+void GamsLicensingDialog::copyLicenseInfo()
 {
-    GamsProcess gproc;
+    ui->errorLabel->clear();
     QClipboard *clip = QGuiApplication::clipboard();
-    clip->setText(studioInfo().replace("<br/>", "\n") + gproc.aboutGAMS().replace("#L", ""));
+    QTextDocument doc;
+    doc.setHtml(ui->label->text());
+    clip->setText(doc.toPlainText());
 }
 
-void GamsLicensingDialog::on_installButton_clicked()
+void GamsLicensingDialog::installFile()
 {
+    ui->errorLabel->clear();
     auto fileName = QFileDialog::getOpenFileName(this,
                                                  "Open License File",
                                                  QDir::homePath(),
@@ -188,6 +229,23 @@ void GamsLicensingDialog::on_installButton_clicked()
         return;
     }
     writeLicenseFile(licenseInfo, license, this, false);
+    ui->label->setText(gamsLicense());
+}
+
+void GamsLicensingDialog::installAlp()
+{
+    ui->errorLabel->clear();
+    GamsGetKeyProcess proc;
+    proc.setAlpId(ui->idEdit->text().trimmed());
+    auto data = proc.execute().split("\n");
+    GamsLicenseInfo licenseInfo;
+    if (data.isEmpty() || !licenseInfo.isLicenseValid(data)) {
+        auto str = data.join(" ");
+        ui->errorLabel->setText(str);
+        SysLogLocator::systemLog()->append(str, LogMsgType::Error);
+        return;
+    }
+    writeLicenseFile(licenseInfo, data, this, false);
     ui->label->setText(gamsLicense());
 }
 

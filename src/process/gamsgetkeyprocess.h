@@ -17,44 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SOLVERTABLEMODEL_H
-#define SOLVERTABLEMODEL_H
+#ifndef GAMSGETKEYPROCESS_H
+#define GAMSGETKEYPROCESS_H
 
-#include <QAbstractTableModel>
-
-#include "gamslicenseinfo.h"
+#include <QProcess>
 
 namespace gams {
 namespace studio {
-namespace support {
 
-class SolverTableModel
-        : public QAbstractTableModel
+class GamsGetKeyProcess
 {
-    Q_OBJECT
-
 public:
-    SolverTableModel(QObject *parent = nullptr);
+    GamsGetKeyProcess();
 
-    virtual QVariant headerData(int section, Qt::Orientation oriantation, int role = Qt::DisplayRole) const override;
+    QString alpId() const;
+    void setAlpId(const QString& id);
 
-    virtual int columnCount(const QModelIndex &parent = QModelIndex()) const override;
-
-    virtual int rowCount(const QModelIndex &parennt = QModelIndex()) const override;
-
-    virtual QVariant data(const QModelIndex &index, int role = Qt::DisplayRole) const override;
+    QString execute();
 
 private:
-    GamsLicenseInfo mLicenseInfo;
-    QMap<int, QString> mHorizontalHeaderData;
-    QMap<int, QString> mVerticalHeaderData;
-    QMap<int, int> mVerticalHeaderIndices;
+    QString nativeAppPath();
 
-    const int RowShift = 1;
+private:
+    QString mApplication;
+    QString mAlpId;
+    QProcess mProcess;
 };
 
 }
 }
-}
 
-#endif // SOLVERTABLEMODEL_H
+#endif // GAMSGETKEYPROCESS_H

@@ -71,6 +71,8 @@ public:
 
     QStringList gamsConfigLocations();
 
+    QString gamsConfigLicenseLocation();
+
     int localDistribVersion();
 
     QString localDistribVersionString();

@@ -638,7 +638,7 @@ QString FastFileMapper::LinesCache::getLines(int lineNr, int count) const
             count = cachedLineCount() - (lineNr - mCacheOffsetLine);
     }
     int localLine = lineNr - mCacheOffsetLine;
-    if (!mLineChar.size())
+    if (mLineChar.size() <= localLine)
         return QString();
     qint64 from = mLineChar.at(localLine);
     qint64 to = mLineChar.at(localLine + count);

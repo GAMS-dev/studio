@@ -1,6 +1,5 @@
 stages:
   - fetch-scripts
-  - install-gams
   - build
   - test
   - pack
@@ -9,10 +8,9 @@ stages:
 
 include:
   - project: 'devel/ciscripts'
-    file: .install-jobs.yml
+    file: '.fetch-job.yml'
   - project: 'devel/ciscripts'
     file: .shared-vars.yml
-  - 'ci/.gitlab-ci-0-gams.yml'
   - 'ci/.gitlab-ci-1-build.yml'
   - 'ci/.gitlab-ci-2-test.yml'
   - 'ci/.gitlab-ci-3-pack.yml'

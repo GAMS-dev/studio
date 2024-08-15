@@ -1,6 +1,7 @@
 TEMPLATE = app
 
 include(../tests.pri)
+include(../../extern/yaml-cpp/yaml-cpp.pri)
 
 INCLUDEPATH += $$SRCPATH            \
                $$SRCPATH/editors    \

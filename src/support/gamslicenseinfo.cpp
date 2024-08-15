@@ -30,6 +30,7 @@
 #include <QClipboard>
 #include <QGuiApplication>
 #include <QRegularExpression>
+#include <yaml-cpp/yaml.h>
 
 namespace gams {
 namespace studio {
@@ -53,9 +54,12 @@ GamsLicenseInfo::GamsLicenseInfo()
         EXCEPT() << "Could not create PAL object. " << msg;
     }
 
+    auto configLice = gamsConfigLicenseLocation();
+
     int rc; // additional return code, not used here
     auto dataPaths = gamsDataLocations();
-    mLicenseFilePath = CommonPaths::gamsLicenseFilePath(dataPaths);
+    mLicenseFilePath = configLice.isEmpty() ? CommonPaths::gamsLicenseFilePath(dataPaths)
+                                            : configLice;
     mLicenseAvailable = palLicenseReadU(mPAL,
                                         mLicenseFilePath.toStdString().c_str(),
                                         msg,
@@ -327,6 +331,45 @@ QStringList GamsLicenseInfo::processLicenseData(const QString &data)
     }
     // a GAMS license has 5 to 8 lines
     return (licenseLines.size() >= 5 && licenseLines.size() <= 8) ? licenseLines : QStringList();
+}
+
+QString GamsLicenseInfo::gamsConfigLicenseLocation()
+{
+    QString configData;
+    QFile configFile(CommonPaths::defaultGamsUserConfigFile());
+    if (configFile.open(QIODevice::ReadOnly)) {
+        configData = configFile.readAll();
+        configFile.close();
+    }
+    YAML::Node root;
+    try {
+        root = YAML::Load(configData.toStdString());
+        auto cmdNode = root["commandLineParameters"];
+        if (cmdNode.IsNull()) {
+            return QString();
+        }
+        for (std::size_t i=0; i<cmdNode.size(); ++i) {
+            for (const auto& node : cmdNode[i]) {
+                auto name = QString::fromStdString(node.first.as<std::string>());
+                if (name.compare("license", Qt::CaseInsensitive)) {
+                    continue;
+                }
+                for (const auto& value : node.second) {
+                    if (value.first.as<std::string>() == "value")
+                        return QString::fromStdString(value.second.as<std::string>());
+                }
+            }
+        }
+    } catch (const YAML::ParserException& e) {
+        auto error = QString("Error while fetching the license file location : %1 : when loading : %2")
+                         .arg(e.what(), configFile.fileName());
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
+    } catch (const std::string& e) {
+        auto error = QString("Error while fetching the license file location : %1 : when loading : %2")
+                         .arg(QString::fromStdString(e), configFile.fileName());
+        SysLogLocator::systemLog()->append(error, LogMsgType::Error);
+    }
+    return QString();
 }
 
 }

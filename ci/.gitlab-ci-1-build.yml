@@ -1,10 +1,12 @@
 build-deg:
   stage: build
-  tags: [carla]
-  needs: [install-gams-deg]
+  tags: [macos]
+  needs: [fetch-ci-scripts]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
   script:
+    - !reference [.get-gams]
+    - !reference [.gams-folder-deg]
     - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`cat gams_folder_deg.txt`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
@@ -19,10 +21,12 @@ build-deg:
 build-dac:
   stage: build
   tags: [macos-arm64]
-  needs: [install-gams-dac]
+  needs: [fetch-ci-scripts]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
   script:
+    - !reference [.get-gams]
+    - !reference [.gams-folder-dac]
     - printf "GAMS_DISTRIB=$HOME/cache/gams-installs/`cat gams_folder_dac.txt`\n" > gamsinclude.pri
     - printf "GAMS_DISTRIB_C_API=\$\$GAMS_DISTRIB/apifiles/C/api\n" >> gamsinclude.pri
     - printf "GAMS_DISTRIB_CPP_API=\$\$GAMS_DISTRIB/apifiles/C++/api\n" >> gamsinclude.pri
@@ -36,14 +40,16 @@ build-dac:
 
 build-leg:
   stage: build
-  tags: [puma]
+  tags: [linux]
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/leg/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]   # prevent startup.sh
-  needs: [install-gams-leg]
+  needs: [fetch-ci-scripts]
   variables:
     DOLLAR_GAMS: $$$$GAMS_DISTRIB
   script:
+    - !reference [.get-gams]
+    - !reference [.gams-folder-leg]
     - echo "GAMS_DISTRIB=/cache/gams-installs/`cat gams_folder_leg.txt`" > gamsinclude.pri
     - echo "GAMS_DISTRIB_C_API=$DOLLAR_GAMS/apifiles/C/api" >> gamsinclude.pri
     - echo "GAMS_DISTRIB_CPP_API=$DOLLAR_GAMS/apifiles/C++/api" >> gamsinclude.pri
@@ -56,14 +62,17 @@ build-leg:
 
 build-wei:
   stage: build
-  tags: [pond]
-  needs: [install-gams-wei]
+  tags: [windows]
+  needs: [fetch-ci-scripts]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
     entrypoint: [""]
   script:
+    - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
+    - !reference [.get-gams-wei]
+    - !reference [.gams-folder-wei]
     - '& $cmd_vcvars'
     - $data = 
       "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
@@ -85,13 +94,16 @@ build-wei-debug:
     - if: $PF_WEI_DEBUG == "0"
       when: never
     - when: on_success
-  tags: [pond]
-  needs: [install-gams-wei]
+  tags: [windows]
+  needs: [fetch-ci-scripts]
   variables:
      cmd_vcvars: C:\Program Files (x86)\Microsoft Visual Studio\2019\Community\VC\Auxiliary\Build\vcvars64.bat
   image:
     name: $GAMS_CONTAINER_REGISTRY/qt-machines/wei/${QT_IMAGE_VERSION}:latest
   script:
+    - $env:Path = "C:\Miniconda\Library\bin;C:\Miniconda\DLLs;" + $env:Path
+    - !reference [.get-gams-wei]
+    - !reference [.gams-folder-wei]
     - '& $cmd_vcvars'
     - $data = 
       "GAMS_DISTRIB=C:/Cache/gams-installs/$(Get-Content mygmsdir.tmp -Raw)",
