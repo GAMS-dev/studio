@@ -5090,7 +5090,7 @@ void MainWindow::focusProject(PExProjectNode *project)
                 visible = true;
             else {
                 for (PExFileNode *node : mProjectRepo.fileNodes(meta->id(), project->id())) {
-                    if (project->childNodes().contains(node))
+                    if (project->listFiles().contains(node))
                         visible = true;
                 }
             }
@@ -5233,8 +5233,20 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
         if (fileNodes.count() == 1)
             closeFileEditors(node->file()->id());
         else {
-            PExFileNode *newNode = fileNodes.first();
-            if (newNode == node) newNode = fileNodes.at(1);
+            // stay in project
+            PExFileNode *newNode = nullptr;
+            if (project) {
+                for (PExFileNode *fn : project->listFiles()) {
+                    if (fn != node && fn->file()->isOpen()) {
+                        newNode = fn;
+                        break;
+                    }
+                }
+            }
+            if (!newNode) {
+                newNode = fileNodes.first();
+                if (newNode == node) newNode = fileNodes.at(1);
+            }
             openFileNode(newNode);
         }
 
