@@ -164,6 +164,7 @@ signals:
     void refreshProjectTabName(QWidget *wid);
     void openRecentFile();
     void projectListChanged();
+    void doFocusProject(PExProjectNode *project);
     void parentAssigned(const gams::studio::PExAbstractNode *node);
     void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);

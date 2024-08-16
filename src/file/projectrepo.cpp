@@ -989,6 +989,11 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
     knownIds.append(addIds);
 
+    if (mFocussedProject && idx.parent() == mTreeModel->rootModelIndex() && !Settings::settings()->toBool(skOpenInCurrent)) {
+        // If in project focus the project is passed, the drop is in the empty area
+        // depending on the settings this counts as new project
+        idx = QModelIndex();
+    }
     PExProjectNode *project = nullptr;
     if (idx.isValid()) {
         PExAbstractNode *aNode = node(idx);
@@ -1014,8 +1019,25 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
         }
     }
 
+    int projectCount = 0;
+    int otherFileCount = 0;
+    for (const QString &item: std::as_const(files)) {
+        QFileInfo f(item);
+        QDir d(item);
+        if (f.isFile()) {
+            if (item.endsWith(".gsp", Qt::CaseInsensitive)) {
+                ++projectCount;
+                continue;
+            }
+            ++otherFileCount;
+        } else if (d.exists()) {
+            ++otherFileCount;
+        }
+    }
+
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
+    PExFileNode *fileToShow = nullptr;
     QList<NodeId> newIds;
     for (const QString &item: std::as_const(files)) {
         QFileInfo f(item);
@@ -1030,6 +1052,7 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
             if (knownIds.contains(file->id())) knownIds.removeAll(file->id());
             if (file->file()->kind() == FileKind::Gms) gmsFiles << file;
             if (!newIds.contains(file->id())) newIds << file->id();
+            if (!fileToShow) fileToShow = file;
         } else if (d.exists()) {
             emit openFolder(item, project);
         } else {
@@ -1055,7 +1078,12 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
                 closeNode(file);
         }
     }
-    emit openRecentFile();
+    if (projectCount && otherFileCount) {
+        emit doFocusProject(nullptr);
+        if (fileToShow)
+            emit openFile(fileToShow->file(), true, fileToShow->assignedProject());
+    } else if (mFocussedProject && project && mFocussedProject != project && !projectCount)
+        emit doFocusProject(project);
 }
 
 void ProjectRepo::reassignFiles(PExProjectNode *project)

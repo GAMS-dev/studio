@@ -106,8 +106,7 @@ void ProjectTreeView::dropEvent(QDropEvent *event)
         event->setDropAction(Qt::CopyAction);
     }
     QModelIndex index = indexAt(event->position().toPoint());
-    model();
-    if (!index.isValid() && rootIndex().parent().isValid())
+    if (!index.isValid() && rootIndex().parent().isValid()) // a project is in focus
         index = rootIndex();
     QList<QModelIndex> newSelection;
     emit dropFiles(index, pathList, idList, event->dropAction(), newSelection);

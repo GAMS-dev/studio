@@ -491,6 +491,7 @@ void MainWindow::watchProjectTree()
         }
     });
     connect(&mProjectRepo, &ProjectRepo::projectListChanged, this, &MainWindow::updateProjectList);
+    connect(&mProjectRepo, &ProjectRepo::doFocusProject, this, &MainWindow::focusProject);
     updateProjectList();
     mStartedUp = true;
     updateRecentEdit(nullptr, ui->mainTabs->currentWidget());
@@ -3347,7 +3348,8 @@ void MainWindow::updateProjectList()
     }
     if (!found)
         ui->cbFocusProject->setCurrentIndex(0);
-    ui->tbProjectSettings->setEnabled(ui->cbFocusProject->currentIndex() > 0);
+    bool hasOptions = focusProject && focusProject->type() < PExProjectNode::tSearch;
+    ui->tbProjectSettings->setEnabled(hasOptions);
     ui->menuFocus_Project->addActions(mActFocusProject->actions());
 }
 
@@ -5059,9 +5061,10 @@ void MainWindow::focusProject(PExProjectNode *project)
 
     // update combobox
     ui->cbFocusProject->setCurrentIndex(index);
-    ui->tbProjectSettings->setEnabled(index > 0);
+    bool hasOptions = project && project->type() < PExProjectNode::tSearch;
+    ui->tbProjectSettings->setEnabled(hasOptions);
     ui->cbFocusProject->setToolTip(project ? project->tooltip() : "Selector to focus on a single project");
-    ui->tbProjectSettings->setToolTip(project ? "Opens the project options" : "No project focussed");
+    ui->tbProjectSettings->setToolTip(hasOptions ? "Opens the project options" : "No project focussed");
 
     if (!project) {
         for (int i = 1; i < ui->mainTabs->count(); ++i)
