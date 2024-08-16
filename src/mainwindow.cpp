@@ -627,9 +627,7 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool closeAndWillReopen)
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
         if (fm->save()) {
             if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
-            else DEB() << "Marked to close " << fm->location();
         } else {
-            DEB() << "Save failed for " << fm->location();
             return false;
         }
     } else if (ret == QMessageBox::Discard) {
@@ -2745,7 +2743,6 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
 
     int newIndex = 0;
     bool closeLater = handleFileChanges(fc, false);
-    DEB() << "Marked to close " << ((closeLater && fc) ? "TRUE" : "FALSE");
     searchDialog()->updateDialogState();
     int visTabs = 0;
     for (int i = 1; i < ui->mainTabs->count(); ++i) {
@@ -2759,10 +2756,12 @@ void MainWindow::on_mainTabs_tabCloseRequested(int index)
             }
         }
     }
-    if (newIndex)
-        ui->mainTabs->setCurrentIndex(newIndex);
-    else
-        if (!visTabs) ui->mainTabs->setCurrentIndex(0);
+    if (!mShutDown) {
+        if (newIndex)
+            ui->mainTabs->setCurrentIndex(newIndex);
+        else
+            if (!visTabs) ui->mainTabs->setCurrentIndex(0);
+    }
     if (closeLater && fc) closeFileEditors(fc->id(), false);
 }
 
@@ -3626,10 +3625,11 @@ void MainWindow::closeEvent(QCloseEvent* event)
     on_actionClose_All_triggered();
     ui->mainTabs->closeTab(0); // Welcome page only gets hidden before, now really close it
     closeHelpView();
-    if (int remain = mFileMetaRepo.fileMetas().size()) {
-        DEB() << "remaining meta data: " << remain;
-        for (FileMeta *meta: mFileMetaRepo.fileMetas()) {
-            if (meta->isOpen()) DEB() << "Missed to close " << meta->location();
+    for (FileMeta *meta: mFileMetaRepo.fileMetas()) {
+        if (meta->isOpen()) {
+            // Workaround, this shouldn't occur
+            DEB() << "Missed to close " << meta->location();
+            closeFileEditors(meta->id());
         }
     }
     mTextMarkRepo.clear();
