@@ -637,10 +637,13 @@ void FileMeta::editToTop(QWidget *edit)
     addEditor(edit);
 }
 
-void FileMeta::removeEditor(QWidget *edit)
+void FileMeta::deleteEdit(QWidget *edit)
 {
     int i = mEditors.indexOf(edit);
-    if (i < 0) return;
+    if (i < 0) {
+        DEB() << "Delete edit failed for " << mLocation;
+        return;
+    }
 
     AbstractEdit* aEdit = ViewHelper::toAbstractEdit(edit);
     CodeEdit* scEdit = ViewHelper::toCodeEdit(edit);
@@ -702,14 +705,11 @@ void FileMeta::removeEditor(QWidget *edit)
         disconnect(scEdit, &CodeEdit::syntaxFlagData, mHighlighter, &syntax::SyntaxHighlighter::syntaxFlagData);
         disconnect(mHighlighter, &syntax::SyntaxHighlighter::needUnfold, scEdit, &CodeEdit::unfold);
     }
-}
-
-void FileMeta::deleteEditor(QWidget *edit)
-{
     if (gdxviewer::GdxViewer *gdx = ViewHelper::toGdxViewer(edit))
         gdx->saveDelete();
     else
         edit->deleteLater();
+    DEB() << "Deleted 1/" << (mEditors.size() + 1) << " editors of " << mLocation;
 }
 
 bool FileMeta::hasEditor(QWidget * const &edit) const
@@ -1329,6 +1329,7 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
     ViewHelper::setLocation(res, location());
     addEditor(res);
     res->setFont(font);
+    DEB() << "Added editor " << mEditors.count() << " to " << mLocation;
     return res;
 }
 
@@ -1349,7 +1350,7 @@ int FileMeta::addToTab(QTabWidget *tabWidget, QWidget *edit, int codecMib, NewTa
         } catch (Exception &e) {
             if (mEditors.size() > 0) {
                 tabWidget->removeTab(tabWidget->currentIndex()+1);
-                removeEditor(mEditors.first());
+                deleteEdit(mEditors.first());
             }
             e.raise();
         }

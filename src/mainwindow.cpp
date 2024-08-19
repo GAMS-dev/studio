@@ -634,7 +634,6 @@ bool MainWindow::handleFileChanges(FileMeta* fm, bool closeAndWillReopen)
         mAutosaveHandler->clearAutosaveFiles(openedFiles());
         fm->setModified(false);
         if (closeAndWillReopen) closeFileEditors(fm->id(), closeAndWillReopen);
-        DEB() << "Discard closing for " << fm->location();
     }
     return true;
 }
@@ -2791,7 +2790,7 @@ void MainWindow::on_logTabs_tabCloseRequested(int index)
     // dont remove syslog and dont delete resultsView
     if (!(edit == mSyslog || isResults)) {
         FileMeta* log = mFileMetaRepo.fileMeta(edit);
-        if (log) log->removeEditor(edit);
+        if (log) log->deleteEdit(edit);
         edit->deleteLater();
     }
 }
@@ -3295,8 +3294,7 @@ void MainWindow::closePinView()
         mRecent.removeEditor(edit);
         FileMeta *fm = mFileMetaRepo.fileMeta(edit);
         if (fm) {
-            fm->removeEditor(edit);
-            fm->deleteEditor(edit);
+            fm->deleteEdit(edit);
         } else
             edit->deleteLater();
         updateRecentEdit(edit, ui->mainTabs->currentWidget());
@@ -5151,7 +5149,7 @@ void MainWindow::closeProject(PExProjectNode* project)
         if (log) {
             QWidget* edit = log->file()->editors().isEmpty() ? nullptr : log->file()->editors().first();
             if (edit) {
-                log->file()->removeEditor(edit);
+                log->file()->deleteEdit(edit);
                 int index = ui->logTabs->indexOf(edit);
                 if (index >= 0) ui->logTabs->removeTab(index);
             }
@@ -5288,8 +5286,7 @@ void MainWindow::closeFileEditors(const FileId &fileId, bool willReopen)
             mSearchDialog->editorChanged(nullptr);
         mRecent.removeEditor(edit);
 
-        fm->removeEditor(edit);
-        fm->deleteEditor(edit);
+        fm->deleteEdit(edit);
     }
     if (fm->kind() != FileKind::Gsp)
         mClosedTabsIndexes << lastIndex;
