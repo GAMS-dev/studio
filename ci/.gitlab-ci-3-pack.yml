@@ -1,6 +1,6 @@
 pack-deg:
   stage: pack
-  tags: [carla]
+  tags: [macos]
   variables:
     qtpath: /Users/gitlab/Qt/${QT_VERSION}/macos/bin
   needs: [fetch-ci-scripts,build-deg]

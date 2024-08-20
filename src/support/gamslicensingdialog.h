@@ -50,9 +50,9 @@ public:
     static void createLicenseFileFromClipboard(QWidget *parent);
 
 private slots:
-    void on_copylicense_clicked();
-
-    void on_installButton_clicked();
+    void copyLicenseInfo();
+    void installFile();
+    void installAlp();
 
 private:
     QString gamsLicense();
