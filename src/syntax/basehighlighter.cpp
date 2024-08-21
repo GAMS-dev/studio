@@ -74,7 +74,8 @@ void BaseHighlighter::setDocument(QTextDocument *doc, bool wipe)
         connect(mDoc, &QTextDocument::contentsChange, this, &BaseHighlighter::reformatBlocks);
         connect(mDoc, &QTextDocument::blockCountChanged, this, &BaseHighlighter::blockCountChanged);
         setDirty(mDoc->firstBlock(), mDoc->lastBlock());
-        QTimer::singleShot(0, this, [this](){ mBlockCount = mDoc->blockCount(); });
+//        QTimer::singleShot(0, this, [this](){ mBlockCount = mDoc->blockCount(); });
+        mBlockCount = mDoc->blockCount();
         QTimer::singleShot(0, this, &BaseHighlighter::processDirtyParts);
     } else {
         mDirtyBlocks.clear();
