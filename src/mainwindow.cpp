@@ -5324,9 +5324,13 @@ void MainWindow::extraSelectionsUpdated()
 
 void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 {
-    fontSize += 0.1;
-    setGroupFontSize(fgText, fontSize, fontFamily);
-    setGroupFontSize(fgLog, fontSize, fontFamily);
+#ifdef _WIN64
+    qreal addSize = 0.1;
+#else
+    qreal addSize = 0.0;
+#endif
+    setGroupFontSize(fgText, fontSize + addSize, fontFamily);
+    setGroupFontSize(fgLog, fontSize + addSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
     mWp->zoomReset();
 }
@@ -6015,7 +6019,10 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
         if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     }
     QFont font(fontFamily);
-    font.setHintingPreference(QFont::PreferVerticalHinting);
+#ifdef _WIN64
+    if (fGroup != FontGroup::fgTable)
+        font.setHintingPreference(QFont::PreferVerticalHinting);
+#endif
     font.setPointSizeF(pointSize);
     mGroupFontSize.insert(fGroup, pointSize);
     return font;
