@@ -2614,8 +2614,7 @@ void MainWindow::on_actionChangelog_triggered()
         return;
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    fm->setKind(FileKind::Txt);
-    fm->setReadOnly(true);
+    fm->setKind(FileKind::TxtRO);
 
     PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
     mProjectRepo.findOrCreateFileNode(fm, project);
@@ -5434,6 +5433,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+        if (fm->location().endsWith("Changelog", Qt::CaseInsensitive)) continue;
         if (!fm || fm->kind() == FileKind::Gsp) continue;
         QVariantMap tabObject;
         tabObject.insert("location", fm->location());

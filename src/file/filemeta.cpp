@@ -48,6 +48,9 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, const FileId &id, const QString &loca
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
+    if (mData.type->kind() == FileKind::TxtRO && mData.size < 1024*1024)
+        setKind(FileKind::TxtRO);
+
     mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
     if (!mCodec) mCodec = QTextCodec::codecForLocale();
     setLocation(location);
@@ -294,7 +297,12 @@ QStringList FileMeta::suffix() const
 
 void FileMeta::setKind(FileKind kind)
 {
-    mData.type = &FileType::from(kind);
+    if (kind == FileKind::TxtRO && mData.size < 1024*1024) {
+        mData.type = &FileType::from(FileKind::Txt);
+        setReadOnly(true);
+    } else {
+        mData.type = &FileType::from(kind);
+    }
 }
 
 FileKind FileMeta::kind() const
