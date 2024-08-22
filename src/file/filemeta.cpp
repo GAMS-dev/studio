@@ -1076,6 +1076,22 @@ bool FileMeta::isReadOnly() const
         return false;
 }
 
+void FileMeta::setReadOnly(bool readOnly)
+{
+    if (mForceReadOnly == readOnly) return;
+    // This adds a readonly to usually editable editors (currently only for CodeEdit)
+    mForceReadOnly = readOnly;
+    if (document()) { // There is a text editor
+        for (QWidget *wid : editors()) {
+            AbstractEdit *aEdit = ViewHelper::toAbstractEdit(wid);
+            if (aEdit) {
+                aEdit->setReadOnly(mForceReadOnly);
+                aEdit->setTextInteractionFlags(aEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+            }
+        }
+    }
+}
+
 bool FileMeta::isAutoReload() const
 {
     bool autoReload = mAutoReload || mTempAutoReloadTimer.isActive();
@@ -1293,6 +1309,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit = new CodeEdit(parent);
+        codeEdit->setReadOnly(mForceReadOnly);
+        codeEdit->setTextInteractionFlags(codeEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+
         edit = (kind() == FileKind::Txt || kind() == FileKind::Efi) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                                                     : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth

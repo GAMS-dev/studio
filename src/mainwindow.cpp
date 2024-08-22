@@ -2614,7 +2614,8 @@ void MainWindow::on_actionChangelog_triggered()
         return;
     }
     FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(filePath);
-    fm->setKind(FileKind::TxtRO);
+    fm->setKind(FileKind::Txt);
+    fm->setReadOnly(true);
 
     PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
     mProjectRepo.findOrCreateFileNode(fm, project);
@@ -5323,6 +5324,7 @@ void MainWindow::extraSelectionsUpdated()
 
 void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 {
+    fontSize += 0.1;
     setGroupFontSize(fgText, fontSize, fontFamily);
     setGroupFontSize(fgLog, fontSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
@@ -6013,6 +6015,7 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
         if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     }
     QFont font(fontFamily);
+    font.setHintingPreference(QFont::PreferVerticalHinting);
     font.setPointSizeF(pointSize);
     mGroupFontSize.insert(fGroup, pointSize);
     return font;

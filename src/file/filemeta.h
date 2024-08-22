@@ -72,6 +72,7 @@ public:
     bool isOpen() const;
     bool isModified() const;
     bool isReadOnly() const;
+    void setReadOnly(bool readOnly = true);
     bool isAutoReload() const;
     void setAutoReload();
     void resetTempReloadState();
@@ -168,6 +169,7 @@ private:
     Data mData;
     bool mAutoReload = false;
     bool mActivelySaved = false;
+    bool mForceReadOnly = false;
     QWidgetList mEditors;
     QTextCodec *mCodec = nullptr;
     QTextDocument* mDocument = nullptr;
