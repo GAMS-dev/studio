@@ -9,6 +9,7 @@ Version 1.18.6 *
 - fixed incorrect entry count for model library tabs
 - fixed crash on reloading a lst file
 - update editors after changes in settings dialog
+- added support for ALP licenses
 
 Version 1.18.5
 ==================
