@@ -97,7 +97,7 @@ void FileSystemWidget::setModelName(const QString &modelName)
     }
     QStringList uncommonFiles;
     for (const QString &rawFile: std::as_const(mUncommonFiles)) {
-        uncommonFiles << rawFile.arg(modelName.toLower());
+        uncommonFiles << (rawFile.contains("%1") ? rawFile.arg(modelName.toLower()) : rawFile);
     }
     QString pattern = uncommonFiles.join("|").replace('.', "\\.").replace('?', '.').replace("*", ".*");
     pattern = QString("^(%1)$").arg(pattern);

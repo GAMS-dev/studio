@@ -71,6 +71,8 @@ public:
 
     QStringList gamsConfigLocations();
 
+    QString gamsConfigLicenseLocation();
+
     int localDistribVersion();
 
     QString localDistribVersionString();
@@ -105,8 +107,6 @@ private:
     static int errorCallback(int count, const char *message);
 
     QStringList processLicenseData(const QString &data);
-
-    QString gamsConfigLicenseLocation();
 
 private:
     QString mLicenseFilePath;

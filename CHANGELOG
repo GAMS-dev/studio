@@ -15,14 +15,18 @@ Version 1.19.0 *
 - removed warning when deleting a project file that does not exist
 - fixed usage of license file specified via the `gamsconfig.yaml`
 
-Version 1.18.6 *
+Version 1.18.6
 ==================
-- added highlighting of project entries while running
+- added highlighting of group names for all running projects
 - added function to "Save as..." for the project options file
+- added licensed GAMS solvers to license text and dropped solver matrix
+- added support for fetching a GAMS license by using a access code
+- fixed usage of license file specified via the `gamsconfig.yaml`
 - fixed crash after "Save as..." of the changelog
 - fixed color theme issue when Windows is in dark mode and Studio is using light mode
-- fixed incorrect entry count for model library tabs
-- update editors after changes in settings dialog
+- fixed incorrect entry count shown by model library tabs when using filters
+- fixed crash on reloading a LST file
+- fixed update editors after changes in settings dialog
 
 Version 1.18.5
 ==================

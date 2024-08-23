@@ -17,40 +17,34 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
+#ifndef GAMSGETKEYPROCESS_H
+#define GAMSGETKEYPROCESS_H
 
-#ifndef TABLEVIEW_H
-#define TABLEVIEW_H
-
-#include <QTableView>
+#include <QProcess>
 
 namespace gams {
 namespace studio {
-namespace modeldialog {
 
-class TableView : public QTableView
+class GamsGetKeyProcess
 {
 public:
-    TableView(QWidget *parent = nullptr);
+    GamsGetKeyProcess();
 
-    void zoomIn(int range = 1);
-    void zoomOut(int range = 1);
-    void resetZoom();
+    QString alpId() const;
+    void setAlpId(const QString& id);
 
-protected:
-    bool eventFilter(QObject *watched, QEvent *event) override;
-
-    void keyPressEvent(QKeyEvent *event) override;
+    QString execute();
 
 private:
-    void zoom(int range);
+    QString nativeAppPath();
 
 private:
-    QFont mBaseFont;
-    int mZoomFactor = 2;
+    QString mApplication;
+    QString mAlpId;
+    QProcess mProcess;
 };
 
 }
 }
-}
 
-#endif // TABLEVIEW_H
+#endif // GAMSGETKEYPROCESS_H
