@@ -15,6 +15,10 @@ Version 1.19.0 *
 - removed warning when deleting a project file that does not exist
 - fixed usage of license file specified via the `gamsconfig.yaml`
 
+Version 1.18.7 *
+==================
+- fixed license dialog layout on resize
+
 Version 1.18.6
 ==================
 - added highlighting of group names for all running projects
