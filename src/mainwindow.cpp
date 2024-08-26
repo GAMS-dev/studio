@@ -683,6 +683,7 @@ void MainWindow::initIcons()
     ui->actionChangelog->setIcon(Theme::icon(":/%1/new"));
     ui->actionGoForward->setIcon(Theme::icon(":/%1/forward"));
     ui->actionGoBack->setIcon(Theme::icon(":/%1/backward"));
+    ui->tbProjectSettings->setIcon(Theme::icon(":/%1/cog"));
 }
 
 void MainWindow::initToolBar()
