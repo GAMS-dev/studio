@@ -116,7 +116,7 @@ public:
     TextMarkRepo* textMarkRepo() const;
 
     bool checkRead(const QVariantMap &map, int &count, int &ignored, QStringList &missed, const QString &baseDir);
-    bool read(const QVariantList &projectsList);
+    bool readList(const QVariantList &projectsList);
     bool read(const QVariantMap &projectMap, QString gspFile = QString());
     void write(QVariantList &projects) const;
     void save(PExProjectNode *project, const QVariantMap &data) const;

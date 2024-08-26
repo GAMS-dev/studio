@@ -275,7 +275,7 @@ bool ProjectRepo::checkRead(const QVariantMap &map, int &count, int &ignored, QS
     return missed.isEmpty();
 }
 
-bool ProjectRepo::read(const QVariantList &projectsList)
+bool ProjectRepo::readList(const QVariantList &projectsList)
 {
     bool res = true;
     for (int i = 0; i < projectsList.size(); ++i) {

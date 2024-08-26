@@ -3149,7 +3149,7 @@ void MainWindow::openProject(const QString &gspFile)
         if (map.contains("projects")) {
             // a list of project maps
             data = map.value("projects").toList();
-            mProjectRepo.read(data);
+            mProjectRepo.readList(data);
         } else {
             // only one project map
             path::PathRequest *dialog = new path::PathRequest(this);
@@ -3158,7 +3158,10 @@ void MainWindow::openProject(const QString &gspFile)
 
             if (dialog->checkProject()) {
                 dialog->deleteLater();
+                bool hasProjectFocus = mProjectRepo.focussedProject();
                 mProjectRepo.read(map, gspFile);
+                if (hasProjectFocus)
+                    focusProject(mProjectRepo.findProject(gspFile));
             } else {
                 connect(dialog, &path::PathRequest::finished, this, [this, dialog]() {
                     dialog->deleteLater();
@@ -3166,7 +3169,10 @@ void MainWindow::openProject(const QString &gspFile)
                     QTimer::singleShot(0, this, &MainWindow::openDelayedFiles);
                 });
                 connect(dialog, &path::PathRequest::accepted, this, [this, map, gspFile]() {
+                    bool hasProjectFocus = mProjectRepo.focussedProject();
                     mProjectRepo.read(map, gspFile);
+                    if (hasProjectFocus)
+                        focusProject(mProjectRepo.findProject(gspFile));
                 });
                 mOpenPermission = opNoGsp;
                 dialog->open();
@@ -3823,8 +3829,11 @@ PExFileNode* MainWindow::openFilePath(const QString &filePath, PExProjectNode* k
         QFileInfo fi(filePath);
         QString proFile = fi.path() + "/" + fi.completeBaseName() + ".gsp";
         if (QFile::exists(proFile)) {
+            bool hasProjectFocus = mProjectRepo.focussedProject();
             mProjectRepo.read(QVariantMap(), proFile);
             project = mProjectRepo.findProject(proFile);
+            if (hasProjectFocus)
+                focusProject(project);
         } else
             project = mProjectRepo.createProject(fi.completeBaseName(), fi.absolutePath(), "", onExist_Project);
     }
@@ -4291,7 +4300,7 @@ void MainWindow::initDelayedElements()
 {
     adjustFonts();
     Settings *settings = Settings::settings();
-    projectRepo()->read(settings->toList(skProjects));
+    projectRepo()->readList(settings->toList(skProjects));
 
     if (settings->toBool(skRestoreTabs)) {
         QVariantMap joTabs = settings->toMap(skTabs);
