@@ -499,6 +499,14 @@ void MainWindow::initWelcomePage()
 
     connect(mWp, &WelcomePage::openFilePath, this, [this](const QString& filePath) {
         PExProjectNode *project = nullptr;
+        if (filePath == CommonPaths::changelog()) {
+            on_actionChangelog_triggered();
+            return;
+        }
+        if (filePath == CommonPaths::defaultGamsUserConfigFile()) {
+            on_actionEditDefaultConfig_triggered();
+            return;
+        }
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
             if (project && project->type() != PExProjectNode::tCommon)
@@ -4787,7 +4795,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         updateRecentEdit(mRecent.editor(), edit);
     }
     addToHistory(fileMeta->location());
-    if (project) addToHistory(project->fileName());
+    if (project && project->type() == PExProjectNode::tCommon) addToHistory(project->fileName());
 }
 
 void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
