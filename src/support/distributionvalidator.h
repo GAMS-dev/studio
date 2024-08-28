@@ -47,12 +47,6 @@ signals:
 
 private:
     ///
-    /// \brief Verify the GAMS Distribution bitness on Windows.
-    /// \remark On Windows we support both 32 Bit and 64 Bit.
-    ///
-    void checkBitness();
-
-    ///
     /// \brief Check the GAMS Distribution to GAMS Studio compatibility.
     ///
     void checkCompatibility();

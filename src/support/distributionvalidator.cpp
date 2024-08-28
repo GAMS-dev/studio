@@ -22,10 +22,6 @@
 #include "commonpaths.h"
 #include "process.h"
 
-#include <QDate>
-#include <QStringList>
-#include <QFileInfo>
-#include <QDir>
 #include <QRegularExpression>
 
 namespace gams {
@@ -42,27 +38,7 @@ DistributionValidator::DistributionValidator(QObject *parent)
 
 void DistributionValidator::run()
 {
-    checkBitness();
     checkCompatibility();
-}
-
-void DistributionValidator::checkBitness()
-{
-#ifdef _WIN32
-    auto gamsPath = CommonPaths::systemDir();
-    QFileInfo joat64(gamsPath + '/' + "joatdclib64.dll");
-    bool is64 = (sizeof(void*) == 8);
-    QStringList messages;
-    if (gamsPath.isEmpty())
-        return; //we can not check the bitness of GAMS if no GAMS was found
-    if (!is64 && joat64.exists())
-        messages << "GAMS Studio is 32 bit but 64 bit GAMS installation found. System directory:"
-                 << gamsPath;
-    if (is64 && !joat64.exists())
-        messages << "GAMS Studio is 64 bit but 32 bit GAMS installation found. System directory:"
-                 << gamsPath;
-    emit newError(messages.join(" "));
-#endif
 }
 
 void DistributionValidator::checkCompatibility()
