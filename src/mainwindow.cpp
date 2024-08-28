@@ -3960,6 +3960,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     QStringList filesNotFound;
     QList<PExFileNode*> gmsFiles;
     QSet<PExProjectNode*> usedProjects;
+    bool skipFocus = false;
 
     // create project
     if (opt == ogNone)
@@ -3975,6 +3976,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                 PExProjectNode *pro = mProjectRepo.findProject(item);
                 if (!pro) {
                     openProject(item);
+                    skipFocus = true;
                     if (files.size() == 1)
                         QTimer::singleShot(0, this, [this, item](){
                             PExProjectNode *pro = mProjectRepo.findProject(item);
@@ -3989,6 +3991,7 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
                 if (!itemProject) {
                     QString proPath = f.path() + "/" + f.completeBaseName() + ".gsp";
                     openProjectIfExists(proPath);
+                    skipFocus = true;
                     itemProject = mProjectRepo.findProject(proPath);
                 }
                 PExFileNode *node = addNode("", item, itemProject);
@@ -4021,10 +4024,11 @@ void MainWindow::openFiles(const QStringList &files, OpenGroupOption opt)
     }
 
     if ((mProjectRepo.focussedProject() || Settings::settings()->toInt(skCurrentFocusProject) >= 0)
-            && usedProjects.count() == 1)
+            && usedProjects.count() == 1) {
         focusProject(usedProjects.values().first());
-    else
+    } else if(!skipFocus) {
         focusProject(nullptr);
+    }
 }
 
 void MainWindow::switchToLogTab(FileMeta *fm)
