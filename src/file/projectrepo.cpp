@@ -989,11 +989,6 @@ void ProjectRepo::dropFiles(QModelIndex idx, QStringList files, QList<NodeId> kn
     }
     knownIds.append(addIds);
 
-    if (mFocussedProject && idx.parent() == mTreeModel->rootModelIndex() && !Settings::settings()->toBool(skOpenInCurrent)) {
-        // If in project focus the project is passed, the drop is in the empty area
-        // depending on the settings this counts as new project
-        idx = QModelIndex();
-    }
     PExProjectNode *project = nullptr;
     if (idx.isValid()) {
         PExAbstractNode *aNode = node(idx);
