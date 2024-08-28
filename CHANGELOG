@@ -12,6 +12,7 @@ Version 1.19.0 *
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 - improved debugging communication between GAMS and GAMS Studio
 - improved allow to remove all but the main file from a running project
+- improved when closing a tab focus other tab from the project if available
 - removed warning when deleting a project file that does not exist
 - fixed usage of license file specified via the `gamsconfig.yaml`
 
