@@ -309,7 +309,6 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             int ignored;
             QStringList missed;
             checkRead(projectMap, count, ignored, missed, projectPath);
-            // TODO (JM) Please fix the default value of count and ignored in some cases you compare random values
             if (count == ignored + missed.count()) {
                 message = "Couldn't restore missing project " + gspFile;
                 SysLogLocator::systemLog()->append(message);
@@ -557,7 +556,9 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
 
-    if (type == PExProjectNode::tGams) {
+    if (name.compare("-GAMS-System-") == 0)
+        type = PExProjectNode::tGams;
+    else if (type == PExProjectNode::tGams) {
         name = CGamsSystemProjectName;
     } else if (type == PExProjectNode::tCommon) {
         if (!name.endsWith(".gsp", FileType::fsCaseSense())) {
@@ -819,10 +820,19 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     // set location to new file and add it to the tree
     if (sourceFM->save(target)) {
         node->setName(sourceFM->name());
-        addToProject(node->assignedProject(), node);
+
+        PExProjectNode *project = node->assignedProject();
+        if (project->type() != PExProjectNode::tGams) {
+            addToProject(project, node);
+        } else {
+            QFileInfo fi(target);
+            PExProjectNode *newPro = createProject(fi.completeBaseName(), fi.path(), "", onExist_Project);
+            if (newPro)
+                addToProject(newPro, node);
+        }
 
         // re-add old file
-        findOrCreateFileNode(oldFile, node->assignedProject());
+        findOrCreateFileNode(oldFile, project);
 
         // macOS didn't focus on the new node
         mTreeModel->setCurrent(mTreeModel->index(node));

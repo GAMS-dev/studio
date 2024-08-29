@@ -247,7 +247,7 @@ bool GamsConfigEditor::saveAs(const QString &location)
     mGuc->writeGamsUserConfigFile(location);
     setModified(false);
 
-    return false;
+    return true;
 }
 
 }
