@@ -425,9 +425,9 @@ MainWindow::MainWindow(QWidget *parent)
 #ifndef __APPLE__
     connect(PaletteManager::instance(), &PaletteManager::paletteChanged, this, [this]() {
         QPalette pal = qApp->palette();
+        ui->logTabs->setPalette(pal);
         pal.setColor(QPalette::Highlight, Qt::transparent);
         ui->projectView->setPalette(pal);
-        ui->logTabs->setPalette(pal);
     });
 #endif
     ViewHelper::changeAppearance();
