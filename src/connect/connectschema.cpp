@@ -46,13 +46,18 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     if (node["type"]) {
         if (node["type"].Type()==YAML::NodeType::Sequence) {
             for(size_t i=0; i<node["type"].size(); i++) {
-               QString value(QString::fromStdString(node["type"][i].as<std::string>()));
-               if (node["type"][i])
-                   types << getTypeFromValue(value);
+                QString value(QString::fromStdString(node["type"][i].as<std::string>()));
+                types << getTypeFromValue(value);
             }
         } else if (node["type"].Type()==YAML::NodeType::Scalar) {
                   QString value(QString::fromStdString(node["type"].as<std::string>()));
                   types << getTypeFromValue(value);
+        }
+    }
+    bool nullable = false;
+    if (node["nullable"]) {
+        if (node["nullable"].Type()==YAML::NodeType::Scalar) {
+            nullable = node["nullable"].as<bool>();
         }
     }
     bool required = false;
@@ -67,14 +72,19 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     }
     ValueWrapper defvalue;
     if (node["default"] ) {
-        if (std::find(types.begin(), types.end(), SchemaType::Integer) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<int>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
-                  defvalue = ValueWrapper(node["default"].as<double>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::String) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<std::string>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::Boolean) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<bool>());
+        if (node["default"].Type()==YAML::NodeType::Null) {
+            std::string nullstr("null");
+            defvalue = ValueWrapper(nullstr);
+        } else {
+            if (std::find(types.begin(), types.end(), SchemaType::String) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<std::string>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Integer) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<int>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<double>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Boolean) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<bool>());
+            }
         }
     }
     ValueWrapper minvalue;
@@ -101,7 +111,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
 //        mOrderedKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
-    mSchemaHelper.insert(key, new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes));
+    mSchemaHelper.insert(key, new Schema(level, node, types, required, nullable, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
@@ -241,7 +251,6 @@ QStringList ConnectSchema::getAllLeveledKeys(const QString &key, int level) cons
 {
     QStringList keyList;
     for(const QString& k : mOrderedKeyList) {
-        qDebug() << "  getAllLeveledKeys:k="<< k;
         if ( level!=mSchemaHelper[key]->level)
             continue;
     }
@@ -414,13 +423,14 @@ QStringList ConnectSchema::getExcludedKeys(const QString &key) const
     return QStringList();
 }
 
-Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, const QList<ValueWrapper> &allowedValues_,
+Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, bool nullable_, const QList<ValueWrapper> &allowedValues_,
                const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_, const QStringList &excludes_)
     : level(level_),
       schemaNode(schemaNode_),
       types(type_),
       required(required_),
       allowedValues(allowedValues_),
+      nullable(nullable_),
       defaultValue(defaultValue_),
       min(min_),
       max(max_),

@@ -62,10 +62,11 @@ QVariant SchemaDefinitionModel::data(const QModelIndex &index, int role) const
     }
     case Qt::DisplayRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
-        if (index.column()<=item->columnCount()-1)
+        if (index.column()<=item->columnCount()-1) {
             return item->data(index.column());
-        else
+        } else {
             return QVariant();
+        }
     }
     case Qt::ForegroundRole: {
         SchemaDefinitionItem* item = static_cast<SchemaDefinitionItem*>(index.internalPointer());
@@ -273,7 +274,10 @@ void SchemaDefinitionModel::addValue(ValueWrapper& value, QList<QVariant>& data)
     } else if (value.type==SchemaValueType::Float) {
         data << value.value.doubleval;
     } else if (value.type==SchemaValueType::String) {
-        data << QString(value.value.stringval);
+               if (strcmp(value.value.stringval, "null") == 0)
+                  data << QString(value.value.stringval);
+               else
+                  data << QString(value.value.stringval);
     } else if (value.type==SchemaValueType::Boolean) {
         data << value.value.boolval;
     } else  {
@@ -319,7 +323,7 @@ QStringList SchemaDefinitionModel::gettAllAllowedValues(Schema *schemaHelper)
 void SchemaDefinitionModel::setupTreeItemModelData()
 {
     QList<QVariant> rootData;
-    rootData << "Option" << "Required"  << "Type" << "default"
+    rootData << "Option" << "Required"  << "Type" << "Nullable" <<  "Default"
              << "Allowed Values"  << "min" /*<< "max"*/ << "SchemaKey" << "DragEnabled" << "Excludes" ;
 
     for (const QString& schemaName : mConnect->getSchemaNames()) {
@@ -350,6 +354,7 @@ void SchemaDefinitionModel::setupTreeItemModelData()
                 columnData << "";
                 columnData << "";
                 columnData << "";
+                columnData << "";
                 columnData << QVariant(false);
                 columnData << (s ? s->excludes : QStringList());
                 if (s && !s->excludes.isEmpty())
@@ -370,6 +375,7 @@ void SchemaDefinitionModel::setupTreeItemModelData()
                 columnData << key;
                 columnData << (s->required?"Y":"");
                 addTypeList(s->types, columnData);
+                columnData << (s->nullable?"Y":"");
                 addValue(s->defaultValue, columnData);
                 QStringList strlist = gettAllAllowedValues(s);
                 if (strlist.isEmpty())
@@ -410,6 +416,7 @@ void SchemaDefinitionModel::setupOneofSchemaTree(const QString &schemaName, cons
             columnData << "";
             columnData << "";
             columnData << "";
+            columnData << "";
             columnData << QVariant(false);
             if (schemaHelper->excludes.isEmpty())
                 columnData << schemaHelper->excludes.join(",");
@@ -429,6 +436,7 @@ void SchemaDefinitionModel::setupOneofSchemaTree(const QString &schemaName, cons
             listData << key.mid(key.lastIndexOf(":")+1);
             listData << (schemaHelper->required?"Y":"");
             addTypeList(schemaHelper->types, listData);
+            listData << (schemaHelper->nullable?"Y":"");
             addValue(schemaHelper->defaultValue, listData);
             QStringList strlist = gettAllAllowedValues(schemaHelper);
             if (strlist.isEmpty())
@@ -457,6 +465,7 @@ void SchemaDefinitionModel::setupAnyofSchemaTree(const QString &schemaName, cons
         listData << (key.contains(":") ? key.mid(key.lastIndexOf(":")+1) : key) ;
         listData << (s->required?"Y":"");
         addTypeList(s->types, listData);
+        listData << (s->nullable?"Y":"");
         addValue(s->defaultValue, listData);
         QStringList strlist = gettAllAllowedValues(schemaHelper);
         if (strlist.isEmpty())
@@ -497,6 +506,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         listData << "schema";
         listData << (schemaHelper->required?"Y":"");
         addTypeList(schemaHelper->types, listData);
+        listData << (schemaHelper->nullable?"Y":"");
         addValue(schemaHelper->defaultValue, listData);
         QStringList strlist = gettAllAllowedValues(schemaHelper);
         if (strlist.isEmpty())
@@ -530,6 +540,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                               data << "oneof_schema";
                           else
                               addTypeList(schemaHelper->types, data);
+                          data << (schemaHelper->nullable?"Y":"");
                           addValue(schemaHelper->defaultValue, data);
                           QStringList strlist = gettAllAllowedValues(schemaHelper);
                           if (strlist.isEmpty())
@@ -556,6 +567,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                                   columnData << kk.mid(kk.lastIndexOf(":")+1);
                                   columnData << "";
                                   columnData << "anyof";
+                                  columnData << "";
                                   columnData << "";
                                   columnData << "";
                                   columnData << "";
@@ -591,6 +603,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                         columnData << "";
                         columnData << "";
                         columnData << "";
+                        columnData << "";
                         columnData << QVariant(false);
                         if (schemaHelper->excludes.isEmpty())
                             columnData << schemaHelper->excludes.join(",");
@@ -611,6 +624,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                         data <<  schemaKeyStr;
                         data << (schemaHelper->required?"Y":"");
                         addTypeList(schemaHelper->types, data);
+                        data << (schemaHelper->nullable?"Y":"");
                         addValue(schemaHelper->defaultValue, data);
                         QStringList strlist = gettAllAllowedValues(schemaHelper);
                         if (strlist.isEmpty())

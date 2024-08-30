@@ -158,6 +158,7 @@ public:
     QList<SchemaType>    types;
     bool                 required;
     QList<ValueWrapper>  allowedValues;
+    bool                 nullable;
     ValueWrapper         defaultValue;
     ValueWrapper         min;
     ValueWrapper         max;
@@ -182,6 +183,7 @@ public:
         const YAML::Node           &schemaNode_,
         const QList<SchemaType>    &type_,
         bool                       required_,
+        bool                       nullable_,
         const QList<ValueWrapper>  &allowedValues_,
         const ValueWrapper         &defaultValue_,
         const ValueWrapper         &min_,
