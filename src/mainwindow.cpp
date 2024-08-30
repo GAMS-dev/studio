@@ -1505,6 +1505,7 @@ void MainWindow::focusProcessLogs()
 
 void MainWindow::updateStatusFile()
 {
+    if (mShutDown) return;
     FileMeta *fm = mFileMetaRepo.fileMeta(mRecent.editFileId());
     if (fm) {
         mStatusWidgets->setFileName(QDir::toNativeSeparators(fm->location()));
@@ -1514,6 +1515,7 @@ void MainWindow::updateStatusFile()
 
 void MainWindow::updateStatusPos()
 {
+    if (mShutDown) return;
     QPoint pos;
     QPoint anchor;
     if (CodeEdit *ce = ViewHelper::toCodeEdit(mRecent.editor())) {
@@ -1534,6 +1536,7 @@ void MainWindow::updateStatusPos()
 
 void MainWindow::updateStatusMode()
 {
+    if (mShutDown) return;
     CodeEdit* edit = ViewHelper::toCodeEdit(mRecent.editor());
     if (ViewHelper::toSolverOptionEdit(mRecent.editor())) {
         mStatusWidgets->setEditMode(StatusWidgets::EditMode::Insert);
@@ -1549,6 +1552,7 @@ void MainWindow::updateStatusMode()
 
 void MainWindow::updateStatusLineCount()
 {
+    if (mShutDown) return;
     if (AbstractEdit* edit = ViewHelper::toAbstractEdit(mRecent.editor()))
         mStatusWidgets->setLineCount(edit->blockCount());
     else if (TextView *tv = ViewHelper::toTextView(mRecent.editor()))
@@ -1560,6 +1564,7 @@ void MainWindow::updateStatusLineCount()
 
 void MainWindow::updateStatusLoadAmount()
 {
+    if (mShutDown) return;
     if (TextView *tv = ViewHelper::toTextView(mRecent.editor())) {
         qreal amount = qAbs(qreal(tv->knownLines()) / tv->lineCount());
         mStatusWidgets->setLoadAmount(amount);
@@ -1976,20 +1981,21 @@ void MainWindow::on_actionClose_All_triggered()
     if (ui->mainTabs->count() > 1)
         ui->mainTabs->tabBar()->moveTab(ui->mainTabs->currentIndex(), ui->mainTabs->count()-1);
 
-    for(int i = ui->mainTabs->count() - 1; i > 0; i--) {
-        on_mainTabs_tabCloseRequested(i);
-    }
+    while (ui->mainTabs->count() > 1) // keep welcome page
+        on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 1);
+
+    ui->mainTabs->setTabVisible(0, true);
     connect(ui->mainTabs, &QTabWidget::currentChanged, this, &MainWindow::activeTabChanged);
 }
 
 void MainWindow::on_actionClose_All_Except_triggered()
 {
     int except = ui->mainTabs->currentIndex();
-    for(int i = ui->mainTabs->count(); i >= 0; i--) {
-        if(i != except) {
-            on_mainTabs_tabCloseRequested(i);
-        }
-    }
+    if (except < 0)
+    while (ui->mainTabs->count() - 1 > except)
+        on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 1);
+    while (ui->mainTabs->count() > 2)  // keep welcome page
+        on_mainTabs_tabCloseRequested(ui->mainTabs->count() - 2);
 }
 
 void MainWindow::codecChanged(QAction *action)
