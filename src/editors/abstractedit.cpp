@@ -176,7 +176,7 @@ int AbstractEdit::topVisibleLine()
 
 void AbstractEdit::extraSelCurrentLine(QList<QTextEdit::ExtraSelection> &selections)
 {
-    if (!Settings::settings() || Settings::settings()->toBool(skEdHighlightCurrentLine)) return;
+    if (!Settings::settings() || !Settings::settings()->toBool(skEdHighlightCurrentLine)) return;
 
     QTextEdit::ExtraSelection selection;
     selection.format.setBackground(toColor(Theme::Edit_currentLineBg));
