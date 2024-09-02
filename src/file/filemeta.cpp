@@ -48,6 +48,9 @@ FileMeta::FileMeta(FileMetaRepo *fileRepo, const FileId &id, const QString &loca
     : mId(id), mFileRepo(fileRepo), mData(Data(location, knownType))
 {
     if (!mFileRepo) EXCEPT() << "FileMetaRepo  must not be null";
+    if (mData.type->kind() == FileKind::TxtRO && mData.size < 1024*1024)
+        setKind(FileKind::TxtRO);
+
     mCodec = QTextCodec::codecForMib(Settings::settings()->toInt(skDefaultCodecMib));
     if (!mCodec) mCodec = QTextCodec::codecForLocale();
     setLocation(location);
@@ -294,7 +297,12 @@ QStringList FileMeta::suffix() const
 
 void FileMeta::setKind(FileKind kind)
 {
-    mData.type = &FileType::from(kind);
+    if (kind == FileKind::TxtRO && mData.size < 1024*1024) {
+        mData.type = &FileType::from(FileKind::Txt);
+        setReadOnly(true);
+    } else {
+        mData.type = &FileType::from(kind);
+    }
 }
 
 FileKind FileMeta::kind() const
@@ -1076,6 +1084,22 @@ bool FileMeta::isReadOnly() const
         return false;
 }
 
+void FileMeta::setReadOnly(bool readOnly)
+{
+    if (mForceReadOnly == readOnly) return;
+    // This adds a readonly to usually editable editors (currently only for CodeEdit)
+    mForceReadOnly = readOnly;
+    if (document()) { // There is a text editor
+        for (QWidget *wid : editors()) {
+            AbstractEdit *aEdit = ViewHelper::toAbstractEdit(wid);
+            if (aEdit) {
+                aEdit->setReadOnly(mForceReadOnly);
+                aEdit->setTextInteractionFlags(aEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+            }
+        }
+    }
+}
+
 bool FileMeta::isAutoReload() const
 {
     bool autoReload = mAutoReload || mTempAutoReloadTimer.isActive();
@@ -1293,6 +1317,9 @@ QWidget* FileMeta::createEdit(QWidget *parent, PExProjectNode *project, const QF
         AbstractEdit *edit = nullptr;
         CodeEdit *codeEdit = nullptr;
         codeEdit = new CodeEdit(parent);
+        codeEdit->setReadOnly(mForceReadOnly);
+        codeEdit->setTextInteractionFlags(codeEdit->textInteractionFlags() | Qt::TextSelectableByKeyboard);
+
         edit = (kind() == FileKind::Txt || kind() == FileKind::Efi) ? ViewHelper::initEditorType(codeEdit, EditorType::txt)
                                                                     : ViewHelper::initEditorType(codeEdit);
         edit->setLineWrapMode(Settings::settings()->toBool(skEdLineWrapEditor) ? QPlainTextEdit::WidgetWidth

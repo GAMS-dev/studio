@@ -433,9 +433,9 @@ MainWindow::MainWindow(QWidget *parent)
 #ifndef __APPLE__
     connect(PaletteManager::instance(), &PaletteManager::paletteChanged, this, [this]() {
         QPalette pal = qApp->palette();
+        ui->logTabs->setPalette(pal);
         pal.setColor(QPalette::Highlight, Qt::transparent);
         ui->projectView->setPalette(pal);
-        ui->logTabs->setPalette(pal);
     });
 #endif
     ViewHelper::changeAppearance();
@@ -5651,8 +5651,13 @@ void MainWindow::extraSelectionsUpdated()
 
 void MainWindow::updateFonts(qreal fontSize, const QString &fontFamily)
 {
-    setGroupFontSize(fgText, fontSize, fontFamily);
-    setGroupFontSize(fgLog, fontSize, fontFamily);
+#ifdef _WIN64
+    qreal addSize = 0.1;
+#else
+    qreal addSize = 0.0;
+#endif
+    setGroupFontSize(fgText, fontSize + addSize, fontFamily);
+    setGroupFontSize(fgLog, fontSize + addSize, fontFamily);
     setGroupFontSize(fgTable, fontSize + mTableFontSizeDif);
     mWp->zoomReset();
 }
@@ -5756,6 +5761,7 @@ void MainWindow::writeTabs(QVariantMap &tabData) const
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
         FileMeta *fm = mFileMetaRepo.fileMeta(wid);
+        if (fm->location().endsWith("Changelog", Qt::CaseInsensitive)) continue;
         if (!fm || fm->kind() == FileKind::Gsp) continue;
         QVariantMap tabObject;
         tabObject.insert("location", fm->location());
@@ -6341,6 +6347,10 @@ QFont MainWindow::getEditorFont(FontGroup fGroup, QString fontFamily, qreal poin
         if (pointSize < 0.01) pointSize = Settings::settings()->toInt(skEdFontSize);
     }
     QFont font(fontFamily);
+#ifdef _WIN64
+    if (fGroup != FontGroup::fgTable)
+        font.setHintingPreference(QFont::PreferVerticalHinting);
+#endif
     font.setPointSizeF(pointSize);
     mGroupFontSize.insert(fGroup, pointSize);
     return font;

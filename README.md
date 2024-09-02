@@ -1,6 +1,6 @@
 # GAMS Studio
 
-GAMS Studio is the official development environment of the General Algebraic Modeling System (GAMS). For further information about GAMS please visit [GAMS](https://www.gams.com) or the [GAMS documentation](https://www.gams.com/latest/docs/).
+GAMS Studio is the official development environment of the General Algebraic Modeling System (GAMS). For further information about GAMS please visit the official [GAMS](https://www.gams.com) website, the [GAMS documentation](https://www.gams.com/latest/docs/) or the [GAMS Forum](https://forum.gams.com/), where Studio also has its own [FAQ section](https://forum.gams.com/c/faq/gams-studio-faqs/17).
 
 # How to build
 
