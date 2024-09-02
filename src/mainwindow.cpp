@@ -1809,8 +1809,11 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters = ViewHelper::dialogFileFilterAll();
-
-            QString selFilter = filters.first();
+#ifdef _WIN64
+            if (fi.suffix().isEmpty())
+                filters.prepend("*.");
+#endif
+            QString selFilter = fi.suffix().isEmpty() ? filters.last() : filters.first();
             for (const QString &f: std::as_const(filters)) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
@@ -1824,6 +1827,12 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         }
         if (filePath.isEmpty()) return;
+
+        if (filePath.compare(node->location(), FileType::fsCaseSense()) == 0) {
+            appendSystemLogWarning("The file '" +filePath + "' cannot be overwritten with itself.");
+            return;
+        }
+
 
         choice = 1;
         if ( fileMeta->kind() == FileKind::Opt  &&
@@ -1851,7 +1860,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                    , "Select other", "Continue", "Abort", 0, 2);
             } else {
                 choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Target '%1'' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
+                                                   , QString("Target '%1' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
                                                           .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
             }
