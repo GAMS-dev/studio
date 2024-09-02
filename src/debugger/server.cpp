@@ -128,11 +128,13 @@ void Server::newConnection()
             if (mIncompletePacket.at(mIncompletePacket.size() - 1) != '\n')
                 return;
 
-            if (!handleReply(mIncompletePacket)) {
+            ParseResult ret = handleReply(mIncompletePacket);
+            if (ret != prOk) {
                 if (!mIncompletePacket.contains("invalidCall"))
                     callProcedure(invalidReply, QStringList() << mIncompletePacket);
             }
-            mIncompletePacket.clear();
+            if (ret != prIncomplete)
+                mIncompletePacket.clear();
         }
     });
     logMessage("Debug-Server: Socket connected to GAMS");
@@ -188,11 +190,10 @@ void Server::callProcedure(CallReply call, const QStringList &arguments)
     }
 }
 
-bool Server::handleReply(const QString &replyData)
+Server::ParseResult Server::handleReply(const QString &replyData)
 {
     if (mVerbose)
-        logMessage("\nFrom GAMS: " + replyData);
-    mIncompletePacket += replyData;
+        logMessage("\nFrom GAMS: " + QString(replyData).replace("\n", "↲"));
     QStringList reList = replyData.split('\n', Qt::SkipEmptyParts);
     CallReply reply = invalid;
     if (!reList.isEmpty()) {
@@ -209,16 +210,13 @@ bool Server::handleReply(const QString &replyData)
         data = reList.first().split('|');
     }
 
-    bool ok = false;
+    bool ok = -2;
     switch (reply) {
     case invalidCall:
         logMessage("Debug-Server: GAMS refused to process this request: " + reList.join(", "));
         break;
     case linesMap: {
-        if (reList.size() < 1) {
-            logMessage("Debug-Server: [linesMap] Missing data for breakable lines.");
-            return false;
-        }
+        if (reList.size() < 1) return prIncomplete; // wait for more data
         for (const QString &line : reList) {
             parseLinesMap(line);
         }
@@ -229,16 +227,13 @@ bool Server::handleReply(const QString &replyData)
         emit signalMapDone();
     }   break;
     case paused: {
-        if (reList.size() < 1) {
-            logMessage("Debug-Server: [paused] Missing continuous line for interrupt.");
-            return false;
-        }
+        if (reList.size() < 1) return prIncomplete; // wait for more data
         if (reList.size() > 1)
             logMessage("Debug-Server: [paused] Only one entry expected. Additional data ignored.");
         int line = data.at(0).toInt(&ok);
         if (!ok) {
             logMessage("Debug-Server: [paused] Can't parse continuous line number: " + data.at(0));
-            return false;
+            return prError;
         }
 
         setState(Paused);
@@ -251,20 +246,20 @@ bool Server::handleReply(const QString &replyData)
 
         if (file.isEmpty()) {
             logMessage("Debug-Server: [gdxReady] Missing name for GDX file.");
-            return false;
+            return prIncomplete;
         }
         if (!QFile::exists(file)) {
             logMessage("Debug-Server: [gdxReady] File not found: " + file);
-            return false;
+            return prError;
         }
         emit signalGdxReady(file);
     }   break;
     default:
         logMessage("Debug-Server: Unknown GAMS request: " + reList.join(", "));
-        return false;
+        return prError;
     }
 
-    return true;
+    return prOk;
 }
 
 QString Server::toBpString(const QList<int> &lines)

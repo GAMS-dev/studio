@@ -136,11 +136,14 @@ private slots:
     void newConnection();
 
 private:
+    enum ParseResult { prOk, prIncomplete, prError };
+
+private:
     void init();
     void logMessage(const QString &message);
     void deleteSocket();
     void callProcedure(CallReply call, const QStringList &arguments = QStringList());
-    bool handleReply(const QString &replyData);
+    ParseResult handleReply(const QString &replyData);
     QString toBpString(const QList<int> &lines);
     void parseLinesMap(const QString &breakData);
     bool getPair(const QString assignment, QList<int> &lines, QList<int> &coLNs);
