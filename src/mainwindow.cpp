@@ -455,6 +455,9 @@ void MainWindow::watchProjectTree()
 //        mRecent.setEditor(mRecent.fileMeta(), mRecent.editor());
         updateRunState();
     });
+    connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
+        configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+    });
     connect(&mProjectRepo, &ProjectRepo::parentAssigned, this, [this](const PExAbstractNode *node) {
         if (const PExProjectNode *project = node->assignedProject()) {
             if (project->type() == PExProjectNode::tCommon) {

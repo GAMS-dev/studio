@@ -67,6 +67,7 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
     mTextMarkRepo = textMarkRepo;
     connect(mTreeModel, &ProjectTreeModel::childrenChanged, this, &ProjectRepo::childrenChanged);
     connect(mTreeModel, &ProjectTreeModel::parentAssigned, this, &ProjectRepo::parentAssigned);
+    connect(mTreeModel, &ProjectTreeModel::getConfigPaths, this, &ProjectRepo::getConfigPaths);
 }
 
 PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const

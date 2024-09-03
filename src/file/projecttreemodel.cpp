@@ -330,6 +330,34 @@ QModelIndex ProjectTreeModel::index(const NodeId &id) const
     return QModelIndex();
 }
 
+QStringList internConfigPaths;
+
+bool isBefore(PExAbstractNode*n1, PExAbstractNode*n2)
+{
+    int cmp = n1->name().compare(n2->name(), Qt::CaseInsensitive);
+    if (cmp != 0) return cmp < 0;
+    QFileInfo fi1(n1->toFile()->location());
+    QFileInfo fi2(n2->toFile()->location());
+    for (int i = 0; i < internConfigPaths.size(); ++i) {
+        if (fi1.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
+            return true;
+        if (fi2.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
+            return false;
+    }
+    return true;
+}
+
+void ProjectTreeModel::sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order)
+{
+    QStringList paths;
+    emit getConfigPaths(paths);
+    internConfigPaths.clear();
+    for (const QString &path : std::as_const(paths)) {
+        internConfigPaths << QDir::toNativeSeparators(path);
+    }
+    std::sort(order.begin(), order.end(), isBefore);
+}
+
 bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
 {
     bool isGroup1 = n1->toGroup();
@@ -347,7 +375,12 @@ bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
 void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
 {
     QList<PExAbstractNode*> order = group->childNodes();
-    std::sort(order.begin(), order.end(), lessThan);
+    PExProjectNode *project = group->toProject();
+    if (project && project->type() == PExProjectNode::tGams)
+        sortGamsProject(project, order);
+    else
+        std::sort(order.begin(), order.end(), lessThan);
+
     for (int i = 0; i < order.size(); ++i) {
         QModelIndex parMi = index(group);
         QModelIndex mi = index(order.at(i));

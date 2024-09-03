@@ -65,6 +65,7 @@ signals:
     void childrenChanged();
     void updateProjectExts();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
+    void getConfigPaths(QStringList &configPaths);
 
 protected:
     friend class ProjectRepo;
@@ -94,6 +95,7 @@ protected:
 
 private:
     QVector<QModelIndex> gatherChildren(QModelIndex index);
+    void sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order);
 
 private:
     ProjectRepo *mProjectRepo;

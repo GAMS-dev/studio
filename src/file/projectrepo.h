@@ -161,6 +161,7 @@ signals:
     void refreshProjectTabName(QWidget *wid);
     void openRecentFile();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
+    void getConfigPaths(QStringList &configPaths);
     void closeFileEditors(gams::studio::FileId fileId);
     void getParameterValue(QString param, QString &value);
     void addWarning(const QString &warning);
