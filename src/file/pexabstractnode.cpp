@@ -33,6 +33,11 @@ PExAbstractNode::PExAbstractNode(const QString &name, NodeType type)
     : QObject(), mId(mNextNodeId++), mParent(nullptr), mName(name), mType(type)
 {}
 
+void PExAbstractNode::setNameExtIntern(const QString &newNameExt)
+{
+    mNameExt = newNameExt;
+}
+
 PExAbstractNode::~PExAbstractNode()
 {
     if (mParent) {
@@ -50,6 +55,17 @@ NodeId PExAbstractNode::id() const
 NodeType PExAbstractNode::type() const
 {
     return mType;
+}
+
+const QString &PExAbstractNode::nameExt() const
+{
+    return mNameExt;
+}
+
+void PExAbstractNode::setNameExt(const QString &newNameExt)
+{
+    mNameExt = newNameExt;
+    emit changed(id());
 }
 
 QString PExAbstractNode::name(NameModifier mod) const

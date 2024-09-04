@@ -84,7 +84,7 @@ protected:
     bool isCurrentProject(const QModelIndex& ind) const;
     QModelIndex findProject(QModelIndex ind, bool *locked);
     void sortChildNodes(PExGroupNode *group);
-    void updateProjectExtNums();
+    void updateProjectExtNums(PExGroupNode *group);
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);

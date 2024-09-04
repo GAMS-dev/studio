@@ -146,8 +146,7 @@ public:
     bool isClosing() const;
 
     const QString &fileName() const;
-    const QString &nameExt() const;
-    void setNameExt(const QString &newNameExt);
+    void setNameExt(const QString &newNameExt) override;
     Type type() const;
 
     QString tempGdx() const;
@@ -204,7 +203,6 @@ private:
     enum ChangeState {csNone, csChanged, csClosing};
     QString mProjectFile;
     QString mWorkDir;
-    QString mNameExt;
     Type mType = tCommon;
     QScopedPointer<AbstractProcess> mGamsProcess;
     QString mEngineJobToken;

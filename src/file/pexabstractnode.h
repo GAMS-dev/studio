@@ -75,6 +75,8 @@ public:
     /// \return Returns the file node type as <c>int</c>.
     NodeType type() const;
     virtual QString tooltip()=0;
+    const QString &nameExt() const;
+    virtual void setNameExt(const QString &newNameExt);
 
     const PExRootNode *toRoot() const;
     const PExGroupNode* toGroup() const;
@@ -92,12 +94,14 @@ signals:
 
 protected:
     PExAbstractNode(const QString &name, NodeType type);
+    void setNameExtIntern(const QString &newNameExt);
 
 private:
     static NodeId mNextNodeId;
     NodeId mId;
     PExGroupNode* mParent;
     QString mName;
+    QString mNameExt;
     NodeType mType;
     bool mDebugMode = false;
 };

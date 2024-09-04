@@ -823,17 +823,30 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
         node->setName(sourceFM->name());
 
         PExProjectNode *project = node->assignedProject();
-        if (project->type() != PExProjectNode::tGams) {
-            addToProject(project, node);
+        if (project->type() == PExProjectNode::tGams) {
+            bool add = false;
+            for (const QString &path : CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath)) {
+                if (target.compare(path + "/gamsconfig.yaml", FileType::fsCaseSense()) == 0) {
+                    add = true;
+                    break;
+                }
+            }
+            if (add)
+                addToProject(project, node);
+            else {
+                QFileInfo fi(target);
+                PExProjectNode *newPro = createProject(fi.completeBaseName(), fi.path(), "", onExist_Project);
+                if (newPro)
+                    addToProject(newPro, node);
+            }
         } else {
-            QFileInfo fi(target);
-            PExProjectNode *newPro = createProject(fi.completeBaseName(), fi.path(), "", onExist_Project);
-            if (newPro)
-                addToProject(newPro, node);
+            addToProject(project, node);
         }
 
         // re-add old file
-        findOrCreateFileNode(oldFile, project);
+        PExFileNode *fn = findOrCreateFileNode(oldFile, project);
+        if (fn && project->type() == PExProjectNode::tGams)
+            emit openFile(fn->file(), false);
 
         // macOS didn't focus on the new node
         mTreeModel->setCurrent(mTreeModel->index(node));
