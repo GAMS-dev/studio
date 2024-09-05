@@ -5462,13 +5462,24 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     return false;
             }
         }
+        QStringList configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+        bool openConfig = false;
         for (const QString &file : std::as_const(skippedFiles)) {
-            if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
-                file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
+            QFileInfo fi(file);
+            if (configPaths.indexOf(fi.path(), 0, FileType::fsCaseSense()) >= 0) {
+                openConfig = true;
+                continue;
+            }
+            if (file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0) {
                 PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
                 PExFileNode *node = addNode("", file, project);
                 openFileNode(node);
             }
+        }
+        if (openConfig) {
+            on_actionEditDefaultConfig_triggered();
+            if (!curTab.isEmpty())
+                openFilePath(curTab, nullptr, ogFindGroup, true);
         }
     }
     QTimer::singleShot(0, this, &MainWindow::initAutoSave);
@@ -5478,10 +5489,6 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
 void MainWindow::writeTabs(QVariantMap &tabData) const
 {
     QVariantList tabArray;
-
-    // TODO(JM) skip saving gamsconfig.yaml
-    QStringList configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
-
     for (int i = 0; i < ui->mainTabs->count(); ++i) {
         QWidget *wid = ui->mainTabs->widget(i);
         if (!wid || wid == mWp) continue;
