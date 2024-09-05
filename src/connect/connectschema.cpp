@@ -84,6 +84,8 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                 defvalue = ValueWrapper(node["default"].as<double>());
             } else if (std::find(types.begin(), types.end(), SchemaType::Boolean) != types.end()) {
                 defvalue = ValueWrapper(node["default"].as<bool>());
+            } else {
+                defvalue = ValueWrapper(node["default"].as<std::string>());
             }
         }
     }
@@ -124,6 +126,8 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                       if (it->second.Type() == YAML::NodeType::Map) {
                           str += QString::fromStdString( it->first.as<std::string>() );
                           createSchemaHelper(str, it->second, level);
+                      } else if (it->second.Type() == YAML::NodeType::Sequence) {
+                                 str += QString::fromStdString( it->first.as<std::string>() );
                       }
                     }
         } // else  'schema' with niether 'type:list' nor 'type:dict' ?
@@ -144,14 +148,18 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                }
             }
         }
-    } else  if (node["anyof"] ? true : false) {
+
+    } /*else  if (node["anyof"] ? true : false) {*/
+    if (node["anyof"]) {
         if (node["anyof"].Type()==YAML::NodeType::Sequence) {
+            if (key.endsWith("-")) {
+                key += ":";
+            }
             for(size_t i=0; i<node["anyof"].size(); i++) {
                QString str = QString("%1[%2]").arg(key).arg(i);
                createSchemaHelper(str, node["anyof"][i], 1);
             }
         }
-
     }
 }
 
@@ -274,8 +282,11 @@ int ConnectSchema::getNumberOfAnyOfDefined(const QString &key) const
     QString keystr;
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
         keystr = QString("%1[%2]").arg(key).arg(num);
-        if (keystr.compare(it.key())==0)
+        if (keystr.compare(it.key())==0) {
             ++num;
+        } else if (it.key().endsWith(keystr)) {
+            ++num;
+        }
     }
     return num;
 }
