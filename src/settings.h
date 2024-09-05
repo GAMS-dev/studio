@@ -60,6 +60,7 @@ enum SettingsKey {
     skEncodingMib,
     skProjects,
     skCurrentFocusProject,
+    skOptionsPerMainFile,
     skTabs,
     skHistory,
     skPinViewTabIndex,

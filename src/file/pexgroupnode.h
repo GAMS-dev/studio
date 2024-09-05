@@ -113,6 +113,8 @@ public:
     QString errorText(int lstLine) override;
     void clearErrorTexts();
     bool hasErrorText(int lstLine = -1);
+    void addRunFileParameterHistory(FileId fileId, QStringList parameterLists);
+    QStringList runFileParameterHistory(FileId fileId) const;
     void addRunParametersHistory(const QString &option);
     QStringList getRunParametersHistory() const;
     QStringList analyzeParameters(const QString &gmsLocation, const QStringList &defaultParameters, const QList<option::OptionItem> &itemList, option::Option *opt, int &logOption);
@@ -212,6 +214,7 @@ private:
     FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
     QStringList mRunParametersHistory;
+    QHash<FileId, QStringList> mRunFileParameters;
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;
     debugger::Server *mDebugServer = nullptr;

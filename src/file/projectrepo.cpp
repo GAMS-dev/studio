@@ -406,6 +406,11 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
                 node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
                                                                      : Settings::settings()->toInt(skDefaultCodecMib));
+                if (Settings::settings()->toBool(skOptionsPerMainFile) && child.contains("options")) {
+                    QStringList optList = child.value("options").toStringList();
+                    if (!optList.isEmpty())
+                        project->addRunFileParameterHistory(node->file()->id(), optList);
+                }
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
@@ -492,6 +497,11 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
         nodeObject.insert("type", file->file()->kindAsStr());
         int mib = file->file()->codecMib();
         nodeObject.insert("codecMib", mib);
+        if (Settings::settings()->toBool(skOptionsPerMainFile)) {
+            QStringList options = project->runFileParameterHistory(file->file()->id());
+            if (!options.isEmpty())
+                nodeObject.insert("options", options);
+        }
         childList.append(nodeObject);
     }
 }
