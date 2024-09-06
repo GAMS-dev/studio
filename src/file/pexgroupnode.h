@@ -145,8 +145,7 @@ public:
     bool isClosing() const;
 
     const QString &fileName() const;
-    const QString &nameExt() const;
-    void setNameExt(const QString &newNameExt);
+    void setNameExt(const QString &newNameExt) override;
     Type type() const;
     void setHasGspFile(bool hasGspFile = false);
     bool wantsGspFile();
@@ -206,7 +205,7 @@ private:
     QString mProjectFile;
     QString mWorkDir;
     QString mNameExt;
-    Type mType = tSmall;
+    Type mType = tCommon;
     QScopedPointer<AbstractProcess> mGamsProcess;
     QString mEngineJobToken;
     PExLogNode* mLogNode = nullptr;

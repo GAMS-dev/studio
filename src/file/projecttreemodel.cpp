@@ -175,8 +175,9 @@ QVariant ProjectTreeModel::data(const QModelIndex& ind, int role) const
         return bool(node && node->type() <= PExProjectNode::tCommon);
     }
     case NameExtRole: {
-        PExProjectNode *node = mProjectRepo->node(ind)->toProject();
-        if (!node) return QString();
+        PExAbstractNode *node = mProjectRepo->node(ind);
+        if (!node)
+            return QString();
         return node->nameExt();
     }
     case IsGamsSys: {
@@ -303,8 +304,9 @@ bool ProjectTreeModel::removeChild(PExAbstractNode* child)
     beginRemoveRows(parMi, mi.row(), mi.row());
     child->setParentNode(nullptr);
     endRemoveRows();
-    if (parent == mRoot)
-        updateProjectExtNums();
+    PExProjectNode *project = parent->toProject();
+    if (parent == mRoot || (project && project->type() == PExProjectNode::tGams))
+        updateProjectExtNums(parent);
     emit childrenChanged();
     return true;
 }
@@ -330,6 +332,38 @@ QModelIndex ProjectTreeModel::index(const NodeId &id) const
     return QModelIndex();
 }
 
+QStringList internConfigPaths;
+
+bool isBefore(PExAbstractNode*n1, PExAbstractNode*n2)
+{
+    int cmp = n1->name().compare(n2->name(), Qt::CaseInsensitive);
+    if (cmp != 0) return cmp < 0;
+    QFileInfo fi1(n1->toFile()->location());
+    QFileInfo fi2(n2->toFile()->location());
+    for (int i = 0; i < internConfigPaths.size(); ++i) {
+        if (fi1.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
+            return true;
+        if (fi2.path().compare(internConfigPaths.at(i), FileType::fsCaseSense()) == 0)
+            return false;
+    }
+    return true;
+}
+
+void ProjectTreeModel::sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order)
+{
+    if (order.size() < 2) return;
+    QStringList paths;
+    emit getConfigPaths(paths);
+    if (paths.isEmpty()) {
+        qDebug() << "Couldn't get StandardConfigPaths";
+        return;
+    }
+    internConfigPaths.clear();
+    for (QString path : paths)
+        internConfigPaths << path;
+    std::sort(order.begin(), order.end(), isBefore);
+}
+
 bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
 {
     bool isGroup1 = n1->toGroup();
@@ -347,7 +381,12 @@ bool lessThan(PExAbstractNode*n1, PExAbstractNode*n2)
 void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
 {
     QList<PExAbstractNode*> order = group->childNodes();
-    std::sort(order.begin(), order.end(), lessThan);
+    PExProjectNode *project = group->toProject();
+    if (project && project->type() == PExProjectNode::tGams)
+        sortGamsProject(project, order);
+    else
+        std::sort(order.begin(), order.end(), lessThan);
+
     for (int i = 0; i < order.size(); ++i) {
         QModelIndex parMi = index(group);
         QModelIndex mi = index(order.at(i));
@@ -358,27 +397,26 @@ void ProjectTreeModel::sortChildNodes(PExGroupNode *group)
             endMoveRows();
         }
     }
-    if (group == mRoot) {
-        updateProjectExtNums();
-    }
+    if (group == mRoot || (project && project->type() == PExProjectNode::tGams))
+        updateProjectExtNums(group);
 }
 
-void ProjectTreeModel::updateProjectExtNums()
+void ProjectTreeModel::updateProjectExtNums(PExGroupNode *group)
 {
-    for (int i = 0; i < mRoot->childCount(); ++i) {
-        PExProjectNode *project = mRoot->childNode(i)->toProject();
-        if (!project) continue;
-        QString name = project->name();
+    for (int i = 0; i < group->childCount(); ++i) {
+        PExAbstractNode *node = group->childNode(i);
+        if (!node) continue;
+        QString name = node->name();
         QString ext;
         int nr = 0;
         for (int j = 0; j < i; ++j) {
-            PExProjectNode *other = mRoot->childNode(j)->toProject();
+            PExAbstractNode *other = group->childNode(j);
             if (other && other->name(NameModifier::withNameExt) == name + ext) {
                 ++nr;
                 ext = QString::number(nr);
             }
         }
-        project->setNameExt(ext);
+        node->setNameExt(ext);
     }
     emit projectListChanged();
 }

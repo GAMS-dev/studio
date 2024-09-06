@@ -65,6 +65,7 @@ signals:
     void childrenChanged();
     void projectListChanged();
     void parentAssigned(const gams::studio::PExAbstractNode *node);
+    void getConfigPaths(QStringList &configPaths);
 
 protected:
     friend class ProjectRepo;
@@ -83,7 +84,7 @@ protected:
     bool isCurrentProject(const QModelIndex& ind) const;
     QModelIndex findProject(QModelIndex ind, bool *locked);
     void sortChildNodes(PExGroupNode *group);
-    void updateProjectExtNums();
+    void updateProjectExtNums(PExGroupNode *group);
 
     bool isSelected(const QModelIndex& ind) const;
     void selectionChanged(const QItemSelection &selected, const QItemSelection &deselected);
@@ -94,6 +95,7 @@ protected:
 
 private:
     QVector<QModelIndex> gatherChildren(QModelIndex index);
+    void sortGamsProject(PExProjectNode *project, QList<PExAbstractNode *> &order);
 
 private:
     ProjectRepo *mProjectRepo;

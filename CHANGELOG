@@ -17,12 +17,13 @@ Version 1.19.0 *
 - fixed usage of license file specified via the `gamsconfig.yaml`
 - added workspace clean-up during Studio start based on filters defined via the settings
 
-Version 1.18.7 *
+Version 1.18.7
 ==================
 - added line wrapping for changelog
 - fixed license dialog layout on resize
 - fixed jumpy font when editing italic lines
 - fixed selection invisible in system log
+- fixed wrong behavior of `-GAMS-System-` project
 
 Version 1.18.6
 ==================

@@ -284,7 +284,7 @@ QIcon PExProjectNode::icon(QIcon::Mode mode, int alpha)
 QString PExProjectNode::name(NameModifier mod) const
 {
     if (mod == NameModifier::withNameExt)
-        return PExGroupNode::name() + mNameExt;
+        return PExGroupNode::name() + nameExt();
     return PExGroupNode::name(mod);
 }
 
@@ -294,14 +294,9 @@ void PExProjectNode::setName(const QString &name)
     updateLogName(name);
 }
 
-const QString &PExProjectNode::nameExt() const
-{
-    return mNameExt;
-}
-
 void PExProjectNode::setNameExt(const QString &newNameExt)
 {
-    mNameExt = newNameExt;
+    PExAbstractNode::setNameExtIntern(newNameExt);
     updateLogName(name());
     emit changed(id());
 }
@@ -330,7 +325,7 @@ void PExProjectNode::setLogNode(PExLogNode* logNode)
         EXCEPT() << "Reset the logNode is not allowed";
     mLogNode = logNode;
     QFileInfo fi(mLogNode->location());
-    mLogNode->setName(fi.completeBaseName() + mNameExt);
+    mLogNode->setName(fi.completeBaseName() + nameExt());
 }
 
 void PExProjectNode::appendChild(PExAbstractNode *child)
@@ -453,7 +448,7 @@ QString PExProjectNode::resolveHRef(const QString &href, PExFileNode *&node, int
                     }
                 }
                 for (QString &path: CommonPaths::gamsStandardPaths(CommonPaths::StandardDataPath))
-                    locations << QDir::fromNativeSeparators(path) + "/inclib";
+                    locations << path + "/inclib";
             }
             QString rawName = fName;
             for (QString loc : std::as_const(locations)) {
@@ -549,7 +544,7 @@ void PExProjectNode::updateLogName(const QString &name)
 {
     if (mLogNode) {
         QString suffix = FileType::from(FileKind::Log).defaultSuffix();
-        QString logName = workDir() + "/" + name + mNameExt + "." + suffix;
+        QString logName = workDir() + "/" + name + nameExt() + "." + suffix;
         mLogNode->file()->setLocation(logName);
         if (mLogNode->file()->editors().size())
             emit projectRepo()->logTabRenamed(mLogNode->file()->editors().first(), mLogNode->file()->name());

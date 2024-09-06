@@ -68,6 +68,7 @@ void ProjectRepo::init(ProjectTreeView *treeView, FileMetaRepo *fileRepo, TextMa
     connect(mTreeModel, &ProjectTreeModel::childrenChanged, this, &ProjectRepo::childrenChanged);
     connect(mTreeModel, &ProjectTreeModel::parentAssigned, this, &ProjectRepo::parentAssigned);
     connect(mTreeModel, &ProjectTreeModel::projectListChanged, this, &ProjectRepo::projectListChanged);
+    connect(mTreeModel, &ProjectTreeModel::getConfigPaths, this, &ProjectRepo::getConfigPaths);
 }
 
 PExProjectNode *ProjectRepo::findProject(const QString &projectFile) const
@@ -572,7 +573,9 @@ PExProjectNode* ProjectRepo::createProject(QString name, const QString &path, co
     PExGroupNode *root = mTreeModel->rootNode();
     if (!root) FATAL() << "Can't get tree-model root-node";
 
-    if (type == PExProjectNode::tGams) {
+    if (name.compare("-GAMS-System-") == 0)
+        type = PExProjectNode::tGams;
+    else if (type == PExProjectNode::tGams) {
         name = CGamsSystemProjectName;
     } else if (type <= PExProjectNode::tCommon) {
         if (!name.endsWith(".gsp", FileType::fsCaseSense())) {
@@ -856,10 +859,32 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
     // set location to new file and add it to the tree
     if (sourceFM->save(target)) {
         node->setName(sourceFM->name());
-        addToProject(node->assignedProject(), node);
+
+        PExProjectNode *project = node->assignedProject();
+        if (project->type() == PExProjectNode::tGams) {
+            bool add = false;
+            for (const QString &path : CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath)) {
+                if (target.compare(path + "/gamsconfig.yaml", FileType::fsCaseSense()) == 0) {
+                    add = true;
+                    break;
+                }
+            }
+            if (add)
+                addToProject(project, node);
+            else {
+                QFileInfo fi(target);
+                PExProjectNode *newPro = createProject(fi.completeBaseName(), fi.path(), "", onExist_Project);
+                if (newPro)
+                    addToProject(newPro, node);
+            }
+        } else {
+            addToProject(project, node);
+        }
 
         // re-add old file
-        findOrCreateFileNode(oldFile, node->assignedProject());
+        PExFileNode *fn = findOrCreateFileNode(oldFile, project);
+        if (fn && project->type() == PExProjectNode::tGams)
+            emit openFile(fn->file(), false);
 
         // macOS didn't focus on the new node
         mTreeModel->setCurrent(mTreeModel->index(node));

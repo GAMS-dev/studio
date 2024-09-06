@@ -349,6 +349,9 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
     connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
+    connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
+        configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+    });
 
     mFileMetaRepo.completer()->setCasing(CodeCompleterCasing(Settings::settings()->toInt(skEdCompleterCasing)));
 
@@ -535,6 +538,22 @@ void MainWindow::initWelcomePage()
 
     connect(mWp, &WelcomePage::openFilePath, this, [this](QString filePath) {
         PExProjectNode *project = nullptr;
+        if (filePath == CommonPaths::changelog()) {
+            on_actionChangelog_triggered();
+            return;
+        }
+        bool isGamsConfig = false;
+        if (filePath.endsWith("gamsconfig.yaml")) {
+            QFileInfo fi(filePath);
+            for (const QString &path : CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath)) {
+                isGamsConfig = fi.path().compare(path, FileType::fsCaseSense()) == 0;
+                if (isGamsConfig) break;
+            }
+        }
+        if (isGamsConfig || filePath == CommonPaths::defaultGamsUserConfigFile()) {
+            on_actionEditDefaultConfig_triggered();
+            return;
+        }
         if (Settings::settings()->toBool(skOpenInCurrent)) {
             project = mRecent.lastProject();
             if (project && project->type() > PExProjectNode::tCommon)
@@ -736,23 +755,37 @@ void MainWindow::initAutoSave()
 
 void MainWindow::on_actionEditDefaultConfig_triggered()
 {
-    QString filePath = CommonPaths::defaultGamsUserConfigFile();
+    QStringList confFilesToOpen;
+    QList<FileMeta*> metas;
 
-    QFile file(filePath);
-    if (file.exists()) {
-        FileMeta *fm = mFileMetaRepo.fileMeta(filePath);
-        if (fm) {
-           openFile(fm);
-           return;
+    for (const QString &path : CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath)) {
+        QString filePath(path + "/gamsconfig.yaml");
+        if (QFile::exists(filePath)) {
+            FileMeta *meta = mFileMetaRepo.fileMeta(filePath);
+            if (meta) metas << meta;
+            else confFilesToOpen << filePath;
         }
-    } else {
+    }
+
+    // if no config file exists, create the default
+    if (confFilesToOpen.isEmpty() && metas.isEmpty()) {
+        QFile file(CommonPaths::defaultGamsUserConfigFile());
         file.open(QFile::WriteOnly); // create empty file
         file.close();
+        confFilesToOpen << file.fileName();
     }
 
     PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
-    PExFileNode *node = addNode("", filePath, project);
-    openFileNode(node);
+
+    // open the config files Studio already knows
+    for (FileMeta *meta : metas)
+        openFile(meta);
+
+    // open the config files that exist
+    for (QString filePath : confFilesToOpen) {
+        PExFileNode *node = addNode("", filePath, project);
+        openFileNode(node);
+    }
 }
 
 void MainWindow::timerEvent(QTimerEvent *event)
@@ -833,11 +866,18 @@ QTabWidget* MainWindow::mainTabs()
     return ui->mainTabs;
 }
 
+QStringList fromNativeSeparators(QStringList paths)
+{
+    for (int i = 0; i < paths.size(); ++i)
+        paths.replace(i, QDir::fromNativeSeparators(paths.at(i)));
+    return paths;
+}
+
 void MainWindow::initGamsStandardPaths()
 {
     support::GamsLicenseInfo licenseInfo;
-    CommonPaths::setGamsStandardPaths(licenseInfo.gamsConfigLocations(), CommonPaths::StandardConfigPath);
-    CommonPaths::setGamsStandardPaths(licenseInfo.gamsDataLocations(), CommonPaths::StandardDataPath);
+    CommonPaths::setGamsStandardPaths(fromNativeSeparators(licenseInfo.gamsConfigLocations()), CommonPaths::StandardConfigPath);
+    CommonPaths::setGamsStandardPaths(fromNativeSeparators(licenseInfo.gamsDataLocations()), CommonPaths::StandardDataPath);
 }
 
 QWidget *MainWindow::currentEdit()
@@ -1856,8 +1896,11 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         } else {
             filters = ViewHelper::dialogFileFilterAll();
-
-            QString selFilter = filters.first();
+#ifdef _WIN64
+            if (fi.suffix().isEmpty())
+                filters.prepend("*.");
+#endif
+            QString selFilter = fi.suffix().isEmpty() ? filters.last() : filters.first();
             for (const QString &f: std::as_const(filters)) {
                 if (f.contains("*."+fi.suffix())) {
                     selFilter = f;
@@ -1871,6 +1914,12 @@ void MainWindow::on_actionSave_As_triggered()
                                                     QFileDialog::DontConfirmOverwrite);
         }
         if (filePath.isEmpty()) return;
+
+        if (filePath.compare(node->location(), FileType::fsCaseSense()) == 0) {
+            appendSystemLogWarning("The file '" +filePath + "' cannot be overwritten with itself.");
+            return;
+        }
+
 
         choice = 1;
         if ( fileMeta->kind() == FileKind::Opt  &&
@@ -1898,7 +1947,7 @@ void MainWindow::on_actionSave_As_triggered()
                                                    , "Select other", "Continue", "Abort", 0, 2);
             } else {
                 choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Target '%1'' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
+                                                   , QString("Target '%1' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
                                                           .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
                                                    , "Select other", "Continue", "Abort", 0, 2);
             }
@@ -5008,7 +5057,7 @@ void MainWindow::openFile(FileMeta* fileMeta, bool focus, PExProjectNode *projec
         updateRecentEdit(mRecent.editor(), edit);
     }
     addToHistory(fileMeta->location());
-    if (project) addToHistory(project->fileName());
+    if (project && project->type() == PExProjectNode::tCommon) addToHistory(project->fileName());
 }
 
 void MainWindow::initEdit(FileMeta* fileMeta, QWidget *edit)
@@ -5742,13 +5791,24 @@ bool MainWindow::readTabs(const QVariantMap &tabData)
                     return false;
             }
         }
+        QStringList configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
+        bool openConfig = false;
         for (const QString &file : std::as_const(skippedFiles)) {
-            if (file.compare(CommonPaths::defaultGamsUserConfigFile(), FileType::fsCaseSense()) == 0 ||
-                file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0   ) {
+            QFileInfo fi(file);
+            if (configPaths.indexOf(fi.path(), 0, FileType::fsCaseSense()) >= 0) {
+                openConfig = true;
+                continue;
+            }
+            if (file.compare(CommonPaths::changelog(), FileType::fsCaseSense()) == 0) {
                 PExProjectNode *project = mProjectRepo.createProject("", "", "", onExist_Project, "", PExProjectNode::tGams);
                 PExFileNode *node = addNode("", file, project);
                 openFileNode(node);
             }
+        }
+        if (openConfig) {
+            on_actionEditDefaultConfig_triggered();
+            if (!curTab.isEmpty())
+                openFilePath(curTab, nullptr, ogFindGroup, true);
         }
     }
     QTimer::singleShot(0, this, &MainWindow::initAutoSave);
