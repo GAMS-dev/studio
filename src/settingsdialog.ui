@@ -194,19 +194,6 @@
           <string>Behavior</string>
          </property>
          <layout class="QGridLayout" name="gridLayout_12">
-          <item row="0" column="0">
-           <widget class="QCheckBox" name="cb_openlst">
-            <property name="sizePolicy">
-             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
-              <horstretch>0</horstretch>
-              <verstretch>0</verstretch>
-             </sizepolicy>
-            </property>
-            <property name="text">
-             <string>Open .lst file after running GAMS</string>
-            </property>
-           </widget>
-          </item>
           <item row="1" column="0">
            <widget class="QCheckBox" name="cb_jumptoerror">
             <property name="sizePolicy">
@@ -227,18 +214,73 @@
             </property>
            </widget>
           </item>
-          <item row="0" column="1">
+          <item row="0" column="0">
+           <widget class="QCheckBox" name="cb_openlst">
+            <property name="sizePolicy">
+             <sizepolicy hsizetype="Minimum" vsizetype="Preferred">
+              <horstretch>0</horstretch>
+              <verstretch>0</verstretch>
+             </sizepolicy>
+            </property>
+            <property name="text">
+             <string>Open .lst file after running GAMS</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="1">
+           <widget class="QRadioButton" name="rb_openInAnyProject">
+            <property name="text">
+             <string>Open file finds or creates new project</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1">
            <widget class="QRadioButton" name="rb_openInCurrentProject">
             <property name="text">
              <string>Open file in current project by default</string>
             </property>
            </widget>
           </item>
-          <item row="1" column="1">
-           <widget class="QRadioButton" name="rb_openInAnyProject">
-            <property name="text">
-             <string>Open file finds or creates new project</string>
-            </property>
+          <item row="0" column="1">
+           <widget class="QWidget" name="widget_4" native="true">
+            <layout class="QHBoxLayout" name="horizontalLayout_8">
+             <property name="spacing">
+              <number>4</number>
+             </property>
+             <property name="leftMargin">
+              <number>0</number>
+             </property>
+             <property name="topMargin">
+              <number>0</number>
+             </property>
+             <property name="rightMargin">
+              <number>0</number>
+             </property>
+             <property name="bottomMargin">
+              <number>0</number>
+             </property>
+             <item>
+              <widget class="QLabel" name="label_14">
+               <property name="text">
+                <string>Store options for each</string>
+               </property>
+              </widget>
+             </item>
+             <item>
+              <widget class="QComboBox" name="cb_optionsStore">
+               <item>
+                <property name="text">
+                 <string>Project</string>
+                </property>
+               </item>
+               <item>
+                <property name="text">
+                 <string>Main File</string>
+                </property>
+               </item>
+              </widget>
+             </item>
+            </layout>
            </widget>
           </item>
          </layout>
@@ -1632,6 +1674,139 @@
          </property>
         </spacer>
        </item>
+       <item row="0" column="0">
+        <widget class="QGroupBox" name="gb_general_2">
+         <property name="sizePolicy">
+          <sizepolicy hsizetype="Expanding" vsizetype="Expanding">
+           <horstretch>0</horstretch>
+           <verstretch>0</verstretch>
+          </sizepolicy>
+         </property>
+         <property name="title">
+          <string>Miscellaneous Settings</string>
+         </property>
+         <layout class="QGridLayout" name="gridLayout_6">
+          <property name="topMargin">
+           <number>4</number>
+          </property>
+          <property name="verticalSpacing">
+           <number>4</number>
+          </property>
+          <item row="3" column="4">
+           <widget class="QToolButton" name="tb_userLibSelect">
+            <property name="toolTip">
+             <string>Select directory</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/folder-open-bw</normaloff>:/solid/folder-open-bw</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="0">
+           <widget class="QLabel" name="lbl_wpHistory">
+            <property name="text">
+             <string>&lt;html&gt;&lt;head/&gt;&lt;body&gt;&lt;p&gt;Reset 'Last Files' list on Welcome Page&amp;nbsp;&amp;nbsp;&lt;/p&gt;&lt;/body&gt;&lt;/html&gt;</string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="0">
+           <widget class="QLabel" name="lbl_AutoReloadTypes">
+            <property name="text">
+             <string>Auto-reload extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="5">
+           <widget class="QToolButton" name="tb_userLibRemove">
+            <property name="toolTip">
+             <string>Remove entry</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/delete-all</normaloff>:/solid/delete-all</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="1">
+           <widget class="QPushButton" name="btn_resetHistory">
+            <property name="text">
+             <string>Reset History</string>
+            </property>
+           </widget>
+          </item>
+          <item row="3" column="0" colspan="4">
+           <widget class="QComboBox" name="cb_userLib">
+            <property name="editable">
+             <bool>true</bool>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="1">
+           <widget class="QPushButton" name="btn_resetView">
+            <property name="text">
+             <string>Reset Window</string>
+            </property>
+           </widget>
+          </item>
+          <item row="2" column="0">
+           <widget class="QLabel" name="lbl_openModLib">
+            <property name="text">
+             <string>User model library: </string>
+            </property>
+           </widget>
+          </item>
+          <item row="1" column="1" colspan="6">
+           <widget class="QLineEdit" name="edAutoReloadTypes"/>
+          </item>
+          <item row="0" column="1" colspan="6">
+           <widget class="QLineEdit" name="edUserGamsTypes">
+            <property name="toolTip">
+             <string/>
+            </property>
+           </widget>
+          </item>
+          <item row="4" column="2" colspan="5">
+           <spacer name="horizontalSpacer_2">
+            <property name="orientation">
+             <enum>Qt::Orientation::Horizontal</enum>
+            </property>
+            <property name="sizeHint" stdset="0">
+             <size>
+              <width>40</width>
+              <height>1</height>
+             </size>
+            </property>
+           </spacer>
+          </item>
+          <item row="3" column="6">
+           <widget class="QToolButton" name="tb_userLibOpen">
+            <property name="toolTip">
+             <string>Open location</string>
+            </property>
+            <property name="icon">
+             <iconset resource="../icons/icons.qrc">
+              <normaloff>:/solid/forward</normaloff>:/solid/forward</iconset>
+            </property>
+           </widget>
+          </item>
+          <item row="0" column="0">
+           <widget class="QLabel" name="lbl_userGamsTypes">
+            <property name="text">
+             <string>GAMS source file extensions:</string>
+            </property>
+           </widget>
+          </item>
+          <item row="5" column="0">
+           <widget class="QLabel" name="lbl_resetView">
+            <property name="text">
+             <string>Reset window size, position and states </string>
+            </property>
+           </widget>
+          </item>
+         </layout>
+        </widget>
+       </item>
       </layout>
      </widget>
      <widget class="QWidget" name="tabUpdate">
@@ -1801,6 +1976,19 @@ li.checked::marker { content: &quot;\2612&quot;; }
        </item>
       </layout>
      </widget>
+    </widget>
+   </item>
+   <item row="1" column="0">
+    <widget class="QDialogButtonBox" name="buttonBox">
+     <property name="orientation">
+      <enum>Qt::Orientation::Horizontal</enum>
+     </property>
+     <property name="standardButtons">
+      <set>QDialogButtonBox::StandardButton::Apply|QDialogButtonBox::StandardButton::Cancel|QDialogButtonBox::StandardButton::Ok</set>
+     </property>
+     <property name="centerButtons">
+      <bool>false</bool>
+     </property>
     </widget>
    </item>
   </layout>

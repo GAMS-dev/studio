@@ -604,6 +604,10 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
     if (mType > PExProjectNode::tCommon) return;
     PExFileNode *gmsFileNode;
+    if (Settings::settings()->toBool(skOptionsPerMainFile)) {
+        if (FileMeta *meta = runnableGms())
+            setRunFileParameterHistory(meta->id(), mRunParametersHistory);
+    }
     if (!gmsFile) {
         // find alternative runable file
         for (PExAbstractNode *node: listFiles()) {
@@ -631,6 +635,13 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
+    if (Settings::settings()->toBool(skOptionsPerMainFile)) {
+        if (FileMeta *meta = runnableGms()) {
+            mRunParametersHistory = runFileParameterHistory(meta->id());
+            setRunFileParameterHistory(meta->id(), QStringList());
+        }
+    }
+
     emit changed(id());
     emit runnableChanged();
 }
@@ -833,7 +844,7 @@ bool PExProjectNode::hasErrorText(int lstLine)
     return (lstLine < 0) ? mErrorTexts.size() > 0 : mErrorTexts.contains(lstLine);
 }
 
-void PExProjectNode::addRunFileParameterHistory(FileId fileId, QStringList parameterLists)
+void PExProjectNode::setRunFileParameterHistory(FileId fileId, QStringList parameterLists)
 {
     mRunFileParameters.insert(fileId, parameterLists);
 }
