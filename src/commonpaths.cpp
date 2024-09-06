@@ -95,6 +95,7 @@ void CommonPaths::setSystemDir(const QString &sysdir)
 #else
     QString gamsPath;
     const QString subPath = QString(QDir::separator()).append("..");
+
 #ifdef __unix__
     QFileInfo fileInfo(qgetenv("APPIMAGE"));
     gamsPath = fileInfo.absoluteDir().path().append(subPath);
@@ -102,11 +103,10 @@ void CommonPaths::setSystemDir(const QString &sysdir)
     gamsPath = QCoreApplication::applicationDirPath().append(subPath);
 #endif
 
-    QString path = QStandardPaths::findExecutable("gams", {gamsPath});
-    if (path.isEmpty()) {
+    gamsPath = QFileInfo(QStandardPaths::findExecutable("gams", { gamsPath })).absolutePath();
+    if (gamsPath.isEmpty()) {
         gamsPath = QFileInfo(QStandardPaths::findExecutable("gams")).absolutePath();
     }
-
     SystemDir = QDir::cleanPath(gamsPath);
 #endif
 }

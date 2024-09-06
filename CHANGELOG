@@ -16,6 +16,7 @@ Version 1.19.0 *
 - removed warning when deleting a project file that does not exist
 - fixed usage of license file specified via the `gamsconfig.yaml`
 - added workspace clean-up during Studio start based on filters defined via the settings
+- fixed find GAMS on Windows
 
 Version 1.18.7
 ==================
