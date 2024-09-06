@@ -5400,6 +5400,7 @@ void MainWindow::on_actionSettings_triggered()
             if (mSettingsDialog->miroSettingsEnabled())
                 updateMiroEnabled();
         });
+        connect(mSettingsDialog, &SettingsDialog::cleanupWorkspace, this, &MainWindow::cleanupWorkspace);
     }
     mSettingsDialog->setMiroSettingsEnabled(!mMiroRunning);
     mSettingsDialog->open();

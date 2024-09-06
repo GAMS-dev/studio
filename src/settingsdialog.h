@@ -69,6 +69,7 @@ signals:
     void persistToken();
     void rehighlight();
     void updateExtraSelections();
+    void cleanupWorkspace(const QStringList&);
 
 public slots:
     void delayBaseThemeChange(bool valid);

@@ -165,6 +165,11 @@ SettingsDialog::SettingsDialog(MainWindow *parent)
 
     connect(ui->edUserGamsTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
     connect(ui->edAutoReloadTypes, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
+    connect(ui->cleanupWsBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
+    connect(ui->cleanupWsEdit, &QLineEdit::textEdited, this, &SettingsDialog::setModified);
+    connect(ui->cleanupWsNowButton, &QPushButton::clicked, this, [this]{
+            cleanupWorkspace(ui->cleanupWsEdit->text().split(",", Qt::SkipEmptyParts));
+    });
     connect(ui->cb_userLib, &QComboBox::editTextChanged, this, &SettingsDialog::setAndCheckUserLib);
     connect(ui->overrideExistingOptionCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
     connect(ui->addCommentAboveCheckBox, &QCheckBox::clicked, this, &SettingsDialog::setModified);
@@ -286,6 +291,8 @@ void SettingsDialog::loadSettings()
     ui->cb_userLib->clear();
     ui->cb_userLib->addItems(mSettings->toString(skUserModelLibraryDir).split(',', Qt::SkipEmptyParts));
     ui->cb_userLib->setCurrentIndex(0);
+    ui->cleanupWsBox->setChecked(mSettings->toBool(skCleanUpWorkspace));
+    ui->cleanupWsEdit->setText(mSettings->toString(skCleanUpWorkspaceFilter));
 
     // solver option editor
     ui->overrideExistingOptionCheckBox->setChecked(mSettings->toBool(skSoOverrideExisting));
@@ -443,6 +450,8 @@ void SettingsDialog::saveSettings()
     mSettings->setString(skUserGamsTypes, suffs.join(","));
     ui->edAutoReloadTypes->setText(changeSeparators(ui->edAutoReloadTypes->text(), ", "));
     mSettings->setString(skAutoReloadTypes, changeSeparators(ui->edAutoReloadTypes->text(), ","));
+    mSettings->setBool(skCleanUpWorkspace, ui->cleanupWsBox->isChecked());
+    mSettings->setString(skCleanUpWorkspaceFilter, ui->cleanupWsEdit->text());
 
     // user model library
     prependUserLib();

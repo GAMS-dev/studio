@@ -141,6 +141,8 @@ enum SettingsKey {
     skNeosShortPrio,
     skUserGamsTypes,
     skAutoReloadTypes,
+    skCleanUpWorkspace,
+    skCleanUpWorkspaceFilter,
 
     // solver option editor settings
     skSoOverrideExisting,

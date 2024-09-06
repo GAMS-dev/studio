@@ -76,6 +76,12 @@ public:
     ///
     bool skipCheckForUpdate() const;
 
+public slots:
+    ///
+    /// \brief Clear workspace accoring to the filters defined via the Settings.
+    ///
+    void clearWorkspaceNow(const QStringList &filters);
+
 protected:
     ///
     /// \brief Reimplemented QObject::event function.
@@ -108,6 +114,10 @@ private:
     /// \brief Start listening
     ///
     void listen();
+
+    void clearWorkspace(bool active, const QStringList &filters, QStringList &rmSuccess, QStringList &rmFailed);
+
+    void reportCleanupWsState(const QStringList &rmSuccess, const QStringList &rmFailed);
 
 private:
     QSharedPointer<MainWindow> mMainWindow;

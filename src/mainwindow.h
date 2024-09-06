@@ -178,6 +178,9 @@ public:
     search::ResultsView *resultsView() const;
     void invalidateResultsView();
 
+signals:
+    void cleanupWorkspace(const QStringList&);
+
 public slots:
     gams::studio::PExFileNode* openFilePath(const QString &filePath, gams::studio::PExProjectNode* knownProject = nullptr,
                                             gams::studio::OpenGroupOption opt = ogNone, bool focus = false, bool forcedAsTextEditor = false,
