@@ -213,7 +213,6 @@ private:
     PExLogNode* mLogNode = nullptr;
     FileMeta *mProjectEditFileMeta = nullptr;
     QHash<int, QString> mErrorTexts;
-    QStringList mRunParametersHistory;
     QHash<FileId, QStringList> mRunFileParameters;
     QHash<QString, QString> mParameterHash;
     ChangeState mChangeState = csNone;

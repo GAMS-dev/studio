@@ -2102,7 +2102,6 @@ void MainWindow::loadCommandLines(PExProjectNode* oldProj, PExProjectNode* proj)
         // node changed from valid: store current command-line
         oldProj->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
     }
-
     if (!proj) {
         // switched to welcome page
         mGamsParameterEditor->loadCommandLine(QStringList());
@@ -4168,6 +4167,8 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
 {
     Settings *settings = Settings::settings();
     project->addRunParametersHistory( mGamsParameterEditor->getCurrentCommandLineData() );
+    mGamsParameterEditor->loadCommandLine(project->getRunParametersHistory());
+
     project->clearErrorTexts();
     if (QWidget *wid = currentEdit())
         wid->setFocus();
