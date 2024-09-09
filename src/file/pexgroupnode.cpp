@@ -604,10 +604,6 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
     if (mType > PExProjectNode::tCommon) return;
     PExFileNode *gmsFileNode;
-    if (Settings::settings()->toBool(skOptionsPerMainFile)) {
-        if (FileMeta *meta = runnableGms())
-            setRunFileParameterHistory(meta->id(), mRunParametersHistory);
-    }
     if (!gmsFile) {
         // find alternative runable file
         for (PExAbstractNode *node: listFiles()) {
@@ -635,12 +631,6 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     QString gmsPath = gmsFile->location();
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
-    if (Settings::settings()->toBool(skOptionsPerMainFile)) {
-        if (FileMeta *meta = runnableGms()) {
-            mRunParametersHistory = runFileParameterHistory(meta->id());
-            setRunFileParameterHistory(meta->id(), QStringList());
-        }
-    }
 
     emit changed(id());
     emit runnableChanged();
@@ -856,26 +846,34 @@ QStringList PExProjectNode::runFileParameterHistory(FileId fileId) const
 
 void PExProjectNode::addRunParametersHistory(const QString &runParameters)
 {
+    FileId id;
+    if (Settings::settings()->toBool(skOptionsPerMainFile))
+        if (FileMeta *meta = runnableGms())
+            id = meta->id();
     if (!runParameters.simplified().isEmpty()) {
-       QStringList list = mRunParametersHistory.filter(runParameters.simplified());
+       QStringList list = mRunFileParameters[id].filter(runParameters.simplified());
        if (list.size() > 0) {
-           mRunParametersHistory.removeOne(runParameters.simplified());
+           mRunFileParameters[id].removeOne(runParameters.simplified());
        }
     } else {
-        for (int i=0; i< mRunParametersHistory.size(); ++i) {
-            QString str = mRunParametersHistory.at(i);
+        for (int i = 0; i < mRunFileParameters[id].size(); ++i) {
+            QString str = mRunFileParameters[id].at(i);
             if (str.simplified().isEmpty()) {
-                mRunParametersHistory.removeAt(i);
+                mRunFileParameters[id].removeAt(i);
                 break;
             }
         }
     }
-    mRunParametersHistory.append(runParameters.simplified());
+    mRunFileParameters[id].append(runParameters.simplified());
 }
 
 QStringList PExProjectNode::getRunParametersHistory() const
 {
-    return mRunParametersHistory;
+    FileId id;
+    if (Settings::settings()->toBool(skOptionsPerMainFile))
+        if (FileMeta *meta = runnableGms())
+            id = meta->id();
+    return mRunFileParameters[id];
 }
 
 ///

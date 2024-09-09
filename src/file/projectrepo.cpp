@@ -373,13 +373,9 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             if (projectData.contains("engineJobToken")) {
                 project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
             }
-            QVariantList optList = projectData.value("options").toList();
-            if (!optList.isEmpty()) {
-                for (const QVariant &opt : std::as_const(optList)) {
-                    QString par = opt.toString();
-                    project->addRunParametersHistory(par);
-                }
-            }
+            QStringList optList = projectData.value("options").toStringList();
+            if (!optList.isEmpty())
+                project->setRunFileParameterHistory(FileId(), optList);
             if (!project->childCount()) {
                 closeGroup(project);
             }

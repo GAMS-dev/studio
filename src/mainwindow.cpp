@@ -348,7 +348,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mSearchDialog, &search::SearchDialog::invalidateResultsView, this, &MainWindow::invalidateResultsView);
     connect(mSearchDialog, &search::SearchDialog::extraSelectionsUpdated, this, &MainWindow::extraSelectionsUpdated);
     connect(mSearchDialog, &search::SearchDialog::toggle, this, &MainWindow::toggleSearchDialog);
-    connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::updateTabIcons);
+    connect(&mProjectRepo, &ProjectRepo::runnableChanged, this, &MainWindow::runnableChanged);
     connect(&mProjectRepo, &ProjectRepo::getConfigPaths, this, [](QStringList &configPaths) {
         configPaths = CommonPaths::gamsStandardPaths(CommonPaths::StandardConfigPath);
     });
@@ -4349,7 +4349,6 @@ void MainWindow::setMainFile(PExFileNode *node)
     if (project) {
         project->setRunnableGms(node->file());
         updateRunState();
-        updateTabIcons();
     }
 }
 
@@ -6657,10 +6656,13 @@ void MainWindow::updateTabIcon(PExAbstractNode *node, int tabIndex)
 #endif
 }
 
-void MainWindow::updateTabIcons()
+void MainWindow::runnableChanged()
 {
     for (int i = 1; i < mainTabs()->count(); ++i) {
         updateTabIcon(nullptr, i);
+    }
+    if (Settings::settings()->toBool(skOptionsPerMainFile)) {
+        loadCommandLines(nullptr, mRecent.project());
     }
 }
 
