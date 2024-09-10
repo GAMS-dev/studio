@@ -231,7 +231,7 @@ QString ExportDriver::generateFilters()
                     if (sym->filterActive(d)) {
                         bool *showUels = sym->showUelInColumn().at(d);
                         std::vector<int> uels = *sym->uelsInColumn().at(d);
-                        inst += "      - column: " + QString::number(d+1) + "\n";
+                        inst += "      - dimension: " + QString::number(d+1) + "\n";
 
                         // switch between keep and reject for improved performance
                         size_t uelCount = uels.size();
@@ -266,9 +266,9 @@ QString ExportDriver::generateFilters()
                         valColumns << "level" << "marginal" << "lower" << "upper" << "scale";
                         ValueFilter *vf = sym->valueFilter(valColIndex);
                         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU)
-                            inst += "      - column: " + valColumns[valColIndex] + "\n";
+                            inst += "      - attribute: " + valColumns[valColIndex] + "\n";
                         else // parameters
-                            inst += "      - column: value\n";
+                            inst += "      - attribute: value\n";
                         QString min = numerics::DoubleFormatter::format(vf->currentMin(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
                         QString max = numerics::DoubleFormatter::format(vf->currentMax(), numerics::DoubleFormatter::g, numerics::DoubleFormatter::gFormatFull, true);
                         if (vf->exclude()) {
@@ -277,16 +277,22 @@ QString ExportDriver::generateFilters()
                             inst += "        rule: (x>=" + min + ") & (x<=" + max + ")\n";
 
                         //special values
+                        QString rejectSpecialValues = "";
                         if (!vf->showEps())
-                            inst += "        eps: false\n";
+                            rejectSpecialValues += "EPS, ";
                         if (!vf->showPInf())
-                            inst += "        infinity: false\n";
+                            rejectSpecialValues += "INF, ";
                         if (!vf->showMInf())
-                            inst += "        negativeInfinity: false\n";
+                            rejectSpecialValues += "-INF, ";
                         if (!vf->showNA())
-                            inst += "        na: false\n";
+                            rejectSpecialValues += "NA, ";
                         if (!vf->showUndef())
-                            inst += "        undf: false\n";
+                            rejectSpecialValues += "UNDEF, ";
+                        if (!rejectSpecialValues.isEmpty()) {
+                                int pos = rejectSpecialValues.lastIndexOf(QChar(','));
+                                rejectSpecialValues.remove(pos, 2);
+                            inst += "        rejectSpecialValues: [" + rejectSpecialValues + "]\n";
+                        }
                     }
                 }
             }
