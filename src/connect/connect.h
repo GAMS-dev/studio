@@ -53,6 +53,9 @@ private:
     bool listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
     bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
 
+    bool mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node& schemaValue, YAML::Node& dataValue,
+                              bool onlyRequiredAttribute=false, bool allowed=false);
+
     YAML::Node getDefaultValueByType(Schema* schemaHelper);
 
     YAML::Node createConnectData(const QString& schemaName, bool onlyRequiredAttribute=false);

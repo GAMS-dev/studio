@@ -240,6 +240,9 @@ public:
     QStringList getTypeAsStringList(const QString& key) const;
 
     QStringList getAllowedValueAsStringList(const QString& key) const;
+    ValueWrapper getDefaultValue(const QString& key) const;
+    bool isNullDefaultAllowed(const QString& key) const;
+
     bool isRequired(const QString& key) const;
     ValueWrapper getMin(const QString& key) const;
     ValueWrapper getMax(const QString& key) const;

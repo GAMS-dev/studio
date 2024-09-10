@@ -384,6 +384,43 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
     return strlist;
 }
 
+ValueWrapper ConnectSchema::getDefaultValue(const QString &key) const
+{
+    ValueWrapper vw;
+    if (contains(key)) {
+        SchemaValueType t = mSchemaHelper[key]->defaultValue.type;
+        if (t==SchemaValueType::String)
+            vw = mSchemaHelper[key]->defaultValue.value.stringval;
+        else if ( t==SchemaValueType::Integer)
+                vw = mSchemaHelper[key]->defaultValue.value.intval;
+        else if (t==SchemaValueType::Float)
+                vw = mSchemaHelper[key]->defaultValue.value.doubleval;
+        else if (t==SchemaValueType::String)
+                 vw = mSchemaHelper[key]->defaultValue.value.stringval;
+        else if (t==SchemaValueType::Boolean)
+            vw = (mSchemaHelper[key]->defaultValue.value.boolval?"true":"false");
+    }
+    return false;
+}
+
+bool ConnectSchema::isNullDefaultAllowed(const QString &key) const
+{
+    qDebug() << " mSchemaHelper.keys()=" << mSchemaHelper.keys();
+    if (contains(key)) {
+        qDebug() << " 0";
+        if (mSchemaHelper[key]) {
+            qDebug() << " 1";
+            Value v = mSchemaHelper[key]->defaultValue.value;
+            if (strcmp(v.stringval, "null") == 0) {
+                qDebug() << " 2";
+                return true;
+            }
+        }
+    }
+    qDebug() << " 3";
+    return false;
+}
+
 bool ConnectSchema::isRequired(const QString &key) const
 {
     if (contains(key)) {
