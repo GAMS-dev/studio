@@ -184,31 +184,22 @@ QString ExportDriver::generateProjections(bool applyFilters)
         QString name;
         QString newName;
         bool asParameter = false;
-        bool domOrderChanged = false;
         QString dom = generateDomains(sym);
         QString domNew = generateDomainsNew(sym);
+        bool domOrderChanged = dom != domNew;
+        QString all_suffix = "";
         if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU) {
-            if (hasActiveFilter(sym) && applyFilters)
-                name = sym->name() + FILTER_SUFFIX + dom;
-            else
-                name = sym->name() + dom;
-            newName = sym->name() + PROJ_SUFFIX + dom;
-            asParameter = true;
+            all_suffix = ".all";
         }
-        if (dom != domNew) {
+        if (sym->type() == GMS_DT_VAR || sym->type() == GMS_DT_EQU || domOrderChanged) {
             if (hasActiveFilter(sym) && applyFilters)
-                name = sym->name() + FILTER_SUFFIX  + dom;
+                name = sym->name() + FILTER_SUFFIX + all_suffix + dom;
             else
-                name = sym->name() + dom;
+                name = sym->name() + all_suffix + dom;
             newName = sym->name() + PROJ_SUFFIX + domNew;
-            domOrderChanged = true;
-        }
-        if (!name.isEmpty()) {
             inst += "- Projection:\n";
             inst += "    name: " + name + "\n";
             inst += "    newName: " + newName + "\n";
-            if (asParameter)
-                inst += "    asParameter: true\n";
             if (domOrderChanged) {
                 inst += "- PythonCode:\n";
                 inst += "    code: |\n";
