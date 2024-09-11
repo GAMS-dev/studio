@@ -384,23 +384,21 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
     return strlist;
 }
 
-ValueWrapper ConnectSchema::getDefaultValue(const QString &key) const
+QVariant ConnectSchema::getDefaultValue(const QString &key) const
 {
-    ValueWrapper vw;
     if (contains(key)) {
         SchemaValueType t = mSchemaHelper[key]->defaultValue.type;
-        if (t==SchemaValueType::String)
-            vw = mSchemaHelper[key]->defaultValue.value.stringval;
-        else if ( t==SchemaValueType::Integer)
-                vw = mSchemaHelper[key]->defaultValue.value.intval;
-        else if (t==SchemaValueType::Float)
-                vw = mSchemaHelper[key]->defaultValue.value.doubleval;
-        else if (t==SchemaValueType::String)
-                 vw = mSchemaHelper[key]->defaultValue.value.stringval;
-        else if (t==SchemaValueType::Boolean)
-            vw = (mSchemaHelper[key]->defaultValue.value.boolval?"true":"false");
+        if (t==SchemaValueType::String) {
+            return QVariant(QString::fromStdString(mSchemaHelper[key]->defaultValue.value.stringval));
+        } else if ( t==SchemaValueType::Integer) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.intval);
+        } else if (t==SchemaValueType::Float) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.doubleval);
+        } else if (t==SchemaValueType::Boolean) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.boolval);
+        }
     }
-    return false;
+    return QVariant();
 }
 
 bool ConnectSchema::isNullDefaultAllowed(const QString &key) const

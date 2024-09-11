@@ -482,6 +482,12 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
 bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node &schemaValue, YAML::Node &dataValue,
                                    bool onlyRequiredAttribute, bool allowed)
 {
+    if (schemaValue["default"]) {
+        std::string defvalue = schemaValue["default"].as<std::string>();
+        dataValue = defvalue;
+        return true;
+    }
+
     for(size_t i=0; i< schemaValue["type"].size(); ++i) {
         YAML::Node type = typenode[i];
         std::string value = type.as<std::string>() ;
