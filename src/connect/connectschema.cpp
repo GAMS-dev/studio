@@ -248,8 +248,6 @@ bool ConnectSchema::contains(const QString &key) const
 {
     if (mSchemaHelper.contains(key)) {
         return true;
-    } else if (isAnyOfDefined(key)) {
-        return true;
     } else {
         return false;
     }

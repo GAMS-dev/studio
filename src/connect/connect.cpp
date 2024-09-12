@@ -380,6 +380,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
                 return mapTypeSequenceValue(schemaValue["type"], schemaValue, dataValue, onlyRequiredAttribute, allowed);
             } else { // not sequence
+
                 std::string value = schemaValue["type"].as<std::string>() ;
                 if (allowed && value.compare("string") == 0) {
                     if (schemaValue["default"]) {
@@ -453,6 +454,15 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                 if (schemaValue["anyof"].Type()==YAML::NodeType::Sequence) {
                     YAML::Node anyofnode = schemaValue["anyof"][0];
                     if (anyofnode.Type() == YAML::NodeType::Map) {
+                        if (schemaValue["default"]) {
+                            std::string defvalue = schemaValue["default"].as<std::string>();
+                            if (defvalue.compare("null")==0)
+                                return true;
+                            else
+                                dataValue = defvalue;
+                            return true;
+                        }
+
                         if (!mapValue( anyofnode, dataValue, false, onlyRequiredAttribute ))
                             return false;
                     }
