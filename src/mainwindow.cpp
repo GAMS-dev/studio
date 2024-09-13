@@ -1975,14 +1975,13 @@ void MainWindow::on_actionSave_As_triggered()
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
 
-                // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
-                DEB() << "Find " << filePath << "   in " << node->assignedProject()->location();
                 if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject())) {
                     pfn->file()->setModified(false);
                     closeFileEditors(pfn->file()->id());
                     mProjectRepo.closeNode(pfn);
                 }
 
+                // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
                 mProjectRepo.saveNodeAs(node, filePath);
 
                 if (oldKind == node->file()->kind()) { // if old == new

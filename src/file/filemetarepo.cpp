@@ -94,10 +94,15 @@ void FileMetaRepo::removeFile(FileMeta *fileMeta)
 {
     if (fileMeta) {
         mFiles.remove(fileMeta->id());
-        if (FileType::fsCaseSense())
-            mFileNames.remove(fileMeta->location());
-        else
-            mFileNames.remove(fileMeta->location().toLower());
+        if (FileType::fsCaseSense()) {
+            // checking if the entry isn't an updated one (destructor is called with deleteLater and thus delayed)
+            if (mFileNames.value(fileMeta->location()) == fileMeta)
+                mFileNames.remove(fileMeta->location());
+        } else {
+            // checking if the entry isn't an updated one (destructor is called with deleteLater and thus delayed)
+            if (mFileNames.value(fileMeta->location().toLower()) == fileMeta)
+                mFileNames.remove(fileMeta->location().toLower());
+        }
         unwatch(fileMeta);
         if (fileMeta->isAutoReload())
             mAutoReloadLater << fileMeta->location();

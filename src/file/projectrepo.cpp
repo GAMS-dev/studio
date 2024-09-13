@@ -855,12 +855,42 @@ PExLogNode*ProjectRepo::logNode(PExAbstractNode* node)
 
 void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
 {
+    FileMeta *destFM = fileRepo()->findOrCreateFileMeta(target);
+    if (!destFM) {
+        SysLogLocator::systemLog()->append("Error creating file " + target);
+        return;
+    }
     FileMeta* sourceFM = node->file();
+    bool keepOld = fileNodes(sourceFM->id()).size() > 1;
+
+    // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
+    if (PExFileNode* destNode = findFile(target, node->assignedProject())) {
+        emit closeFileEditors(destFM->id());
+
+
+        closeNode(destNode);
+        // This triggers a deleteLater of the FileMeta.
+        //The destructor then wrongly removes the entry for the edit-widget that is already for the new FileMeta!
+
+
+
+        destFM = fileRepo()->findOrCreateFileMeta(target);
+    }
+
+    // if keepOld: Copy to dest  AND  replace sourceFM by destFM in node
+    // else      : sourceFM->save(target)
+
     QString oldFile = node->location();
 
+
     // set location to new file and add it to the tree
-    if (sourceFM->save(target)) {
-        node->setName(sourceFM->name());
+    if (sourceFM->save(target, !keepOld)) {
+        if (keepOld) {
+            // destFM has been overwritten by the contents of sourceFM: replace sourceFM by destFM in node
+            node->replaceFile(destFM);
+        } else {
+            node->setName(sourceFM->name());
+        }
 
         PExProjectNode *project = node->assignedProject();
         if (project->type() == PExProjectNode::tGams) {
@@ -882,11 +912,6 @@ void ProjectRepo::saveNodeAs(PExFileNode *node, const QString &target)
         } else {
             addToProject(project, node);
         }
-
-        // re-add old file
-        PExFileNode *fn = findOrCreateFileNode(oldFile, project);
-        if (fn && project->type() == PExProjectNode::tGams)
-            emit openFile(fn->file(), false);
 
         // macOS didn't focus on the new node
         mTreeModel->setCurrent(mTreeModel->index(node));

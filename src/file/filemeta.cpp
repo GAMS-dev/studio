@@ -850,7 +850,13 @@ void FileMeta::load(int codecMib, bool init)
     return;
 }
 
-bool FileMeta::save(const QString &newLocation)
+///
+/// \brief FileMeta::save Saves the data to a file
+/// \param newLocation the filepath of the new or replaced file
+/// \param transferLocation TRUE: transfer the location reference of this FileMeta to the new location
+/// \return
+///
+bool FileMeta::save(const QString &newLocation, bool transferLocation)
 {
     QString location = newLocation.isEmpty() ? mLocation : newLocation;
     QFile file(location);
@@ -918,10 +924,12 @@ bool FileMeta::save(const QString &newLocation)
 
         if (!old.copy(location)) EXCEPT() << "Can't save " << location;
     }
-    setLocation(location);
-    refreshType();
-    if (res)
-        setModified(false);
+    if (transferLocation) {
+        setLocation(location);
+        refreshType();
+        if (res)
+            setModified(false);
+    }
     if (kind() != FileKind::Gsp)
         mFileRepo->watch(this);
     return res;
