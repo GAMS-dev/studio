@@ -930,8 +930,9 @@ bool FileMeta::save(const QString &newLocation, bool transferLocation)
         if (res)
             setModified(false);
     }
-    if (kind() != FileKind::Gsp)
-        mFileRepo->watch(this);
+    if (kind() != FileKind::Gsp) {
+        QTimer::singleShot(0, this, [this](){ mFileRepo->watch(this); });
+    }
     return res;
 }
 
