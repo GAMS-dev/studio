@@ -837,8 +837,6 @@ bool PExProjectNode::hasErrorText(int lstLine)
 void PExProjectNode::setRunFileParameterHistory(FileId fileId, QStringList parameterLists)
 {
     mRunFileParameters.insert(fileId, parameterLists);
-    // also store to the project global parameters list
-    if (fileId.isValid()) mRunFileParameters.insert(FileId(), parameterLists);
 }
 
 QStringList PExProjectNode::runFileParameterHistory(FileId fileId) const
@@ -879,7 +877,12 @@ QStringList PExProjectNode::getRunParametersHistory() const
     if (Settings::settings()->toBool(skOptionsPerMainFile))
         if (FileMeta *meta = runnableGms())
             id = meta->id();
-    return mRunFileParameters[id];
+    QStringList params = mRunFileParameters.value(id, QStringList());
+    if (params.size() == 1 && params.at(0).isEmpty())
+        params.clear();
+    if (params.isEmpty())
+        return mRunFileParameters.value(FileId(), QStringList());
+    return params;
 }
 
 ///

@@ -6664,6 +6664,17 @@ void MainWindow::runnableChanged()
     }
     if (Settings::settings()->toBool(skOptionsPerMainFile)) {
         loadCommandLines(nullptr, mRecent.project());
+        if (PExProjectNode *proj = mRecent.project()) {
+            QStringList params = proj->getRunParametersHistory();
+            mGamsParameterEditor->loadCommandLine(params);
+            // ensure the options are actualized
+            if (FileMeta *meta = proj->runnableGms()) {
+                FileId id = meta->id();
+                if (id.isValid())
+                    proj->setRunFileParameterHistory(id, params);
+            }
+        }
+
     }
 }
 

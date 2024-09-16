@@ -370,12 +370,9 @@ bool ProjectRepo::read(const QVariantMap &projectMap, QString gspFile)
             emit setNodeExpanded(mTreeModel->index(project), expand);
             if (projectChangedMarker)
                 project->setNeedSave();
-            if (projectData.contains("engineJobToken")) {
+            if (projectData.contains("engineJobToken"))
                 project->setEngineJobToken(projectData.value("engineJobToken").toString(), false);
-            }
-            QStringList optList = projectData.value("options").toStringList();
-            if (!optList.isEmpty())
-                project->setRunFileParameterHistory(FileId(), optList);
+            project->setRunFileParameterHistory(FileId(), projectData.value("options").toStringList());
             if (!project->childCount()) {
                 closeGroup(project);
             }
@@ -402,11 +399,10 @@ bool ProjectRepo::readProjectFiles(PExProjectNode *project, const QVariantList &
                 PExFileNode * node = findOrCreateFileNode(file, project, ft, name);
                 node->file()->setCodecMib(child.contains("codecMib") ? child.value("codecMib").toInt()
                                                                      : Settings::settings()->toInt(skDefaultCodecMib));
-                if (child.contains("options")) {
-                    QStringList optList = child.value("options").toStringList();
-                    if (!optList.isEmpty())
-                        project->setRunFileParameterHistory(node->file()->id(), optList);
-                }
+                QStringList optList;
+                if (child.contains("options"))
+                    optList = child.value("options").toStringList();
+                project->setRunFileParameterHistory(node->file()->id(), optList);
             } else if (!CIgnoreSuffix.contains('.'+QFileInfo(file).suffix()+'.')) {
                 emit addWarning("File not found: " + file);
                 res = false;
@@ -494,6 +490,8 @@ void ProjectRepo::writeProjectFiles(const PExProjectNode* project, QVariantList&
         int mib = file->file()->codecMib();
         nodeObject.insert("codecMib", mib);
         QStringList options = project->runFileParameterHistory(file->file()->id());
+        if (options.size() == 1 && options.at(0).isEmpty())
+            options.clear();
         if (!options.isEmpty())
             nodeObject.insert("options", options);
         childList.append(nodeObject);
