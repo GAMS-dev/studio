@@ -17,6 +17,7 @@ Version 1.19.0 *
 - fixed usage of license file specified via the `gamsconfig.yaml`
 - added workspace clean-up during Studio start based on filters defined via the settings
 - fixed find GAMS on Windows
+- fixed path of project options not recognized for file dialog
 
 Version 1.18.7
 ==================

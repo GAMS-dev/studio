@@ -3414,8 +3414,12 @@ void MainWindow::updateProjectList()
 
 QString MainWindow::currentPath()
 {
-    if (currentEdit() != nullptr)
-        return mRecent.path();
+    if (currentEdit() != nullptr) {
+        if (ViewHelper::toProjectEdit(currentEdit())) {
+            if (PExProjectNode *pro = mRecent.project(false))
+                return pro->workDir();
+        } else return mRecent.path();
+    }
     return CommonPaths::defaultWorkingDir();
 
 }
