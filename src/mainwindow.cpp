@@ -3706,6 +3706,13 @@ void MainWindow::keyPressEvent(QKeyEvent* e)
     if (e == Hotkey::Print)
         on_actionPrint_triggered();
 
+    if (e == Hotkey::SetMainFile) {
+        if (PExFileNode *node = mProjectRepo.findFileNode(mRecent.editor())) {
+            if (node->file()->kind() == FileKind::Gms)
+                setMainFile(node);
+        }
+    }
+
     if ((e->modifiers() & Qt::ControlModifier) && (e->key() == Qt::Key_0)) {
         updateFonts(Settings::settings()->toInt(skEdFontSize), Settings::settings()->toString(skEdFontFamily));
     }

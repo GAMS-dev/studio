@@ -229,6 +229,9 @@ void Keys::reset()
     seq = new KeySeqList("Ctrl+Shift+B","select to matching parentheses");
     setHotkey(Hotkey::SelectParentheses, seq);
 
+    seq = new KeySeqList("Ctrl+Shift+M","set current file as main file");
+    setHotkey(Hotkey::SetMainFile, seq);
+
     seq = new KeySeqList("F1","Open Help View");
     setHotkey(Hotkey::OpenHelp, seq);
 

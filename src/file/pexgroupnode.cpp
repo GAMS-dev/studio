@@ -603,7 +603,8 @@ FileMeta* PExProjectNode::runnableGms() const
 void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
 {
     if (mType > PExProjectNode::tCommon) return;
-    PExFileNode *gmsFileNode;
+    QList<NodeId> ids;
+    PExFileNode *gmsFileNode = nullptr;
     if (!gmsFile) {
         // find alternative runable file
         for (PExAbstractNode *node: listFiles()) {
@@ -613,15 +614,26 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
                 break;
             }
         }
+    } else {
+        gmsFileNode = findFile(gmsFile);
     }
     if (gmsFile && gmsFile->kind() != FileKind::Gms) {
         DEB() << "Only files of FileKind::Gms can become runable";
         return;
     }
+
+    ids << id();
+    if (gmsFileNode) ids << gmsFileNode->id();
+    if (!parameter("gms").isEmpty()) {
+        if (PExFileNode *oldMain = findFile(parameter("gms")))
+            ids << oldMain->id();
+    }
     setParameter("gms", "");
     if (!gmsFile) {
         setParameter("lst", "");
-        emit changed(id());
+        for (NodeId id : ids) {
+            emit changed(id);
+        }
         emit runnableChanged();
         return;
     }
@@ -632,7 +644,9 @@ void PExProjectNode::setRunnableGms(FileMeta *gmsFile)
     setParameter("gms", gmsPath);
     if (hasLogNode()) logNode()->resetLst();
 
-    emit changed(id());
+    for (NodeId id : ids) {
+        emit changed(id);
+    }
     emit runnableChanged();
 }
 

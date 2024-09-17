@@ -72,7 +72,8 @@ enum struct Hotkey {
     Outdent = 104,
     MatchParentheses = 105,
     SelectParentheses = 106,
-    JumpToContext = 107,
+    SetMainFile = 107,
+    JumpToContext = 108,
 
 };
 
