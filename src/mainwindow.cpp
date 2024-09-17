@@ -4348,6 +4348,7 @@ void MainWindow::setMainFile(PExFileNode *node)
 {
     PExProjectNode *project = node->assignedProject();
     if (project) {
+        project->addRunParametersHistory(mGamsParameterEditor->getCurrentCommandLineData());
         project->setRunnableGms(node->file());
         updateRunState();
     }
