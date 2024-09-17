@@ -156,6 +156,18 @@ MainWindow::MainWindow(QWidget *parent)
     connect(mPinView, &pin::PinViewWidget::hidden, this, [this]() { closePinView(); });
     mPinControl.init(mPinView);
 
+    connect(&mMainTabContextMenu, &MainTabContextMenu::handleSetMainFile, this, [this](int tabIndex, bool *testOnly) {
+        // when testOnly is set -> only return if set main is possible for this file
+        if (testOnly) *testOnly = false;
+        if (tabIndex < 0) return;
+        if (PExFileNode *node = mProjectRepo.findFileNode(ui->mainTabs->widget(tabIndex))) {
+            if (node->file()->kind() == FileKind::Gms && node->assignedProject()->runnableGms() != node->file()) {
+                if (testOnly) *testOnly = true;
+                else setMainFile(node);
+            }
+        }
+    });
+
     // Status Bar
     mStatusWidgets = new StatusWidgets(this);
 
@@ -1368,7 +1380,7 @@ void MainWindow::mainTabContextMenuRequested(const QPoint& pos)
     int tabIndex = ui->mainTabs->tabBar()->tabAt(pos);
     QWidget *edit = ui->mainTabs->widget(tabIndex);
     FileMeta *fm = mFileMetaRepo.fileMeta(edit);
-    mMainTabContextMenu.setTabIndex(tabIndex, fm && fm->isPinnable());
+    mMainTabContextMenu.setTabIndex(tabIndex, fm && fm->isPinnable(), fm && fm->kind() == FileKind::Gms);
     mMainTabContextMenu.exec(ui->mainTabs->tabBar()->mapToGlobal(pos));
 }
 

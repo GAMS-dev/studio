@@ -19,6 +19,7 @@
  */
 #include "maintabcontextmenu.h"
 #include "mainwindow.h"
+#include "keys.h"
 
 namespace gams {
 namespace studio {
@@ -26,6 +27,7 @@ namespace studio {
 enum TabActions {
     actSplitH,
     actSplitV,
+    actSetMain,
     actClose,
     actCloseAll,
     actCloseAllExceptVisible,
@@ -44,6 +46,14 @@ MainTabContextMenu::MainTabContextMenu(MainWindow* parent) : mParent(parent)
         emit openPinView(mTabIndex, Qt::Vertical);
     }));
     mActions.value(actSplitV)->setToolTip("Pin edit to the bottom <b>Shift+Ctrl+Click</b>");
+
+    addSeparator();
+    mActions.insert(actSetMain, addAction("Set as &main file", this, [this]() {
+        emit handleSetMainFile(mTabIndex);
+    }));
+    mActions.value(actSetMain)->setToolTip("Set as main file in current project");
+    mActions.value(actSetMain)->setShortcut(Keys::instance().keySequence(Hotkey::SetMainFile).first());
+
     addSeparator();
     mActions.insert(actClose, addAction("&Close", this, &MainTabContextMenu::close));
     mActions.insert(actCloseAll, addAction("Close &All", mParent, &MainWindow::on_actionClose_All_triggered));
@@ -78,7 +88,7 @@ void MainTabContextMenu::closeAllRight()
     }
 }
 
-void MainTabContextMenu::setTabIndex(int tab, bool canSplit)
+void MainTabContextMenu::setTabIndex(int tab, bool canSplit, bool isFile)
 {
     mTabIndex = tab;
     mActions.value(actSplitH)->setVisible(canSplit);
@@ -86,6 +96,12 @@ void MainTabContextMenu::setTabIndex(int tab, bool canSplit)
     mActions.value(actCloseAllExceptVisible)->setEnabled(mParent->mainTabs()->count() > 1);
     mActions.value(actCloseAllToLeft)->setEnabled(mTabIndex);
     mActions.value(actCloseAllToRight)->setEnabled(mTabIndex < mParent->mainTabs()->count()-1);
+    mActions.value(actSetMain)->setVisible(isFile);
+    if (isFile) {
+        bool canBeMain = false;
+        emit handleSetMainFile(mTabIndex, &canBeMain);
+        mActions.value(actSetMain)->setEnabled(canBeMain);
+    }
 }
 
 }

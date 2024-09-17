@@ -32,10 +32,11 @@ class MainTabContextMenu : public QMenu
     Q_OBJECT
 public:
     MainTabContextMenu(MainWindow* parent);
-    void setTabIndex(int tab, bool canSplit);
+    void setTabIndex(int tab, bool canSplit, bool isFile);
 
 signals:
     void openPinView(int tabIndex, Qt::Orientation orientation);
+    void handleSetMainFile(int tabIndex, bool *canBeMain = nullptr);
 
 private:
     QHash<int, QAction*> mActions;
