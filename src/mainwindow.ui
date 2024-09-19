@@ -610,9 +610,8 @@
    <addaction name="actionGoForward"/>
    <addaction name="separator"/>
    <addaction name="actionSearch"/>
-   <addaction name="actionSettings"/>
-   <addaction name="separator"/>
    <addaction name="actionGAMS_Library"/>
+   <addaction name="actionSettings"/>
    <addaction name="actionToggle_Extended_Parameter_Editor"/>
    <addaction name="actionProject_View"/>
    <addaction name="actionProcess_Log"/>
