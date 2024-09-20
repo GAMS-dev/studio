@@ -867,6 +867,7 @@ bool FileMeta::save(const QString &newLocation, bool transferLocation)
 
     bool res = true;
     mFileRepo->unwatch(this);
+    mFileRepo->unwatch(newLocation);
     if (document()) {
         TextFileSaver saver;
         if (!saver.open(location))
@@ -931,7 +932,13 @@ bool FileMeta::save(const QString &newLocation, bool transferLocation)
             setModified(false);
     }
     if (kind() != FileKind::Gsp) {
-        QTimer::singleShot(0, this, [this](){ mFileRepo->watch(this); });
+        QTimer::singleShot(500, this, [this, transferLocation, newLocation]() {
+            mFileRepo->watch(this);
+            if (!transferLocation) {
+                if (FileMeta *meta = mFileRepo->fileMeta(newLocation))
+                    mFileRepo->watch(meta);
+            }
+        });
     }
     return res;
 }
