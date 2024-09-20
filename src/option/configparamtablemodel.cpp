@@ -19,6 +19,7 @@
  */
 #include "configparamtablemodel.h"
 #include "theme.h"
+#include "msgbox.h"
 
 #include <QApplication>
 #include <QMessageBox>
@@ -478,49 +479,40 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
          bool singleEntryExisted = (overrideIdRowList.size()==1);
          bool multipleEntryExisted = (overrideIdRowList.size()>1);
          if (singleEntryExisted) {
-             QMessageBox msgBox;
-             msgBox.setWindowTitle("Parameter Entry exists");
-             msgBox.setText("Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString()+ "' already exists.");
-             msgBox.setInformativeText("How do you want to proceed?");
-             msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(overrideIdRowList.at(0)),
-                     "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
-                     "The value of all other entries except the last entry will be ignored."));
-             msgBox.setStandardButtons(QMessageBox::Abort);
-             msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
-             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-             qDebug() << "ConfigParamTableModel 1";
-             switch(msgBox.exec()) {
-             case 3: // replace
+             QString param = data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString();
+             QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+                 .arg(getParameterTableEntry(overrideIdRowList.at(0)),
+                 "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                 "The value of all other entries except the last entry will be ignored.");
+             int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + param + "' already exists.",
+                                           "How do you want to proceed?", detailText,
+                                           nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+             switch(answer) {
+             case 0: // replace
                 replaceExistingEntry = true;
                 beginRow = overrideIdRowList.at(0);
                 break;
-             case 4: // add
+             case 1: // add
                 break;
-             case QMessageBox::Abort:
+             default:
                 itemList.clear();
                 return false;
              }
          } else if (multipleEntryExisted) {
-             QMessageBox msgBox;
-             msgBox.setWindowTitle("Multiple Parameter Entries exist");
-             msgBox.setText(QString("%1 entries of Parmaeter '%2' already exist.").arg(overrideIdRowList.size())
-                      .arg(data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString()));
-             msgBox.setInformativeText("How do you want to proceed?");
+             QString param = data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString();
              QString entryDetailedText = QString("Entries:\n");
              int i = 0;
              for (int id : overrideIdRowList)
                  entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(id)));
-             msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText,
-                      "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
-                      "The value of all other entries except the last entry will be ignored."));
-             msgBox.setText("Multiple entries of Parameter '" + data(index(overrideIdRowList.at(0), COLUMN_PARAM_KEY)).toString() + "' already exist.");
-             msgBox.setInformativeText("How do you want to proceed?");
-             msgBox.setStandardButtons(QMessageBox::Abort);
-             msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
-             msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-             switch(msgBox.exec()) {
-             case 3: { // delete and replace
+             QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+                 "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
+                 "The value of all other entries except the last entry will be ignored.");
+             int answer = MsgBox::question("Multiple Parameter Entries exist",
+                                           "Multiple entries of Parameter '" + param + "' already exist.",
+                                           "How do you want to proceed?", detailText,
+                                           nullptr, "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
+             switch(answer) {
+             case 0: { // delete and replace
                  int prev = -1;
                  for(int i=overrideIdRowList.count()-1; i>=0; i--) {
                      int current = overrideIdRowList[i];
@@ -536,10 +528,10 @@ bool ConfigParamTableModel::dropMimeData(const QMimeData *mimedata, Qt::DropActi
                  beginRow = overrideIdRowList.at(0);
                  break;
              }
-             case 4: { // add
+             case 1: { // add
                  break;
              }
-             case QMessageBox::Abort: {
+             default: {
                  itemList.clear();
                  return false;
              }

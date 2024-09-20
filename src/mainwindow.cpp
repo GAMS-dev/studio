@@ -69,6 +69,7 @@
 #include "headerviewproxy.h"
 #include "pinviewwidget.h"
 #include "file/pathselect.h"
+#include "msgbox.h"
 
 #ifdef __APPLE__
 # include "../platform/macos/macoscocoabridge.h"
@@ -1179,17 +1180,10 @@ void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelNa
         FileMeta* fm = mFileMetaRepo.findOrCreateFileMeta(gmsFilePath);
 
         if (!forceOverwrite) {
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("File already existing");
-            msgBox.setText("The file " + gmsFilePath + " already exists in your working directory.");
-            msgBox.setInformativeText("What do you want to do with the existing file?");
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            QPushButton *bOpen = msgBox.addButton("Open", QMessageBox::ActionRole);
-            QPushButton *bReplace = msgBox.addButton("Replace", QMessageBox::ActionRole);
-            int answer = msgBox.exec();
-            if (msgBox.clickedButton() == bOpen) answer = 0;
-            if (msgBox.clickedButton() == bReplace) answer = 1;
-
+            int answer = MsgBox::question("File already exists"
+                                          , "The file " + gmsFilePath + " already exists in your working directory."
+                                          , "What do you want to do with the existing file?"
+                                          , this, "Open", "Replace", "Abort");
             switch(answer) {
             case 0: {// open
                 PExProjectNode* project = openInCurrent ? mRecent.project() : nullptr;
@@ -1743,19 +1737,12 @@ void MainWindow::newFileDialog(const QVector<PExProjectNode*> &projects, const Q
     if (file.exists()) {
         bool isOpen = (projectOnly && mProjectRepo.findProject(filePath)) ||
                       (!projectOnly && mProjectRepo.findFile(filePath));
-        QMessageBox msgBox;
-        msgBox.setWindowTitle(QString("%1 already %2").arg(kind, isOpen ? "opened" : "exists"));
-        msgBox.setText(QString("The %1 ").arg(kind.toLower()) + filePath +
-                       QString(" already %1.").arg(isOpen ? "opened in the Project Explorer"
-                                                          : "exists in the selected directory"));
-        msgBox.setInformativeText(QString("What do you want to do with the existing %1?").arg(kind.toLower()));
-        msgBox.setStandardButtons(QMessageBox::Abort);
-        QPushButton *bOpen = (isOpen ? nullptr : msgBox.addButton("Open", QMessageBox::ActionRole));
-        QPushButton *bReplace = msgBox.addButton("Replace", QMessageBox::ActionRole);
-        int answer = msgBox.exec();
-        if (msgBox.clickedButton() == bOpen) answer = 0;
-        if (msgBox.clickedButton() == bReplace) answer = 1;
-
+        QString text = QString("The %1 ").arg(kind.toLower()) + filePath +
+                QString(" already %1.").arg(isOpen ? "opened in the Project Explorer"
+                                                   : "exists in the selected directory");
+        int answer = MsgBox::question(QString("%1 already %2").arg(kind, isOpen ? "opened" : "exists"), text,
+                                      QString("What do you want to do with the existing %1?").arg(kind.toLower()),
+                                      this, "Open", "Replace");
         switch(answer) {
         case 0: // open
             // for files do nothing and continue
@@ -1850,16 +1837,10 @@ void MainWindow::openFolder(const QString &path, PExProjectNode *project)
     }
 
     if (allFiles.count() > 499) {
-        QMessageBox msgBox(this);
-        msgBox.setText("Warning");
-        msgBox.setIcon(QMessageBox::Warning);
-        msgBox.setText(path + " contains " + QString::number(allFiles.count())
-                       + " files. Adding that many files can take a long time to complete.\n"
-                       + "Do you want to continue?");
-        msgBox.setStandardButtons(QMessageBox::Yes | QMessageBox::No);
-        msgBox.setDefaultButton(QMessageBox::No);
-
-        if (msgBox.exec() == QMessageBox::No) return; // abort
+        int choice = MsgBox::warning("Warning: many files", path + " contains " + QString::number(allFiles.count()) +
+                        " files. Adding that many files can take a long time to complete.\nDo you want to continue?",
+                        this, "Yes", "No", QString(), 1);
+        if (choice == 1) return; // abort
     }
 
     if (!project) {
@@ -1936,10 +1917,10 @@ void MainWindow::on_actionSave_As_triggered()
         choice = 1;
         if ( fileMeta->kind() == FileKind::Opt  &&
              QString::compare(fi.baseName(), QFileInfo(filePath).completeBaseName(), Qt::CaseInsensitive)!=0 )
-            choice = QMessageBox::question(this, "Different solver name"
-                                               , QString("The option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
-                                                      .arg(QFileInfo(filePath).completeBaseName(), QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).fileName())
-                                               , "Select other", "Continue", "Abort", 0, 2);
+            choice = MsgBox::question("Different solver name"
+                                      , QString("The option file name '%1' is different than source option file name '%2'. Saved file '%3' may not be displayed properly.")
+                                               .arg(QFileInfo(filePath).completeBaseName(), QFileInfo(fileMeta->location()).completeBaseName(), QFileInfo(filePath).fileName())
+                                      , this, "Select other", "Continue", "Abort", 0, 2);
         if (choice == 0)
             continue;
         else if (choice == 2)
@@ -1948,20 +1929,20 @@ void MainWindow::on_actionSave_As_triggered()
         choice = 1;
         if (FileType::from(fileMeta->kind()) != FileType::from(QFileInfo(filePath).fileName())) {
             if (fileMeta->kind() == FileKind::Opt) {
-                choice = QMessageBox::question(this, "Invalid Option File Name or Suffix"
-                                                   , QString("'%1' is not a valid solver option file name or suffix. File Saved as '%2' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
-                                                   , "Select other", "Continue", "Abort", 0, 2);
+                choice = MsgBox::question("Invalid Option File Name or Suffix"
+                                          , QString("'%1' is not a valid solver option file name or suffix. File Saved as '%2' may not be displayed properly.")
+                                                   .arg(QFileInfo(filePath).suffix(), QFileInfo(filePath).fileName())
+                                          , this, "Select other", "Continue", "Abort", 0, 2);
             } else if (fileMeta->kind() == FileKind::Guc) {
-                choice = QMessageBox::question(this, "Invalid Gams Configuration File Name or Suffix"
-                                                   , QString("'%1' is not a valid Gams configuration file name or suffix. File saved as '%1' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).fileName())
-                                                   , "Select other", "Continue", "Abort", 0, 2);
+                choice = MsgBox::question("Invalid Gams Configuration File Name or Suffix"
+                                          , QString("'%1' is not a valid Gams configuration file name or suffix. File saved as '%1' may not be displayed properly.")
+                                                   .arg(QFileInfo(filePath).fileName())
+                                          , this, "Select other", "Continue", "Abort", 0, 2);
             } else {
-                choice = QMessageBox::question(this, "Different File Type"
-                                                   , QString("Target '%1' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
-                                                          .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
-                                                   , "Select other", "Continue", "Abort", 0, 2);
+                choice = MsgBox::question("Different File Type"
+                                          , QString("Target '%1' is of different type than the type of source '%2'. File saved as '%1' may not be displayed properly.")
+                                                   .arg(QFileInfo(filePath).fileName(), QFileInfo(fileMeta->location()).fileName())
+                                          , this, "Select other", "Continue", "Abort", 0, 2);
             }
         }
         if (choice == 0)
@@ -1974,8 +1955,8 @@ void MainWindow::on_actionSave_As_triggered()
         if ((fileMeta->kind() == FileKind::Gdx) || (fileMeta->kind() == FileKind::Ref))  {
             choice = 1;
             if (exists) {
-                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                               , "Select other", "Overwrite", "Abort", 0, 2);
+                choice = MsgBox::question("File exists", filePath+" already exists."
+                                          , this, "Select other", "Overwrite", "Abort", 0, 2);
                 if (choice == 1 && fileMeta->location() != filePath)
                     QFile::remove(filePath);
             }
@@ -1985,19 +1966,22 @@ void MainWindow::on_actionSave_As_triggered()
             FileMeta *destFM = mFileMetaRepo.fileMeta(filePath);
             choice = (destFM && destFM->isModified()) ? -1 : exists ? 0 : 1;
             if (choice < 0)
-                choice = QMessageBox::question(this, "Destination file modified"
-                                               , QString("Your unsaved changes on %1 will be lost.").arg(filePath)
-                                               , "Select other", "Continue", "Abort", 0, 2);
+                choice = MsgBox::question("Destination file modified", QString("Your unsaved changes on %1 will be lost.").arg(filePath)
+                                          , this, "Select other", "Continue", "Abort", 0, 2);
             else if (choice < 1)
-                choice = QMessageBox::question(this, "File exists", filePath+" already exists."
-                                               , "Select other", "Overwrite", "Abort", 0, 2);
+                choice = MsgBox::question("File exists", filePath+" already exists."
+                                          , this, "Select other", "Overwrite", "Abort", 0, 2);
 
             if (choice == 1) {
                 FileKind oldKind = node->file()->kind();
 
                 // when overwriting a node, remove existing to prevent project explorer to contain two identical entries
-                if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject()))
+                DEB() << "Find " << filePath << "   in " << node->assignedProject()->location();
+                if (PExFileNode* pfn = mProjectRepo.findFile(filePath, node->assignedProject())) {
+                    pfn->file()->setModified(false);
+                    closeFileEditors(pfn->file()->id());
                     mProjectRepo.closeNode(pfn);
+                }
 
                 mProjectRepo.saveNodeAs(node, filePath);
 
@@ -2080,16 +2064,10 @@ void MainWindow::codecReload(QAction *action)
     if (fm && fm->codecMib() != action->data().toInt()) {
         bool reload = true;
         if (fm->isModified()) {
-            QMessageBox msgBox;
-            msgBox.setIcon(QMessageBox::Warning);
-            msgBox.setText(QDir::toNativeSeparators(fm->location())+" has been modified.");
-            msgBox.setInformativeText("Do you want to discard your changes and reload it with Character Set "
-                                      + action->text() + "?");
-            QPushButton *bReload = msgBox.addButton(tr("Discard and Reload"), QMessageBox::ResetRole);
-            msgBox.setStandardButtons(QMessageBox::Cancel);
-            msgBox.setDefaultButton(QMessageBox::Cancel);
-            msgBox.exec();
-            reload = msgBox.clickedButton() == bReload;
+            int choice = MsgBox::warning("File modified", QDir::toNativeSeparators(fm->location())+" has been modified.\n"+
+                            "Do you want to discard your changes and reload it with Character Set " + action->text() + "?",
+                            this, "Discard and Reload", "Cancel", QString(), 1, 1);
+            reload = choice == 0;
         }
         if (reload) {
             fm->load(action->data().toInt());
@@ -3029,11 +3007,10 @@ bool MainWindow::terminateProcessesConditionally(const QVector<PExProjectNode *>
     message += runningNames.join("\n");
     if (runningNames.size() < runningGroups.size()) runningNames << " ...";
 
-    int choice = remoteCount ? localCount ? QMessageBox::question(this, title, message, "Stop All", "Stop Local", "Cancel")
-                                          : QMessageBox::question(this, title, message, "Stop", "Keep", "Cancel")
-                             : ignoreOnly ? QMessageBox::question(this, title, message, "Exit anyway", "Cancel") + 1
-                                          : QMessageBox::question(this, title, message, "Stop", "Cancel") + 1;
-    choice -= 2;
+    int choice = remoteCount ? localCount ? MsgBox::question(title, message, this, "Stop All", "Stop Local", "Cancel")
+                                          : MsgBox::question(title, message, this, "Stop", "Keep", "Cancel")
+                             : ignoreOnly ? MsgBox::question(title, message, this, "Exit anyway", "Cancel") + 1
+                                          : MsgBox::question(title, message, this, "Stop", "Cancel") + 1;
     if (choice == 2) return false;
     bool save = false;
     for (PExProjectNode* project: std::as_const(runningGroups)) {
@@ -4205,21 +4182,15 @@ bool MainWindow::executePrepare(PExProjectNode* project, const QString &commandL
 
     bool doSave = !modifiedFiles.isEmpty();
     if (doSave && !settings->toBool(skAutosaveOnRun)) {
-        QMessageBox msgBox;
-        msgBox.setIcon(QMessageBox::Warning);
-        if (modifiedFiles.size() > 1)
-            msgBox.setText(modifiedFiles.first()->location()+" and "+QString::number(modifiedFiles.size()-1)+" other files have been modified.");
-        else
-            msgBox.setText(QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.");
-        msgBox.setInformativeText("Do you want to save your changes before running?");
-        msgBox.setStandardButtons(QMessageBox::Save | QMessageBox::Cancel);
-        QAbstractButton* discardButton = msgBox.addButton(tr("Discard Changes and Run"), QMessageBox::ResetRole);
-        msgBox.setDefaultButton(QMessageBox::Save);
-        int ret = msgBox.exec();
-
-        if (ret == QMessageBox::Cancel) {
+        QString text = modifiedFiles.size() > 1
+                ? modifiedFiles.first()->location()+" and "+QString::number(modifiedFiles.size()-1)+" other files have been modified."
+                : QDir::toNativeSeparators(modifiedFiles.first()->location())+" has been modified.";
+        int answer = MsgBox::warning((modifiedFiles.size() > 1 ? "Files modified" : "File modified")
+                                     , text, "Do you want to save your changes before running?"
+                                     , this, "Discard Changes and Run", "Save", "Cancel", 1, 2);
+        if (answer == 2) {
             return false;
-        } else if (msgBox.clickedButton() == discardButton) {
+        } else if (answer == 0) {
             for (FileMeta *file: std::as_const(modifiedFiles))
                 if (file->kind() != FileKind::Log && file->kind() != FileKind::Gsp) {
                     try {
@@ -4919,8 +4890,8 @@ void MainWindow::editableFileSizeCheck(const QFile &file, bool &canOpen)
                         + "About " + QString::number(qreal(file.size())/1024/1024*factor, 'f', 1)
                         + " MB of memory need to be allocated."
                         + "\nOpening this file can take a long time during which Studio will be unresponsive.");
-        int choice = QMessageBox::question(nullptr, "File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
-                                           + " MB exceeded", text, "Open anyway", "Always open", "Cancel", 2, 2);
+        int choice = MsgBox::question("File size of " + QString::number(qreal(maxSize)/1024/1024, 'f', 1)
+                                      + " MB exceeded", text, this, "Open anyway", "Always open", "Cancel", 2, 2);
         if (choice == 2) {
             canOpen = false;
             return;

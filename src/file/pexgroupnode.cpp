@@ -147,8 +147,10 @@ PExFileNode *PExGroupNode::findFile(const FileMeta *fileMeta) const
 {
     if (!fileMeta) return nullptr;
     if (fileMeta->kind() == FileKind::Log) return nullptr;
-    for (PExFileNode* fileNode: listFiles())
+    for (PExFileNode* fileNode: listFiles()) {
+        DEB() << "  check " << fileNode->location();
         if (fileNode && fileNode->file() == fileMeta) return fileNode;
+    }
     return nullptr;
 }
 

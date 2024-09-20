@@ -35,6 +35,7 @@
 #include "editors/systemlogedit.h"
 #include "settings.h"
 #include "exception.h"
+#include "msgbox.h"
 
 namespace gams {
 namespace studio {
@@ -398,19 +399,15 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
         bool singleEntryExisted = (indices.size()==1);
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("Option Entry exists");
-            msgBox.setText("Option '" + optionNameData+ "' already exists.");
-            msgBox.setInformativeText("How do you want to proceed?");
-            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getOptionTableEntry(indices.at(0).row()))
-                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
-                         "The value of all other entries except the last entry will be ignored."));
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
-            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-            switch(msgBox.exec()) {
-            case 3: // replace
+            QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+                .arg(getOptionTableEntry(indices.at(0).row()),
+                "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                "The value of all other entries except the last entry will be ignored.");
+            int answer = MsgBox::question("Option Entry exists", "Option '" + optionNameData + "' already exists.",
+                                          "How do you want to proceed?", detailText,
+                                          nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+            switch(answer) {
+            case 0: // replace
                 if (settings && settings->toBool(skSoDeleteCommentsAbove) && indices.size()>0) {
                     disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                     deleteCommentsBeforeOption(indices.at(0).row());
@@ -422,31 +419,25 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 4: // add
+            case 1: // add
                 break;
-            case QMessageBox::Abort:
+            default:
                 return;
             }
         } else if (multipleEntryExisted) {
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("Multiple Option Entries exist");
-            msgBox.setText(QString("%1 entries of Option '%2' already exist.").arg(indices.size()).arg(optionNameData));
-            msgBox.setInformativeText("How do you want to proceed?");
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
             for (const QModelIndex &idx : std::as_const(indices))
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getOptionTableEntry(idx.row())));
-            msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                    .arg("When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
-                         "The value of all other entries except the last entry will be ignored."));
-            msgBox.setText("Multiple entries of Option '" + optionNameData + "' already exist.");
-            msgBox.setInformativeText("How do you want to proceed?");
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
-            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-            switch(msgBox.exec()) {
-            case 3: // delete and replace
+            QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+                "When a solver option file contains multiple entries of the same options, only the value of the last entry will be utilized by the solver.",
+                "The value of all other entries except the last entry will be ignored.");
+            int answer = MsgBox::question("Multiple Option Entries exist",
+                                          "Multiple entries of Option '" + optionNameData + "' already exist.",
+                                          "How do you want to proceed?", detailText, nullptr,
+                                          "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
+            switch(answer) {
+            case 0: // delete and replace
                 disconnect(mOptionTableModel, &SolverOptionTableModel::solverOptionItemRemoved, mOptionTableModel, &SolverOptionTableModel::on_removeSolverOptionItem);
                 ui->solverOptionTableView->selectionModel()->clearSelection();
                 for(int i=1; i<indices.size(); i++) {
@@ -461,9 +452,9 @@ void SolverOptionWidget::addOptionFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 4: // add
+            case 1: // add
                 break;
-            case QMessageBox::Abort:
+            default:
                 return;
             }
 

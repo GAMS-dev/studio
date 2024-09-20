@@ -30,6 +30,7 @@
 #include "editors/sysloglocator.h"
 #include "editors/systemlogedit.h"
 #include "editors/sysloglocator.h"
+#include "msgbox.h"
 
 namespace gams {
 namespace studio {
@@ -433,17 +434,35 @@ void ProjectContextMenu::onCloseProject()
 
 void ProjectContextMenu::onCloseDelProject()
 {
+    QList<PExProjectNode*> pro2close;
+    QList<QString> pro2del;
+    QString proFirst;
     for (PExAbstractNode *node: std::as_const(mNodes)) {
         PExProjectNode *project = node->toProject();
         if (!project) project = node->assignedProject();
         if (project) {
+            pro2close << project;
             QString gsp = project->fileName();
-            emit closeProject(project);
             if (project->type() == PExProjectNode::tCommon && QFile::exists(gsp)) {
-                bool ok = QFile::remove(gsp);
-                if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
+                pro2del << gsp;
+                if (proFirst.isEmpty()) proFirst = project->name();
             }
         }
+    }
+    if (pro2del.size()) {
+        bool one = pro2del.size() == 1;
+        QString text = one ? "Project file for " + proFirst : QString::number(pro2del.size()) + " project files";
+
+        int choice = MsgBox::question("Deleting Project" + QString(one ? "" : "s") , text + " will be deleted", mParent
+                                      , "OK", "Cancel", "", 0, 1);
+        if (choice == 1) return;
+    }
+
+    for (PExProjectNode *pro : pro2close)
+        emit closeProject(pro);
+    for (QString gsp : pro2del) {
+        bool ok = QFile::remove(gsp);
+        if (!ok) SysLogLocator::systemLog()->append("Couldn't remove " + gsp);
     }
 }
 

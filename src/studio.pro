@@ -180,6 +180,7 @@ SOURCES += \
     modeldialog/librarymodel.cpp \
     modeldialog/modeldialog.cpp \
     modeldialog/tableview.cpp \
+    msgbox.cpp \
     navigator/navigatorcontent.cpp \
     navigator/navigatordialog.cpp \
     navigator/navigatorlineedit.cpp \
@@ -404,6 +405,7 @@ HEADERS += \
     modeldialog/librarymodel.h \
     modeldialog/modeldialog.h \
     modeldialog/tableview.h \
+    msgbox.h \
     navigator/navigatorcontent.h \
     navigator/navigatordialog.h \
     navigator/navigatorlineedit.h \

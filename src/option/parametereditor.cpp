@@ -32,6 +32,7 @@
 #include "optionsortfilterproxymodel.h"
 #include "gamsoptiondefinitionmodel.h"
 #include "mainwindow.h"
+#include "msgbox.h"
 
 namespace gams {
 namespace studio {
@@ -438,46 +439,36 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
     bool singleEntryExisted = (indices.size()==1);
     bool multipleEntryExisted = (indices.size()>1);
     if (singleEntryExisted ) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Parameter Entry exists");
-        msgBox.setText("Parameter '" + optionNameData+ "' already exists.");
-        msgBox.setInformativeText("How do you want to proceed?");
-        msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(indices.at(0).row()))
-                .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
-                     "The value of all other entries except the last entry will be ignored."));
-        msgBox.setStandardButtons(QMessageBox::Abort);
-        msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
-        msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-        switch(msgBox.exec()) {
-        case 3: // replace
+        QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+            .arg(getParameterTableEntry(indices.at(0).row()),
+            "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+            "The value of all other entries except the last entry will be ignored.");
+        int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
+                                      "How do you want to proceed?", detailText,
+                                      nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+        switch(answer) {
+        case 0: // replace
             rowToBeAdded = indices.at(0).row();
             break;
-        case 4: // add
+        case 1: // add
             break;
-        case QMessageBox::Abort:
+        default:
             return;
         }
     } else if (multipleEntryExisted) {
-        QMessageBox msgBox;
-        msgBox.setWindowTitle("Multiple Parameter Entries exist");
-        msgBox.setText(QString("%1 entries of Parameter '%2' already exist.").arg(indices.size()).arg(optionNameData));
-        msgBox.setInformativeText("How do you want to proceed?");
         QString entryDetailedText = QString("Entries:\n");
         int i = 0;
         for (QModelIndex &idx : indices)
             entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
-        msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                 .arg("When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by the GAMS.",
-                      "The value of all other entries except the last entry will be ignored."));
-        msgBox.setText("Multiple entries of Parameter '" + optionNameData + "' already exist.");
-        msgBox.setInformativeText("How do you want to proceed?");
-        msgBox.setStandardButtons(QMessageBox::Abort);
-        msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
-        msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-        switch(msgBox.exec()) {
-        case 3: { // delete and replace
+        QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+            "When running GAMS with multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+            "The value of all other entries except the last entry will be ignored.");
+        int answer = MsgBox::question("Multiple Parameter Entries exist",
+                                      "Multiple entries of Parameter '" + optionNameData + "' already exist.",
+                                      "How do you want to proceed?", detailText, nullptr,
+                                      "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
+        switch(answer) {
+        case 0: { // delete and replace
             QList<int> overrideIdRowList;
             for(QModelIndex idx : std::as_const(indices)) { overrideIdRowList.append(idx.row()); }
             std::sort(overrideIdRowList.begin(), overrideIdRowList.end());
@@ -491,8 +482,10 @@ void ParameterEditor::addParameterFromDefinition(const QModelIndex &index)
             deleteParameter();
             break;
         }
-        case 4: { /* add */  break; }
-        case QMessageBox::Abort: { return; }
+        case 1:  /* add */
+            break;
+        default:
+            return;
         }
     } // else entry not exist*/
 

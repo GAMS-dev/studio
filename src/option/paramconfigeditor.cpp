@@ -25,6 +25,7 @@
 #include "theme.h"
 #include "ui_paramconfigeditor.h"
 #include "headerviewproxy.h"
+#include "msgbox.h"
 
 #include <QScrollBar>
 #include <QMessageBox>
@@ -610,50 +611,40 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
         bool singleEntryExisted = (indices.size()==1);
         bool multipleEntryExisted = (indices.size()>1);
         if (singleEntryExisted ) {
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("Parameter Entry exists");
-            msgBox.setText("Parameter '" + optionNameData+ "' already exists.");
-            msgBox.setInformativeText("How do you want to proceed?");
-            msgBox.setDetailedText(QString("Entry:  '%1'\nDescription:  %2 %3").arg(getParameterTableEntry(indices.at(0).row()),
-                    "When a Gams config file contains multiple entries of the same parameters, only the value of the last entry will be utilized by Gams.",
-                    "The value of all other entries except the last entry will be ignored."));
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Replace existing entry", QMessageBox::ActionRole);
-            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-            switch(msgBox.exec()) {
-            case 3: // replace
+            QString detailText = QString("Entry:  '%1'\nDescription:  %2 %3")
+                .arg(getParameterTableEntry(indices.at(0).row()),
+                "When a Gams config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                "The value of all other entries except the last entry will be ignored.");
+            int answer = MsgBox::question("Parameter Entry exists", "Parameter '" + optionNameData + "' already exists.",
+                                          "How do you want to proceed?", detailText,
+                                          nullptr, "Replace existing entry", "Add new entry", "Abort", 2, 2);
+            switch(answer) {
+            case 0: // replace
                 replaceExistingEntry = true;
                 indices = ui->paramCfgTableView->model()->match(ui->paramCfgTableView->model()->index(0, ConfigParamTableModel::COLUMN_ENTRY_NUMBER),
                                                                     Qt::DisplayRole,
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 4: // add
+            case 1: // add
                 break;
-            case QMessageBox::Abort:
+            default:
                 return;
             }
         } else if (multipleEntryExisted) {
-            QMessageBox msgBox;
-            msgBox.setWindowTitle("Multiple Parameter Entries exist");
-            msgBox.setText(QString("%1 entries of Parameter '%2' already exist.").arg(indices.size()).arg(optionNameData));
-            msgBox.setInformativeText("How do you want to proceed?");
             QString entryDetailedText = QString("Entries:\n");
             int i = 0;
             for (QModelIndex &idx : indices)
                 entryDetailedText.append(QString("   %1. '%2'\n").arg(++i).arg(getParameterTableEntry(idx.row())));
-            msgBox.setDetailedText(QString("%1Description:  %2 %3").arg(entryDetailedText)
-                    .arg("When a Gams config file contains multiple entries of the same parameters, only the value of the last entry will be utilized by Gams.",
-                         "The value of all other entries except the last entry will be ignored."));
-            msgBox.setText("Multiple entries of Parameter '" + optionNameData + "' already exist.");
-            msgBox.setInformativeText("How do you want to proceed?");
-            msgBox.setStandardButtons(QMessageBox::Abort);
-            msgBox.addButton("Replace first entry and delete other entries", QMessageBox::ActionRole);
-            msgBox.addButton("Add new entry", QMessageBox::ActionRole);
-
-            switch(msgBox.exec()) {
-            case 3: // delete and replace
+            QString detailText = QString("%1Description:  %2 %3").arg(entryDetailedText,
+                "When a Gams config file contains multiple entries of the same parameter, only the value of the last entry will be utilized by GAMS.",
+                "The value of all other entries except the last entry will be ignored.");
+            int answer = MsgBox::question("Multiple Parameter Entries exist",
+                                          "Multiple entries of Parameter '" + optionNameData + "' already exist.",
+                                          "How do you want to proceed?", detailText, nullptr,
+                                          "Replace first entry and delete other entries", "Add new entry", "Abort", 2, 2);
+            switch(answer) {
+            case 0: // delete and replace
                 disconnect( mParameterTableModel, &ConfigParamTableModel::configParamItemRemoved, mParameterTableModel, &ConfigParamTableModel::on_removeConfigParamItem);
                 ui->paramCfgTableView->selectionModel()->clearSelection();
                 for(int i=1; i<indices.size(); i++) {
@@ -668,9 +659,9 @@ void ParamConfigEditor::addParameterFromDefinition(const QModelIndex &index)
                                                                     optionIdData, -1, Qt::MatchExactly|Qt::MatchRecursive);
                 rowToBeAdded = (indices.size()>0) ? indices.at(0).row() : 0;
                 break;
-            case 4: // add
+            case 1: // add
                 break;
-            case QMessageBox::Abort:
+            default:
                 return;
             }
 
