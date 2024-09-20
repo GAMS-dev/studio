@@ -20,6 +20,8 @@ Version 1.19.0 *
 - added workspace clean-up during Studio start based on filters defined via the settings
 - fixed find GAMS on Windows
 - fixed path of project options not recognized for file dialog
+- fixed save_as crash when saving to a file already known by Studio
+- fixed save_as keeps original in project
 
 Version 1.18.7
 ==================
