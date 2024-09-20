@@ -1,6 +1,6 @@
-Version 1.19.0 *
+Version 1.19.0
 ==================
-- added background color for syntax
+- added background color for syntax highlighting
 - added "Close and delete project" action to Project Explorer context menu
 - added virtual project, i.e. only create a gsp file on a certain number of files or if a main file is there
 - added zoom support for model dialog
@@ -9,19 +9,19 @@ Version 1.19.0 *
 - added single project mode to focus one project only
 - added licensed GAMS solvers to license text and dropped solver matrix
 - added feature to store options for each main file. The main file can now be changed via the shortcuts `Shift+Ctrl+M` and `Shift+Cmd+M`.
-- added search icon to toolbar
-- improved allow to close non-mainfile while running
-- improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
-- improved debugging communication between GAMS and GAMS Studio
-- improved allow to remove all but the main file from a running project
-- improved when closing a tab focus other tab from the project if available
-- removed warning when deleting a project file that does not exist
-- fixed usage of license file specified via the `gamsconfig.yaml`
 - added workspace clean-up during Studio start based on filters defined via the settings
-- fixed find GAMS on Windows
+- added search icon to toolbar
+- fixed usage of license file specified via the `gamsconfig.yaml`
 - fixed path of project options not recognized for file dialog
 - fixed save_as crash when saving to a file already known by Studio
 - fixed save_as keeps original in project
+- fixed find GAMS on Windows
+- improved allow to close non-main file while running a model
+- improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
+- improved behaviour while debugging GAMS code
+- improved allow to remove all but the main file from a running project
+- improved closing a focused tab  and switching to a tab from the same project if possible
+- removed warning when deleting a project file that does not exist
 
 Version 1.18.7
 ==================
