@@ -72,9 +72,7 @@ private:
     QString getValue(ValueWrapper& value);
     QStringList gettAllAllowedValues(Schema* schemaHelper);
 
-    void setupOneofSchemaTree(const QString& schemaName, const QString& key,
-                              QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
-    void setupAnyofSchemaTree(const QString& schemaName, const QString& key,
+    void setupOneofAnyofSchemaTree(const QString& schemaName, const QString& key,
                               QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupSchemaTree(const QString& schemaName, const QString& key,
                          QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);

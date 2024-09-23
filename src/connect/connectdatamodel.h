@@ -138,7 +138,7 @@ protected:
     void setupTreeItemModelData();
     void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents);
     void updateInvalidExcludedItem(ConnectDataItem* item);
-    bool updateiInvaldItem(int column, ConnectDataItem* item);
+    bool updateInvaldItem(int column, ConnectDataItem* item);
 
     bool             mOnlyRequriedAttributesAdded;
     int              mItemIDCount;

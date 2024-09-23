@@ -164,6 +164,8 @@ public:
     ValueWrapper         max;
     bool                 schemaDefined;
     QStringList          excludes;
+    bool                 isOneOf;
+    bool                 isAnyOf;
 
     Schema(
         int                        level_,
@@ -189,7 +191,9 @@ public:
         const ValueWrapper         &min_,
         const ValueWrapper         &max_,
         bool                       schemaDefined_=false,
-        const QStringList          &excludes_=QStringList()
+        const QStringList          &excludes_=QStringList(),
+        bool                       isOneOf_=false,
+        bool                       _=false
     );
 
     bool hasType(SchemaType tt) {
@@ -229,7 +233,9 @@ public:
     QStringList getAllLeveledKeys(const QString& key, int level) const;
     QStringList getAllAnyOfKeys(const QString& key) const;
     int getNumberOfAnyOfDefined(const QString& key) const;
+    int getNumberOfOneOfDefined(const QString& key) const;
     bool isAnyOfDefined(const QString& key) const;
+    bool isOneOfDefined(const QString& key) const;
 
     QStringList getAllOneOfSchemaKeys(const QString& key) const;
     int getNumberOfOneOfSchemaDefined(const QString& key) const;

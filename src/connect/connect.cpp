@@ -271,11 +271,11 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Node value;
     if (mapValue(schemanode, value, true, onlyRequiredAttribute )) {
-       if (cRex.match(tobeinsertSchemaKey.last()).hasMatch()) {
-           data[0] = value; //listnode;
-       } else {
-            data[tobeinsertSchemaKey.last().toStdString()] = value;
-       }
+        if (cRex.match(tobeinsertSchemaKey.last()).hasMatch()) {
+            data[0] = value; //listnode;
+        } else {
+             data[tobeinsertSchemaKey.last().toStdString()] = value;
+        }
     }
     return new ConnectData(data);
 }
@@ -345,8 +345,8 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
                         // else TODO
                     }
                     dataValue[0] = node;
-                } else if (schemaValue["oneof_schema"]) {
-                    YAML::Node oneofnode = schemaValue["oneof_schema"][0];
+                } else if (schemaValue["oneof"]) {
+                    YAML::Node oneofnode = schemaValue["oneof"][0];
                     if (oneofnode.Type() == YAML::NodeType::Map) {
                         YAML::Node data;
                         if (!mapValue( oneofnode, data, false, onlyRequiredAttribute ))
@@ -380,7 +380,6 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
                 return mapTypeSequenceValue(schemaValue["type"], schemaValue, dataValue, onlyRequiredAttribute, allowed);
             } else { // not sequence
-
                 std::string value = schemaValue["type"].as<std::string>() ;
                 if (allowed && value.compare("string") == 0) {
                     if (schemaValue["default"]) {
@@ -464,6 +463,23 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                         }
 
                         if (!mapValue( anyofnode, dataValue, false, onlyRequiredAttribute ))
+                            return false;
+                    }
+                }
+            } else if (schemaValue["oneof"]) {
+                if (schemaValue["oneof"].Type()==YAML::NodeType::Sequence) {
+                    YAML::Node oneofnode = schemaValue["oneof"][0];
+                    if (oneofnode.Type() == YAML::NodeType::Map) {
+                        if (schemaValue["default"]) {
+                            std::string defvalue = schemaValue["default"].as<std::string>();
+                            if (defvalue.compare("null")==0)
+                                return true;
+                            else
+                                dataValue = defvalue;
+                            return true;
+                        }
+
+                        if (!mapValue( oneofnode, dataValue, false, onlyRequiredAttribute ))
                             return false;
                     }
                 }
