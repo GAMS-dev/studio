@@ -65,7 +65,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
         required = (node["required"].as<std::string>().compare("true") == 0 || node["required"].as<std::string>().compare("True") == 0);
     }
     QList<ValueWrapper> allowedValues;
-    if (node["allowed"] && node.Type() == YAML::NodeType::Map) {
+    if (node["allowed"] /* & node.Type() == YAML::NodeType::Map*/) {
         for(size_t i=0; i<node["allowed"].size(); i++) {
             allowedValues <<  ValueWrapper(node["allowed"][i].as<std::string>());
         }
