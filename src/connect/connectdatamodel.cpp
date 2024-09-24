@@ -1739,7 +1739,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    itemData << ""; // TODO
                    itemData << QVariant((int)DataCheckState::KeyItem);
                    itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
-                   itemData << QVariant(QString());
+                   itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
                    itemData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
                    itemData << QVariant();
                    itemData << QVariant();
@@ -1778,7 +1778,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                            mapitemData << QVariant(dmit->second.as<std::string>().c_str());
                            mapitemData << QVariant((int)DataCheckState::ElementMap);
                            mapitemData << (schema ? QVariant(schema->getTypeAsStringList(checkKeys.join(":")).join(",")) : QVariant());
-                           mapitemData << QVariant(QString());
+                           mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                            mapitemData << (schema ? QVariant(!schema->isRequired(checkKeys.join(":"))) : QVariant());
                            mapitemData << QVariant();
                            mapitemData << QVariant();
@@ -1803,7 +1803,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                   mapitemData << "null";
                                   mapitemData << QVariant((int)DataCheckState::ElementMap);
                                   mapitemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
-                                  mapitemData << QVariant(QString());
+                                  mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
                                   mapitemData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
                                   mapitemData << QVariant();
                                   mapitemData << QVariant();
@@ -1831,7 +1831,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                  seqSeqData << "";
                                  seqSeqData << QVariant((int)DataCheckState::KeyItem);
                                  seqSeqData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
-                                 seqSeqData << QVariant(QString());
+                                 seqSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
                                  seqSeqData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
                                  seqSeqData << QVariant();
                                  seqSeqData << QVariant();
@@ -1929,7 +1929,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << "";
              itemData << QVariant((int)DataCheckState::KeyItem);
              itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
-             itemData << QVariant(QString());
+             itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
              itemData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
              itemData << QVariant();
              itemData << QVariant();
@@ -2007,7 +2007,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    seqSeqData << "";
                                    seqSeqData << QVariant((int)DataCheckState::KeyItem);
                                    seqSeqData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")) : QVariant());
-                                   seqSeqData << QVariant(QString());
+                                   seqSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")) : QVariant());
                                    seqSeqData << (schema ? QVariant(!schema->isRequired(datakeyslist.join(":"))) : QVariant());
                                    seqSeqData << QVariant();
                                    seqSeqData << QVariant();
@@ -2066,7 +2066,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                            QStringList dataKeysforTypes(datakeyslist);
                                            dataKeysforTypes.removeLast();
                                            indexScalarData << (schema ? QVariant(schema->getTypeAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
-                                           indexScalarData << QVariant(QString());
+                                           indexScalarData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
                                            indexScalarData << QVariant();
                                            indexScalarData << QVariant();
                                            indexScalarData << QVariant();
@@ -2115,7 +2115,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                           mapData << "";
                                           mapData << QVariant((int)DataCheckState::KeyItem);
                                           mapData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")) : QVariant());
-                                          mapData << QVariant(QString());
+                                          mapData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")) : QVariant());
                                           mapData << (schema ? QVariant(!schema->isRequired(datakeyslist.join(":"))) : QVariant());
                                           mapData << QVariant();
                                           mapData << QVariant();
@@ -2230,7 +2230,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    QStringList dataKeysforTypes(datakeyslist);
                                    dataKeysforTypes.removeLast();
                                    mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(dataKeysforTypes.join(":")).join(",")) : QVariant());
-                                   mapSeqData << QVariant(QString());
+                                   mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeysforTypes.join(":")).join(",")): QVariant());
                                    mapSeqData << QVariant();
                                    mapSeqData << QVariant();
                                    mapSeqData << QVariant();
@@ -2283,7 +2283,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
               if (!schemaKeys.isEmpty())
                   schemaKeys.removeLast();
         }
-         ConnectDataItem* item = parents.last();;
+         ConnectDataItem* item = parents.last();
          updateInvaldItem((int)DataItemColumn::Key, item);
     }
     if (data) {
