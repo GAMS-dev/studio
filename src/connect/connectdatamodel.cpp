@@ -986,7 +986,6 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
         mapSeqData << QVariant();
         mapSeqData << QVariant();
         mapSeqData << QVariant();
-
         if (node[i].Type()==YAML::NodeType::Map) {
             ConnectSchema* schema = mConnect->getSchema(schemaname);
             if (schema && schema->getNumberOfOneOfSchemaDefined(keys.join(":"))) {
@@ -1168,6 +1167,12 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
         }
     } else {
         return true;
+    }
+
+    if (schema->isNullDefaultAllowed(schemakeys.join(":"))) {
+        if (item->data((int)DataItemColumn::Value).toString().compare("null", Qt::CaseInsensitive)==0) {
+            return true;
+        }
     }
 
     int i = 0;

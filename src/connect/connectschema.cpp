@@ -423,10 +423,14 @@ bool ConnectSchema::isNullDefaultAllowed(const QString &key) const
 {
     if (contains(key)) {
         if (mSchemaHelper[key]) {
-            Value v = mSchemaHelper[key]->defaultValue.value;
-            if (strcmp(v.stringval, "null") == 0) {
-                return true;
+            QStringList keylist = key.split(":");
+            QString lastkey = key.split(":").last();
+            if (lastkey.endsWith("]")) {
+                 if (mSchemaHelper[key.left(key.lastIndexOf("["))]->nullable) {
+                    return true;
+                }
             }
+            return mSchemaHelper[key]->nullable;
         }
     }
     return false;
