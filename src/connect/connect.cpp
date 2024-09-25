@@ -614,8 +614,8 @@ YAML::Node Connect::getDefaultValueByType(Schema* schemaHelper)
         node = "[value]";
         break;
     }
-    return node;
     }
+    return node;
 }
 
 YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequiredAttribute)
