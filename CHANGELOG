@@ -25,6 +25,7 @@ Version 1.19.0
 - improved Connect Editor option defaults are now shown and instantiated agents are pre-populated with those defaults
 - removed warning when deleting a project file that does not exist
 - changed disable check for Studio updates on startup 
+- improved group search result by files, i.e. a tree view is used instead of a table
 
 Version 1.18.7
 ==================

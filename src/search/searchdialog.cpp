@@ -37,9 +37,13 @@ namespace gams {
 namespace studio {
 namespace search {
 
-SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent) :
-    QDialog(parent), mFileWorker(fileHandler), ui(new Ui::SearchDialog), mMain(parent),
-    mFileHandler(fileHandler), mSearch(this, fileHandler)
+SearchDialog::SearchDialog(AbstractSearchFileHandler* fileHandler, MainWindow* parent)
+    : QDialog(parent)
+    , mFileWorker(fileHandler)
+    , ui(new Ui::SearchDialog)
+    , mMain(parent)
+    , mFileHandler(fileHandler)
+    , mSearch(this, fileHandler)
 {
     setWindowFlags(windowFlags() & ~Qt::WindowContextHelpButtonHint);
 
@@ -166,9 +170,11 @@ void SearchDialog::finalUpdate()
     updateEditHighlighting();
 }
 
-void SearchDialog::relaySearchResults(bool showResults, QList<Result> *results) {
-    if ((showResults && results->size() > 0) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
-        if (mSearchResultModel) delete mSearchResultModel;
+void SearchDialog::relaySearchResults(bool showResults, QList<Result> *results)
+{
+    if ((showResults && !results->isEmpty()) || (mMain->resultsView() && mMain->resultsView()->isVisible())) {
+        if (mSearchResultModel)
+            delete mSearchResultModel;
         mSearchResultModel = new SearchResultModel(createRegex(), mSearch.results());
         emit updateResults(mSearchResultModel);
     }
@@ -366,7 +372,8 @@ void SearchDialog::on_cb_subdirs_stateChanged(int)
 }
 
 ///
-/// \brief SearchDialog::updateFindNextLabel calculates match number, updates label and result lists from cursor position
+/// \brief SearchDialog::updateFindNextLabel calculates match number,
+///        updates label and result lists from cursor position
 /// \param matchSelection cursor position to calculate result number
 ///
 int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
@@ -393,7 +400,7 @@ int SearchDialog::updateLabelByCursorPos(int lineNr, int colNr)
     int size = list.size() >= MAX_SEARCH_RESULTS ? MAX_SEARCH_RESULTS : list.size();
     for (int i = 0; i < size; i++) {
         const Result& match = list.at(i);
-        if (file == match.filepath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
+        if (file == match.filePath() && match.lineNr() == lineNr && match.colNr() == colNr - match.length()) {
             emit selectResult(i);
             updateMatchLabel(i + 1);
             return i;
@@ -771,12 +778,12 @@ void SearchDialog::jumpToResult(int index) {
 
 void SearchDialog::jumpToResult(Result r)
 {
-    if (!QFileInfo::exists(r.filepath())) {
-        SysLogLocator::systemLog()->append("File not found: " + r.filepath(), LogMsgType::Error);
+    if (!QFileInfo::exists(r.filePath())) {
+        SysLogLocator::systemLog()->append("File not found: " + r.filePath(), LogMsgType::Error);
         return;
     }
 
-    PExFileNode* fn = mFileHandler->findFileNode(r.filepath());
+    PExFileNode* fn = mFileHandler->findFileNode(r.filePath());
     if (!r.parentGroup().isValid()) {
         if (fn) r.setParentGroup(fn->parentNode()->id());
     }
@@ -794,14 +801,14 @@ void SearchDialog::jumpToResult(Result r)
             } else mCurrentSearchGroup = nullptr;
         }
         if (!mCurrentSearchGroup) {
-            QFileInfo dir(r.filepath());
+            QFileInfo dir(r.filePath());
             mCurrentSearchGroup = mFileHandler->createProject(name, dir.absolutePath());
         }
     }
 
     if (!fn) {
-        fn = mFileHandler->openFile(r.filepath(), mCurrentSearchGroup);
-        if (!fn) EXCEPT() << "File not found: " << r.filepath();
+        fn = mFileHandler->openFile(r.filePath(), mCurrentSearchGroup);
+        if (!fn) EXCEPT() << "File not found: " << r.filePath();
     }
 
     NodeId nodeId = (r.parentGroup().isValid()) ? r.parentGroup() : fn->assignedProject()->id();

@@ -17,32 +17,47 @@
  * You should have received a copy of the GNU General Public License
  * along with this program. If not, see <http://www.gnu.org/licenses/>.
  */
-#ifndef SEARCHRESULTVIEWITEMDELEGATE_H
-#define SEARCHRESULTVIEWITEMDELEGATE_H
+#ifndef RESULTTREEVIEW_H
+#define RESULTTREEVIEW_H
 
-#include <QStyledItemDelegate>
+#include <QTreeView>
 
 namespace gams {
 namespace studio {
 namespace search {
 
-class SearchResultViewItemDelegate : public QStyledItemDelegate
+#define ZOOM_FACTOR 2
+
+class ResultTreeView : public QTreeView
 {
     Q_OBJECT
 
 public:
-    explicit SearchResultViewItemDelegate(QObject *parent = nullptr);
+    ResultTreeView(QWidget *parent = nullptr);
 
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    bool eventFilter(QObject *watched, QEvent *event) override;
 
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void zoomIn(int range = 1);
+    void zoomOut(int range = 1);
+    void resetZoom();
+
+public slots:
+    void showCustomContextMenu(const QPoint &pos);
+
+    void resizeColumns();
 
 private:
-    QString elideRichText(const QString &richText, int maxWidth, const QFontMetrics &metrics) const;
+    void zoom(int range);
+
+private:
+    QFont mBaseFont;
+    QMenu* mMenu;
+    QAction* mCollapsAllAction;
+    QAction* mExpandAllAction;
 };
 
 }
 }
 }
 
-#endif // SEARCHRESULTVIEWITEMDELEGATE_H
+#endif // RESULTTREEVIEW_H
