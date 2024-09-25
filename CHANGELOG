@@ -22,6 +22,7 @@ Version 1.19.0
 - improved allow to remove all but the main file from a running project
 - improved closing a focused tab  and switching to a tab from the same project if possible
 - removed warning when deleting a project file that does not exist
+- changed disable check for Studio updates on startup 
 
 Version 1.18.7
 ==================

@@ -414,7 +414,7 @@ QHash<SettingsKey, Settings::KeyData> Settings::generateKeys()
     safelyAdd(res, skUserThemes, scTheme, {"theme"}, QJsonArray());
 
     // Check gams update
-    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, true);
+    safelyAdd(res, skAutoUpdateCheck, scSys, {"update", "autoUpdateCheck"}, false);
     safelyAdd(res, skUpdateInterval, scSys, {"update", "updateInterval"}, UpdateCheckInterval::Daily);
     safelyAdd(res, skLastUpdateCheckDate, scSys, {"update", "lastUpdateDate"}, QDate());
     safelyAdd(res, skNextUpdateCheckDate, scSys, {"update", "nextUpdateDate"}, QDate());
