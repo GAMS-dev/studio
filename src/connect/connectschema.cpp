@@ -46,13 +46,18 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     if (node["type"]) {
         if (node["type"].Type()==YAML::NodeType::Sequence) {
             for(size_t i=0; i<node["type"].size(); i++) {
-               QString value(QString::fromStdString(node["type"][i].as<std::string>()));
-               if (node["type"][i])
-                   types << getTypeFromValue(value);
+                QString value(QString::fromStdString(node["type"][i].as<std::string>()));
+                types << getTypeFromValue(value);
             }
         } else if (node["type"].Type()==YAML::NodeType::Scalar) {
                   QString value(QString::fromStdString(node["type"].as<std::string>()));
                   types << getTypeFromValue(value);
+        }
+    }
+    bool nullable = false;
+    if (node["nullable"]) {
+        if (node["nullable"].Type()==YAML::NodeType::Scalar) {
+            nullable = node["nullable"].as<bool>();
         }
     }
     bool required = false;
@@ -60,21 +65,28 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
         required = (node["required"].as<std::string>().compare("true") == 0 || node["required"].as<std::string>().compare("True") == 0);
     }
     QList<ValueWrapper> allowedValues;
-    if (node["allowed"] && node.Type() == YAML::NodeType::Map) {
+    if (node["allowed"] /* & node.Type() == YAML::NodeType::Map*/) {
         for(size_t i=0; i<node["allowed"].size(); i++) {
             allowedValues <<  ValueWrapper(node["allowed"][i].as<std::string>());
         }
     }
     ValueWrapper defvalue;
     if (node["default"] ) {
-        if (std::find(types.begin(), types.end(), SchemaType::Integer) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<int>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
-                  defvalue = ValueWrapper(node["default"].as<double>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::String) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<std::string>());
-        } else if (std::find(types.begin(), types.end(), SchemaType::Boolean) != types.end()) {
-            defvalue = ValueWrapper(node["default"].as<bool>());
+        if (node["default"].Type()==YAML::NodeType::Null) {
+            std::string nullstr("null");
+            defvalue = ValueWrapper(nullstr);
+        } else {
+            if (std::find(types.begin(), types.end(), SchemaType::String) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<std::string>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Integer) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<int>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Float) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<double>());
+            } else if (std::find(types.begin(), types.end(), SchemaType::Boolean) != types.end()) {
+                defvalue = ValueWrapper(node["default"].as<bool>());
+            } else {
+                defvalue = ValueWrapper(node["default"].as<std::string>());
+            }
         }
     }
     ValueWrapper minvalue;
@@ -101,7 +113,9 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
 //        mOrderedKeyList << key;
 
     bool schemaDefined = (node["schema"] ? true : false);
-    mSchemaHelper.insert(key, new Schema(level, node, types, required, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes));
+    bool oneofDefined = (node["oneof"] ? true : false);
+    bool anyofDefined = (node["anyof"] ? true : false);
+    mSchemaHelper.insert(key, new Schema(level, node, types, required, nullable, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes, oneofDefined, anyofDefined));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
@@ -114,34 +128,32 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
                       if (it->second.Type() == YAML::NodeType::Map) {
                           str += QString::fromStdString( it->first.as<std::string>() );
                           createSchemaHelper(str, it->second, level);
+                      } else if (it->second.Type() == YAML::NodeType::Sequence) {
+                                 str += QString::fromStdString( it->first.as<std::string>() );
                       }
                     }
         } // else  'schema' with niether 'type:list' nor 'type:dict' ?
-    } else if (node["oneof_schema"] ? true : false) {
-        if (node["oneof_schema"].Type()==YAML::NodeType::Sequence) {
-            ++level;
-            for(size_t i=0; i<node["oneof_schema"].size(); i++) {
-               QString str = QString("%1:[%2]").arg(key).arg(i);
-               if (node["oneof_schema"][i].Type()==YAML::NodeType::Map) {
-                   createSchemaHelper(str, node["oneof_schema"][i], level);
-                  for (YAML::const_iterator it=node["oneof_schema"][i].begin(); it != node["oneof_schema"][i].end(); ++it) {
-                      if (it->second.Type() == YAML::NodeType::Map) {
-
-                          QString nodestr = str + ":" + QString::fromStdString( it->first.as<std::string>() );
-                          createSchemaHelper(nodestr, it->second, level+1);
-                      }
-                 }
-               }
+    } else if (node["oneof"]) {
+        if (node["oneof"].Type()==YAML::NodeType::Sequence) {
+            if (key.endsWith("-")) {
+                key += ":";
+            }
+            for(size_t i=0; i<node["oneof"].size(); i++) {
+                QString str = QString("%1[%2]").arg(key).arg(i);
+                createSchemaHelper(str, node["oneof"][i], level);
             }
         }
-    } else  if (node["anyof"] ? true : false) {
+    } /*else  if (node["anyof"] ? true : false) {*/
+    if (node["anyof"]) {
         if (node["anyof"].Type()==YAML::NodeType::Sequence) {
+            if (key.endsWith("-")) {
+                key += ":";
+            }
             for(size_t i=0; i<node["anyof"].size(); i++) {
                QString str = QString("%1[%2]").arg(key).arg(i);
-               createSchemaHelper(str, node["anyof"][i], 1);
+               createSchemaHelper(str, node["anyof"][i], level);
             }
         }
-
     }
 }
 
@@ -230,8 +242,6 @@ bool ConnectSchema::contains(const QString &key) const
 {
     if (mSchemaHelper.contains(key)) {
         return true;
-    } else if (isAnyOfDefined(key)) {
-        return true;
     } else {
         return false;
     }
@@ -241,7 +251,6 @@ QStringList ConnectSchema::getAllLeveledKeys(const QString &key, int level) cons
 {
     QStringList keyList;
     for(const QString& k : mOrderedKeyList) {
-        qDebug() << "  getAllLeveledKeys:k="<< k;
         if ( level!=mSchemaHelper[key]->level)
             continue;
     }
@@ -265,15 +274,44 @@ int ConnectSchema::getNumberOfAnyOfDefined(const QString &key) const
     QString keystr;
     for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
         keystr = QString("%1[%2]").arg(key).arg(num);
-        if (keystr.compare(it.key())==0)
+        if (keystr.compare(it.key())==0) {
             ++num;
+        } else if (it.key().endsWith(keystr)) {
+            ++num;
+        }
+    }
+    return num;
+}
+
+int ConnectSchema::getNumberOfOneOfDefined(const QString &key) const
+{
+    int num=0;
+    QString keystr;
+    for(QMap<QString, Schema*>::const_iterator it= mSchemaHelper.begin(); it!=mSchemaHelper.end(); ++it) {
+        keystr = QString("%1[%2]").arg(key).arg(num);
+        if (keystr.compare(it.key())==0) {
+            ++num;
+        } else if (it.key().endsWith(keystr)) {
+            ++num;
+        }
     }
     return num;
 }
 
 bool ConnectSchema::isAnyOfDefined(const QString &key) const
 {
-    return (getNumberOfAnyOfDefined(key) > 0);
+    if (contains(key)) {
+        return mSchemaHelper[key]->isAnyOf;
+    }
+    return false;
+}
+
+bool ConnectSchema::isOneOfDefined(const QString &key) const
+{
+    if (contains(key)) {
+        return mSchemaHelper[key]->isOneOf;
+    }
+    return false;
 }
 
 QStringList ConnectSchema::getAllOneOfSchemaKeys(const QString &key) const
@@ -364,6 +402,40 @@ QStringList ConnectSchema::getAllowedValueAsStringList(const QString &key) const
     return strlist;
 }
 
+QVariant ConnectSchema::getDefaultValue(const QString &key) const
+{
+    if (contains(key)) {
+        SchemaValueType t = mSchemaHelper[key]->defaultValue.type;
+        if (t==SchemaValueType::String) {
+            return QVariant(QString::fromStdString(mSchemaHelper[key]->defaultValue.value.stringval));
+        } else if ( t==SchemaValueType::Integer) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.intval);
+        } else if (t==SchemaValueType::Float) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.doubleval);
+        } else if (t==SchemaValueType::Boolean) {
+                return QVariant(mSchemaHelper[key]->defaultValue.value.boolval);
+        }
+    }
+    return QVariant();
+}
+
+bool ConnectSchema::isNullDefaultAllowed(const QString &key) const
+{
+    if (contains(key)) {
+        if (mSchemaHelper[key]) {
+            QStringList keylist = key.split(":");
+            QString lastkey = key.split(":").last();
+            if (lastkey.endsWith("]")) {
+                 if (mSchemaHelper[key.left(key.lastIndexOf("["))]->nullable) {
+                    return true;
+                }
+            }
+            return mSchemaHelper[key]->nullable;
+        }
+    }
+    return false;
+}
+
 bool ConnectSchema::isRequired(const QString &key) const
 {
     if (contains(key)) {
@@ -414,18 +486,22 @@ QStringList ConnectSchema::getExcludedKeys(const QString &key) const
     return QStringList();
 }
 
-Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, const QList<ValueWrapper> &allowedValues_,
-               const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_, const QStringList &excludes_)
+Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, bool nullable_, const QList<ValueWrapper> &allowedValues_,
+               const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_, const QStringList &excludes_,
+               bool oneofDefined_, bool anyofDefined_)
     : level(level_),
       schemaNode(schemaNode_),
       types(type_),
       required(required_),
       allowedValues(allowedValues_),
+      nullable(nullable_),
       defaultValue(defaultValue_),
       min(min_),
       max(max_),
       schemaDefined(schemaDefined_),
-    excludes(excludes_)
+      excludes(excludes_),
+      isOneOf(oneofDefined_),
+      isAnyOf(anyofDefined_)
 { }
 
 

@@ -32,12 +32,13 @@ enum class SchemaItemColumn {
     Field        = 0,
     Required     = 1,
     Type         = 2,
-    Default      = 3,
-    AllowedValue = 4,
-    min          = 5,
-    SchemaKey    = 6,
-    DragEnabled  = 7,
-    Excludes     = 8
+    Nullable     = 3,
+    Default      = 4,
+    AllowedValue = 5,
+    min          = 6,
+    SchemaKey    = 7,
+    DragEnabled  = 8,
+    Excludes     = 9
 };
 
 class SchemaDefinitionModel : public QAbstractItemModel
@@ -71,9 +72,7 @@ private:
     QString getValue(ValueWrapper& value);
     QStringList gettAllAllowedValues(Schema* schemaHelper);
 
-    void setupOneofSchemaTree(const QString& schemaName, const QString& key,
-                              QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
-    void setupAnyofSchemaTree(const QString& schemaName, const QString& key,
+    void setupOneofAnyofSchemaTree(const QString& schemaName, const QString& key,
                               QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);
     void setupSchemaTree(const QString& schemaName, const QString& key,
                          QStringList& schemaKeys, QList<SchemaDefinitionItem*>& parents, ConnectSchema* schema);

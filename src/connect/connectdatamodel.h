@@ -56,7 +56,8 @@ enum class DataItemColumn {
     SchemaKey    = 9,
     Undefined    = 10,
     InvalidValue = 11,
-    ExcludedKeys = 12
+    ExcludedKeys = 12,
+    DefaultValue = 13
 };
 
 class ConnectDataModel : public QAbstractItemModel
@@ -123,6 +124,7 @@ protected:
     bool hasSameParent(const QStringList& tobeinsertSchema, const QStringList& schemaKey, bool samelevel=true) const;
     bool existsUnderSameParent(const QString& tobeinsertSchema, const QModelIndex& parent, bool samelevel=true) const;
     int numberOfExcludedSibling(ConnectDataItem* item);
+    int numberOfExcludedChildren(ConnectDataItem* item);
 
     QModelIndex getSchemaParentIndex(const QModelIndex& idx);
     ConnectDataItem* getSchemaParentItem(ConnectDataItem* item);
@@ -135,7 +137,8 @@ protected:
 
     void setupTreeItemModelData();
     void insertSchemaData(const QString& schemaname, const QStringList& keys, ConnectData* data, int position, QList<ConnectDataItem*>& parents);
-    void updateInvalidItem(ConnectSchema* schema, ConnectDataItem* item);
+    void updateInvalidExcludedItem(ConnectDataItem* item);
+    bool updateInvaldItem(int column, ConnectDataItem* item);
 
     bool             mOnlyRequriedAttributesAdded;
     int              mItemIDCount;

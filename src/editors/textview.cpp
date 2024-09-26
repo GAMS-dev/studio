@@ -288,14 +288,14 @@ bool TextView::findText(const QRegularExpression &searchRegex, QTextDocument::Fi
     return found;
 }
 
-void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file, QList<search::Result> *results, bool showResults)
+void TextView::findInSelection(const QRegularExpression &searchRegex, FileMeta* file,
+                               QList<search::Result> *results, bool showResults)
 {
     if (!mEdit->hasSearchSelection()) {
         mEdit->updateSearchSelection();
         mMapper->updateSearchSelection();
     }
     if (!mEdit->hasSearchSelection()) return;
-
     SearchWorker sw(SearchFile(file), searchRegex, mMapper->searchSelectionStart(), mMapper->searchSelectionEnd(),
                     results, showResults);
     sw.findInFiles();

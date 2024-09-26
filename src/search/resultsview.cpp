@@ -22,8 +22,7 @@
 #include "ui_resultsview.h"
 #include "searchresultmodel.h"
 #include "result.h"
-#include "common.h"
-#include "keys.h"
+#include "resultitem.h"
 #include "mainwindow.h"
 #include "searchresultviewitemdelegate.h"
 
@@ -31,22 +30,23 @@ namespace gams {
 namespace studio {
 namespace search {
 
-ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent) :
-    QWidget(parent), ui(new Ui::ResultsView), mMain(parent), mResultList(results)
+ResultsView::ResultsView(SearchResultModel* results, MainWindow *parent)
+    : QWidget(parent)
+    , ui(new Ui::ResultsView)
+    , mMain(parent)
+    , mResultModel(results)
 {
     ui->setupUi(this);
-    ui->tableView->verticalHeader()->setSectionResizeMode(QHeaderView::Fixed);
-    ui->tableView->verticalHeader()->setMinimumSectionSize(1);
-    ui->tableView->verticalHeader()->setDefaultSectionSize(int(fontMetrics().height()*TABLE_ROW_HEIGHT));
 
-    ui->tableView->setModel(mResultList);
+    ui->resultView->setModel(mResultModel);
 
     QPalette palette = qApp->palette();
-    palette.setColor(QPalette::Highlight, ui->tableView->palette().highlight().color());
-    palette.setColor(QPalette::HighlightedText, ui->tableView->palette().highlightedText().color());
-    ui->tableView->setPalette(palette);
+    palette.setColor(QPalette::Highlight, ui->resultView->palette().highlight().color());
+    palette.setColor(QPalette::HighlightedText, ui->resultView->palette().highlightedText().color());
+    ui->resultView->setPalette(palette);
 
-    ui->tableView->setItemDelegateForColumn(2, new SearchResultViewItemDelegate(this));
+    // TODO AF: https://git.gams.com/devel/studio/-/issues/2619
+    //ui->resultView->setItemDelegateForColumn(0, new SearchResultViewItemDelegate(this));
 }
 
 ResultsView::~ResultsView()
@@ -56,89 +56,88 @@ ResultsView::~ResultsView()
 
 void ResultsView::resizeColumnsToContent()
 {
-    ui->tableView->setColumnWidth(0, this->width()/3);
-    ui->tableView->resizeColumnToContents(1);
+    ui->resultView->resizeColumns();
 }
 
 void ResultsView::jumpToResult(int selectedRow, bool focus)
 {
-    Result r = mResultList->at(selectedRow);
+    auto index = ui->resultView->currentIndex();
+    auto item = static_cast<ResultItem*>(index.internalPointer());
+    Result r;
+    if (item->type() != ResultItem::Entry) {
+        r = item->child(0)->data();
+    } else {
+        r = item->data();
+    }
 
     mMain->searchDialog()->jumpToResult(r);
 
-    emit updateMatchLabel(selectedRow+1, mResultList->size());
+    emit updateMatchLabel(item->data().logicalIndex()+1, mResultModel->resultCount());
     selectItem(selectedRow);
     if (!focus) setFocus(); // focus stays in results view
 }
 
-void ResultsView::on_tableView_clicked(const QModelIndex &index)
+void ResultsView::expandAll()
+{
+    ui->resultView->expandAll();
+}
+
+void ResultsView::on_resultView_clicked(const QModelIndex &index)
 {
     Q_UNUSED(index)
     setFocus();
 }
 
-void ResultsView::on_tableView_doubleClicked(const QModelIndex &index)
+void ResultsView::on_resultView_doubleClicked(const QModelIndex &index)
 {
-    int selectedRow = index.row();
-    jumpToResult(selectedRow);
+    if (!index.isValid())
+        return;
+    auto item = static_cast<ResultItem*>(index.internalPointer());
+    jumpToResult(item->data().logicalIndex());
 }
 
-void ResultsView::keyPressEvent(QKeyEvent* e)
+void ResultsView::zoomIn()
 {
-    if (e->key() == Qt::Key_Enter || e->key() == Qt::Key_Return) {
-        if (!ui->tableView->selectionModel()->hasSelection())
-            ui->tableView->selectRow(0);
-        on_tableView_doubleClicked(ui->tableView->selectionModel()->selectedRows(0).first());
-        e->accept();
-    } else if (e == Hotkey::SearchFindPrev) {
-        mMain->searchDialog()->on_searchPrev();
-        e->accept();
-    } else if (e == Hotkey::SearchFindNext) {
-        mMain->searchDialog()->on_searchNext();
-        e->accept();
-    } else if (e->key() == Qt::Key_Up) {
-        jumpToResult(selectNextItem(true), false);
-        e->accept();
-    } else if (e->key() == Qt::Key_Down) {
-        jumpToResult(selectNextItem(), false);
-        e->accept();
+    ui->resultView->zoomIn(ZOOM_FACTOR);
+}
+
+void ResultsView::zoomOut()
+{
+    ui->resultView->zoomOut(ZOOM_FACTOR);
+}
+
+void ResultsView::resetZoom()
+{
+    ui->resultView->resetZoom();
+}
+
+void ResultsView::selectItem(int row)
+{
+    if (row < 0) {
+        ui->resultView->clearSelection();
+    } else if (!mOutdated) {
+        auto item = mResultModel->item(row);
+        if (item) {
+            auto fileItem = item->parent();
+            auto fileIdx = ui->resultView->model()->index(fileItem->realIndex(), 0);
+            ui->resultView->expand(fileIdx);
+            auto itemIdx = ui->resultView->model()->index(item->realIndex(), 0, fileIdx);
+            ui->resultView->setCurrentIndex(itemIdx);
+        }
     }
-    QWidget::keyPressEvent(e);
-}
-
-int ResultsView::selectNextItem(bool backwards)
-{
-    int selected = selectedItem();
-    int iterator = backwards ? -1 : 1;
-    if (selected == -1) selected = backwards ? mResultList->size() : 0;
-
-    int newIndex = selected + iterator;
-    if (newIndex < 0)
-        newIndex = mResultList->size()-1;
-    else if (newIndex > mResultList->size()-1)
-        newIndex = 0;
-
-    ui->tableView->selectRow(newIndex);
-    return newIndex;
-}
-
-void ResultsView::selectItem(int index)
-{
-    if (index < 0) ui->tableView->clearSelection();
-    else if (!mOutdated) ui->tableView->selectRow(index);
 }
 
 int ResultsView::selectedItem()
 {
-    if (!ui->tableView->selectionModel()->hasSelection())
+    if (!ui->resultView->selectionModel()->hasSelection())
         return -1;
-    return ui->tableView->selectionModel()->selectedRows().first().row();
+    return ui->resultView->selectionModel()->selectedRows().first().row();
 }
 
 void ResultsView::setOutdated()
 {
     mOutdated = true;
-    ui->tableView->clearSelection();
+    ui->resultView->clearSelection();
 }
 
 bool ResultsView::isOutdated()
@@ -149,4 +148,3 @@ bool ResultsView::isOutdated()
 }
 }
 }
-

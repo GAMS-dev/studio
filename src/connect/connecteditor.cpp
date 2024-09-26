@@ -150,6 +150,7 @@ bool ConnectEditor::init(bool quiet)
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::Undefined, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::InvalidValue, true);
     ui->dataTreeView->setColumnHidden( (int)DataItemColumn::ExcludedKeys, true);
+    ui->dataTreeView->setColumnHidden( (int)DataItemColumn::DefaultValue, true);
     ui->dataTreeView->setRootIndex( mDataModel->index(0,0, QModelIndex()) );    // hide root
     headerRegister(ui->dataTreeView->header());
 
@@ -169,7 +170,6 @@ bool ConnectEditor::init(bool quiet)
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::Default);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::AllowedValue);
     ui->helpTreeView->resizeColumnToContents((int)SchemaItemColumn::min);
-    ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::Default, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::SchemaKey, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::DragEnabled, true );
     ui->helpTreeView->setColumnHidden( (int)SchemaItemColumn::min, true );
