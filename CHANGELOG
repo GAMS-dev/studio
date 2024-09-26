@@ -2,30 +2,28 @@ Version 1.19.0
 ==================
 - added background color for syntax highlighting
 - added "Close and delete project" action to Project Explorer context menu
-- added virtual project, i.e. only create a gsp file on a certain number of files or if a main file is there
+- added virtual project, i.e. only create a gsp file on a certain number of files or if a main file is part of the project
 - added zoom support for model dialog
 - added Reference File (RF) creation to `Run with GDX creation`
 - added color indicator for non-existing MIRO path
 - added single project mode to focus one project only
 - added licensed GAMS solvers to license text and dropped solver matrix
-- added feature to store options for each main file. The main file can now be changed via the shortcuts `Shift+Ctrl+M` and `Shift+Cmd+M`.
-- added workspace clean-up during Studio start based on filters defined via the settings
+- added feature to store options for each main file. The main file can now be changed via the shortcuts `Shift+Ctrl+M` and `Shift+Cmd+M`. The old behavior can be activated via the settings.
+- added default workspace clean-up during Studio start based on filters defined via the settings. In the future the project workspaces will be cleaned.
 - added search icon to toolbar
 - added support for `oneof`, `nullable`, and `default` schema in Connect Editor
+- changed check for Studio updates on startup to deactivated
 - fixed usage of license file specified via the `gamsconfig.yaml`
 - fixed path of project options not recognized for file dialog
-- fixed save_as crash when saving to a file already known by Studio
-- fixed save_as keeps original in project
+- fixed `Save As...` crash when saving to a file already known by Studio
+- fixed `Save As...` so that the new file is added to the project and the original is removed
 - fixed find GAMS on Windows
-- improved allow to close non-main file while running a model
 - improved select next project when closing the current edited file-node in the Project Explorer that is also part of other projects
 - improved behaviour while debugging GAMS code
 - improved allow to remove all but the main file from a running project
-- improved closing a focused tab  and switching to a tab from the same project if possibleoption defaults are now shown and instantiated agents are pre-populated with those defaults
-- improved Connect Editor option defaults are now shown and instantiated agents are pre-populated with those defaults
+- improved closing a focused tab  and switching to a tab from the same project if possible- improved Connect Editor option defaults are now shown and instantiated agents are pre-populated with those defaults
+- improved group search results by file, i.e. a tree view is used instead of a table
 - removed warning when deleting a project file that does not exist
-- changed disable check for Studio updates on startup 
-- improved group search result by files, i.e. a tree view is used instead of a table
 
 Version 1.18.7
 ==================
