@@ -130,6 +130,7 @@ protected:
     ConnectDataItem* getSchemaParentItem(ConnectDataItem* item);
 
     int whichAnyOfSchema(const YAML::Node &data, ConnectSchema* schema, const QStringList& keylist, const QString& key);
+    int whichOneOfSchema(const YAML::Node &data, ConnectSchema *schema, const QStringList &keylist, const QString &key);
     int whichOneOfSchema(const YAML::Node &data, ConnectSchema* schema, const QString& key);
     void getSchemaListFromData(const YAML::Node& data, QStringList& schemaList);
     void getData(ConnectDataItem* item, YAML::Node& node);

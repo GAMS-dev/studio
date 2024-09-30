@@ -589,7 +589,7 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                         QList<QVariant> columnData;
                         columnData << schemaKeyStr;
                         columnData << (schemaHelper->required?"Y":"");
-                        if (schema->isOneOfSchemaDefined(k))
+                        if (schema->isOneOfDefined(k))
                             columnData << "oneof";
                         else if (schema->isAnyOfDefined(k))
                                 columnData << "anyof";
@@ -599,8 +599,8 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
                         addValue(schemaHelper->defaultValue, columnData);
                         QStringList strlist = gettAllAllowedValues(schemaHelper);
                         columnData << (strlist.isEmpty() ? "" : strlist.join(","));
-                        columnData << "";
-                        columnData << "";
+                        columnData << "";                         // min
+                        columnData << QVariant(schemaDataKeys);   // schemaKey
                         columnData << (schema->isOneOfDefined(k) || schema->isOneOfDefined(k) ? QVariant(false)
                                                                                               : QVariant(true));
                         columnData << (!schemaHelper->excludes.isEmpty() ? schemaHelper->excludes.join(",") : "");
