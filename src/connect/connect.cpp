@@ -355,9 +355,21 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
                     }
                 }
             } else if (allowed && value.compare("string") == 0) {
-                       dataValue[0] = "[value]";
+                       if (schemaValue["default"]) {
+                           dataValue[0] = schemaValue["default"].as<std::string>();
+                       } else  if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
+                                   dataValue[0] = schemaValue["allowed"][0].as<std::string>();
+                       } else {
+                            dataValue[0] = "[value]";
+                       }
             } else if (allowed && value.compare("integer") == 0) {
-                       dataValue[0] = 0;
+                       if (schemaValue["default"]) {
+                           dataValue[0] = schemaValue["default"].as<int>();
+                       } else  if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
+                           dataValue[0] = schemaValue["allowed"][0].as<int>();
+                       } else {
+                           dataValue[0] = 0;
+                       }
             } else {
                 if (allowed)
                     dataValue[0] = "[value]";
