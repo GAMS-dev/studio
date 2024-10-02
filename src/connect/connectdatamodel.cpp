@@ -1759,12 +1759,20 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              }
              dataKeys << key;
              schemaKeys << key;
+             QStringList typelist = schema->getTypeAsStringList(dataKeys.join(":"));
+             QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
-             itemData << (mit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mit->second.as<std::string>()) )
-                                                                     : QVariant( "null" ) );
-             itemData << QVariant((int)DataCheckState::ElementValue);
-             itemData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")) : QVariant());
+             bool nulldict = typelist.contains("dict");
+             if (nulldict) {
+                 itemData << QVariant();
+                 itemData << QVariant( (int)DataCheckState::KeyItem);
+             } else {
+                 itemData << (mit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mit->second.as<std::string>()) )
+                                                                         : QVariant( "null" ) );
+                 itemData << QVariant((int)DataCheckState::ElementValue);
+             }
+             itemData << (schema ? QVariant(typelist.join(",")) : QVariant());
              itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
              itemData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))) : QVariant());
              itemData << QVariant();
@@ -1774,7 +1782,6 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (schema ? (schema->contains(dataKeys.join(":")) ? QVariant(false) : QVariant(true))
                                  : QVariant(true));
              itemData << QVariant(0);
-             QStringList excluded = schema->getExcludedKeys(dataKeys.join(":"));
              itemData << (schema ? (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")))
                                  : QVariant());
              itemData << (schema ? (schema->getDefaultValue(dataKeys.join(":")))
@@ -1783,10 +1790,33 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              updateInvaldItem((int)DataItemColumn::Key, item);
              if (position>=parents.last()->childCount() || position < 0) {
                  parents.last()->appendChild(item);
+                 if (nulldict)
+                     parents << parents.last()->child(parents.last()->childCount()-1);
              } else {
                  parents.last()->insertChild(position, item);
+                 if (nulldict)
+                     parents << parents.last()->child(position);
              }
              updateInvalidExcludedItem(item);
+             if (nulldict) {
+                 QList<QVariant> sequenceDummyData;
+                 sequenceDummyData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
+                 sequenceDummyData << "";
+                 sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
+                 sequenceDummyData << QVariant(QString());
+                 sequenceDummyData << QVariant(QString());
+                 sequenceDummyData << QVariant(false);
+                 sequenceDummyData << QVariant();
+                 sequenceDummyData << QVariant();
+                 sequenceDummyData << QVariant();
+                 sequenceDummyData << QVariant(QStringList());
+                 sequenceDummyData << (schema ? QVariant(false) : QVariant(true));
+                 sequenceDummyData << QVariant(0);
+                 sequenceDummyData << QVariant();
+                 sequenceDummyData << QVariant();
+                 parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
+                 parents.pop_back();
+             }
              dataKeys.removeLast();
              schemaKeys.removeLast();
          } else if (mit->second.Type()==YAML::NodeType::Map) {
