@@ -703,6 +703,8 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
                                );
     QStringList schemaKey =  schemaIndex.data(Qt::DisplayRole).toString().split(":");
     int state = schemaIndex.siblingAtColumn((int)DataItemColumn::CheckState).data(Qt::DisplayRole).toInt();
+    if (mOnlyRequriedAttributesAdded && !isRequired(tobeinsertSchemaKey, schemaKey))
+        return false;
     if (row < 0 || column < 0) { // drop on to a row or end of the list
         if (schemaKey.size()>tobeinsertSchemaKey.size()) // same size
             return false;
@@ -719,6 +721,8 @@ bool ConnectDataModel::canDropMimeData(const QMimeData *mimedata, Qt::DropAction
             if (schemaKey.size()==1 && schemaKey.first().isEmpty() &&
                tobeinsertSchemaKey.size()==1 && !tobeinsertSchemaKey.isEmpty()) // special case; drop
                 return true;
+            if (mOnlyRequriedAttributesAdded && !isRequired(tobeinsertSchemaKey, schemaKey))
+                return false;
             if (state!=(int)DataCheckState::ListItem && state!=(int)DataCheckState::KeyItem) // not a ListItem
                 return false;
             if (schemaKey.size()==tobeinsertSchemaKey.size()) // same size
@@ -1373,6 +1377,24 @@ bool ConnectDataModel::existsUnderSameParent(const QString& tobeinsertSchema, co
         int keylevel = schemakeylist.size();
         if (!samelevel && qAbs(level-keylevel) != 1 )
             return false;
+    }
+    return false;
+}
+
+bool ConnectDataModel::isRequired(const QStringList &tobeinsertSchema, const QStringList &schemaKey) const
+{
+    if (tobeinsertSchema.size()==1)
+        return true;
+    QStringList schemakeylist(tobeinsertSchema);
+    schemakeylist.removeFirst();
+    ConnectSchema* s = mConnect->getSchema(schemaKey[0]);
+    if (s) {
+        if (s->isRequired(schemakeylist.join(":"))) {
+            return true;
+         } else {
+             if (s->getAllRequiredKeyList().contains(schemakeylist.join(":") ))
+                return true;
+         }
     }
     return false;
 }
@@ -2369,11 +2391,18 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                      mapSeqData << QVariant((int)DataCheckState::ElementValue);
                                      mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")): QVariant());
                                      mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")): QVariant());
-                                     if (key.endsWith("]")) { // take rquire flag from parent schema
-                                         QStringList skeylist(dataKeys);
-                                         skeylist.removeLast();
-                                         skeylist << key.left(key.lastIndexOf("["));
-                                         mapSeqData << (schema ? QVariant(!schema->isRequired(skeylist.join(":"))) : QVariant());
+                                     bool required =  schema->isRequired(datakeyslist.join(":"));
+                                     if (key.endsWith("]")) {
+                                         if (required) {
+                                            mapSeqData << (!required); // delete able
+                                         } else { // take rquire flag from parent schema
+                                            QStringList skeylist(dataKeys);
+                                            skeylist.removeLast();
+                                            skeylist << key.left(key.lastIndexOf("["));
+                                            mapSeqData << (schema ? QVariant(!schema->isRequired(skeylist.join(":"))) : QVariant());
+                                         }
+                                     } else {
+                                         mapSeqData << (schema ? QVariant(!required) : QVariant(false));
                                      }
                                      mapSeqData << QVariant();
                                      mapSeqData << QVariant();

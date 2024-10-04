@@ -388,12 +388,14 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                              : schemaValue["required"] ? (onlyRequiredAttribute ? schemaValue["required"].as<bool>() : true)
                                                                        : (onlyRequiredAttribute ? false : true)
                        );
+        if (!allowed)
+            return false;
         if (schemaValue["type"]) {
             if (schemaValue["type"].Type()==YAML::NodeType::Sequence) {
                 return mapTypeSequenceValue(schemaValue["type"], schemaValue, dataValue, onlyRequiredAttribute, allowed);
             } else { // not sequence
                 std::string value = schemaValue["type"].as<std::string>() ;
-                if (allowed && value.compare("string") == 0) {
+                if (value.compare("string") == 0) {
                     if (schemaValue["default"]) {
                         dataValue = schemaValue["default"].as<std::string>();
                     } else  if (schemaValue["allowed"] && schemaValue["allowed"].Type()==YAML::NodeType::Sequence) {
@@ -409,7 +411,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                     } else {
                         dataValue = "[value]";
                     }
-                } else if (allowed && value.compare("integer") == 0) {
+                } else if (value.compare("integer") == 0) {
                             if (schemaValue["default"]) {
                                 try {
                                     dataValue = schemaValue["default"].as<int>();
@@ -419,7 +421,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                             } else {
                                 dataValue = (schemaValue["min"] ? schemaValue["min"].as<int>() : 0);
                             }
-                } else if (allowed && value.compare("boolean") == 0) {
+                } else if (value.compare("boolean") == 0) {
                             if (schemaValue["default"]) {
                                 try {
                                     dataValue = schemaValue["default"].as<bool>();
@@ -429,7 +431,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                             } else {
                                 dataValue = false;
                             }
-                } else if (allowed && value.compare("dict") == 0) {
+                } else if (value.compare("dict") == 0) {
                             bool nullable = false;
                             if (schemaValue["default"]) {
                                 try {
@@ -457,7 +459,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 else
                                    dataValue["[key]"] = "[value]";
                            }
-                } else if (allowed && value.compare("list") == 0) {
+                } else if (value.compare("list") == 0) {
                            if (schemaValue["schema"]) {
                                if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
                                    return false;
