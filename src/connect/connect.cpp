@@ -430,11 +430,19 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                 dataValue = false;
                             }
                 } else if (allowed && value.compare("dict") == 0) {
+                            bool nullable = false;
                             if (schemaValue["default"]) {
                                 try {
                                     std::string defaultvalue = schemaValue["default"].as<std::string>();
                                 } catch (const YAML::BadConversion& e) {
                                     // TODO
+                                }
+                            }
+                            if (schemaValue["nullable"]) {
+                                try {
+                                    nullable = schemaValue["nullable"].as<bool>();
+                                } catch (const YAML::BadConversion& e) {
+                                    nullable = false;
                                 }
                             }
                             if (schemaValue["schema"]) {
@@ -444,7 +452,10 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                else
                                    return false;
                            } else {
-                               dataValue["[key]"] = "[value]";
+                                if (nullable)
+                                   dataValue = "null";
+                                else
+                                   dataValue["[key]"] = "[value]";
                            }
                 } else if (allowed && value.compare("list") == 0) {
                            if (schemaValue["schema"]) {
