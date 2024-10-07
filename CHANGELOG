@@ -4,6 +4,10 @@ Version 1.20.0 *
 
 Version 1.19.0
 ==================
+- upgraded from Qt 6.7.2 to Qt 6.7.3
+
+Version 1.19.0
+==================
 - added background color for syntax highlighting
 - added "Close and delete project" action to Project Explorer context menu
 - added virtual project, i.e. only create a gsp file on a certain number of files or if a main file is part of the project
