@@ -135,7 +135,7 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                       QString str = item->data((int)DataItemColumn::Value).toString();
                       if (!deletable) {
                           if (index.column()==(int)DataItemColumn::Value && QString::compare(str,"[value]",Qt::CaseInsensitive)==0) {
-                              return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
+                              return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
                           }
                       }
                       return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
@@ -150,9 +150,9 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                 bool deletable = (item->parentItem() ? item->parentItem()->data((int)DataItemColumn::Delete).toBool() : true);
                 if (!deletable) {
                     if (index.column()==(int)DataItemColumn::Key && QString::compare(item->data((int)DataItemColumn::Key).toString(), "[key]", Qt::CaseInsensitive)==0)
-                        return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
+                        return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
                     if (index.column()==(int)DataItemColumn::Value && QString::compare(item->data((int)DataItemColumn::Value).toString(), "[value]", Qt::CaseInsensitive)==0)
-                        return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
+                        return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
                 }
                 return QVariant::fromValue(Theme::color(Theme::Syntax_keyword));
             }
@@ -276,7 +276,29 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                              }
                                          }
                                      }
+                           } else if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap) {
+                                      QString str = item->data((int)DataItemColumn::Key).toString();
+                                      if (QString::compare(str,"[key]",Qt::CaseInsensitive)==0)
+                                          return  QVariant( QString("%1 The key %2%3%4 is created for the dict %2%5%4. <br/>Edit this to change to a wanted or desired dict key. %6")
+                                                                .arg(TooltipStrHeader, TooltipOpenedBoldStr, "[key]", TooltipClosedBoldStr, item->parentItem()->data((int)DataItemColumn::Key).toString(), TooltipStrFooter) );
+
                            }
+                } else if (index.column()==(int)DataItemColumn::Value) {
+                          bool deletable = item->data((int)DataItemColumn::Delete).toBool();
+                          QString str = item->data((int)DataItemColumn::Value).toString();
+                          if (!deletable) {
+                              if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue) {
+                                  if (QString::compare(str,"[value]",Qt::CaseInsensitive)==0)
+                                      return  QVariant( QString("%1 %2%3%4 is created for the required attribute %2%5%4. <br/>Edit this value to change to a wanted or desired value. %6")
+                                                      .arg(TooltipStrHeader, TooltipOpenedBoldStr, "[value]", TooltipClosedBoldStr, item->data((int)DataItemColumn::Key).toString(), TooltipStrFooter) );
+                              }
+                          }
+                          if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap) {
+                              if (QString::compare(str,"[value]",Qt::CaseInsensitive)==0)
+                                  return  QVariant( QString("%1 The value %2%3%4 is created for the dict %2%5%4. <br/>Edit this value to change to a wanted or desired dict value. %6")
+                                                  .arg(TooltipStrHeader, TooltipOpenedBoldStr, "[value]", TooltipClosedBoldStr, item->parentItem()->data((int)DataItemColumn::Key).toString(), TooltipStrFooter) );
+
+                          }
                 }
             }
         }
