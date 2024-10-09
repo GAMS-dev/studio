@@ -256,25 +256,25 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                                      return QVariant( QString("%1 %2%3%4 attribute is unknown.<br/>Check schema definition for valid attribute name or name of its parent.<br/>Note that name is case-sensitive.%5")
                                                            .arg( TooltipStrHeader,TooltipOpenedBoldStr,data.toString(),TooltipClosedBoldStr,TooltipStrFooter ));
                            } else if (item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::KeyItem || item->data((int)DataItemColumn::CheckState ).toInt()==(int)DataCheckState::ElementValue) {
-                                     if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0) {
-                                          return QVariant( QString("%1%2%3%4 may be invalid or excluded from (an)other attribute.<br/>Check schema definition for valid and excluded attribute.%5")
-                                                              .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
-                                     } else {
-                                         QStringList schemakey = item->data((int)DataItemColumn::SchemaKey).toStringList();
-                                         if (!schemakey.isEmpty()) {
-                                             ConnectSchema* schema = mConnect->getSchema(schemakey.first());
-                                             if (schema) {
-                                                 schemakey.removeFirst();
-                                                 QString schemastr = schemakey.join(":");
-                                                 QString key = schemastr.left(schemastr.lastIndexOf("["));
-                                                 bool oneof = (schema && schema->isOneOfDefined(key));
-                                                 if (oneof) {
-                                                     QVariant type = index.siblingAtColumn((int)DataItemColumn::SchemaType).data(Qt::DisplayRole);
-                                                     return QVariant( QString("%1%2%3%4 is oneof %2%5%4 with type %2%6%4 %7")
-                                                                         .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,key,type.toStringList().join(","), TooltipStrFooter)); // data_index.data(Qt::DisplayRole).toString() ) );
-                                                 }
-                                             }
-                                         }
+                                     QStringList schemakey = item->data((int)DataItemColumn::SchemaKey).toStringList();
+                                     if (!schemakey.isEmpty()) {
+                                        ConnectSchema* schema = mConnect->getSchema(schemakey.first());
+                                        if (schema) {
+                                            schemakey.removeFirst();
+                                            QString schemastr = schemakey.join(":");
+                                            QString key = schemastr.left(schemastr.lastIndexOf("["));
+                                            bool oneof = (schema->isOneOfDefined(key));
+                                            if (oneof) {
+                                                int number = schema->getNumberOfOneOfDefined(key);
+                                                QVariant type = index.siblingAtColumn((int)DataItemColumn::SchemaType).data(Qt::DisplayRole);
+                                                return QVariant( QString("%1%2%3%4 is oneof %2%5%4 schema with type %2%6%4 %7")
+                                                                    .arg( TooltipStrHeader,TooltipOpenedBoldStr,schemakey.last(),TooltipClosedBoldStr,QString::number(number),type.toStringList().join(","), TooltipStrFooter)); // data_index.data(Qt::DisplayRole).toString() ) );
+                                            }
+                                            if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0) {
+                                                    return QVariant( QString("%1%2%3%4 may be invalid attribute or be excluded from (an)other attribute or contains an invalid value.<br/>Check schema definition for valid and excluded attribute.%5")
+                                                                        .arg( TooltipStrHeader,TooltipOpenedBoldStr,data_index.data(Qt::DisplayRole).toString(),TooltipClosedBoldStr,TooltipStrFooter ));
+                                            }
+                                        }
                                      }
                            } else if (item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementMap) {
                                       QString str = item->data((int)DataItemColumn::Key).toString();
@@ -302,23 +302,26 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                 }
             }
         }
-        if (index.column()==(int)DataItemColumn::Value && item->data( (int)DataItemColumn::InvalidValue).toInt()>0 && !item->data( (int)DataItemColumn::Undefined ).toBool()) {
+        if (item->data( (int)DataItemColumn::InvalidValue).toInt()>0 && !item->data( (int)DataItemColumn::Undefined ).toBool()) {
             QVariant key  = index.siblingAtColumn((int)DataItemColumn::Key).data(Qt::DisplayRole);
             QVariant type = index.siblingAtColumn((int)DataItemColumn::SchemaType).data(Qt::DisplayRole);
             QVariant allowedValue = index.siblingAtColumn((int)DataItemColumn::AllowedValue).data(Qt::DisplayRole);
 
             QStringList schema = item->data((int)DataItemColumn::SchemaKey).toStringList();
             if (!schema.isEmpty()) {
-                 QString schemaname = schema.first();
-                 schema.removeFirst();
-                 ValueWrapper minvalue = mConnect->getSchema(schemaname)->getMin(schema.join(":"));
-                 ValueWrapper maxvalue = mConnect->getSchema(schemaname)->getMax(schema.join(":"));
-                 return QVariant( QString("%1 Invalid value.<br/>%2%3%4 must be of type %2%5%4.%6 %7 %8 %9")
-                                  .arg( TooltipStrHeader, TooltipOpenedBoldStr, key.toString(), TooltipClosedBoldStr, type.toString(),
-                                        (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
-                                        (minvalue.type!=SchemaValueType::Integer ? "" : "<br/>Min value is "+TooltipOpenedBoldStr+QString::number(minvalue.value.intval)+TooltipClosedBoldStr+"." ),
-                                        (maxvalue.type!=SchemaValueType::Integer ? "" : "<br/>Max value is "+TooltipOpenedBoldStr+QString::number(maxvalue.value.intval)+TooltipClosedBoldStr+"." ),
-                                        TooltipStrFooter ) );
+                 if ( (index.column()==(int)DataItemColumn::Key && item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementKey) ||
+                    (index.column()==(int)DataItemColumn::Value && item->data((int)DataItemColumn::CheckState).toInt()==(int)DataCheckState::ElementValue)  ) {
+                     QString schemaname = schema.first();
+                     schema.removeFirst();
+                     ValueWrapper minvalue = mConnect->getSchema(schemaname)->getMin(schema.join(":"));
+                     ValueWrapper maxvalue = mConnect->getSchema(schemaname)->getMax(schema.join(":"));
+                     return QVariant( QString("%1 Invalid value.<br/>%2%3%4 must be of type %2%5%4.%6 %7 %8 %9")
+                                      .arg( TooltipStrHeader, TooltipOpenedBoldStr, key.toString(), TooltipClosedBoldStr, type.toString(),
+                                            (allowedValue.toString().isEmpty()?"" : "<br/>Allowed values are "+TooltipOpenedBoldStr+allowedValue.toString()+TooltipClosedBoldStr+"."),
+                                            (minvalue.type!=SchemaValueType::Integer ? "" : "<br/>Min value is "+TooltipOpenedBoldStr+QString::number(minvalue.value.intval)+TooltipClosedBoldStr+"." ),
+                                            (maxvalue.type!=SchemaValueType::Integer ? "" : "<br/>Max value is "+TooltipOpenedBoldStr+QString::number(maxvalue.value.intval)+TooltipClosedBoldStr+"." ),
+                                            TooltipStrFooter ) );
+                 }
             }
         }
         break;
