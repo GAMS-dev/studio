@@ -183,8 +183,10 @@ bool ConnectEditor::init(bool quiet)
     connect(keydelegate, &ConnectDataKeyDelegate::requestAppendItem, this, &ConnectEditor::appendItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::requestInsertSchemaItem, this, &ConnectEditor::appendSchemaItemRequested, Qt::UniqueConnection);
     connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
+    connect(keydelegate, &ConnectDataKeyDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Key); });
 
     connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, &ConnectEditor::setModified, Qt::UniqueConnection);
+    connect(valuedelegate, &ConnectDataValueDelegate::modificationChanged, this, [this]() { ui->dataTreeView->resizeColumnToContents((int)DataItemColumn::Value); });
     connect(actiondelegate, &ConnectDataActionDelegate::requestDeleteItem, this, &ConnectEditor::deleteDataItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveUpItem, this, &ConnectEditor::moveUpDatatItemRequested, Qt::UniqueConnection);
     connect(actiondelegate, &ConnectDataActionDelegate::requestMoveDownItem, this, &ConnectEditor::moveDownDatatItemRequested, Qt::UniqueConnection);
