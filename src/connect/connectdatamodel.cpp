@@ -2423,11 +2423,19 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                          datakeyslist.removeLast();
                                          datakeyslist << keystr;
                                      }
+                                     QStringList typelist = schema->getTypeAsStringList(datakeyslist.join(":"));
+                                     QVariant defvalue = schema->getDefaultValue(datakeyslist.join(":"));
+                                     bool nulldict = (typelist.contains("dict") && defvalue.toString().compare("null")==0);
                                      schemaKeys << keystr;
                                      mapSeqData << (keystr.contains("[") ? keystr.left(keystr.lastIndexOf("[")) : keystr);
-                                     mapSeqData << (mmit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mmit->second.as<std::string>()) )
-                                                                                                : QVariant( "null" ) );
-                                     mapSeqData << QVariant((int)DataCheckState::ElementValue);
+                                     if (typelist.contains("dict")) {
+                                         mapSeqData << QVariant();
+                                         mapSeqData << QVariant( (int)DataCheckState::KeyItem);
+                                     } else {
+                                         mapSeqData << (mit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mit->second.as<std::string>()) )
+                                                                                                   : QVariant( "null" ) );
+                                         mapSeqData << QVariant((int)DataCheckState::ElementValue);
+                                     }
                                      mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")): QVariant());
                                      mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")): QVariant());
                                      bool required =  schema->isRequired(datakeyslist.join(":"));
@@ -2456,8 +2464,39 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                      mapSeqData << (schema ? (schema->getDefaultValue(datakeyslist.join(":")))
                                                            : QVariant());
                                      ConnectDataItem* item = new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last());
-                                     updateInvaldItem((int)DataItemColumn::Value, item);
-                                     parents.last()->appendChild(item);
+                                     if (typelist.contains("dict"))
+                                         updateInvaldItem((int)DataItemColumn::Key, item);
+                                     else
+                                         updateInvaldItem((int)DataItemColumn::Value, item);
+                                     if (position>=parents.last()->childCount() || position < 0) {
+                                         parents.last()->appendChild(item);
+                                         if (nulldict)
+                                             parents << parents.last()->child(parents.last()->childCount()-1);
+                                     } else {
+                                         parents.last()->insertChild(position, item);
+                                         if (nulldict)
+                                             parents << parents.last()->child(position);
+                                     }
+                                     updateInvalidExcludedItem(item);
+                                     if (nulldict) {
+                                         QList<QVariant> sequenceDummyData;
+                                         sequenceDummyData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
+                                         sequenceDummyData << "";
+                                         sequenceDummyData << QVariant((int)DataCheckState::MapAppend);
+                                         sequenceDummyData << QVariant(QString());
+                                         sequenceDummyData << QVariant(QString());
+                                         sequenceDummyData << QVariant(false);
+                                         sequenceDummyData << QVariant();
+                                         sequenceDummyData << QVariant();
+                                         sequenceDummyData << QVariant();
+                                         sequenceDummyData << QVariant(QStringList());
+                                         sequenceDummyData << (schema ? QVariant(false) : QVariant(true));
+                                         sequenceDummyData << QVariant(0);
+                                         sequenceDummyData << QVariant();
+                                         sequenceDummyData << QVariant();
+                                         parents.last()->appendChild(new ConnectDataItem(sequenceDummyData, mItemIDCount++, parents.last()));
+                                         parents.pop_back();
+                                     }
                                      schemaKeys.removeLast();
                                }
                                updateInvalidExcludedItem(item);
