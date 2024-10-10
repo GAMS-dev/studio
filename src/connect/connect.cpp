@@ -460,10 +460,21 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                    dataValue["[key]"] = "[value]";
                            }
                 } else if (value.compare("list") == 0) {
+                           bool nullable = false;
+                           if (schemaValue["nullable"]) {
+                               try {
+                                   nullable = schemaValue["nullable"].as<bool>();
+                               } catch (const YAML::BadConversion& e) {
+                                   nullable = false;
+                               }
+                           }
                            if (schemaValue["schema"]) {
                                if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
                                    return false;
                            } else {
+                               if (nullable)
+                                   dataValue = "null";
+                               else
                                    dataValue[0] = 0;
                            }
                 } else {
@@ -553,6 +564,14 @@ bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node 
                 dataValue = (schemaValue["default"] ? schemaValue["default"].as<int>() :  0);
                 return true;
             } else if (allowed && value.compare("dict") == 0) {
+                bool nullable = false;
+                if (schemaValue["nullable"]) {
+                    try {
+                        nullable = schemaValue["nullable"].as<bool>();
+                    } catch (const YAML::BadConversion& e) {
+                        nullable = false;
+                    }
+                }
                 if (schemaValue["schema"]) {
                     YAML::Node data;
                     if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute)) {
@@ -560,15 +579,29 @@ bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node 
                         return true;
                     }
                 } else {
-                    dataValue["[key]"] = "[value]";
+                    if (nullable)
+                        dataValue = "null";
+                    else
+                        dataValue["[key]"] = "[value]";
                     return true;
                 }
             } else if (allowed && value.compare("list") == 0) {
+                bool nullable = false;
+                if (schemaValue["nullable"]) {
+                    try {
+                        nullable = schemaValue["nullable"].as<bool>();
+                    } catch (const YAML::BadConversion& e) {
+                        nullable = false;
+                    }
+                }
                 if (schemaValue["schema"]) {
                     if (listValue(schemaValue["schema"], dataValue, false, onlyRequiredAttribute))
                         return true;
                 } else {
-                    dataValue[0] = 0;
+                    if (nullable)
+                        dataValue = "null";
+                    else
+                        dataValue[0] = 0;
                     return true;
                 }
             } else {
