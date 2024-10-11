@@ -358,8 +358,8 @@ void ConnectEditor::appendItemRequested(const QModelIndex &index)
         if (index.parent().isValid() &&
             index.parent().siblingAtColumn((int)DataItemColumn::Undefined).data(Qt::DisplayRole).toBool())
             return;
-        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::AllowedValue);
-        QStringList schema = values_idx.data().toStringList();
+        QModelIndex values_idx = index.sibling(index.row(), (int)DataItemColumn::SchemaKey);
+        QStringList schema = values_idx.data(Qt::DisplayRole).toString().split(":");
         if ( !schema.isEmpty() ) {
             QString schemaname = schema.at(0);
             schema.removeFirst();
