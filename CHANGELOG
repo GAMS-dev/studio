@@ -1,5 +1,6 @@
 Version 1.19.1
 ==================
+- improved license text for time limited licenses
 - upgraded from Qt 6.7.2 to Qt 6.7.3
 
 Version 1.19.0

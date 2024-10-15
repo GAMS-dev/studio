@@ -127,7 +127,7 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
         about << QString("<li>Full: %2</li>").arg(groups["Full"].join(", "));
     }
     if (groups.contains("Evaluation")) {
-        about << QString("<li>Evaluation: %2</li>").arg(groups["Evaluation"].join(", "));
+        about << QString("<li>Time limited: %2</li>").arg(groups["Evaluation"].join(", "));
     }
     if (groups.contains("Community")) {
         about << QString("<li>Community: %2</li>").arg(groups["Community"].join(", "));
@@ -136,7 +136,7 @@ void GamsLicensingDialog::setSolverLines(QStringList& about)
         about << QString("<li>Demo: %2</li>").arg(groups["Demo"].join(", "));
     }
     if (groups.contains("Expired")) {
-        about << QString("<li>Expired Evaluation: %2</li>").arg(groups["Expired"].join(", "));
+        about << QString("<li>Expired: %2</li>").arg(groups["Expired"].join(", "));
     }
     about << "</ul><br/>";
 }
