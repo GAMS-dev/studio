@@ -39,8 +39,8 @@ public:
     ConnectData* loadDataFromFile(const QString& fileName);
 
     ConnectData* createDataHolder(const QStringList& schemaNameList, bool onlyRequiredAttribute=false);
-    ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema, bool onlyRequiredAttribute=false);
-    ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false);
+    ConnectData* createDataHolderFromSchema(const QString& schemaname, const QStringList& schema, bool onlyRequiredAttribute=false, bool ignoreNull=false);
+    ConnectData* createDataHolderFromSchema(const QStringList& schemastrlist, bool onlyRequiredAttribute=false, bool ignoreNull=false);
 
     ConnectSchema* getSchema(const QString& schemaName);
     const QStringList getSchemaNames() const;
@@ -51,7 +51,7 @@ public:
 
 private:
     bool listValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
-    bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false);
+    bool mapValue(const YAML::Node& schemaValue, YAML::Node& dataValue, bool ignoreRequiredSchema=false, bool onlyRequiredAttribute=false, bool ignoreNull=false);
 
     bool mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node& schemaValue, YAML::Node& dataValue,
                               bool onlyRequiredAttribute=false, bool allowed=false);

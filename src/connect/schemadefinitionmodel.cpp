@@ -494,13 +494,20 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         schemaHelper = schema->getSchema(sk.join(":"));
     }
     if (schemaHelper) {
+        bool differentSchemaKeys = (QString::compare(key,prefix, Qt::CaseInsensitive)!=0);
         parents << parents.last()->child(parents.last()->childCount()-1);
         QList<QVariant> listData;
         listData << "schema";
-        listData << (schemaHelper->required?"Y":"");
-        addTypeList(schemaHelper->types, listData);
-        listData << (schemaHelper->nullable?"Y":"");
-        addValue(schemaHelper->defaultValue, listData);
+        listData << (differentSchemaKeys ? (schemaHelper->required?"Y":"") : QVariant());
+        if (differentSchemaKeys)
+            addTypeList(schemaHelper->types, listData);
+        else
+            listData << QVariant();
+        listData << (differentSchemaKeys ? (schemaHelper->nullable?"Y":"") : QVariant());
+        if (differentSchemaKeys)
+            addValue(schemaHelper->defaultValue, listData);
+        else
+            listData << QVariant();
         QStringList strlist = gettAllAllowedValues(schemaHelper);
         if (strlist.isEmpty())
             listData << "";
@@ -509,8 +516,8 @@ void SchemaDefinitionModel::setupSchemaTree(const QString& schemaName, const QSt
         listData << "";
         listData << QVariant(schemaKeys);
         listData << QVariant(false);
-        listData << (!schemaHelper->excludes.isEmpty() ? schemaHelper->excludes.join(",") : "");
-        listData << QVariant::fromValue(schemaHelper->defaultValue.value.stringval);
+        listData << (differentSchemaKeys ? (!schemaHelper->excludes.isEmpty() ? schemaHelper->excludes.join(",") : QVariant()) : QVariant());
+        listData << (differentSchemaKeys ? QVariant::fromValue(schemaHelper->defaultValue.value.stringval) : QVariant());
         parents.last()->appendChild(new SchemaDefinitionItem(schemaName, listData, parents.last()));
         const QStringList nextlevelList = schema->getNextLevelKeyList(prefix);
         if (nextlevelList.size() > 0) {

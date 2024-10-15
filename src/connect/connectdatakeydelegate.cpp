@@ -60,7 +60,8 @@ void ConnectDataKeyDelegate::initStyleOption(QStyleOptionViewItem *option, const
         mSchemaHelpPosition[index.data(Qt::DisplayRole).toString()] =
                     QRect(option->rect.bottomRight().x()-mIconWidth, option->rect.bottomRight().y()-mIconHeight, mIconWidth , mIconHeight);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::ListAppend ||
-               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend     ) {
+               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapAppend  ||
+               checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::MapSchemaAppend ) {
                option->icon = QIcon(qvariant_cast<QIcon>(index.data(Qt::DecorationRole)));
                mSchemaAppendPosition[index] = QRect(option->rect.topLeft().x(), option->rect.topLeft().y(), mIconWidth , mIconHeight);
     } else if (checkstate_index.data( Qt::DisplayRole ).toInt()==(int)DataCheckState::SchemaAppend) {
@@ -203,7 +204,7 @@ bool ConnectDataKeyDelegate::editorEvent(QEvent *event, QAbstractItemModel *mode
     if (event->type()==QEvent::MouseButtonRelease) {
         QModelIndex checkstate_index = index.sibling(index.row(), (int)DataItemColumn::CheckState);
         if (checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementKey ||
-            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap    ) {
+            checkstate_index.data(Qt::DisplayRole).toInt()==(int)DataCheckState::ElementMap     ) {
              return true;
         }
         const QMouseEvent* const mouseevent = static_cast<const QMouseEvent*>( event );

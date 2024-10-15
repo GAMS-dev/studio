@@ -233,7 +233,7 @@ ConnectData *Connect::createDataHolder(const QStringList &schemaNameList, bool o
     return new ConnectData(data);
 }
 
-ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, const QStringList &schema, bool onlyRequiredAttribute)
+ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, const QStringList &schema, bool onlyRequiredAttribute, bool ignoreNull)
 {
     ConnectSchema* s = mSchema[schemaname];
     YAML::Node data;
@@ -241,20 +241,19 @@ ConnectData *Connect::createDataHolderFromSchema(const QString& schemaname, cons
         return new ConnectData(data);
 
     QString schemastr = schema.join(":");
-
     Schema* schemaHelper = s->getSchema(schemastr);
     if (!schemaHelper)
         return new ConnectData(data);
 
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Node value;
-    if (mapValue( schemanode, value, true, onlyRequiredAttribute )) {
+    if (mapValue( schemanode, value, true, onlyRequiredAttribute, ignoreNull )) {
         data = value;
     }
     return new ConnectData(data);
 }
 
-ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlist, bool onlyRequiredAttribute)
+ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlist, bool onlyRequiredAttribute, bool ignoreNull)
 {
     ConnectSchema* s = mSchema[schemastrlist.first()];
     YAML::Node data;
@@ -270,7 +269,7 @@ ConnectData *Connect::createDataHolderFromSchema(const QStringList &schemastrlis
 
     YAML::Node schemanode = schemaHelper->schemaNode;
     YAML::Node value;
-    if (mapValue(schemanode, value, true, onlyRequiredAttribute )) {
+    if (mapValue(schemanode, value, true, onlyRequiredAttribute, ignoreNull )) {
         if (cRex.match(tobeinsertSchemaKey.last()).hasMatch()) {
             data[0] = value; //listnode;
         } else {
@@ -381,7 +380,7 @@ bool Connect::listValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bo
     return true;
 }
 
-bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool ignoreRequiredSchema, bool onlyRequiredAttribute)
+bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, bool ignoreRequiredSchema, bool onlyRequiredAttribute, bool ignoreNull)
 {
     if (schemaValue.Type() == YAML::NodeType::Map) {
         bool allowed = (ignoreRequiredSchema ? ignoreRequiredSchema
@@ -447,7 +446,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                     nullable = false;
                                 }
                             }
-                            if (schemaValue["schema"]) {
+                            if (schemaValue["schema"] && (ignoreNull || !nullable)) {
                                YAML::Node data;
                                if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute))
                                   dataValue = data;
@@ -468,7 +467,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                    nullable = false;
                                }
                            }
-                           if (schemaValue["schema"]) {
+                           if (schemaValue["schema"] && (ignoreNull || !nullable)) {
                                if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
                                    return false;
                            } else {
@@ -498,7 +497,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                             return true;
                         }
 
-                        if (!mapValue( anyofnode, dataValue, false, onlyRequiredAttribute ))
+                        if (!mapValue( anyofnode, dataValue, false, onlyRequiredAttribute, ignoreNull ))
                             return false;
                     }
                 }
@@ -515,7 +514,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                             return true;
                         }
 
-                        if (!mapValue( oneofnode, dataValue, false, onlyRequiredAttribute ))
+                        if (!mapValue( oneofnode, dataValue, false, onlyRequiredAttribute, ignoreNull ))
                             return false;
                     }
                 }
@@ -523,7 +522,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                 for (YAML::const_iterator it = schemaValue.begin(); it != schemaValue.end(); ++it) {
                     if (it->second.Type() == YAML::NodeType::Map) {
                         YAML::Node value;
-                        if (!mapValue( it->second, value, false, onlyRequiredAttribute ))
+                        if (!mapValue( it->second, value, false, onlyRequiredAttribute, ignoreNull ))
                             continue;
                         try {
                             int i = it->first.as<int>();
@@ -594,7 +593,7 @@ bool Connect::mapTypeSequenceValue(const YAML::Node& typenode, const YAML::Node 
                         nullable = false;
                     }
                 }
-                if (schemaValue["schema"]) {
+                if (schemaValue["schema"] && !nullable) {
                     if (listValue(schemaValue["schema"], dataValue, false, onlyRequiredAttribute))
                         return true;
                 } else {
