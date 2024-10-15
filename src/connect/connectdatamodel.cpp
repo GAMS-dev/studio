@@ -1293,7 +1293,6 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
                   return true;
               }
     }
-    qDebug() << "1 valid? key=" << item->data((int)DataItemColumn::Key).toString();
     int n = 0;
     QStringList schemakeys = item->data((int)DataItemColumn::SchemaKey).toStringList();
     ConnectSchema* schema = schemakeys.isEmpty() ? nullptr : mConnect->getSchema(schemakeys.first());
@@ -1315,7 +1314,6 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
         return true;
     }
 
-    qDebug() << "   2 valid? key=" << item->data((int)DataItemColumn::Key).toString() << "n=" << n;
     if (schema->isNullDefaultAllowed(schemakeys.join(":"))) {
         if (item->data((int)DataItemColumn::Value).toString().compare("null", Qt::CaseInsensitive)==0) {
             return true;
@@ -1331,7 +1329,6 @@ bool ConnectDataModel::isIndexValueValid(int column, ConnectDataItem *item)
             allowedValues = schema->getAllowedValueAsStringList( slist );
         }
         for (const QString& t : std::as_const(types) ) {
-            qDebug() << "   4 0 t=" << t << ", i=" << i << (valid?"valid=Y":"valid=N");
             if (t.compare("string")==0 || t.compare("dict")==0 || t.compare("list")==0) {
                 if (allowedValues.isEmpty()) {
                     valid = true;
@@ -1932,15 +1929,18 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  defvalue = schema->getDefaultValue(dataKeys.join(":"));
                  excluded = schema->getExcludedKeys(dataKeys.join(":"));
              }
+             int column = (int)DataItemColumn::Key;
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              if (typelist.contains("dict") || (typelist.contains("list"))) {
                  itemData << QVariant();
                  itemData << QVariant( (int)DataCheckState::KeyItem);
+                 column = (int)DataItemColumn::Key;
              } else {
                  itemData << (mit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mit->second.as<std::string>()) )
                                                                          : QVariant( "null" ) );
                  itemData << QVariant((int)DataCheckState::ElementValue);
+                 column = (int)DataItemColumn::Value;
              }
              itemData << (schema ? QVariant(typelist.join(",")) : QVariant());
              itemData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")) : QVariant());
@@ -1962,10 +1962,10 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              itemData << (excluded.isEmpty() ? QVariant() : QVariant(excluded.join(",")));
              itemData << defvalue;
              ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
-             if (typelist.contains("dict") || typelist.contains("list"))
-                 updateInvaldItem((int)DataItemColumn::Key, item);
-             else
-                updateInvaldItem((int)DataItemColumn::Value, item);
+             if (!isIndexValueValid(column, item)) {
+                 item->setData((int)DataItemColumn::InvalidValue, 1);
+                 updateInvaldItem(column, item);
+             }
              if (position>=parents.last()->childCount() || position < 0) {
                  parents.last()->appendChild(item);
                  if (typelist.contains("dict") || typelist.contains("list"))
@@ -2479,6 +2479,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                          datakeyslist.removeLast();
                                          datakeyslist << keystr;
                                      }
+                                     int column = (int)DataItemColumn::Key;
                                      QStringList typelist = schema->getTypeAsStringList(datakeyslist.join(":"));
                                      QVariant defvalue = schema->getDefaultValue(datakeyslist.join(":"));
                                      schemaKeys << keystr;
@@ -2486,6 +2487,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                      if (typelist.contains("dict") || typelist.contains("list")) {
                                          mapSeqData << QVariant();
                                          mapSeqData << QVariant( (int)DataCheckState::KeyItem);
+                                         column = (int)DataItemColumn::Key;
                                      } else {
                                          mapSeqData << ( mmit->second.Type()==YAML::NodeType::Scalar ? QVariant( QString::fromStdString(mmit->second.as<std::string>()) )
                                                                                                      : (mmit->second.Type()==YAML::NodeType::Null ? QVariant("null")
@@ -2493,6 +2495,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                                                                                                                                                    : QVariant(defvalue.toString())))
                                                         );
                                          mapSeqData << QVariant((int)DataCheckState::ElementValue);
+                                         column = (int)DataItemColumn::Value;
                                      }
                                      mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(datakeyslist.join(":")).join(",")): QVariant());
                                      mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(datakeyslist.join(":")).join(",")): QVariant());
@@ -2523,10 +2526,10 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                            : QVariant());
                                      ConnectDataItem* item = new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last());
 
-                                     if (typelist.contains("dict")||typelist.contains("list"))
-                                         updateInvaldItem((int)DataItemColumn::Key, item);
-                                     else
-                                         updateInvaldItem((int)DataItemColumn::Value, item);
+                                     if (!isIndexValueValid(column, item)) {
+                                         item->setData((int)DataItemColumn::InvalidValue, 1);
+                                         updateInvaldItem(column, item);
+                                     }
                                      if (position>=parents.last()->childCount() || position < 0) {
                                          parents.last()->appendChild(item);
                                          if (typelist.contains("dict") || typelist.contains("list"))
@@ -2706,18 +2709,14 @@ bool ConnectDataModel::updateInvaldItem(int column, ConnectDataItem *item)
     bool valid = isIndexValueValid(column, item);
     if (!valid) {
         int value = item->data((int)DataItemColumn::InvalidValue).toInt();
-//        item->setData((int)DataItemColumn::InvalidValue, QVariant(value));
         ConnectDataItem* schemaitem = getSchemaParentItem(item);
         ConnectDataItem* parentitem = item->parentItem();
-        bool updated = false;
         while(parentitem && parentitem != schemaitem && parentitem != mRootItem) {
             int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
             parentitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue+value));
             parentitem = parentitem->parentItem();
-//            value = parentvalue;
-            updated = true;
         }
-        if (updated && schemaitem==parentitem) {
+        if (schemaitem==parentitem) {
             int parentvalue = parentitem->data((int)DataItemColumn::InvalidValue).toInt();
             schemaitem->setData((int)DataItemColumn::InvalidValue, QVariant(parentvalue+value));
         }
