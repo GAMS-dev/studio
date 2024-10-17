@@ -1920,10 +1920,11 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  defvalue = schema->getDefaultValue(dataKeys.join(":"));
                  excluded = schema->getExcludedKeys(dataKeys.join(":"));
              }
+             bool dictOrListType = (typelist.contains("dict") || typelist.contains("list"));
              int column = (int)DataItemColumn::Key;
              QList<QVariant> itemData;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
-             if (typelist.contains("dict") || (typelist.contains("list"))) {
+             if (dictOrListType) {
                  itemData << QVariant();
                  itemData << QVariant( (int)DataCheckState::KeyItem);
                  column = (int)DataItemColumn::Key;
@@ -1959,15 +1960,15 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              }
              if (position>=parents.last()->childCount() || position < 0) {
                  parents.last()->appendChild(item);
-                 if (typelist.contains("dict") || typelist.contains("list"))
+                 if (dictOrListType)
                      parents << parents.last()->child(parents.last()->childCount()-1);
              } else {
                  parents.last()->insertChild(position, item);
-                 if (typelist.contains("dict") || typelist.contains("list"))
+                 if (dictOrListType)
                      parents << parents.last()->child(position);
              }
              updateInvalidExcludedItem(item);
-             if (typelist.contains("dict") || typelist.contains("list")) {
+             if (dictOrListType) {
                  QList<QVariant> sequenceDummyData;
                  sequenceDummyData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
                  sequenceDummyData << "";
@@ -2026,6 +2027,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                    itemData << (schema ? schema->getDefaultValue(dataKeys.join(":"))
                                        : QVariant());
                    ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
+                   bool empty = (schema ? schema->isEmpty(dataKeys.join(":")) : true);
                    if (!updateInvaldItem((int)DataItemColumn::Key, item))
                        updateInvaldItem((int)DataItemColumn::Value, item);
                    if (position>=parents.last()->childCount() || position < 0) {
@@ -2051,7 +2053,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                            mapitemData << QVariant((int)DataCheckState::ElementMap);
                            mapitemData << (schema ? QVariant(schema->getTypeAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                            mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(checkKeys.join(":")).join(",")) : QVariant());
-                           mapitemData << (schema ? QVariant(!schema->isRequired(checkKeys.join(":"))) : QVariant());
+                           mapitemData << ((k==0 && !empty) ? QVariant(false) : QVariant(true));
+//                           mapitemData << (schema ? QVariant(!schema->isRequired(checkKeys.join(":"))) : QVariant());
                            mapitemData << QVariant();
                            mapitemData << QVariant();
                            mapitemData << QVariant();
@@ -2125,6 +2128,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                  dataKeys   << "-";
                                  schemaKeys << "-";
                                  parents << parents.last()->child(parents.last()->childCount()-1);
+                                 bool empty = (schema ? schema->isEmpty(dataKeys.join(":")) : true);
                                  for(size_t kk = 0; kk<dmit->second.size(); kk++) {
                                      QList<QVariant> indexSeqData;
                                      indexSeqData << QVariant::fromValue(kk);
@@ -2136,7 +2140,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                      QStringList Keys(dataKeys);
                                      if (Keys.last().compare("-")==0)
                                          Keys.removeLast();
-                                     indexSeqData << QVariant(true);
+                                     indexSeqData << ((kk==0 && !empty) ? QVariant(false) : QVariant(true));
                                      indexSeqData << QVariant();
                                      indexSeqData << QVariant();
                                      indexSeqData << QVariant();
@@ -2155,6 +2159,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                        } else {
                            Q_ASSERT(dmit->second.Type()==YAML::NodeType::Scalar || dmit->second.Type()==YAML::NodeType::Sequence );
                        }
+                       ++k;
 //                       dataKeys.removeLast();
                    }
 ////                   updateInvalidExcludedItem(item);
@@ -2217,6 +2222,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                  : QVariant());
              itemData << (schema ? (schema->getDefaultValue(dataKeys.join(":")))
                                  : QVariant());
+             bool empty = (schema ? schema->isEmpty(dataKeys.join(":")) : true);
              ConnectDataItem* item = new ConnectDataItem(itemData, mItemIDCount++, parents.last());
              updateInvaldItem((int)DataItemColumn::Key, item);
              if (position>=parents.last()->childCount() || position < 0) {
@@ -2245,7 +2251,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                  QStringList Keys(datakeyslist);
 //                 if (Keys.last().compare("-")==0)
 //                     Keys.removeLast();
-                 indexData << QVariant(true);
+                 indexData << (k==0 && !empty ? QVariant(false) : QVariant(true));
                  indexData << QVariant();
                  indexData << QVariant();
                  indexData << QVariant();
@@ -2304,6 +2310,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    datakeyslist   << "-";
                                    schemakeyslist << "-";
                                    parents << parents.last()->child(parents.last()->childCount()-1);
+                                   bool empty = (schema ? schema->isEmpty(datakeyslist.join(":")) : true);
                                    for(size_t kk = 0; kk<mmit->second.size(); kk++) {
                                        QList<QVariant> indexSeqData;
                                        indexSeqData << QVariant::fromValue(kk);
@@ -2314,7 +2321,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                        QStringList Keys(datakeyslist);
                                        if (Keys.last().compare("-")==0)
                                            Keys.removeLast();
-                                       indexSeqData << QVariant(true);
+                                       indexSeqData << ((kk==0 && !empty) ? QVariant(false) : QVariant(true));
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
                                        indexSeqData << QVariant();
@@ -2409,7 +2416,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                    parents.last()->appendChild(new ConnectDataItem(mapData, mItemIDCount++, parents.last()));
 
                                    parents << parents.last()->child(parents.last()->childCount()-1);
+                                   bool empty = (schema ? schema->isEmpty(datakeyslist.join(":")) : true);
                                    const YAML::Node mapmapnode = mmit->second;
+                                   int k = 0;
                                           for (YAML::const_iterator mmmit = mapmapnode.begin(); mmmit != mapmapnode.end(); ++mmmit) {
                                                QList<QVariant> mapSeqData;
                                                mapSeqData << mmmit->first.as<std::string>().c_str();
@@ -2418,6 +2427,9 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                mapSeqData << (schema ? QVariant(schema->getTypeAsStringList(dataKeys.join(":")).join(",")): QVariant());
                                                mapSeqData << (schema ? QVariant(schema->getAllowedValueAsStringList(dataKeys.join(":")).join(",")): QVariant());
                                                mapSeqData << (schema ? QVariant(!schema->isRequired(dataKeys.join(":"))): QVariant());
+                                               mapSeqData << (schema ? (schema->isRequired(dataKeys.join(":")) ? QVariant(false)
+                                                                                                               : (k==0 && !empty ?  QVariant(false) : QVariant(true)))
+                                                                     : QVariant(true));
                                                mapSeqData << QVariant();
                                                mapSeqData << QVariant();
                                                mapSeqData << QVariant();
@@ -2435,6 +2447,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                                                    updateInvaldItem((int)DataItemColumn::Value, item);
                                                parents.last()->appendChild(new ConnectDataItem(mapSeqData, mItemIDCount++, parents.last()));
 //                                                       dataKeys.removeLast();
+                                               ++k;
                                           }
                                           updateInvalidExcludedItem(item);
                                           QList<QVariant> indexSeqDummyData;

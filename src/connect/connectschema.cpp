@@ -64,6 +64,12 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     if (node["required"]) {
         required = (node["required"].as<std::string>().compare("true") == 0 || node["required"].as<std::string>().compare("True") == 0);
     }
+    bool empty = true;
+    if (node["empty"]) {
+        if (node["empty"].Type()==YAML::NodeType::Scalar) {
+            empty = node["empty"].as<bool>();
+        }
+    }
     QList<ValueWrapper> allowedValues;
     if (node["allowed"] /* & node.Type() == YAML::NodeType::Map*/) {
         for(size_t i=0; i<node["allowed"].size(); i++) {
@@ -115,7 +121,7 @@ void ConnectSchema::createSchemaHelper(QString& key, const YAML::Node& node, int
     bool schemaDefined = (node["schema"] ? true : false);
     bool oneofDefined = (node["oneof"] ? true : false);
     bool anyofDefined = (node["anyof"] ? true : false);
-    mSchemaHelper.insert(key, new Schema(level, node, types, required, nullable, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes, oneofDefined, anyofDefined));
+    mSchemaHelper.insert(key, new Schema(level, node, types, required, nullable, allowedValues, defvalue, minvalue, maxvalue, schemaDefined, excludes, oneofDefined, anyofDefined, empty));
     if (schemaDefined) {
         if (mSchemaHelper[key]->hasType(SchemaType::List)) {
             QString str = key + ":-";
@@ -446,6 +452,14 @@ bool ConnectSchema::isRequired(const QString &key) const
     return false;
 }
 
+bool ConnectSchema::isEmpty(const QString &key) const
+{
+    if (contains(key)) {
+        return mSchemaHelper[key]->empty;
+    }
+    return false;
+}
+
 ValueWrapper ConnectSchema::getMin(const QString &key) const
 {
     if (contains(key)) {
@@ -488,7 +502,7 @@ QStringList ConnectSchema::getExcludedKeys(const QString &key) const
 
 Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType> &type_, bool required_, bool nullable_, const QList<ValueWrapper> &allowedValues_,
                const ValueWrapper &defaultValue_, const ValueWrapper &min_, const ValueWrapper &max_, bool schemaDefined_, const QStringList &excludes_,
-               bool oneofDefined_, bool anyofDefined_)
+               bool oneofDefined_, bool anyofDefined_, bool empty_)
     : level(level_),
       schemaNode(schemaNode_),
       types(type_),
@@ -501,7 +515,8 @@ Schema::Schema(int level_, const YAML::Node &schemaNode_, const QList<SchemaType
       schemaDefined(schemaDefined_),
       excludes(excludes_),
       isOneOf(oneofDefined_),
-      isAnyOf(anyofDefined_)
+      isAnyOf(anyofDefined_),
+      empty(empty_)
 { }
 
 
