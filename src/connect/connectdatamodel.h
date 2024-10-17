@@ -41,7 +41,6 @@ enum class DataCheckState {
     ListAppend   = 7,
     MapAppend    = 8,
     SchemaAppend = 9,
-    MapSchemaAppend = 10,
 };
 
 enum class DataItemColumn {

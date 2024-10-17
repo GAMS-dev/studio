@@ -446,7 +446,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                     nullable = false;
                                 }
                             }
-                            if (schemaValue["schema"] && (ignoreNull || !nullable)) {
+                            if (schemaValue["schema"] ) { // do not check ignoreNull nor nullable
                                YAML::Node data;
                                if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute))
                                   dataValue = data;
