@@ -990,6 +990,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
 
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
+    bool empty = (schema ? schema->isEmpty(schemaKeys.join(":")) : true);
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
 //        QString listkey = schemaKeys.last();
@@ -998,7 +999,7 @@ void ConnectDataModel::appendListElement(const QString& schemaname,  QStringList
         mapSeqData << QVariant((int)DataCheckState::ListItem);
         mapSeqData << QVariant(QString());
         mapSeqData << QVariant(QString());
-        mapSeqData << QVariant(true);
+        mapSeqData << (idx.row()+i==0 && !empty ? QVariant(false) : QVariant(true));
         mapSeqData << QVariant();
         mapSeqData << QVariant();
         mapSeqData << QVariant();
@@ -1099,6 +1100,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
 
+    bool empty = (schema ? schema->isEmpty(schemaKeys.join(":")) : true);
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
 //        QString listkey = schemaKeys.last();
@@ -1107,7 +1109,7 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
         mapSeqData << QVariant((int)DataCheckState::ListItem);
         mapSeqData << QVariant(QString());
         mapSeqData << QVariant(QString());
-        mapSeqData << QVariant(true);
+        mapSeqData << (schema ?  QVariant(false) : QVariant(true));
         mapSeqData << QVariant();
         mapSeqData << QVariant();
         mapSeqData << QVariant();
@@ -1923,6 +1925,7 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              bool dictOrListType = (typelist.contains("dict") || typelist.contains("list"));
              int column = (int)DataItemColumn::Key;
              QList<QVariant> itemData;
+             qDebug() << "1 keyitem" << dataKeys;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              if (dictOrListType) {
                  itemData << QVariant();
