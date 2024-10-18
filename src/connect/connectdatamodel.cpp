@@ -1925,7 +1925,6 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
              bool dictOrListType = (typelist.contains("dict") || typelist.contains("list"));
              int column = (int)DataItemColumn::Key;
              QList<QVariant> itemData;
-             qDebug() << "1 keyitem" << dataKeys;
              itemData << (key.contains("[") ? key.left(key.lastIndexOf("[")) : key);
              if (dictOrListType) {
                  itemData << QVariant();
