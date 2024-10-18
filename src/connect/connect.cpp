@@ -467,7 +467,7 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                    nullable = false;
                                }
                            }
-                           if (schemaValue["schema"] && (ignoreNull || !nullable)) {
+                           if (schemaValue["schema"]) { // && (ignoreNull || !nullable)) {
                                if (!listValue(schemaValue["schema"], dataValue, true, onlyRequiredAttribute))
                                    return false;
                            } else {
