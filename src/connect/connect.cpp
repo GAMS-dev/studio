@@ -384,8 +384,8 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
 {
     if (schemaValue.Type() == YAML::NodeType::Map) {
         bool allowed = (ignoreRequiredSchema ? ignoreRequiredSchema
-                                             : schemaValue["required"] ? (onlyRequiredAttribute ? schemaValue["required"].as<bool>() : true)
-                                                                       : (onlyRequiredAttribute ? false : true)
+                                             : (onlyRequiredAttribute ? (schemaValue["required"] ? schemaValue["required"].as<bool>() : false)
+                                                                      : true)
                        );
         if (!allowed)
             return false;
@@ -446,9 +446,9 @@ bool Connect::mapValue(const YAML::Node &schemaValue, YAML::Node &dataValue, boo
                                     nullable = false;
                                 }
                             }
-                            if (schemaValue["schema"] ) { // do not check ignoreNull nor nullable
+                            if (schemaValue["schema"]) { // do not check ignoreNull nor nullable
                                YAML::Node data;
-                               if (mapValue(schemaValue["schema"], data, false, onlyRequiredAttribute))
+                               if (mapValue(schemaValue["schema"], data, true, onlyRequiredAttribute, ignoreNull))
                                   dataValue = data;
                                else
                                    return false;
@@ -682,7 +682,7 @@ YAML::Node Connect::createConnectData(const QString &schemaName, bool onlyRequir
     for (YAML::const_iterator it = s->mRootNode.begin(); it != s->mRootNode.end(); ++it) {
         if (it->second.Type() == YAML::NodeType::Map) { // first level should be a map
             YAML::Node value;
-            if (!mapValue( it->second, value, false, onlyRequiredAttribute ))
+            if (!mapValue( it->second, value, false, onlyRequiredAttribute, true ))
                 continue;
             try {
                 int i = it->first.as<int>();
