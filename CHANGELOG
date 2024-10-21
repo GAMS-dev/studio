@@ -1,5 +1,6 @@
 Version 1.19.1
 ==================
+- fixed invalid error mark when the LST file contains wrong position information
 - improved license text for time limited licenses
 - upgraded from Qt 6.7.2 to Qt 6.7.3
 

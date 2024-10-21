@@ -202,8 +202,13 @@ void AbstractEdit::extraSelMarks(QList<QTextEdit::ExtraSelection> &selections)
             if (m->blockStart() < 0) continue;
             int start = m->blockStart();
             int end = m->size() ? (m->size() < 0 ? block.length() : m->blockEnd()+1) : 0;
-            selection.cursor.setPosition(block.position() + start);
+            if (block.position() + start > max)
+                DEB() << "TextMark " << m->line() << "," << m->column() << " w" << m->size() << " start beyond EOF";
+            selection.cursor.setPosition(qMin(block.position() + start, max));
+            if (block.position() + end > max)
+                DEB() << "TextMark " << m->line() << "," << m->column() << " w" << m->size() << " end beyond EOF";
             selection.cursor.setPosition(qMin(block.position() + end, max), QTextCursor::KeepAnchor);
+            if (!selection.cursor.hasSelection()) continue;
             if (m->type() == TextMark::error || m->refType() == TextMark::error) {
                 if (m->refType() == TextMark::error)
                     selection.format.setForeground(m->color());
