@@ -44,14 +44,17 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
 
     QModelIndex allowedval_index = index.sibling( index.row(), (int)DataItemColumn::AllowedValue );
     QStringList allowedval_list = allowedval_index.data().toString().split(",");
+    mIsCompleter= false;
     if (!allowedval_index.data().toString().isEmpty() && allowedval_list.size() > 0) {
         completer->setModel( new QStringListModel(allowedval_list) );
+        mIsCompleter = true;
     } else {
         QModelIndex type_index = index.sibling( index.row(), (int)DataItemColumn::SchemaType );
         QStringList type_list = type_index.data().toString().split(",");
         if (type_list.contains("boolean", Qt::CaseInsensitive)) {
             QStringList boolean_list({ "true", "false"});
             completer->setModel( new QStringListModel(boolean_list) );
+            mIsCompleter = true;
         }
     }
     completer->setCompletionMode(QCompleter::UnfilteredPopupCompletion);
@@ -64,6 +67,12 @@ QWidget *ConnectDataValueDelegate::createEditor(QWidget *parent, const QStyleOpt
     mLastEditor = lineEdit;
     mIsLastEditorClosed = false;
 
+    connect(lineEdit, &QLineEdit::textChanged, this, [=](const QString &text) {
+        if (mOriginalText.isEmpty())
+            mOriginalText = text;
+        mLastText = text;
+    });
+    connect(lineEdit, &QLineEdit::editingFinished, this, &ConnectDataValueDelegate::commitAndCloseEditorWithCompleter, Qt::UniqueConnection);
     return lineEdit;
 }
 
@@ -94,7 +103,20 @@ void ConnectDataValueDelegate::commitAndCloseEditor()
         emit closeEditor(lineEdit);
         emit modificationChanged(true);
     }
+    mOriginalText = "";
     mIsLastEditorClosed = true;
+}
+
+void ConnectDataValueDelegate::commitAndCloseEditorWithCompleter()
+{
+    if (!mIsCompleter)
+        return;
+    if (!mIsLastEditorClosed)
+        return;
+    if (QString::compare(mOriginalText, mLastText)!=0)
+       emit modificationChanged(true);
+    mOriginalText = "";
+    mLastText = "";
 }
 
 
@@ -117,14 +139,22 @@ bool ConnectDataValueDelegate::eventFilter(QObject *editor, QEvent *event)
        QLineEdit* lineEdit = static_cast<QLineEdit *>(editor);
        QKeyEvent* keyEvent = static_cast<QKeyEvent *>(event);
        if (keyEvent->key() == Qt::Key_Escape) {
-             mIsLastEditorClosed = true;
-             emit closeEditor(lineEdit);
-             return true;
+           mLastText = mOriginalText;
+           mIsLastEditorClosed = true;
+           emit closeEditor(lineEdit);
+           return true;
        } else if ((keyEvent->key() == Qt::Key_Tab) || (keyEvent->key() == Qt::Key_Enter) || (keyEvent->key() == Qt::Key_Return)) {
+                  mLastText = lineEdit->text();
                   commitAndCloseEditor();
                   return true;
        }
+    } else if(event->type()==QEvent::FocusOut) {
+              if (!mIsCompleter) {
+                  commitAndCloseEditor();
+                  return true;
+              }
     }
+
     return QStyledItemDelegate::eventFilter(editor, event);
 
 }

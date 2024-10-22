@@ -256,6 +256,10 @@ bool ConnectDataKeyDelegate::eventFilter(QObject *editor, QEvent *event)
                   commitAndCloseEditor();
                   return true;
        }
+    } else if(event->type()==QEvent::FocusOut) { // only event check not work with completer with listmodel
+             commitAndCloseEditor();
+             return true;
+
     }
     return QStyledItemDelegate::eventFilter(editor, event);
 }
