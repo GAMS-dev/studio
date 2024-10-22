@@ -2,6 +2,9 @@ Version 1.19.1
 ==================
 - added allow to delete files from the Project Explorer
 - fixed invalid error mark when the LST file contains wrong position information
+- fixed initialization and validation of options created from Connect schema in Connect Editor 
+- fixed adding only required options in Connect Editor
+- fixed saving file in Connect Editor after an edit finished with a mouse click
 - improved license text for time limited licenses
 - reverted "improved group search results by file, i.e. a tree view is used instead of a table"
 - upgraded from Qt 6.7.2 to Qt 6.7.3
