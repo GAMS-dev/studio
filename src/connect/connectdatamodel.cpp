@@ -148,6 +148,8 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
                 }
             } else {
                 bool deletable = (item->parentItem() ? item->parentItem()->data((int)DataItemColumn::Delete).toBool() : true);
+                if (deletable)
+                    deletable = item->data((int)DataItemColumn::Delete).toBool();
                 if (!deletable) {
                     if (index.column()==(int)DataItemColumn::Key && QString::compare(item->data((int)DataItemColumn::Key).toString(), "[key]", Qt::CaseInsensitive)==0)
                         return  QVariant::fromValue(Theme::color(Theme::Normal_Blue));
@@ -183,7 +185,6 @@ QVariant ConnectDataModel::data(const QModelIndex &index, int role) const
         } else if (index.column()==(int)DataItemColumn::Value) {
                    bool deletable = item->data((int)DataItemColumn::Delete).toBool();
                    if (!deletable) {
-                       QString str = item->data(Qt::DisplayRole).toString().trimmed();
                        if (!deletable && QString::compare(item->data((int)DataItemColumn::Value).toString(),"[value]",Qt::CaseInsensitive)==0)
                            return  QVariant::fromValue(Theme::color(Theme::Normal_Red));
                    }
@@ -2055,8 +2056,8 @@ void ConnectDataModel::insertSchemaData(const QString& schemaName, const QString
                            mapitemData << QVariant((int)DataCheckState::ElementMap);
                            mapitemData << (schema ? QVariant(schema->getTypeAsStringList(checkKeys.join(":")).join(",")) : QVariant());
                            mapitemData << (schema ? QVariant(schema->getAllowedValueAsStringList(checkKeys.join(":")).join(",")) : QVariant());
-                           mapitemData << ((k==0 && !empty) ? QVariant(false) : QVariant(true));
-//                           mapitemData << (schema ? QVariant(!schema->isRequired(checkKeys.join(":"))) : QVariant());
+                           mapitemData << (schema ? (schema->isRequired(checkKeys.join(":")) || (k==0 && !empty) ? QVariant(false) : QVariant(true))
+                                                  : QVariant(true));
                            mapitemData << QVariant();
                            mapitemData << QVariant();
                            mapitemData << QVariant();
