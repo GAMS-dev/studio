@@ -277,6 +277,7 @@ MainWindow::MainWindow(QWidget *parent)
     connect(ui->projectView, &QTreeView::customContextMenuRequested, this, &MainWindow::projectContextMenuRequested);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeProject, this, &MainWindow::closeProject);
     connect(&mProjectContextMenu, &ProjectContextMenu::closeFile, this, &MainWindow::closeNodeConditionally);
+    connect(&mProjectContextMenu, &ProjectContextMenu::closeDelFiles, this, &MainWindow::closeAndDeleteFiles);
     connect(&mProjectContextMenu, &ProjectContextMenu::addExistingFile, this, &MainWindow::addToGroup);
     connect(&mProjectContextMenu, &ProjectContextMenu::getSourcePath, this, &MainWindow::sendSourcePath);
     connect(&mProjectContextMenu, &ProjectContextMenu::newFileDialog, this, &MainWindow::newFileDialogPrepare);
@@ -5314,6 +5315,27 @@ void MainWindow::closeNodeConditionally(PExFileNode* node)
         mProjectRepo.closeNode(node);
     }
     mProjectRepo.purgeGroup(group);
+}
+
+void MainWindow::closeAndDeleteFiles(QList<PExFileNode *> fileNodes)
+{
+    if (!fileNodes.size()) return;
+    ui->projectView->fixFocus(true);
+    QString text = QString("Delete %1").arg(fileNodes.size() > 1 ? QString::number(fileNodes.size()) + " files?" : fileNodes.first()->location() + "?");
+    if (MsgBox::question("Delete", text, this, "Yes", "No", "", 0, 1) == 1) {
+        ui->projectView->fixFocus();
+        return;
+    }
+    for (PExFileNode* node : fileNodes) {
+        QString fName = node->location();
+        emit mProjectContextMenu.closeFile(node);
+        QFile file(fName);
+        if (QFile::exists(fName)) {
+            if (!QFile::remove(fName))
+                appendSystemLogWarning("Could not delete " + fName);
+        }
+    }
+    ui->projectView->fixFocus();
 }
 
 /// Closes all open editors and tabs related to a file and remove option history
