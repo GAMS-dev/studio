@@ -1101,7 +1101,6 @@ void ConnectDataModel::insertLastListElement(const QString &schemaname, QStringL
     ConnectSchema* schema = mConnect->getSchema(schemaname);
     YAML::Node node = data->getRootNode();
 
-    bool empty = (schema ? schema->isEmpty(schemaKeys.join(":")) : true);
     for(size_t i = 0; i<node.size(); i++) {
         QList<QVariant> mapSeqData;
 //        QString listkey = schemaKeys.last();
