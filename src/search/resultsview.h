@@ -23,8 +23,8 @@
 #include <QTableWidget>
 #include <QTextCursor>
 #include <QWidget>
-
 #include "searchresultmodel.h"
+
 
 namespace gams {
 namespace studio {
@@ -45,40 +45,35 @@ class ResultsView : public QWidget
 
 public:
     explicit ResultsView(SearchResultModel* searchResultList, MainWindow *parent = nullptr);
-
     ~ResultsView();
-
     void resizeColumnsToContent();
 
-    void selectItem(int row);
+    void selectItem(int index);
     int selectedItem();
 
     void setOutdated();
     bool isOutdated();
 
-    void expandAll();
-
-    void zoomIn();
-
-    void zoomOut();
-
-    void resetZoom();
+    void jumpToResult(int selectedRow, bool focus = true);
 
 signals:
     void updateMatchLabel(int row, int max);
 
 private slots:
-    void on_resultView_clicked(const QModelIndex &index);
-    void on_resultView_doubleClicked(const QModelIndex &index);
+    void on_tableView_clicked(const QModelIndex &index);
+    void on_tableView_doubleClicked(const QModelIndex &index);
 
-private:
-    void jumpToResult(int selectedRow, bool focus = true);
+protected:
+    void keyPressEvent(QKeyEvent* event);
 
 private:
     Ui::ResultsView *ui;
     MainWindow *mMain;
-    SearchResultModel* mResultModel;
+    SearchResultModel* mResultList;
     bool mOutdated = false;
+
+private:
+    int selectNextItem(bool backwards = false);
 };
 
 }

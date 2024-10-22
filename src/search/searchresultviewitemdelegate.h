@@ -22,27 +22,14 @@
 
 #include <QStyledItemDelegate>
 
-namespace gams {
-namespace studio {
-namespace search {
-
 class SearchResultViewItemDelegate : public QStyledItemDelegate
 {
-    Q_OBJECT
-
 public:
     explicit SearchResultViewItemDelegate(QObject *parent = nullptr);
-
-    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const override;
-
-    QSize sizeHint(const QStyleOptionViewItem &option, const QModelIndex &index) const override;
+    void paint(QPainter *painter, const QStyleOptionViewItem &option, const QModelIndex &index) const;
 
 private:
     QString elideRichText(const QString &richText, int maxWidth, const QFontMetrics &metrics) const;
 };
-
-}
-}
-}
 
 #endif // SEARCHRESULTVIEWITEMDELEGATE_H

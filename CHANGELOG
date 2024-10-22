@@ -2,6 +2,7 @@ Version 1.19.1
 ==================
 - fixed invalid error mark when the LST file contains wrong position information
 - improved license text for time limited licenses
+- reverted "improved group search results by file, i.e. a tree view is used instead of a table"
 - upgraded from Qt 6.7.2 to Qt 6.7.3
 
 Version 1.19.0

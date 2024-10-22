@@ -213,7 +213,7 @@ public slots:
     void updateCursorHistoryAvailability();
     void closeProject(gams::studio::PExProjectNode *project);
     void closeFileEditors(const FileId &fileId, bool willReopen = false);
-    void updateResults(search::SearchResultModel* model);
+    void updateResults(search::SearchResultModel* results);
     void closeResultsView();
     void openPinView(int tabIndex, Qt::Orientation orientation);
     void openInPinView(PExProjectNode *project, QWidget *editInMainTabs);
