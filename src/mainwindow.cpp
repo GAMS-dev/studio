@@ -1167,6 +1167,13 @@ void MainWindow::openModelFromLibPrepare(const QString &glbFile, const QString &
 void MainWindow::openModelFromLib(const QString &glbFile, const QString &modelName, const QString &inputFile, bool forceOverwrite)
 {
     bool openInCurrent = Settings::settings()->toBool(skOpenInCurrent) && mRecent.project();
+
+    // TODO(JM) remove this when issue is fixed
+    DEB() << "Open in current project: " << (Settings::settings()->toBool(skOpenInCurrent) ? "YES" : "NO")
+          << " (project: " << (mRecent.project() ? mRecent.project()->name() : "-none-") << ")";
+    if (!mRecent.project()) DEB() << "   - Editors meta data: " << (mRecent.fileMeta() ? mRecent.fileMeta()->name() + " no."
+                                                                                         + QString::number(mRecent.fileMeta()->projectId())
+                                                                                       : QString("no editor") );
     QString destDir = openInCurrent ? mRecent.project()->workDir() : CommonPaths::defaultWorkingDir();
     if (!QFile::exists(destDir)) {
         DEB() << "No existing workspace defined";

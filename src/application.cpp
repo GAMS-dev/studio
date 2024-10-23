@@ -25,6 +25,7 @@
 #include "commonpaths.h"
 #include "editors/sysloglocator.h"
 #include "editors/abstractsystemlogger.h"
+#include "logger.h"
 #include "networkmanager.h"
 #ifndef __APPLE__
 # include "colors/palettemanager.h"
@@ -128,6 +129,10 @@ void Application::init()
     mDistribValidator.start();
     listen();
     reportCleanupWsState(success, failed);
+    DEB() << GAMS_PRODUCTNAME_STR << " " << applicationVersion() << " on " << QSysInfo::prettyProductName() << " "
+          << QSysInfo::currentCpuArchitecture() << " build " << QSysInfo::kernelVersion();
+    GamsProcess gp;
+    DEB() << gp.aboutGAMS().split("\n").first();
 }
 
 QString Application::serverName() const

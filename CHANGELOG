@@ -1,6 +1,7 @@
 Version 1.19.1
 ==================
 - added allow to delete files from the Project Explorer
+- added system and version information to the log (created via `--log`)
 - fixed invalid error mark when the LST file contains wrong position information
 - fixed initialization and validation of options created from Connect schema in Connect Editor 
 - fixed adding only required options in Connect Editor
