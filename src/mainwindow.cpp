@@ -2762,7 +2762,12 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
     process.setProcessEnvironment(environment);
     SysLogLocator::systemLog()->append("On some Linux distributions GAMS Studio may not be able to start a terminal.", LogMsgType::Info);
 #else
-    process.setProgram("cmd.exe");
+    QString terminalPath = QFileInfo(QStandardPaths::findExecutable("cmd")).absoluteFilePath();
+    if (terminalPath.isEmpty()) {
+        appendSystemLogError("Terminal not found in PATH");
+        return;
+    }
+    process.setProgram(terminalPath);
     process.setArguments({"/k", "title", "GAMS Terminal"});
     process.setWorkingDirectory(workingDir);
     process.setCreateProcessArgumentsModifier([] (QProcess::CreateProcessArguments *args)
@@ -2771,8 +2776,12 @@ void MainWindow::actionTerminalTriggered(const QString &workingDir)
         args->startupInfo->dwFlags &= ulong(~STARTF_USESTDHANDLES);
     });
 #endif
-    if (!process.startDetached())
+    if (!process.startDetached()) {
         appendSystemLogError("Error opening terminal: " + process.errorString());
+#ifdef _WIN64
+        DEB() << "Path for terminal: " << QFileInfo(QStandardPaths::findExecutable("cmd")).absoluteFilePath();
+#endif
+    }
 }
 
 void MainWindow::on_mainTabs_tabCloseRequested(int index)
